@@ -150,9 +150,10 @@ class Sanitize {
     return str;
   }
 
-  // EAI like ндрис@уайлддк.орг need to pass
-  regexpEMailAddress = /^[\p{Letter}\p{Number}\-+_\.]+@[\p{Letter}\p{Number}\-\.]+\.(?:[\p{Letter}]+|xn--[a-z0-9]+)$/u;
-  regexpEMailAddress_ASCII = /^[a-zA-Z0-9\-+_\.]+@[a-zA-Z0-9\-\.]+\.(?:[a-zA-Z]+|xn--[a-z0-9]+)$/;
+  // EAI like ндрис@уайлддк.орг need to pass.
+  // \ & # % ` are rejected as defense in depth against HTML, JS and URL injection.
+  regexpEMailAddress = /^[\p{Letter}\p{Number}='\-+_\.]+@[\p{Letter}\p{Number}\-\.]+\.(?:[\p{Letter}]+|xn--[a-z0-9]+)$/u;
+  regexpEMailAddress_ASCII = /^[a-zA-Z0-9='\-+_\.]+@[a-zA-Z0-9\-\.]+\.(?:[a-zA-Z]+|xn--[a-z0-9]+)$/;
 
   /**
    * Email address foo@bar.com
@@ -161,7 +162,7 @@ class Sanitize {
     if (!unchecked) {
       return haveError("Missing email address", unchecked, fallback);
     }
-    let str = String(unchecked);
+    let str = String(unchecked).trim().toLowerCase();
     try {
       if (!this.regexpEMailAddress.test(str)) {
         return haveError("Not an email address", unchecked, fallback);
@@ -174,7 +175,7 @@ class Sanitize {
         return haveError("Not an email address", unchecked, fallback);
       }
     }
-    return str.toLowerCase();
+    return str;
     /*
     let sp = str.split("@");
     if (sp.length != 2) {
@@ -200,7 +201,7 @@ class Sanitize {
       if (!ex.message?.includes("Invalid regular expression")) {
         throw ex;
       }
-      filename = filename.replace(this.regexpHostname_ASCII, "").trim();
+      filename = filename.replace(this.regexpFilename_ASCII, "").trim();
     }
     if (!filename) {
       return haveError("Filename cannot have only punctuation and control characters", unchecked, fallback);
@@ -268,7 +269,7 @@ class Sanitize {
     }
   }
 
-  array(unchecked: [] | null | undefined, fallback: [] | null | Symbol = throwErrors): [] | null {
+  array<T>(unchecked: T[] | null | undefined, fallback: T[] | null | Symbol = throwErrors): T[] | null {
     if (unchecked && Array.isArray(unchecked)) {
       return unchecked;
     } else {

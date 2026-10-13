@@ -10,11 +10,13 @@ import { RawFilesAttachment } from "./Store/RawFilesAttachment";
 import { EMailProcessorList, ProcessingStartOn } from "./EMailProcessor";
 import type { ExtraData } from "./ExtraData";
 import type { SMLData } from "./SML/SMLData";
+import type { PublicKey } from "./Encryption/PublicKey";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
 import type { EncryptionSystem } from "./Encryption/enums";
-import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, blobToDataURL, assert, AbstractFunction } from "../util/util";
+import { isMobile, webMail } from "../build";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { PromiseAllDone } from "../util/flow/PromiseAllDone";
 import { Lock } from "../util/flow/Lock";
@@ -51,9 +53,20 @@ export class EMail extends Message {
   /** The user has answered this message, by clicking "Reply" */
   @notifyChangedProperty
   isReplied = false;
+  /** The user has forwarded this message to somebody else */
+  @notifyChangedProperty
+  isForwarded = false;
+  /** The sender or the server marked this message as important,
+   * e.g. `Importance: high` or IMAP keyword `$Important` */
+  @notifyChangedProperty
+  isImportant = false;
   /** The user started writing this message, but didn't send it yet */
   @notifyChangedProperty
   isDraft = false;
+  /** We are currently sending this message to the server.
+   * It's in the Sent folder, animated, until the server took it. */
+  @notifyChangedProperty
+  isSending = false;
   @notifyChangedProperty
   isDeleted = false;
   /** Complete MIME source of the email */
@@ -100,7 +113,13 @@ export class EMail extends Message {
    * This gives you the specific public key that was used to sign.
    * Format: `PublicKey.id` */
   @notifyChangedProperty
-  signed: string | null = null;
+  signedByKeyID: string | null = null;
+  /** As `signed` but giving you the actual PublicKey object.
+   * Set this using @see rememberSigner() */
+  signedKey: PublicKey | null = null;
+  /** As `signedKey`, but not parsed yet.
+   * `getPublicKeyByKeyID()` parses it when the reader needs it. */
+  signedKeyJSON: any = null;
   /** Contains the complete MIME message for sending.
    * Used for encrypted messages. */
   sendRawMIME: string | null = null;
@@ -132,7 +151,7 @@ export class EMail extends Message {
   }
 
   get baseSubject(): string {
-    return this.subject.replace(/^((Re|RE|AW|Aw): ?)+/g, "");
+    return this.subject?.replace(/^((Re|RE|AW|Aw): ?)+/g, "") ?? "";
   }
 
   get storage(): MailAccountStorage {
@@ -158,6 +177,29 @@ export class EMail extends Message {
     return recipients;
   }
 
+  /** Keeps the key that the sender signed this email with, so that the
+   * user can inspect it, add it to his addressbook, and encrypt his reply
+   * with it. The key travels with the message - in the CMS blob for S/MIME,
+   * in the AutoCrypt header for PGP - so this is the only place where we
+   * have it for senders who are not in the addressbook.
+   * Only keys that were issued for the `From:` address describe the sender.
+   * @param signer null, if the signature did not verify */
+  rememberSigner(signer: PublicKey | null) {
+    this.signedKey = signer;
+    this.signedByKeyID = signer?.id ?? null;
+    if (!signer) {
+      return;
+    }
+    let emailAddress = this.from?.emailAddress?.toLowerCase();
+    if (!emailAddress || !signer.userIDs.some(userID => userID.toLowerCase() == emailAddress)) {
+      return;
+    }
+    let known = this.from.encryptionPublicKey;
+    if (!known || known.obsolete) {
+      this.from.encryptionPublicKey = signer;
+    }
+  }
+
   /** Marks as spam, and deletes or moves the message, as configured */
   async treatSpam(isSpam = true) {
     if (this.pID) {
@@ -166,16 +208,18 @@ export class EMail extends Message {
     try {
       let strategy = this.folder.account.spamStrategy;
       if (strategy == DeleteStrategy.MoveToTrash) {
-        let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam);
-        assert(spamFolder, gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
+        let spamFolder = this.folder.account.getSpecialFolder(SpecialFolder.Spam)
+          ?? this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         if (isSpam) {
+          assert(spamFolder.specialFolder == SpecialFolder.Spam || spamFolder.specialFolder == SpecialFolder.Trash,
+            gt`Spam folder is not set. Please go to folder properties and set Use As: Spam.`);
           /** Immediate reaction for end user */
           await this.deleteMessageLocally();
           await this.markSpam(isSpam);
           await spamFolder.moveMessageHere(this);
         } else {
           await this.markSpam(isSpam);
-          if (this.folder == spamFolder) {
+          if (this.folder.specialFolder == SpecialFolder.Spam) {
             await this.folder.account.inbox.moveMessageHere(this);
           }
         }
@@ -205,6 +249,14 @@ export class EMail extends Message {
     this.isReplied = true;
   }
 
+  async markForwarded() {
+    this.isForwarded = true;
+  }
+
+  async markImportant(isImportant = true) {
+    this.isImportant = isImportant;
+  }
+
   async markDraft(isDraft = true) {
     this.isDraft = isDraft;
     if (this.dbID) {
@@ -230,24 +282,30 @@ export class EMail extends Message {
   async deleteMessageLocally() {
     this.isDeleted = true;
     this.folder.messages.remove(this);
-    await this.storage.deleteMessage(this);
     let contentDeletes = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
       contentDeletes.add(contentStorage.deleteIt(this));
     }
     await contentDeletes.wait();
+    await this.storage.deleteMessage(this);
   }
 
   async deleteMessageOnServer(strategy?: DeleteStrategy) {
   }
 
   async addTag(tag: Tag) {
+    if (this.tags.contains(tag)) {
+      return;
+    }
     this.tags.add(tag);
     await this.storage.saveMessageTags(this);
     await this.addTagOnServer(tag);
   }
 
   async removeTag(tag: Tag) {
+    if (!this.tags.contains(tag)) {
+      return;
+    }
     this.tags.remove(tag);
     await this.storage.saveMessageTags(this);
     await this.removeTagOnServer(tag);
@@ -308,7 +366,7 @@ export class EMail extends Message {
     let mail = await postalMIME.parse(this.mime);
 
     this.id ??= sanitize.string(mail.messageId, this.id ?? "");
-    this.subject ??= sanitize.string(mail.subject, this.subject ?? "");
+    this.subject ||= sanitize.string(mail.subject, "");
     this.sent ??= sanitize.date(mail.date, this.sent ?? new Date());
     if (!this.from || this.from.emailAddress == kDummyPerson.emailAddress) {
       this.from = mail.from?.address
@@ -332,6 +390,10 @@ export class EMail extends Message {
       this.inReplyTo = sanitize.string(mail.inReplyTo, null);
     }
     this.references = sanitize.string(mail.references, null)?.split(" ");
+    // RFC 4021 `Importance:`, RFC 2156 `Priority:`, and the de-facto `X-Priority: 1` = highest
+    this.isImportant ||= this.mimeHeader(mail, "importance") == "high" ||
+      this.mimeHeader(mail, "priority") == "urgent" ||
+      ["1", "2"].includes(this.mimeHeader(mail, "x-priority")[0]);
 
     // Body
     this.text = mail.text;
@@ -367,13 +429,18 @@ export class EMail extends Message {
       }
     }).filter(attachment => !!attachment));
     oldAttachments.clear();
+    await Promise.all(this.attachments.contents.map(a => a.checkExecutable()));
 
     // Run processors, filters, calendar invitations, SML, etc.
     for (let processor of EMailProcessorList.processors) {
       if (processor.runOn != ProcessingStartOn.Parse) {
         continue;
       }
-      await processor.process(this, mail);
+      try {
+        await processor.process(this, mail);
+      } catch (ex) {
+        this.folder.account.errorCallback(ex);
+      }
     }
     return mail;
   }
@@ -387,12 +454,19 @@ export class EMail extends Message {
     for (let header of mail.headers) {
       try {
         let name = sanitize.nonemptystring(header.key).toLowerCase();
-        let value = sanitize.nonemptystring(header.value);
+        let value = sanitize.string(header.value, "");
         this.headers.set(name, value);
       } catch (ex) {
         this.folder.account.errorCallback(ex);
       }
     }
+  }
+
+  /** @param name must be lowercase
+   * @returns the header value, normalized for comparison */
+  protected mimeHeader(mail: MIME, name: string): string {
+    let header = mail.headers.find(h => h.key.toLowerCase() == name);
+    return sanitize.string(header?.value, "").toLowerCase().trim();
   }
 
   /** Used by encrypted messages.
@@ -427,7 +501,6 @@ export class EMail extends Message {
     if (this.isDeleted || !this.mime || await this.isDownloadCompleteDoublecheck()) {
       return;
     }
-    await this.processMessage();
     await this.saveMetadataLocally();
     let contentSaves = new PromiseAllDone();
     for (let contentStorage of this.folder.account.contentStorage) {
@@ -435,7 +508,11 @@ export class EMail extends Message {
     }
     await contentSaves.wait();
     this.downloadComplete = true;
-    await this.saveWritablePropsLocally(); // save downloadComplete = true
+    await this.processMessage();
+    if (this.isDeleted) { // rule deleted or moved
+      return;
+    }
+    await this.saveWritablePropsLocally(); // downloadComplete = true, and what the filter rules changed
   }
 
   protected async isDownloadCompleteDoublecheck(): Promise<boolean> {
@@ -547,14 +624,31 @@ export class EMail extends Message {
   /**
    * Runs filters, spam filter, and content interpreters on the message.
    *
-   * Should be called after the entire message has been downloaded,
-   * and before it is stored.
+   * Should be called after the entire message has been downloaded
+   * and stored, because the filter actions tag, move and delete it in the database.
+   *
+   * We download mails in every folder, but a mail arrives only in the inbox,
+   * so that is the only place where the rules for incoming mail run.
+   * Likewise, the rules for sent mail run on the mails in the Sent folder.
    */
   async processMessage() {
-    let rules = this.folder?.account?.filterRuleActions.contents;
-    rules = rules?.filter(rule => rule.when == FilterMoment.IncomingBeforeSpam || rule.when == FilterMoment.IncomingAfterSpam);
+    let account = this.folder.account;
+    let moments: FilterMoment[] = [];
+    if (this.folder == account.inbox) {
+      moments = [FilterMoment.IncomingBeforeSpam, FilterMoment.IncomingAfterSpam];
+    } else if (this.folder.specialFolder == SpecialFolder.Sent) {
+      moments = [FilterMoment.Outgoing];
+    }
+    let rules = account.filterRuleActions.filterOnce(rule => moments.includes(rule.when));
     for (let rule of rules) {
-      await rule.run(this);
+      try {
+        await rule.run(this);
+      } catch (ex) {
+        account.errorCallback(ex);
+      }
+      if (this.isDeleted) { // rule deleted or moved
+        return;
+      }
     }
   }
 
@@ -606,6 +700,8 @@ export class EMail extends Message {
     other.threadID = this.threadID;
     other.isSpam = this.isSpam;
     other.isReplied = this.isReplied;
+    other.isForwarded = this.isForwarded;
+    other.isImportant = this.isImportant;
     other.isDraft = this.isDraft;
     other.isDeleted = this.isDeleted;
     other.mime = this.mime;
@@ -621,7 +717,8 @@ export class EMail extends Message {
     other.mustEncrypt = this.mustEncrypt;
     other.shouldEncrypt = this.shouldEncrypt;
     other.wasEncrypted = this.wasEncrypted;
-    other.signed = this.signed;
+    other.signedByKeyID = this.signedByKeyID;
+    other.system = this.system;
   }
 
   /**
@@ -629,13 +726,14 @@ export class EMail extends Message {
    * true: older message
    * false: newer message
    * null: Same list position, after deleting this message
+   * @returns null, if there is no message left to show
    *
    * Implementation: If there are more functions that are
    * not about the email itself, this might move to an `EMailActions` class,
    * like `ComposeActions`.
    * For now, given that it's just 1 function and small, keep it here.
    */
-  nextMessage(previous?: boolean): EMail {
+  nextMessage(previous?: boolean): EMail | null {
     let i = this.folder.messages.getKeyForValue(this);
     if (typeof (previous) == "boolean") {
       previous ? --i : ++i;
@@ -643,7 +741,7 @@ export class EMail extends Message {
     return this.folder.messages.getIndex(i) ??
       this.folder.messages.first ??
       this.folder.account.inbox.messages.first ??
-      this.folder.newEMail();
+      null;
   }
 
   get compose(): ComposeActions {
@@ -651,7 +749,7 @@ export class EMail extends Message {
   }
 }
 
-/** For inline images, convert `cid:` URIs into `data:` URIs. */
+/** For inline images, convert `cid:` URIs into `blob:` or `data:` URLs. */
 async function addCID(html: string, email: EMail): Promise<string> {
   try {
     let doc = new DOMParser().parseFromString(html, "text/html");
@@ -666,15 +764,19 @@ async function addCID(html: string, email: EMail): Promise<string> {
       }
       let cid = src.substring(4);
       let attachment = email.attachments.find(a => a.contentID == "<" + cid + ">");
+      // mobile/web `<iframe sandbox>` has opaque origin and won't load our `blob:`. Electron <webview> has the same origin.
+      let canLoadBlobURL = !webMail && !isMobile;
       src = attachment?.content
-        ? attachment.blobURL
+        ? canLoadBlobURL
+          ? attachment.blobURL
+          : await blobToDataURL(attachment.content)
         : "";
       img.setAttribute("src", src);
       if (src) {
         attachment.hidden = true;
       }
     }
-    html = new XMLSerializer().serializeToString(doc);
+    html = doc.documentElement.outerHTML; // Serialize HTML (XMLSerializer would escape `>` in `<style>`)
   } catch (ex) {
     email.folder.account.errorCallback(ex);
   }

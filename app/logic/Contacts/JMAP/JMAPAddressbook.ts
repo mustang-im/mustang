@@ -1,8 +1,10 @@
-import { Addressbook } from "../Addressbook";
+import { Addressbook, AddressbookShareCombinedPermissions } from "../Addressbook";
 import { JMAPPerson } from "./JMAPPerson";
 import { JMAPGroup } from "./JMAPGroup";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
-import type { TJMAPAddressbook } from "./TJMAPAddressbook";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import { checkChangeError } from "../../Mail/JMAP/JMAPError";
+import type { TJMAPAddressbook, TJMAPAddressbookRights } from "./TJMAPAddressbook";
 import type { TJMAPContact } from "./TJSContact";
 import type { TJMAPChangeResponse, TJMAPGetResponse, TID } from "../../Mail/JMAP/TJMAPGeneric";
 import { retryOnTransientError } from "../../util/netUtil";
@@ -130,7 +132,16 @@ export class JMAPAddressbook extends Addressbook {
       return await this.listAllPersons();
     }
 
-    return await this.fetchChangedPersonsForAllAddressbooks();
+    try {
+      return await this.fetchChangedPersonsForAllAddressbooks();
+    } catch (ex) {
+      if (ex.code == "cannotCalculateChanges") {
+        // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+        this.account.syncState.delete("ContactCard");
+        return await this.listAllPersons();
+      }
+      throw ex;
+    }
   }
 
   /**
@@ -198,7 +209,7 @@ export class JMAPAddressbook extends Addressbook {
               removed.hasItems || changes.destroyed?.length)) {
               continue;
         }
-        removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed));
+        removed.addAll(await addressbook.parseRemovedPersons(changes.destroyed ?? []));
         // A new item created locally comes back in `created`, so need dup checks
         let addedResult = addressbook.parsePersonsList(addedThisAB ?? []);
         let changedResult = addressbook.parsePersonsList(changedThisAB ?? []);
@@ -291,6 +302,47 @@ export class JMAPAddressbook extends Addressbook {
 
   protected getGroupByJMAPID(jmapID: string): JMAPGroup | undefined {
     return this.groups.find(p => p.jmapID == jmapID);
+  }
+
+  get sharePermissionLevels(): AddressbookShareCombinedPermissions[] {
+    return [
+      AddressbookShareCombinedPermissions.Read,
+      AddressbookShareCombinedPermissions.Modify,
+    ];
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let response = await this.account.makeSingleCall("AddressBook/get", {
+      accountId: this.account.accountID,
+      ids: [this.jmapID],
+      properties: ["shareWith"],
+    }) as TJMAPGetResponse<TJMAPAddressbook>;
+    return await this.account.getPrincipals(Object.keys(response.list[0]?.shareWith ?? {}));
+  }
+
+  async deleteSharedPerson(person: PersonUID) {
+    await this.setSharedPerson(person, null);
+  }
+
+  async addSharedPerson(person: PersonUID, access: AddressbookShareCombinedPermissions) {
+    await this.setSharedPerson(person, {
+      mayRead: true,
+      mayWrite: access == AddressbookShareCombinedPermissions.Modify,
+      mayShare: false,
+      mayDelete: false,
+    });
+  }
+
+  protected async setSharedPerson(person: PersonUID, rights: TJMAPAddressbookRights | null) {
+    let principalID = (await this.account.findPrincipal(person))?.id;
+    assert(principalID, gt`You have no access to the account of ${person.emailAddress}`);
+    let response = await this.account.makeSingleCall("AddressBook/set", {
+      accountId: this.account.accountID,
+      update: {
+        [this.jmapID]: { [`shareWith/${principalID}`]: rights },
+      },
+    }) as TJMAPChangeResponse<TJMAPAddressbook>;
+    checkChangeError(response);
   }
 
   fromConfigJSON(json: any) {

@@ -16,6 +16,12 @@ class ObservableLocalStorageSetting<T> extends Observable {
     localStorage.setItem(this.key, JSON.stringify(val));
     this.notifyObservers();
   }
+  /** Svelte calls this when a component writes to a bound `$setting.value`.
+   * The store value is this object itself, and `set value()` above already
+   * saved the new value, so we only need to tell the other subscribers. */
+  set(setting: this) {
+    this.notifyObservers();
+  }
   withDefault(defaultValue: T): T {
     this.defaultValue = defaultValue;
     return this.value;

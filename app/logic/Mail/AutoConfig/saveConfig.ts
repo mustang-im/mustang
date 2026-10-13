@@ -1,7 +1,6 @@
 import { MailAccount } from "../MailAccount";
 import { ContactEntry } from "../../Abstract/Person";
 import { Folder, SpecialFolder } from "../../Mail/Folder";
-import { MailIdentity } from "../MailIdentity";
 import { type PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import type { Account } from "../../Abstract/Account";
 import { Calendar } from "../../Calendar/Calendar";
@@ -12,7 +11,8 @@ import { MeetAccount } from "../../Meet/MeetAccount";
 import { appGlobal } from "../../app";
 import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { NotReached, assert } from "../../util/util";
+import { NotReached, UserError, assert } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 
 export async function saveAndInitConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
@@ -33,9 +33,10 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
+  sanitize.emailAddress(emailAddress); // Otherwise account fails on the next start
   fillConfig(config, emailAddress, password);
 
-  let identity = new MailIdentity(config);
+  let identity = config.newIdentity();
   identity.realname = config.realname;
   identity.emailAddress = config.emailAddress;
   config.identities.add(identity);
@@ -69,10 +70,11 @@ export async function saveChildService(config: Account, main: Account): Promise<
  */
 export function fillConfig(config: MailAccount, emailAddress: string, password: string) {
   if (config.source == "manual") {
+    config.name = config.name ? replaceVar(config.name, emailAddress) : emailAddress;
     return;
   }
   assert(emailAddress, `${config.name}: Need email address`);
-  config.realname = appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
+  config.realname ??= appGlobal.me.name ?? nameFromEmailAddress(emailAddress); // may be overwritten in setRealname()
   config.emailAddress = emailAddress;
   config.password = password;
   config.username = config.username ? replaceVar(config.username, emailAddress) : emailAddress;
@@ -113,7 +115,7 @@ function replaceVar(str: string, emailAddress: string): string {
  * 2. Sets the realname of the user based on the From in messages in Sent
  * 3. Pre-populates the Collected Addresses. */
 export async function getFirstMessages(config: MailAccount) {
-  await config.login(true);
+  await config.loginAndStartup(true);
   let sent = config.getSpecialFolder(SpecialFolder.Sent);
   let inbox = config.getSpecialFolder(SpecialFolder.Inbox);
   if (sent) {

@@ -4,6 +4,7 @@ import type { PersonUID } from "../Abstract/PersonUID";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
 import { SQLGroup } from "./SQL/SQLGroup";
+import { SQLPerson } from "./SQL/SQLPerson";
 import { appGlobal } from "../app";
 import { RunOnce } from "../util/flow/RunOnce";
 import { AbstractFunction, NotReached } from "../util/util";
@@ -19,6 +20,7 @@ export class Addressbook extends Account {
   storage: AddressbookStorage | null = null;
   syncState: string | null = null;
   readDBRunOnce = new RunOnce();
+  readDBPersonsRunOnce = new RunOnce();
 
   newPerson(): Person {
     return new Person(this);
@@ -32,12 +34,17 @@ export class Addressbook extends Account {
     return true; // for local addressbook
   }
 
-  async startup() {
-    await super.startup();
+  async syncOnStartup() {
+    await super.syncOnStartup();
     await this.listContacts();
+    await this.startupDependentAccounts();
   }
 
   async listContacts() {
+    await this.readContactsFromDB();
+  }
+
+  async readFromDB(): Promise<void> {
     await this.readContactsFromDB();
   }
 
@@ -46,9 +53,23 @@ export class Addressbook extends Account {
       if (!this.dbID) {
         await this.save();
       }
-      if (this.persons.isEmpty && this.groups.isEmpty) {
-        await SQLGroup.readAll(this); // also reads persons
+      await this.readPersonsFromDB();
+      if (this.groups.isEmpty) {
+        await SQLGroup.readAll(this);
       }
+    });
+  }
+
+  /** Reads the persons, but not the groups.
+   * Groups can have members from other addressbooks, e.g. the collected addressbook,
+   * so reading the groups needs the persons of the other addressbooks,
+   * but must not read their groups again. */
+  async readPersonsFromDB() {
+    await this.readDBPersonsRunOnce.runOnce(async () => {
+      if (!this.dbID || this.persons.hasItems) {
+        return;
+      }
+      await SQLPerson.readAll(this);
     });
   }
 
@@ -96,6 +117,12 @@ export class Addressbook extends Account {
     await super.deleteIt();
     await this.storage?.deleteAddressbook(this);
     appGlobal.addressbooks.remove(this);
+  }
+
+  /** The access levels that this server can grant to other users.
+   * Ordered from least to most permission. Used by @see `addSharedPerson()` */
+  get sharePermissionLevels(): AddressbookShareCombinedPermissions[] {
+    return [];
   }
 
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {

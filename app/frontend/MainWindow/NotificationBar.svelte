@@ -14,7 +14,8 @@
         padding="4px"
         label={button.label}
         onClick={() => {
-          button.onClick();
+          button.onClick() // close the bar right away, don't wait for the action
+            .catch(showError);
           onClose(notification);
         }}
         />
@@ -44,6 +45,7 @@
   import XIcon from "lucide-svelte/icons/x";
   import ErrorInfoIcon from "lucide-svelte/icons/bot";
   import { ArrayColl } from "svelte-collections";
+  import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
 
   export let notifications: ArrayColl<Notification>;

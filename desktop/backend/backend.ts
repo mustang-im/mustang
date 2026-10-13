@@ -1,4 +1,6 @@
 import { HTTPServer } from './HTTPServer';
+import { HTTPConnection, type HTTPConnectionOptions } from './HTTPConnection';
+import { NetSession } from './NetSession';
 import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../../app/logic/build';
@@ -19,6 +21,7 @@ import net from "node:net";
 import { WebSocket as NodeWebSocket } from "ws";
 import zlib from "node:zlib";
 import path from "node:path";
+import tls from "node:tls";
 import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
@@ -57,7 +60,7 @@ async function createSharedAppObject() {
     OWA,
     newOSNotification,
     isOSNotificationSupported,
-    newTrayIcon,
+    setTrayIcon,
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
@@ -93,9 +96,13 @@ async function createSharedAppObject() {
     createType3MessageFromType2Message,
     newAdmZIP,
     newHTTPServer,
+    newHTTPConnection,
+    newNetSession,
     newTCPSocket,
+    startTLS,
     newWebSocket,
     gunzip,
+    getCACertificates,
     readFile,
     writeFile,
     deleteFile,
@@ -221,6 +228,8 @@ export class HTTPFetchError extends Error {
   httpStatusText: string;
   httpMethod: string;
   hostname: string;
+  /** `Retry-After`, in seconds, when the server rate-limited us */
+  retryAfterSeconds: number;
 
   constructor(ex: Error) {
     super(ex?.message ?? ex + "");
@@ -235,6 +244,7 @@ export class HTTPFetchError extends Error {
       this.httpStatusText = response.statusText;
       this.httpMethod = request.method;
       this.hostname = new URL(this.url).hostname;
+      this.retryAfterSeconds = parseInt(response.headers.get("Retry-After")) || undefined;
       this.message = `HTTP ${this.httpMethod} <${this.url}>${this.redirectedURL ? ` redirected to <${this.redirectedURL}>` : ''} failed with ${this.httpCode} ${this.httpStatusText}`;
     } else if (cause) {
       this.code = cause.code;
@@ -252,10 +262,33 @@ function newHTTPServer() {
   return new HTTPServer();
 }
 
+/** A HTTP(S) client that runs all requests over a single TCP connection,
+ * for connection-based authentication like NTLM. @see `HTTPConnection` */
+function newHTTPConnection(url: string, options?: HTTPConnectionOptions): HTTPConnection {
+  return new HTTPConnection(url, options);
+}
+
+/** A HTTP client that uses Chromium's network stack, which performs
+ * connection-based logins like NTLM natively. @see `NetSession` */
+function newNetSession(url: string, partition: string, username: string, password: string): NetSession {
+  return new NetSession(url, partition, username, password);
+}
+
 /** A new raw TCP socket, from the node net module.
  * You can attach `connect`/`error`/`data` listeners and `connect()` */
 function newTCPSocket(): net.Socket {
   return new net.Socket();
+}
+
+/** Wraps a connected `newTCPSocket()` in TLS, for implicit TLS and STARTTLS.
+ * Resolves once the handshake succeeded, so that you can attach listeners.
+ * @param tlsOptions node `tls.ConnectionOptions`, e.g. `rejectUnauthorized: false`
+ *   accepts self-signed and expired certificates, `minVersion: "TLSv1"` old servers. */
+function startTLS(socket: net.Socket, hostname: string, tlsOptions?: tls.ConnectionOptions): Promise<tls.TLSSocket> {
+  return new Promise((resolve, reject) => {
+    let tlsSocket = tls.connect({ socket, servername: hostname, ...tlsOptions }, () => resolve(tlsSocket));
+    tlsSocket.on("error", reject);
+  });
 }
 
 /** A new `ws` WebSocket, for the Signal chat-service socket. The renderer's browser
@@ -274,14 +307,52 @@ function gunzip(data: Uint8Array): Uint8Array {
   return zlib.unzipSync(Buffer.from(data));
 }
 
-/** <https://www.electronjs.org/docs/latest/api/tray> */
-function newTrayIcon(imgDataURL: string): Tray {
-  return new Tray(nativeImage.createFromDataURL(imgDataURL));
+function getCACertificates(type: string) {
+  if (tls.getCACertificates) {
+    return tls.getCACertificates(type);
+  }
+  // Fallback for old node.js
+  return type == "bundled" ? tls.rootCertificates : [];
 }
 
-/** <https://www.electronjs.org/docs/latest/api/notification> */
+let trayIcon: Tray | null = null;
+
+/** Shows our icon in the system tray, and replaces the icon that is
+ * already there, if any.
+ * <https://www.electronjs.org/docs/latest/api/tray> */
+function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
+  let image = nativeImage.createFromDataURL(imgDataURL);
+  if (os.platform() == "darwin") { // macOS doesn't scale the icon down to its menu bar
+    image = image.resize({ width: 16, height: 16 });
+  }
+  if (trayIcon) {
+    trayIcon.setImage(image);
+    trayIcon.removeAllListeners("click");
+  } else {
+    trayIcon = new Tray(image);
+  }
+  function remove() {
+    trayIcon?.destroy();
+    trayIcon = null;
+  }
+  trayIcon.setToolTip(tooltip);
+  trayIcon.on("click", () => {
+    remove();
+    onClick?.();
+  });
+}
+
+/** <https://www.electronjs.org/docs/latest/api/notification>
+ *
+ * jpc describes only the object itself and its own class, so the frontend
+ * doesn't get the functions that this native Electron class inherits
+ * from `EventEmitter`. Make them properties of the object itself. */
 function newOSNotification(options: any): Notification {
-  return new Notification(options);
+  let popup: any = new Notification(options);
+  for (let name of ["on", "once", "off"]) {
+    popup[name] = popup[name].bind(popup);
+  }
+  return popup;
 }
 
 function isOSNotificationSupported(): boolean {
@@ -312,7 +383,7 @@ const checkForUpdateRunOnce = new RunOnce<boolean>();
 async function checkForUpdate(): Promise<boolean> {
   if (updateState.haveUpdate) return true;
   return await checkForUpdateRunOnce.runOnce(async () => {
-    updateState.update = await autoUpdater.checkForUpdates();
+    updateState.update = await ignoreMissingUpdateConfig(autoUpdater.checkForUpdates());
     return updateState.haveUpdate;
   });
 }
@@ -320,9 +391,22 @@ async function checkForUpdate(): Promise<boolean> {
 export async function checkForUpdateAndNotify(): Promise<boolean> {
   if (updateState.haveUpdate) return true;
   return await checkForUpdateRunOnce.runOnce(async () => {
-    updateState.update = await autoUpdater.checkForUpdatesAndNotify();
+    updateState.update = await ignoreMissingUpdateConfig(autoUpdater.checkForUpdatesAndNotify());
     return updateState.haveUpdate;
   });
+}
+
+/** Builds without a publish configuration ship no `app-update.yml`.
+  * They cannot update themselves, which is not an error, but no update. */
+async function ignoreMissingUpdateConfig(check: Promise<UpdateCheckResult | null>): Promise<UpdateCheckResult | null> {
+  try {
+    return await check;
+  } catch (ex) {
+    if (ex.code == "ENOENT") {
+      return null;
+    }
+    throw ex;
+  }
 }
 
 export async function installUpdate() {
@@ -339,12 +423,30 @@ function setTheme(theme: "system" | "light" | "dark") {
   nativeTheme.themeSource = theme;
 }
 
-function openExternalURL(url: string) {
-  shell.openExternal(url);
+async function openExternalURL(url: string) {
+  let scheme = new URL(url).protocol; // throws on a malformed URL
+
+  /** Schemes that we let the OS open. A mail fully controls the URL of its links,
+   * and `shell.openExternal()` starts whichever app the OS registered for the scheme.
+   * E.g. `file:` runs a `.desktop` file or an `.exe`, and `ms-msdt:` and `search-ms:`
+   * are remote code execution on Windows. */
+  const kAllowedURLSchemes = [
+    "https:",
+    "http:",
+    "mailto:",
+    "tel:",
+    "xmpp:",
+    "matrix:",
+  ];
+  if (!kAllowedURLSchemes.includes(scheme)) {
+    throw new Error(`Refusing to open a ${scheme} URL in an OS app`);
+  }
+
+  await shell.openExternal(url);
 }
 
-function openFileInNativeApp(filePath: string) {
-  shell.openPath(filePath);
+async function openFileInNativeApp(filePath: string) {
+  await shell.openPath(filePath);
 }
 
 class StartupArgs extends Observable {
@@ -430,7 +532,7 @@ function onScreenSharingSelect(onSelect: (screens: DesktopCapturerSource[], erro
         if (!(ex instanceof Error)) {
           ex = new Error(ex + "");
         }
-        onSelect([], ex as Error);
+        await onSelect([], ex as Error);
       }
     },
     // If true, use the system picker if available.
@@ -451,13 +553,14 @@ function createIMAPFlowConnection(...args): ImapFlow {
 }
 
 function getSQLiteDatabase(filename: string, options: any, buffer?: Uint8Array): Database {
+  let safeOptions = { readonly: !!options?.readonly }; // `nativeBinding` in it would `require()` any file as native code
   if (buffer) {
-    return new Database(Buffer.from(buffer), options);
+    return new Database(Buffer.from(buffer), safeOptions);
   }
   if (!filename.startsWith("/")) {
     filename = path.join(getConfigDir(), filename);
   }
-  return new Database(filename, options);
+  return new Database(filename, safeOptions);
 }
 
 async function sendMailNodemailer(transport, mail) {
@@ -686,7 +789,7 @@ let filesDirCreated = false;
  *
  * TODO Change it
  * Linux: /home/USER/.mustang/
- * Windows: C:\Users\USER\AppData\Mustang\
+ * Windows: C:\Users\USER\AppData\Roaming\Mustang\
  * Mac OS: /Users/USER/Library/Mustang
  */
 function getFilesDir(): string {

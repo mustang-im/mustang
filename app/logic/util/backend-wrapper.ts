@@ -61,7 +61,7 @@ let configDir: string;
  * but still accessible, if needed by technical people or for backups.
  *
  * - Linux: /home/USER/.mustang/
- * - Windows: C:\Users\USER\AppData\Mustang\
+ * - Windows: C:\Users\USER\AppData\Roaming\Mustang\
  * - Mac OS: /Users/USER/Library/Application Support/Mustang
  * - Android: /data/user/0/im.mustang.capa/files/
  */

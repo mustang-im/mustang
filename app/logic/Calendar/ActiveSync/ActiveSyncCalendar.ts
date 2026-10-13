@@ -118,9 +118,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
     }
   }
 
-  async listEvents() {
-    await super.listEvents();
-
+  protected async listEventsFromServer() {
     let data = {
       WindowSize: String(kMaxCount),
       Options: {
@@ -146,7 +144,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
           // Exceptions must be handled after the master event has been saved.
           for (let exception of ensureArray(item.ApplicationData.Exceptions?.Exception)) {
             if (exception.Deleted != "1") {
-              let exceptionTime = fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime));
+              let exceptionTime = event.toLocalMidnight(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime), event.allDay && this.account.protocolVersion == "16.1"));
               let existing = event.exceptions.find(event => event.recurrenceStartTime.getTime() == exceptionTime.getTime());
               if (existing) {
                 existing.fromWBXML(exception);
@@ -154,8 +152,8 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
               } else {
                 let instance = event.getOccurrenceByDate(exceptionTime) as ActiveSyncEvent;
                 instance.fromWBXML(exception);
+                // This adds the exception to `this.events`
                 await instance.saveLocally();
-                this.events.add(event);
               }
             }
           }

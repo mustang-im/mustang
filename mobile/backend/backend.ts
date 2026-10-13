@@ -8,6 +8,8 @@ import os from "node:os";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import crypto from "node:crypto";
+import net from "node:net";
+import tls from "node:tls";
 
 // TODO Remove backend OWA.* entirely and
 // use standard HTTP requests and Auth window.
@@ -44,7 +46,7 @@ async function createSharedAppObject() {
     OWA,
     newOSNotification,
     isOSNotificationSupported,
-    newTrayIcon,
+    setTrayIcon,
     setBadgeCount,
     minimizeMainWindow,
     unminimizeMainWindow,
@@ -70,8 +72,12 @@ async function createSharedAppObject() {
     createTSDAVClient,
     createType1Message,
     createType3MessageFromType2Message,
+    getCACertificates,
     newAdmZIP,
     newHTTPServer,
+    newHTTPConnection,
+    newTCPSocket,
+    startTLS,
     readFile,
     writeFile,
     getIconForLocalFile,
@@ -86,6 +92,14 @@ async function createSharedAppObject() {
       join: path.join,
     },
   };
+}
+
+function getCACertificates(type: string) {
+  if (tls.getCACertificates) {
+    return tls.getCACertificates(type);
+  }
+  // Fallback for old node.js
+  return type == "bundled" ? tls.rootCertificates : [];
 }
 
 function createType3MessageFromType2Message(WWWAuthenticate, username, password) {
@@ -160,6 +174,8 @@ export class HTTPFetchError extends Error {
   httpStatusText: string;
   httpMethod: string;
   hostname: string;
+  /** `Retry-After`, in seconds, when the server rate-limited us */
+  retryAfterSeconds: number;
 
   constructor(ex: Error) {
     super(ex?.message ?? ex + "");
@@ -174,6 +190,7 @@ export class HTTPFetchError extends Error {
       this.httpStatusText = response.statusText;
       this.httpMethod = request.method;
       this.hostname = new URL(this.url).hostname;
+      this.retryAfterSeconds = parseInt(response.headers.get("Retry-After")) || undefined;
       this.message = `HTTP ${this.httpMethod} <${this.url}>${this.redirectedURL ? ` redirected to <${this.redirectedURL}>` : ''} failed with ${this.httpCode} ${this.httpStatusText}`;
     } else if (cause) {
       this.code = cause.code;
@@ -255,7 +272,32 @@ async function newHTTPServer() {
   return new HTTPServer();
 }
 
-function newTrayIcon(imgDataURL: string): null {
+/** A HTTP(S) client that runs all requests over a single TCP connection,
+ * for connection-based authentication like NTLM. @see `HTTPConnection` */
+async function newHTTPConnection(url: string, options?: any) {
+  const { HTTPConnection } = await import("../../desktop/backend/HTTPConnection");
+  return new HTTPConnection(url, options);
+}
+
+/** A new raw TCP socket, from the node net module.
+ * You can attach `connect`/`error`/`data` listeners and `connect()` */
+function newTCPSocket(): net.Socket {
+  return new net.Socket();
+}
+
+/** Wraps a connected `newTCPSocket()` in TLS, for implicit TLS and STARTTLS.
+ * Resolves once the handshake succeeded, so that you can attach listeners.
+ * @param tlsOptions node `tls.ConnectionOptions`, e.g. `rejectUnauthorized: false`
+ *   accepts self-signed and expired certificates, `minVersion: "TLSv1"` old servers. */
+function startTLS(socket: net.Socket, hostname: string, tlsOptions?: tls.ConnectionOptions): Promise<tls.TLSSocket> {
+  return new Promise((resolve, reject) => {
+    let tlsSocket = tls.connect({ socket, servername: hostname, ...tlsOptions }, () => resolve(tlsSocket));
+    tlsSocket.on("error", reject);
+  });
+}
+
+function setTrayIcon(imgDataURL: string, tooltip: string, onClick: () => void) {
+  // Mobile OSes have no system tray
 }
 
 function newOSNotification(options: any): Notification {
@@ -294,10 +336,11 @@ async function createIMAPFlowConnection(...args): ImapFlow {
 }
 
 function getSQLiteDatabase(filename: string, options: any, buffer?: Uint8Array): Database {
+  let safeOptions = { readonly: !!options?.readonly }; // `nativeBinding` in it would `require()` any file as native code
   if (buffer) {
-    return new Database(Buffer.from(buffer), options);
+    return new Database(Buffer.from(buffer), safeOptions);
   }
-  return new Database(filename, options);
+  return new Database(filename, safeOptions);
 }
 
 async function sendMailNodemailer(transport, mail) {

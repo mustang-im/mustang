@@ -47,10 +47,12 @@
   //$: console.log("persons", persons.contents);
 
   function onAddPersonDefault(person: PersonUID) {
+    // <copied to="MailAutocomplete.onAddPerson()">
     if (!person || persons.contains(person)) {
       return;
     }
     persons.add(person);
+    // </copied>
   }
   function onRemovePersonDefault(person: PersonUID) {
     if (!person) {

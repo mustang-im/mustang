@@ -1,5 +1,5 @@
 import type { MailContentStorage } from "../MailAccount";
-import type { Attachment } from "../../Abstract/Attachment";
+import type { Attachment, MessageWithAttachments } from "../../Abstract/Attachment";
 import type { Message } from "../../Abstract/Message";
 import { EMail } from "../EMail";
 import { ChatMessage } from "../../Chat/ChatMessage";
@@ -30,7 +30,9 @@ export class RawFilesAttachment implements MailContentStorage {
       // knows that the message is not complete on disk.
       await saves.wait();
     } finally {
-      await this.messageFinished(message);
+      if (message.dbID) {
+        await this.messageFinished(message);
+      } // else: deleted while we were writing
     }
   }
 
@@ -39,17 +41,26 @@ export class RawFilesAttachment implements MailContentStorage {
     if (!attachment.content || attachment.filepathLocal || !message.dbID) {
       return;
     }
-    let filepath = await this.getFilePath(attachment, message);
-    let contents = new Uint8Array(await attachment.content.arrayBuffer());
-    // Permissions: Only user can read the file, but not modify
-    await appGlobal.remoteApp.writeFile(filepath, 0o400, contents);
-    attachment.filepathLocal = filepath;
-    // Save the local file path in the message DB
+    attachment.filepathLocal = await this.writeFile(attachment, message);
+    // The OS opens the file by its name on disk, which `sanitize.filename()` changed:
+    // the sender's `invoice.b#at` became `invoice-1.bat` here
+    await attachment.checkExecutable();
+    // Save the local file path, and the check on it, in the message DB
     if (message instanceof EMail) {
       await SQLEMail.saveAttachmentFilename(message, attachment);
     } else if (message instanceof ChatMessage) {
       await SQLChatMessage.saveAttachmentFilename(message, attachment);
     }
+  }
+
+  /** Writes the attachment contents into a new file on disk.
+   * @returns the file path where it was written */
+  protected async writeFile(attachment: Attachment, message: MessageWithAttachments): Promise<string> {
+    let filepath = await this.getFilePath(attachment, message);
+    let contents = new Uint8Array(await attachment.content.arrayBuffer());
+    // Permissions: Only user can read the file, but not modify
+    await appGlobal.remoteApp.writeFile(filepath, 0o400, contents);
+    return filepath;
   }
 
   /** Call this before writing attachment files for this message.
@@ -83,6 +94,7 @@ export class RawFilesAttachment implements MailContentStorage {
     let array = await appGlobal.remoteApp.readFile(attachment.filepathLocal);
     let file = new File([array], attachment.filename, { type: attachment.mimeType });
     attachment.content = file;
+    await attachment.checkExecutable();
     return true;
   }
 
@@ -100,6 +112,7 @@ export class RawFilesAttachment implements MailContentStorage {
 
   static async rmdirWithFiles(dir: string) {
     try {
+      await appGlobal.remoteApp.fs.chmod(dir, 0o700); // `messageFinished()` made it read-only
       let files = await appGlobal.remoteApp.fs.readdir(dir);
       for (let file of files) {
         await appGlobal.remoteApp.fs.rm(dir + "/" + file);
@@ -109,7 +122,7 @@ export class RawFilesAttachment implements MailContentStorage {
     }
   }
 
-  async getFilePath(attachment: Attachment, message: Message): Promise<string> {
+  async getFilePath(attachment: Attachment, message: MessageWithAttachments): Promise<string> {
     let dir = await this.getDirPath(message);
     // Permissions: Only user can read and write the dir. Permissions later changed in `messageFinished()`
     await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
@@ -120,7 +133,7 @@ export class RawFilesAttachment implements MailContentStorage {
     return `${dir}/${sanitize.filename(filename, "unknownAttachment")}`;
   }
 
-  async getDirPath(message: Message): Promise<string> {
+  async getDirPath(message: MessageWithAttachments): Promise<string> {
     filesDir ??= await getFilesDir();
     if (message instanceof EMail) {
       return `${filesDir}/files/email/${sanitize.filename(message.from?.emailAddress?.replace("@", "-").substring(0, 30), "unknownPerson")}/${message.dbID}-${sanitize.filename(message.baseSubject.substring(0, 30), "unknownSubject")}`;

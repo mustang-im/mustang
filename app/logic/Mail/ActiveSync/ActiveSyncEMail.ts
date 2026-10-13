@@ -1,5 +1,7 @@
-import { ExchangeEMail } from "../EWS/ExchangeEMail";
+import { ExchangeEMail, type IconIndex, type EMailFlag } from "../EWS/ExchangeEMail";
 import type { ActiveSyncFolder } from "./ActiveSyncFolder";
+import { SpecialFolder } from "../Folder";
+import { DeleteStrategy } from "../MailAccount";
 import { ActiveSyncError } from "./ActiveSyncError";
 import { ActiveSyncEvent } from "../../Calendar/ActiveSync/ActiveSyncEvent";
 import { getTagByName } from "../../Abstract/Tag";
@@ -56,6 +58,7 @@ export class ActiveSyncEMail extends ExchangeEMail {
 
   fromWBXML(wbxmljs: any) {
     this.subject = sanitize.nonemptystring(wbxmljs.Subject, "");
+    this.size = sanitize.integer(wbxmljs.Body?.EstimatedDataSize, null); // without body
     this.received = sanitize.date(wbxmljs.DateReceived, new Date());
     this.sent = this.received; // ActiveSync only supports received date
     this.setFlags(wbxmljs);
@@ -78,14 +81,33 @@ export class ActiveSyncEMail extends ExchangeEMail {
     */
   }
 
+  /** A server-side Change contains only the changed properties,
+   * so leave omitted properties unchanged. */
   setFlags(wbxmljs: any) {
-    this.isRead = wbxmljs.Read != "0";
-    this.isStarred = wbxmljs.Flag?.Status == "2";
-    if (this.folder.account.protocolVersion == "16.1") {
+    if (wbxmljs.Read != undefined) {
+      let read = wbxmljs.Read != "0";
+      if (this.isRead != read) {
+        this.folder.countUnread += read ? -1 : 1;
+      }
+      this.isRead = read;
+    }
+    if (wbxmljs.Flag != undefined) {
+      this.isStarred = wbxmljs.Flag?.Status == "2";
+    }
+    if (wbxmljs.Importance != undefined) {
+      // Not `=`: The sender's `Importance:` header is not in the sync response
+      this.isImportant ||= wbxmljs.Importance == "2";
+    }
+    if (wbxmljs.LastVerbExecuted != undefined) {
+      // 1 = reply to sender, 2 = reply to all, 3 = forward
+      this.isReplied = ["1", "2"].includes(wbxmljs.LastVerbExecuted);
+      this.isForwarded = wbxmljs.LastVerbExecuted == "3";
+    }
+    if (this.folder.account.protocolVersion == "16.1" && wbxmljs.IsDraft != undefined) {
       this.isDraft = wbxmljs.IsDraft != "0";
     }
-    this.tags.clear();
-    if (wbxmljs.Categories) {
+    if (wbxmljs.Categories != undefined) {
+      this.tags.clear();
       this.tags.addAll(ensureArray(wbxmljs.Categories.Category).map(name => getTagByName(sanitize.string(name))));
     }
   }
@@ -105,6 +127,9 @@ export class ActiveSyncEMail extends ExchangeEMail {
     let response = await this.folder.makeSyncRequest(data);
     if (response.Responses) {
       throw new ActiveSyncError("Sync", response.Responses.Change.Status, this.folder?.account);
+    }
+    if (this.isRead != read) {
+      this.folder.countUnread += read ? -1 : 1;
     }
     await super.markRead(read);
   }
@@ -131,17 +156,24 @@ export class ActiveSyncEMail extends ExchangeEMail {
   //markSpam(spam = true) {
   //}
 
+  /** The client cannot set this. The server sets it itself,
+   * but only for mails that were sent using SmartReply and SmartForward. */
+  protected async setFlagOnServer(verb: EMailFlag, icon: IconIndex) {
+  }
+
   async markDraft(isDraft = true) {
     throw new NotSupported("Drafts are not supported by ActiveSync 14.1");
     // ActiveSync 16 apparently does let you create drafts.
     // And only drafts.
   }
 
-  async deleteMessageOnServer() {
+  async deleteMessageOnServer(strategy = this.folder.account.deleteStrategy) {
     try {
       this.folder.deletions.add(this.serverID);
+      let hardDelete = strategy == DeleteStrategy.DeleteImmediately ||
+        [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder);
       let data = {
-        DeletesAsMoves: "1",
+        DeletesAsMoves: hardDelete ? "0" : "1",
         GetChanges: "0",
         Commands: {
           Delete: {
@@ -152,6 +184,10 @@ export class ActiveSyncEMail extends ExchangeEMail {
       let response = await this.folder.makeSyncRequest(data);
       if (response.Responses) {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.folder?.account);
+      }
+      this.folder.countTotal--;
+      if (!this.isRead) {
+        this.folder.countUnread--;
       }
     } finally {
       this.folder.deletions.delete(this.serverID);

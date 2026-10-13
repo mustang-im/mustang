@@ -23,7 +23,7 @@
   export let folder: Directory;
   export let searchFiles: Collection<FileOrDirectory> | null = null;
 
-  $: folder, onSelect();
+  $: folder, catchErrors(onSelect);
 
   async function onSelect() {
     if (selectedTags.hasItems) {

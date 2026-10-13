@@ -33,11 +33,13 @@
       <hbox class="label">{$t`Import from`}</hbox>
       <hbox class="buttons">
         <hbox bind:this={appsButton}>
+          <!--
           <Button
             label={$t`App`}
             icon={AppIcon}
             onClick={onImportFromApps}
             />
+          -->
         </hbox>
         <Button
           label={$t`File`}
@@ -57,9 +59,14 @@
     </hbox>
     <hbox class="create buttons">
       <Button
-        label={$t`Create new`}
+        label={$t`Create new PGP key`}
         icon={PlusIcon}
-        onClick={onCreateNew}
+        onClick={onCreateNewPGP}
+        />
+      <Button
+        label={$t`Create new S/MIME key`}
+        icon={PlusIcon}
+        onClick={onCreateNewSMIME}
         />
     </hbox>
   {/if}
@@ -80,7 +87,7 @@
   import { SMIMEPrivateKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import { TrustLevel } from "../../../../logic/Mail/Encryption/enums";
   import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
-  import { importPrivateKey } from "../../../../logic/Mail/Encryption/KeyUtils";
+  import { importPrivateKey, readKeyFile } from "../../../../logic/Mail/Encryption/KeyUtils";
   import FileSelector from "../../../Mail/Composer/Attachments/FileSelector.svelte";
   import Menu from "../../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../../Shared/Menu/MenuItem.svelte";
@@ -96,24 +103,34 @@
   export let identity: MailIdentity;
   /** in/out */
   export let isOpen: boolean;
+  export let showObsolete: boolean;
 
   let showPassword = false;
-  let passphrase: string;
+  let passphrase = "";
   async function onFilePassword() {
     await onImportFile(passphrase);
     showPassword = false;
   }
 
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", "text/plain" ];
+  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", ".key", "application/x-pkcs12", ".p12", ".pfx", "text/plain" ];
   async function onImportFile(passphrase: string) {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
-    let fileContent = await file.text();
+    let fileContent = await readKeyFile(file, passphrase);
     let key = await importPrivateKey(fileContent, passphrase);
-    identity.encryptionPrivateKeys.add(key);
+    let existing = identity.encryptionPrivateKeys.find(existing => existing.id == key.id);
+    if (!existing) {
+      identity.encryptionPrivateKeys.add(key);
+    } else if (existing instanceof SMIMEPrivateKey) {
+      // Re-import of the same key, possibly with new certificates in the file
+      await existing.addCertificates(fileContent);
+    }
+    if (key.obsolete) {
+      showObsolete = true;
+    }
     isOpen = false;
     await identity.account.save();
   }
@@ -136,13 +153,22 @@
     isOpen = false;
   }
 
-  async function onCreateNew() {
+  async function onCreateNewPGP() {
     assert(!identity.isCatchAll, gt`Cannot create keys for catch-all email addresses. Please create an identity with a specific email address.`);
     let key = await PGPPrivateKey.createNewPrivateKey({
       realname: identity.realname,
       emailAddress: identity.emailAddress,
     });
     identity.encryptionPrivateKeys.add(key);
+    isOpen = false;
+    await identity.account.save();
+  }
+
+  async function onCreateNewSMIME() {
+    assert(!identity.isCatchAll, gt`Cannot create keys for catch-all email addresses. Please create an identity with a specific email address.`);
+    let key = await SMIMEPrivateKey.createNewPrivateKey(identity.emailAddress);
+    identity.encryptionPrivateKeys.add(key);
+    showObsolete = true;
     isOpen = false;
     await identity.account.save();
   }

@@ -2,12 +2,16 @@ import { SMLHTTPAccount } from '../../../../logic/Mail/SML/SMLHTTPAccount';
 import { MailIdentity } from '../../../../logic/Mail/MailIdentity';
 import { setupTestMailAccount } from '../setup';
 import { kMailAccounts } from '../logins';
-import { connectToBackend, stopBackend } from '../../util/backend.test';
+import { connectToBackend, stopBackend } from '../../util/backend';
+import { appGlobal } from '../../../../logic/app';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 /** Attention: Slow. Typically takes 15 seconds, or more */
 async function accountSetup() {
   await connectToBackend();
+  if (!appGlobal.remoteApp) { // no dev backend, so all tests here are skipped, see util/backend
+    return;
+  }
   let config = kMailAccounts[0];
   if (!config) {
     throw new Error("Please define test accounts in test/logic/Mail/logins.ts");
@@ -27,7 +31,7 @@ let acc: SMLHTTPAccount;
  * @warning Waits for email, so often takes minutes or hangs entirely. Do not `await` it.
  */
 async function registerSMLHTTP(identity: MailIdentity) {
-  acc = SMLHTTPAccount.getOrCreateAccount(identity.emailAddress, identity.realname);
+  acc = await SMLHTTPAccount.getOrCreateAccount(identity);
   if (!acc.isLoggedIn) {
     acc.mailAccount = identity.account;
     await acc.login(); // waits for email, so often takes minutes or hangs entirely

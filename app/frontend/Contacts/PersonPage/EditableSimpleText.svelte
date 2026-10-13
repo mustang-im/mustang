@@ -13,6 +13,7 @@
 <script lang="ts">
   import Clickable from "../../Shared/Clickable.svelte";
   import { onKeyEnter } from "../../Util/util";
+  import { catchErrors } from "../../Util/error";
   import { createEventDispatcher, tick } from 'svelte';
   const dispatch = createEventDispatcher();
 
@@ -26,7 +27,7 @@
 
   let inputEl: HTMLInputElement;
 
-  $: !value && isName && startEditing();
+  $: !value && isName && catchErrors(startEditing);
 
   async function startEditing() {
     isEditing = true;

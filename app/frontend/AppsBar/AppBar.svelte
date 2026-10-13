@@ -9,19 +9,22 @@
     </AppButton>
     <SubAppsList mainApp={app} bind:selectedApp />
   {/each}
+
   <vbox flex class="middle">
     <DemoBarMiddle />
   </vbox>
-  // #if [!WEBMAIL]
-  <vbox class="above-setup">
-    <DemoToggle />
-  </vbox>
-  // #endif
+  {#if $showDemoToggle}
+    // #if [!WEBMAIL]
+    <vbox class="above-setup">
+      <DemoToggle />
+    </vbox>
+    // #endif
+  {/if}
 </vbox>
 
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
-  import { openApp } from "./selectedApp";
+  import { openApp, showDemoToggle } from "./selectedApp";
   import AppButton from "./AppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
   import SubAppsList from "./SubAppsList.svelte";

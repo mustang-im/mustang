@@ -28,7 +28,7 @@
       tabindex={2}
       autofocus={!outgoing}
       on:input={onHostnameChanged}
-      on:keydown={event => onKeyInHostname(event)}
+      on:keydown={event => catchErrors(() => onKeyInHostname(event))}
       />
   </hbox>
 
@@ -116,6 +116,7 @@
   import ArrowRightIcon from "lucide-svelte/icons/move-right";
   import { gt, t } from "../../../../l10n/l10n";
   import { UserError } from "../../../../logic/util/util";
+  import { catchErrors } from "../../../Util/error";
   import { createEventDispatcher, tick } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ continue: void }>();
 

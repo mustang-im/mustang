@@ -12,6 +12,7 @@
   import ParticipatingVideo from "./Video/ParticipatingVideo.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
+  import { onDestroy } from "svelte";
 
   export let videos: Collection<VideoStream>;
   export let showParticipant: MeetingParticipant;
@@ -76,13 +77,19 @@
   $: $videos, subscribeParticipants()
   let subscriptions = new ArrayColl<() => void>();
   function subscribeParticipants() {
-    for (let unsubscribe of subscriptions) {
-      unsubscribe();
-    }
+    unsubscribeParticipants();
     for (let video of videos) {
       if (video.participant && !video.isScreenShare) {
         subscriptions.add(video.participant.subscribe(onParticipantPropsChanged));
       }
     }
   }
+
+  function unsubscribeParticipants() {
+    for (let unsubscribe of subscriptions) {
+      unsubscribe();
+    }
+    subscriptions.clear();
+  }
+  onDestroy(unsubscribeParticipants);
 </script>

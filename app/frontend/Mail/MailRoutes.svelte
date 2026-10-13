@@ -50,12 +50,13 @@
   import { ArrayColl } from "svelte-collections";
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
+  import { catchErrors } from "../Util/error";
   import { Route, useLocation } from "svelte-navigator";
 
   $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // ?? acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();
   $: location = useLocation();
-  $: params = getParams($location.state);
+  $: params = getParams($location?.state);
   $: params, setFolder()
   // Set only when params.foo changes, not when $selectedFoo changes
   let lastAccount = null;
@@ -73,7 +74,7 @@
 
   let searchMessages: ArrayColl<EMail> | null;
 
-  $: loadFolder($selectedFolder);
+  $: $selectedFolder, catchErrors(() => loadFolder($selectedFolder));
   async function loadFolder(folder: Folder) {
     if (!folder) {
       return;
@@ -82,8 +83,7 @@
       if ($selectedMessage?.folder != folder) {
         $selectedMessage = null;
       }
-      let newMessages = await folder.listMessages();
-      await folder.downloadMessages(newMessages);
+      await folder.getRecentMessages();
     } catch (ex) {
       if (ex.authFail) {
         // await folder.account.login(true);

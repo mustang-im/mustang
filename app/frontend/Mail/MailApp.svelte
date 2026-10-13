@@ -43,4 +43,16 @@
 
   let viewSetting = getLocalStorage("mail.view", "vertical");
   $: view = $viewSetting.value;
+
+  $: $folders, selectInbox();
+  /** We read the folders from the database and fetch them from the server only
+   * after the window is up, so we can select the inbox only once they are there.
+   * Likewise, after the user switched accounts, the folder of the old account
+   * must not stay selected. */
+  function selectInbox() {
+    if ($selectedFolder?.account == $selectedAccount) {
+      return;
+    }
+    $selectedFolder = $selectedAccount?.inbox ?? null;
+  }
 </script>

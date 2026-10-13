@@ -1,5 +1,6 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
+import { Attachment, ContentDisposition, type MessageWithAttachments } from "../Abstract/Attachment";
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
@@ -10,9 +11,9 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/conv
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { assert, randomID } from "../util/util";
+import { randomID, AbstractFunction, assert } from "../util/util";
 import { backgroundError } from "../../frontend/Util/error";
-import { ArrayColl, Collection } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
   id: string;
@@ -204,6 +205,9 @@ export class Event extends Observable {
   createOnlineMeetingWithAccount: MeetAccount | null = null;
   @notifyChangedObservable
   readonly participants = new ArrayColl<Participant>();
+  /** Files that the organizer attached to the event, e.g. the agenda */
+  @notifyChangedObservable
+  readonly attachments = new ArrayColl<Attachment>();
   @notifyChangedProperty
   myParticipation = InvitationResponse.Unknown;
   /** Only for incoming meetings
@@ -246,6 +250,17 @@ export class Event extends Observable {
       this.copyFromRecurrenceMaster(parentEvent);
       this.recurrenceCase = RecurrenceCase.Instance;
     }
+  }
+
+  /** The event has not ended yet, i.e. it is currently happening or still to come.
+   * For a recurring master, whether any of its occurrences is still to come. */
+  isUpcoming(): boolean {
+    if (this.recurrenceRule) {
+      // An occurrence that started less than the event duration ago is still running
+      let nowStart = new Date(Date.now() - this.duration * 1000);
+      return !!this.recurrenceRule.getOccurrenceAfter(nowStart);
+    }
+    return this.endTime > new Date();
   }
 
   /** in seconds */
@@ -348,6 +363,12 @@ export class Event extends Observable {
       frequency,
       interval,
     };
+    // The UI cannot edit the end of the series, so keep any existing end,
+    // instead of making the series endless
+    if (this.recurrenceRule) {
+      init.seriesEndTime = this.recurrenceRule.seriesEndTime;
+      init.count = this.recurrenceRule.count;
+    }
     if (frequency == Frequency.Weekly) {
       init.weekdays = weekdays;
     } else if (frequency == Frequency.Monthly || frequency == Frequency.Yearly) {
@@ -402,6 +423,7 @@ export class Event extends Observable {
     this.isOnline = original.isOnline;
     this.onlineMeetingURL = original.onlineMeetingURL;
     this.participants.replaceAll(original.participants);
+    this.attachments.replaceAll(original.attachments);
     this.myParticipation = original.myParticipation;
     this.lastUpdateTime = original.lastUpdateTime;
   }
@@ -430,6 +452,12 @@ export class Event extends Observable {
     return new OutgoingInvitation(this);
   }
 
+  /** Whether `other` is the same event as this one, either the same object,
+   * or the same meeting in another calendar or in an invitation email */
+  isSameUID(other: Event | null | undefined): boolean {
+    return this == other || !!this.calUID && this.calUID == other?.calUID;
+  }
+
   /** Assumes that `startEditing()` was called before */
   hasChanged(): boolean {
     return !!this.unedited && !this.matches(this.unedited);
@@ -452,6 +480,9 @@ export class Event extends Observable {
       this.participants.length == other.participants.length &&
       (this.participants.isEmpty || this.participants.contents.every((pThis, i) =>
         pThis.emailAddress == other.participants.get(i).emailAddress)) &&
+      this.attachments.length == other.attachments.length &&
+      (this.attachments.isEmpty || this.attachments.contents.every((aThis, i) =>
+        aThis.filename == other.attachments.get(i).filename)) &&
       !this.recurrenceRule == !other.recurrenceRule &&
       (!this.recurrenceRule || this.recurrenceRule.matches(other.recurrenceRule)) &&
       this.alarm?.getTime() == other.alarm?.getTime()
@@ -493,6 +524,68 @@ export class Event extends Observable {
     this.outgoingInvitation.createOrganizer();
   }
 
+  /** Who invited to this meeting.
+   * null, if this is a private event of our user, without other participants. */
+  get organizer(): Participant | null {
+    return this.participants.find(participant => participant.response == InvitationResponse.Organizer) ?? null;
+  }
+
+  newAttachment(): Attachment {
+    let attachment = new Attachment();
+    attachment.message = this;
+    let storage = this.calendar?.storage;
+    attachment.storage = new ArrayColl(storage ? [storage] : []);
+    return attachment;
+  }
+
+  /** Reads the attachment contents from the local disk and, for those that
+   * aren't saved there yet, downloads them from the server. */
+  async loadAttachments(): Promise<void> {
+    for (let attachment of this.attachments) {
+      await attachment.read();
+    }
+    // Only those that are on the server can be downloaded from there.
+    if (this.attachments.every(attachment => attachment.content || !attachment.pID)) {
+      return;
+    }
+    await this.downloadAttachmentsFromServer();
+    for (let attachment of this.attachments) {
+      await attachment.save();
+    }
+  }
+
+  /** Copies the attachments of the `original` event or invitation email to this
+   * event, e.g. when accepting an invitation or moving the event to another calendar.
+   * `copyFrom()` merely shares the attachment objects, but they still belong
+   * to the `original` event and are saved in its calendar, not in ours. */
+  async adoptAttachmentsFrom(original: MessageWithAttachments) {
+    await original.loadAttachments?.();
+    this.attachments.replaceAll(original.attachments.contents
+      // Not the invitation iCal itself, signatures, nor inline images
+      // Exchange uses `multipart/related` with `Content-ID`
+      .filter(attachment => !attachment.hidden && attachment.disposition != ContentDisposition.inline)
+      .map(attachment => attachment.cloneTo(this)));
+  }
+
+  /** Fetches the attachment contents from the server.
+   * Only needed for protocols that send the attachment metadata,
+   * but not the contents, together with the event. Only those set
+   * `Attachment.pID`, and only for those is this function called. */
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    throw new AbstractFunction();
+  }
+
+  /** Attachments that are still on the server, but that the user
+   * removed from the event during the current editing session.
+   * Call before `finishEditing()`. */
+  get removedAttachments(): Attachment[] {
+    if (!this.unedited) {
+      return [];
+    }
+    return this.unedited.attachments.contents.filter(removed =>
+      removed.pID && !this.attachments.some(attachment => attachment.pID == removed.pID));
+  }
+
   get isNew(): boolean {
     return !this.dbID;
   }
@@ -521,6 +614,27 @@ export class Event extends Observable {
     this.onlineMeetingURL = await this.createOnlineMeetingWithAccount.createMeetingURL();
   }
 
+  /** For backends that have only a single location field and no dedicated field
+   * for the online meeting URL, put the URL in the location, like other clients do.
+   * @see setLocationFromServer() the inverse */
+  getLocationForServer(): string {
+    return this.location || this.isOnline && this.onlineMeetingURL || "";
+  }
+
+  /** If the location is actually the online meeting URL,
+   * move it to `onlineMeetingURL`.
+   * @see getLocationForServer() for the inverse */
+  setLocationFromServer(location: string | null): void {
+    this.location = location || "";
+    if (!this.onlineMeetingURL && this.location.startsWith("https://")) {
+      this.isOnline = true;
+      this.onlineMeetingURL = sanitize.url(this.location, null);
+    }
+    if (this.location == this.onlineMeetingURL) { // Our own backwards compat code for online meeting URL
+      this.location = "";
+    }
+  }
+
   /** Call this whenever the master changes */
   generateRecurringInstances(endDate?: Date) {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
@@ -528,9 +642,15 @@ export class Event extends Observable {
     this.fillRecurrences(endDate);
   }
 
-  getOccurrenceByDate(recurrenceStartTime: Date): Event {
+  /** @param mustExist
+   *   When the occurrence was excluded or isn't in the recurrence,
+   *   throw (default), or return null. */
+  getOccurrenceByDate(recurrenceStartTime: Date, mustExist = true): Event | null {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
-    assert(!this.exclusions.find(date => date.getTime() == recurrenceStartTime.getTime()), "occurrence was already excluded");
+    if (this.exclusions.find(date => date.getTime() == recurrenceStartTime.getTime())) {
+      assert(!mustExist, "occurrence was already excluded");
+      return null;
+    }
     let event = this.exceptions.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
     if (event) {
       return event;
@@ -539,8 +659,10 @@ export class Event extends Observable {
     if (event) {
       return event;
     }
-    let index = this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime);
-    assert(index != -1, "occurrence date not in recurrence");
+    if (this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime) == -1) {
+      assert(!mustExist, "occurrence date not in recurrence");
+      return null;
+    }
     this.generateRecurringInstances(recurrenceStartTime);
     return this.instances.find(event => event.recurrenceStartTime.getTime() == recurrenceStartTime.getTime());
   }
@@ -549,6 +671,12 @@ export class Event extends Observable {
     assert(this.recurrenceCase == RecurrenceCase.Master, "Only for master");
     if (this.exclusions.some(date => date.getTime() == recurrenceStartTime.getTime())) {
       return; // already excluded
+    }
+    if (this.recurrenceRule.getIndexOfOccurrence(recurrenceStartTime) == -1) {
+      // Server deleted an occurrence outside our computed recurrence (faulty
+      // data, or past the series end). Our rule generates no instance there,
+      // so there's nothing to exclude. #1186
+      return;
     }
     this.getOccurrenceByDate(recurrenceStartTime).deleteLocally().catch(this.calendar.errorCallback);
   }
@@ -662,7 +790,7 @@ export class Event extends Observable {
       if (this.isOutgoingMeeting) {
         await this.outgoingInvitation.sendCancellations();
       } else if (this.isIncomingMeeting) {
-        await this.respondToInvitation(InvitationResponse.Decline);
+        await this.respondToInvitation(InvitationResponse.Decline, null, false);
       }
     } catch (ex) {
       this.calendar.errorCallback(ex);
@@ -706,6 +834,7 @@ export class Event extends Observable {
     }
     newEvent.copyFrom(this);
     newEvent.calendar = newCalendar;
+    await newEvent.adoptAttachmentsFrom(this);
 
     // Replace organizer with email matching the new calendar
     let organizer = newEvent.participants.find(p => p.response == InvitationResponse.Organizer);
@@ -732,16 +861,19 @@ export class Event extends Observable {
    * This implementation is used by protocols:
    * - Personal calendar
    * - CalDAV
+   * - JMAP, because we prefer to let the user control which events are added to the calendar
    * - ActiveSync, indirectly: `ActiveSyncEvent` overrides this and then calls this.
    * Not used by: EWS, OWA
    *
    * TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation
    */
-  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount): Promise<void> {
+  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount, save = true): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
     await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
-    // Do *not* save, because some callers are deleted events or `InvitationEvent`. Caller saves as needed.
+    if (save) { // `save == false` for deleted events and `InvitationEvent`
+      await this.save();
+    }
   }
 
   /**

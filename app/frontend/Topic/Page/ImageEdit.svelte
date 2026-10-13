@@ -22,12 +22,12 @@
    *  Provided by the TipTap node view so deletion goes through the editor. */
   export let onDelete: (() => void) | null = null;
 
-  function myOnDelete() {
+  async function myOnDelete() {
     if (onDelete) {
       onDelete();
     } else {
       topic.content.remove(image);
-      topic.save();
+      await topic.save();
     }
   }
 </script>

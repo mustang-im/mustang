@@ -40,7 +40,7 @@
 
   let logHistoryEl: HTMLDivElement;
   async function copyLogHistory() {
-    navigator.clipboard.writeText(logHistoryEl.innerText + "\n");
+    await navigator.clipboard.writeText(logHistoryEl.innerText + "\n");
   }
 </script>
 

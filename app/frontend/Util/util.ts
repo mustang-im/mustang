@@ -1,12 +1,15 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { blobToDataURL, type URLString } from "../../logic/util/util";
 
-export function onKeyEnter(event: KeyboardEvent, onEnter: () => void) {
-  if (event.key == "Enter") {
-    event.preventDefault();
-    event.stopPropagation();
-    onEnter();
+/** Returns what `onEnter` returns, so that an async `onEnter` can be awaited,
+ * e.g. by the `catchErrors()` around the call. */
+export function onKeyEnter(event: KeyboardEvent, onEnter: () => void | Promise<void>) {
+  if (event.key != "Enter") {
+    return;
   }
+  event.preventDefault();
+  event.stopPropagation();
+  return onEnter();
 }
 
 export async function saveBlobAsFile(blob: Blob, filename?: string) {

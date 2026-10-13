@@ -145,6 +145,53 @@
             {/each}
           </vbox>
         </hbox>
+        {#if chain}
+          <vbox>
+            {#await keyStatusAsync then keyStatus}
+              {#if keyStatus == KeyStatus.NoCertificate}
+                <hbox>
+                  <Button
+                    label={$t`Please add this private key's certificate.`}
+                    onClick={onAddCertificateSMIME}
+                    />
+                </hbox>
+              {:else if keyStatus == KeyStatus.ChainInvalid}
+                <hbox>{$t`The certificate chain could not be verified.`}</hbox>
+              {:else if keyStatus == KeyStatus.ChainIncomplete}
+                <hbox>
+                  <Button
+                    label={$t`Please add the intermediate certificate.`}
+                    onClick={onAddCertificateSMIME}
+                    />
+                </hbox>
+              {:else if keyStatus == KeyStatus.SelfSignedRoot}
+                <hbox>{$t`WARNING This private key uses a self-signed root certificate.`}</hbox>
+              {:else if keyStatus == KeyStatus.Valid}
+                <hbox>{$t`This private key has a valid certificate.`}</hbox>
+              {:else}
+                <hbox>{$t`Unexpected private key status`}</hbox>
+              {/if}
+            {:catch error}
+              <ErrorMessageInline ex={error} />
+            {/await}
+            <hbox class="label">{$t`Certificate chain *=> Any additional certificates that might be required to authenticate this key`}</hbox>
+            {#each $chain.each as certificate}
+              <hbox>
+                <hbox class="label">{$t`Common Name`}</hbox>
+                <hbox class="value" flex>{certificate.commonName}</hbox>
+                <RoundButton
+                  label={$t`Delete`}
+                  icon={DeleteIcon}
+                  onClick={() => onRemoveFromChain(certificate)}
+                  />
+              </hbox>
+              <hbox class="fingerprint" class:obsolete={certificate.obsolete}>
+                <hbox class="label">{$t`Fingerprint`}</hbox>
+                <hbox class="value">{certificate.fingerprintDisplay}</hbox>
+              </hbox>
+            {/each}
+          </vbox>
+        {/if}
         <hbox>
           <hbox class="label" />
           <hbox class="buttons">
@@ -165,18 +212,23 @@
   {/if}
 </vbox>
 
+<FileSelector {acceptFileTypes} bind:this={fileSelector} />
+
 <script lang="ts">
   import { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { trustColor, trustColorFG, TrustLevel } from "../../../logic/Mail/Encryption/enums";
+  import { SMIMEPublicKey, KeyStatus } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { findAllIdentities } from "../../../logic/Mail/MailIdentity";
+  import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import IdentitySelector from "../../Mail/Composer/IdentitySelector.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import SignIcon from "lucide-svelte/icons/signature";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import DistrustIcon from "lucide-svelte/icons/octagon-x";
@@ -187,7 +239,7 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { getDateString, getDateTimeString } from "../../Util/date";
   import { saveBlobAsFile } from "../../Util/util";
-  import { logError, showError } from "../../Util/error";
+  import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let key: PublicKey;
@@ -204,13 +256,20 @@
   $: myPrivateKey = myIdentity ? getMyPrivateKey(myIdentity) : null;
   $: personName = person?.name ?? personUID?.name ?? $t`this person`;
 
+  $: chain = key instanceof SMIMEPublicKey ? key.chain : null;
+  $: keyStatusAsync = key instanceof SMIMEPublicKey ? key.keyStatus() : null;
+
   async function onExport() {
     await saveBlobAsFile(key.publicKeyAsFile());
   }
 
   async function onSave() {
     try {
-      await person.save();
+      if (person) {
+        await person.save();
+      } else if (personUID) {
+        await personUID.findPerson()?.save();
+      }
     } catch (ex) {
       showError(ex);
     }
@@ -220,6 +279,23 @@
       return;
     }
     person.encryptionPublicKeys.remove(key);
+    await person.save();
+  }
+  let fileSelector: FileSelector;
+  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
+  async function onAddCertificateSMIME() {
+    let file = await fileSelector.selectFile();
+    if (!file) {
+      return;
+    }
+    let fileContent = await file.text();
+    await (key as SMIMEPublicKey).addCertificates(fileContent);
+    keyStatusAsync = (key as SMIMEPublicKey).keyStatus();
+    await person.save();
+  }
+  async function onRemoveFromChain(certificate: SMIMEPublicKey) {
+    (key as SMIMEPublicKey).chain.remove(certificate);
+    keyStatusAsync = (key as SMIMEPublicKey).keyStatus();
     await person.save();
   }
 </script>
@@ -294,15 +370,18 @@
   .short .verification-code:not(.obsolete) {
     margin-block-start: 6px;
   }
+  .fingerprint .label,
   .verification-code .label {
     padding-block: 7px;
     max-width: max-content;
   }
+  .fingerprint .value,
   .verification-code .value {
     letter-spacing: 0.05em;
     padding-block: 8px;
     font-family: 'Courier New', Courier, monospace;
   }
+  .fingerprint:not(.obsolete) .value,
   .verification-code:not(.obsolete) .value {
     background-color: var(--bg);
     color: var(--fg);

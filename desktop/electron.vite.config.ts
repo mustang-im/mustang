@@ -6,6 +6,7 @@ import replace from '@rollup/plugin-replace';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { production, webMail, includeProprietary } from '../app/logic/build';
 import { defaultClientConditions } from 'vite';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   main: {
@@ -22,8 +23,14 @@ export default defineConfig({
     ],
   },
   renderer: {
+    /* The same HTML shell as the browser and mobile builds. `electron-vite` would
+     * otherwise default to `src/renderer/index.html`, and that copy drifted. */
+    root: resolve(import.meta.dirname, '../app'),
     build: {
       sourcemap: production,
+      rollupOptions: {
+        input: resolve(import.meta.dirname, '../app/index.html'),
+      },
     },
     plugins: [
       conditionalCompile({
@@ -36,11 +43,12 @@ export default defineConfig({
           DEV: !production ? true : undefined,
         },
       }),
-      nodePolyfills({include: ['buffer'], globals: {global: false, process: false}}),
+      nodePolyfills({include: ['buffer'], globals: {global: true, process: false}}),
       svelte(),
       sentryVitePlugin({
-        org: "mustang-jq",
-        project: "mustang",
+        url: "https://errorlog.parula.app/",
+        org: "bugsink-has-no-orgs",
+        project: "parula",
         authToken: process.env.SENTRY_AUTH_TOKEN,
         disable: !production,
       }),
@@ -49,6 +57,5 @@ export default defineConfig({
       // Explicitly set the resolve conditions for Vite 7+
       conditions: [...defaultClientConditions],
     },
-    publicDir: '../../../app/public',
   }
 })

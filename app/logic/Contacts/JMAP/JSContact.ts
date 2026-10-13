@@ -20,17 +20,19 @@ export class JSContact {
     person.lastName = sanitize.nonemptystring(jscontact.name?.components?.find(c => c.kind == "surname")?.value, "");
 
     JSContact.toContactEntries(person.emailAddresses, jscontact.emails, e => new ContactEntry(
-      sanitize.emailAddress(e.address),
-      "mailto"));
+      // Contacts imported from vCard often have a `mailto:` URL here, not a bare address
+      sanitize.emailAddress(e.address?.replace(/^mailto:/i, ""), null),
+      null, "mailto"));
     JSContact.toContactEntries(person.phoneNumbers, jscontact.phones, e => new ContactEntry(
-      sanitize.nonemptystring(e.number),
-      JSContact.fromPhoneFeatureToProtocol(e.features)));
+      sanitize.nonemptystring(e.number, null),
+      null, JSContact.fromPhoneFeatureToProtocol(e.features)));
     JSContact.toContactEntries(person.chatAccounts, jscontact.onlineServices, e => new ContactEntry(
-      sanitize.nonemptystring(e.uri, sanitize.nonemptystring(e.user)),
-      e.service));
-    JSContact.toContactEntries(person.urls, jscontact.links, e => new ContactEntry(
-      sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]), // ["*"] ?
-      new URL(e.uri).protocol));
+      sanitize.nonemptystring(e.uri ?? e.user, null),
+      null, e.service));
+    JSContact.toContactEntries(person.urls, jscontact.links, e => {
+      let url = sanitize.url(e.uri, null, ["https", "http", "mailto", "tel", "fax"]); // ["*"] ?
+      return new ContactEntry(url, null, url ? new URL(url).protocol.slice(0, -1) : null);
+    });
 
     person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
 
@@ -57,8 +59,8 @@ export class JSContact {
         : { [purpose]: true };
   }
 
-  protected static fromPhoneFeatureToProtocol(features: TPhoneFeature): string | null {
-    let first = Object.keys(features)[0];
+  protected static fromPhoneFeatureToProtocol(features: TPhoneFeature | undefined): string | null {
+    let first = Object.keys(features ?? {})[0];
     return first == "voice" ? "tel" : first;
   }
 
@@ -140,13 +142,17 @@ export class JSContact {
         company.units ??= [];
         company.units[0] ??= {} as TOrgUnit;
         company.units[0].name = person.department;
-      } else {
-        if (company.units?.length) {
-          delete company.units[0];
+      } else if (company.units?.length) {
+        company.units.shift();
+        if (!company.units.length) {
+          delete company.units;
         }
       }
     }
-    setOneValue(person, jscontact, jscontact.organizations, "organizations", (entry) => entry = company);
+    setOneValue(person, jscontact, jscontact.organizations, "organizations", (entry: TOrganization) => {
+      entry.name = company.name;
+      entry.units = company.units;
+    });
   }
 
   protected static toContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(
@@ -158,6 +164,9 @@ export class JSContact {
     for (let jmapID in jscontactEntries) {
       let jscontactEntry = jscontactEntries[jmapID];
       let newCE = getValues(jscontactEntry);
+      if (!newCE.value) { // malformed value on the server, e.g. not an email address
+        continue;
+      }
       newCE.purpose = JSContact.fromContextToPurpose(jscontactEntry.contexts);
       newCE.preference = sanitize.integerRange(jscontactEntry.pref, 0, 100, 100);
       let existing = personEntries.find(p => getJMAPID(p) == jmapID);
@@ -172,7 +181,7 @@ export class JSContact {
       }
     }
     // Delete old entries
-    for (let p of personEntries) {
+    for (let p of personEntries.contents) { // copy: remove alters personEntries
       let jmapID = getJMAPID(p);
       if (!jmapID || !jscontactEntries[jmapID]) {
         personEntries.remove(p);
@@ -270,5 +279,8 @@ function getOneValue<TValueObject, TValue>(personGeneric: Person, jscontact: JSC
     return null;
   }
   let id = person.propertyFieldIDs[propName] ??= firstID;
+  if (!jscontactEntries[id]) { // our entry was deleted on the server
+    id = person.propertyFieldIDs[propName] = firstID;
+  }
   return getter(jscontactEntries[id]);
 }

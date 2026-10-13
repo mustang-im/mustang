@@ -26,8 +26,9 @@ export class Throttle {
     }
   }
 
+  /** Delays the next task until `seconds` from now. */
   waitForSecond(seconds: number) {
-    this.nextTime.unshift(Date.now() + seconds * 1000);
+    this.nextTime[0] = Math.max(this.nextTime[0] ?? 0, Date.now() + seconds * 1000);
   }
 
   get maxTasks(): number {

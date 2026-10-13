@@ -1,11 +1,13 @@
 import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
+import { VTimezone } from "./VTimezone";
+import { myTimezone } from "../../../frontend/Util/date";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
-export function getICal(event: Event, method?: iCalMethod): string | null {
+export async function getICal(event: Event, method?: iCalMethod): Promise<string | null> {
   assert(event, "Need event");
   /* We have to special-case RRULE as it contains ";"s
    * which must not be escaped as normal text values would */
@@ -16,22 +18,50 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   }
   lines.push(["VERSION", "2.0"]);
   lines.push(["PRODID", `-//Beonex//${appName}//EN`]);
+  addVTimezones(lines, event);
+  await addVEvent(lines, event, method);
+  for (let exception of event.exceptions) {
+    await addVEvent(lines, exception, method);
+  }
+  lines.push(["END", "VCALENDAR"]);
+  return lines.map(line2ical).join("");
+}
+
+/**
+ * Spells out the daylight saving time rules of every timezone that the event
+ * uses. Outlook and Exchange do not understand the `TZID` names and would
+ * otherwise show the event at the wrong time, RFC 5545 3.6.5.
+ */
+function addVTimezones(lines: (string | string[])[], event: Event): void {
+  let timezones = new Set([event, ...event.exceptions]
+    .filter(occurrence => !occurrence.allDay)
+    .map(timezoneOf)
+    .filter(timezone => timezone != "UTC")); // written as UTC times, without `TZID`
+  for (let timezone of timezones) {
+    lines.push(...new VTimezone(timezone, event.startTime).toICalLines());
+  }
+}
+
+/** The timezone in which the times of the event are meant */
+function timezoneOf(event: Event): string {
+  return event.timezone || myTimezone();
+}
+
+/** @param method (Optional) The invitation action, only if this iCal is sent as an invitation email */
+async function addVEvent(lines: (string | string[])[], event: Event, method?: iCalMethod): Promise<void> {
   lines.push(["BEGIN", "VEVENT"]);
   lines.push(["DTSTAMP", utc2ical(new Date())]);
   lines.push(["UID", event.calUID]);
   if (event.title) {
     lines.push(["SUMMARY", event.title]);
   }
-  if (event.location) {
-    lines.push(["LOCATION", event.location]);
+  if (event.getLocationForServer()) {
+    lines.push(["LOCATION", event.getLocationForServer()]);
   }
   if (event.isOnline && event.onlineMeetingURL) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    // `locationForServer` already put the URL in `LOCATION` for clients that don't know `CONFERENCE`
     lines.push(["CONFERENCE", event.onlineMeetingURL]);
-    if (!event.location) {
-      // Backwards compat, because other clients don't know `CONFERENCE`
-      lines.push(["LOCATION", event.onlineMeetingURL]);
-    }
     // Maybe also add to the end of descriptionText and HTML?
     // if (!event.descriptionHTML.includes(event.onlineMeetingURL)) { ...
   }
@@ -53,11 +83,12 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   if (event.allDay) {
     lines.push(["DTSTART", "VALUE", "DATE", date2ical(event.startTime)]);
     lines.push(["DTEND", "VALUE", "DATE", date2ical(event.endTime)]);
+    lines.push(["X-MICROSOFT-CDO-ALLDAYEVENT", "TRUE"]);
     if (event.recurrenceStartTime) {
       lines.push(["RECURRENCE-ID", "VALUE", "DATE", date2ical(event.recurrenceStartTime)]);
     }
   } else {
-    let timezone = event.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let timezone = timezoneOf(event);
     if (timezone == "UTC") {
       lines.push(["DTSTART", "VALUE", "DATE-TIME", utc2ical(event.startTime)]);
       lines.push(["DTEND", "VALUE", "DATE-TIME", utc2ical(event.endTime)]);
@@ -81,6 +112,16 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
   }
   if (event.recurrenceRule) {
     lines.push(event.recurrenceRule.getCalString(event.allDay) + "\r\n");
+    let timezone = timezoneOf(event);
+    for (let exclusion of event.exclusions) {
+      if (event.allDay) {
+        lines.push(["EXDATE", "VALUE", "DATE", date2ical(exclusion)]);
+      } else if (timezone == "UTC") {
+        lines.push(["EXDATE", "VALUE", "DATE-TIME", utc2ical(exclusion)]);
+      } else {
+        lines.push(["EXDATE", "VALUE", "DATE-TIME", "TZID", timezone, datetime2ical(exclusion, timezone)]);
+      }
+    }
   }
   for (let participant of event.participants) {
     switch (participant.response) {
@@ -97,9 +138,27 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
       break;
     }
   }
+  if (!method) {
+    await addAttachments(lines, event);
+  } // else: Invitations send the files as email attachments @see OutgoingInvitation.addAttachments()
   lines.push(["END", "VEVENT"]);
-  lines.push(["END", "VCALENDAR"]);
-  return lines.map(line2ical).join("");
+}
+
+/** Inline attachments, RFC 5545 3.8.1.1.
+ * `FILENAME` is RFC 8607, `X-FILENAME` is what Outlook writes. */
+async function addAttachments(lines: (string | string[])[], event: Event): Promise<void> {
+  if (event.attachments.isEmpty) {
+    return;
+  }
+  await event.loadAttachments();
+  for (let attachment of event.attachments) {
+    if (!attachment.content) {
+      continue; // We can't send what we don't have
+    }
+    lines.push(["ATTACH", "VALUE", "BINARY", "ENCODING", "BASE64",
+      "FMTTYPE", attachment.mimeType, "FILENAME", attachment.filename, "X-FILENAME", attachment.filename,
+      await attachment.contentAsBase64()]);
+  }
 }
 
 /**
@@ -110,11 +169,11 @@ export function getICal(event: Event, method?: iCalMethod): string | null {
  *    The name will be name filesystem-safe.
  * @returns iCal file contents, as UTF8 text file
  */
-export function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): File {
+export async function eventsToICalFile(events: Collection<Event>, filenameWithoutExt: string): Promise<File> {
   let fileContents = "";
   for (let event of events) {
     // TODO Don't wrap *each* `VEVENT` with `VCALENDAR`, but all with a single one
-    fileContents += getICal(event);
+    fileContents += await getICal(event);
   }
   let filename = sanitize.filename(filenameWithoutExt) + ".ics";
   let file = new File([fileContents], filename, { type: "text/calendar" });

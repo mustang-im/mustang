@@ -1,13 +1,15 @@
 import { ExchangeAddressbook } from "./ExchangeAddressbook";
-import { type AddressbookShareCombinedPermissions } from "../Addressbook";
+import { AddressbookShareCombinedPermissions } from "../Addressbook";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSPerson } from "./EWSPerson";
 import { EWSGroup } from "./EWSGroup";
 import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
+import { ConnectionPurpose } from "../../Mail/EWS/ConnectionPurpose";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
+import { Lock } from "../../util/flow/Lock";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -38,8 +40,8 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
     await this.account.unsubscribeNotifications(this);
   }
 
-  async startup(): Promise<void> {
-    await super.startup();
+  async syncOnStartup(): Promise<void> {
+    await super.syncOnStartup();
     if (this.username != this.account.username) {
       await this.account.subscribeToNotificationsForSubaccount(this);
     }
@@ -51,68 +53,75 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
     return this.updateChangedContacts();
   }
 
+  protected readonly listContactsLock = new Lock();
+
   // Uses the sync state to get just the contats that changed since last time.
   protected async updateChangedContacts() {
-    let sync = {
-      m$SyncFolderItems: {
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-        },
-        m$SyncFolderId: {
-          t$FolderId: {
-            Id: this.folderID,
+    let lock = await this.listContactsLock.lock();
+    try {
+      let sync = {
+        m$SyncFolderItems: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
           },
-        },
-        m$SyncState: this.syncState,
-        m$MaxChangesReturned: kMaxCount,
-      }
-    };
-    let persons: any[] = [];
-    let groups: any[] = [];
-    let result: any = { IncludesLastItemInRange: "false" };
-    while (result.IncludesLastItemInRange === "false") {
-      try {
-        result = await this.account.callEWS(sync);
-      } catch (ex) {
-        if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
-          throw ex;
+          m$SyncFolderId: {
+            t$FolderId: {
+              Id: this.folderID,
+            },
+          },
+          m$SyncState: this.syncState,
+          m$MaxChangesReturned: kMaxCount,
         }
-        this.syncState = null;
-        await this.save();
-        sync.m$SyncFolderItems.m$SyncState = null;
-        result = await this.account.callEWS(sync);
-      }
-      for (let changes of [result.Changes.Update, result.Changes.Create]) {
-        if (changes) {
-          for (let change of ensureArray(changes)) {
-            if (change.Contact) {
-              persons.push(change.Contact);
+      };
+      let persons: any[] = [];
+      let groups: any[] = [];
+      let result: any = { IncludesLastItemInRange: "false" };
+      while (result.IncludesLastItemInRange === "false") {
+        try {
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
+        } catch (ex) {
+          if (ex.error?.ResponseCode != 'ErrorInvalidSyncStateData') {
+            throw ex;
+          }
+          this.syncState = null;
+          await this.save();
+          sync.m$SyncFolderItems.m$SyncState = null;
+          result = await this.account.callEWS(sync, ConnectionPurpose.Fetch);
+        }
+        for (let changes of [result.Changes.Update, result.Changes.Create]) {
+          if (changes) {
+            for (let change of ensureArray(changes)) {
+              if (change.Contact) {
+                persons.push(change.Contact);
+              }
+              if (change.DistributionList) {
+                groups.push(change.DistributionList);
+              }
             }
-            if (change.DistributionList) {
-              groups.push(change.DistributionList);
+          }
+        }
+        if (result.Changes.Delete) {
+          for (let deletion of ensureArray(result.Changes.Delete)) {
+            let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+            if (person) {
+              this.persons.remove(person);
+              await person.deleteLocally();
+            }
+            let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
+            if (group) {
+              this.groups.remove(group);
+              await group.deleteLocally();
             }
           }
         }
+        this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
       }
-      if (result.Changes.Delete) {
-        for (let deletion of ensureArray(result.Changes.Delete)) {
-          let person = this.getPersonByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
-          if (person) {
-            this.persons.remove(person);
-            await person.deleteLocally();
-          }
-          let group = this.getGroupByItemID(sanitize.nonemptystring(deletion.ItemId.Id));
-          if (group) {
-            this.groups.remove(group);
-            await group.deleteIt();
-          }
-        }
-      }
-      this.syncState = sync.m$SyncFolderItems.m$SyncState = sanitize.nonemptystring(result.SyncState);
+      await this.listPersons(persons);
+      await this.listGroups(groups);
+      await this.save();
+    } finally {
+      lock.release();
     }
-    await this.listPersons(persons);
-    await this.listGroups(groups);
-    await this.save();
   }
 
   // Lists all contacts and adds them to the persons and groups.
@@ -140,7 +149,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
     let groups: any[] = [];
     let result: any = { RootFolder: { IncludesLastItemInRange: "false" } };
     while (result?.RootFolder?.IncludesLastItemInRange === "false") {
-      result = await this.account.callEWS(request);
+      result = await this.account.callEWS(request, ConnectionPurpose.Fetch);
       if (!result?.RootFolder?.Items) {
         break;
       }
@@ -173,6 +182,8 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
                 FieldURI: "contacts:Surname",
               }, {
                 FieldURI: "item:Body", // contact:Notes doesn't work
+              }, {
+                FieldURI: "item:Attachments", // The picture is an attachment
               }],
             },
           },
@@ -181,21 +192,50 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
+      let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
       for (let result of results) {
         try {
-          let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id));
-          if (person) {
-            person.fromXML(result.Items.Contact);
-            await person.saveLocally();
-          } else {
-            person = new EWSPerson(this);
-            person.fromXML(result.Items.Contact);
-            await person.saveLocally();
-          }
+          let person = this.getPersonByItemID(sanitize.nonemptystring(result.Items.Contact.ItemId.Id)) ??
+            new EWSPerson(this);
+          person.fromXML(result.Items.Contact);
+          await person.saveLocally();
         } catch (ex) {
           this.account.errorCallback(ex);
         }
+      }
+    }
+    // The pictures are slow and not vital, so they come only after all contacts
+    await this.downloadPictures(this.persons.contents);
+  }
+
+  /** Exchange saves the pictures as attachments of the contacts,
+   * so they need an extra call, but all pictures of a batch fit in one call.
+   * Downloads only the pictures that changed, @see `ExchangePerson.needsPicture` */
+  async downloadPictures(persons: EWSPerson[]) {
+    let needPicture = persons.filter(person => person.needsPicture);
+    for (let i = 0; i < needPicture.length; i += kMaxCount) {
+      let batch = needPicture.slice(i, i + kMaxCount);
+      try {
+        let results = ensureArray(await this.account.callEWS({
+          m$GetAttachment: {
+            m$AttachmentIds: {
+              t$AttachmentId: batch.map(person => ({
+                Id: person.pictureAttachmentID,
+              })),
+            },
+          },
+        }, ConnectionPurpose.Fetch));
+        for (let result of results) {
+          let attachment = result.Attachments.FileAttachment;
+          let attachmentID = sanitize.nonemptystring(attachment.AttachmentId.Id);
+          let person = batch.find(person => person.pictureAttachmentID == attachmentID);
+          if (person) {
+            person.pictureFromServer(sanitize.nonemptystring(attachment.Content), sanitize.nonemptystring(attachment.ContentType, ""));
+            await person.saveLocally();
+          }
+        }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
   }
@@ -227,7 +267,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
           },
         },
       };
-      let results = ensureArray(await this.account.callEWS(request));
+      let results = ensureArray(await this.account.callEWS(request, ConnectionPurpose.Fetch));
       for (let result of results) {
         try {
           let group = this.getGroupByItemID(sanitize.nonemptystring(result.Items.DistributionList.ItemId.Id));
@@ -270,11 +310,15 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
       },
     };
     let result = await this.account.callEWS(request);
-    return getSharedPersons(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission, this.account.emailAddress);
+    return getSharedPersons(ensureArray(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission), this.account.emailAddress);
   }
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  get sharePermissionLevels(): AddressbookShareCombinedPermissions[] {
+    return [AddressbookShareCombinedPermissions.Read, AddressbookShareCombinedPermissions.Modify];
   }
 
   async addSharedPerson(otherPerson: PersonUID, access: AddressbookShareCombinedPermissions) {
@@ -300,7 +344,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
       },
     };
     let result = await this.account.callEWS(request);
-    return sanitize.array(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission, []).map(permission => new ExchangePermission(permission));
+    return ensureArray(result.Folders.ContactsFolder.PermissionSet.Permissions.Permission).map(permission => new ExchangePermission(permission));
   }
 
   async setPermissions(permissions: ExchangePermission[]) {

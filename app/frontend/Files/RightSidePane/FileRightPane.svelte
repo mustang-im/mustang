@@ -45,7 +45,7 @@
         onClick={() => openFileInCloudApp(file)}
         icon={OpenCloudIcon}
         label={$t`Open with a cloud app on the web`}
-        disabled={!editors || editors.isEmpty ? $t`${file.account.name} does not offer a cloud app for this file type` : null}
+        disabled={cloudAppDisabledReason}
         iconSize="20px"
         padding="6px"
         classes="secondary"
@@ -96,6 +96,10 @@
   let editors: Collection<WebAppListed>;
   $: error && file && catchErrors(async () => editors = await file.availableOnlineEditors(), error.showError);
   $: error && canPreview && catchErrors(async () => canPreview && await file.getURL(), error.showError);
+  $: cloudAppDisabledReason = editors?.hasItems ? null
+    : file.account
+      ? $t`${file.account.name} does not offer a cloud app for this file type`
+      : $t`No cloud app is available for this file`; // EMail attachments can't be opened in cloud apps
 
   function onClosePreview() {
     $viewFile = null;

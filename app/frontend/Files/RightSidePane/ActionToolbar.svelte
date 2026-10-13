@@ -50,7 +50,7 @@
   let toast: string | null = null;
   async function onCopyLink() {
     let url = await file.shareLink();
-    navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(url);
     toast = $t`Link copied to clipboard`;
     setTimeout(() => toast = null, 2000);
   }

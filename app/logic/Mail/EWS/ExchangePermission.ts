@@ -23,12 +23,22 @@ export class ExchangePermission {
     return this.emailAddress?.toLowerCase() == emailAddress.toLowerCase();
   }
 
+  /** Whether `emailAddress` may create items, e.g. save a sent copy, per this permission set.
+   * The user may have access via the Default entry or a group membership,
+   * in which case there's no entry with his email address. */
+  static mayCreateItems(permissions: ExchangePermission[], emailAddress: string): boolean {
+    let permission = permissions.find(permission => permission.matchesEMailAddress(emailAddress))
+      ?? permissions.find(permission => permission.distinguishedUser == "Default");
+    return permission?.exchangePermissions?.CanCreateItems ?? false;
+  }
+
+  // Exchange requires the elements in schema order, with the permission level last.
   toEWSFolderPermission() {
     return Object.assign({
       t$UserId: this.distinguishedUser
       ? { t$DistinguishedUser: this.distinguishedUser, }
       : { t$PrimarySmtpAddress: this.emailAddress, },
-    }, { t$PermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+    }, this.exchangePermissions.toEWS(), { t$PermissionLevel: "Custom" });
   }
 
   toEWSCalendarPermission() {
@@ -36,7 +46,7 @@ export class ExchangePermission {
       t$UserId: this.distinguishedUser
       ? { t$DistinguishedUser: this.distinguishedUser, }
       : { t$PrimarySmtpAddress: this.emailAddress, },
-    }, { t$CalendarPermissionLevel: "Custom" }, this.exchangePermissions.toEWS());
+    }, this.exchangePermissions.toEWS(), { t$CalendarPermissionLevel: "Custom" });
   }
 
   toOWAFolderPermission() {
@@ -60,7 +70,9 @@ export class ExchangePermission {
 
 export function getSharedPersons(permissions: ExchangeUser[], thisUser: string): ArrayColl<PersonUID> {
   return new ArrayColl(permissions
-    .filter(permission => !permission.UserId.DistinguishedUser && permission.UserId.PrimarySmtpAddress.toLowerCase() != thisUser.toLowerCase())
+    // (Null check: Permission entries of users deleted from the directory have only a SID, no email address)
+    .filter(permission => !permission.UserId.DistinguishedUser && permission.UserId.PrimarySmtpAddress &&
+      permission.UserId.PrimarySmtpAddress.toLowerCase() != thisUser.toLowerCase())
     .map(permission => new PersonUID(permission.UserId.PrimarySmtpAddress, permission.UserId.DisplayName)));
 }
 
@@ -119,24 +131,26 @@ export async function setExchangePermissions(target: { getPermissions(): Promise
   await target.setPermissions(targetPermissions);
 }
 
+/** Field order matters: `toEWS()` emits the fields in this order,
+ * which must be the EWS schema order. */
 class ExchangePermissions {
   CanCreateItems: boolean;
   CanCreateSubFolders: boolean;
-  DeleteItems: "None" | "Owned" | "All";
-  EditItems: "None" | "Owned" | "All";
-  IsFolderContact: boolean;
   IsFolderOwner: boolean;
   IsFolderVisible: boolean;
+  IsFolderContact: boolean;
+  EditItems: "None" | "Owned" | "All";
+  DeleteItems: "None" | "Owned" | "All";
   ReadItems: "None" | "TimeOnly" | "TimeAndSubjectAndLocation" | "FullDetails";
 
   constructor(permissions: Partial<ExchangePermissions> = {}) {
     this.CanCreateItems = sanitize.boolean(permissions.CanCreateItems, false);
     this.CanCreateSubFolders = sanitize.boolean(permissions.CanCreateSubFolders, false);
-    this.DeleteItems = sanitize.enum(permissions.DeleteItems, ["None", "Owned", "All"], "None");
-    this.EditItems = sanitize.enum(permissions.EditItems, ["None", "Owned", "All"], "None");
-    this.IsFolderContact = sanitize.boolean(permissions.IsFolderContact, false);
     this.IsFolderOwner = sanitize.boolean(permissions.IsFolderOwner, false);
     this.IsFolderVisible = sanitize.boolean(permissions.IsFolderVisible, true);
+    this.IsFolderContact = sanitize.boolean(permissions.IsFolderContact, false);
+    this.EditItems = sanitize.enum(permissions.EditItems, ["None", "Owned", "All"], "None");
+    this.DeleteItems = sanitize.enum(permissions.DeleteItems, ["None", "Owned", "All"], "None");
     this.ReadItems = sanitize.enum(permissions.ReadItems, ["None", "TimeOnly", "TimeAndSubjectAndLocation", "FullDetails"], "None");
   }
 

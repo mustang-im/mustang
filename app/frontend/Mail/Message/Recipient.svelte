@@ -80,17 +80,21 @@
     recipient = recipient;
   }
 
-  function addToPerson(otherPerson: Person) {
+  async function addToPerson(otherPerson: Person) {
     otherPerson.emailAddresses.add(new ContactEntry(recipient.emailAddress));
+    if (recipient.encryptionPublicKey) {
+      otherPerson.addEncryptionPublicKey(recipient.encryptionPublicKey);
+    }
     recipient.person = otherPerson;
+    await otherPerson.save();
   }
 
-  function copyToClipboard() {
+  async function copyToClipboard() {
     let text = recipient.emailAddress;
     if (recipient.name) {
       text = recipient.name + " <" + recipient.emailAddress + ">";
     }
-    navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(text);
   }
 </script>
 

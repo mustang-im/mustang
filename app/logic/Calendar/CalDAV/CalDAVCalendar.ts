@@ -2,12 +2,13 @@ import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { CalDAVEvent } from "./CalDAVEvent";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { OAuth2 } from "../../Auth/OAuth2";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
 import { RunOnce } from "../../util/flow/RunOnce";
-import { NotReached, assert, type URLString } from "../../util/util";
+import { NotReached, UserError, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { DAVClient, DAVCalendar, DAVObject } from "tsdav";
@@ -19,6 +20,8 @@ export class CalDAVCalendar extends Calendar {
   calendarURL: URLString;
   ctag: string | null = null;
   client: DAVClient;
+  /** The OAuth2 access token that `client` authenticates with */
+  protected clientAccessToken: string | null = null;
   protected readonly syncLock = new Lock();
   protected readonly loginRunOnce = new RunOnce();
 
@@ -43,28 +46,36 @@ export class CalDAVCalendar extends Calendar {
     await this.loginRunOnce.runOnce(async () => {
       let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
       let usePassword = this.authMethod == AuthMethod.Password;
+      let oAuth2 = this.oAuth2 ?? this.mainAccount?.oAuth2;
       if (useOAuth2) {
         if (this.isDependentAccount) {
           await this.mainAccount.login(interactive);
         } else {
-          assert(this.oAuth2, gt`Need OAuth2 configuration`);
-          if (!this.oAuth2.isLoggedIn) {
-            await this.oAuth2.login(interactive);
+          assert(oAuth2, gt`Need OAuth2 configuration`);
+          if (!oAuth2.isLoggedIn) {
+            await oAuth2.login(interactive);
           }
         }
       }
       assert(usePassword || useOAuth2, gt`Unknown authentication method`);
+      if (this.client && (!useOAuth2 || this.clientAccessToken == oAuth2.accessToken)) {
+        return; // already logged in. The client caches the auth headers, so re-create it once the access token changed.
+      }
+      if (!URL.canParse(this.url)) {
+        throw new UserError(gt`Please enter the server URL, e.g. https://dav.example.com/`);
+      }
       let options = {
         serverUrl: this.url,
-        authType: useOAuth2 ? "Oauth" : "Basic",
+        authMethod: useOAuth2 ? "Bearer" : "Basic",
         credentials: useOAuth2 ? {
-          access_token: this.oAuth2.accessToken,
+          accessToken: oAuth2.accessToken,
         } : {
           username: this.username,
           password: usePassword ? this.password : undefined,
         },
         defaultAccountType: "caldav",
       };
+      this.clientAccessToken = useOAuth2 ? oAuth2.accessToken : null;
       this.client = await appGlobal.remoteApp.createTSDAVClient(options);
       await this.client.login();
     });
@@ -84,6 +95,7 @@ export class CalDAVCalendar extends Calendar {
   }
 
   async listCalendars(): Promise<Collection<DAVCalendar>> {
+    await this.login(false);
     let lock = await this.syncLock.lock();
     try {
       return new ArrayColl(await this.client.fetchCalendars());
@@ -92,8 +104,7 @@ export class CalDAVCalendar extends Calendar {
     }
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     await this.sync();
     await this.save();
   }
@@ -114,9 +125,7 @@ export class CalDAVCalendar extends Calendar {
   protected async sync() {
     let lock = await this.syncLock.lock();
     try {
-      if (!this.client) {
-        await this.login(false);
-      }
+      await this.login(false);
       /* For multiple calendars:
       let { created, updated, deleted } = await this.client.syncCalendars({
         oldCalendars: [this.davCalendar],
@@ -147,18 +156,27 @@ export class CalDAVCalendar extends Calendar {
         await this.addEvent(iCalEntry);
       }
       for (let iCalEntry of updated) {
-        let existing = this.getEventByURL(iCalEntry.url);
-        if (existing) {
-          existing.fromDAVObject(iCalEntry);
-          await existing.saveLocally();
-        } else {
-          await this.addEvent(iCalEntry);
+        try {
+          let existing = this.getEventByURL(iCalEntry.url);
+          if (existing) {
+            existing.fromDAVObject(iCalEntry);
+            await existing.saveLocally();
+            await existing.updateExceptions();
+          } else {
+            await this.addEvent(iCalEntry);
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
       for (let iCalEntry of deleted) {
-        let existing = this.getEventByURL(iCalEntry.url);
-        if (existing) {
-          await existing.deleteLocally();
+        try {
+          let existing = this.getEventByURL(iCalEntry.url);
+          if (existing) {
+            await existing.deleteLocally();
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
 
@@ -178,8 +196,9 @@ export class CalDAVCalendar extends Calendar {
       }
       this.events.add(event);
       await event.saveLocally();
+      await event.updateExceptions();
     } catch (ex) {
-      console.warn(ex);
+      this.errorCallback(ex);
     }
   }
 
@@ -211,7 +230,6 @@ export class CalDAVCalendar extends Calendar {
     let newAccounts = new ArrayColl<CalDAVCalendar>();
     let i = 0;
     for (let newCal of newCalendars) {
-      i++;
       let account = newCalendarForProtocol(this.protocol) as CalDAVCalendar; // also sets up storage etc.
       account.initFromMainAccount(this);
       account.calendarURL = sanitize.url(newCal.url);
@@ -231,11 +249,16 @@ export class CalDAVCalendar extends Calendar {
     super.fromConfigJSON(json);
     this.calendarURL = sanitize.url(json.calendarURL);
     this.ctag = sanitize.string(json.ctag, null);
+    if (json.oAuth2) {
+      this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
+      this.oAuth2.subscribe(() => this.notifyObservers());
+    }
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.calendarURL = this.calendarURL;
     json.ctag = this.ctag;
+    json.oAuth2 = this.oAuth2?.toConfigJSON();
     return json;
   }
 }

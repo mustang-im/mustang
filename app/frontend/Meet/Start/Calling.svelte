@@ -29,7 +29,9 @@
               {#if $participants.length == 1}
                 <hbox class="who-id">
                   <!-- Phone number -->
-                  {participants.first.emailAddress}
+                  {#if participants.first.emailAddress != kDummyPerson.emailAddress}
+                    {participants.first.emailAddress}
+                  {/if}
                 </hbox>
               {/if}
               <hbox class="who-count">
@@ -142,7 +144,7 @@
 <svelte:window on:keydown={ev => catchErrors(() => onKeyEnter(ev, accept))} />
 
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
-  <audio src="/sound/ringtone1.mp3" loop autoplay />
+  <audio src="sound/ringtone1.mp3" loop autoplay />
 {/if}
 
 {#if ($meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall) &&
@@ -177,6 +179,7 @@
   import { t } from "../../../l10n/l10n";
   import { onKeyEnter } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
+  import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
 
   export let meeting: VideoConfMeeting;
 

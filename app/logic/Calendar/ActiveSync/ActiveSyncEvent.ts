@@ -6,9 +6,10 @@ import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTim
 import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import { ActiveSyncOutgoingInvitation } from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const kSyncStatusItemNotFound = "8";
@@ -52,7 +53,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       this.lastUpdateTime = fromCompact(sanitize.nonemptystring(wbxmljs.DtStamp));
     }
     if (wbxmljs.ExceptionId) { // for ActiveSync 16.1
-      this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionId);
+      this.recurrenceStartTime = fromCompact(wbxmljs.ExceptionId, this.allDay && this.calendar.account.protocolVersion == "16.1");
       // In case it's not otherwise provided to us.
       this.startTime = new Date(this.recurrenceStartTime);
     }
@@ -73,11 +74,12 @@ export class ActiveSyncEvent extends ExchangeEvent {
     if (wbxmljs.Timezone) { // Omitted in 16.1 for all day events
       this.timezone = fromActiveSyncZone(sanitize.nonemptystring(wbxmljs.Timezone, null));
     }
+    this.setAllDayTimeToLocalMidnight();
     if (wbxmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromWBXML(wbxmljs.Recurrence);
       for (let exception of ensureArray(wbxmljs.Exceptions?.Exception)) {
         if (exception.Deleted == "1") {
-          this.makeExclusionLocally(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime)));
+          this.makeExclusionLocally(this.toLocalMidnight(fromCompact(sanitize.nonemptystring(exception.ExceptionId || exception.ExceptionStartTime), this.allDay && this.calendar.account.protocolVersion == "16.1")));
         }
       }
     } else {
@@ -85,10 +87,10 @@ export class ActiveSyncEvent extends ExchangeEvent {
     }
     this.alarm = wbxmljs.Reminder ? new Date(this.startTime.getTime() - k1MinuteMS * sanitize.integer(wbxmljs.Reminder)) : null;
     if (wbxmljs.EnhancedLocation != undefined) {
-      this.location = sanitize.nonemptystring(wbxmljs.EnhancedLocation.DisplayName, "");
+      this.setLocationFromServer(sanitize.nonemptystring(wbxmljs.EnhancedLocation.DisplayName, ""));
     }
     if (wbxmljs.Location != undefined) {
-      this.location = sanitize.nonemptystring(wbxmljs.Location, "");
+      this.setLocationFromServer(sanitize.nonemptystring(wbxmljs.Location, ""));
     }
     if (wbxmljs.MeetingStatus) {
       this.isCancelled = (sanitize.integer(wbxmljs.MeetingStatus, 0) & 4) !== 0;
@@ -113,6 +115,44 @@ export class ActiveSyncEvent extends ExchangeEvent {
     this.participants.replaceAll(attendees.map(attendee => new Participant(attendee.Email, sanitize.nonemptystring(attendee.Name, null), sanitize.integer(attendee.AttendeeStatus, InvitationResponse.Unknown))));
     if (wbxmljs.ResponseType) {
       this.myParticipation = sanitize.integer(wbxmljs.ResponseType, InvitationResponse.Unknown);
+    }
+    if (wbxmljs.Attachments != undefined) {
+      this.attachmentsFromWBXML(wbxmljs.Attachments);
+    }
+  }
+
+  /** Only the meta-data. The contents are fetched later,
+   * @see downloadAttachmentsFromServer()
+   * ActiveSync 16.0 and later. Read-only for now: Writing them would need the
+   * `Add` and `Delete` elements of MS-ASAIRS 2.2.2.2 and 2.2.2.21,
+   * which `toFields()` does not implement. */
+  protected attachmentsFromWBXML(wbxmljs: Record<string, any>) {
+    this.attachments.replaceAll(ensureArray(wbxmljs.Attachment).map(a => {
+      let attachment = this.newAttachment();
+      attachment.pID = sanitize.nonemptystring(a.FileReference);
+      attachment.filename = sanitize.filename(a.DisplayName, "attachment");
+      attachment.mimeType = sanitize.nonemptystring(a.ContentType, "application/octet-stream");
+      attachment.size = sanitize.integer(a.EstimatedDataSize, null);
+      attachment.disposition = ContentDisposition.attachment;
+      return attachment;
+    }));
+  }
+
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    for (let attachment of this.attachments) {
+      if (attachment.content || !attachment.pID) {
+        continue;
+      }
+      let response = await this.calendar.account.callEAS("ItemOperations", {
+        Fetch: {
+          Store: "Mailbox",
+          FileReference: attachment.pID,
+        },
+      });
+      let content = sanitize.nonemptystring(response.Response?.Fetch?.Properties?.Data);
+      attachment.content = new File([base64ToUint8Array(content)],
+        attachment.filename, { type: attachment.mimeType });
+      attachment.size = attachment.content.size;
     }
   }
 
@@ -145,7 +185,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       // Attendee is guaranteed in ActiveSync 16.1 and Timezone is in 14.x.
       AllDayEvent: this.allDay ? "1" : "0",
       EndTime: toCompact(this.endTime, version16_1 && this.allDay),
-      Location: version16_1 ? [] : this.location || {}, // Allows exception to have no location
+      Location: version16_1 ? [] : this.getLocationForServer() || {}, // Allows exception to have no location
       Reminder: this.alarm ? String((this.alarm.getTime() - this.startTime.getTime()) / -k1MinuteMS | 0) : version16_1 ? {} : [],
       StartTime: toCompact(this.startTime, version16_1 && this.allDay),
       UID: !version16_1 && !this.parentEvent && this.calUID || [],
@@ -163,7 +203,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       Subject: this.title,
       // These fields are in code page 17.
       Body: this.rawHTMLDangerous ? { Type: "2", Data: this.rawHTMLDangerous } : { Type: "1", Data: [this.descriptionText ?? ""] },
-      EnhancedLocation: version16_1 ? { DisplayName: this.location || [] } : [],
+      EnhancedLocation: version16_1 ? { DisplayName: this.getLocationForServer() || [] } : [],
     };
   }
 
@@ -191,11 +231,14 @@ export class ActiveSyncEvent extends ExchangeEvent {
   }
 
   async saveFields(fields: any): Promise<void> {
-    let data = this.serverID ? {
+    // An exception has no own server ID; it is addressed
+    // by the server ID of the master plus the ExceptionId.
+    let serverID = this.parentEvent ? this.parentEvent.serverID : this.serverID;
+    let data = serverID ? {
       GetChanges: "0",
       Commands: {
         Change: {
-          ServerId: this.serverID,
+          ServerId: serverID,
           ExceptionId: this.parentEvent ? toCompact(this.recurrenceStartTime, this.allDay) : [],
           ApplicationData: fields,
         },
@@ -238,7 +281,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
       }));
     } else {
       let data = {
-        DeletesAsMoves: "1",
+        DeletesAsMoves: "0",
         GetChanges: "0",
         Commands: {
           Delete: {
@@ -252,7 +295,10 @@ export class ActiveSyncEvent extends ExchangeEvent {
         throw new ActiveSyncError("Sync", response.Responses.Delete.Status, this.calendar);
       }
     }
-    await super.deleteFromServer();
+    // ActiveSync 16.1 automatically sends cancellations and responses.
+    if (this.calendar.account.protocolVersion != "16.1") {
+      await super.deleteFromServer();
+    }
   }
 
   /** Returns a copy of the event as read from the server */
@@ -287,6 +333,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
         [exceptionField]: toCompact(event.recurrenceStartTime, this.calendar.account.protocolVersion == "16.1" && this.allDay),
       },
     }))));
+    await super.makeExclusions(exclusions);
   }
 
   async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
@@ -310,7 +357,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
     await this.calendar.account.callEAS("MeetingResponse", request);
     // We asked ActiveSync 16.1 to send the response for us.
     if (this.calendar.account.protocolVersion != "16.1") {
-      await super.respondToInvitation(response, this.calendar.account);
+      await super.respondToInvitation(response, this.calendar.account, false);
     }
     await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }
@@ -332,6 +379,8 @@ export function fromCompact(date: string, v16AllDay?: boolean): Date {
   // In ActiveSync 14.1, all-day events are sent with a time zone,
   // and the start and end times are midnight in that zone,
   // but they are then converted to UTC.
+  // setAllDayTimeToLocalMidnight() will fix those times up for us,
+  // in the same way as it does for EWS and OWA.
   // In ActiveSync 16.1, all-day events are not sent with a time zone.
   // Start and end times are sent as if they were midnight in UTC.
   // We want them to show up as the user's local midnight.
@@ -357,7 +406,7 @@ function fromActiveSyncZone(zone: string | null): string | null {
   if (!zone) {
     return null;
   }
-  let buffer = Uint8Array.from(atob(zone), c => c.charCodeAt(0)).buffer;
+  let buffer = base64ToUint8Array(zone).buffer;
   zone = String.fromCharCode(...new Uint16Array(buffer, 4, 32)).replace(/\0+$/, "") || String.fromCharCode(...new Uint16Array(buffer, 88, 32)).replace(/\0+$/, "");
   return zone in IANAToWindowsTimezone ? zone : WindowsToIANATimezone[zone] ?? null;
 }

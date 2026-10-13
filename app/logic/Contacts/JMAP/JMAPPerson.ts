@@ -33,6 +33,10 @@ export class JMAPPerson extends Person {
     JSContact.fromPerson(this, jscontact); // overwrites `jscontact`, so must be first
     jscontact.addressBookIds ??= {};
     jscontact.addressBookIds[this.addressbook.jmapID] = true;
+    if (!isNew) {
+      delete jscontact.id; // immutable
+      delete jscontact.uid; // ditto, and sending `null` deletes it on the server
+    }
     assert(this.id, "ContactBase ctor should set this");
 
     let results = await this.account.makeSingleCall("ContactCard/set", {
@@ -63,7 +67,7 @@ export class JMAPPerson extends Person {
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
     this.uid = sanitize.nonemptystring(json.uid, null);
-    this.original = sanitize.json(json.original, {}); // as object, not string
+    this.original = sanitize.json(json.original, null); // as object, not string. null = never saved to the server
     this.jmapID = sanitize.alphanumdash(json.jmapID, null);
     this.propertyFieldIDs = {};
     for (let propName in sanitize.object(json.propertyFieldIDs, {})) {

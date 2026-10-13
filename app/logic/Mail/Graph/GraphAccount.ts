@@ -1,7 +1,8 @@
 import { ExchangeMailAccount } from "../EWS/ExchangeMailAccount";
-import { DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
+import { Provider } from "../../Auth/OAuth2URLs";
 import { GraphFolder } from "./GraphFolder";
+import { GraphSearchEMail } from "./GraphSearchEMail";
 import type { TGraphFolder } from "./TGraphMail";
 import type { UUID } from "./TGraphGeneric";
 import type { EMail } from "../EMail";
@@ -18,14 +19,12 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, blobToBase64, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, MapColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
 export class GraphAccount extends ExchangeMailAccount {
   readonly protocol: string = "graph";
   accountID: string;
   userID: UUID;
-  protected allFolders = new MapColl<string, GraphFolder>();
-  deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
@@ -54,19 +53,20 @@ export class GraphAccount extends ExchangeMailAccount {
 
       await this.loginOAuth2(interactive);
     });
-
-    await this.startup();
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
-      let inbox = this.inbox as GraphFolder;
-      assert(inbox, "Inbox not found");
-      inbox.startPolling();
+      try {
+        await super.syncOnStartup();
+        let inbox = this.inbox as GraphFolder;
+        assert(inbox, "Inbox not found");
+        inbox.startPolling();
 
-      await this.createDefaultDependentAccounts();
-      await this.startupDependentAccounts();
+        await this.createDefaultDependentAccounts();
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
+      }
     });
   }
 
@@ -86,6 +86,10 @@ export class GraphAccount extends ExchangeMailAccount {
 
   needsLicense(): boolean {
     return true;
+  }
+
+  provider(): Provider {
+    return Provider.Office365;
   }
 
   /**
@@ -246,9 +250,8 @@ export class GraphAccount extends ExchangeMailAccount {
       if (this.logging) {
         console.log("Calling <" + url + ">", method.toUpperCase(), "with options", options);
       }
-      return await ky[method](url);
-      // let result = options?.result ?? "json";
-      // return await ky[method](url)[result](options); // e.g. await ky.get(url).json();
+      // options: JPC turns undefined into null, which ky throws on
+      return await ky[method](url, { json: options?.json, body: options?.body });
     } catch (ex) {
       await this.httpError(ex);
     }
@@ -281,21 +284,17 @@ export class GraphAccount extends ExchangeMailAccount {
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
+    let currentFolders = new Map<string, GraphFolder>();
     let oldFolders = this.getAllFolders();
 
-    this.rootFolders.addAll(await this.listSubFolders(null));
+    await this.listSubFolders(null, currentFolders);
 
-    if (this.logging) {
-      console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
-    }
-    let currentFolders = new ArrayColl(this.allFolders.contents);
-    for (let oldFolder of oldFolders) {
-      if (!currentFolders.includes(oldFolder as GraphFolder)) {
-        await oldFolder.deleteItLocally();
-        continue;
+    for (let folder of oldFolders) {
+      if (!currentFolders.has(folder.id)) {
+        await folder.deleteItLocally();
       }
     }
-    for (let folder of currentFolders) {
+    for (let folder of currentFolders.values()) {
       if (folder.dbID) {
         await this.storage.saveFolderProperties(folder);
       } else {
@@ -305,30 +304,31 @@ export class GraphAccount extends ExchangeMailAccount {
   }
 
   /** List the subfolders of the given parent (or root, if null).
-   * Also query all descendant folders, recursively. */
-  protected async listSubFolders(parentFolder: GraphFolder | null): Promise<ArrayColl<GraphFolder>> {
+   * Also query all descendant folders, recursively.
+   * @param currentFolders All folders that the server listed, filled in by us */
+  protected async listSubFolders(parentFolder: GraphFolder | null, currentFolders: Map<string, GraphFolder>): Promise<void> {
     let foldersJSON = await this.graphGetAll<TGraphFolder>(
       parentFolder ? `mailFolders/${parentFolder.id}/childFolders` : `mailFolders`,
       { top: kMaxFetchCount },
       { beta: true }
     );
-    let result = new ArrayColl<GraphFolder>();
+    let parentFolders = parentFolder ? parentFolder.subFolders : this.rootFolders;
     for (let folderJSON of foldersJSON) {
-      let folder = this.newFolder();
-      folder.parent = parentFolder;
+      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as GraphFolder;
+      if (!folder) {
+        // We may already have the folder from our database, or it moved
+        folder = this.findFolder(folder => folder.id == folderJSON.id) as GraphFolder ?? this.newFolder();
+        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+        oldParentFolders.remove(folder);
+        folder.parent = parentFolder;
+        parentFolders.add(folder);
+      }
       folder.fromGraph(folderJSON);
-
-      result.add(folder);
-      this.allFolders.set(folder.id, folder);
+      currentFolders.set(folder.id, folder);
 
       // Query decendants
-      folder.children.addAll(await this.listSubFolders(folder));
+      await this.listSubFolders(folder, currentFolders);
     }
-    return result;
-  }
-
-  getFolderByID(id: string): GraphFolder | null {
-    return this.allFolders.get(id);
   }
 
   getMyID(json: any) {
@@ -346,7 +346,6 @@ export class GraphAccount extends ExchangeMailAccount {
       displayName: name,
     });
     newFolder.fromGraph(newFolderJSON);
-    this.allFolders.set(newFolder.id, newFolder);
     console.log("Folder created", name);
     await newFolder.listMessages();
     return newFolder;
@@ -426,6 +425,10 @@ export class GraphAccount extends ExchangeMailAccount {
 
   newFolder(): GraphFolder {
     return new GraphFolder(this);
+  }
+
+  newSearch(): GraphSearchEMail {
+    return new GraphSearchEMail();
   }
 }
 

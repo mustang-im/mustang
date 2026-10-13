@@ -11,11 +11,35 @@ import { topicMustangApp } from "../Topic/TopicMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 // #endif
 import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
-import { mustangApps, selectedApp } from "./selectedApp";
+import { mustangApps, selectedApp, showDemoToggle } from "./selectedApp";
+import { MustangApp } from "./MustangApp";
+import { appGlobal } from "../../logic/app";
+import { getConfigDir } from "../../logic/util/backend-wrapper";
 import { production } from "../../logic/build";
+import JXON from "../../../lib/util/JXON";
+import { ArrayColl } from "svelte-collections";
+
+const allMustangApps = new ArrayColl<MustangApp>();
 
 export function loadMustangApps() {
-  if (!production) {
+
+  if (allMustangApps.isEmpty) {
+    allMustangApps.addAll([
+      contactsMustangApp,
+      mailMustangApp,
+      chatMustangApp,
+      // #if [PROPRIETARY]
+      meetMustangApp,
+      // #endif
+      calendarMustangApp,
+      filesMustangApp,
+      webAppsMustangApp,
+      topicMustangApp,
+      settingsMustangApp,
+    ]);
+  }
+
+  if (false && !production) {
     loadDemoMustangApps();
     selectedApp.set(mailMustangApp);
     return;
@@ -36,18 +60,30 @@ export function loadMustangApps() {
 }
 
 export function loadDemoMustangApps() {
-  mustangApps.replaceAll([
-    contactsMustangApp,
-    mailMustangApp,
-    chatMustangApp,
-    // #if [PROPRIETARY]
-    meetMustangApp,
-    // #endif
-    calendarMustangApp,
-    filesMustangApp,
-    webAppsMustangApp,
-    topicMustangApp,
-    settingsMustangApp,
-  ]);
-  selectedApp.set(contactsMustangApp);
+  mustangApps.replaceAll(allMustangApps);
+}
+
+export async function disableAppsBasedOnFeaturesXML() {
+  let fileName = await appGlobal.remoteApp.path.join(await getConfigDir(), "features.xml");
+  let xmlArray: Uint8Array;
+  try {
+    xmlArray = await appGlobal.remoteApp.readFile(fileName, { encoding: "utf-8" });
+  } catch (ex) {
+    if (ex.message?.includes("ENOENT")) {
+      return;
+    }
+    throw ex;
+  }
+  let xmlStr = new TextDecoder().decode(xmlArray);
+  let xml = JXON.parse(xmlStr);
+  let newApps = new ArrayColl<MustangApp>(); // preserve order of apps
+  for (let app of allMustangApps) {
+    let enabledProp = xml.features?.[app.id]?.["@enabled"];
+    let enabled = typeof(enabledProp) == "boolean" ? enabledProp : mustangApps.includes(app);
+    if (enabled) {
+      newApps.add(app);
+    }
+  }
+  mustangApps.replaceAll(newApps);
+  showDemoToggle.set(false);
 }

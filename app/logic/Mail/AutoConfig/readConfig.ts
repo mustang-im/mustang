@@ -36,9 +36,11 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
   let xml = autoconfigXML.clientConfig.emailProvider;
 
   let configs = new ArrayColl<MailAccount>();
-  let outgoingConfigs = new ArrayColl<MailAccount>();
 
+  forDomain ??= sanitize.hostname(xml.domain);
   let displayName = sanitize.label(xml.displayName, sanitize.label(xml["@id"], forDomain));
+  let realName = sanitize.label(autoconfigXML.clientConfig.realName, null);
+  let emailAddress = sanitize.emailAddress(autoconfigXML.clientConfig.emailAddress, null);
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
   assert(!forDomain || ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;
@@ -46,7 +48,10 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
   // Incoming server
   for (let iX of ensureArray(xml.$incomingServer)) {
     try {
-      configs.push(readServer(iX, displayName, fullXML, source, newAccountForProtocol) as MailAccount);
+      let config = readServer(iX, displayName, fullXML, source, newAccountForProtocol) as MailAccount;
+      config.emailAddress ??= emailAddress;
+      config.realname = realName;
+      configs.push(config);
     } catch (ex) {
       firstError = ex;
     }

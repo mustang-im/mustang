@@ -1,4 +1,4 @@
-<Clickable onClick={selectDay} onDoubleClick={addEvent}>
+<Clickable onClick={selectDay} {onDoubleClick}>
   <vbox flex class="events"
     style="--selected-calendar-color: {$selectedCalendar?.color ?? "black"}">
     {#if $displayEvents?.hasItems}
@@ -21,17 +21,15 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { setNewEventTime } from "../event";
   import { selectedCalendar, selectedDate } from "../selected";
-  import { openEvent } from "../open";
-  import { appGlobal } from "../../../logic/app";
   import EventContainer from "./EventContainer.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { k1HourMS } from "../../Util/date";
-  import { assert } from "../../../logic/util/util";
-  import { getDateTimeLocale, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
   import type { Collection } from "svelte-collections";
+  const dispatchEvent = createEventDispatcher<{ celldblclick: { start: Date, mouseEvent: MouseEvent } }>();
 
   export let start: Date;
   export let intervalInHours: number;
@@ -52,13 +50,9 @@
     $selectedDate = start;
   }
 
-  function addEvent() {
-    $selectedCalendar ??= appGlobal.calendars.first;
-    assert($selectedCalendar, $t`Please set up a calendar first`);
-    let event = $selectedCalendar.newEvent();
+  function onDoubleClick(mouseEvent: MouseEvent) {
     let startTime = new Date(start.getTime() + 10 * k1HourMS);
-    setNewEventTime(event, true, startTime);
-    openEvent(event, true);
+    dispatchEvent("celldblclick", { start: startTime, mouseEvent });
   }
 </script>
 

@@ -7,6 +7,7 @@ import { appGlobal } from "../app";
 import { SetColl, ArrayColl } from 'svelte-collections';
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert, type URLString, AbstractFunction, NotSupported } from "../util/util";
+import { catchErrors } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
 
 export class VideoConfMeeting extends Observable {
@@ -46,7 +47,8 @@ export class VideoConfMeeting extends Observable {
 
   /** Subclass constructor must set `this.mediaDeviceStreams` and then call this function. */
   protected listenStreamChanges() {
-    this.mediaDeviceStreams.subscribe((_obj, propName: string, oldValue: any) => this.streamsChanged(propName, oldValue));
+    this.mediaDeviceStreams.subscribe((_obj, propName: string, oldValue: any) =>
+      catchErrors(() => this.streamsChanged(propName, oldValue), ex => this.errorCallback(ex)));
   }
 
   errorCallback = (ex: Error) => {

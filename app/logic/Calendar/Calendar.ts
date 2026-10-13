@@ -1,4 +1,5 @@
 import { Account } from "../Abstract/Account";
+import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
@@ -68,15 +69,45 @@ export class Calendar extends Account {
 
   /** Has a corresponding event with the same `calUID` */
   hasMatchingEvent(event: Event) {
-    return this.events.some(ev => ev.calUID == event.calUID);
+    return this.events.some(ev => ev.isSameUID(event));
   }
 
-  async startup() {
-    await super.startup();
+  async syncOnStartup() {
+    await super.syncOnStartup();
     await this.listEvents();
+    await this.startupDependentAccounts();
   }
 
+  /** Reads the events that we already have,
+   * then downloads the events from the server. */
   async listEvents() {
+    await this.readEventsFromDB();
+    await this.listEventsFromServer();
+    await this.downloadAttachmentsOfUpcomingEvents();
+  }
+
+  /** Downloads the details of all events from the server.
+   * Not the attachment contents, though. */
+  protected async listEventsFromServer(): Promise<void> {
+  }
+
+  /** Fetches the attachment contents of all future events.
+   * Older events are fetched only when the user opens them. */
+  async downloadAttachmentsOfUpcomingEvents(): Promise<void> {
+    let missing = this.events.filterOnce(event =>
+      event.attachments.some(attachment => attachment.pID && !attachment.content && !attachment.filepathLocal) &&
+      // `isUpcoming()` is expensive for recurring events, so check the attachments first
+      event.isUpcoming());
+    for (let event of missing) {
+      try {
+        await event.loadAttachments();
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
+    }
+  }
+
+  async readFromDB(): Promise<void> {
     await this.readEventsFromDB();
   }
 
@@ -149,6 +180,12 @@ export class Calendar extends Account {
     appGlobal.calendars.remove(this);
   }
 
+  /** The access levels that this server can grant to other users.
+   * Ordered from least to most permission. Used by @see `addSharedPerson()` */
+  get sharePermissionLevels(): CalendarShareCombinedPermissions[] {
+    return [];
+  }
+
   async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
     return new ArrayColl<PersonUID>();
   }
@@ -174,7 +211,7 @@ export class Calendar extends Account {
   }
 }
 
-export interface CalendarStorage {
+export interface CalendarStorage extends AttachmentStorage {
   saveEvent(event: Event): Promise<void>;
   deleteEvent(event: Event): Promise<void>;
   saveCalendar(calendar: Calendar): Promise<void>;

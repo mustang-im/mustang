@@ -2,7 +2,7 @@
   <Scroll bind:this={scrollE}>
     <grid flex class="week"
       columns={showDays}
-      style="min-height: {scrollHeight}px;"
+      style="min-height: {scrollHeight}px; {columnWidths}"
       class:enlargeSelectedDay
       on:swipeleft={onNextDay}
       on:swiperight={onPreviousDay}
@@ -16,7 +16,7 @@
               <hbox class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
             </vbox>
           </slot>
-          <vbox class="all-day-events">
+          <vbox class="all-day-events" style="max-height: {visibleHeight / 3}px">
             {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
               <AllDayEvent {event} {start} />
             {/each}
@@ -38,23 +38,26 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import type { DateInterval } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import TimeLabel from "./TimeLabel.svelte";
   import TimeDayRow from "./TimeDayRow.svelte";
   import AllDayEvent from "./AllDayEvent.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
+  import { getToday, getWeekStart } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import { tick } from "svelte";
 
   export let start: Date;
   export let events: Collection<Event>;
   /** UI elements that appear in the event slots. Optional */
   export let overlayEvents: Collection<Event> | null = null;
-  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
+  export let showDays: DateInterval; // If you add new options, adapt styles below
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;
-  export let defaultFocusHour = 8;
+  export let defaultFocusHour: number | null = null;
   export let enlargeSelectedDay = false;
 
   let startHour = 0;
@@ -65,10 +68,14 @@
   let visibleHeight = 0;
   $: pxPerHour =  visibleHeight / showHours;
   $: scrollHeight = pxPerHour * (endHour - startHour);
-  $: focusHour = start.toDateString() == new Date().toDateString()
+  $: focusHour = defaultFocusHour ?? (start.toDateString() == new Date().toDateString()
     ? new Date().getHours()
-    : defaultFocusHour;
-  $: if (scrollE) scrollE.scrollTo((focusHour - 0.5) * pxPerHour);
+    : 8);
+  $: focusHour, pxPerHour, scrollToFocusHour();
+  async function scrollToFocusHour() {
+    await tick(); // The new grid height reaches the DOM only after the update
+    scrollE?.scrollTo((focusHour - 0.5) * pxPerHour);
+  }
 
   let startTimes: Date[] = [];
   $: start, setStartTimes();
@@ -85,12 +92,9 @@
   let days: Date[] = [];
   let visibleEvents: Collection<Event>;
   let allDayEvents: Collection<Event>;
-  $: start, setDays();
+  $: start, showDays, setDays();
   function setDays() {
-    let startTime = new Date(start);
-    if (showDays > 3) {
-      startTime.setDate(startTime.getDate() - 1);
-    }
+    let startTime = showDays > 3 ? getWeekStart(start) : new Date(start);
     startTime.setHours(startHour, 0, 0, 0);
     let filterStart = new Date(startTime);
     days = [];
@@ -104,14 +108,24 @@
     allDayEvents = filtered.filterObservable(ev => ev.allDay);
   }
 
+  let today = getToday();
+  // Update today at midnight
+  $: setTimeout(() => today = getToday(), new Date(today).setDate(today.getDate() + 1) - Date.now());
+
+  // Shows today wider. Sets e.g. `grid-template-columns: max-content 1fr 1fr 1.5fr 1fr 1fr` on the `<grid>`
+  $: columnWidths = showDays > 3 && days.some(day => day.getTime() == today.getTime())
+    ? "grid-template-columns: max-content " + days.map(day => day.getTime() == today.getTime() ? "1.5fr" : "1fr").join(" ")
+    : "";
+
   function onNextDay() {
-    let pageDays = showDays == 7 ? 7 : 1;
+    // Week views snap to Monday, so page whole weeks
+    let pageDays = showDays > 3 ? 7 : 1;
     start.setDate(start.getDate() + pageDays);
     start = start;
   }
 
   function onPreviousDay() {
-    let pageDays = showDays == 7 ? 7 : 1;
+    let pageDays = showDays > 3 ? 7 : 1;
     start.setDate(start.getDate() - pageDays);
     start = start;
   }
@@ -133,11 +147,13 @@
   .week.enlargeSelectedDay[columns="2"] {
     grid-template-columns: max-content 3fr 1fr;
   }
+  .week[columns="5"] {
+    grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr;
+    /* overridden by $: above */
+  }
   .week[columns="7"] {
     grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  }
-  .week.enlargeSelectedDay[columns="7"] {
-    grid-template-columns: max-content 0.33fr 3fr 2fr 1fr 1fr 1fr 1fr;
+    /* overridden by $: above */
   }
   .header {
     position: sticky;
@@ -153,6 +169,7 @@
     border-top: 1px dotted var(--border);
     border-left: 1px dotted var(--border);
     border-bottom: 1px dotted var(--border);
+    min-width: 0px; /* Long titles must not widen the column */
   }
   .date-day {
     padding: 8px 16px;
@@ -164,6 +181,7 @@
   .all-day-events {
     margin: 0px -1px -2px 0px;
     opacity: 85%;
+    overflow-y: auto;
   }
   .weekday {
     margin-block-start: -4px;

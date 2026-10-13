@@ -20,11 +20,12 @@
   import { appGlobal } from "../../../logic/app";
   import DoIcon from "lucide-svelte/icons/mail-plus";
   import DoneIcon from "lucide-svelte/icons/check";
+  import { catchErrors } from "../../Util/error";
   import { gt } from "../../../l10n/l10n";
 
   let isDefaultApp = false;
 
-  $: checkIsDefaultApp();
+  $: catchErrors(checkIsDefaultApp);
 
   async function checkIsDefaultApp() {
     isDefaultApp = await appGlobal.remoteApp.isDefaultApp("mailto");

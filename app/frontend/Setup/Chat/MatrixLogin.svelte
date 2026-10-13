@@ -61,18 +61,18 @@
     try {
       error = null;
       config.password = password;
-      config.deleteAllKeys();
+      await config.deleteAllKeys();
 
-      //await config.loginOnly(true);
+      //await config.login(true);
       //showPage = MatrixVerify;
 
       // or, until the crypto key recovery works:
-      await config.login(true);
+      await config.loginAndStartup(true);
       await config.save();
       appGlobal.chatAccounts.add(config);
       showPage = null;
     } catch (ex) {
-      config.deleteAllKeys();
+      await config.deleteAllKeys();
       error = ex;
     }
   }

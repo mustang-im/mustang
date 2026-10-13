@@ -53,6 +53,7 @@
   */
 
   import { Collection, CollectionObserver, ArrayColl } from "svelte-collections"
+  import { catchErrors } from "../Util/error";
   import throttle from "lodash/throttle";
   import { onMount, tick } from "svelte";
   import { createEventDispatcher } from 'svelte';
@@ -84,8 +85,9 @@
    * @see also selectedItem
    *
    * out only
+   * `let`, not `const`: Svelte 5 nulls a bound readonly export on destroy.
    */
-  export const selectedItems = new ArrayColl<T>();
+  export let selectedItems = new ArrayColl<T>();
 
   /**
    * The list item that the user selected,
@@ -146,7 +148,7 @@
    */
   $: heightY = $items.length * rowHeight + headerHeight || 100;
 
-  $: $items.hasItems && listE && updateSize();
+  $: $items.hasItems && listE && catchErrors(updateSize);
 
   //$: console.log("items", $items.length, "header height", headerHeight, "rowHeight", rowHeight, "heightY", heightY, "startPosY", startPosY, "startPos", startPos);
 
@@ -181,17 +183,19 @@
     }
   }
 
-  onMount(() => {
-    selectedItems.registerObserver(singleSelectionObserver);
-    if (selectedItem) {
-      selectedItems.add(selectedItem);
-    }
+  const updateSizeThrottled = throttle(updateSize, 30);
+  const resizeObserver = new ResizeObserver(updateSizeThrottled);
 
-    const updateSizeThrottled = throttle(updateSize, 30);
-    const resizeObserver = new ResizeObserver(updateSizeThrottled);
+  onMount(() => {
     resizeObserver.observe(listE);
-    return () => resizeObserver.disconnect();
+    return onDestroy;
   });
+
+  function onDestroy() {
+    resizeObserver.disconnect();
+    updateSizeThrottled.cancel();
+    onScrollThrottled.cancel();
+  }
 
   function onKey(event: KeyboardEvent) {
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
@@ -311,14 +315,23 @@
 
   /** If the selected items were removed from the list,
    * adapt the selectedItems and implicitly selectedItem. */
-  $: ensureSelection && $items && replaceSelectedItem();
+  $: $items && replaceSelectedItem();
   function replaceSelectedItem() {
+    // Before the first `selectedItems` change, else the caller misses it. Repeats are no-ops.
+    selectedItems.registerObserver(singleSelectionObserver);
+    if (!ensureSelection) {
+      return;
+    }
+    let wantedItem = selectedItem; // `removeAll()` below clears it
     if (selectedItems.isEmpty) {
+      if (items.includes(wantedItem)) { // The caller selected it before the items arrived
+        selectedItems.add(wantedItem);
+      }
       return;
     }
     selectedItems.removeAll(selectedItems.filterOnce(a => !items.includes(a)));
     if (selectedItems.isEmpty) {
-      let newItem = items.getIndex(lastSelectedIndex) ?? items.first;
+      let newItem = items.includes(wantedItem) ? wantedItem : items.getIndex(lastSelectedIndex) ?? items.first;
       if (!newItem) {
         return;
       }

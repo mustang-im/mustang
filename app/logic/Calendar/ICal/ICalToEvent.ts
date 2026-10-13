@@ -2,8 +2,10 @@ import type { Event } from "../Event";
 import { Participant } from "../Participant";
 import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { ICalContainer, ICalParser } from "./ICalParser";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
+import { base64ToUint8Array, fileExtensionForMIMEType } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { stringFromDataURL } from "../../../frontend/Util/util";
 import { gt } from "../../../l10n/l10n";
@@ -16,11 +18,14 @@ import type { ArrayColl } from "svelte-collections";
  */
 export function convertICalToEvent(ics: string, event: Event): boolean {
   let parsed = new ICalParser(ics);
-  let vevent = parsed.containers.vevent?.[0];
-  if (!vevent) {
+  let vevents = parsed.containers.vevent;
+  if (!vevents?.length) {
     return false;
   }
-  convertICalContainerToEvent(vevent, event);
+  // A recurring event with modified occurrences has multiple VEVENTs:
+  // the master, and one per modified occurrence, marked with RECURRENCE-ID.
+  let master = vevents.find(v => !v.entries.recurrenceid) ?? vevents[0];
+  convertICalContainerToEvent(master, event);
   return true;
 }
 
@@ -109,32 +114,36 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   }
   if (vevent.entries.conference) {
     // <https://www.rfc-editor.org/rfc/rfc7986#section-5.11>
+    // There can be several, e.g. a `tel:` dial-in next to the video link
     event.isOnline = true;
-    event.onlineMeetingURL = vevent.entries.conference[0].value;
+    event.onlineMeetingURL = vevent.entries.conference
+      .map(entry => sanitize.url(entry.value, null))
+      .find(url => !!url) ?? null;
   }
   if (vevent.entries.location) {
-    event.location = vevent.entries.location[0].value;
-    if (!event.onlineMeetingURL && event.location.startsWith("https://")) { // other clients may send online meeting URL in `LOCATION`
-      event.isOnline = true;
-      event.onlineMeetingURL = sanitize.url(event.location, null);
-    }
-    if (event.location == event.onlineMeetingURL) { // Our own backwards compat code for online meeting URL
-      event.location = null;
-    }
+    // Some clients send the online meeting URL in `LOCATION` (see `CONFERENCE` above)
+    event.setLocationFromServer(vevent.entries.location[0].value);
   }
   if (vevent.entries.status?.[0].value == "CANCELLED") {
     event.isCancelled = true;
   }
+  event.participants.clear(); // in case we're updating an existing event
   let organizer: Participant | undefined;
-  if (vevent.entries.organizer) {
-    let value = vevent.entries.organizer[0].value.replace(/^MAILTO:/i, "");
-    organizer = new Participant(sanitize.emailAddress(value), sanitize.label(vevent.entries.organizer[0].properties.cn, null), InvitationResponse.Organizer);
-    event.participants.add(organizer);
+  let organizerEntry = vevent.entries.organizer?.[0];
+  if (organizerEntry) {
+    let emailAddress = sanitize.emailAddress(emailAddressFromCalAddress(organizerEntry.value), null);
+    if (emailAddress) {
+      organizer = new Participant(emailAddress, sanitize.label(organizerEntry.properties.cn, null), InvitationResponse.Organizer);
+      event.participants.add(organizer);
+    }
   }
   if (vevent.entries.attendee) {
     for (let { value, properties: { role, partstat, cn } } of vevent.entries.attendee) {
-      value = value.replace(/^MAILTO:/i, "");
-      let participant = new Participant(sanitize.emailAddress(value), sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase() as keyof typeof ParticipationStatus] || InvitationResponse.Unknown));
+      let emailAddress = sanitize.emailAddress(emailAddressFromCalAddress(value), null);
+      if (!emailAddress) {
+        continue; // we cannot address this participant, e.g. free text instead of an address
+      }
+      let participant = new Participant(emailAddress, sanitize.label(cn, null), sanitize.integer(ParticipationStatus[partstat?.toUpperCase() as keyof typeof ParticipationStatus] || InvitationResponse.Unknown));
       if (participant.emailAddress == organizer?.emailAddress || /^CHAIR$/i.test(role)) {
         participant.response = InvitationResponse.Organizer;
         // Remove the organizer as it has less detail than an attendee
@@ -146,11 +155,41 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
       event.participants.add(participant);
     }
   }
+  readAttachments(vevent, event);
+}
+
+/** ORGANIZER and ATTENDEE are a CAL-ADDRESS, RFC 5545 3.3.3, i.e. a `mailto:` URI.
+ * // <compat for="Doctolib" reason="Writes `MAILTO:<foo@example.com>`, with the angle
+ * brackets of an RFC 5322 mail header inside the URI, where RFC 6068 allows only the
+ * bare address and RFC 3986 does not allow the brackets at all"> */
+function emailAddressFromCalAddress(calAddress: string): string {
+  return calAddress.replace(/^MAILTO:/i, "").replace(/^<(.*)>$/, "$1");
+}
+
+/** Inline attachments, RFC 5545 3.8.1.1.
+ * Attachments that are only referenced by URI are not supported. */
+function readAttachments(vevent: ICalContainer, event: Event): void {
+  event.attachments.clear(); // in case we're updating an existing event
+  let fallbackID = 0;
+  for (let entry of vevent.entries.attach ?? []) {
+    if (entry.properties.value?.toUpperCase() != "BINARY") {
+      continue;
+    }
+    let attachment = event.newAttachment();
+    attachment.mimeType = sanitize.nonemptystring(entry.properties.fmttype, "application/octet-stream");
+    attachment.filename = sanitize.filename(
+      entry.properties.filename ?? entry.properties["x-filename"] ?? entry.properties["x-apple-filename"],
+      "attachment-" + ++fallbackID + "." + fileExtensionForMIMEType(attachment.mimeType));
+    attachment.content = new File([base64ToUint8Array(entry.value)], attachment.filename, { type: attachment.mimeType });
+    attachment.size = attachment.content.size;
+    attachment.disposition = ContentDisposition.attachment;
+    event.attachments.add(attachment);
+  }
 }
 
 const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;
 
-function parseDate(icalDate: { value: string, properties: { tzid?: string } }): [Date | null, string | null] {
+export function parseDate(icalDate: { value: string, properties: { tzid?: string } }): [Date | null, string | null] {
   let value = icalDate.value;
   let tzid = icalDate.properties.tzid || null;
   if (value.length == 8) {

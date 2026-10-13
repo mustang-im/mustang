@@ -2,16 +2,21 @@
   {$t`Checking…`}
 {:then}
   <vbox class="availability-grid">
-    <WeekView
+    <hbox class="range-header">
+      <DateRange bind:date={start} dateInterval={7} />
+    </hbox>
+    <DayViewGrid
       {start}
       defaultFocusHour={start.getHours()}
       showDays={7}
       showHours={5}
-      events={freeBusy}
+      events={noEvents}
+      overlayEvents={freeBusy}
       >
-      <hbox slot="top-left">
+      <hbox class="free-busy font-small" slot="event-overlay" let:event>
+        {event.title}
       </hbox>
-    </WeekView>
+    </DayViewGrid>
   </vbox>
 {:catch ex}
   <hbox class="error">
@@ -24,7 +29,8 @@
   import { Participant } from "../../../logic/Calendar/Participant";
   import { Event } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
-  import WeekView from "../DayView/WeekView.svelte";
+  import DayViewGrid from "../DayView/DayViewGrid.svelte";
+  import DateRange from "../DateRange.svelte";
   import { UserError } from "../../../logic/util/util";
   import { showError } from "../../Util/error";
   import { ArrayColl, type Collection } from "svelte-collections";
@@ -46,7 +52,10 @@
   export let calendar: Calendar;
 
 
+  /** The free/busy blocks are no real events and are in no calendar,
+   * so they are shown as overlay and not as events, which the user could open. */
   let freeBusy = new ArrayColl<Event>();
+  let noEvents = new ArrayColl<Event>();
   async function check(start: Date, participants: Collection<Participant>) {
     freeBusy.clear();
     if (!participants?.length || participants.length == 1) {
@@ -126,12 +135,31 @@
     border: 1px dotted var(--border);
     border-radius: 3px;
   }
-  .availability-grid :global(.event .time) {
-    display: none;
+  .range-header {
+    justify-content: center;
   }
-  .availability-grid :global(.event .title) {
+  /* <copied from="EventContent.svelte"> The overlay draws its own block */
+  .free-busy {
+    height: 100%;
+    width: 100%;
+    padding-inline-start: 6px;
+    padding-block-start: 5px;
+    overflow: hidden;
     white-space-collapse: preserve;
+    background-color: var(--color);
+    color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
+  @media (prefers-color-scheme: dark) {
+    .free-busy {
+      background-image:
+        linear-gradient(var(--color), var(--color)),
+        linear-gradient(#000000BB, #000000BB);
+      background-blend-mode: overlay;
+      background-color: unset;
+      color: unset;
+    }
+  }
+  /* </copied> */
   .availability-grid :global(.day-header .date-day) {
     padding: 4px 8px;
   }

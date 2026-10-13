@@ -4,7 +4,7 @@
       {$t`Notifications`}
     </hbox>
     <hbox class="subtitle">{$t`When a new mail arrives, show with:`}</hbox>
-    <NotificationKinds bind:list={notificationsSetting.value} />
+    <NotificationKinds bind:list={$notificationsSetting.value} />
   </HeaderGroupBox>
 
   <HeaderGroupBox>
@@ -25,7 +25,7 @@
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { t } from "../../../l10n/l10n";
 
-  let notificationsSetting = getLocalStorage("notifications.mail", ["popup","sound"]);
+  let notificationsSetting = getLocalStorage("notifications.mail", ["popup"]);
   let onlyABSetting = getLocalStorage("notifications.mail.only.addressbook", true);
 </script>
 

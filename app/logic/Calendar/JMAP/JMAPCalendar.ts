@@ -1,13 +1,13 @@
-import { Calendar } from "../Calendar";
+import { Calendar, CalendarShareCombinedPermissions } from "../Calendar";
 import type { Event } from "../Event";
 import { JMAPEvent } from "./JMAPEvent";
-import type { TJMAPCalendar } from "./TJMAPCalendar";
+import type { TJMAPCalendar, TJMAPCalendarRights } from "./TJMAPCalendar";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { JMAPAccount } from "../../Mail/JMAP/JMAPAccount";
-import type { JMAPEMail } from "../../Mail/JMAP/JMAPEMail";
-import type { TID, TJMAPChangeResponse, TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
-import { JMAPIncomingInvitation } from "./JMAPIncomingInvitation";
+import type { TID, TJMAPChangeResponse, TJMAPGetResponse, TJMAPQueryResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import type { Participant } from "../Participant";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import { checkChangeError } from "../../Mail/JMAP/JMAPError";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
@@ -18,8 +18,6 @@ export class JMAPCalendar extends Calendar {
   readonly protocol: string = "calendar-jmap";
   declare readonly events: ArrayColl<JMAPEvent>;
   readonly deletions = new Set<string>();
-  /** TODO JMAP calendar can only accept incoming invitations from its inbox */
-  readonly canAcceptAnyInvitation = false;
   /** ID in JMAP (because `.id` is the ID our database) */
   jmapID: TID;
   /** Primary calendar for this account */
@@ -45,16 +43,11 @@ export class JMAPCalendar extends Calendar {
     }
   }
 
-  getIncomingInvitationForEMail(message: JMAPEMail) {
-    return new JMAPIncomingInvitation(this, message);
-  }
-
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     return [];
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     if (!this.account.isLoggedIn) {
       await this.account.login(false);
     }
@@ -64,21 +57,22 @@ export class JMAPCalendar extends Calendar {
       : await this.listChangedEvents();
   }
 
-  /** Lists all events in this calendar. */
   protected async listAllEvents(): Promise<ArrayColl<JMAPEvent>> {
     const batchSize = 200;
     let state: string;
-    let hasMore = true;
     let allNewEvents = new ArrayColl<JMAPEvent>();
-    for (let i = 0; hasMore; i += batchSize) {
-      let { newEvents, updatedEvents, syncState } = await retryOnTransientError(() =>
-        this.fetchEvents(i, batchSize + 1));
+    let start = 0;
+    let hasMore = true;
+    while (hasMore) {
+      let { newEvents, updatedEvents, syncState, count, pageSize } = await retryOnTransientError(() =>
+        this.fetchEvents(start, batchSize));
+      hasMore = count == pageSize; // A full page means that there is probably more
+      start += count;
       state ??= syncState;
       this.events.addAll(newEvents);
       await this.saveEvents(newEvents);
       await this.updateRecurrenceOverrides(newEvents);
       allNewEvents.addAll(newEvents);
-      hasMore = newEvents.length + updatedEvents.length > batchSize;
     }
     if (state) {
       this.account.syncState.set("CalendarEvent", state);
@@ -86,8 +80,12 @@ export class JMAPCalendar extends Calendar {
     return allNewEvents;
   }
 
-  protected async fetchEvents(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPEvent> & { syncState: string }> {
-    console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
+  /** @returns
+   * `count`: How many events the server returned.
+   * `pageSize`: The `limit` that the server used, which may be lower than the
+   *   one that we asked for. A `count` below it means that this was the last page. */
+  protected async fetchEvents(start: number, limit: number): Promise<UpdateResult<JMAPEvent> & { syncState: string, count: number, pageSize: number }> {
+    console.log("JMAP fetch", `start ${start} limit ${limit}`);
     let listResponse: TJMAPGetResponse<TJMAPCalendarEvent>;
     let lock = await this.account.stateLock.lock();
     let after = new Date();
@@ -100,11 +98,11 @@ export class JMAPCalendar extends Calendar {
             accountId: this.account.accountID,
             filter: {
               inCalendar: this.jmapID,
+              after: after.toISOString().substring(0, 19) + "Z",
             },
             sort: [
-              { property: "start" }
+              { property: "start", isAscending: false }
             ],
-            after: after.toISOString().substring(0, 19),
             position: start,
             limit: limit,
           },
@@ -121,11 +119,15 @@ export class JMAPCalendar extends Calendar {
           "events",
         ],
       ]);
+      let queryResponse = response["list"] as TJMAPQueryResponse;
       listResponse = response["events"] as TJMAPGetResponse<TJMAPCalendarEvent>;
 
       return {
         ...this.parseEventsList(listResponse.list),
         syncState: listResponse.state,
+        count: queryResponse.ids.length,
+        // RFC 8620 5.5: Only returned when the server used a different limit than we asked, so default to what we asked
+        pageSize: sanitize.integerRange(queryResponse.limit, 1, limit * 10, limit),
       };
     } finally {
       lock.release();
@@ -138,7 +140,16 @@ export class JMAPCalendar extends Calendar {
       return await this.listAllEvents();
     }
 
-    return await this.fetchChangedEventsForAllCalendars();
+    try {
+      return await this.fetchChangedEventsForAllCalendars();
+    } catch (ex) {
+      if (ex.code == "cannotCalculateChanges") {
+        // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+        this.account.syncState.delete("CalendarEvent");
+        return await this.listAllEvents();
+      }
+      throw ex;
+    }
   }
 
   /**
@@ -206,7 +217,7 @@ export class JMAPCalendar extends Calendar {
           removed.hasItems || changes.destroyed?.length)) {
           continue;
         }
-        removed.addAll(await calendar.parseRemovedEvents(changes.destroyed));
+        removed.addAll(await calendar.parseRemovedEvents(changes.destroyed ?? []));
         // A new created locally comes back in `created`, so need dup checks
         let addedResult = calendar.parseEventsList(addedThisCal ?? []);
         let changedResult = calendar.parseEventsList(changedThisCal ?? []);
@@ -305,6 +316,53 @@ export class JMAPCalendar extends Calendar {
 
   getEventByJMAPID(jmapID: string): JMAPEvent | undefined {
     return this.events.find(p => p.jmapID == jmapID);
+  }
+
+  get sharePermissionLevels(): CalendarShareCombinedPermissions[] {
+    return [
+      CalendarShareCombinedPermissions.ReadAvailability,
+      CalendarShareCombinedPermissions.ReadAll,
+      CalendarShareCombinedPermissions.Modify,
+    ];
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let response = await this.account.makeSingleCall("Calendar/get", {
+      accountId: this.account.accountID,
+      ids: [this.jmapID],
+      properties: ["shareWith"],
+    }) as TJMAPGetResponse<TJMAPCalendar>;
+    return await this.account.getPrincipals(Object.keys(response.list[0]?.shareWith ?? {}));
+  }
+
+  async deleteSharedPerson(person: PersonUID) {
+    await this.setSharedPerson(person, null);
+  }
+
+  async addSharedPerson(person: PersonUID, access: CalendarShareCombinedPermissions) {
+    let mayModify = access == CalendarShareCombinedPermissions.Modify;
+    await this.setSharedPerson(person, {
+      mayReadFreeBusy: true,
+      mayReadItems: access != CalendarShareCombinedPermissions.ReadAvailability,
+      mayWriteAll: mayModify,
+      mayWriteOwn: mayModify,
+      mayUpdatePrivate: mayModify,
+      mayRSVP: mayModify,
+      mayShare: false,
+      mayDelete: false,
+    });
+  }
+
+  protected async setSharedPerson(person: PersonUID, rights: TJMAPCalendarRights | null) {
+    let principalID = (await this.account.findPrincipal(person))?.id;
+    assert(principalID, gt`You have no access to the account of ${person.emailAddress}`);
+    let response = await this.account.makeSingleCall("Calendar/set", {
+      accountId: this.account.accountID,
+      update: {
+        [this.jmapID]: { [`shareWith/${principalID}`]: rights },
+      },
+    }) as TJMAPChangeResponse<TJMAPCalendar>;
+    checkChangeError(response);
   }
 
   fromConfigJSON(json: any) {

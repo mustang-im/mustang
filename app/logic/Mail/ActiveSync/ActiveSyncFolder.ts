@@ -5,7 +5,7 @@ import type { ActiveSyncAccount, ActiveSyncPingable } from "./ActiveSyncAccount"
 import { ActiveSyncError } from "./ActiveSyncError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import type { EMailCollection } from "../Store/EMailCollection";
-import { assert, ensureArray, NotImplemented, NotSupported } from "../../util/util";
+import { assert, ensureArray, NotSupported } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
@@ -138,6 +138,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
 
   async listMessages(): Promise<Collection<ActiveSyncEMail>> {
     await this.readFolder();
+    let isNewMail = !!this.syncState; // no sync key returns the entire folder
     let newMsgs = new ArrayColl<ActiveSyncEMail>();
     let data = {
       WindowSize: String(kMaxCount),
@@ -150,6 +151,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
       },
     };
     await this.makeSyncRequest(data, async response => {
+      let newMsgsInPage = new ArrayColl<ActiveSyncEMail>();
       let addedOrChanged = ensureArray(response.Commands?.Add).concat(ensureArray(response.Commands?.Change));
       for (let item of addedOrChanged) {
         try {
@@ -163,10 +165,11 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
             await email.saveWritablePropsLocally();
           } else {
             email = this.newEMail();
+            email.isRead = true; // fromWBXML will update countUnread
             email.serverID = serverID;
             email.fromWBXML(item.ApplicationData);
             await email.saveMetadataLocally();
-            newMsgs.add(email);
+            newMsgsInPage.add(email);
           }
         } catch (ex) {
           this.account.errorCallback(ex);
@@ -182,8 +185,13 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
           this.account.errorCallback(ex);
         }
       }
+      for (let msg of newMsgsInPage) {
+        msg.isNewArrived = isNewMail;
+      }
+      newMsgs.addAll(newMsgsInPage);
+      this.messages.addAll(newMsgsInPage);
     });
-    this.messages.addAll(newMsgs);
+    this.countTotal = this.messages.length;
     this.account.addPingable(this);
     return newMsgs;
   }
@@ -194,6 +202,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
     for (let i = 0; i < emailsToDownload.length; i += kMaxCount) {
       let batch = emailsToDownload.slice(i, i + kMaxCount);
       batch = batch.filter((email) => !email.downloadRunOnce.running);
+      if (!batch.length) {
+        continue;
+      }
       let request = {
         Fetch: batch.map(email => ({
           Store: "Mailbox",
@@ -207,17 +218,23 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
           },
         })),
       };
-      let results = await this.account.callEAS("ItemOperations", request);
-      for (let result of ensureArray(results.Response.Fetch)) try {
-        if (result.Status != "1") {
-          throw new ActiveSyncError("ItemOperations", result.Status, this.account);
-        }
-        let email = emailsToDownload.find(email => email.serverID == result.ServerID);
-        if (email && !email.downloadComplete) {
-          email.mime = result.Properties.Body.RawData;
-          await email.parseMIME();
-          await email.saveCompleteMessage();
-          downloadedEmail.add(email);
+      try {
+        let results = await this.account.callEAS("ItemOperations", request);
+        for (let result of ensureArray(results.Response.Fetch)) try {
+          if (result.Status != "1") {
+            throw new ActiveSyncError("ItemOperations", result.Status, this.account);
+          }
+          let email = emailsToDownload.find(email => email.serverID == result.ServerId);
+          if (email && !email.downloadComplete) {
+            await email.downloadRunOnce.runOnce(async () => {
+              email.mime = result.Properties.Body.RawData;
+              await email.parseMIME();
+              await email.saveCompleteMessage();
+            });
+            downloadedEmail.add(email);
+          }
+        } catch (ex) {
+          this.account.errorCallback(ex);
         }
       } catch (ex) {
         this.account.errorCallback(ex);
@@ -227,6 +244,10 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   }
 
   async getNewMessages(): Promise<Collection<ActiveSyncEMail>> {
+    if (!this.syncState) {
+      // Without sync key, the server returns the entire folder
+      return await this.getRecentMessages() as Collection<ActiveSyncEMail>;
+    }
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -253,11 +274,12 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
       })),
     };
     let result = await this.account.callEAS("MoveItems", request);
-    // Just reporting to the console for now.
+    // The messages will be deleted locally after this returns,
+    // so ensure that none of them failed on the server.
     for (let response of ensureArray(result.Response)) {
       // "3" is success for a Move operation... go figure.
       if (response.Status != "3") {
-        console.error(`ActiveSync MoveItems status ${response.Status}`);
+        throw new ActiveSyncError("MoveItems", response.Status, this.account);
       }
     }
   }
@@ -298,14 +320,15 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
     await email.saveCompleteMessage();
     await this.readFolder();
     this.messages.add(email);
+    this.countTotal++;
   }
 
   async moveFolderHere(folder: ActiveSyncFolder) {
     await super.moveFolderHere(folder);
     let request = {
-      ServerId: this.id,
-      ParentId: folder.id,
-      DisplayName: this.name,
+      ServerId: folder.id,
+      ParentId: this.id,
+      DisplayName: folder.name,
     };
     await this.account.queuedRequest("FolderUpdate", request);
     // We're required to sync which should be a no-op at this point.
@@ -340,6 +363,9 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   }
 
   async deleteIt() {
+    for (let folder of this.getInclusiveDescendants()) {
+      this.account.removePingable(folder as ActiveSyncFolder);
+    }
     await this.storage.deleteFolder(this);
     this.removeFromParent();
     let request = {
@@ -351,6 +377,24 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
   }
 
   async markAllRead() {
-    throw new NotImplemented();
+    let unread = this.messages.contents.filter(msg => !msg.isRead && msg.serverID);
+    for (let i = 0; i < unread.length; i += kMaxCount) {
+      let data = {
+        GetChanges: "0",
+        Commands: {
+          Change: unread.slice(i, i + kMaxCount).map(msg => ({
+            ServerId: msg.serverID,
+            ApplicationData: {
+              Read: "1",
+            },
+          })),
+        },
+      };
+      let response = await this.makeSyncRequest(data);
+      if (response.Responses) {
+        throw new ActiveSyncError("Sync", ensureArray(response.Responses.Change)[0].Status, this.account);
+      }
+    }
+    await super.markAllRead();
   }
 }

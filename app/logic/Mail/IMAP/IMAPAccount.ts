@@ -2,6 +2,7 @@ import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { AuthMethod } from "../../Abstract/Account";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { IMAPFolder } from "./IMAPFolder";
+import { IMAPSearchEMail } from "./IMAPSearchEMail";
 import { appGlobal } from "../../app";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -20,7 +21,6 @@ import { gt } from "../../../l10n/l10n";
 
 export class IMAPAccount extends MailAccount {
   readonly protocol: string = "imap";
-  acceptOldTLS = false;
   pathDelimiter: string; /** Separator in folder path. E.g. '.' or '/', depending on server */
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /**
@@ -36,6 +36,8 @@ export class IMAPAccount extends MailAccount {
   connectionLock = new MapColl<ImapFlow, Lock>();
   protected throttle = new Throttle(50, 1);
   protected reconnectRunOnce = new MapColl<ConnectionPurpose, RunOnce<ImapFlow>>();
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
   /** High level logging about the commands we issue, logged by us */
   logCommands = false;
   /** Logs by ImapFlow */
@@ -54,23 +56,31 @@ export class IMAPAccount extends MailAccount {
     return !!this.connections.get(ConnectionPurpose.Main);
   }
 
-  async login(interactive: boolean): Promise<void> {
-    await super.login(interactive);
-    if (!this.dbID) {
-      await this.storage.saveAccount(this);
-    }
-    await this.storage.readFolderHierarchy(this);
-
-    await this.connection(interactive);
-    await this.startup();
+  /** @returns The purpose that the given connection currently serves */
+  getConnectionPurpose(connection: ImapFlow): ConnectionPurpose | null {
+    return this.connections.getKeyForValue(connection) ?? null;
   }
 
-  async startup() {
-    this.namespaces = await this.getNamespaces();
-    await super.startup();
-    await this.startIDLE(await this.connection(false, ConnectionPurpose.Main));
-    this.notifyObservers();
-    (this.inbox as IMAPFolder).startPolling();
+  async login(interactive: boolean): Promise<void> {
+    await this.loginRunOnce.runOnce(async () => {
+      await super.login(interactive);
+      if (!this.dbID) {
+        await this.storage.saveAccount(this);
+      }
+      await this.storage.readFolderHierarchy(this);
+
+      await this.connection(interactive);
+    });
+  }
+
+  async syncOnStartup() {
+    await this.startupRunOnce.runOnce(async () => {
+      this.namespaces = await this.getNamespaces();
+      await super.syncOnStartup();
+      this.notifyObservers();
+      (this.inbox as IMAPFolder).startPolling();
+      await this.startIDLE(await this.connection(false, ConnectionPurpose.Main));
+    });
   }
 
   async verifyLogin(): Promise<void> {
@@ -124,12 +134,13 @@ export class IMAPAccount extends MailAccount {
           rejectUnauthorized: !this.acceptBrokenTLSCerts,
         },
         disableAutoIdle: purpose != ConnectionPurpose.Main,
+        autoIdleDelay: 2000,
         maxIdleTime: kIDLERenewalSeconds * 1000, // renew IDLE, so that server and NAT don't drop us as stale
         connectionTimeout: 5 * 1000, // 5 s connection timeout
         greetingTimeout: 5 * 1000, // 5 s greeting timeout
         socketTimeout: purpose == ConnectionPurpose.Main
           ? (2 * kIDLERenewalSeconds) * 1000 + 1 * 60 * 1000 // 2 * 5 min IDLE + 1 min leeway
-          : 10 * 60 * 1000, // 10 min - Fetch/Display connections time one when unused, and we re-create them on demand
+          : (Math.max(this.pollIntervalMinutes, 10) + 1) * 60 * 1000, // 11 min - Fetch/Display connections time out when unused, and we re-create them on demand
         logger: false, // true, // Run backend using: `yarn run dev | npx pino-pretty -i time,msg`
         emitLogs: this.logLibrary,
       }
@@ -143,14 +154,16 @@ export class IMAPAccount extends MailAccount {
       try {
         await connection.connect();
       } catch (ex) {
-        let msg = ex?.responseText ?? ex?.message ?? ex + "";
+        let msg = ex?.responseText || ex?.message || "";
         if (ex.authenticationFailed) {
           throw this.fatalError = new LoginError(ex,
             "Check your login, username, and password.\n" + msg);
         } else if (ex.code == "EAUTH" || ex.code == "ClosedAfterConnectTLS") {
           throw this.fatalError = new LoginError(ex,
             "Check your login, username, and password.\n" + msg);
-        } else if (ex.code == "NoConnection" || ex.code == "NoConn" || msg == "Command failed.") {
+        } else if (ex.code == "NoConnection" || ex.code == "NoConn" || msg.startsWith("Command failed") ||
+            // Offline with a dual-stack server -> node throws an `AggregateError` with an empty `message`
+            !msg) {
           throw this.fatalError = new ConnectError(ex,
             "Failed to connect to server " + this.hostname + " for account " + this.name);
         } else {
@@ -209,7 +222,7 @@ export class IMAPAccount extends MailAccount {
         await folder.messageFlagsChanged(info.uid ?? null, info.seq, info.flags, info.modseq, connection);
       } catch (ex) {
         console.error("Error", ex, "in processing server event", info);
-        this.errorCallback(new IMAPCommandError(ex, `Server event about message seq ${info.seq} = UID ${info.uid} in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
+        this.errorCallback(new IMAPCommandError(ex, `Server event about a message in folder ${info.path} failed:\n${ex.message}\n${this.hostname} IMAP server`));
       }
     });
     connection.on("expunge", async (info) => {
@@ -264,12 +277,22 @@ export class IMAPAccount extends MailAccount {
   }
 
   /** ImapFlow starts IDLE only once a folder is open */
-  protected async startIDLE(connection: ImapFlow): Promise<void> {
+  async startIDLE(connection: ImapFlow): Promise<void> {
     let inbox = this.inbox as IMAPFolder;
     if (!inbox?.path) {
       return;
     }
-    await connection.mailboxOpen(inbox.path);
+    let lock = await this.connectionLock.get(connection)?.lock();
+    try {
+      if (connection != this.connections.get(ConnectionPurpose.Main)) {
+        return; // reconnected meanwhile; reconnect() re-selects the inbox
+      }
+      await connection.mailboxOpen(inbox.path);
+    } catch (ex) {
+      throw IMAPCommandError.fromServerResponse(ex);
+    } finally {
+      lock?.release();
+    }
   }
 
   dropConnection(connection: ImapFlow): void {
@@ -356,9 +379,7 @@ export class IMAPAccount extends MailAccount {
     for (let folderInfo of subFoldersInfo) {
       let subFolder = addTo.find(folder => folder.path == folderInfo.path);
       if (subFolder) {
-        if (folderInfo.status) {
-          subFolder.fromFlow(folderInfo); // update with new info
-        }
+        subFolder.fromFlow(folderInfo); // update with new info
       } else if (folderInfo.path == "[Gmail]" || folderInfo.flags.has("\\NoSelect")) {
         let subFoldersInfo = allFoldersInfo.filter(f => f.parentPath == folderInfo.path);
         this.readFolders(parent, addTo, subFoldersInfo, allFoldersInfo, resultAllFolders);
@@ -435,6 +456,12 @@ export class IMAPAccount extends MailAccount {
     let sentFolder = email.folder ?? this.getSpecialFolder(SpecialFolder.Sent);
     email.isRead = true;
     await sentFolder.addMessage(email);
+  }
+
+
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    return [MailShareCombinedPermissions.Read, MailShareCombinedPermissions.FlagChange,
+      MailShareCombinedPermissions.Modify, MailShareCombinedPermissions.Custom];
   }
 
   canShareWithPersons(): boolean {
@@ -521,6 +548,10 @@ export class IMAPAccount extends MailAccount {
   newFolder(): IMAPFolder {
     return new IMAPFolder(this);
   }
+
+  newSearch(): IMAPSearchEMail {
+    return new IMAPSearchEMail();
+  }
 }
 
 /**
@@ -554,6 +585,16 @@ const connectionPurposes = [ConnectionPurpose.Main, ConnectionPurpose.Fetch, Con
 const kIDLERenewalSeconds = 5 * 60;
 
 export class IMAPCommandError extends SpecificError {
+  /** ImapFlow reports every `NO`/`BAD` response as "Command failed" and puts
+    * the reason that the server gave into `responseText`. Show that reason. */
+  static fromServerResponse(ex: Error & { responseText?: string }): Error {
+    if (!ex?.responseText) {
+      return ex;
+    }
+    return new IMAPCommandError(ex, ex.responseText
+      .replace("Error in IMAP command", "IMAP")
+      .replace(/ \([\d\. +]* secs\)\./, ""));
+  }
 }
 
 const useragent = {

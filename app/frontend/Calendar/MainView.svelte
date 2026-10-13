@@ -8,8 +8,8 @@
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </WeekView>
-{:else if dateInterval == 7}
-  <WeekView bind:start {events} enlargeSelectedDay={true}>
+{:else if dateInterval > 3 && dateInterval <= 7}
+  <WeekView bind:start {events} showDays={dateInterval} enlargeSelectedDay={true}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </WeekView>
@@ -29,7 +29,7 @@
     <slot name="top-right" slot="top-right" />
   </DualView>
 {:else}
-  <WeekView bind:start {events}>
+  <WeekView bind:start {events} showDays={7}>
     <slot name="top-left" slot="top-left" />
     <slot name="top-right" slot="top-right" />
   </WeekView>

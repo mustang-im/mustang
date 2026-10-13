@@ -1,9 +1,11 @@
-import { ExchangeFolder, MessageFlagsPidTag } from "../EWS/ExchangeFolder";
+import { ExchangeFolder } from "../EWS/ExchangeFolder";
+import { MessageFlagsPidTag } from "../EWS/ExchangeEMail";
 import { SpecialFolder } from "../Folder";
 import type { EMail } from "../EMail";
 import { getSharedPersons, ExchangePermission } from "../EWS/ExchangePermission";
 import { OWAEMail } from "./OWAEMail";
 import { type OWAAccount, kMaxFetchCount } from "./OWAAccount";
+import { OWAError } from "./OWAError";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import {
   owaCreateNewSubFolderRequest, owaDeleteFolderRequest,
@@ -16,7 +18,7 @@ import {
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { base64ToArrayBuffer, blobToBase64 } from "../../util/util";
+import { base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -91,6 +93,7 @@ export class OWAFolder extends ExchangeFolder {
         return new ArrayColl<OWAEMail>();
       }
 
+      let isNewMail = this.messages.hasItems;
       let allMsgs = new ArrayColl<OWAEMail>();
       let newMsgs = new ArrayColl<OWAEMail>();
       let request = owaFindMsgsInFolderRequest(this.id, kMaxFetchCount);
@@ -119,6 +122,9 @@ export class OWAFolder extends ExchangeFolder {
           }
         }
         let newMsgsInIteration = await this.getNewMessageHeaders(newMessageIDs);
+        for (let msg of newMsgsInIteration) {
+          msg.isNewArrived = isNewMail;
+        }
         newMsgs.addAll(newMsgsInIteration);
       }
 
@@ -136,17 +142,21 @@ export class OWAFolder extends ExchangeFolder {
   async getNewMessageHeaders(newMessageIDs: string[]): Promise<ArrayColl<OWAEMail>> {
     let newMsgs = new ArrayColl<OWAEMail>();
     if (newMessageIDs.length) {
-      let results = await this.account.callOWA(owaGetNewMsgHeadersRequest(newMessageIDs));
-      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
-      for (let item of items) {
-        try {
-          let email = this.newEMail();
-          email.fromJSON(item);
-          await email.saveMetadataLocally();
-          newMsgs.add(email);
-        } catch (ex) {
-          this.account.errorCallback(ex);
+      try {
+        let results = await this.account.callOWA(owaGetNewMsgHeadersRequest(newMessageIDs));
+        let items = results.ResponseMessages ? this.account.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
+        for (let item of items) {
+          try {
+            let email = this.newEMail();
+            email.fromJSON(item);
+            await email.saveMetadataLocally();
+            newMsgs.add(email);
+          } catch (ex) {
+            this.account.errorCallback(ex);
+          }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
     return newMsgs;
@@ -158,21 +168,30 @@ export class OWAFolder extends ExchangeFolder {
     for (let i = 0; i < emailsToDownload.length; i += kMaxFetchCount) {
       let batch = emailsToDownload.slice(i, i + kMaxFetchCount);
       batch = batch.filter((email) => !email.downloadRunOnce.running);
-      let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
-      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
-      for (let item of items) {
-        let email = emailsToDownload.find(email => email.itemID == item.ItemId.Id);
-        if (email && !email.downloadComplete) {
-          try {
-            let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
-            email.mime = new Uint8Array(await base64ToArrayBuffer(mimeBase64, "message/rfc822"));
-            await email.parseMIME();
-            await email.saveCompleteMessage();
-            downloadedEmail.add(email);
-          } catch (ex) {
-            this.account.errorCallback(ex);
+      if (!batch.length) {
+        continue;
+      }
+      try {
+        let results = await this.account.callOWA(owaDownloadMsgsRequest(batch));
+        let items = results.ResponseMessages ? this.account.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
+        for (let item of items) {
+          let email = emailsToDownload.find(email => email.itemID == item.ItemId.Id);
+          if (email && !email.downloadComplete) {
+            try {
+              let mimeBase64 = sanitize.nonemptystring(item.MimeContent.Value);
+              await email.downloadRunOnce.runOnce(async () => {
+                email.mime = base64ToUint8Array(mimeBase64);
+                await email.parseMIME();
+                await email.saveCompleteMessage();
+              });
+              downloadedEmail.add(email);
+            } catch (ex) {
+              this.account.errorCallback(ex);
+            }
           }
         }
+      } catch (ex) {
+        this.account.errorCallback(ex);
       }
     }
 
@@ -191,6 +210,11 @@ export class OWAFolder extends ExchangeFolder {
    * so that the action can be repeated routinely every few minutes.
    * @returns the new messages */
   async getNewMessages(): Promise<Collection<OWAEMail>> {
+    await this.readFolder();
+    if (this.messages.isEmpty) {
+      // OWA has no sync state, so we would fetch the entire folder
+      return await this.getRecentMessages() as Collection<OWAEMail>;
+    }
     let newMsgs = await this.listMessages(); // TODO get only the msgs from the last 4 weeks
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -215,7 +239,14 @@ export class OWAFolder extends ExchangeFolder {
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<OWAEMail>) {
     let actionVerb = sanitize.translate(action, { move: "Move", copy: "Copy" }) as "Move" | "Copy";
     // This function must be called using the source account
-    await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(actionVerb, this.id, messages.contents));
+    let results = await messages.first.folder.account.callOWA(owaMoveOrCopyMsgsIntoFolderRequest(actionVerb, this.id, messages.contents));
+    // The messages will be deleted locally after this returns,
+    // so ensure that none of them failed on the server.
+    for (let result of ensureArray(results.ResponseMessages?.Items)) {
+      if (result.ResponseClass == "Error") {
+        throw new OWAError({ json: result });
+      }
+    }
   }
 
   async addMessage(message: EMail) {

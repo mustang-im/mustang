@@ -147,6 +147,9 @@
         readonly={!isEditing}
         class="font-small" />
     </vbox>
+  {:else}
+    <vbox flex />
+    <vbox class="background-pattern" style:height="400px" />
   {/if}
 </vbox>
 

@@ -1,5 +1,5 @@
 import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
-import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions } from 'electron'
+import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import { electronApp, is } from '@electron-toolkit/utils'
@@ -44,7 +44,7 @@ function createWindow(): void {
       });
     }
 
-    mainWindow.on('closed', shutdownBackend);
+    mainWindow.on('closed', () => shutdownBackend().catch(console.error));
 
     /** Ensure that new web windows are opened in the browser, not inside our app.
      *
@@ -66,6 +66,7 @@ function createWindow(): void {
       }
       // Open the URL in the system web browser
       shell.openExternal(details.url)
+        .catch(console.error); // must return the action synchronously
       // ... and do not open a new Electron window
       return { action: 'deny' }
     })
@@ -85,12 +86,16 @@ function createWindow(): void {
 
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
+    // The `try` above cannot catch these, because they fail asynchronously
     if (is.dev && true) {
-      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret);
+      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret)
+        .catch(console.error);
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#jpcSecret=' + jpcSecret)
+        .catch(console.error);
     } else {
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'jpcSecret=' + jpcSecret })
+        .catch(console.error);
     }
   } catch (ex) {
     console.error(ex);
@@ -124,7 +129,8 @@ function createMenu() {
 const gotLock = app.requestSingleInstanceLock();
 if (gotLock) {
   app.whenReady()
-    .then(whenReady);
+    .then(whenReady)
+    .catch(console.error);
 } else {
   // This is a second instance
   app.quit();
@@ -173,14 +179,18 @@ async function whenReady() {
   }
 }
 
-app.on('web-contents-created', (event, webContents) => setWindowOpenHandler(webContents));
+app.on('web-contents-created', (event, webContents) => {
+  setWindowOpenHandler(webContents);
+  restrictWebViews(webContents);
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform == 'darwin') {
-    updateAndRestartNowIfNeeded();
+    updateAndRestartNowIfNeeded()
+      .catch(console.error);
   } else {
     app.quit();
   }
@@ -291,6 +301,23 @@ function allowCrossDomainRequestsFromFrontend() {
 function setWindowOpenHandler(webContents: WebContents) {
   webContents.setWindowOpenHandler((details) => {
     return { action: 'deny' };
+  });
+}
+
+/** We need `webviewTag`, but it also means that any `<webview>` element that ends up
+ * in our document decides its own `webPreferences`, and `nodeintegration` there is
+ * node.js in the page. We only ever set `src`, `partition` and `title`. */
+function restrictWebViews(webContents: WebContents) {
+  webContents.on('will-attach-webview', (_event, webPreferences, params) => {
+    delete webPreferences.preload;
+    webPreferences.nodeIntegration = false;
+    webPreferences.nodeIntegrationInSubFrames = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.webSecurity = true;
+    delete params.nodeintegration;
+    delete params.nodeintegrationinsubframes;
+    delete params.disablewebsecurity;
+    delete params.allowpopups;
   });
 }
 

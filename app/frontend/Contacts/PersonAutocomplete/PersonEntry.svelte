@@ -34,6 +34,7 @@
   import PersonPicture from "../Person/PersonPicture.svelte";
   import Popup from "../../Shared/Popup.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
+  import { sleep } from "../../../logic/util/util";
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ focusNext: void }>();
 
@@ -46,10 +47,14 @@
   let popupAnchor: HTMLElement;
 
   onMount(checkPopup);
-  function checkPopup() {
-    if ((person as any).openPopup) {
-      popupOpen = true;
+  async function checkPopup() {
+    if (!person.nameIsUnknown) {
+      return;
     }
+    // The click that added the person is still bubbling up to the window,
+    // where `Popup` would take it as a click outside and close us again.
+    await sleep(0);
+    popupOpen = true;
   }
 
   function onPopupToggle(event: MouseEvent) {

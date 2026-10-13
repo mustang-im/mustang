@@ -41,7 +41,7 @@
     filterByWorkspace={true} />
 </hbox>
 <hbox flex class="main">
-  <vbox flex class="actions-container">
+  <vbox flex class="actions-container background-pattern">
     <vbox class="actions">
       {#if $selectedPerson}
         <Button label={$t`Call ${$selectedPerson.name}`} onClick={() => callSelected($selectedPerson)} errorCallback={showError} classes="call-person secondary">

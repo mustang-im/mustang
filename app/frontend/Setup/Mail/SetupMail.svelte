@@ -17,7 +17,8 @@
     {:else if step == Step.Instructions}
       <Instructions bind:config bind:password />
     {:else if step == Step.Login}
-      <LoginPage account={config} onContinue={onLoginSucceeded} />
+      <LoginPage account={config} onContinue={onLoginSucceeded}
+        onCancel={() => step = Step.FoundConfig} />
     {:else if step == Step.CheckConfig}
       <CheckConfig {config} {emailAddress} {password}
         on:continue={onCheckConfigSucceeded} on:fail={onCheckConfigFailed} {abort} />
@@ -81,6 +82,7 @@
   import Button from "../../Shared/Button.svelte";
   import { logError } from "../../Util/error";
   import { assert, NotReached } from "../../../logic/util/util";
+  import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { gt, t } from "../../../l10n/l10n";
   import type { ArrayColl } from "svelte-collections";
 
@@ -141,7 +143,9 @@
   function onManualSetup() {
     if (!config ||
         !config.outgoing && (config.protocol == "imap" || config.protocol == "pop3")) {
+      let name = config?.name;
       config = makeManualConfig(emailAddress, password);
+      config.name = name;
     } else {
       fillConfig(config, emailAddress, password);
     }
@@ -154,7 +158,7 @@
   let manualConfigEl: ManualConfigPage;
 
   $: canContinue =
-    step == Step.EmailAddress && !!emailAddress && !!password ||
+    step == Step.EmailAddress && sanitize.emailAddress(emailAddress, null) && !!password ||
     step == Step.FoundConfig ||
     step == Step.ManualConfig ||
     step == Step.FinalizeConfig;

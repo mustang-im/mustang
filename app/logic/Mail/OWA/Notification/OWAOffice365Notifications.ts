@@ -41,7 +41,9 @@ export class OWAOffice365Notifications extends OWANotifications {
         let url = this.account.url + "notificationchannel/negotiate?cid=" + cid;
         response = await fetch(url, options);
         if (!response.ok) {
-          throw new Error(`negotiate failed with HTTP ${response.status} ${response.statusText}`);
+          let allowed = response.headers.get("Allow");
+          throw new Error(`negotiate failed with HTTP ${response.status} ${response.statusText}` +
+            (allowed ? `, server allows ${allowed}` : ""));
         }
         json = await response.json();
         // Tell the server to start sending events.

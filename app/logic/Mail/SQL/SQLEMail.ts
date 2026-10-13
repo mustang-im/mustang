@@ -99,6 +99,8 @@ export class SQLEMail {
           isRead = ${email.isRead ? 1 : 0},
           isStarred = ${email.isStarred ? 1 : 0},
           isReplied = ${email.isReplied ? 1 : 0},
+          isForwarded = ${email.isForwarded ? 1 : 0},
+          isImportant = ${email.isImportant ? 1 : 0},
           isSpam = ${email.isSpam ? 1 : 0},
           isDraft = ${email.isDraft ? 1 : 0},
           threadID = COALESCE(${email.threadID}, threadID),
@@ -137,14 +139,15 @@ export class SQLEMail {
   }
 
   protected static async saveRecipient(email: EMail, puid: PersonUID, recipientType: number) {
-    let exists = await (await getDatabase()).get(sql`
+    let findPerson = sql`
         SELECT
           id
         FROM emailPerson
         WHERE
           emailAddress = ${puid.emailAddress} AND
           name = ${puid.name}
-      `) as any;
+      `;
+    let exists = await (await getDatabase()).get(findPerson) as any;
     let personID = exists?.id;
     if (!personID) {
       let insert = await (await getDatabase()).run(sql`
@@ -153,7 +156,10 @@ export class SQLEMail {
       ) VALUES (
         ${puid.name}, ${puid.emailAddress}, ${puid.person?.dbID}
       )`);
-      personID = insert.lastInsertRowid;
+      // An ignored insert leaves `lastInsertRowid` at another table's row
+      personID = insert.changes
+        ? insert.lastInsertRowid
+        : (await (await getDatabase()).get(findPerson) as any)?.id;
     }
     await (await getDatabase()).run(sql`
       INSERT INTO emailPersonRel (
@@ -207,17 +213,19 @@ export class SQLEMail {
   protected static async saveAttachment(email: EMail, a: Attachment) {
     assert(email.dbID, "Need to save email before attachment");
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
+    let jsonStr = JSON.stringify(a.toExtraJSON(), null, 2);
     await (await getDatabase()).run(sql`
       INSERT OR IGNORE INTO emailAttachment (
-        emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related
+        emailID, filename, filepathLocal, mimeType, size, contentID, disposition, related, json
       ) VALUES (
         ${email.dbID}, ${a.filename}, ${filepath}, ${a.mimeType}, ${a.size},
-        ${a.contentID}, ${a.disposition}, ${a.related ? 1 : 0}
+        ${a.contentID}, ${a.disposition}, ${a.related ? 1 : 0}, ${jsonStr}
       )`);
   }
 
   protected static async updateAttachment(a: Attachment, rowID: number) {
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
+    let jsonStr = JSON.stringify(a.toExtraJSON(), null, 2);
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
         contentID = ${a.contentID},
@@ -225,6 +233,7 @@ export class SQLEMail {
         size = ${a.size},
         disposition = ${a.disposition},
         related = ${a.related ? 1 : 0},
+        json = ${jsonStr},
         filepathLocal = COALESCE(${filepath}, filepathLocal)
       WHERE id = ${rowID}
       `);
@@ -237,7 +246,8 @@ export class SQLEMail {
     let filepath = a.filepathLocal?.replace(JSONEMail.filesDir + "/", "");
     await (await getDatabase()).run(sql`
       UPDATE emailAttachment SET
-        filepathLocal = ${filepath}
+        filepathLocal = ${filepath},
+        json = ${JSON.stringify(a.toExtraJSON(), null, 2)}
       WHERE emailID = ${email.dbID}
         AND filename = ${a.filename}
       `);
@@ -318,7 +328,7 @@ export class SQLEMail {
         outgoing,
         subject, plaintext, html,
         threadID, downloadComplete, json,
-        isRead, isStarred, isReplied, isDraft, isSpam
+        isRead, isStarred, isReplied, isForwarded, isImportant, isDraft, isSpam
       FROM email
       WHERE id = ${dbID}
       `) as any;
@@ -368,6 +378,8 @@ export class SQLEMail {
     email.isRead = sanitize.boolean(row.isRead, false);
     email.isStarred = sanitize.boolean(row.isStarred, false);
     email.isReplied = sanitize.boolean(row.isReplied, false);
+    email.isForwarded = sanitize.boolean(row.isForwarded, false);
+    email.isImportant = sanitize.boolean(row.isImportant, false);
     email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
     email.downloadComplete = sanitize.boolean(row.downloadComplete, false);
@@ -381,7 +393,7 @@ export class SQLEMail {
     if (!row) {
       row = await (await getDatabase()).get(sql`
       SELECT
-        isRead, isStarred, isReplied, isDraft, isSpam, threadID, downloadComplete, json
+        isRead, isStarred, isReplied, isForwarded, isImportant, isDraft, isSpam, threadID, downloadComplete, json
       FROM email
       WHERE id = ${email.dbID}
       `) as any;
@@ -392,6 +404,8 @@ export class SQLEMail {
     email.isRead = sanitize.boolean(row.isRead, false);
     email.isStarred = sanitize.boolean(row.isStarred, false);
     email.isReplied = sanitize.boolean(row.isReplied, false);
+    email.isForwarded = sanitize.boolean(row.isForwarded, false);
+    email.isImportant = sanitize.boolean(row.isImportant, false);
     email.isDraft = sanitize.boolean(row.isDraft, false);
     email.isSpam = sanitize.boolean(row.isSpam, false);
     email.threadID = sanitize.string(row.threadID ?? row.parentMsgID, null);
@@ -446,7 +460,7 @@ export class SQLEMail {
       // <copied to="readAll()" />
       attachmentRows = await (await getDatabase()).all(sql`
         SELECT
-          filename, filepathLocal, mimeType, size, contentID, disposition, related
+          filename, filepathLocal, mimeType, size, contentID, disposition, related, json
         FROM emailAttachment
         WHERE emailID = ${email.dbID}
       `) as any;
@@ -467,6 +481,7 @@ export class SQLEMail {
           inline: ContentDisposition.inline,
         }, ContentDisposition.unknown);
         a.related = sanitize.boolean(row.related, false);
+        a.fromExtraJSON(sanitize.json(row.json, {}) as any);
         email.attachments.add(a);
       } catch (ex) {
         email.folder.account.errorCallback(ex);
@@ -534,7 +549,7 @@ export class SQLEMail {
         outgoing,
         subject,
         threadID, downloadComplete, json,
-        isRead, isStarred, isReplied, isDraft, isSpam
+        isRead, isStarred, isReplied, isForwarded, isImportant, isDraft, isSpam
       FROM email
       WHERE folderID = ${folder.dbID}
       ORDER BY dateSent DESC
@@ -556,7 +571,7 @@ export class SQLEMail {
     // <copied from="readAttachments()" />
     let folderAttachmentRows = await (await getDatabase()).all(sql`
       SELECT
-        emailID, filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related
+        emailID, filename, filepathLocal, mimeType, emailAttachment.size as size, contentID, disposition, related, json
       FROM emailAttachment
       LEFT JOIN email ON (emailID = email.id)
       WHERE folderID = ${folder.dbID}
@@ -602,7 +617,7 @@ export class SQLEMail {
         id, pID, messageID, parentMsgID,
         size, dateSent, dateReceived, outgoing,
         subject, threadID, downloadComplete,
-        isRead, isStarred, isReplied, isSpam,
+        isRead, isStarred, isReplied, isForwarded, isImportant, isSpam,
         (SELECT name
          FROM emailPersonRel
            LEFT JOIN emailPerson ON (emailPersonRel.emailPersonID = emailPerson.id)

@@ -21,7 +21,7 @@ export class GraphChatAccount extends ChatAccount {
     return new GraphChatPerson(userID, name);
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.listRooms();
   }
 

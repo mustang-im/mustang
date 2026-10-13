@@ -10,9 +10,10 @@ import { EWSCreateItemRequest } from "../../Mail/EWS/Request/EWSCreateItemReques
 import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemRequest";
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
+import { ContentDisposition } from "../../Abstract/Attachment";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
@@ -84,11 +85,12 @@ export class EWSEvent extends ExchangeEvent {
     }
     this.timezone = fromWindowsZone(sanitize.nonemptystring(xmljs.StartTimeZoneId, null));
     this.allDay = sanitize.boolean(xmljs.IsAllDayEvent, false);
+    this.setAllDayTimeToLocalMidnight();
     if (xmljs.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromXML(xmljs.Recurrence);
       if (xmljs.DeletedOccurrences?.DeletedOccurrence) {
         for (let deletion of ensureArray(xmljs.DeletedOccurrences.DeletedOccurrence)) {
-          this.makeExclusionLocally(sanitize.date(deletion.Start));
+          this.makeExclusionLocally(this.toLocalMidnight(sanitize.date(deletion.Start)));
         }
       }
     } else {
@@ -99,7 +101,7 @@ export class EWSEvent extends ExchangeEvent {
     } else {
       this.alarm = null;
     }
-    this.location = sanitize.nonemptystring(xmljs.Location, "");
+    this.setLocationFromServer(sanitize.nonemptystring(xmljs.Location, ""));
     this.isCancelled = sanitize.boolean(xmljs.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
@@ -121,6 +123,81 @@ export class EWSEvent extends ExchangeEvent {
     if (xmljs.LastModifiedTime) {
       this.lastMod = sanitize.date(xmljs.LastModifiedTime);
     }
+    this.attachmentsFromXML(xmljs);
+  }
+
+  /** Only the meta-data. The contents are fetched later,
+   * @see downloadAttachmentsFromServer() */
+  protected attachmentsFromXML(xmljs: Record<string, any>) {
+    let attachments = ensureArray(xmljs.Attachments?.FileAttachment);
+    this.attachments.replaceAll(attachments.map(a => {
+      let attachment = this.newAttachment();
+      attachment.pID = sanitize.nonemptystring(a.AttachmentId.Id);
+      attachment.filename = sanitize.filename(a.Name, "attachment");
+      attachment.mimeType = sanitize.nonemptystring(a.ContentType, "application/octet-stream");
+      attachment.size = sanitize.integer(a.Size, null);
+      attachment.disposition = ContentDisposition.attachment;
+      return attachment;
+    }));
+  }
+
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    for (let attachment of this.attachments) {
+      if (attachment.content || !attachment.pID) {
+        continue;
+      }
+      let response = await this.calendar.account.callEWS({
+        m$GetAttachment: {
+          m$AttachmentIds: {
+            t$AttachmentId: {
+              Id: attachment.pID,
+            },
+          },
+        },
+      });
+      let content = sanitize.nonemptystring(response.Attachments.FileAttachment.Content);
+      attachment.content = new File([base64ToUint8Array(content)],
+        attachment.filename, { type: attachment.mimeType });
+      attachment.size = attachment.content.size;
+    }
+  }
+
+  /** Exchange cannot save attachments as part of the event,
+   * but needs separate calls, after the event exists on the server. */
+  protected async saveAttachmentsToServer(): Promise<void> {
+    let removed = this.removedAttachments;
+    if (removed.length) {
+      await this.calendar.account.callEWS({
+        m$DeleteAttachment: {
+          m$AttachmentIds: {
+            t$AttachmentId: removed.map(attachment => ({
+              Id: attachment.pID,
+            })),
+          },
+        },
+      });
+    }
+    for (let attachment of this.attachments) {
+      if (attachment.pID) {
+        continue; // already on the server
+      }
+      await attachment.load();
+      let response = await this.calendar.account.callEWS({
+        m$CreateAttachment: {
+          m$ParentItemId: {
+            Id: this.itemID,
+          },
+          m$Attachments: {
+            t$FileAttachment: {
+              t$Name: attachment.filename,
+              t$ContentType: attachment.mimeType,
+              t$Content: await attachment.contentAsBase64(),
+            },
+          },
+        },
+      });
+      attachment.pID = sanitize.nonemptystring(response.Attachments.FileAttachment.AttachmentId.Id);
+    }
   }
 
   protected newRecurrenceRuleFromXML(xmljs: any): RecurrenceRule {
@@ -130,13 +207,13 @@ export class EWSEvent extends ExchangeEvent {
     let seriesEndTime: Date | null = null;
     if (xmljs.EndDateRecurrence) {
       // These dates don't have a time, but they do have a time zone suffixed.
+      // Parse them as machine-local time, like the iCal path does,
+      // because `dateString()` writes them back using machine-local date fields.
       if (!seriesStartTime) {
-        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10));
+        this.startTime = seriesStartTime = sanitize.date(xmljs.EndDateRecurrence.StartDate.slice(0, 10) + "T00:00:00");
       }
-      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
-      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
+      seriesEndTime = sanitize.date(xmljs.EndDateRecurrence.EndDate.slice(0, 10) + "T23:59:59");
     }
     let count = sanitize.integer(xmljs.NumberedRecurrence?.NumberOfOccurrences, Infinity);
     let key = Object.keys(RecurrenceType).find(key => key in xmljs);
@@ -156,23 +233,42 @@ export class EWSEvent extends ExchangeEvent {
   async saveToServer() {
     await this.prepareSaveToServer();
 
+    /* Exchange saves the attachments separately from the event, and sends the
+     * invitations while saving the event. So, when creating a meeting that has
+     * attachments, create it without the attendees first, which sends no
+     * invitation, and add the attendees only after the attachments.
+     * Otherwise, the attendees would get 2 invitations,
+     * and the first one without the attachments. */
+    let isNew = !this.itemID;
+    let inviteAfterAttachments = isNew && !this.parentEvent &&
+      this.participants.hasItems && this.attachments.hasItems;
+
     /* Disabling tasks for now.
     if (this.startTime) {
     */
-      await this.saveCalendarItemToServer();
+      await this.saveCalendarItemToServer(inviteAfterAttachments);
     /* Disabling tasks for now.
     } else {
       await this.saveTask();
     }
     */
+    await this.saveAttachmentsToServer();
+    if (inviteAfterAttachments) {
+      await this.saveCalendarItemToServer();
+    }
+    if (isNew) {
+      await this.saveLocally(); // Save server IDs, otherwise we get dups
+    }
   }
 
-  async saveCalendarItemToServer() {
+  /** @param withoutAttendees Save the event as an appointment without
+   *   attendees, so that the server sends no invitations yet. @see saveToServer() */
+  async saveCalendarItemToServer(withoutAttendees = false) {
     let request: any = this.itemID ?
       new EWSUpdateItemRequest(this.itemID, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
       new EWSUpdateOccurrenceRequest(this, { SendMeetingInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
-      new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
+      new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.calendar.folderID } }, SendMeetingInvitations: withoutAttendees ? "SendToNone" : "SendToAllAndSaveCopy" });
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
@@ -191,8 +287,8 @@ export class EWSEvent extends ExchangeEvent {
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", this.location, "calendar:Location");
-    request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? {
+    request.addField("CalendarItem", "Location", this.getLocationForServer(), "calendar:Location");
+    request.addField("CalendarItem", "RequiredAttendees", !withoutAttendees && this.participants.hasItems ? {
       t$Attendee: this.participants.contents.map(entry => ({
         t$Mailbox: {
           t$EmailAddress: entry.emailAddress,
@@ -270,7 +366,10 @@ export class EWSEvent extends ExchangeEvent {
     if (rule.frequency != Frequency.Yearly) {
       pattern.t$Interval = rule.interval;
     }
-    if (/^Relative|^Weekly/.test(recurrenceType)) {
+    if (/^Relative/.test(recurrenceType)) {
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
+      pattern.t$DaysOfWeek = relativeWeekdayString(weekdays);
+    } else if (/^Weekly/.test(recurrenceType)) {
       let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
       pattern.t$DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
@@ -309,7 +408,10 @@ export class EWSEvent extends ExchangeEvent {
   async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
-      let request = new EWSDeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
+      let request = new EWSDeleteItemRequest(this.itemID, {
+        DeleteType: "HardDelete",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      });
       try {
         await this.calendar.account.callEWS(request);
       } catch (ex) {
@@ -329,7 +431,7 @@ export class EWSEvent extends ExchangeEvent {
               InstanceIndex: this.parentEvent.recurrenceRule.getIndexOfOccurrence(this.recurrenceStartTime) + 1,
             },
           },
-          DeleteType: "MoveToDeletedItems",
+          DeleteType: "HardDelete",
           SendMeetingCancellations: "SendToAllAndSaveCopy",
         },
       };
@@ -348,6 +450,8 @@ export class EWSEvent extends ExchangeEvent {
           t$AdditionalProperties: {
             t$FieldURI: [{
               FieldURI: "item:Body",
+            }, {
+              FieldURI: "item:Attachments",
             }, {
               FieldURI: "item:ReminderIsSet",
             }, {
@@ -403,7 +507,7 @@ export class EWSEvent extends ExchangeEvent {
             InstanceIndex: this.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
           },
         })),
-        DeleteType: "MoveToDeletedItems",
+        DeleteType: "HardDelete",
         SendMeetingCancellations: "SendToAllAndSaveCopy",
       },
     };
@@ -450,8 +554,24 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
   }
 }
 
+/** Sets of weekdays for the special `DaysOfWeek` values
+ * used by relative monthly/yearly patterns, e.g. "first weekday of the month" */
+export const kSpecialWeekdays: Record<string, Weekday[]> = {
+  Day: [0, 1, 2, 3, 4, 5, 6],
+  Weekday: [1, 2, 3, 4, 5],
+  WeekendDay: [0, 6],
+};
+
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").flatMap((day: keyof typeof Weekday) => kSpecialWeekdays[day] ?? sanitize.integer(Weekday[day])) : null;
+}
+
+/** The single `DaysOfWeek` value for a relative monthly/yearly pattern,
+ * which may be one of the special values */
+export function relativeWeekdayString(weekdays: Weekday[]): string {
+  return Object.keys(kSpecialWeekdays).find(day =>
+    kSpecialWeekdays[day].length == weekdays.length && kSpecialWeekdays[day].every(d => weekdays.includes(d)))
+    ?? weekdays.map(day => Weekday[day]).join(" ");
 }
 
 class EWSUpdateOccurrenceRequest {

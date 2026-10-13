@@ -15,28 +15,43 @@ export class EWSGAL extends SearchOnlyAddressbook {
   }
 
   newPerson(): EWSPerson {
-    return new EWSPerson();
+    return new EWSPerson(this);
   }
   newGroup(): never {
     throw new NotReached();
   }
 
+  /** Searches only the names: an `smtp:` search would find the secondary email
+   * addresses, too, but it costs a second server call for every keystroke. */
   async quickSearchAsync(searchTerm: string, results: ArrayColl<EWSPerson>) {
+    await this.resolveNames(searchTerm, results);
+  }
+
+  /** Searches the Global Address List (GAL) and adds the persons found to `results`.
+   * @param searchTerm Exchange matches the start of
+   *   first name, last name, display name, alias, office, and primary email address.
+   *   With an `smtp:` prefix, it matches the start of email addresses instead. */
+  protected async resolveNames(searchTerm: string, results: ArrayColl<EWSPerson>) {
     let query = {
       m$ResolveNames: {
-        m$UnresolvedEntry: 'smtp:' + searchTerm,
+        m$UnresolvedEntry: searchTerm,
         ReturnFullContactData: true,
       },
     };
     try {
       let response = await this.account.callEWS(query);
-      for (let resolution of ensureArray(response.ResolutionSet.Resolution)) {
+      for (let resolution of ensureArray(response.ResolutionSet?.Resolution)) {
         if (!resolution.Contact) {
           continue;
         }
         resolution.Contact.EmailAddresses = { Entry: convertEmailAddresses(ensureArray(resolution.Contact.EmailAddresses?.Entry), resolution.Mailbox) };
         let person = this.newPerson();
         person.fromXML(resolution.Contact);
+        // Dedup
+        if (results.find(existing => existing.name == person.name &&
+            existing.emailAddresses.first?.value == person.emailAddresses.first?.value)) {
+          continue;
+        }
         results.add(person);
       }
     } catch (ex) {

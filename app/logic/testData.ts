@@ -235,7 +235,7 @@ export class FakeMailAccount extends MailAccount {
 
   async send(email: EMail): Promise<void> {
     let sentFolder = this.findFolder(acc => acc.specialFolder == SpecialFolder.Sent)!;
-    sentFolder.addMessage(email);
+    await sentFolder.addMessage(email);
   }
 }
 

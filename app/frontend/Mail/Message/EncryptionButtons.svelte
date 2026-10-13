@@ -28,13 +28,13 @@
   export let isExpanded = false;
 
   let signingKey: PublicKey;
-  $: getPublicKeyByKeyID($message.signed, message)
+  $: getPublicKeyByKeyID($message.signedByKeyID, message)
     .then(key => signingKey = key)
     .catch(showError);
-  $: signed = $message.signed && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
+  $: signed = $message.signedByKeyID && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
   $: encrypted = $message.wasEncrypted;
   $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
-  $: keyName = $signingKey?.name ?? $message.signed?.substring(2, 6);
+  $: keyName = $signingKey?.name ?? $message.signedByKeyID?.substring(2, 6);
   $: msg = signed && encrypted
       ? $t`This message was end-to-end-encrypted to you, and signed by ${$message.from?.name ?? $t`somebody`} with ${signingKey?.system} key ${keyName}`
       : signed

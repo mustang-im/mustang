@@ -46,6 +46,10 @@ export function fixNewlines(text: string): string {
   return text?.replace(/\r?\n/g, "\r\n");
 }
 
+/** Remove dangerous HTML from untrusted content.
+ * Intended only as additional security (defense in depth),
+ * not as sole protection. Render it in a jailed sandboxed `<iframe>`.
+ * @returns HTML snipplet, not whole document */
 export function sanitizeHTML(html: string): string {
   if (!html) {
     return "";
@@ -53,12 +57,33 @@ export function sanitizeHTML(html: string): string {
   includeExternal = false;
   let sanitized = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    FORBID_TAGS: ["svg", "mathml"],
+    FORBID_TAGS: ["svg", "mathml", "form"],
     WHOLE_DOCUMENT: true,
   });
   return sanitized;
 }
 
+/** Similar to `sanitizeHTML()`,
+ * but additionally drops `<style>`, which would affect the rest of the document.
+ * The `style` attribute stays allowed, because it applies only to the element itself.
+ *
+ * E.g. to render HTML inline as `{@html san…(html)}` instead of in an `<iframe>`.
+ * Warning: Don't use this sanitizer as the only defense.
+ * Use this in combination with other defenses, e.g. for
+ * MarkDown->HTML without accepting HTML from the source MarkDown.
+ * @returns HTML snipplet, not whole document */
+export function sanitizeHTMLWithoutStyleTag(html: string): string {
+  if (!html) {
+    return "";
+  }
+  includeExternal = false;
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["svg", "mathml", "style", "form"],
+  });
+}
+
+/** Allow to load images from Internet */
 export function sanitizeHTMLExternal(html: string): string {
   if (!html) {
     return "";
@@ -66,7 +91,7 @@ export function sanitizeHTMLExternal(html: string): string {
   includeExternal = true;
   let sanitized = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    FORBID_TAGS: ["svg", "mathml"],
+    FORBID_TAGS: ["svg", "mathml", "form"],
     WHOLE_DOCUMENT: true,
   });
   includeExternal = false;
@@ -75,7 +100,7 @@ export function sanitizeHTMLExternal(html: string): string {
 
 // <copied from="https://github.com/cure53/DOMPurify/blob/main/demos/hooks-proxy-demo.html" modified="true" license="Apache 2.0">
 const proxy = 'http://localhost:5454/proxy?url=';
-const cssURLRegex = /(url\("?)(?!data:)/gim;
+const cssURLRegex = /url\((?!["']?data:)["']?/gim;
 const urlAttributes = ['action', 'background', 'href', 'poster', 'src', 'srcset'];
 
 function urlAttribute(url: URLString, includeExternal = false) {
@@ -90,22 +115,24 @@ function urlAttribute(url: URLString, includeExternal = false) {
 }
 
 function addStyles(output: string[], styles: CSSStyleDeclaration) {
-  for (let style of [...styles].reverse()) {
-    if (styles[style]) {
-      styles[style] = styles[style].replace(cssURLRegex, `$1${proxy}`);
-      output.push(`${style}: ${styles[style]};`);
-    }
+  if (styles) {
+    output.push(styleDeclarations(styles));
   }
 };
 
+/** The declarations of `styles` as CSS text, with external URLs redirected to our proxy.
+ * `cssText` keeps the declaration order and the `!important` flags. Mails need
+ * `!important` in their `@media` rules to override their inline styles. */
+function styleDeclarations(styles: CSSStyleDeclaration): string {
+  return styles.cssText.replace(cssURLRegex, `$&${proxy}`);
+};
+
 function addCSSRules(output: string[], cssRules = []) {
-  for (let rule of [...cssRules].reverse()) {
+  for (let rule of cssRules) {
     switch (rule.type) {
       case CSSRule.STYLE_RULE:
         output.push(`${rule.selectorText} {`);
-        if (rule.style) {
-          addStyles(output, rule.style);
-        }
+        addStyles(output, rule.style);
         output.push('}\n');
         break;
       case CSSRule.MEDIA_RULE:
@@ -115,19 +142,15 @@ function addCSSRules(output: string[], cssRules = []) {
         break;
       case CSSRule.FONT_FACE_RULE:
         output.push('@font-face {');
-        if (rule.style) {
-          addStyles(output, rule.style);
-        }
+        addStyles(output, rule.style);
         output.push('}\n');
         break;
       case CSSRule.KEYFRAMES_RULE:
         output.push(`@keyframes ${rule.name} {`);
-        for (let frame of [...rule.cssRules].reverse()) {
+        for (let frame of rule.cssRules) {
           if (frame.type === CSSRule.KEYFRAME_RULE && frame.keyText) {
             output.push(`${frame.keyText} {`);
-            if (frame.style) {
-              addStyles(output, frame.style);
-            }
+            addStyles(output, frame.style);
             output.push('}\n');
           }
         }
@@ -186,16 +209,12 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
   }
 
   if (node.hasAttribute('style')) {
-    const styles = (node as HTMLElement).style;
-    const output = [];
-    for (let style of [...styles].reverse()) {
-      if (styles[style] && cssURLRegex.test(styles[style])) {
-        styles[style] = styles[style].replace(cssURLRegex, `$1${proxy}`);
-      }
-      output.push(`${style}: ${styles[style]};`);
+    let styles = styleDeclarations((node as HTMLElement).style);
+    if (styles) {
+      node.setAttribute('style', styles);
+    } else {
+      node.removeAttribute('style');
     }
-
-    node.setAttribute('style', output.join('') || node.removeAttribute('style') || '');
   }
 });
 // </copied>

@@ -86,7 +86,7 @@
 
   async function onContinue() {
     try {
-      await config.login(true);
+      await config.loginAndStartup(true);
       await config.save();
       appGlobal.chatAccounts.add(config);
       showPage = null;
@@ -95,9 +95,9 @@
     }
   }
 
-  function cancel(event: Event) {
+  async function cancel(event: Event) {
     sas?.cancel();
-    verification.cancel();
+    await verification.cancel();
     onCancel(event);
   }
 </script>

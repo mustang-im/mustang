@@ -32,9 +32,15 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: true
   target:
-    target: default
-    arch:
-      - universal
+    - target: dmg
+      arch:
+        - universal
+    - target: zip
+      arch:
+        - universal
+    # Requires CSC_INSTALLER_LINK and CSC_INSTALLER_KEY_PASSWORD secrets on GitHub CI
+    # pkg is intentionally arm only
+    - target: pkg
   x64ArchFiles: '**/{bufferutil,utf-8-validate}.node'
 dmg:
   artifactName: ${name}-${version}.${ext}

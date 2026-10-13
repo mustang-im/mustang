@@ -11,6 +11,8 @@ export const selectedApp: Writable<MustangApp> = writable(null);
 export const sidebarApp: Writable<MustangApp> = writable(null);
 export const mustangApps = new ArrayColl<MustangApp>;
 
+export const showDemoToggle: Writable<boolean> = writable(true);
+
 /** Search bar in the window title, applies to all apps */
 export const globalSearchTerm: Writable<string> = writable(null);
 
@@ -23,8 +25,9 @@ export function openApp(app: MustangApp, params: PageParams) {
 }
 
 export function goTo(pageURL: string, params: PageParams) {
-  let replace = pageURL == window.location.hash;
-  console.log("Go to", pageURL, replace ? "replace" : "", "from", window.location.hash, "with params", params);
+  let location = window.location.hash.slice(1);
+  let replace = pageURL == location;
+  console.log("Go to", pageURL, replace ? "replace" : "", "from", location, "with params", params);
   history.navigate(pageURL, {
     replace,
     state: addParams(params),
@@ -66,10 +69,10 @@ export function bringAppToFront() {
  * So, store the object here, generate an ID for it, and then store the ID on the history stack. */
 const historyParams = new MapColl<number, any>();
 let lastID = 1;
-export type HistoryIDObj = { id: number };
+type HistoryIDObj = { id: number };
 
 /** @returns ID. Put this as `state` on the history stack. */
-export function addParams(params: PageParams): HistoryIDObj {
+function addParams(params: PageParams): HistoryIDObj {
   let id = lastID++;
   historyParams.set(id, params);
   return { id };
@@ -78,7 +81,7 @@ export function getParams(id: HistoryIDObj | AnyObject): PageParams {
   if (!id?.id) {
     return {};
   }
-  return historyParams.get(id.id);
+  return historyParams.get(id.id) ?? {};
 }
 /** TODO call this
  * a) when the user goes back in history and then forward, remove the orphaned entries, or

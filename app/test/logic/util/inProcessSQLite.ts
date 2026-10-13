@@ -28,13 +28,20 @@ export class InProcessSQLiteDatabase {
   }
 
   async migrate(...migrations: (Query | ((database: Database) => void | Promise<void>))[]): Promise<this> {
-    // Always starts on a fresh test database, so no versioning needed
-    for (let migration of migrations) {
-      if (typeof (migration) == "function") {
-        await migration(this as any as Database);
-      } else {
-        this.db.exec(this.source(migration));
+    // Like @radically-straightforward/sqlite, so that a migration sees the same
+    // database: its `ON DELETE CASCADE`s do not run.
+    this.pragma("foreign_keys = false");
+    try {
+      // Always starts on a fresh test database, so no versioning needed
+      for (let migration of migrations) {
+        if (typeof (migration) == "function") {
+          await migration(this as any as Database);
+        } else {
+          this.db.exec(this.source(migration));
+        }
       }
+    } finally {
+      this.pragma("foreign_keys = true");
     }
     return this;
   }

@@ -1,11 +1,12 @@
 <vbox class="avatar" style="width: {size}px; height: {size}px;">
-  {#if person?.picture}
+  {#if picture}
     <img
-      src={person.picture}
+      src={picture}
       width={size} height={size}
       title={$t`Picture of ${person.name}`}
       alt=""
-      on:error={event => event.currentTarget.classList.add("broken-image")}
+      class:broken-image={isBroken}
+      on:error={() => isBroken = true}
       />
   {:else if placeholder == "slot"}
     <slot name="placeholder" />
@@ -26,6 +27,10 @@
   export let person: PersonOrGroup | ChatPersonUID;
   export let size = 48;
   export let placeholder: "none" | "empty" | "icon" | "slot" = "none";
+
+  let isBroken = false;
+  $: picture = $person?.picture;
+  $: picture, isBroken = false;
 </script>
 
 <style>
@@ -39,7 +44,7 @@
     border: 1px solid var(--border);
     border-radius: 1000px;
   }
-  .avatar :global(.broken-image) {
+  .avatar .broken-image {
     visibility: hidden;
   }
 </style>

@@ -270,7 +270,7 @@ export class OAuth2 extends WebBasedAuth {
   }
 
   async getAuthURL(doneURL?: URLString): Promise<URLString> {
-    this.verificationToken = Math.random().toString().slice(2);
+    this.verificationToken = crypto.randomUUID();
     this.authDoneURL = doneURL ?? this.authDoneURL; // needed for getAccessTokenFromAuthCode()
     let params = new URLSearchParams({
       client_id: this.clientID,

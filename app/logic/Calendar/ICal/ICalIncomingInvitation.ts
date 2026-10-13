@@ -5,7 +5,7 @@ import type { Participant } from "../Participant";
 import type { MailAccount } from "../../Mail/MailAccount";
 import type { MailIdentity } from "../../Mail/MailIdentity";
 import { appGlobal } from "../../app";
-import { assert } from "../../util/util";
+import { UserError, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
 export class ICalIncomingInvitation extends IncomingInvitation {
@@ -15,20 +15,22 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     if (!event) {
       event = this.calendar.newEvent();
       event.copyFrom(this.event);
+      await event.adoptAttachmentsFrom(this.event);
       this.calendar.events.add(event);
     } else if (this.event?.lastUpdateTime >= event.lastUpdateTime) {
       event.copyFrom(this.event);
+      await event.adoptAttachmentsFrom(this.event);
     }
     let { myParticipant } = ICalIncomingInvitation.participantMe(this.event, this.message.folder.account);
     /* else add participant? */
     let hasChanged = event.myParticipation != response;
     event.myParticipation = this.myParticipation = myParticipant.response = response;
-    // Do *not* save, @see Event.respondToInvitation()
 
     let isFuture = event.startTime?.getTime() > Date.now() || event.recurrenceCase == RecurrenceCase.Master;
     if (hasChanged && isFuture) {
       await ICalIncomingInvitation.sendInvitationResponse(event, myParticipant, this.message.folder.account);
     }
+    await event.save(); // The other protocols let their server do this
   }
 
   static async respondToInvitationFromCalEvent(calEvent: Event, response: InvitationResponseInMessage, mailAccount?: MailAccount) {
@@ -62,8 +64,11 @@ export class ICalIncomingInvitation extends IncomingInvitation {
   /** Helper for @see Event.respondToInvitation() */
   protected static async sendInvitationResponse(repliedEvent: Event, myParticipant: Participant, account: MailAccount) {
     let organizer = repliedEvent.participants.find(participant => participant.response == InvitationResponse.Organizer);
-    assert(organizer, "Invitation should have an organizer");
+    if (!organizer) { // RFC 5546 3.2.2 demands one, but e.g. an auto-responder mangled it
+      throw new UserError(gt`This invitation does not say who invited you, so there is nobody to reply to`);
+    }
     let email = account.newEMailFrom();
+    email.identity = account.findIdentityForEMailAddress(myParticipant.emailAddress) ?? account.identities.first;
     email.from.emailAddress = myParticipant.emailAddress;
     email.from.name = myParticipant.name || email.from.name;
     email.to.add(organizer);
@@ -73,6 +78,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     email.event.copyFrom(repliedEvent);
     // Only myself in reply: RFC 5546 3.2.3
     email.event.participants.replaceAll([myParticipant]);
+    email.event.attachments.clear();
     if (email.event.descriptionText) {
       email.text = email.event.descriptionText;
       email.html = email.event.descriptionHTML;

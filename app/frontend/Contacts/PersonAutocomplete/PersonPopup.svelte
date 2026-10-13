@@ -16,6 +16,7 @@
         <input class="name font-normal" type="text"
           bind:value={personUID.name}
           bind:this={nameInputEl}
+          on:input={() => personUID.nameIsUnknown = false}
           on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder={$t`Enter a name for the person`} />
         <input class="email font-normal" type="email"
@@ -46,7 +47,7 @@
       </vbox>
     {/if}
   </hbox>
-  {#if $personUID.name == $personUID.emailAddress && nameInputEl == document.activeElement}
+  {#if $personUID.nameIsUnknown && nameInputEl == document.activeElement}
     <hbox class="helptext font-small">{$t`Add the name of the person, and press ENTER`}</hbox>
   {/if}
   {#if !disabled}
@@ -95,7 +96,7 @@
   import { createIsSame, onKeyEnter } from "../../Util/util";
   import { backgroundError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   const dispatch = createEventDispatcher<{ close: void }>();
 
   export let personUID: PersonUID;
@@ -127,10 +128,16 @@
     isEditing = (!person.addressbook || person.addressbook == appGlobal.collectedAddressbook) && !disabled;
   }
 
+  /** The user closes the popup in many ways, not only with ENTER. */
+  onDestroy(() => {
+    if (isEditing) {
+      onSave()
+        .catch(backgroundError);
+    }
+  });
   function onClose() {
-    onSave()
-      .catch(backgroundError);
     dispatch("close");
+    // continue in onDestroy()
   }
   async function onSave() {
     person ??= personUID.createPerson(appGlobal.personalAddressbook);

@@ -28,6 +28,9 @@ export function owaGetEventsRequest(eventIDs: string[]): OWARequest {
         FieldURI: "item:Body",
       }, {
         __type: "PropertyUri:#Exchange",
+        FieldURI: "item:Attachments",
+      }, {
+        __type: "PropertyUri:#Exchange",
         FieldURI: "item:ReminderIsSet",
       }, {
         __type: "PropertyUri:#Exchange",
@@ -202,7 +205,7 @@ export function owaCreateMultipleExclusionsRequest(exclusions: OWAEvent[], paren
       RecurringMasterId: parentEvent.itemID,
       InstanceIndex: parentEvent.recurrenceRule.getIndexOfOccurrence(event.recurrenceStartTime) + 1,
     })),
-    DeleteType: "MoveToDeletedItems",
+    DeleteType: "HardDelete",
     SendMeetingCancellations: "SendToAllAndSaveCopy",
   });
 }

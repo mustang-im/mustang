@@ -32,6 +32,7 @@
   import Loader from './Loader.svelte';
   import CloseIcon from "lucide-svelte/icons/x";
   import { getBaseDomainFromHost } from '../../logic/util/netUtil';
+  import { logError } from '../Util/error';
   import type { URLString } from '../../logic/util/util';
   import { t } from '../../l10n/l10n';
   const dispatch = createEventDispatcher();
@@ -74,7 +75,8 @@
     webviewE.addEventListener("did-stop-loading", () => {
       isLoading = false;
       if (autofill) {
-        webviewE.executeJavaScript(autofill);
+        webviewE.executeJavaScript(autofill)
+          .catch(logError); // Some login pages refuse our script. TODO log getDomain()?
       }
     });
   }

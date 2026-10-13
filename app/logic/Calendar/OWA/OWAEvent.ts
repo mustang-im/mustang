@@ -1,4 +1,6 @@
-import { Event, RecurrenceCase } from "../Event";
+import { ExchangeEvent } from "../EWS/ExchangeEvent";
+import { kSpecialWeekdays, relativeWeekdayString } from "../EWS/EWSEvent";
+import { RecurrenceCase } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { Frequency, Weekday, RecurrenceRule } from "../RecurrenceRule";
@@ -12,11 +14,15 @@ import { OWAUpdateOffice365OccurrenceRequest } from "./Request/OWAUpdateOffice36
 import { OWACreateItemRequest } from "../../Mail/OWA/Request/OWACreateItemRequest";
 import { OWADeleteItemRequest } from "../../Mail/OWA/Request/OWADeleteItemRequest";
 import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
+import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest, owaGetAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEventUIDsRequest, owaOnlineMeetingDescriptionRequest, owaOnlineMeetingURLRequest, owaGetCalendarEventsRequest, owaGetEventsRequest, owaGetOccurrenceIdRequest } from "./Request/OWAEventRequests";
+import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
+import { ContentDisposition } from "../../Abstract/Attachment";
+import { Provider } from "../../Auth/OAuth2URLs";
 import { k1MinuteMS } from "../../../frontend/Util/date";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 
 const ResponseTypes: Record<InvitationResponseInMessage, string> = {
   [InvitationResponse.Accept]: "AcceptItem",
@@ -32,7 +38,7 @@ enum WeekOfMonth {
   'Last' = 5,
 };
 
-export class OWAEvent extends Event {
+export class OWAEvent extends ExchangeEvent {
   declare calendar: OWACalendar;
   declare parentEvent: OWAEvent;
   declare readonly exceptions: ArrayColl<OWAEvent>;
@@ -76,13 +82,14 @@ export class OWAEvent extends Event {
     if (json.DueDate) {
       this.endTime = sanitize.date(json.DueDate);
     }
-    this.timezone = fromWindowsZone(sanitize.string(json.StartTimeZoneId));
+    this.timezone = fromWindowsZone(sanitize.nonemptystring(json.StartTimeZoneId, null));
     this.allDay = sanitize.boolean(json.IsAllDayEvent, false);
+    this.setAllDayTimeToLocalMidnight();
     if (json.Recurrence) {
       this.recurrenceRule = this.newRecurrenceRuleFromJSON(json.Recurrence);
       if (json.DeletedOccurrences) {
         for (let deletion of json.DeletedOccurrences) {
-          this.makeExclusionLocally(sanitize.date(deletion.Start));
+          this.makeExclusionLocally(this.toLocalMidnight(sanitize.date(deletion.Start)));
         }
       }
     } else {
@@ -93,14 +100,14 @@ export class OWAEvent extends Event {
     } else {
       this.alarm = null;
     }
-    this.location = sanitize.nonemptystring(json.Location?.DisplayName, "");
     this.onlineMeetingURL = sanitize.url(json.OnlineMeetingJoinUrl, null);
     this.isOnline = sanitize.boolean(json.IsOnlineMeeting, false);
+    this.setLocationFromServer(sanitize.nonemptystring(json.Location?.DisplayName, ""));
     this.isCancelled = sanitize.boolean(json.IsCancelled, false);
     let organizer: string | undefined;
     let participants: Participant[] = [];
     if (json.Organizer && (json.RequiredAttendees || json.OptionalAttendees)) {
-      organizer = sanitize.emailAddress(json.Organizer.Mailbox.EmailAddress);
+      organizer = getEmailAddressOrX400(json.Organizer.Mailbox.EmailAddress);
       json.Organizer.ResponseType = "Organizer";
       addParticipants([json.Organizer], participants);
     }
@@ -117,6 +124,58 @@ export class OWAEvent extends Event {
     if (json.LastModifiedTime) {
       this.lastMod = sanitize.date(json.LastModifiedTime);
     }
+    this.attachmentsFromJSON(json);
+  }
+
+  /** Only the meta-data. The contents are fetched later,
+   * @see downloadAttachmentsFromServer() */
+  protected attachmentsFromJSON(json: any) {
+    this.attachments.replaceAll(ensureArray(json.Attachments).map(a => {
+      let attachment = this.newAttachment();
+      attachment.pID = sanitize.nonemptystring(a.AttachmentId.Id);
+      attachment.filename = sanitize.filename(a.Name, "attachment");
+      attachment.mimeType = sanitize.nonemptystring(a.ContentType, "application/octet-stream");
+      attachment.size = sanitize.integer(a.Size, null);
+      attachment.disposition = ContentDisposition.attachment;
+      return attachment;
+    }));
+  }
+
+  protected async downloadAttachmentsFromServer(): Promise<void> {
+    for (let attachment of this.attachments) {
+      if (attachment.content || !attachment.pID) {
+        continue;
+      }
+      let response = await this.calendar.callOWA(owaGetAttachmentsRequest([attachment.pID]));
+      let content = sanitize.nonemptystring(response.Attachments[0].Content);
+      attachment.content = new File([base64ToUint8Array(content)],
+        attachment.filename, { type: attachment.mimeType });
+      attachment.size = attachment.content.size;
+    }
+  }
+
+  /** Exchange cannot save attachments as part of the event,
+   * but needs separate calls, after the event exists on the server. */
+  protected async saveAttachmentsToServer(): Promise<void> {
+    let removed = this.removedAttachments;
+    if (removed.length) {
+      await this.calendar.callOWA(owaDeleteAttachmentsRequest(removed.map(attachment => attachment.pID)));
+    }
+    for (let attachment of this.attachments) {
+      if (attachment.pID) {
+        continue; // already on the server
+      }
+      await attachment.load();
+      let request = owaCreateAttachmentRequest(this.itemID, attachment);
+      let response;
+      if (this.calendar.account.authorizationHeader) {
+        response = await this.calendar.callOWAWithOffice365Attachment(request, attachment);
+      } else {
+        request.Body.Attachments[0].Content = await attachment.contentAsBase64();
+        response = await this.calendar.callOWA(request);
+      }
+      attachment.pID = sanitize.nonemptystring(response.Attachments[0].AttachmentId.Id);
+    }
   }
 
   protected newRecurrenceRuleFromJSON(json: any): RecurrenceRule {
@@ -126,13 +185,13 @@ export class OWAEvent extends Event {
     let seriesEndTime: Date | null = null;
     if (json.RecurrenceRange.EndDate) {
       // These dates don't have a time, but they do have a time zone suffixed.
+      // Parse them as machine-local time, like the iCal path does,
+      // because `dateString()` writes them back using machine-local date fields.
       if (!seriesStartTime) {
-        this.startTime = seriesStartTime = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10));
+        this.startTime = seriesStartTime = sanitize.date(json.RecurrenceRange.StartDate.slice(0, 10) + "T00:00:00");
       }
-      seriesEndTime = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10));
       // RecurrenceRule wants this to be at least the same time as the endTime
-      seriesEndTime.setDate(seriesEndTime.getDate() + 1);
-      seriesEndTime.setTime(seriesEndTime.getTime() - 1000);
+      seriesEndTime = sanitize.date(json.RecurrenceRange.EndDate.slice(0, 10) + "T23:59:59");
     }
     let count = sanitize.integer(json.RecurrenceRange.NumberOfOccurrences, Infinity);
     let pattern = json.RecurrencePattern;
@@ -151,23 +210,40 @@ export class OWAEvent extends Event {
   async saveToServer() {
     await this.prepareSaveToServer();
 
+    /* Exchange saves the attachments separately from the event, and sends the
+     * invitations while saving the event. So, when creating a meeting that has
+     * attachments, create it without the attendees first, which sends no
+     * invitation, and add the attendees only after the attachments.
+     * Otherwise, the attendees would get 2 invitations,
+     * and the first one without the attachments. */
+    let isNew = !this.itemID;
+    let inviteAfterAttachments = isNew && !this.parentEvent &&
+      this.participants.hasItems && this.attachments.hasItems;
+
     /* Disabling tasks for now.
     if (this.startTime) {
     */
-      await this.saveCalendarItem();
+      await this.saveCalendarItem(inviteAfterAttachments);
     /* Disabling tasks for now.
     } else {
       await this.saveTask();
     }
     */
+    await this.saveAttachmentsToServer();
+    if (inviteAfterAttachments) {
+      await this.saveCalendarItem();
+    }
+    if (isNew) {
+      await this.saveLocally(); // Save server IDs, otherwise we get dups
+    }
   }
 
-  protected getExchangeSaveRequest() {
+  protected getExchangeSaveRequest(withoutAttendees: boolean) {
     return this.itemID ?
       new OWAUpdateItemRequest(this.itemID, { SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
       this.parentEvent ?
       new OWAUpdateOccurrenceRequest(this, { SendCalendarInvitationsOrCancellations: "SendToAllAndSaveCopy" }) :
-      new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } }, SendMeetingInvitations: "SendToAllAndSaveCopy" });
+      new OWACreateItemRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } }, SendMeetingInvitations: withoutAttendees ? "SendToNone" : "SendToAllAndSaveCopy" });
   }
 
   protected getOffice365SaveRequest() {
@@ -179,8 +255,11 @@ export class OWAEvent extends Event {
       new OWACreateOffice365EventRequest({ SavedItemFolderId: { __type: "TargetFolderId:#Exchange", BaseFolderId: { __type: "FolderId:#Exchange", Id: this.calendar.folderID } } });
   }
 
-  async saveCalendarItem() {
-    let request = this.calendar.account.isOffice365() ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest();
+  /** @param withoutAttendees Save the event as an appointment without
+   *   attendees, so that the server sends no invitations yet. @see saveToServer() */
+  async saveCalendarItem(withoutAttendees = false) {
+    let isOffice365 = this.calendar.account.provider() == Provider.Office365;
+    let request = isOffice365 ? this.getOffice365SaveRequest() : this.getExchangeSaveRequest(withoutAttendees);
     if (this.isIncomingMeeting) {
       request.addField("CalendarItem", "ReminderIsSet", this.alarm != null, "item:ReminderIsSet");
       request.addField("CalendarItem", "ReminderMinutesBeforeStart", this.alarmMinutesBeforeStart(), "item:ReminderMinutesBeforeStart");
@@ -202,8 +281,8 @@ export class OWAEvent extends Event {
     request.addField("CalendarItem", "Start", this.dateString(this.startTime), "calendar:Start");
     request.addField("CalendarItem", "End", this.dateString(this.endTime), "calendar:End");
     request.addField("CalendarItem", "IsAllDayEvent", this.allDay, "calendar:IsAllDayEvent");
-    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.location || "", PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
-    request.addField("CalendarItem", "RequiredAttendees", this.participants.hasItems ? this.participants.contents.map(entry => ({
+    request.addField("CalendarItem", "Location", { __type: "EnhancedLocation:#Exchange", DisplayName: this.getLocationForServer(), PostalAddress: { __type: "PersonaPostalAddress:#Exchange", Type: "Business", LocationSource: "None", } }, "EnhancedLocation");
+    request.addField("CalendarItem", "RequiredAttendees", !withoutAttendees && this.participants.hasItems ? this.participants.contents.map(entry => ({
       __type: "AttendeeType:#Exchange",
       Mailbox: {
         EmailAddress: entry.emailAddress,
@@ -214,7 +293,7 @@ export class OWAEvent extends Event {
     // all attendees get converted to be required for now.
     request.addField("CalendarItem", "OptionalAttendees", null, "calendar:OptionalAttendees");
     let timezone = IANAToWindowsTimezone[this.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone] || "UTC";
-    if (this.calendar.account.isOffice365()) {
+    if (isOffice365) {
       request.addField("CalendarItem", "StartTimeZoneId", timezone, "calendar:StartTimeZoneId");
       request.addField("CalendarItem", "EndTimeZoneId", timezone, "calendar:EndTimeZoneId");
       (request.Header as any).TimeZoneContext = {
@@ -228,7 +307,7 @@ export class OWAEvent extends Event {
       request.addField("CalendarItem", "StartTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:StartTimeZone");
       request.addField("CalendarItem", "EndTimeZone", { __type: "TimeZoneDefinitionType:#Exchange", Id: timezone }, "calendar:EndTimeZone");
     }
-    if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
+    if (isOffice365 && this.isOnline && !this.onlineMeetingURL) {
       request.addField("CalendarItem", "IsOnlineMeeting", true, "IsOnlineMeeting");
       request.addField("CalendarItem", "OnlineMeetingProvider", "TeamsForBusiness", "OnlineMeetingProvider");
     }
@@ -237,7 +316,7 @@ export class OWAEvent extends Event {
 
     // The server will set the online meeting URL and append the description.
     // Get the new values back from the server.
-    if (this.calendar.account.isOffice365() && this.isOnline && !this.onlineMeetingURL) {
+    if (isOffice365 && this.isOnline && !this.onlineMeetingURL) {
       // Sadly we can't get all of the changes in one API call
       await this.getOnlineMeetingDescription();
       await this.getOnlineMeetingURL();
@@ -317,7 +396,10 @@ export class OWAEvent extends Event {
     if (rule.frequency != Frequency.Yearly) {
       recurrence.RecurrencePattern.Interval = rule.interval;
     }
-    if (/^Relative|^Weekly/.test(recurrenceType)) {
+    if (/^Relative/.test(recurrenceType)) {
+      let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
+      recurrence.RecurrencePattern.DaysOfWeek = relativeWeekdayString(weekdays);
+    } else if (/^Weekly/.test(recurrenceType)) {
       let weekdays = rule.weekdays || [rule.seriesStartTime.getUTCDay()];
       recurrence.RecurrencePattern.DaysOfWeek = weekdays.map(day => Weekday[day]).join(" ");
     }
@@ -347,7 +429,10 @@ export class OWAEvent extends Event {
   async deleteFromServer() {
     if (this.itemID) {
       // This works both for recurring masters and exceptions.
-      let request = new OWADeleteItemRequest(this.itemID, {SendMeetingCancellations: "SendToAllAndSaveCopy"});
+      let request = new OWADeleteItemRequest(this.itemID, {
+        DeleteType: "HardDelete",
+        SendMeetingCancellations: "SendToAllAndSaveCopy",
+      });
       try {
         await this.calendar.callOWA(request);
       } catch (ex) {
@@ -399,7 +484,7 @@ export class OWAEvent extends Event {
     });
     await this.calendar.callOWA(request);
     try {
-      await this.calendar.getEvents([itemID], new ArrayColl<OWAEvent>(), this.parentEvent);
+      await this.calendar.getEventFromServerByID(itemID, this.parentEvent);
     } catch (ex) {
       if (ex.type == "ErrorItemNotFound") { // expected
         await this.deleteLocally(); // OWA deleted the event from the server
@@ -421,7 +506,7 @@ function addParticipants(attendees: { Mailbox: { EmailAddress: string, Name: str
 }
 
 function extractWeekdays(daysOfWeek: string): Weekday[] | null {
-  return daysOfWeek ? daysOfWeek.split(" ").map((day: keyof typeof Weekday) => sanitize.integer(Weekday[day])) : null;
+  return daysOfWeek ? daysOfWeek.split(" ").flatMap((day: keyof typeof Weekday) => kSpecialWeekdays[day] ?? sanitize.integer(Weekday[day])) : null;
 }
 
 function fromWindowsZone(zone: string | null): string | null {

@@ -3,7 +3,7 @@
   class="button {classes}"
   class:filled class:border
   class:selected
-  disabled={!!disabled} class:disabled
+  disabled={isDisabled} class:disabled={isDisabled}
   {tabindex}
   style="--padding: {padding}"
   >
@@ -57,14 +57,15 @@
   export let loadDelayMS = 500; // ms before showing the spinner
 
   let loading = false;
+  let running = false;
+  $: isDisabled = !!disabled || running;
   async function myOnClick(event: Event) {
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
     event.stopPropagation();
     event.preventDefault();
-    let previousDisabled = disabled;
-    disabled = true;
+    running = true;
     let loadTimeout = setTimeout(() => {
       loading = true;
     }, loadDelayMS);
@@ -75,8 +76,8 @@
     } finally {
       clearTimeout(loadTimeout);
       loading = false;
+      running = false;
     }
-    disabled = previousDisabled;
   }
 </script>
 

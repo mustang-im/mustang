@@ -2,12 +2,13 @@ import { Addressbook } from "../Addressbook";
 import { CardDAVPerson } from "./CardDAVPerson";
 import { CardDAVGroup } from "./CardDAVGroup";
 import { AuthMethod, type Account } from "../../Abstract/Account";
+import { OAuth2 } from "../../Auth/OAuth2";
 import { newAddressbookForProtocol } from "../AccountsList/Addressbooks";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
 import { RunOnce } from "../../util/flow/RunOnce";
-import { NotReached, assert, type URLString } from "../../util/util";
+import { NotReached, UserError, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
 import type { DAVClient, DAVAddressBook, DAVObject } from "tsdav";
@@ -21,6 +22,8 @@ export class CardDAVAddressbook extends Addressbook {
   addressbookURL: URLString;
   ctag: string | null = null;
   client: DAVClient;
+  /** The OAuth2 access token that `client` authenticates with */
+  protected clientAccessToken: string | null = null;
   protected readonly syncLock = new Lock();
   protected readonly loginRunOnce = new RunOnce();
 
@@ -48,34 +51,43 @@ export class CardDAVAddressbook extends Addressbook {
     await this.loginRunOnce.runOnce(async () => {
       let useOAuth2 = this.authMethod == AuthMethod.OAuth2;
       let usePassword = this.authMethod == AuthMethod.Password;
+      let oAuth2 = this.oAuth2 ?? this.mainAccount?.oAuth2;
       if (useOAuth2) {
         if (this.isDependentAccount) {
           await this.mainAccount.login(interactive);
         } else {
-          assert(this.oAuth2, gt`Need OAuth2 configuration`);
-          if (!this.oAuth2.isLoggedIn) {
-            await this.oAuth2.login(interactive);
+          assert(oAuth2, gt`Need OAuth2 configuration`);
+          if (!oAuth2.isLoggedIn) {
+            await oAuth2.login(interactive);
           }
         }
       }
       assert(usePassword || useOAuth2, gt`Unknown authentication method`);
+      if (this.client && (!useOAuth2 || this.clientAccessToken == oAuth2.accessToken)) {
+        return; // already logged in. The client caches the auth headers, so re-create it once the access token changed.
+      }
+      if (!URL.canParse(this.url)) {
+        throw new UserError(gt`Please enter the server URL, e.g. https://dav.example.com/`);
+      }
       let options = {
         serverUrl: this.url,
-        authType: useOAuth2 ? "Oauth" : "Basic",
+        authMethod: useOAuth2 ? "Bearer" : "Basic",
         credentials: useOAuth2 ? {
-          access_token: this.oAuth2.accessToken,
+          accessToken: oAuth2.accessToken,
         } : {
           username: this.username,
           password: usePassword ? this.password : undefined,
         },
         defaultAccountType: "carddav",
       };
+      this.clientAccessToken = useOAuth2 ? oAuth2.accessToken : null;
       this.client = await appGlobal.remoteApp.createTSDAVClient(options);
       await this.client.login();
     });
   }
 
   async listAddressbooks(): Promise<Collection<DAVAddressBook>> {
+    await this.login(false);
     let lock = await this.syncLock.lock();
     try {
       return new ArrayColl(await this.client.fetchAddressBooks());
@@ -116,9 +128,7 @@ export class CardDAVAddressbook extends Addressbook {
   protected async sync() {
     let lock = await this.syncLock.lock();
     try {
-      if (!this.client) {
-        await this.login(false);
-      }
+      await this.login(false);
       let localObjects = this.persons.contents.map(e => ({
         url: e.url,
         etag: e.etag,
@@ -141,18 +151,26 @@ export class CardDAVAddressbook extends Addressbook {
         await this.addPerson(vCardEntry);
       }
       for (let vCardEntry of updated) {
-        let existing = this.getPersonByURL(vCardEntry.url);
-        if (existing) {
-          existing.fromDAVObject(vCardEntry);
-          await existing.saveLocally();
-        } else {
-          await this.addPerson(vCardEntry);
+        try {
+          let existing = this.getPersonByURL(vCardEntry.url);
+          if (existing) {
+            existing.fromDAVObject(vCardEntry);
+            await existing.saveLocally();
+          } else {
+            await this.addPerson(vCardEntry);
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
       for (let vCardEntry of deleted) {
-        let existing = this.getPersonByURL(vCardEntry.url);
-        if (existing) {
-          await existing.deleteIt();
+        try {
+          let existing = this.getPersonByURL(vCardEntry.url);
+          if (existing) {
+            await existing.deleteLocally();
+          }
+        } catch (ex) {
+          this.errorCallback(ex);
         }
       }
 
@@ -170,7 +188,7 @@ export class CardDAVAddressbook extends Addressbook {
       this.persons.add(person);
       await person.saveLocally();
     } catch (ex) {
-      console.warn(ex);
+      this.errorCallback(ex);
     }
   }
 
@@ -202,7 +220,6 @@ export class CardDAVAddressbook extends Addressbook {
     let newAccounts = new ArrayColl<CardDAVAddressbook>();
     let i = 0;
     for (let newAB of newAddressbooks) {
-      i++;
       let account = newAddressbookForProtocol(this.protocol) as CardDAVAddressbook; // also sets up storage etc.
       account.initFromMainAccount(this);
       account.addressbookURL = sanitize.url(newAB.url);
@@ -222,11 +239,16 @@ export class CardDAVAddressbook extends Addressbook {
     super.fromConfigJSON(json);
     this.addressbookURL = sanitize.url(json.addressbookURL);
     this.ctag = sanitize.string(json.ctag, null);
+    if (json.oAuth2) {
+      this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
+      this.oAuth2.subscribe(() => this.notifyObservers());
+    }
   }
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.addressbookURL = this.addressbookURL;
     json.ctag = this.ctag;
+    json.oAuth2 = this.oAuth2?.toConfigJSON();
     return json;
   }
 }

@@ -23,7 +23,8 @@ const PASSWORD = "testpass";
 
 let server: any;
 let port: number;
-let storageDir: string;
+let storageDir: string;      // what the server serves
+let localDir: string;        // where the app caches downloaded files
 let account: any;            // WebDAVAccount
 let ArrayColl: any;
 let WebDAVDirectoryCls: any;
@@ -52,6 +53,7 @@ async function startServer(): Promise<void> {
 async function stopServer(): Promise<void> {
   await new Promise<void>(resolve => server.stop(() => resolve()));
   await fs.rm(storageDir, { recursive: true, force: true });
+  await fs.rm(localDir, { recursive: true, force: true });
 }
 
 /** Independent verification client — talks to the WebDAV server directly, not
@@ -67,10 +69,23 @@ beforeAll(async () => {
   ArrayColl = (await import("svelte-collections")).ArrayColl;
   WebDAVDirectoryCls = WebDAVDirectory;
 
+  localDir = await fs.mkdtemp(path.join(os.tmpdir(), "mustang-webdav-local-"));
   app.appGlobal.remoteApp = {
     createWebDAVClient(serverURL: string, options: any) {
       return webdavClient.createClient(serverURL, options);
     },
+    getFilesDir: () => localDir,
+    // <copied from="desktop/backend/backend.ts">
+    async writeFile(filepath: string, permissions: number, contents: Uint8Array): Promise<void> {
+      await fs.rm(filepath, { force: true });
+      let fileHandle = await fs.open(filepath, "w", permissions);
+      await fileHandle.write(contents);
+      await fileHandle.close();
+    },
+    readFile: (filepath: string) => fs.readFile(filepath),
+    deleteFile: (filepath: string) => fs.unlink(filepath),
+    fs,
+    // </copied>
   };
   await startServer();
   verify = webdavClient.createClient(`http://127.0.0.1:${port}/`, {
@@ -134,7 +149,7 @@ test("downloaded file bytes match what was uploaded", async () => {
 
 test("created subdirectory appears on the server", async () => {
   let root = account.rootDirs.first;
-  await root.createSubdirectory("subdir");
+  await root.createSubDirectory("subdir");
 
   let serverListing = await verify.getDirectoryContents("/") as webdavClient.FileStat[];
   let subStat = serverListing.find(s => s.basename == "subdir");

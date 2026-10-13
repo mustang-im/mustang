@@ -61,6 +61,7 @@
   import Button from "../../../Shared/Button.svelte";
   import QRCode from "../../../Shared/QRCode.svelte";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../../Util/error";
   import { t } from "../../../../l10n/l10n";
   import { onMount, onDestroy } from "svelte";
 
@@ -86,9 +87,7 @@
     historyStatus == "importing" ? $t`Importing your chats…` :
     $t`Transferring your chats…`;
 
-  onMount(() => {
-    startLinking();
-  });
+  onMount(() => catchErrors(startLinking));
 
   onDestroy(() => {
     closing = true;
@@ -109,6 +108,7 @@
         appGlobal.chatAccounts.add(config);
       }
       await config.save();
+      await config.syncOnStartup(); // `linkDevice()` logged us in already
       showPage = null; // finish the wizard
     } catch (ex) {
       if (!closing) {

@@ -20,7 +20,7 @@
   import { t } from "../../l10n/l10n";
   import { appGlobal } from "../../logic/app";
 
-  export let dateInterval: DateInterval = 7; /* in/out */
+  export let dateInterval: DateInterval; /* in/out */
 
   async function sync() {
     await Promise.all(appGlobal.calendars.contents.map(cal =>

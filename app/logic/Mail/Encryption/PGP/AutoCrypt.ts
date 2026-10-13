@@ -30,7 +30,7 @@ export async function readAutoCryptKeys(mail: EMail): Promise<PGPPublicKey> {
   let params = header ? parseHeaderParameters(header) : null;
   if (!header ||
       !params?.keydata ||
-      params.addr != mail.from?.emailAddress) {
+      sanitize.emailAddress(params.addr, null) != mail.from?.emailAddress) {
     return null;
   }
   let preferEncrypted = params["prefer-encrypt"] == "mutual";

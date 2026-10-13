@@ -6,7 +6,7 @@
       <RoundButton
         label={$t`Import or Create new…`}
         icon={PlusIcon}
-        onClick={() => showCreate = true}
+        onClick={() => showCreateOverride = true}
         border={false}
         classes="plain"
         />
@@ -15,7 +15,7 @@
   <hbox class="subtitle font-small">{$t`Private keys allow you to send encrypted emails, and to sign your own emails.`}</hbox>
   <vbox class="keys">
     {#if showCreate || showCreateOverride}
-      <EncryptionImport {identity} bind:isOpen={showCreateOverride} />
+      <EncryptionImport {identity} bind:isOpen={showCreateOverride} bind:showObsolete />
     {/if}
     {#each $keys.filterObservable(key => !key.obsolete).sortBy(key => key.sortOrder).each as key}
       <EncryptionKey {key} {identity} />
@@ -68,8 +68,6 @@
   $: keys = identity.encryptionPrivateKeys;
   $: showCreate = $keys.isEmpty;
   let showObsolete = false;
-
-  $: console.log("override", showCreateOverride, "empty", showCreate, "show", showCreateOverride || showCreate);
 </script>
 
 <style>

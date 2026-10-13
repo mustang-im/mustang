@@ -26,7 +26,11 @@ export class SMTPAccount extends MailAccount {
   }
 
   // Should not be called, but do nothing, just in case.
-  async startup() {
+  async syncOnStartup() {
+  }
+
+  // We have no folders
+  async readFromDB(): Promise<void> {
   }
 
   protected getTransportOptions() {
@@ -53,7 +57,7 @@ export class SMTPAccount extends MailAccount {
       requireTLS: this.tls == TLSSocketType.STARTTLS,
       ignoreTLS: this.tls == TLSSocketType.Plain,
       tls: {
-        //minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
+        minVersion: this.acceptOldTLS ? 'TLSv1' : undefined,
         rejectUnauthorized: !this.acceptBrokenTLSCerts,
       },
       auth: noAuth ? undefined : {

@@ -8,6 +8,7 @@ import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/P
 import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPPerson } from "./TJMAPMail";
 import type { TJMAPGetResponse } from "./TJMAPGeneric";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -36,11 +37,11 @@ export class JMAPEMail extends EMail {
     if (this.downloadComplete) {
       return;
     }
-    this.id = sanitize.nonemptystring(json.messageId, this.jmapID);
+    this.id = sanitize.nonemptystring(json.messageId?.[0], this.jmapID);
     this.subject = sanitize.string(json.subject, null);
     this.received = sanitize.date(json.receivedAt, this.received ?? new Date());
     this.sent = sanitize.date(json.sentAt, this.received);
-    this.inReplyTo = sanitize.string(json.inReplyTo, null);
+    this.inReplyTo = sanitize.string(json.inReplyTo?.[0], null);
     this.threadID = sanitize.string(json.threadId, null);
     this.from = getPersonUID(json.from?.[0] ?? {} as TJMAPPerson);
     setPersons(this.to, json.to);
@@ -59,12 +60,15 @@ export class JMAPEMail extends EMail {
       return;
     }
     // <https://www.rfc-editor.org/rfc/rfc8621.html#section-4.1.1>
-    // isNewArrived not supported
     this.isRead = sanitize.boolean(flags["$seen"], true);
     this.isStarred = sanitize.boolean(flags["$flagged"], false);
     this.isReplied = sanitize.boolean(flags["$answered"], false);
+    this.isForwarded = sanitize.boolean(flags["$forwarded"], false);
+    // Not `=`: The sender's `Importance:` header is not on the server
+    this.isImportant ||= sanitize.boolean(flags["$important"], false); // RFC 8457
     this.isDraft = sanitize.boolean(flags["$draft"], false);
     this.isSpam = sanitize.boolean(flags["$junk"], false);
+    // `isNewArrived` @see JMAPFolder.fetchChangedMessagesForAllFolders()
 
     for (let customTag in flags) {
       if (!customTag ||
@@ -81,6 +85,8 @@ export class JMAPEMail extends EMail {
     flags["$seen"] = email.isRead ? true : undefined;
     flags["$flagged"] = email.isStarred ? true : undefined;
     flags["$answered"] = email.isReplied ? true : undefined;
+    flags["$forwarded"] = email.isForwarded ? true : undefined;
+    flags["$important"] = email.isImportant ? true : undefined;
     flags["$draft"] = email.isDraft ? true : undefined;
     flags["$junk"] = email.isSpam ? true : undefined;
     for (let tag of email.tags) {
@@ -168,13 +174,13 @@ export class JMAPEMail extends EMail {
         .replace("{blobId}", this.mimeBlobId)
         .replace("{name}", "email")
         .replace("{type}", "message/rfc822");
-      let response = await account.httpGet(url, {
+      let response = await retryOnTransientError(() => account.httpGet(url, {
         headers: {
           "Accept": "message/rfc822",
           "Content-Type": undefined, // override
         },
         result: "blob",
-      });
+      }));
       this.mime = new Uint8Array(await response.arrayBuffer());
       await this.parseMIME();
       await this.saveCompleteMessage();
@@ -201,6 +207,16 @@ export class JMAPEMail extends EMail {
     await this.setFlagServer("$answered", true);
   }
 
+  async markForwarded() {
+    await super.markForwarded();
+    await this.setFlagServer("$forwarded", true);
+  }
+
+  async markImportant(isImportant = true) {
+    await super.markImportant(isImportant);
+    await this.setFlagServer("$important", isImportant); // RFC 8457
+  }
+
   async markDraft(isDraft = true) {
     await super.markDraft(isDraft);
     await this.setFlagServer("$draft", isDraft);
@@ -214,15 +230,18 @@ export class JMAPEMail extends EMail {
    */
   async setFlagServer(name: string, set: boolean) {
     this.flagsChanging = true;
-    await this.folder.account.makeSingleCall("Email/set", {
-      accountId: this.folder.account.accountID,
-      update: {
-        [this.jmapID]: {
-          [`keywords/${name}`]: set ? true : null,
+    try {
+      await this.folder.account.makeSingleCall("Email/set", {
+        accountId: this.folder.account.accountID,
+        update: {
+          [this.jmapID]: {
+            [`keywords/${name}`]: set ? true : null,
+          },
         },
-      },
-    });
-    this.flagsChanging = false;
+      });
+    } finally {
+      this.flagsChanging = false;
+    }
   }
 
   async addTagOnServer(tag: Tag) {

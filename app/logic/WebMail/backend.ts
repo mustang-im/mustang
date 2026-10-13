@@ -36,7 +36,7 @@ export class WebMailBackend {
   async isOSNotificationSupported(): Promise<boolean> {
     return false;
   }
-  async newTrayIcon() {
+  async setTrayIcon() {
   }
   async setBadgeCount() {
   }
@@ -47,7 +47,7 @@ export class WebMailBackend {
   async maximizeMainWindow() {
   }
   async writeTextToClipboard(text: string) {
-    navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(text);
   }
   async openExternalURL(url: string) {
     window.open(url, "_blank", "noopener, noreferrer");
@@ -64,6 +64,11 @@ export class WebMailBackend {
   }
   async setTheme() {
   }
+  /** The browser does not let us at its root store, so S/MIME certificates
+   * stay at the trust level that the user gives them. */
+  async getCACertificates(type: string): Promise<string[]> {
+    return [];
+  }
 }
 
 export class HTTPFetchError extends Error {
@@ -74,6 +79,8 @@ export class HTTPFetchError extends Error {
   httpStatusText: string;
   httpMethod: string;
   hostname: string;
+  /** `Retry-After`, in seconds, when the server rate-limited us */
+  retryAfterSeconds: number;
 
   constructor(ex: Error) {
     super(ex?.message ?? ex + "");
@@ -88,6 +95,7 @@ export class HTTPFetchError extends Error {
       this.httpStatusText = response.statusText;
       this.httpMethod = request.method;
       this.hostname = new URL(this.url).hostname;
+      this.retryAfterSeconds = parseInt(response.headers.get("Retry-After")) || undefined;
       this.message = `HTTP ${this.httpMethod} <${this.url}>${this.redirectedURL ? ` redirected to <${this.redirectedURL}>` : ''} failed with ${this.httpCode} ${this.httpStatusText}`;
     } else if (cause) {
       this.code = cause.code;

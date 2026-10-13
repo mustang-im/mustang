@@ -1,9 +1,9 @@
 import { ExchangeMailAccount } from "./ExchangeMailAccount";
-import { MailIdentity } from "../MailIdentity";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import type { EMail } from "../EMail";
-import { SpecialFolder, type Folder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "../Folder";
+import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
 import { EWSFolder, getEWSItem } from "./EWSFolder";
+import { EWSSearchEMail } from "./EWSSearchEMail";
 import { deleteExchangePermissions, setExchangePermissions } from "./ExchangePermission";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
@@ -17,6 +17,8 @@ import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbo
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
+import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
+import { NTLMChromiumSession } from "../../Auth/NTLM/NTLMChromiumSession";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
@@ -24,30 +26,56 @@ import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
+import { ConnectionPurpose } from "./ConnectionPurpose";
 import { RunOnce } from "../../util/flow/RunOnce";
+import { Lock } from "../../util/flow/Lock";
+import { notifyChangedProperty } from "../../util/Observable";
+import { isNetworkError } from "../../util/netUtil";
+import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
 export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   readonly protocol: string = "ews";
   readonly folderMap = new Map<string, EWSFolder>;
+  /** The login worked and we fetched the folder list, so the account
+   * is ready to take commands. Not merely: we have a password. */
+  @notifyChangedProperty
+  protected hasLoggedIn = false;
   protected throttle = new Throttle(50, 1);
-  protected semaphore = new Semaphore(20);
+  /** How many requests may be underway at the same time.
+   * The user commands have their own budget, so that they never wait for
+   * the background download. @see `ConnectionPurpose`
+   * @see `NTLMConnectionPool` has its own limits for TCP conn on top of this. */
+  protected semaphores = new Map<ConnectionPurpose, Semaphore>([
+    [ConnectionPurpose.Fetch, new Semaphore(16)],
+    [ConnectionPurpose.Display, new Semaphore(4)],
+  ]);
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  /** NTLM authenticates TCP connections, not HTTP requests, so it needs
+   * connections that we control. Only for `AuthMethod.NTLM`. */
+  protected ntlmTransport: NTLMChromiumSession | NTLMConnectionPool | null = null;
+  @notifyChangedProperty
+  protected _useChromiumNTLM = false;
   /** null: if this is our account
    * msgfolderroot: if this is an account shared with us
    * inbox: if this is an inbox shared with us */
   protected sharedFolderRoot: "msgfolderroot" | "inbox" | null;
   /** AbortController for streaming notifications */
   protected notificationAbort: Record<string, AbortController> = {};
+  protected subscribeLock = new Lock();
   /** SubscriptionId for unsubscribing on disconnect */
   subscriptionID?: string;
 
   newFolder(): EWSFolder {
     return new EWSFolder(this);
+  }
+
+  newSearch(): EWSSearchEMail {
+    return new EWSSearchEMail();
   }
 
   get folderID(): string {
@@ -58,7 +86,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (this.mainAccount) {
       return this.mainAccount.isLoggedIn;
     }
-    return this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn;
+    return this.hasLoggedIn &&
+      (this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn);
   }
 
   async verifyLogin(): Promise<void> {
@@ -104,43 +133,45 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await ensureLicensed(); // Not in generic `Account`, to keep license code in the proprietary parts
       await super.login(interactive);
       await this.loginCommon(interactive);
-
-      await this.startup();
+      this.hasLoggedIn = true;
+      this.notifyObserversOfSubaccounts();
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
-      if (this.isDependentAccount) {
-        await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
-        return;
+      try {
+        await super.syncOnStartup();
+        if (this.isDependentAccount) {
+          await (this.mainAccount as EWSAccount).subscribeToNotificationsForSubaccount(this);
+          return;
+        }
+        if (!appGlobal.searchOnlyAddressbooks.some(ab => ab.mainAccount == this)) {
+          appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
+        }
+        // `listFolders()` will subscribe to new user-added addressbooks and calendars
+
+        await this.subscribeToNotifications();
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-      await this.startupDependentAccounts();
-
-      appGlobal.searchOnlyAddressbooks.add(new EWSGAL(this));
-      // `listFolders()` will subscribe to new user-added addressbooks and calendars
-
-      await this.subscribeToNotifications();
     });
   }
 
   async disconnect(): Promise<void> {
+    this.hasLoggedIn = false;
+    this.notifyObserversOfSubaccounts();
     if (this.mainAccount) {
       await (this.mainAccount as EWSAccount).unsubscribeNotifications(this);
     } else {
       await this.unsubscribeAllSubscriptions();
+      this.ntlmTransport?.close();
+      this.ntlmTransport = null;
     }
 
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
-    }
-  }
-
-  notifyObserversOfSubaccounts() {
-    for (let account of this.dependentAccounts()) {
-      account.notifyObservers();
     }
   }
 
@@ -161,12 +192,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     assert((folder.account.mainAccount ?? folder.account) == (this.mainAccount ?? this), "Need saved folder to have same master account");
     if (folder.account.mainAccount) {
       let mainAccount = folder.account.mainAccount as EWSAccount;
-      let permissions = await folder.getPermissions();
-      // The user may have access via the Default entry or a group membership,
-      // in which case there's no entry with his email address.
-      let permission = permissions.find(permission => permission.matchesEMailAddress(mainAccount.emailAddress))
-        ?? permissions.find(permission => permission.distinguishedUser == "Default");
-      if (!permission?.exchangePermissions?.CanCreateItems) {
+      if (!await folder.mayCreateItems(mainAccount.emailAddress)) {
         folder = mainAccount.getSpecialFolder(SpecialFolder.Sent) as EWSFolder;
       }
     }
@@ -185,10 +211,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           t$FileAttachment: await Promise.all(email.attachments.contents.map(async attachment => ({
             t$Name: attachment.filename,
             t$ContentType: attachment.mimeType,
-            t$ContentID: attachment.contentID,
+            t$ContentId: attachment.contentID,
             t$Size: attachment.size,
             t$IsInline: attachment.disposition == ContentDisposition.inline,
-            t$Content: await blobToBase64(attachment.content),
+            t$Content: await attachment.contentAsBase64(),
           }))),
         }, "item:Attachments");
       }
@@ -208,7 +234,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
       // Older versions of Exchange require a specific order of parameters
       addRecipients(request, "ToRecipients", email.to.contents);
-      addRecipients(request, "CcReipients", email.cc.contents);
+      addRecipients(request, "CcRecipients", email.cc.contents);
     }
     addRecipients(request, "BccRecipients", email.bcc.contents);
     addRecipients(request, "From", [email.from]);
@@ -291,19 +317,35 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return true;
   }
 
-  /** @returns `Authorization` HTTP request header - usable only for a single call */
-  async loginWithNTLM(): Promise<string> {
-    assert(this.username && this.password, gt`Need username and password`);
-    let response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: await appGlobal.remoteApp.createType1Message() }));
-    assert(/\bNTLM\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${"NTLM"} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
-    return await appGlobal.remoteApp.createType3MessageFromType2Message(response.headers.get("WWW-Authenticate"), this.username, this.password);
+  /** User setting: Use the Chromium network stack (HTTP and NTLM)
+   * instead of our own NTLM implementation.
+   * Honored only if the authentication is NTLM. */
+  get useChromiumNTLM(): boolean {
+    return this._useChromiumNTLM;
+  }
+  set useChromiumNTLM(val: boolean) {
+    if (val == this._useChromiumNTLM) {
+      return;
+    }
+    // Use the other implementation from now on
+    this.ntlmTransport?.close();
+    this.ntlmTransport = null;
+    this._useChromiumNTLM = val;
   }
 
-  createRequestOptions({ authorizationHeader, body, signal }: { authorizationHeader?: string, body?: string, signal?: AbortSignal }): any {
+  /** For `AuthMethod.NTLM`. It authenticates each TCP connection. */
+  protected get ntlm(): NTLMChromiumSession | NTLMConnectionPool {
+    assert(this.username && this.password, gt`Need username and password`);
+    return this.ntlmTransport ??= appGlobal.remoteApp.newNetSession && this.useChromiumNTLM
+      ? new NTLMChromiumSession(this)
+      : new NTLMConnectionPool(this);
+  }
+
+  createRequestOptions({ body, signal }: { body?: string, signal?: AbortSignal } = {}): any {
     let options: any = {
       body,
       headers: {
-        'Content-Type': "text/xml; charset=utf-8",
+        'Content-Type': kXMLContentType,
       },
       method: "POST",
       signal,
@@ -314,9 +356,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
       options.headers.Authorization = this.oAuth2.authorizationHeader;
     } else if (this.authMethod == AuthMethod.NTLM) {
-      if (authorizationHeader) {
-        options.headers.Authorization = authorizationHeader;
-      }
+      throw new NotReached("NTLM requests go through the NTLM transport");
     } else if (this.authMethod == AuthMethod.Password) {
       options.headers.Authorization = `Basic ${btoa(unescape(encodeURIComponent(`${this.username}:${this.password}`)))}`;
     } else if (this.authMethod == AuthMethod.Unknown) {
@@ -332,31 +372,44 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
    * @param options for internal use only
    * @returns XML2JSON = XML as JSON. What the server returned.
    */
-  async callEWS(aRequest: JsonRequest, options?: any): Promise<any> {
+  async callEWS(aRequest: JsonRequest, purpose = ConnectionPurpose.Display, options?: any): Promise<any> {
     if (this.mainAccount) {
-      return await (this.mainAccount as EWSAccount).callEWS(aRequest, options);
+      return await (this.mainAccount as EWSAccount).callEWS(aRequest, purpose, options);
     }
     await this.throttle.throttle();
-    let lock = await this.semaphore.lock();
 
     if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
       await this.oAuth2.login(false);
     }
 
+    let startTime = Date.now();
+    let lock = await this.semaphores.get(purpose).lock();
     let response: any;
     try {
-      response = await fetch(this.url, this.createRequestOptions({ authorizationHeader: options?.authorizationHeader, body: this.request2XML(aRequest) }));
+      response = this.authMethod == AuthMethod.NTLM
+        ? await this.ntlm.request(this.request2XML(aRequest), { headers: { 'Content-Type': kXMLContentType }, purpose })
+        : await fetch(this.url, this.createRequestOptions({ body: this.request2XML(aRequest) }));
     } finally {
       lock.release();
+
+      let seconds = Math.round((Date.now() - startTime) / 100) / 10;
+      if (purpose == ConnectionPurpose.Display && seconds > 3) {
+        logError(new Error(`Server needed ${seconds} seconds to answer`));
+      }
     }
-    response.responseXML = this.parseXML(await response.text());
+    try {
+      response.responseText = await response.text();
+    } catch (ex) {
+      response.responseText = "";
+    }
     this.fatalError = null;
     if (response.status == 200) {
       try {
+        response.responseXML = this.parseXML(response.responseText);
         return this.checkResponse(response, aRequest);
       } catch (ex) {
         if (this.isThrottleError(ex)) {
-          return await this.callEWS(aRequest);
+          return await this.callEWS(aRequest, purpose);
         } else {
           this.throttle.waitForSecond(1);
           throw ex;
@@ -366,7 +419,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (response.status == 401) {
       const repeat = async (options: any = {}) => {
         options.isRepeating = true;
-        return await this.callEWS(aRequest, options); // repeat the call
+        return await this.callEWS(aRequest, purpose, options); // repeat the call
       }
       if (options?.isRepeating) {
         let ex = new EWSError(response, aRequest);
@@ -376,8 +429,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         await this.oAuth2.login(false); // will throw error, if interactive login is needed
         return repeat();
       } else if (this.authMethod == AuthMethod.NTLM) {
-        let authorizationHeader = await this.loginWithNTLM();
-        return repeat({ authorizationHeader });
+        // Login can fail transiently, e.g. when the connection closed during the login handshake
+        return repeat();
       } else if (this.authMethod == AuthMethod.Password) {
         assert(/\bBasic\b/.test(response.headers.get("WWW-Authenticate")), gt`Your account is configured to use ${gt`Password`} authentication, but your server does not support it. Please change your account settings or set up the account again.`);
         throw this.fatalError = new LoginError(null, gt`Password incorrect`);
@@ -397,11 +450,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
     } else {
       this.throttle.waitForSecond(1);
+      response.responseXML = this.parseXML(response.responseText);
       throw new EWSError(response, aRequest);
     }
   }
 
-  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>) {
+  /** @param username stable ID per stream, e.g. the streamed account's username */
+  async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
     let lastAttempt: number;
     let signal = abort.signal;
     do {
@@ -410,16 +465,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
-        let response = await fetch(this.url, this.createRequestOptions({ body, signal }));
-        if (this.authMethod == AuthMethod.NTLM && response.status == 401) {
-          let authorizationHeader = await this.loginWithNTLM();
-          response = await fetch(this.url, this.createRequestOptions({ authorizationHeader, body, signal })); // Repeat the call
-        }
-        if (!response.ok) {
-          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
-          return;
-        }
-        for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
+        const processChunk = async (chunk: string) => {
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;
@@ -443,8 +489,43 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               }
               await responseCallback(message);
             } catch (ex) {
+              if (signal.aborted) {
+                continue; // Server errors on cancel
+              }
+              if (ex.type == "ErrorSubscriptionNotFound" || ex.type == "ErrorMissedNotificationEvents") {
+                // The server dropped it, e.g. while the computer slept
+                await this.resubscribeNotifications(username);
+                return; // it restarted the stream, and aborted this one
+              }
               this.errorCallback(ex);
             }
+          }
+        };
+        let response: any;
+        if (this.authMethod == AuthMethod.NTLM) {
+          // The stream runs for up to 29 minutes, so give it its own
+          // TCP connection, outside of the pool.
+          let conn = this.ntlm.newDedicatedConnection(username);
+          let onAbort = () => conn.close(); // the only way to abort the stream
+          signal.addEventListener("abort", onAbort);
+          try {
+            assert(!signal.aborted, "Stream was aborted");
+            // Streams via `processChunk`. Resolves once the stream ended.
+            response = await conn.request(body, { headers: { 'Content-Type': kXMLContentType }, onChunk: processChunk });
+          } finally {
+            signal.removeEventListener("abort", onAbort);
+            conn.close();
+          }
+        } else {
+          response = await fetch(this.url, this.createRequestOptions({ body, signal }));
+        }
+        if (!response.ok) {
+          console.error(`callStream failed with HTTP ${response.status} ${response.statusText}`);
+          return;
+        }
+        if (response.body) { // `fetch()`. The NTLM path streamed via `processChunk` above.
+          for await (let chunk of response.body.pipeThrough(new TextDecoderStream())) {
+            await processChunk(chunk);
           }
         }
       } catch (ex) {
@@ -453,7 +534,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           console.log(signal.reason);
           break;
         }
-        if (ex?.message == "terminated") {
+        if (isNetworkError(ex) || ex?.message == "terminated") { // `fetch()` says "terminated"
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
           continue;
@@ -461,7 +542,20 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         this.errorCallback(ex);
         break;
       }
-    } while (Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+  }
+
+  /** The server lost our subscription. Get a new one, which restarts the stream. */
+  protected async resubscribeNotifications(username: string) {
+    if (username == this.username) {
+      this.subscriptionID = undefined;
+      await this.subscribeToNotifications();
+      return;
+    }
+    for (let account of this.subscribedAccounts(username)) {
+      account.subscriptionID = undefined;
+      await this.subscribeToNotificationsForSubaccount(account);
+    }
   }
 
   async unsubscribeAllSubscriptions() {
@@ -469,18 +563,21 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       this.notificationAbort[emailAddress].abort("Disconnect requested");
     }
     this.notificationAbort = {};
-    let unsubscribe = {
-      m$Unsubscribe: {
-        m$SubscriptionId: [this, ...this.dependentAccounts()].map(account => (account as EWSSubscribable).subscriptionID).filter(Boolean),
-      },
-    };
-    try {
-      await this.callEWS(unsubscribe);
-    } catch (ex) {
-      this.errorCallback(ex);
-    }
-    this.subscriptionID = undefined;
-    for (let account of this.dependentAccounts().contents.filter((account: Account): account is EWSSubscribable => (account as EWSSubscribable).subscriptionID != undefined)) {
+    // Unsubscribe accepts only a single subscription ID per call
+    for (let account of [this as EWSSubscribable, ...this.dependentAccounts().contents.filter((account: Account): account is EWSSubscribable => (account as EWSSubscribable).subscriptionID != undefined)]) {
+      if (!account.subscriptionID) {
+        continue;
+      }
+      let unsubscribe = {
+        m$Unsubscribe: {
+          m$SubscriptionId: account.subscriptionID,
+        },
+      };
+      try {
+        await this.callEWS(unsubscribe);
+      } catch (ex) {
+        this.errorCallback(ex);
+      }
       account.subscriptionID = undefined;
     }
   }
@@ -490,82 +587,106 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       return;
     }
     try {
+      this.notificationAbort[account.username]?.abort("Unsubscribing");
       let unsubscribe = {
         m$Unsubscribe: {
           m$SubscriptionId: account.subscriptionID,
         },
       };
-      await this.callEWS(unsubscribe);
       account.subscriptionID = undefined;
-      await this.streamNotifications(account.username);
+      await this.callEWS(unsubscribe);
     } catch (ex) {
       this.errorCallback(ex);
+    } finally {
+      await this.streamNotifications(account.username);
     }
   }
 
   async subscribeToNotifications() {
-    if (this.subscriptionID) {
-      console.warn("EWS: Trying to re-subscribe");
-      return; // E.g. re-login after connection loss
-    }
-    let subscribe = {
-      m$Subscribe: {
-        m$StreamingSubscriptionRequest: {
-          t$EventTypes: {
-            t$EventType: [
-              "CopiedEvent",
-              "CreatedEvent",
-              "DeletedEvent",
-              "ModifiedEvent",
-              "MovedEvent",
-              "NewMailEvent",
-            ],
+    let lock = await this.subscribeLock.lock();
+    try {
+      if (this.subscriptionID) {
+        console.warn("EWS: Trying to re-subscribe");
+        // E.g. re-login after connection loss. The subscription is still ours,
+        // but the stream that carries it died with the connection.
+        await this.streamNotifications(this.username);
+        return;
+      }
+      let subscribe = {
+        m$Subscribe: {
+          m$StreamingSubscriptionRequest: {
+            t$EventTypes: {
+              t$EventType: [
+                "CopiedEvent",
+                "CreatedEvent",
+                "DeletedEvent",
+                "ModifiedEvent",
+                "MovedEvent",
+                "NewMailEvent",
+              ],
+            },
+            SubscribeToAllFolders: true,
           },
-          SubscribeToAllFolders: true,
         },
-      },
-    };
-    let response = await this.callEWS(subscribe);
-    assert(!this.subscriptionID, "stream notification started twice");
-    this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
-    await this.streamNotifications();
+      };
+      let response = await this.callEWS(subscribe);
+      this.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+      await this.streamNotifications(this.username);
+    } finally {
+      lock.release();
+    }
   }
 
   async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
-    let subscribe = {
-      m$Subscribe: {
-        m$StreamingSubscriptionRequest: {
-          t$FolderIds: {
-            t$FolderId: {
-              Id: account.folderID,
+    let lock = await this.subscribeLock.lock();
+    try {
+      if (account.subscriptionID) {
+        console.warn("EWS: Trying to re-subscribe");
+        // E.g. re-login after connection loss. The subscription is still ours,
+        // but the stream that carries it died with the connection.
+        await this.streamNotifications(account.username);
+        return;
+      }
+      let subscribe = {
+        m$Subscribe: {
+          m$StreamingSubscriptionRequest: {
+            t$FolderIds: {
+              t$FolderId: {
+                Id: account.folderID,
+              },
+            },
+            t$EventTypes: {
+              t$EventType: [
+                "CopiedEvent",
+                "CreatedEvent",
+                "DeletedEvent",
+                "ModifiedEvent",
+                "MovedEvent",
+              ],
             },
           },
-          t$EventTypes: {
-            t$EventType: [
-              "CopiedEvent",
-              "CreatedEvent",
-              "DeletedEvent",
-              "ModifiedEvent",
-              "MovedEvent",
-            ],
-          },
         },
-      },
-    };
-    let response = await this.callEWS(subscribe);
-    assert(!account.subscriptionID, "stream notification started twice");
-    account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
-    await this.streamNotifications(account.username);
+      };
+      let response = await this.callEWS(subscribe);
+      account.subscriptionID = sanitize.nonemptystring(response.SubscriptionId);
+      await this.streamNotifications(account.username);
+    } finally {
+      lock.release();
+    }
   }
 
-  async streamNotifications(username = "") {
+  /** The shared mailboxes that stream their notifications under this user name */
+  protected subscribedAccounts(username: string): EWSSubscribable[] {
+    return this.dependentAccounts().contents.filter(
+      (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined);
+  }
+
+  async streamNotifications(username: string) {
     this.notificationAbort[username]?.abort("Restarting stream due to changed subscription");
     this.notificationAbort[username] = new AbortController();
-    let subscriptions = username
-      ? this.dependentAccounts().contents.filter(
-          (account: Account): account is EWSSubscribable => account.username == username && (account as EWSSubscribable).subscriptionID != undefined
-        ).map(account => account.subscriptionID)
-      : [this.subscriptionID];
+    let subscriptions = username == this.username
+      ? [this.subscriptionID]
+      : this.subscribedAccounts(username).map(account => account.subscriptionID);
     if (!subscriptions.length) {
       return;
     }
@@ -584,7 +705,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       for (let notification of ensureArray(message.Notifications?.Notification)) {
         await this.processNotification(notification);
       }
-    }).catch(this.errorCallback);
+    }, username).catch(this.errorCallback);
   }
 
   async processNotification(notification: Record<string, any>) {
@@ -648,17 +769,33 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     for (let folderID of folderIDs) {
       try {
-        let mailFolder = this.folderMap.get(sanitize.string(folderID));
+        let id = sanitize.string(folderID);
+        let mailFolder = this.folderMap.get(id);
+        if (!mailFolder) {
+          // A mailbox that another user shared with us is a separate account
+          // with its own folders, but its notifications arrive on our connection.
+          let sharedAccount = appGlobal.emailAccounts.find((account: EWSAccount) =>
+            account instanceof EWSAccount &&
+            account.mainAccount == this &&
+            account.folderMap?.has(id)) as EWSAccount | null;
+          mailFolder = sharedAccount?.folderMap.get(id);
+        }
         if (mailFolder) {
-          await mailFolder.updateChangedMessages();
+          let newMsgs = await mailFolder.updateChangedMessages();
+          mailFolder.downloadMessages(newMsgs)
+            .catch(this.errorCallback);
           continue;
         }
-        let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) => addressbook.mainAccount == this && addressbook.folderID == folderID) as EWSAddressbook | null;
+        let addressbook = appGlobal.addressbooks.find((addressbook: EWSAddressbook) =>
+          addressbook.mainAccount == this &&
+          addressbook.folderID == id) as EWSAddressbook | null;
         if (addressbook) {
           await addressbook.listContacts();
           continue;
         }
-        let calendar = appGlobal.calendars.find((calendar: EWSCalendar) => calendar.mainAccount == this && calendar.folderID == folderID) as EWSCalendar | null;
+        let calendar = appGlobal.calendars.find((calendar: EWSCalendar) =>
+          calendar.mainAccount == this &&
+          calendar.folderID == id) as EWSCalendar | null;
         if (calendar) {
           await calendar.listEvents();
           continue;
@@ -670,6 +807,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async listFolders(): Promise<void> {
+    await this.storage.readFolderHierarchy(this);
+
     let query = {
       m$FindFolder: {
         Traversal: "Deep",
@@ -757,6 +896,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         await folder.deleteItLocally();
       }
     }
+    for (let folder of this.getAllFolders()) {
+      await folder.save();
+    }
     if (this.sharedFolderRoot) {
       return; // Don't automatically add shared addressbook or calendar.
     }
@@ -766,22 +908,18 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       let folder = ensureArray(result.RootFolder.Folders.ContactsFolder).find(folder =>
         folder.DistinguishedFolderId == "contacts" && folder.ExtendedProperty?.Value != "true");
       let addressbook = this.createAddressbookAccount(folder);
-      await addressbook.save();
+      // Add it before saving it, so that a concurrent `listFolders()` sees it
       appGlobal.addressbooks.add(addressbook);
+      await addressbook.save();
     }
     let haveCalendar = appGlobal.calendars.some(calendar => calendar.dependsOn(this));
     if (!haveCalendar) {
       let folder = ensureArray(result.RootFolder.Folders.CalendarFolder).find(folder =>
         folder.DistinguishedFolderId == "calendar");
       let calendar = this.createCalendarAccount(folder);
-      await calendar.save();
       appGlobal.calendars.add(calendar);
+      await calendar.save();
     }
-  }
-
-  isOffice365(): boolean {
-    let hostname = new URL(this.url).hostname;
-    return hostname == "outlook.office365.com";
   }
 
   async createToplevelFolder(name: string): Promise<EWSFolder> {
@@ -854,8 +992,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       .filter(folder => folder.ExtendedProperty?.Value != "true");
     let calendars = ensureArray(result.RootFolder.Folders.CalendarFolder)
       .filter(folder => folder.FolderClass == "IPF.Appointment");
-    for (let account of this.dependentAccounts()) {
-      if (account instanceof EWSAccount) {
+    for (let dependentAcc of this.dependentAccounts()) {
+      if (dependentAcc instanceof EWSAccount) {
         let request = {
           m$GetFolder: {
             m$FolderShape: {
@@ -876,7 +1014,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               t$DistinguishedFolderId: ["contacts", "calendar"].map(folder => ({
                 Id: folder,
                 t$Mailbox: {
-                  t$EmailAddress: account.username,
+                  t$EmailAddress: dependentAcc.username,
                 },
               })),
             },
@@ -886,55 +1024,58 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         for (let result of results.filter(result => result.ResponseClass == "Success")) {
           if (result.Folders.ContactsFolder) {
             let folder = result.Folders.ContactsFolder;
-            folder.account = account; // pass to createAddressbookAccount below
+            folder.dependentAcc = dependentAcc; // pass to createAddressbookAccount below
             addressbooks.push(folder);
           }
           if (result.Folders.CalendarFolder) {
             let folder = result.Folders.CalendarFolder;
-            folder.account = account; // pass to createCalendarAccount below
+            folder.dependentAcc = dependentAcc; // pass to createCalendarAccount below
             calendars.push(folder);
           }
         }
       }
     }
-    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, ab.account)).filter(Boolean));
-    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.account)).filter(Boolean));
+    accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, ab.dependentAcc)).filter(Boolean));
+    accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
     return accounts;
   }
 
-  private createAddressbookAccount(folder: any, account?: EWSAccount): EWSAddressbook | null {
+  private createAddressbookAccount(folder: any, dependentAcc?: EWSAccount): EWSAddressbook | null {
     assert(folder.ExtendedProperty?.Value != "true", "Need visible addressbook");
-    if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
+    if (this.dependentAccounts().find(account => account.protocol == "addressbook-ews" &&
+          (account as EWSAddressbook).folderID == folder.FolderId.Id)) {
       return null;
     }
     let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
     addressbook.initFromMainAccount(this);
-    let isMainAddressbook = !account && folder.DistinguishedFolderId == "contacts";
-    if (!isMainAddressbook && folder.DisplayName) {
-      addressbook.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    let isPrimary = !dependentAcc && folder.DistinguishedFolderId == "contacts";
+    if (!isPrimary && folder.DisplayName) {
+      addressbook.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (account) {
-      addressbook.username = account.username;
+    if (dependentAcc) {
+      addressbook.username = dependentAcc.username;
+      addressbook.color = dependentAcc.color;
     }
     addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, account?: EWSAccount): EWSCalendar | null {
+  private createCalendarAccount(folder: any, dependentAcc?: EWSAccount): EWSCalendar | null {
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
-    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folder.FolderId.Id)) {
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
+          (account as EWSCalendar).folderID == folder.FolderId.Id)) {
       return null;
     }
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
     calendar.initFromMainAccount(this);
-    let isMainCalendar = !account && folder.DistinguishedFolderId == "calendar";
-    if (isMainCalendar) {
-      calendar.useForInvitations = true;
-    } else if (folder.DisplayName) {
-      calendar.name = `${(account || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    let isPrimary = folder.DistinguishedFolderId == "calendar";
+    calendar.useForInvitations = isPrimary;
+    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (account) {
-      calendar.username = account.username;
+    if (dependentAcc) {
+      calendar.username = dependentAcc.username;
+      calendar.color = dependentAcc.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
@@ -978,17 +1119,18 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     let account = newAccountForProtocol("ews") as EWSAccount;
     account.initFromMainAccount(this);
+    account.color = this.colorForSharedAccount(person);
     account.name = person.name;
     account.username = person.emailAddress;
     account.emailAddress = person.emailAddress;
     account.sharedFolderRoot = sharedFolderRoot;
-    let identity = new MailIdentity(account);
+    let identity = account.newIdentity();
     identity.realname = person.name;
     identity.emailAddress = person.emailAddress;
     account.identities.add(identity);
     await account.save();
     appGlobal.emailAccounts.add(account);
-    await account.startup();
+    await account.syncOnStartup();
     return account;
   }
 
@@ -1013,13 +1155,20 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let folder = result.Folders.ContactsFolder;
+    let folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    let existing = this.dependentAccounts().find(account =>
+      account.protocol == "addressbook-ews" && (account as EWSAddressbook).folderID == folderID) as EWSAddressbook;
+    if (existing) {
+      return existing;
+    }
     let addressbook = newAddressbookForProtocol("addressbook-ews") as EWSAddressbook;
     addressbook.initFromMainAccount(this);
+    addressbook.color = this.colorForSharedAccount(person);
     addressbook.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     addressbook.username = person.emailAddress;
-    addressbook.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    addressbook.folderID = folderID;
     appGlobal.addressbooks.add(addressbook);
-    await addressbook.startup();
+    await addressbook.syncOnStartup();
     return addressbook;
   }
 
@@ -1044,14 +1193,28 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let folder = result.Folders.CalendarFolder;
+    let folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    let existing = this.dependentAccounts().find(account =>
+      account.protocol == "calendar-ews" && (account as EWSCalendar).folderID == folderID) as EWSCalendar;
+    if (existing) {
+      return existing;
+    }
     let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
     calendar.initFromMainAccount(this);
+    calendar.color = this.colorForSharedAccount(person);
     calendar.name = `${person.name} ${sanitize.label(folder.DisplayName)}`;
     calendar.username = person.emailAddress;
-    calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
+    calendar.folderID = folderID;
+    calendar.useForInvitations = true;
     appGlobal.calendars.add(calendar);
-    await calendar.startup();
+    await calendar.syncOnStartup();
     return calendar;
+  }
+
+
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    return [MailShareCombinedPermissions.Read, MailShareCombinedPermissions.FlagChange,
+      MailShareCombinedPermissions.Modify, MailShareCombinedPermissions.Custom];
   }
 
   canShareWithPersons(): boolean {
@@ -1080,11 +1243,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.sharedFolderRoot = sanitize.enum(json.sharedFolderRoot, ["msgfolderroot", "inbox"], null);
+    this.useChromiumNTLM = sanitize.boolean(json.useChromiumNTLM, false);
   }
 
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.sharedFolderRoot = this.sharedFolderRoot;
+    json.useChromiumNTLM = this.useChromiumNTLM;
     return json;
   }
 }
@@ -1097,6 +1262,8 @@ export interface EWSSubscribable extends Account {
 }
 
 export type JsonRequest = Json | EWSCreateItemRequest | EWSDeleteItemRequest | EWSUpdateItemRequest;
+
+const kXMLContentType = "text/xml; charset=utf-8";
 
 /** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";

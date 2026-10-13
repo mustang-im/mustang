@@ -1,13 +1,15 @@
 import { File as FileEntry } from "../Files/File";
-import { Message } from "./Message";
+import { checkExecutableFile, executableMessage, ExecutableKind } from "../Files/FileType/ExecutableFile";
 import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
-import { NotImplemented, type URLString } from "../util/util";
-import type { Collection } from "svelte-collections";
 import { RunOnce } from "../util/flow/RunOnce";
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
+import { blobToBase64, UserError, type URLString, fileExtensionForMIMEType, assert } from "../util/util";
+import { gt } from "../../l10n/l10n";
+import type { ArrayColl, Collection } from "svelte-collections";
 
 export class Attachment extends Observable {
   /** filename with extension, as given by the sender of the email */
@@ -29,9 +31,18 @@ export class Attachment extends Observable {
   related: boolean;
   @notifyChangedProperty
   contentID: string;
+  /** Protocol-specific ID of this attachment on the server, e.g. the EWS `AttachmentId`.
+   * null, if the attachment isn't on the server yet. */
+  @notifyChangedProperty
+  pID: string | null = null;
   /** File contents. Not populated, if we have the attachment saved on disk */
   @notifyChangedProperty
   content: File;
+  /** Would opening this file run untrusted code?
+   * Checked once, when we get the contents, and saved in the DB.
+   * null = none. undefined = not checked. */
+  @notifyChangedProperty
+  executable: ExecutableKind | null | undefined;
   /** Override the default hidden state.
    * Currently not saved to DB. */
   @notifyChangedProperty
@@ -39,7 +50,8 @@ export class Attachment extends Observable {
   protected _blobURL: URLString;
   /** Exists while editing or displaying. */
   dataURL: URLString;
-  message: Message;
+  /** The email, chat message or calendar event that this attachment is part of */
+  message: MessageWithAttachments;
   storage: Collection<AttachmentStorage>;
   storageRunOnce = new RunOnce<void>();
 
@@ -72,11 +84,15 @@ export class Attachment extends Observable {
     this.disposition = ContentDisposition.attachment;
   }
 
-  cloneTo(to: Message): Attachment {
+  /** Creates a copy that belongs to the email, chat message or event `to`.
+   * The copy isn't saved yet, so it must not point to the original's
+   * file on disk nor to its attachment on the server. */
+  cloneTo(to: MessageWithAttachments): Attachment {
     let clone = to.newAttachment();
-    Object.assign(clone, this);
+    let { message, storage, storageRunOnce } = clone;
+    Object.assign(clone, this, { message, storage, storageRunOnce, filepathLocal: null, pID: null, _blobURL: null });
     if (this.content) {
-      clone.content = new File([this.content], this.content.name);
+      clone.content = new File([this.content], this.filename, { type: this.mimeType });
     }
     return clone;
   }
@@ -89,6 +105,7 @@ export class Attachment extends Observable {
     file.size = this.size;
     file.mimetype = this.mimeType;
     file.contents = this.content;
+    file.executable = this.executable;
     file.id = this.contentID;
     return file;
   }
@@ -98,14 +115,45 @@ export class Attachment extends Observable {
   }
 
   async load() {
-    if (!this.content && this.message instanceof EMail) {
-      await this.message.loadAttachments();
+    if (this.content) {
+      return;
+    }
+    await this.message.loadAttachments?.();
+  }
+
+  async readLocalFile() {
+    assert(this.filepathLocal, "Need local file first");
+    let array = await appGlobal.remoteApp.readFile(this.filepathLocal);
+    this.content = new File([array], this.filename, { type: this.mimeType });
+  }
+
+  /** The file contents, base64-encoded, to send it to the server */
+  async contentAsBase64(): Promise<string> {
+    try {
+      return await blobToBase64(this.content);
+    } catch (ex) {
+      throw new UserError(gt`Could not read the attachment ${this.filename}. The file may have been moved, deleted or changed on disk.`);
     }
   }
 
   /** Open the native desktop app with this file */
   async openOSApp() {
+    if (this.executable === undefined) { // e.g. saved before we had this check
+      await this.read(); // we need the contents, to check them
+      await this.checkExecutable();
+    }
+    if (this.executable) {
+      throw new UserError(executableMessage(this.executable));
+    }
     await openOSAppForFile(this.filepathLocal);
+  }
+  /** Determines whether this file is code.
+   * Call this whenever we got the contents */
+  async checkExecutable(): Promise<void> {
+    if (!this.content && this.filepathLocal) {
+      await this.readLocalFile();
+    }
+    this.executable = await checkExecutableFile(this.filename, this.mimeType, this.filepathLocal, this.content);
   }
   /** Open the native file manager with the folder
    * where this file is, and select this file. */
@@ -114,7 +162,7 @@ export class Attachment extends Observable {
   }
   async saveFile() {
     await this.load();
-    saveBlobAsFile(this.content);
+    await saveBlobAsFile(this.content);
   }
   async deleteFile() {
     await this.storageRunOnce.runOnce(async () => {
@@ -140,6 +188,47 @@ export class Attachment extends Observable {
         await storage.saveAttachment(this);
       }
     });
+  }
+
+  toJSON(): any {
+    let json = this.toExtraJSON();
+    json.filename = this.filename;
+    json.mimeType = this.mimeType;
+    json.size = this.size;
+    json.contentID = this.contentID;
+    json.disposition = this.disposition;
+    json.related = this.related;
+    return json;
+  }
+
+  fromJSON(json: any, fallbackID: number, filesDir: string) {
+    this.mimeType = sanitize.nonemptystring(json.mimeType, "application/octet-stream");
+    this.contentID = sanitize.nonemptystring(json.contentID, "" + fallbackID);
+    this.filename = sanitize.nonemptystring(json.filename, "attachment-" + fallbackID + "." + fileExtensionForMIMEType(this.mimeType));
+    let filepathLocal = sanitize.string(json.filepathLocal, null)
+    if (filepathLocal && filesDir) {
+      this.filepathLocal = filesDir + "/" + filepathLocal;
+    }
+    this.size = sanitize.integer(json.size, -1);
+    this.disposition = sanitize.translate(json.disposition, {
+      attachment: ContentDisposition.attachment,
+      inline: ContentDisposition.inline,
+    }, ContentDisposition.unknown);
+    this.related = sanitize.boolean(json.related, false);
+    this.fromExtraJSON(json);
+  }
+
+  /** The `json` column of the DB row, for properties that not every protocol
+   * has, and that therefore have no column of their own */
+  toExtraJSON(): any {
+    let json: any = {};
+    json.executable = this.executable;
+    return json;
+  }
+  fromExtraJSON(json: any) {
+    this.executable = json?.executable === undefined
+      ? undefined
+      : sanitize.enum(json.executable, Object.values(ExecutableKind), null);
   }
 
   /** Should not show to end user. This is true for auto-processing attachments
@@ -180,6 +269,8 @@ export class AttachmentFile extends FileEntry {
       if (attachment.content && !attachment.filepathLocal) {
         await attachment.save(); // write to disk, so `openOSApp()` has a file path
       }
+      await attachment.checkExecutable();
+      this.executable = attachment.executable;
       this.contents = attachment.content;
       this.filepathLocal = attachment.filepathLocal;
     });
@@ -198,11 +289,30 @@ const kHiddenMIMETypes = [
   "text/vcard", // vCard
   "text/calendar", // vCard
   "application/pkcs7-signature", // S/MIME signature
+  "application/x-pkcs7-signature", // S/MIME signature, legacy type name
   "application/pgp-signature", // PGP signature
   "application/pgp-keys", // Sender announcing his PGP keys
   // "application/pkcs7-mime", // S/MIME encrypted
   // "application/pgp-encrypted", // PGP encrypted
 ];
+
+/** An email, chat message or calendar event that can have attachments */
+export interface MessageWithAttachments {
+  dbID: number | string;
+  readonly attachments: ArrayColl<Attachment>;
+  newAttachment(): Attachment;
+  /** Fetches the attachment contents, for messages that don't have them in memory */
+  loadAttachments?(): Promise<void>;
+}
+
+/** Attaches files that the user picked or dropped */
+export function addFilesAsAttachments(message: MessageWithAttachments, files: File[]): void {
+  for (let file of files) {
+    let attachment = message.newAttachment();
+    attachment.fromFile(file);
+    message.attachments.add(attachment);
+  }
+}
 
 export interface AttachmentStorage {
   /** Whether this class can save and read attachment content at all */

@@ -4,13 +4,16 @@ import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
 import { SendEncrypted } from "./Encryption/SendEncrypted";
+import { ExtraData } from "./ExtraData";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { importAutoCryptKeys } from "./Encryption/PGP/AutoCrypt";
+import { fileExtensionForMIMEType } from "../Files/FileType/MIMETypes";
+import { escapeAttr, escapeHTML } from "../Files/FileType/htmlHelper";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { UserError, assert, type URLString, ensureArray } from "../util/util";
+import { UserError, assert, dataURLToBlob, type URLString, ensureArray } from "../util/util";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -67,20 +70,22 @@ export class ComposeActions {
     let reply = this.newMailFromSameIdentity();
 
     let original = this.email;
-    original.markReplied()
-      .catch(original.folder.account.errorCallback);
+    let sendData = new SendData();
+    sendData.replyTo = original;
+    reply.extraData.set(SendData.extraDataName, sendData);
 
     reply.subject = "Re: " + original.baseSubject; // Do *not* localize "Re: "
     reply.inReplyTo = original.messageID;
     reply.references = original.references?.slice() ?? [];
     reply.references.push(original.messageID);
     reply.mustEncrypt = original.wasEncrypted;
+    reply.system = original.system;
     importAutoCryptKeys(original)
       .catch(original.folder.account.errorCallback);
 
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
-    let quote = `<p class="quote-header">${this.quotePrefixLine()}</p>
-    <blockquote cite="mid:${original.id}">
+    let quote = `<p class="quote-header">${escapeHTML(this.quotePrefixLine())}</p>
+    <blockquote cite="mid:${escapeAttr(original.id ?? "")}">
       ${original.html}
     </blockquote>`;
     reply.html = quoteSetting == "none" ? `<p></p>` :
@@ -131,11 +136,20 @@ export class ComposeActions {
     }
   }
 
-  async forwardInline(): Promise<EMail> {
-    await this.email.loadAttachments();
+  protected _forward(): EMail {
     let forward = this.email.folder.account.newEMailFrom();
     forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
     forward.mustEncrypt = this.email.wasEncrypted;
+    forward.system = this.email.system;
+    let sendData = new SendData();
+    sendData.forwarded = this.email;
+    forward.extraData.set(SendData.extraDataName, sendData);
+    return forward;
+  }
+
+  async forwardInline(): Promise<EMail> {
+    await this.email.loadAttachments();
+    let forward = this._forward();
     forward.html = `<p></p>
     <p></p>
     <p></p>
@@ -143,7 +157,7 @@ export class ComposeActions {
     <p class="forward-header">
       <div>
         <span class="field">From:</span> <span class="value">
-          ${this.email.from?.name ?? this.email.from.emailAddress}${this.email.from?.name != this.email.from?.emailAddress ? ' <' + this.email.from.emailAddress + '>' : ''}
+          ${escapeHTML(this.email.from?.name ?? this.email.from.emailAddress ?? "")}${this.email.from?.name != this.email.from?.emailAddress ? escapeHTML(' <' + this.email.from.emailAddress + '>') : ''}
         </span>
       </div>
       <div>
@@ -153,7 +167,7 @@ export class ComposeActions {
       </div>
       <div>
         <span class="field">Subject:</span> <span class="value">
-          ${this.email.subject ?? ""}
+          ${escapeHTML(this.email.subject ?? "")}
         </span>
       </div>
     </p>
@@ -165,9 +179,7 @@ export class ComposeActions {
 
   async forwardAsAttachment(): Promise<EMail> {
     await this.email.loadMIME();
-    let forward = this.email.folder.account.newEMailFrom();
-    forward.subject = "Fwd: " + this.email.subject; // Do *not* localize "Fwd: "
-    forward.mustEncrypt = this.email.wasEncrypted;
+    let forward = this._forward();
     let a = forward.newAttachment();
     a.mimeType = "message/rfc822";
     a.disposition = ContentDisposition.inline;
@@ -199,13 +211,13 @@ export class ComposeActions {
     return clone;
   }
 
-  convertInlineAttachmentsURLs() {
+  async convertInlineAttachmentsURLs() {
     let changed = false;
     let html = new DOMParser().parseFromString(this.email.rawHTMLDangerous ?? "", "text/html");
     for (let node of html.querySelectorAll("img[src]")) {
       let img = node as HTMLImageElement;
       // img.src = this.convertBlobURLToCIDURL(img.src);
-      img.src = this.convertDataURLToCIDURL(img.src);
+      img.src = await this.convertDataURLToCIDURL(img.src);
       changed = true;
     }
     if (changed) {
@@ -213,20 +225,29 @@ export class ComposeActions {
     }
   }
 
-  protected convertDataURLToCIDURL(url: URLString): URLString {
+  protected async convertDataURLToCIDURL(url: URLString): Promise<URLString> {
     if (!url?.startsWith("data:")) {
       return url;
     }
-    let attachment = this.email.attachments.find(a => a.dataURL == url);
-    if (!attachment) {
-      /*let blob = await dataURLToBlob(url);
-      attachment = Attachment.fromFile(new File([blob], "image"));*/
-      console.warn(attachment, "Attachment for data URL not found", url.substring(0, 20));
-      return url;
-    }
-
+    // Images dragged into the mail composer are already made attachments
+    let attachment = this.email.attachments.find(a => a.dataURL == url) ??
+      // For image pastes, the editor creates only a `img src="data:…"` URL, so build an attachment
+      await this.createInlineAttachment(url);
     attachment.contentID ??= crypto.randomUUID();
     return "cid:" + attachment.contentID;
+  }
+
+  protected async createInlineAttachment(dataURL: URLString): Promise<Attachment> {
+    let blob = await dataURLToBlob(dataURL);
+    let ext = fileExtensionForMIMEType(blob.type);
+    let filename = `image-${this.email.attachments.length}.${ext}`;
+    let attachment = this.email.newAttachment();
+    attachment.fromFile(new File([blob], filename, { type: blob.type }));
+    attachment.disposition = ContentDisposition.inline;
+    attachment.related = true;
+    attachment.dataURL = dataURL;
+    this.email.attachments.add(attachment);
+    return attachment;
   }
 
   protected convertBlobURLToCIDURL(url: URLString): URLString {
@@ -250,11 +271,11 @@ export class ComposeActions {
   populateFromMailtoURL(mailtoURL: URLString) {
     let urlObj = new URL(mailtoURL);
     let args = new URLSearchParams(urlObj.search);
-    let tos = ensureArray(urlObj.pathname.split(","));
+    let tos = ensureArray(urlObj.pathname.split(",")).filter(to => to);
     for (let to of tos) {
       this.email.to.add(findOrCreatePersonUID(sanitize.emailAddress(to), null));
     }
-    let ccs = ensureArray(args.get("cc")?.split(","));
+    let ccs = ensureArray(args.get("cc")?.split(",")).filter(cc => cc);
     for (let cc of ccs) {
       this.email.cc.add(findOrCreatePersonUID(sanitize.emailAddress(cc), null));
     }
@@ -287,12 +308,17 @@ export class ComposeActions {
    * - Insert inline images
    * - Add footer signature
    * - Encrypt
+   * - Send
+   * - Mark the message that we replied to or forwarded
    * - Delete drafts
    *
    * Called by composer.
-   * The actual send on the protocol level is done by `EMail.send()`
+   * The actual send on the protocol level is done by `MailAccount.send()`
+   *
+   * @param onSending Called once the mail is on its way, i.e. after all errors
+   *   that the user must fix were thrown. The composer uses it to close itself.
    */
-  async send(): Promise<void> {
+  async send(onSending?: () => void): Promise<void> {
     let fromIdentity = this.email.identity;
     assert(fromIdentity, "Need identity set on mail");
     if (fromIdentity.replyTo) {
@@ -300,7 +326,7 @@ export class ComposeActions {
     }
     let account = fromIdentity.account;
 
-    this.convertInlineAttachmentsURLs();
+    await this.convertInlineAttachmentsURLs();
     let sig = fromIdentity.signatureHTML;
     if (!gLicense?.license) {
       this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
@@ -326,11 +352,31 @@ export class ComposeActions {
       this.email.folder = account.getSpecialFolder(SpecialFolder.Sent);
     }
     this.email.isDraft = false;
+    this.email.sent = new Date();
+    this.email.received = this.email.sent;
+    this.email.outgoing = true;
+    this.email.contact = this.email.to.first;
 
     let mail = await SendEncrypted.encryptAsNeeded(this.email);
-    await account.send(mail);
+
+    let sentFolder = this.email.folder;
+    this.email.isSending = true;
+    sentFolder?.messages.add(this.email);
+    onSending?.();
+    try {
+      await account.send(mail);
+    } finally {
+      this.email.isSending = false;
+      // The real sent mail comes with the next folder sync.
+      sentFolder?.messages.remove(this.email);
+    }
 
     this.email.folder = previousFolder;
+    let sendData = this.email.extraData.get(SendData.extraDataName) as SendData;
+    sendData?.replyTo?.markReplied()
+      .catch(backgroundError);
+    sendData?.forwarded?.markForwarded()
+      .catch(backgroundError);
     this.deleteDrafts(previousDrafts)
       .catch(backgroundError);
   }
@@ -366,5 +412,17 @@ export class ComposeActions {
     for (let previousDraft of previousDrafts) {
       await previousDraft.deleteMessage();
     }
+  }
+}
+
+/** What `send()` still has to do, once the mail went out.
+ * Live objects, not IDs, so a saved draft loses them. */
+class SendData extends ExtraData {
+  static extraDataName = "send";
+  replyTo: EMail | null = null;
+  forwarded: EMail | null = null;
+
+  toJSON(): null {
+    return null;
   }
 }

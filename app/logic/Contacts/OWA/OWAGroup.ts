@@ -1,26 +1,23 @@
 import { ExchangeGroup } from '../EWS/ExchangeGroup';
-import { Person, ContactEntry } from '../../Abstract/Person';
-import { findPerson } from '../../Abstract/PersonUID';
+import { findOrCreatePerson } from '../../Abstract/PersonUID';
 import type { OWAAddressbook } from './OWAAddressbook';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented } from '../../util/util';
-import { appGlobal } from "../../app";
 
 export class OWAGroup extends ExchangeGroup {
   declare addressbook: OWAAddressbook | null;
 
-  get personaID() {
-    return this.id;
-  }
-  set personaID(val) {
-    this.id = val;
-  }
+  /** The Exchange PersonaId,
+   * or the empty string if the item has not been saved to the server. */
+  personaID = "";
 
   fromJSON(json: any): OWAGroup {
     this.personaID = sanitize.nonemptystring(json.PersonaId.Id);
     this.name = sanitize.nonemptystring(json.DisplayName, "");
     this.description = sanitize.nonemptystring(json.Notes, "");
-    this.participants.replaceAll((json.Members || []).map(member => findOrCreatePerson(sanitize.emailAddress(member.EmailAddress.EmailAddress), sanitize.nonemptystring(member.EmailAddress.Name, null))));
+    this.participants.replaceAll((json.Members || [])
+      .filter(member => sanitize.emailAddress(member.EmailAddress?.EmailAddress, null))
+      .map(member => findOrCreatePerson(sanitize.emailAddress(member.EmailAddress.EmailAddress), sanitize.nonemptystring(member.EmailAddress.Name, null))));
     return this;
   }
 
@@ -36,15 +33,16 @@ export class OWAGroup extends ExchangeGroup {
     //await super.deleteIt();
     */
   }
-}
 
-function findOrCreatePerson(emailAddress: string, name:string): Person {
-  let person = findPerson(emailAddress);
-  if (person) {
-    return person;
+  fromExtraJSON(json: any) {
+    super.fromExtraJSON(json);
+    // Old existing contacts saved the personaID in the id
+    this.personaID = sanitize.string(json.personaID, this.id);
   }
-  person = appGlobal.collectedAddressbook.newPerson();
-  person.name = name;
-  person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
-  return person;
+
+  toExtraJSON(): any {
+    let json = super.toExtraJSON();
+    json.personaID = this.personaID;
+    return json;
+  }
 }

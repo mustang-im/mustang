@@ -89,7 +89,16 @@ export class JMAPFolder extends Folder {
       return await this.listAllMessages();
     }
 
-    return await this.fetchChangedMessagesForAllFolders();
+    try {
+      return await this.fetchChangedMessagesForAllFolders();
+    } catch (ex) {
+      if (ex.code == "cannotCalculateChanges") {
+        // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+        this.account.syncState.delete("Email");
+        return await this.listAllMessages();
+      }
+      throw ex;
+    }
   }
 
   protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
@@ -146,7 +155,7 @@ export class JMAPFolder extends Folder {
     try {
       //console.log("JMAP fetching changes for folder", this.name);
       // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
-      let response = await this.account.makeCombinedCall([
+      let response = await retryOnTransientError(() => this.account.makeCombinedCall([
         [
           "Email/changes", {
             accountId: this.account.accountID,
@@ -175,7 +184,7 @@ export class JMAPFolder extends Folder {
           },
           "changed",
         ],
-      ]);
+      ]));
       //console.log("sync response", response);
 
       let changes = response["changes"] as TJMAPChangeResponse<TJMAPEMailHeaders>;
@@ -209,7 +218,7 @@ export class JMAPFolder extends Folder {
           continue; // Adding messages here would stop listAllMessages() from ever running
         }
         removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
-        removed.addAll(await folder.parseRemovedMessages(changes.destroyed));
+        removed.addAll(await folder.parseRemovedMessages(changes.destroyed ?? []));
         // A draft or email uploaded from here comes back in `created`, so need dup checks
         let addedResult = folder.parseMessageList(addedThisFolder ?? []);
         let changedResult = folder.parseMessageList(changedThisFolder ?? []);
@@ -219,6 +228,9 @@ export class JMAPFolder extends Folder {
         //console.log(folder.name, "removed messages", removedMessages.contents.map(e => e.subject));
 
         folder.messages.removeAll(removed);
+        for (let msg of addedResult.newMessages) {
+          msg.isNewArrived = true;
+        }
         folder.messages.addAll(addedResult.newMessages);
         for (let msg of removed) {
           await msg.deleteMessageLocally();
@@ -275,7 +287,7 @@ export class JMAPFolder extends Folder {
     return removed;
   }
 
-  protected parseMessageList(msgs: TJMAPEMailHeaders[], checkUpdates = true): { newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> } {
+  parseMessageList(msgs: TJMAPEMailHeaders[], checkUpdates = true): { newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail> } {
     let newMessages = new ArrayColl<JMAPEMail>();
     let updatedMessages = new ArrayColl<JMAPEMail>();
     for (let json of msgs) {
@@ -301,7 +313,11 @@ export class JMAPFolder extends Folder {
   }
 
   /** Lists new messages, and downloads them */
-  async getNewMessages(): Promise<ArrayColl<JMAPEMail>> {
+  async getNewMessages(): Promise<Collection<JMAPEMail>> {
+    if (!this.account.syncState.has("Email")) {
+      // Without sync state, we would fetch the entire folder
+      return await this.getRecentMessages() as Collection<JMAPEMail>;
+    }
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -310,7 +326,7 @@ export class JMAPFolder extends Folder {
   /** Lists all messages, and downloads them */
   async getAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     let newMsgs = await this.listAllMessages();
-    await this.downloadMessages(newMsgs);
+    await this.downloadSmallMessagesFirst(newMsgs);
     let updateNew = await this.getNewMessages();
     newMsgs.addAll(updateNew);
     return newMsgs;
@@ -323,8 +339,7 @@ export class JMAPFolder extends Folder {
   async downloadMessages(emails: Collection<JMAPEMail>): Promise<Collection<JMAPEMail>> {
     let needMsgs = new ArrayColl(emails);
     let downloadedMsgs = new ArrayColl<JMAPEMail>();
-    const kMaxParallelCount = 5;
-    let semaphore = new Semaphore(kMaxParallelCount);
+    let semaphore = new Semaphore(this.account.maxParallelRequests);
     let downloads = new PromiseAllDone();
     while (needMsgs.hasItems) {
       let msg = needMsgs.pop();
@@ -513,7 +528,6 @@ export class JMAPFolder extends Folder {
     }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
     checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
-    this.account.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);
     await this.account.listFolders();
     await newFolder.listMessages();
@@ -600,24 +614,24 @@ export class JMAPFolder extends Folder {
   }
 
   disableDelete(): string | false {
-    return super.disableDelete() ??
-      this.myRights.mayDelete
-      ? gt`You cannot delete this folder, because the server forbids it.`
-      : null;
+    return super.disableDelete() ||
+      (this.myRights.mayDelete
+        ? false
+        : gt`You cannot delete this folder, because the server forbids it.`);
   }
 
   disableRename(): string | false {
-    return super.disableRename() ??
-      this.myRights.mayRename
-      ? gt`You cannot rename this folder, because the server forbids it.`
-      : null;
+    return super.disableRename() ||
+      (this.myRights.mayRename
+        ? false
+        : gt`You cannot rename this folder, because the server forbids it.`);
   }
 
   disableSubfolders(): string | false {
-    return super.disableSubfolders() ??
-      this.myRights.mayCreateChild
-      ? gt`You cannot create subfolders of this folder, because the server forbids it.`
-      : null;
+    return super.disableSubfolders() ||
+      (this.myRights.mayCreateChild
+        ? false
+        : gt`You cannot create subfolders of this folder, because the server forbids it.`);
   }
 
   newEMail(): JMAPEMail {

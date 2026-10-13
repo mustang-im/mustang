@@ -1,53 +1,52 @@
 <vbox flex class="calendar-app">
-  <Splitter
-    initialRightRatio={0.25}
-    rightMinWidth={250}
-    hasRight={!appGlobal.isMobile}
-    >
-    <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
-      <MainView events={appGlobal.calendarEvents} bind:start={$startDate} dateInterval={$selectedDateInterval}>
-        <hbox slot="top-left">
-          {#if !$appGlobal.isMobile}
-            <TitleBarLeft />
-          {/if}
-        </hbox>
-        <TitleBarRight bind:dateInterval={$selectedDateInterval} slot="top-right" />
-      </MainView>
-    </vbox>
-    <vbox flex class="sidebar" slot="right">
-      {#if $selectedEvent && !appGlobal.isMobile}
-        <ShowEvent event={$selectedEvent} />
-      {:else}
-        <!--<TaskList />-->
-      {/if}
-    </vbox>
-  </Splitter>
+  <hbox flex>
+    {#if $isCalendarListOpen}
+      <CalendarList />
+    {/if}
+    <Splitter
+      initialRightRatio={0.25}
+      rightMinWidth={250}
+      hasRight={!appGlobal.isMobile}
+      >
+      <vbox flex class="main" slot="left" class:mobile={$appGlobal.isMobile}>
+        <MainView events={shownCalendarEvents} bind:start={$startDate} dateInterval={$dateIntervalSetting.value}>
+          <hbox slot="top-left">
+            {#if !$appGlobal.isMobile}
+              <TitleBarLeft />
+            {/if}
+          </hbox>
+          <TitleBarRight bind:dateInterval={dateIntervalSetting.value} slot="top-right" />
+        </MainView>
+      </vbox>
+      <vbox flex class="sidebar" slot="right">
+        {#if $selectedEvent && !appGlobal.isMobile}
+          <ShowEvent event={$selectedEvent} />
+        {:else}
+          <!--<TaskList />-->
+        {/if}
+      </vbox>
+    </Splitter>
+  </hbox>
   {#if $appGlobal.isMobile}
     <CalendarViewBarM />
   {/if}
 </vbox>
-<CalendarInBackground />
 
 <script lang="ts">
-  import { selectedCalendar, selectedDateInterval, selectedEvent, startDate } from "./selected";
+  import { isCalendarListOpen, selectedCalendar, selectedEvent, shownCalendarEvents, startDate, type DateInterval } from "./selected";
   import { appGlobal } from "../../logic/app";
+  import CalendarList from "./CalendarList.svelte";
   import MainView from "./MainView.svelte";
   import CalendarViewBarM from "./MonthView/CalenderViewBarM.svelte";
   import TitleBarLeft from "./TitleBarLeft.svelte";
   import TitleBarRight from "./TitleBarRight.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
-  import CalendarInBackground from "./CalendarInBackground.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import { getLocalStorage } from "../Util/LocalStorage";
 
-  $: cals = appGlobal.calendars;
-  $: if ($cals.length > 1 &&
-          cals.first.protocol == "calendar-local" &&
-          cals.get(1).protocol != "calendar-local" &&
-          cals.first.events.isEmpty) {
-        cals.remove(cals.first);
-        // but don't delete it in DB, so that it re-appears after the last cal was deleted (and an app restart)
-      }
-  $: if (!$selectedCalendar) { $selectedCalendar = cals.first; }
+  $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
+
+  let dateIntervalSetting = getLocalStorage("calendar.view", 2 as DateInterval);
 </script>
 
 <style>

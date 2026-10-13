@@ -18,14 +18,27 @@ export enum LogLevel {
 
 export class ConsoleLogEntry extends LogEntry {
   level: LogLevel;
-  args: string[];
-  constructor(level: LogLevel, args: string[]) {
+  text: string;
+  constructor(level: LogLevel, args: any[]) {
     super();
     this.level = level;
-    this.args = args;
+    // Don't leak the logged objects, so convert to text immediately
+    this.text = args.map(arg => safeStringify(arg)).join(" ");
   }
   message() {
-    return this.args.map(arg => safeStringify(arg)).join(" ");
+    return this.text;
+  }
+}
+
+/** The log lives for the entire runtime of the app, so drop the oldest entries. */
+const kMaxLogEntries = 10000;
+
+function addLogEntry(entry: LogEntry) {
+  logHistory.push(entry);
+  let tooMany = logHistory.length - kMaxLogEntries;
+  if (tooMany > 0) {
+    // Keep only second half
+    logHistory.replaceAll(logHistory.contents.slice(Math.floor(kMaxLogEntries / 2)));
   }
 }
 
@@ -35,19 +48,19 @@ const originalDebug = console.debug;
 const originalWarn = console.warn;
 
 console.log = function (...args: any[]) {
-  logHistory.push(new ConsoleLogEntry(LogLevel.log, args));
+  addLogEntry(new ConsoleLogEntry(LogLevel.log, args));
   originalLog.apply(console, args);
 };
 console.error = function (...args: any[]) {
-  logHistory.push(new ConsoleLogEntry(LogLevel.error, args));
+  addLogEntry(new ConsoleLogEntry(LogLevel.error, args));
   originalError.apply(console, args);
 };
 console.warn = function (...args: any[]) {
-  logHistory.push(new ConsoleLogEntry(LogLevel.warn, args));
+  addLogEntry(new ConsoleLogEntry(LogLevel.warn, args));
   originalWarn.apply(console, args);
 };
 console.debug = function (...args: any[]) {
-  logHistory.push(new ConsoleLogEntry(LogLevel.debug, args));
+  addLogEntry(new ConsoleLogEntry(LogLevel.debug, args));
   originalDebug.apply(console, args);
 };
 

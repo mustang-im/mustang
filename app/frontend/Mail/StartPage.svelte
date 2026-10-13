@@ -1,4 +1,4 @@
-<hbox class="mail-start-page">
+<hbox class="mail-start-page background-pattern" flex>
 </hbox>
 
 <script lang="ts">

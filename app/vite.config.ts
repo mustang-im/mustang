@@ -28,8 +28,10 @@ export default defineConfig({
     svelte(),
     wasm(),
     sentryVitePlugin({
-      org: "mustang-jq",
-      project: "mustang"
+      url: "https://errorlog.parula.app/",
+      org: "bugsink-has-no-orgs",
+      project: "parula",
+        disable: !production,
     })
   ],
   resolve: {

@@ -62,7 +62,7 @@ export class JSONPerson {
     person.name = sanitize.label(json.name);
     person.firstName = sanitize.label(json.firstName, null);
     person.lastName = sanitize.string(json.lastName, null);
-    person.picture = sanitize.url(json.picture, null);
+    person.picture = sanitize.url(json.picture, null, ["https", "http", "data"]);
     person.notes = sanitize.string(json.notes, null);
     person.popularity = sanitize.integer(json.popularity, 0);
     if (json.addressbookID) {

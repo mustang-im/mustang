@@ -47,6 +47,7 @@
 </vbox>
 <MeetBackground />
 <MailInBackground />
+<CalendarInBackground />
 <WebAppsInBackground />
 
 <script lang="ts">
@@ -55,14 +56,15 @@
   // #if [!WEBMAIL]
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/startup";
+  import { predefinedConfig } from "../../logic/Mail/AutoConfig/predefinedConfig";
   // #else
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { notifications } from "./Notification";
-  import { selectedAccount, selectedFolder } from "../Mail/Selected";
+  import { selectedAccount } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { loadMustangApps } from "../AppsBar/loadMustangApps";
+  import { loadMustangApps, disableAppsBasedOnFeaturesXML } from "../AppsBar/loadMustangApps";
   import { mailMustangApp } from "../Mail/MailMustangApp";
   import { meetMustangApp } from "../Meet/MeetMustangApp";
   import { categoriesLoaded } from "../Settings/SettingsCategories";
@@ -75,6 +77,7 @@
   import Splitter from "../Shared/Splitter.svelte";
   import SplitterHorizontal from "../Shared/SplitterHorizontal.svelte";
   import MailInBackground from "../Mail/MailInBackground.svelte";
+  import CalendarInBackground from "../Calendar/CalendarInBackground.svelte";
   import MeetBackground from "../Meet/MeetBackground.svelte";
   import WebAppsInBackground from "../WebApps/Runner/WebAppsInBackground.svelte";
   import { catchErrors } from "../Util/error";
@@ -105,23 +108,29 @@
     // #endif
     await startup();
     changeTheme($themeSetting.value);
+    await disableAppsBasedOnFeaturesXML();
   }
 
   async function startup() {
     await getStartObjects();
     if (appGlobal.emailAccounts.isEmpty && appGlobal.chatAccounts.isEmpty) {
-      setup();
+      await setup();
     } else {
       await loginOnStartup(console.error);
       // Setting $selectedApp late would overwrite commandline/URL handlers
       $selectedAccount = appGlobal.emailAccounts.first;
-      $selectedFolder = $selectedAccount?.inbox;
+      // `MailApp` selects the inbox, once we read the folders
     }
   }
 
-  function setup() {
+  async function setup() {
     // #if [!WEBMAIL]
-    goTo("/setup/initial", {});
+    let account = await predefinedConfig();
+    if (account) {
+      goTo("/setup/predefined", { account });
+    } else {
+      goTo("/setup/initial", {});
+    }
     // #endif
   }
 

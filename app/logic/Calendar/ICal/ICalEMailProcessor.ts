@@ -21,6 +21,11 @@ export class ICalEMailProcessor extends EMailProcessor {
       return;
     }
     convertICalContainerToEvent(vevent, event);
+    if (event.attachments.isEmpty) {
+      // Exchange and Google send the files that the organizer attached to the
+      // event as attachments of the email, instead of inline in the iCal.
+      await event.adoptAttachmentsFrom(email);
+    }
     event.isCancelled = email.invitationMessage == InvitationMessage.CancelledEvent;
     if (email.hasHTML) {
       event.rawHTMLDangerous = email.rawHTMLDangerous;

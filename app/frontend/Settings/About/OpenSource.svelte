@@ -20,15 +20,16 @@
   import attributionURL from "../../../public/attribution.txt.gz?url";
   import { appName } from "../../../logic/build";
   import { fetchGzip } from "../../Util/util";
+  import { catchErrors } from "../../Util/error";
   import T from '../../../l10n/T.svelte';
   import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   let iframeE: HTMLIFrameElement;
 
-  onMount(async () => {
+  onMount(() => catchErrors(async () => {
     iframeE.src = await fetchGzip(iframeE.src);
-  });
+  }));
 </script>
 
 <style>

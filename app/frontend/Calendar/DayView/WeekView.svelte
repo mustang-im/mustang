@@ -3,7 +3,7 @@
     <slot name="top-left" />
     <hbox flex />
     <slot name="top-center">
-      <DateRange bind:date={start} dateInterval={showDays == 2 ? 1 : showDays} />
+      <DateRange bind:date={start} dateInterval={showDays > 3 ? 7 : 1} {showDays} />
       <Button classes="today-button" label={$t`Go back to today`} icon={TodayIcon} onClick={goToToday} iconSize="16px" plain iconOnly />
     </slot>
     <slot name="top-center" />
@@ -11,18 +11,17 @@
     <slot name="top-right" />
   </hbox>
   <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} {enlargeSelectedDay}
-    on:celldblclick={(param) => addEvent(param.detail.start)} />
+    on:celldblclick={(param) => newEventMenu.openMenu(param.detail.mouseEvent, param.detail.start)} />
 </vbox>
+
+<NewEventMenu bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { setNewEventTime } from "../event";
-  import { selectedCalendar } from "../selected";
-  import { openEvent } from "../open";
-  import { appGlobal } from "../../../logic/app";
-  import { assert } from "../../../logic/util/util";
+  import { type DateInterval } from "../selected";
   import { getToday } from "../../Util/date";
   import DayViewGrid from "./DayViewGrid.svelte";
+  import NewEventMenu from "../NewEventMenu.svelte";
   import DateRange from "../DateRange.svelte";
   import Button from "../../Shared/Button.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
@@ -31,23 +30,17 @@
 
   export let start: Date;
   export let events: Collection<Event>;
-  export let showDays: 1 | 2 | 7 = 7; // If you add new options, adapt styles below
+  export let showDays: DateInterval;
   /* Number of hours visible at the same time. Larger range reduces size per hour.
    * Other hours are available on scroll. */
   export let showHours = 10;
-  export let defaultFocusHour = 8;
+  export let defaultFocusHour: number | null = null;
   export let enlargeSelectedDay = false;
+
+  let newEventMenu: NewEventMenu;
 
   function goToToday() {
     start = getToday();
-  }
-
-  function addEvent(start: Date) {
-    $selectedCalendar ??= appGlobal.calendars.first;
-    assert($selectedCalendar, $t`Please set up a calendar first`);
-    let event = $selectedCalendar.newEvent();
-    setNewEventTime(event, true, start);
-    openEvent(event, true);
   }
 </script>
 

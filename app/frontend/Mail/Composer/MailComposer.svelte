@@ -184,7 +184,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { Attachment } from "../../../logic/Abstract/Attachment";
+  import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
@@ -322,22 +322,15 @@
 
   let fileSelector: FileSelector;
   async function onAddAttachment() {
-    let file = await fileSelector.selectFile();
-    if (!file) {
+    let files = await fileSelector.selectFiles();
+    if (!files?.length) {
       return;
     }
-    let attachment = mail.newAttachment();
-    attachment.fromFile(file);
-    mail.attachments.add(attachment);
+    addFilesAsAttachments(mail, files);
   }
 
   function onFilesDrop(event: CustomEvent) {
-    let files = event.detail.files as File[];
-    for (let file of files) {
-      let attachment = mail.newAttachment();
-      attachment.fromFile(file);
-      mail.attachments.add(attachment);
-    }
+    addFilesAsAttachments(mail, event.detail.files as File[]);
   }
 
   async function onFileInlineDrop(event: CustomEvent) {
@@ -368,8 +361,14 @@
     null;
 
   async function onSend() {
-    await mail.compose.send();
-    onClose();
+    try {
+      await mail.compose.send(onClose);
+    } catch (ex) {
+      if (closing) { // Already closed. Re-open, to not lose the mail.
+        mailMustangApp.writeMail(mail);
+      }
+      throw ex;
+    }
   }
 
   let closing = false;

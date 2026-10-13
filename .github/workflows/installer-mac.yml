@@ -6,7 +6,6 @@ on:
       release_type:
         type: choice
         options:
-          - release
           - prerelease
           - test
         default: 'test'
@@ -41,6 +40,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CSC_LINK: ${{ secrets.CSC_LINK }}
         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+        CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
         APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
         APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
         APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -59,3 +60,4 @@ jobs:
         name: Installers Mac
         path: |
           desktop/dist/*.dmg
+          desktop/dist/*.pkg

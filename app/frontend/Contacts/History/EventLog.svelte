@@ -14,7 +14,7 @@
   export let event: Event;
 
   function onOpen() {
-    openEvent(event);
+    openEvent(event, false);
   }
 </script>
 

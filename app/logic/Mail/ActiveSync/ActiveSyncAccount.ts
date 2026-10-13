@@ -48,6 +48,13 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     return new ActiveSyncFolder(this);
   }
 
+  /** ActiveSync `Search` identifies each hit only with a `LongId` that is valid
+   * for that one result set, never with the `ServerId` that we store. So we could
+   * not tell which of the emails that we already have it found, and list them twice. */
+  newSearch(): null {
+    return null;
+  }
+
   /**
    * Currently storing the folder sync key, protocol version and policy key
    * (if any) in local storage. Should this migrate to configJSON?
@@ -78,6 +85,9 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
         await this.oAuth2.login(interactive);
       }
       this.protocolVersion = this.getStorageItem("protocolVersion");
+      if (!this.protocolVersion) {
+        await this.checkProtocolVersion();
+      }
       if (this.protocolVersion == "14.0") {
         let request = {
           DeviceInformation: {
@@ -91,41 +101,38 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
           throw new ActiveSyncError("Settings", response.DeviceInformation.Status, this);
         }
       }
-
-      await this.startup();
     });
   }
 
-  async startup() {
+  async syncOnStartup() {
     await this.startupRunOnce.runOnce(async () => {
-      await super.startup();
+      try {
+        await super.syncOnStartup();
 
-      // `listFolders()` will subscribe to new user-added addressbooks and calendars
+        // `listFolders()` will subscribe to new user-added addressbooks and calendars
 
-      if (!this.isDependentAccount) {
-        appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+        if (!this.isDependentAccount &&
+            !appGlobal.searchOnlyAddressbooks.some(ab => ab.mainAccount == this)) {
+          appGlobal.searchOnlyAddressbooks.add(new ActiveSyncGAL(this));
+        }
+
+        // ActiveSync doesn't have streaming notifications, instead it
+        // provides the Ping operation which will tell us when a pingable
+        // has gone out of sync. This only makes sense once the pingable
+        // is in sync, so each pingable registers with the account when
+        // it's ready to be specified in the Ping operation.
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
       }
-
-      // ActiveSync doesn't have streaming notifications, instead it
-      // provides the Ping operation which will tell us when a pingable
-      // has gone out of sync. This only makes sense once the pingable
-      // is in sync, so each pingable registers with the account when
-      // it's ready to be specified in the Ping operation.
-
-      await this.startupDependentAccounts();
     });
   }
 
   async disconnect() {
+    // Ends the Ping loop after the current long poll returns
+    this.pingsMRU.clear();
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
-    }
-  }
-
-  notifyObserversOfSubaccounts() {
-    for (let account of this.dependentAccounts()) {
-      account.notifyObservers();
     }
   }
 
@@ -156,10 +163,17 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     return clientID;
   }
 
-  /**
-   * Performs an OPTIONS request to check the server's ActiveSync version.
-   */
+  /** For setup only. Test that the login works, and get the protocol version. */
   async verifyLogin(): Promise<void> {
+    await this.checkProtocolVersion();
+  }
+
+  /**
+   * Asks the server, with an OPTIONS request, which ActiveSync versions it
+   * speaks, and uses the newest one that we both support. Every request states
+   * the version, so we need it before any other call, i.e. during the login.
+   */
+  async checkProtocolVersion(): Promise<void> {
     let options: any = {
       headers: {
         "Cookie-Bypass": `DefaultAnchorMailbox=${encodeURI(this.emailAddress)}`, // required for Hotmail
@@ -176,7 +190,9 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     }
     let response = await fetch(this.url, options);
     if (response.ok) {
-      let versions = (response.headers.get("MS-ASProtocolVersions") || "").split(",");
+      let supported = response.headers.get("MS-ASProtocolVersions");
+      assert(supported, gt`The server did not answer with the ActiveSync versions that it supports. Please check the server URL.`);
+      let versions = supported.split(",");
       if (versions.includes("16.1")) {
         this.protocolVersion = "16.1";
         this.setStorageItem("protocolVersion", this.protocolVersion);
@@ -190,12 +206,12 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
         this.setStorageItem("protocolVersion", this.protocolVersion);
         return;
       }
-      throw new Error(`ActiveSync version(s) ${response.headers.get("MS-ASProtocolVersions")} not supported`);
+      throw new Error(`ActiveSync version(s) ${supported} not supported`);
     }
     if (response.status == 401) {
       const repeat = async () => {
         this.retries++;
-        await this.verifyLogin(); // repeat the call
+        await this.checkProtocolVersion(); // repeat the call
         this.retries = 0;
       }
       if (this.retries) {
@@ -227,7 +243,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       return deviceID;
     }
     let array = new Uint32Array(4);
-    window.crypto.getRandomValues(array);
+    crypto.getRandomValues(array);
     deviceID = Array.from(array, value => value.toString(16).padStart(8, "0")).join("");
     localStorage.setItem("active_sync.device_id", deviceID);
     return deviceID;
@@ -297,6 +313,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       }
       // The Ping command has its own status codes for some reason.
       if (!wbxmljs.Status || wbxmljs.Status == "1" || aCommand == "Ping") {
+        this.retries = 0;
         return wbxmljs;
       }
       if (this.isThrottleError(wbxmljs.Status)) {
@@ -403,8 +420,10 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
       // The SyncKey must be the first element of the request.
       request = Object.assign({ SyncKey: this.getStorageItem("sync_key") || "0" }, request);
       let response = await this.callEAS(command, request);
-      await callback?.(response);
-      this.setStorageItem("sync_key", response.SyncKey);
+      if (response) { // null means an empty response body: nothing changed
+        await callback?.(response);
+        this.setStorageItem("sync_key", response.SyncKey);
+      }
       return response;
     } catch (ex) {
       if (callback && ex.code == kFolderSyncKeyError) {
@@ -496,7 +515,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
           this.errorCallback(ex);
         }
       }
-      for (let deletion of ensureArray(response.Changes.Delete)) {
+      for (let deletion of ensureArray(response.Changes?.Delete)) {
         try {
           let folder = this.findFolderById(sanitize.nonemptystring(deletion.ServerId));
           if (folder) {
@@ -521,6 +540,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     });
     // Iterate from deepest to shallowest
     for (let folder of missingFolders.reverse()) {
+      this.removePingable(folder as ActiveSyncFolder);
       await folder.deleteItLocally();
     }
   }
@@ -535,7 +555,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     this.pingsMRU.add(pingable);
     if (!this.listening) {
       this.listenForPings()
-        .catch(this.errorCallback); // TODO restart on error (with throttle)?
+        .catch(this.errorCallback);
     }
   }
 
@@ -552,35 +572,52 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
   async listenForPings() {
     try {
       this.listening = true;
+      let lastAttempt = 0;
       while (this.pingsMRU.hasItems) {
-        let request = {
-          HeartbeatInterval: String(this.heartbeat),
-          Folders: {
-            Folder: this.pingsMRU.contents.map(pingable => ({ Id: pingable.serverID, Class: pingable.folderClass })),
-          },
-        };
-        let response = await this.callEAS("Ping", request, { heartbeat: this.heartbeat });
-        switch (response.Status) {
-        case "1":
-          continue;
-        case "2":
-          for (let serverID of ensureArray(response.Folders.Folder)) {
-            let pingable = this.pingsMRU.find(pingable => pingable.serverID == serverID);
-            await pingable?.ping();
+        try {
+          lastAttempt = Date.now();
+          let request = {
+            HeartbeatInterval: String(this.heartbeat),
+            Folders: {
+              Folder: this.pingsMRU.contents.map(pingable => ({ Id: pingable.serverID, Class: pingable.folderClass })),
+            },
+          };
+          let response = await this.callEAS("Ping", request, { heartbeat: this.heartbeat });
+          if (!response) { // empty response body, nothing changed
+            continue;
           }
-          continue;
-        case "5":
-          this.heartbeat = sanitize.integer(response.HeartbeatInterval);
-          continue;
-        case "6":
-          this.maxPings = sanitize.integer(response.MaxFolders);
-          this.trimPings();
-          continue;
-        case "7":
-          await this.listFolders();
-          continue;
-        default:
-          throw new ActiveSyncError("Ping", response.Status, this);
+          switch (response.Status) {
+          case "1":
+            continue;
+          case "2":
+            for (let serverID of ensureArray(response.Folders.Folder)) {
+              let pingable = this.pingsMRU.find(pingable => pingable.serverID == serverID);
+              await pingable?.ping();
+            }
+            continue;
+          case "5":
+            this.heartbeat = sanitize.integer(response.HeartbeatInterval);
+            continue;
+          case "6":
+            this.maxPings = sanitize.integer(response.MaxFolders);
+            this.trimPings();
+            continue;
+          case "7":
+            await this.listFolders();
+            continue;
+          case "8": // Temporary server error
+            this.throttle.waitForSecond(5);
+            continue;
+          default:
+            throw new ActiveSyncError("Ping", response.Status, this);
+          }
+        } catch (ex) {
+          if (Date.now() - lastAttempt < 10 * 1000) {
+            // Failed right away: give up, to avoid hammering the server
+            throw ex;
+          }
+          // The connection was up for a while, e.g. a network interruption
+          // after a long poll: retry
         }
       }
     } catch (ex) {
@@ -588,11 +625,6 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
     } finally {
       this.listening = false;
     }
-  }
-
-  isOffice365(): boolean {
-    let hostname = new URL(this.url).hostname;
-    return hostname == "outlook.office365.com";
   }
 
   async createToplevelFolder(name: string): Promise<ActiveSyncFolder> {

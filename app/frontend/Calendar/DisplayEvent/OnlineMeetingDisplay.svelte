@@ -58,8 +58,8 @@
     }
   }
 
-  function onCopyMeetingURL() {
-    navigator.clipboard.writeText(event.onlineMeetingURL);
+  async function onCopyMeetingURL() {
+    await navigator.clipboard.writeText(event.onlineMeetingURL);
   }
 </script>
 

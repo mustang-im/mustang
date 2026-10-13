@@ -32,10 +32,15 @@
   </vbox>
 {/if}
 
+{#if config?.protocol == "pop3"}
+  <POP3Warning />
+{/if}
+
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import DisplayConfig from "./DisplayConfig.svelte";
+  import POP3Warning from "./POP3Warning.svelte";
   import StatusMessage from "../Shared/StatusMessage.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
   import { filterUnique } from "../../../logic/util/collections";
@@ -47,8 +52,7 @@
   export let haveError = false;
 
   // Show only the most preferred (= first) config of the same protocol
-  // TODO POP3 not yet implemented
-  $: uniqueConfigs = filterUnique(altConfigs?.filter(a => a.protocol != "pop3"), (a, b) => a.protocol == b.protocol);
+  $: uniqueConfigs = filterUnique(altConfigs, (a, b) => a.protocol == b.protocol);
 
   $: successMessage = !config?.source ? $t`No config found` :
     config.source == "ispdb" ? $t`We found the configuration in our database.` :

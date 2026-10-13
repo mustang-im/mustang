@@ -1,6 +1,7 @@
 import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
-import type { CalendarShareCombinedPermissions } from "../Calendar";
+import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
+import type { Attachment } from "../../Abstract/Attachment";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
 import { OWAIncomingInvitation } from "./OWAIncomingInvitation";
@@ -11,6 +12,7 @@ import type { OWAEMail } from "../../Mail/OWA/OWAEMail";
 import { owaFindEventsRequest, owaGetCalendarEventsRequest, owaGetEventsRequest } from "./Request/OWAEventRequests";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
+import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -22,6 +24,7 @@ export class OWACalendar extends ExchangeCalendar {
   /** Exchange FolderID for this calendar. Not DistinguishedFolderId */
   folderID: string;
   protected listEventsRunOnce = new RunOnce();
+  protected readonly listEventsLock = new Lock();
 
   get account(): OWAAccount {
     assert(this.mainAccount, gt`Calendar ${this.name} lost the connection to its account`);
@@ -38,6 +41,12 @@ export class OWACalendar extends ExchangeCalendar {
       : this.account.callOWA(aRequest, this.username);
   }
 
+  callOWAWithOffice365Attachment(aRequest: any, attachment: Attachment) {
+    return this.username == this.account.username
+      ? this.account.callOWAWithOffice365Attachment(aRequest, attachment)
+      : this.account.callOWAWithOffice365Attachment(aRequest, attachment, this.username);
+  }
+
   newEvent(parentEvent?: OWAEvent): OWAEvent {
     return new OWAEvent(this, parentEvent);
   }
@@ -48,34 +57,47 @@ export class OWACalendar extends ExchangeCalendar {
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
-    return participants.map((participant, i) => ({
-      participant,
-      availability: results.Responses[i].ResponseMessage.ResponseClass == "Error" ? undefined : ensureArray(results.Responses[i].CalendarView.Items).map(event => ({
-        from: new Date(event.Start + "Z"),
-        to: new Date(event.End + "Z"),
-        free: event.FreeBusyType == "Free",
-      })),
-    }));
+    let availabilities = [];
+    for (let [i, participant] of participants.entries()) {
+      let result = results.Responses[i];
+      if (result.ResponseMessage.ResponseClass == "Error" || result.FreeBusyViewType == "None") {
+        // Don't report unknown as Free
+        availabilities.push({ participant, availability: undefined });
+        continue;
+      }
+      availabilities.push({
+        participant,
+        availability: ensureArray(result.CalendarView.Items).map(event => ({
+          from: new Date(event.Start + "Z"),
+          to: new Date(event.End + "Z"),
+          free: event.FreeBusyType == "Free",
+        })),
+      });
+    }
+    return availabilities;
   }
 
   protected getEventByItemID(id: string): OWAEvent | undefined {
     return this.events.find(p => p.itemID == id);
   }
 
-  async listEvents() {
-    await super.listEvents();
+  protected async listEventsFromServer() {
     await this.listEventsRunOnce.runOnce(() => this.listEventsSlow());
   }
 
   async listEventsSlow() {
-    await super.listEvents();
-    let events = new ArrayColl<OWAEvent>;
-    await this.listFolder(events);
-    for (let event of this.events.subtract(events)) {
-      // This might be a filled occurrence that has since been modified.
-      await event.deleteLocally();
+    let lock = await this.listEventsLock.lock();
+    try {
+      let events = new ArrayColl<OWAEvent>;
+      await this.listFolder(events);
+      for (let event of this.events.subtract(events).contents) { // copy: delete alters events
+        // This might be a filled occurrence that has since been modified.
+        await event.deleteLocally();
+      }
+      this.events.replaceAll(events);
+    } finally {
+      lock.release();
     }
-    this.events.replaceAll(events);
   }
 
   protected async listFolder(events: ArrayColl<OWAEvent>) {
@@ -103,41 +125,51 @@ export class OWACalendar extends ExchangeCalendar {
     }
   }
 
-  async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
+  /** Fetches one event from the server and updates our local copy,
+   * e.g. after Exchange processed an invitation */
+  async getEventFromServerByID(itemID: string, parentEvent?: OWAEvent) {
+    let lock = await this.listEventsLock.lock();
+    try {
+      await this.getEvents([itemID], new ArrayColl<OWAEvent>(), parentEvent);
+    } finally {
+      lock.release();
+    }
+  }
+
+  protected async getEvents(eventIDs: string[], events: ArrayColl<OWAEvent>, parentEvent?: OWAEvent) {
     if (!eventIDs.length) {
       return;
     }
     let results = await this.callOWA(owaGetEventsRequest(eventIDs));
-    let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
+    let items = results.ResponseMessages ? this.account.itemsFromResponses(results.ResponseMessages.Items) : results.Items;
     let online = items.filter(item => item.IsOnlineMeeting);
     if (online.length) {
       let results = await this.callOWA(owaGetCalendarEventsRequest(online.map(item => item.ItemId.Id)));
-      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items[0]) : results.Items;
+      let items = results.ResponseMessages ? results.ResponseMessages.Items.map(item => item.Items?.[0]) : results.Items;
       for (let i = 0; i < items.length; i++) {
-        online[i].OnlineMeetingJoinUrl = items[i].OnlineMeetingJoinUrl;
+        online[i].OnlineMeetingJoinUrl = items[i]?.OnlineMeetingJoinUrl;
       }
     }
     for (let item of items) {
       try {
-        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id)) || parentEvent?.getOccurrenceByDate(sanitize.date(item.RecurrenceId)) as OWAEvent || this.newEvent();
+        let event = this.getEventByItemID(sanitize.nonemptystring(item.ItemId.Id));
+        if (!event && parentEvent) {
+          // `toLocalMidnight()`, because the master converted its own times, too
+          event = parentEvent.getOccurrenceByDate(parentEvent.toLocalMidnight(sanitize.date(item.RecurrenceId))) as OWAEvent;
+        }
+        event ??= this.newEvent();
         event.fromJSON(item);
         await event.saveLocally();
+        if (!this.events.contains(event)) {
+          // Add it now, so that `getEventByItemID()` finds it when the server sends it again in a later page
+          this.events.add(event);
+        }
         events.add(event);
         if (item.ModifiedOccurrences?.length && event.recurrenceRule) {
           await this.getEvents(item.ModifiedOccurrences.map(item => item.ItemId.Id), events, event);
         }
       } catch (ex) {
         this.account.errorCallback(ex);
-      }
-    }
-  }
-
-  async createOrUpdateEventFromServerByID(itemID: string) {
-    let events = new ArrayColl<OWAEvent>();
-    await this.getEvents([itemID], events);
-    for (let event of events) {
-      if (!this.events.contains(event)) {
-        this.events.add(event);
       }
     }
   }
@@ -149,6 +181,11 @@ export class OWACalendar extends ExchangeCalendar {
 
   async deleteSharedPerson(otherPerson: PersonUID) {
     await deleteExchangePermissions(this, otherPerson);
+  }
+
+  get sharePermissionLevels(): CalendarShareCombinedPermissions[] {
+    return [CalendarShareCombinedPermissions.ReadAvailability, CalendarShareCombinedPermissions.ReadTitle,
+      CalendarShareCombinedPermissions.ReadAll, CalendarShareCombinedPermissions.Modify];
   }
 
   async addSharedPerson(otherPerson: PersonUID, access: CalendarShareCombinedPermissions) {

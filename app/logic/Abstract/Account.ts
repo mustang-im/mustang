@@ -1,8 +1,9 @@
-import { Workspace, getWorkspaceByID, randomAccountColor } from "./Workspace";
+import { Workspace, getWorkspaceByID, accountColors, randomAccountColor } from "./Workspace";
 import type { WebBasedAuth } from "../Auth/WebBasedAuth";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
+import { RunOnce } from "../util/flow/RunOnce";
 import { logError } from "../../frontend/Util/error";
 import { SpecificError, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -53,21 +54,34 @@ export class Account extends Observable {
    * which cannot be attributed directly to an API function called,
    * e.g. errors while processing server messages. */
   errorCallback = (ex) => console.error(ex);
+  protected dependentStartupOnce = new RunOnce();
 
   constructor() {
     super();
     this.id = findFreeAccountID();
-    this.color = randomAccountColor();
+    this.color = unusedAccountColor();
   }
 
   /**
-   * For local accounts, this is the startup entry point. It is overridden
-   * e.g. for contacts and calendar to load data from the database.
-   * Startup for accounts that need to log in will attempt to use a
-   * noninteractive `login` call instead. However if this is successful
-   * then the account's login code should finish by running its startup code.
+   * The initial sync after the login: lists the folders, events or contacts,
+   * fetches the new mail, subscribes to changes on the server, and starts the
+   * dependent accounts. The UI could make these calls at any time, so `login()`
+   * must not call this: it would run twice. @see `loginAndStartup()`
+   *
+   * Runs after the app start, after a manual login, and after the computer
+   * slept. The caller may skip it and issue a single call instead.
    */
-  async startup() {
+  async syncOnStartup() {
+  }
+
+  /**
+   * Load all the data that we stored locally in our database,
+   * e.g. the mail folders, the calendar events, or the contacts.
+   * Called at app start, before the login, so that the user sees the data
+   * even when the login fails, e.g. when we're offline.
+   * May be called again later, and must then not add the data a second time.
+   */
+  async readFromDB(): Promise<void> {
   }
 
   /**
@@ -76,8 +90,15 @@ export class Account extends Observable {
    */
   protected async startupDependentAccounts() {
     for (let dependent of this.dependentAccounts()) {
-      dependent.startup()
+      dependent.dependentStartupOnce.runOnce(() => dependent.syncOnStartup())
         .catch(dependent.errorCallback);
+    }
+  }
+
+  /** Tell the UI that the dependent accounts are logged in etc as well. */
+  notifyObserversOfSubaccounts() {
+    for (let dependent of this.dependentAccounts()) {
+      dependent.notifyObservers();
     }
   }
 
@@ -86,6 +107,17 @@ export class Account extends Observable {
   }
 
   /**
+   * The preparation which allows us to issue any normal call to the server,
+   * including sending the password. There are no calls to the server before it.
+   *
+   * Depending on the protocol:
+   * - IMAP: opening the the TCP connection, CAPABILITY, login
+   * - JMAP: the session
+   * …
+   *
+   * Initial sync is done in `syncOnStartup()`, not here.
+   * `loginAndStartup()` does both.
+   *
    * @param interactive
    *   true: If needed, open UI to ask user to log in manually,
    *     e.g. using password, MFA, or passkey
@@ -104,6 +136,17 @@ export class Account extends Observable {
     if (this.isDependentAccount && !this.isLoggedIn) {
       await this.mainAccount.login(interactive);
     }
+  }
+
+  /** Logs in and runs the initial sync, like the app start does.
+   * For the Login and Get Mail buttons and the account setup. */
+  async loginAndStartup(interactive: boolean): Promise<void> {
+    if (this.isDependentAccount) {
+      await this.mainAccount.loginAndStartup(interactive); // it starts us up
+      return;
+    }
+    await this.login(interactive);
+    await this.syncOnStartup();
   }
 
   /** For setup only. Test that the login works. */
@@ -307,4 +350,20 @@ export class ConnectError extends SpecificError {
 export class LoginError extends SpecificError {
   authFail = true;
   isUserError = true;
+}
+
+/**
+ * Returns a preset account color that is not used by another account yet.
+ * Once all preset colors are taken, falls back to any random color.
+ */
+export function unusedAccountColor(): string {
+  let usedColors = getAllAccounts().contents.map(account => account.color);
+  let unusedColors = accountColors.filter(color => !usedColors.includes(color));
+  return unusedColors.length
+    ? unusedColors[Math.floor(Math.random() * unusedColors.length)]
+    : randomColor();
+}
+
+function randomColor(): string {
+  return "#" + Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0");
 }

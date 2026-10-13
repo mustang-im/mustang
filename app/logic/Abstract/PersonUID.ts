@@ -2,6 +2,7 @@ import type { PersonOrGroup } from "../../frontend/Contacts/Person/PersonOrGroup
 import { Group } from "./Group";
 import type { Addressbook } from "../Contacts/Addressbook";
 import { ContactEntry, Person } from "./Person";
+import type { PublicKey } from "../Mail/Encryption/PublicKey";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { capitalizeWords } from "../util/util";
@@ -14,6 +15,13 @@ export class PersonUID extends Observable {
   emailAddress: string;
   @notifyChangedProperty
   person?: Person;
+  /** A key that we know for this email address, but that is not saved in an
+   * addressbook, e.g. the certificate of an email that this address signed.
+   * `createPerson()` saves it with the contact. */
+  @notifyChangedProperty
+  encryptionPublicKey?: PublicKey;
+  /** We guessed `name` from the email address, so `PersonPopup` asks the user. Not saved. */
+  nameIsUnknown = false;
 
   constructor(emailAddress?: string, name?: string) {
     super();
@@ -43,13 +51,15 @@ export class PersonUID extends Observable {
 
   createPerson(addressbook: Addressbook) {
     this.person = this.findPerson();
-    if (this.person) {
-      return this.person;
+    if (!this.person) {
+      this.person = addressbook.newPerson();
+      this.person.name = this.name || nameFromEmailAddress(this.emailAddress);
+      this.person.emailAddresses.add(new ContactEntry(this.emailAddress, "primary"));
+      addressbook.persons.add(this.person);
     }
-    this.person = addressbook.newPerson();
-    this.person.name = this.name || nameFromEmailAddress(this.emailAddress);
-    this.person.emailAddresses.add(new ContactEntry(this.emailAddress, "primary"));
-    addressbook.persons.add(this.person);
+    if (this.encryptionPublicKey) {
+      this.person.addEncryptionPublicKey(this.encryptionPublicKey);
+    }
     return this.person;
   }
 
@@ -79,12 +89,21 @@ export class PersonUID extends Observable {
 }
 
 const cachedPersonUIDs = new Map<string, WeakRef<PersonUID>>();
+/** Drops the cache entry once the `PersonUID` itself is gone.
+ * Otherwise we keep one dead entry per email address that we ever saw.
+ * @see Abstract/Attachment */
+const cachedPersonUIDsFinalizer = new FinalizationRegistry((key: string) => {
+  if (!cachedPersonUIDs.get(key)?.deref()) {
+    cachedPersonUIDs.delete(key);
+  }
+});
 
 export function findOrCreatePersonUID(emailAddress: string, realname: string): PersonUID {
   if (!emailAddress && !realname) {
     return kDummyPerson;
   }
-  let cached = cachedPersonUIDs.get(emailAddress + "|" + realname)?.deref();
+  let key = emailAddress + "|" + realname;
+  let cached = cachedPersonUIDs.get(key)?.deref();
   if (cached) {
     return cached;
   }
@@ -96,7 +115,8 @@ export function findOrCreatePersonUID(emailAddress: string, realname: string): P
   if (existing) {
     uid.person = existing;
   }
-  cachedPersonUIDs.set(emailAddress + "|" + realname, new WeakRef(uid));
+  cachedPersonUIDs.set(key, new WeakRef(uid));
+  cachedPersonUIDsFinalizer.register(uid, key);
   return uid;
 }
 
@@ -112,6 +132,19 @@ export function findPerson(emailAddress: string): Person | undefined {
     }
   }
   return undefined;
+}
+
+export function findOrCreatePerson(emailAddress: string, name: string): Person {
+  let person = findPerson(emailAddress);
+  if (person) {
+    return person;
+  }
+  person = appGlobal.collectedAddressbook.newPerson();
+  person.name = name;
+  person.emailAddresses.add(new ContactEntry(emailAddress, null, "mailto"));
+  // Add it, so that the next call finds it, instead of creating a duplicate
+  appGlobal.collectedAddressbook.persons.add(person);
+  return person;
 }
 
 export function findPersonsWithName(name: string): ArrayColl<Person> {

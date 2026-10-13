@@ -58,12 +58,14 @@ export async function retryOnTransientError<T>(func: () => Promise<T>, attempts 
 export function isNetworkError(ex: any): boolean {
   // Node fetch, via backend `HTTPFetchError`
   const kNetworkErrorCodes = ["ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "ETIMEDOUT",
-    "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
+    "EPIPE", "EAI_AGAIN", "ENETDOWN", "ENETUNREACH", "EHOSTUNREACH",
     "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET",
-    // ImapFlow
-    "ETIMEOUT", "CONNECT_TIMEOUT", "GREETING_TIMEOUT", "UPGRADE_TIMEOUT"];
+    // ImapFlow. `NoConnection` = socket already closed
+    "ETIMEOUT", "CONNECT_TIMEOUT", "GREETING_TIMEOUT", "UPGRADE_TIMEOUT", "NoConnection"];
   // Error class `instanceof` doesn't survive JPC
   return kNetworkErrorCodes.includes(ex?.code) ||
+    // Chromium `net` module, e.g. `net::ERR_CONNECTION_RESET`
+    /net::ERR_(CONNECTION_|EMPTY_RESPONSE|NETWORK_CHANGED|INTERNET_DISCONNECTED|INCOMPLETE_CHUNKED_ENCODING|CONTENT_LENGTH_MISMATCH)/.test(ex?.message) ||
     // browser fetch
     ex?.name == "TypeError" &&
     /network ?error|failed to fetch|fetch failed|load failed/i.test(ex.message);
@@ -114,6 +116,17 @@ export class HTTPError extends Error {
       return undefined;
     }
   }
+}
+
+/** Checks a `Response` for HTTP errors, for callers of libraries that
+ * don't check it themselves, e.g. tsdav.
+ * Also works for a `Response` that came over JPC, where all properties are async.
+ * @throws an Error starting with `message`, if the response status is not 2xx */
+export async function assertHTTPResponseOK(response: Response, message: string): Promise<void> {
+  if (await response.ok) {
+    return;
+  }
+  throw new Error(`${message}: HTTP ${await response.status} ${await response.statusText}`);
 }
 
 /** Like `fetch()`, but returns the parsed JSON body.

@@ -77,10 +77,9 @@
               <hbox>
                 <hbox class="label">{$t`Access`}</hbox>
                 <select bind:value={mailAccess}>
-                  <option value={MailShareCombinedPermissions.Read}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Read]}</option>
-                  <option value={MailShareCombinedPermissions.FlagChange}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.FlagChange]}</option>
-                  <option value={MailShareCombinedPermissions.Modify}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Modify]}</option>
-                  <option value={MailShareCombinedPermissions.Custom}>{mailShareCombinedPermissionsLabels[MailShareCombinedPermissions.Custom]}</option>
+                  {#each account.sharePermissionLevels as permission}
+                    <option value={permission}>{mailShareCombinedPermissionsLabels[permission]}</option>
+                  {/each}
                 </select>
               </hbox>
               {#if mailAccess == MailShareCombinedPermissions.Custom}
@@ -96,7 +95,7 @@
             </vbox>
           {/if}
 
-          {#if !(account instanceof IMAPAccount)}
+          {#if $calendars.hasItems}
             <hbox class="enable">
               <Checkbox
                 label={$t`Share calendar`}
@@ -114,15 +113,16 @@
                 <hbox>
                   <hbox class="label">{$t`Access`}</hbox>
                   <select bind:value={calendarAccess}>
-                    <option value={CalendarShareCombinedPermissions.ReadAvailability}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAvailability]}</option>
-                    <option value={CalendarShareCombinedPermissions.ReadTitle}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadTitle]}</option>
-                    <option value={CalendarShareCombinedPermissions.ReadAll}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.ReadAll]}</option>
-                    <option value={CalendarShareCombinedPermissions.Modify}>{calendarShareCombinedPermissionsLabels[CalendarShareCombinedPermissions.Modify]}</option>
+                    {#each $calendars.first.sharePermissionLevels as permission}
+                      <option value={permission}>{calendarShareCombinedPermissionsLabels[permission]}</option>
+                    {/each}
                   </select>
                 </hbox>
               </vbox>
             {/if}
+          {/if}
 
+          {#if $addressbooks.hasItems}
             <hbox class="enable">
               <Checkbox
                 label={$t`Share addressbook`}
@@ -140,21 +140,23 @@
                 <hbox>
                   <hbox class="label">{$t`Access`}</hbox>
                   <select bind:value={addressbookAccess}>
-                    <option value={AddressbookShareCombinedPermissions.Read}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Read]}</option>
-                    <option value={AddressbookShareCombinedPermissions.Modify}>{addressbookShareCombinedPermissionsLabels[AddressbookShareCombinedPermissions.Modify]}</option>
+                    {#each $addressbooks.first.sharePermissionLevels as permission}
+                      <option value={permission}>{addressbookShareCombinedPermissionsLabels[permission]}</option>
+                    {/each}
                   </select>
                 </hbox>
               </vbox>
             {/if}
-            <hbox class="buttons">
-              <Button
-                label={$t`Add`}
-                onClick={() => onAddPersons()}
-                disabled={errorMessage}
-                classes="primary filled"
-                />
-            </hbox>
           {/if}
+
+          <hbox class="buttons">
+            <Button
+              label={$t`Add`}
+              onClick={() => onAddPersons()}
+              disabled={errorMessage}
+              classes="primary filled"
+              />
+          </hbox>
         {/if}
 
       </vbox>
@@ -164,14 +166,13 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { IMAPAccount } from "../../../logic/Mail/IMAP/IMAPAccount";
-  import { EWSAccount } from "../../../logic/Mail/EWS/EWSAccount";
-  import { OWAAccount } from "../../../logic/Mail/OWA/OWAAccount";
-  import { Addressbook, AddressbookShareCombinedPermissions, addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
-  import { Calendar, CalendarShareCombinedPermissions, calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
+  import { addressbookShareCombinedPermissionsLabels } from "../../../logic/Contacts/Addressbook";
+  import { calendarShareCombinedPermissionsLabels } from "../../../logic/Calendar/Calendar";
   import { MailShareCombinedPermissions, mailShareCombinedPermissionsLabels, MailShareIndividualPermissions, mailShareIndividualPermissionsLabels, type Folder } from "../../../logic/Mail/Folder";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { appGlobal } from "../../../logic/app";
   import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
+  import { catchErrors } from "../../Util/error";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import StatusMessage from "../../Setup/Shared/StatusMessage.svelte";
@@ -186,12 +187,15 @@
 
   export let account: MailAccount;
   let sharedWith = new ArrayColl<PersonUID>();
-  $: (async() => { sharedWith = new ArrayColl<PersonUID>(); findSharedPersons(account); })();
+  $: account, catchErrors(async () => {
+    sharedWith = new ArrayColl<PersonUID>();
+    await findSharedPersons(account);
+  });
 
   async function findSharedPersons(account: MailAccount) {
-    mergePersons(await account.getSharedPersons());
-    mergePersons(await calendars.first?.getSharedPersons());
-    mergePersons(await addressbooks.first?.getSharedPersons());
+    await mergePersons(await account.getSharedPersons());
+    await mergePersons(await calendars.first?.getSharedPersons());
+    await mergePersons(await addressbooks.first?.getSharedPersons());
   }
 
   async function mergePersons(persons?: ArrayColl<PersonUID>) {
@@ -228,7 +232,7 @@
   async function checkForShares(person: PersonUID) {
     try {
       resetAddDialog();
-      if (!(account instanceof EWSAccount || account instanceof OWAAccount || account instanceof IMAPAccount)) {
+      if (!account.canShareWithPersons()) {
         return;
       }
       if (getBaseDomainFromHost(getDomainForEmailAddress(person.emailAddress)) !=
@@ -287,7 +291,7 @@
   let shareAddressbook = false;
   let shareCalendar = true;
   // mail
-  let mailAccess = MailShareCombinedPermissions.Read;
+  let mailAccess = account.sharePermissionLevels[0];
   let mailFolder = account.inbox;
   let selectedFolders: ArrayColl<Folder>;
   let includeSubfolders = true;
@@ -298,10 +302,10 @@
   let shareDeleteFolder = false;
   let shareCreateSubfolders = false;
   // calendars and addressbooks
-  $: calendars = account.dependentAccounts().filterObservable(acc => acc instanceof Calendar);
-  $: addressbooks = account.dependentAccounts().filterObservable(acc => acc instanceof Addressbook);
-  let calendarAccess = CalendarShareCombinedPermissions.ReadAvailability;
-  let addressbookAccess = AddressbookShareCombinedPermissions.Read;
+  $: calendars = appGlobal.calendars.filterObservable(calendar => calendar.dependsOn(account));
+  $: addressbooks = appGlobal.addressbooks.filterObservable(addressbook => addressbook.dependsOn(account));
+  $: calendarAccess = calendars.first?.sharePermissionLevels[0];
+  $: addressbookAccess = addressbooks.first?.sharePermissionLevels[0];
 </script>
 
 <style>

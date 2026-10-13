@@ -1,8 +1,7 @@
 // #if [!WEBMAIL && !MOBILE]
 <webview bind:this={webviewE} src={url ?? blobURL} {title} class:hidden {partition} />
 // #else
-<!-- TODO Security: Test that this <webview> is untrusted and jailed -->
-<iframe bind:this={webviewE} src={url ?? blobURL} {title} class:hidden />
+<iframe bind:this={webviewE} src={url ?? blobURL} {title} {sandbox} class:hidden />
 // #endif
 
 <!--
@@ -29,7 +28,7 @@
   // #endif
   import { stringToBlobURL } from "../Util/util";
   import type { URLString } from "../../logic/util/util";
-  import { backgroundError, catchErrors } from "../Util/error";
+  import { backgroundError, catchErrors, showError } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { openExternalURL } from "../../logic/util/os-integration";
@@ -70,6 +69,12 @@
 
   $: partition = sessionID ? "persist:" + sessionID : undefined;
 
+  /** Jail untrusted `html`, e.g. a mail: No scripts, and an opaque origin to block access of app.
+   * `allow-popups` keeps the `target="_blank"` links working that `sanitizeHTML()` creates.
+   * Only a page that a web server gave us is not jailed, e.g. a web app or the payment page:
+   * That page gets the origin of its server. A `blob:` URL would get *ours*. */
+  $: sandbox = url?.startsWith("https:") ? undefined : "allow-popups allow-popups-to-escape-sandbox";
+
   onMount(() =>{
     if (autoSize) {
       observeMaxWidth();
@@ -77,7 +82,7 @@
   });
 
   let blobURL: URLString;
-  $: html, setURL();
+  $: html, catchErrors(setURL);
   async function setURL() {
     if (url) {
       return;
@@ -95,17 +100,12 @@
         over-flow: visible !important;
       }
     </style>`;
-    let servers = allowServerCalls ? `* 'unsafe-inline'` : `'unsafe-inline'` ;
+    let servers = allowServerCalls === true ? "*" : allowServerCalls || "";
     const head = `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
-      style-src ${servers}; img-src data: blob: ${servers}">\n\n` + headHTML + `\n\n`;
-    let displayHTML = html ?? "";
-    let headPos = displayHTML.indexOf("<head>");
-    headPos = headPos < 0 ? 0 : headPos + 6;
-    displayHTML =
-      displayHTML.substring(0, headPos) +
-      head +
-      (autoSize ? autoSizeCSS: "") +
-      displayHTML.substring(headPos);
+      style-src ${servers} 'unsafe-inline'; img-src data: blob: ${servers}">\n\n` + headHTML + `\n\n`;
+    /* Put our head additions in front of the mail, because the content is untrusted.
+     * The HTML parser moves a leading meta and style element into the head for us. */
+    let displayHTML = head + (autoSize ? autoSizeCSS : "") + (html ?? "");
     // console.log("html", displayHTML);
     blobURL = stringToBlobURL("text/html", displayHTML);
   }
@@ -124,7 +124,7 @@
         dispatch("webview", webviewE);
         // #if [!WEBMAIL]
         if (autoSize) {
-          webviewE.addEventListener("did-finish-load", onLoadResize);
+          webviewE.addEventListener("did-finish-load", () => catchErrors(onLoadResize));
         }
         await addInputListener();
         await addLinkListener();
@@ -136,9 +136,8 @@
 
     // #if [!WEBMAIL]
     // <https://www.electronjs.org/docs/latest/api/webview-tag/#event-context-menu>
-    webviewE.addEventListener("context-menu", event => catchErrors(() => {
-      onContextMenu((event as any).params);
-    }));
+    webviewE.addEventListener("context-menu", event =>
+      catchErrors(() => onContextMenu((event as any).params)));
     // #endif
   }
 
@@ -152,7 +151,8 @@
       if (event.type == "mouseDown") {
         webviewE.click();
       } else if (event.type == "rawKeyDown") {
-        onKeyOnMessage(newElectronKeyboardEvent(event));
+        onKeyOnMessage(newElectronKeyboardEvent(event))
+          .catch(showError);
       }
     });
   }

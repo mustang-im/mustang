@@ -91,11 +91,30 @@ export class OutgoingInvitation {
       throw new NotReached(`You cannot ${method} to this invitation, because you're the organizer`);
     }
     email.subject = subject + ": " + this.event.title;
+    if (method == "REQUEST") {
+      await this.addAttachments(email);
+    }
     if (this.event.descriptionText) {
       email.text = this.event.descriptionText;
       email.html = this.event.descriptionHTML;
     }
     await email.folder.account.send(email);
+  }
+
+  /**
+   * Sends the files that are attached to the event as attachments of the
+   * invitation email, and not inline in the iCal, which is what Exchange,
+   * Google and Apple do as well.
+   *
+   * Exchange puts the invitation into the calendar of the invitee before any
+   * mail app ever sees the email, so files inline in the iCal would be lost.
+   * @see ICalEMailProcessor for the receiving end.
+   */
+  protected async addAttachments(email: EMail) {
+    await this.event.loadAttachments();
+    email.attachments.addAll(this.event.attachments.contents
+      .filter(attachment => attachment.content) // We can't send what we don't have
+      .map(attachment => attachment.cloneTo(email)));
   }
 
   /**
@@ -128,13 +147,13 @@ export class OutgoingInvitation {
    *   you'd simply add participants to the event.
    * - If it was an event without participants, you'd simply add participants.
    */
-  static forwardEventByMail(event: Event): EMail {
+  static async forwardEventByMail(event: Event): Promise<EMail> {
     let identity = identityForCalendar(event.calendar);
     let mail = identity.newEMailFrom();
     mail.subject = "Fwd: " + event.title; // Do NOT translate "Fwd: "
     mail.event = event;
     // `mail.event` already sends the event, but it's not visible in the composer, so add it a third time
-    let icalStr = new TextEncoder().encode(getICal(event));
+    let icalStr = new TextEncoder().encode(await getICal(event));
     let file = new File([icalStr], "forwarded.ics", { type: "text/calendar" });
     let attachment = mail.newAttachment();
     attachment.fromFile(file);

@@ -32,6 +32,10 @@ export function ensureArray<Type>(val: Type[] | Type): Type[] {
   return val ? Array.isArray(val) ? val : [val] : [];
 }
 
+export function booleanHasValue(value: boolean | null | undefined): value is boolean {
+  return value === true || value === false;
+}
+
 export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }
@@ -49,19 +53,28 @@ export async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export async function blobToDataURL(blob: Blob): Promise<URLString> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let reader = new FileReader();
-    reader.onloadend = () => {
-      let dataURL = reader.result as string;
-      resolve(dataURL);
-    }
+    reader.onload = () => resolve(reader.result as string);
+    // The file may be gone or changed on disk, since the user picked it
+    reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
 }
 
-export async function base64ToArrayBuffer(base64: string, mimetype: string): Promise<ArrayBuffer> {
-  let res = await fetch(`data:${mimetype};base64,` + base64);
-  return await res.arrayBuffer();
+/** Decodes base64. */
+export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
+  if (Uint8Array.fromBase64) {
+    return Uint8Array.fromBase64(base64);
+  }
+  // Fallback: node doesn't have it yet, unlike Electron
+  // `Uint8Array.from()` with a map is 30x slower = 1.2s for a 20 MB mail
+  let binary = atob(base64);
+  let bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {

@@ -1,4 +1,4 @@
-<svelte:window on:url-mailto|capture={(event) => onMailto(event.url)} />
+<svelte:window on:url-mailto|capture={(event) => catchErrors(() => onMailto(event.url))} />
 
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
@@ -12,9 +12,7 @@
   import { t } from "../../l10n/l10n";
   import { onMount } from "svelte";
 
-  onMount(() => {
-    newMailListener();
-  });
+  onMount(() => catchErrors(newMailListener));
 
   $: emailAccounts = appGlobal.emailAccounts;
   $: startupArgs = $emailAccounts.hasItems ? appGlobal.remoteApp?.startupArgs : null;
@@ -35,6 +33,7 @@
   async function onMailto(url: URLString) {
     let account = emailAccounts.first;
     assert(account, $t`Please set up an email account before sending mail`);
+    await waitForStartup();
     let mail = account.newEMailFrom();
     mail.compose.populateFromMailtoURL(url);
     mailMustangApp.writeMail(mail);
@@ -52,6 +51,8 @@
     }
   }
 
+  /** `newEMailFrom()` and `AllFolders.newEMail()` need the Sent folder of an account,
+   * so wait until we read the folders. `$selectedFolder` tells us that we have them. */
   async function waitForStartup(): Promise<boolean> {
     if ($selectedFolder) {
       return false;

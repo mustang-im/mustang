@@ -3,7 +3,6 @@ import { JSCalendarEvent } from "./JSCalendarEvent";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { TID, TJMAPChangeResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import type { JMAPCalendar } from "./JMAPCalendar";
-import type { InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { JMAPOutgoingInvitation } from "./JMAPOutgoingInvitation";
 import { checkChangeError } from "../../Mail/JMAP/JMAPError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -38,13 +37,22 @@ export class JMAPEvent extends Event {
   updateRecurrenceOverrides(exceptions: ArrayColl<Event>) {
     let ro = this.original.recurrenceOverrides;
     for (let override in ro) {
-      let recurrenceStartTime = JSCalendarEvent.toDate(override, this.original);
-      if (ro[override].excluded) {
-        this.makeExclusionLocally(recurrenceStartTime);
-      } else {
-        let instance = this.getOccurrenceByDate(recurrenceStartTime);
-        JSCalendarEvent.toEvent(ro[override], instance);
-        exceptions.add(instance);
+      try {
+        let recurrenceStartTime = JSCalendarEvent.toDate(override, this.original);
+        if (ro[override].excluded) {
+          this.makeExclusionLocally(recurrenceStartTime);
+        } else {
+          let instance = this.getOccurrenceByDate(recurrenceStartTime);
+          // The override contains only the changed properties, so overlay them on the master event
+          let json = { ...this.original, start: override, ...ro[override] } as TJMAPCalendarEvent;
+          delete json.recurrenceRule;
+          delete json.recurrenceOverrides;
+          JSCalendarEvent.toEvent(json, instance);
+          instance.original = ro[override];
+          exceptions.add(instance);
+        }
+      } catch (ex) {
+        this.calendar.errorCallback(ex);
       }
     }
   }
@@ -70,6 +78,9 @@ export class JMAPEvent extends Event {
     jsevent.calendarIds[this.calendar.jmapID] = true;
     delete jsevent.id; // Workaround for <https://github.com/stalwartlabs/stalwart/discussions/2858>
     delete jsevent.isOrigin; // ditto
+    if (!isNew) {
+      delete jsevent.uid; // UID is immutable
+    }
     assert(this.id, "Event ctor should set this");
 
     let results = await this.account.makeSingleCall("CalendarEvent/set", {
@@ -85,6 +96,8 @@ export class JMAPEvent extends Event {
       this.jmapID = this.original.id = sanitize.alphanumdash(results.created[this.id].id);
       await this.saveLocally();
     }
+
+    await this.sendInvitationsDirectly(); // server doesn't send
   }
 
   async deleteFromServer() {
@@ -107,15 +120,9 @@ export class JMAPEvent extends Event {
     await super.makeExclusions(exclusions);
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
-    assert(this.isIncomingMeeting, "Only invitations can be responded to");
-    // ...
-    await this.calendar.listEvents(); // Sync whatever the server decides to do
-  }
-
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
-    this.original = sanitize.json(json.original, {}); // as object, not string
+    this.original = sanitize.json(json.original, null); // as object, not string. null = never saved to the server
     this.jmapID = sanitize.alphanumdash(json.jmapID, null);
   }
   toExtraJSON(): any {

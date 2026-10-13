@@ -30,7 +30,7 @@ export class JMAPGroup extends Group {
 
   fromExtraJSON(json: any) {
     super.fromExtraJSON(json);
-    this.original = sanitize.json(json.original, {}); // as object, not string
+    this.original = sanitize.json(json.original, null); // as object, not string. null = never saved to the server
     this.jmapID = sanitize.alphanumdash(json.jmapID, null);
     this.uid = sanitize.nonemptystring(json.uid, null);
   }

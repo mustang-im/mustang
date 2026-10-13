@@ -3,6 +3,8 @@
   <Scroll>
     {#if showStore}
       <WebAppStore bind:showStore />
+    {:else}
+      <hbox class="background-pattern" flex />
     {/if}
   </Scroll>
 </hbox>
@@ -13,18 +15,19 @@
   import LaunchBar from "./LauncherBar/LaunchBar.svelte";
   import WebAppStore from "./Shop/WebAppStore.svelte";
   import Scroll from "../Shared/Scroll.svelte";
+  import { catchErrors } from "../Util/error";
   import { onDestroy, onMount } from "svelte";
 
   let showStore = false;
 
   $: apps = appGlobal.webApps.myApps;
 
-  onMount(async () => {
+  onMount(() => catchErrors(async () => {
     await appGlobal.webApps.load();
     if (appGlobal.webApps.myApps.isEmpty) {
       showStore = true;
     }
-  });
+  }));
 
   onDestroy(() => {
     $showingWebApp = null;

@@ -155,6 +155,9 @@ export class GraphFolder extends Folder {
       }
     }
 
+    for (let msg of newMessages) {
+      msg.isNewArrived = true;
+    }
     this.messages.addAll(newMessages);
     this.messages.removeAll(removedMessages);
     await this.saveNewMsgs(newMessages);
@@ -166,7 +169,7 @@ export class GraphFolder extends Folder {
     return { newMessages, missingMessagesJSON };
   }
 
-  protected parseMessageList(msgs: TGraphEMail[], checkUpdates = true): { newMessages: ArrayColl<GraphEMail>, updatedMessages: ArrayColl<GraphEMail> } {
+  parseMessageList(msgs: TGraphEMail[], checkUpdates = true): { newMessages: ArrayColl<GraphEMail>, updatedMessages: ArrayColl<GraphEMail> } {
     let newMessages = new ArrayColl<GraphEMail>();
     let updatedMessages = new ArrayColl<GraphEMail>();
     for (let json of msgs) {
@@ -205,7 +208,11 @@ export class GraphFolder extends Folder {
   }
 
   /** Lists new messages, and downloads them */
-  async getNewMessages(): Promise<ArrayColl<GraphEMail>> {
+  async getNewMessages(): Promise<Collection<GraphEMail>> {
+    if (!this.deltaURL) {
+      // Without delta URL, we would fetch the entire folder
+      return await this.getRecentMessages() as Collection<GraphEMail>;
+    }
     let newMsgs = await this.listMessages();
     await this.downloadMessages(newMsgs);
     return newMsgs;
@@ -214,7 +221,7 @@ export class GraphFolder extends Folder {
   /** Lists all messages, and downloads them */
   async getAllMessages(): Promise<ArrayColl<GraphEMail>> {
     let newMsgs = await this.listAllMessages();
-    await this.downloadMessages(newMsgs);
+    await this.downloadSmallMessagesFirst(newMsgs);
     let updateNew = await this.getNewMessages();
     newMsgs.addAll(updateNew);
     return newMsgs;
@@ -341,7 +348,6 @@ export class GraphFolder extends Folder {
       displayName: name,
     });
     newFolder.fromGraph(newFolderJSON);
-    this.account.allFolders.set(newFolder.id, newFolder);
     console.log("Folder created", name);
     await newFolder.listMessages();
     return newFolder;

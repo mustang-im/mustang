@@ -1,19 +1,22 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
+import { JMAPIdentity } from "./JMAPIdentity";
+import { JMAPSearchEMail } from "./JMAPSearchEMail";
 import type { EMail } from "../EMail";
-import type { PersonUID } from "../../Abstract/PersonUID";
+import { newAccountForProtocol } from "../AccountsList/MailAccounts";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPSession, type TJMAPUpload } from "./TJMAPGeneric";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPUpload } from "./TJMAPGeneric";
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
 import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
 import { checkChangeError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { SpecialFolder } from "../Folder";
+import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions, type Folder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { basicAuth } from "../../Auth/httpAuth";
@@ -21,11 +24,12 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
-import { waitUntilOnline, isNetworkError, HTTPError } from "../../util/netUtil";
+import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
-import { ArrayColl, Collection, MapColl } from "svelte-collections";
+import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
 
 export class JMAPAccount extends MailAccount {
   readonly protocol: string = "jmap";
@@ -33,13 +37,17 @@ export class JMAPAccount extends MailAccount {
   accountID: string;
   @notifyChangedProperty
   session: TJMAPSession;
-  allFolders = new MapColl<string, JMAPFolder>();
+  declare readonly identities: ArrayColl<JMAPIdentity>;
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
   /** if polling is enabled, how often to poll.
    * In minutes. 0 or null = polling disabled */
   pollIntervalMinutes = 10;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   readonly stateLock = new Lock(); /** Protects syncState */
+  protected loginRunOnce = new RunOnce();
+  protected startupRunOnce = new RunOnce();
+  protected pushAbort: AbortController | null = null;
+  protected throttle = new Throttle(50, 1);
   logging = true;
 
   constructor() {
@@ -49,36 +57,63 @@ export class JMAPAccount extends MailAccount {
 
   get isLoggedIn(): boolean {
     return this.session &&
-      (this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn);
+      (this.isDependentAccount
+       ? this.mainAccount.isLoggedIn
+       : this.authMethod != AuthMethod.OAuth2 || this.oAuth2?.isLoggedIn);
   }
 
   async login(interactive: boolean): Promise<void> {
-    await super.login(interactive);
-    if (!this.dbID) {
-      await this.storage.saveAccount(this);
-    }
-    await this.storage.readFolderHierarchy(this);
+    await this.loginRunOnce.runOnce(async () => {
+      await super.login(interactive);
+      if (this.isDependentAccount) {
+        return; // `super.login()` logged in the main account, which starts us up
+      }
+      if (!this.dbID) {
+        await this.storage.saveAccount(this);
+      }
+      await this.storage.readFolderHierarchy(this);
 
-    await this.loginOAuth2(interactive);
-    await this.getSession();
-    await this.startup();
+      await this.loginOAuth2(interactive);
+      await this.getSession();
+    });
   }
 
-  async startup() {
-    await super.startup();
-    this.startPushListener()
-      .catch(this.errorCallback);
-    let inbox = this.inbox as JMAPFolder;
-    assert(inbox, "Inbox not found");
-    inbox.startPolling();
-
-    if (this.haveContacts) {
-      await this.listAddressbooks();
-    }
-    if (this.haveCalendar) {
-      await this.listCalendars();
-    }
-    await this.startupDependentAccounts();
+  async syncOnStartup() {
+    await this.startupRunOnce.runOnce(async () => {
+      if (this.isDependentAccount) {
+        this.session = (this.mainAccount as JMAPAccount).session;
+      }
+      let firstSync = this.rootFolders.isEmpty;
+      try {
+        if (this.haveSubmission) {
+          await this.listIdentities();
+        }
+        if (this.haveMail) {
+          await super.syncOnStartup();
+          let inbox = this.inbox as JMAPFolder;
+          assert(inbox, "Inbox not found");
+          inbox.startPolling();
+        }
+        if (!this.isDependentAccount) { // One stream covers all accounts shared with us
+          this.startPushListener()
+            .catch(this.errorCallback);
+        }
+        if (this.haveContacts) {
+          await this.listAddressbooks();
+        }
+        if (this.haveCalendar) {
+          await this.listCalendars();
+        }
+        if (!this.isDependentAccount && this.haveSharing) {
+          await this.addNewlySharedAccounts(); // Shared while we were not running
+        }
+      } finally { // Even when the mail folders failed, so that calendar and addressbook still work
+        await this.startupDependentAccounts();
+      }
+      if (firstSync && !this.isDependentAccount) {
+        await this.addSharedAccounts(); // after `startupDependentAccounts()`: they start up on their own
+      }
+    });
   }
 
   async verifyLogin(): Promise<void> {
@@ -118,12 +153,40 @@ export class JMAPAccount extends MailAccount {
     this.session = session;
   }
 
+  /** An account shared with us may offer less than our own, e.g. a calendar, but no mail.
+   * Assumes that our own mail, contacts and calendars are all in the same account, like
+   * Stalwart and Cyrus do it. The RFC allows `primaryAccounts` to name a different account
+   * per capability, which would be a second personal account, and we don't add those. */
+  get accountCapabilities(): Record<string, Record<string, any>> {
+    return this.session?.accounts[this.accountID]?.accountCapabilities ?? {};
+  }
+  get haveMail(): boolean {
+    return !!this.accountCapabilities["urn:ietf:params:jmap:mail"];
+  }
+  get haveSubmission(): boolean {
+    return !!this.accountCapabilities["urn:ietf:params:jmap:submission"];
+  }
   get haveContacts(): boolean {
-    return !!this.session.capabilities["urn:ietf:params:jmap:contacts"];
+    return !!this.accountCapabilities["urn:ietf:params:jmap:contacts"];
   }
   get haveCalendar(): boolean {
-    return !!this.session.capabilities["urn:ietf:params:jmap:calendars"];
+    return !!this.accountCapabilities["urn:ietf:params:jmap:calendars"];
   }
+  get haveSharing(): boolean {
+    return this.hasCapability("urn:ietf:params:jmap:principals");
+  }
+  /** One below what the server allows, so that the mail the user clicks on still gets through.
+   * @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxConcurrentRequests` */
+  get maxParallelRequests(): number {
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
+    return serverMax ? Math.max(1, Math.min(serverMax - 1, 30)) : 5;
+  }
+  // <compat for="Cyrus">
+  // Cyrus announces its core extension always, even when its non-standard extensions are off.
+  get isCyrus(): boolean {
+    return this.hasCapability("https://cyrusimap.org/ns/jmap/core");
+  }
+  // </compat>
 
   /** A single API call, with a single result */
   async makeSingleCall(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any>> {
@@ -131,6 +194,23 @@ export class JMAPAccount extends MailAccount {
     let response = responses[0];
     assert(response[0] == method, "Method in response does not match");
     return response[1];
+  }
+
+  /** Like `makeSingleCall()`, but might be either for our account or for a shared account.
+   * Calls to shared accounts might fail due to lacking permissions.
+   * Unfortunately, the session object from Stalwart doesn't tell us the actual permissions
+   * we have, so all we can do is try and error. This function mostly handles the error.
+   * In this specific error condition, it returns `null` instead of throwing.
+   * @returns null, if they did not share this part of their account with us */
+  async makeSingleCallForSharedAccount(method: string, argumentsJSON: Record<string, any>): Promise<Record<string, any> | null> {
+    try {
+      return await this.makeSingleCall(method, argumentsJSON);
+    } catch (ex) {
+      if (this.isDependentAccount && (ex as any).code == "forbidden") {
+        return null;
+      }
+      throw ex;
+    }
   }
 
   /** Make multiple calls in one request, and return only the last result.
@@ -173,12 +253,15 @@ export class JMAPAccount extends MailAccount {
         await this.login(false);
       }
     }
-    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail"];
+    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
     if (this.haveContacts) {
       using.push("urn:ietf:params:jmap:contacts");
     }
     if (this.haveCalendar) {
       using.push("urn:ietf:params:jmap:calendars");
+    }
+    if (this.haveSharing) {
+      using.push("urn:ietf:params:jmap:principals");
     }
     let requestJSON: TJMAPAPIRequest = {
       using: using,
@@ -199,10 +282,7 @@ export class JMAPAccount extends MailAccount {
       responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
     } catch (ex) {
       if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
-        console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with error", JSON.stringify(responsesJSON, null, 2), "while", ...log);
-        let errorJSON = responsesJSON as TJMAPAPIErrorResponse;
-        ex.message = errorJSON?.detail ?? ex.message;
-        ex.code = errorJSON?.type;
+        console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with", ex?.message ?? ex, "while", ...log);
         throw ex;
       }
       console.error("Error", ex?.message ?? ex, ...log);
@@ -243,6 +323,9 @@ export class JMAPAccount extends MailAccount {
   }
 
   protected authorizationHeader(): string {
+    if (this.isDependentAccount) {
+      return (this.mainAccount as JMAPAccount).authorizationHeader();
+    }
     // Auth method
     let usePassword = [AuthMethod.Password].includes(this.authMethod);
     let useOAuth2 = [AuthMethod.OAuth2].includes(this.authMethod);
@@ -276,6 +359,7 @@ export class JMAPAccount extends MailAccount {
 
   async httpGet(url: string, options?: any): Promise<any> {
     let ky = await this.ky(options);
+    await this.throttle.throttle();
     try {
       return await ky.get(url);
     } catch (ex) {
@@ -285,6 +369,7 @@ export class JMAPAccount extends MailAccount {
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
     let ky = await this.ky();
+    await this.throttle.throttle();
     try {
       return await ky.post(url, { json: sendJSON });
     } catch (ex) {
@@ -294,6 +379,7 @@ export class JMAPAccount extends MailAccount {
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
     let ky = await this.ky(options);
+    await this.throttle.throttle();
     try {
       return await ky.post(url, { body: body });
     } catch (ex) {
@@ -304,13 +390,17 @@ export class JMAPAccount extends MailAccount {
   /** @throws an appropriate exception (always throws) */
   protected async httpError(ex: Error) {
     if (ex.name == "HTTPError") {
+      // HTTPFetchError from backend.ts, which has only scalar properties, not the HTTP response body
       let ext = ex as any;
-      let json = await ext.response.json();
-      let msg = json.title + ": " + json.detail;
-      if (ext.status == 401) {
-        throw new LoginError(ex, msg);
+      if (ext.httpCode == 401) {
+        throw new LoginError(ex, null);
       } else {
-        throw new ConnectError(ex, msg);
+        if (isTransientError(ext)) {
+          const kDefaultBackoffSec = 5;
+          const kMaxBackoffSec = 20; // Sensible upper limit
+          this.throttle.waitForSecond(Math.min(ext.retryAfterSeconds ?? kDefaultBackoffSec, kMaxBackoffSec));
+        }
+        throw new ConnectError(ex, null);
       }
     }
     throw ex;
@@ -334,6 +424,7 @@ export class JMAPAccount extends MailAccount {
 
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
+    let currentFolders = new Map<string, JMAPFolder>();
     let oldFolders = this.getAllFolders();
 
     let serverFoldersResponse = await this.makeSingleCall("Mailbox/get", {
@@ -341,46 +432,36 @@ export class JMAPAccount extends MailAccount {
       "ids": null,
     }) as TJMAPGetResponse<TJMAPFolder>;
     for (let folderJSON of serverFoldersResponse.list) {
-      let folder = this.getFolderByID(folderJSON.id) ?? this.newFolder();
-      // Assumes that parent folders will be listed first
-      folder.parent = folderJSON.parentId ? this.getFolderByID(folderJSON.parentId) : null;
-
-      let parentGroup = folder.parent
-        ? folder.parent.subFolders
-        : this.rootFolders;
-      let existing = parentGroup.find(folder => folder.id == folderJSON.id) as JMAPFolder;
-      if (existing) {
-        folder = existing;
-      } else {
-        parentGroup.add(folder);
+      // If the server lists the parent only later, we move the folder there on the next listing
+      let parent = folderJSON.parentId
+        ? this.findFolder(folder => folder.id == folderJSON.parentId) as JMAPFolder
+        : null;
+      let parentFolders = parent ? parent.subFolders : this.rootFolders;
+      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as JMAPFolder;
+      if (!folder) {
+        // We may already have the folder from our database, or it moved
+        folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
+        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+        oldParentFolders.remove(folder);
+        folder.parent = parent;
+        parentFolders.add(folder);
       }
       folder.fromJMAP(folderJSON);
-      this.allFolders.set(folder.id, folder);
+      currentFolders.set(folder.id, folder);
     }
 
-    if (this.logging) {
-      // console.log("super.getAllFolders()", super.getAllFolders().contents.map(f => f.name).join(","));
-      console.log("All folders", this.getAllFolders().contents.map(f => f.name).join(", "));
-    }
-
-    let currentFolders = new ArrayColl(this.allFolders.contents);
-    for (let oldFolder of oldFolders) {
-      if (!currentFolders.includes(oldFolder as JMAPFolder)) {
-        await oldFolder.deleteItLocally();
-        continue;
+    for (let folder of oldFolders) {
+      if (!currentFolders.has(folder.id)) {
+        await folder.deleteItLocally();
       }
     }
-    for (let folder of currentFolders) {
+    for (let folder of currentFolders.values()) {
       if (folder.dbID) {
         await this.storage.saveFolderProperties(folder);
       } else {
         await this.storage.saveFolder(folder);
       }
     }
-  }
-
-  getFolderByID(id: string): JMAPFolder | null {
-    return this.allFolders.get(id);
   }
 
   async createToplevelFolder(name: string): Promise<JMAPFolder> {
@@ -396,7 +477,6 @@ export class JMAPAccount extends MailAccount {
     }) as TJMAPChangeResponse<TJMAPFolder>;
     checkChangeError(response);
     newFolder.id = response.created["newFolder"].id;
-    this.allFolders.set(newFolder.id, newFolder);
     console.log("JMAP folder created", name);
     await this.listFolders();
     await newFolder.listMessages();
@@ -411,6 +491,7 @@ export class JMAPAccount extends MailAccount {
 
   async disconnect(): Promise<void> {
     this.stopPolling();
+    this.pushAbort?.abort();
     this.session = null;
   }
 
@@ -461,21 +542,56 @@ export class JMAPAccount extends MailAccount {
 
   protected async findIdentityOnServer(email: EMail): Promise<string | null> {
     assert(email.identity, `${this.name}: Please set the email identity before sending`);
+    if (!email.identity.pID) {
+      await this.listIdentities();
+    }
     if (email.identity.pID) {
       return email.identity.pID as string;
     }
+    // Our identity is local-only, e.g. a catch-all
+    let identity = this.identities.find(identity =>
+      identity.pID && identity.isEMailAddress(email.from.emailAddress));
+    // <compat for="Cyrus" reason="Offers a single identity, for the login user, and takes the `From` address from the mail itself">
+    if (this.isCyrus) {
+      identity ??= this.identities.find(identity => !!identity.pID);
+    }
+    // </compat>
+    assert(identity, gt`The server does not allow sending from this email address`);
+    return identity.pID;
+  }
 
-    let listResponse = await this.makeSingleCall("Identity/get", {
+  /** Creates, updates or removes our local identities, to match the server.
+   * Also for the accounts of other users: We are a member of some of them,
+   * e.g. functional accounts, and may then send as them. */
+  async listIdentities(): Promise<void> {
+    let response = await this.makeSingleCallForSharedAccount("Identity/get", {
       accountId: this.accountID,
+      ids: null,
     }) as TJMAPGetResponse<TJMAPIdentity>;
-    for (let jmapIdentity of listResponse.list) {
-      if (email.from.emailAddress == jmapIdentity.email ||
-          email.identity.emailAddress == jmapIdentity.email ||
-          email.identity.isEMailAddress(jmapIdentity.email)) {
-        return email.identity.pID = jmapIdentity.id;
+    if (!response) {
+      return; // Another user's account, and we are not a member of it
+    }
+
+    let obsolete = new ArrayColl(this.identities.contents.filter(identity => identity.pID));
+    for (let json of response.list) {
+      try {
+        let identity = this.identities.find(identity => identity.isSameAs(json));
+        if (identity) {
+          obsolete.remove(identity);
+        } else {
+          identity = this.newIdentity();
+          this.identities.add(identity);
+        }
+        identity.fromJMAP(json);
+      } catch (ex) {
+        this.errorCallback(ex);
       }
     }
-    return null;
+    // Identities that were never saved to the server have no `pID` and stay
+    this.identities.removeAll(obsolete);
+
+    this.syncState.set("Identity", response.state);
+    await this.save();
   }
 
   /**
@@ -498,6 +614,9 @@ export class JMAPAccount extends MailAccount {
     if (type == "Email") {
       await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
+    if (type == "Identity") {
+      await this.listIdentities();
+    }
     if (type == "ContactCard") {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
@@ -506,6 +625,9 @@ export class JMAPAccount extends MailAccount {
       let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
       await calendars.first?.fetchChangedEventsForAllCalendars();
     }
+    if (type == "ShareNotification") {
+      await this.addNewlySharedAccounts();
+    }
   }
 
   /** Starts push mail
@@ -513,12 +635,15 @@ export class JMAPAccount extends MailAccount {
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     assert(url, "Need event source URL");
-    let types = ["Email"];
+    let types = ["Email", "Identity"];
     if (this.haveContacts) {
       types.push("ContactCard");
     }
     if (this.haveCalendar) {
       types.push("CalendarEvent");
+    }
+    if (this.haveSharing) {
+      types.push("ShareNotification");
     }
     url = url
       .replace("{accountId}", this.accountID)
@@ -529,12 +654,15 @@ export class JMAPAccount extends MailAccount {
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
       try {
+        this.pushAbort = new AbortController();
         let stream = await fetch(url, {
           headers: {
             Authorization: this.authorizationHeader(),
-          }
+          },
+          signal: this.pushAbort.signal,
         });
         if (!stream.ok) {
+          reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
           throw new HTTPError(stream);
         }
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
@@ -543,14 +671,19 @@ export class JMAPAccount extends MailAccount {
             try {
               let json = JSON.parse(event.data);
               assert(json.changed, "Need state changes");
-              let changes = json.changed[this.accountID];
-              for (let typename in changes) {
-                let newState = changes[typename];
-                let type = typename as TJMAPObjectType;
-                if (newState == this.syncState.get(type)) {
+              for (let accountID in json.changed) {
+                let account = this.accountForID(accountID); // Incl. accounts shared with us
+                if (!account) {
                   continue;
                 }
-                await this.sync(type, newState);
+                for (let typename in json.changed[accountID]) {
+                  let newState = json.changed[accountID][typename];
+                  let type = typename as TJMAPObjectType;
+                  if (newState == account.syncState.get(type)) {
+                    continue;
+                  }
+                  await account.sync(type, newState);
+                }
               }
             } catch (ex) {
               console.error(ex);
@@ -558,9 +691,16 @@ export class JMAPAccount extends MailAccount {
           }
         }
       } catch (ex) {
-        if (isNetworkError(ex)) {
-          this.errorCallback(ex);
-          await waitUntilOnline(); // Computer sleep drops the network
+        if (ex.name == "AbortError") { // disconnect()
+          return;
+        }
+        if (isTransientError(ex)) {
+          // A connection that stays open for hours drops all the time: computer
+          // sleep, Wi-Fi change, server restart. Reconnecting is normal, not an error.
+          console.log(this.name + ": Push connection dropped, reconnecting:", ex?.message);
+          if (isNetworkError(ex)) {
+            await waitUntilOnline(); // Computer sleep drops the network
+          }
         } else {
           throw ex;
         }
@@ -569,13 +709,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listAddressbooks() {
-    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:contacts"]);
-    if (!primaryID) {
-      return;
-    }
-    let response = await this.makeSingleCall("AddressBook/get", {
-      accountId: primaryID,
+    let response = await this.makeSingleCallForSharedAccount("AddressBook/get", {
+      accountId: this.accountID,
     });
+    if (!response) {
+      return; // Another user's account, and they did not share their contacts with us
+    }
     let listResponse = response as TJMAPGetResponse<TJMAPAddressbook>;
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
@@ -591,13 +730,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async listCalendars() {
-    let primaryID = sanitize.alphanumdash(this.session.primaryAccounts["urn:ietf:params:jmap:calendars"]);
-    if (!primaryID) {
-      return;
-    }
-    let response = await this.makeSingleCall("Calendar/get", {
-      accountId: primaryID,
+    let response = await this.makeSingleCallForSharedAccount("Calendar/get", {
+      accountId: this.accountID,
     });
+    if (!response) {
+      return; // Another user's account, and they did not share their calendars with us
+    }
     let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
@@ -612,8 +750,290 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  // The list of accounts (with accountIds) you have access to is in the JMAP session object.
-  // Get the shared mailboxes using Mailbox/query or Mailbox/get using the accountId of the account that shared the mailbox to you.
+  /** Us, or our sub-account for a JMAP account that another user shared with us. */
+  accountForID(accountID: string): JMAPAccount | null {
+    return accountID == this.accountID
+      ? this
+      : this.dependentAccounts().find(acc => acc instanceof JMAPAccount && acc.accountID == accountID) as JMAPAccount;
+  }
+
+  /** Incoming delegation: We add the whole account.
+   * The session lists accounts, not folders. `Mailbox/get` then returns exactly
+   * the folders that they shared with us.
+   * <https://www.rfc-editor.org/rfc/rfc9670.html#section-1.4> */
+  async availableSharedAccounts(): Promise<ArrayColl<PersonUID>> {
+    let persons = new ArrayColl<PersonUID>();
+    if (!this.haveSharing) {
+      return persons;
+    }
+    for (let accountID in this.session?.accounts) {
+      let shared = this.session.accounts[accountID];
+      let ownerEMail = this.sharedAccountOwner(shared);
+      if (shared.isPersonal || !ownerEMail || this.accountForID(accountID)) {
+        continue; // Our own account, one that we cannot address, or one that we already have
+      }
+      persons.add(new PersonUID(ownerEMail, sanitize.nonemptystring(shared.name)));
+    }
+    return persons;
+  }
+
+  /** The JMAP session names an account after its owner, normally by email address,
+   * but that is not guaranteed, and then we cannot match the account to a person. */
+  protected sharedAccountOwner(shared: TJMAPSessionAccount): string | null {
+    return sanitize.emailAddress(shared.name, null);
+  }
+
+  async addSharedAccounts(): Promise<void> {
+    for (let person of await this.availableSharedAccounts()) {
+      await this.addSharedFolders(person, "msgfolderroot");
+    }
+  }
+
+  /** Another user just gave us access to their account, so add it.
+   * Accounts that the user deleted stay deleted, because we look only at new notifications.
+   * @see <https://www.rfc-editor.org/rfc/rfc9670.html#section-3> */
+  async addNewlySharedAccounts(): Promise<void> {
+    let sinceState = this.syncState.get("ShareNotification");
+    if (!sinceState) {
+      let current = await this.makeSingleCall("ShareNotification/get", {
+        accountId: this.principalsAccountID,
+        ids: [], // Start from now: Older notifications may be for accounts that the user deleted
+      }) as TJMAPGetResponse<TJMAPShareNotification>;
+      this.syncState.set("ShareNotification", current.state);
+      await this.save();
+      return;
+    }
+    let response = await this.makeCombinedCall([
+      [
+        "ShareNotification/changes", {
+          accountId: this.principalsAccountID,
+          sinceState: sinceState,
+        },
+        "changes",
+      ], [
+        "ShareNotification/get", {
+          accountId: this.principalsAccountID,
+          "#ids": {
+            resultOf: "changes",
+            name: "ShareNotification/changes",
+            path: "/created",
+          },
+        },
+        "new",
+      ],
+    ]);
+    let changes = response["changes"] as TJMAPChangeResponse<TJMAPShareNotification>;
+    let notifications = (response["new"] as TJMAPGetResponse<TJMAPShareNotification>).list;
+    this.syncState.set("ShareNotification", changes.newState);
+    await this.save();
+    if (!notifications.length) {
+      return;
+    }
+
+    await this.getSession(); // The new account appears in the session only now
+    for (let notification of notifications) {
+      let granted = Object.values(notification.newRights ?? {}).some(right => right);
+      let shared = this.session.accounts[notification.objectAccountId];
+      let ownerEMail = shared && this.sharedAccountOwner(shared);
+      if (!granted || !ownerEMail || shared.isPersonal || this.accountForID(notification.objectAccountId)) {
+        continue; // Access revoked, our own account, one that we cannot address, or already set up
+      }
+      await this.addSharedFolders(new PersonUID(ownerEMail, sanitize.nonemptystring(shared.name)), "msgfolderroot");
+    }
+  }
+
+  async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
+    return this.sharedAccountID(person) && distinguishedIDs.includes("msgfolderroot")
+      ? ["msgfolderroot"]
+      : [];
+  }
+
+  /** Its folders, calendars and addressbooks are added by its `syncOnStartup()`. */
+  async addSharedFolders(person: PersonUID, sharedFolderRoot: "msgfolderroot" | "inbox"): Promise<JMAPAccount> {
+    let sharedAccountID = this.sharedAccountID(person);
+    assert(sharedAccountID, gt`You have no access to the account of ${person.emailAddress}`);
+    let account = newAccountForProtocol("jmap") as JMAPAccount;
+    account.initFromMainAccount(this);
+    account.color = this.colorForSharedAccount(person);
+    account.name = person.name ?? person.emailAddress;
+    account.username = sanitize.nonemptystring(this.session.accounts[sharedAccountID].name);
+    account.emailAddress = sanitize.emailAddress(person.emailAddress);
+    account.accountID = sharedAccountID;
+    let identity = account.newIdentity();
+    identity.realname = person.name;
+    identity.emailAddress = account.emailAddress;
+    account.identities.add(identity);
+    await account.save();
+    appGlobal.emailAccounts.add(account);
+    await account.syncOnStartup();
+    return account;
+  }
+
+  protected sharedAccountID(person: PersonUID): string | null {
+    let wanted = sanitize.emailAddress(person.emailAddress, null);
+    for (let accountID in this.session?.accounts) {
+      let shared = this.session.accounts[accountID];
+      let ownerEMail = this.sharedAccountOwner(shared);
+      if (!shared.isPersonal && ownerEMail && ownerEMail == wanted) {
+        return accountID;
+      }
+    }
+    return null;
+  }
+
+  // Outgoing: Our account, shared with other users
+
+  canShareWithPersons(): boolean {
+    return this.haveSharing || // Outgoing
+      Object.values(this.session?.accounts ?? {}).some(account => !account.isPersonal); // Incoming
+  }
+
+  get sharePermissionLevels(): MailShareCombinedPermissions[] {
+    // <compat for="Cyrus" reason="Knows only 3 coarse rights, so it cannot express flags-only or custom access">
+    if (this.isCyrus) {
+      return [
+        MailShareCombinedPermissions.Read,
+        MailShareCombinedPermissions.Modify,
+      ];
+    }
+    // </compat>
+    return [
+      MailShareCombinedPermissions.Read,
+      MailShareCombinedPermissions.FlagChange,
+      MailShareCombinedPermissions.Modify,
+      MailShareCombinedPermissions.Custom,
+    ];
+  }
+
+  async getSharedPersons(): Promise<ArrayColl<PersonUID>> {
+    let response = await this.makeSingleCall("Mailbox/get", {
+      accountId: this.accountID,
+      properties: ["shareWith"],
+    }) as TJMAPGetResponse<TJMAPFolder>;
+    let principalIDs = new SetColl<string>();
+    for (let folder of response.list) {
+      if (folder.shareWith) {
+        principalIDs.addAll(Object.keys(folder.shareWith));
+      }
+    }
+    return await this.getPrincipals(principalIDs.contents);
+  }
+
+  async deleteSharedPerson(otherPerson: PersonUID) {
+    await this.setSharedPerson(otherPerson, null, null, true);
+  }
+
+  async addSharedPerson(otherPerson: PersonUID, mailFolder: JMAPFolder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
+    await this.setSharedPerson(otherPerson, this.mailShareRights(access, permissions), mailFolder, includeSubfolders);
+  }
+
+  /** `rights` null removes their access. */
+  protected async setSharedPerson(otherPerson: PersonUID, rights: Record<string, boolean> | null, mailFolder: JMAPFolder | null, includeSubfolders: boolean) {
+    let principalID = (await this.findPrincipal(otherPerson))?.id;
+    assert(principalID, gt`You have no access to the account of ${otherPerson.emailAddress}`);
+    let folders = !mailFolder
+      ? this.getAllFolders()
+      : includeSubfolders
+        ? mailFolder.getInclusiveDescendants()
+        : new ArrayColl<Folder>([mailFolder]);
+    let update: Record<string, any> = {};
+    for (let folder of folders) {
+      update[folder.id] = { [`shareWith/${principalID}`]: rights };
+    }
+    let response = await this.makeSingleCall("Mailbox/set", {
+      accountId: this.accountID,
+      update: update,
+    }) as TJMAPChangeResponse<TJMAPFolder>;
+    checkChangeError(response);
+  }
+
+  /** RFC 8621 doesn't define mailbox sharing, so the servers invented their own rights:
+   * Stalwart re-uses the `myRights` names, Cyrus knows only read, write and admin. */
+  protected mailShareRights(access: MailShareCombinedPermissions, permissions: MailShareIndividualPermissions[]): Record<string, boolean> {
+    let mayRead = access != MailShareCombinedPermissions.Custom || permissions.includes(MailShareIndividualPermissions.Read);
+    let mayFlag = access == MailShareCombinedPermissions.FlagChange || access == MailShareCombinedPermissions.Modify ||
+      permissions.includes(MailShareIndividualPermissions.FlagChange);
+    let mayAdd = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.Create);
+    let mayRemove = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.Delete);
+    let mayDeleteFolder = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.DeleteFolder);
+    let mayCreateChild = access == MailShareCombinedPermissions.Modify || permissions.includes(MailShareIndividualPermissions.CreateSubfolders);
+    // <compat for="Cyrus" reason="Knows only 3 coarse rights, so this over-grants">
+    if (this.isCyrus) {
+      return {
+        mayRead: mayRead,
+        mayWrite: mayFlag || mayAdd || mayRemove, // `mayWrite` also covers adding and deleting mails
+        mayAdmin: mayDeleteFolder || mayCreateChild,
+      };
+    }
+    // </compat>
+    return {
+      mayReadItems: mayRead,
+      maySetSeen: mayFlag,
+      maySetKeywords: mayFlag,
+      mayAddItems: mayAdd,
+      mayRemoveItems: mayRemove,
+      mayCreateChild: mayCreateChild,
+      mayRename: mayDeleteFolder,
+      mayDelete: mayDeleteFolder,
+      maySubmit: false,
+      mayShare: false,
+    };
+  }
+
+  /** The account that holds the `Principal` objects, i.e. the other users.
+   * @see <https://www.rfc-editor.org/rfc/rfc9670.html#section-1.5.2> */
+  protected get principalsAccountID(): string {
+    let accountID = this.accountCapabilities["urn:ietf:params:jmap:principals:owner"]?.accountIdForPrincipal;
+    // <compat for="Stalwart, Cyrus" reason="Neither sends `principals:owner` in the session: Stalwart has it only inside `Principal.accounts`, and Cyrus implements the older draft, which has no such capability">
+    accountID ??= this.session.primaryAccounts["urn:ietf:params:jmap:principals"];
+    // </compat>
+    return sanitize.nonemptystring(accountID);
+  }
+
+  /** The principal ID is the key in `shareWith`. */
+  async findPrincipal(person: PersonUID): Promise<TJMAPPrincipal | null> {
+    let response = await this.makeCombinedCall([
+      [
+        "Principal/query", {
+          accountId: this.principalsAccountID,
+          filter: { email: person.emailAddress },
+        },
+        "query",
+      ], [
+        "Principal/get", {
+          accountId: this.principalsAccountID,
+          "#ids": {
+            resultOf: "query",
+            name: "Principal/query",
+            path: "/ids",
+          },
+        },
+        "principals",
+      ],
+    ]);
+    let principals = (response["principals"] as TJMAPGetResponse<TJMAPPrincipal>).list;
+    let matching = principals.find(principal => principal.email?.toLowerCase() == person.emailAddress.toLowerCase());
+    // <compat for="Cyrus" reason="`Principal.email` comes from the calendar scheduling addresses, and may be unset">
+    if (this.isCyrus) {
+      matching ??= principals[0];
+    }
+    // </compat>
+    return matching ?? null;
+  }
+
+  async getPrincipals(principalIDs: string[]): Promise<ArrayColl<PersonUID>> {
+    if (!principalIDs.length) {
+      return new ArrayColl<PersonUID>();
+    }
+    let response = await this.makeSingleCall("Principal/get", {
+      accountId: this.principalsAccountID,
+      ids: principalIDs,
+    }) as TJMAPGetResponse<TJMAPPrincipal>;
+    return new ArrayColl(response.list.map(principal => {
+      let emailAddress = sanitize.emailAddress(principal.email, null);
+      return new PersonUID(emailAddress, sanitize.label(principal.description ?? principal.name, emailAddress));
+    }));
+  }
 
   hasCapability(capa: string): boolean {
     if (!this.session) {
@@ -655,5 +1075,13 @@ export class JMAPAccount extends MailAccount {
 
   newFolder(): JMAPFolder {
     return new JMAPFolder(this);
+  }
+
+  newIdentity(): JMAPIdentity {
+    return new JMAPIdentity(this);
+  }
+
+  newSearch(): JMAPSearchEMail {
+    return new JMAPSearchEMail();
   }
 }

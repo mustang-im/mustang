@@ -1,6 +1,6 @@
 <button on:click on:dblclick on:click={myOnClick} bind:this={buttonEl}
   title={tooltipCalc} class="button {classes}" class:plain
-  disabled={!!disabled} class:disabled class:selected
+  disabled={isDisabled} class:disabled={isDisabled} class:selected
   {tabindex}
   >
   <hbox class="icon">
@@ -80,14 +80,15 @@
         : null;
 
   let loading = false;
+  let running = false;
+  $: isDisabled = !!disabled || running;
   async function myOnClick(event: Event) {
     if (!(onClick && typeof(onClick) == "function")) {
       return;
     }
     event.stopPropagation();
     event.preventDefault();
-    let previousDisabled = disabled;
-    disabled = true;
+    running = true;
     let loadTimeout = setTimeout(() => {
       loading = true;
     }, loadDelayMS);
@@ -98,9 +99,7 @@
     } finally {
       clearTimeout(loadTimeout);
       loading = false;
-    }
-    if (disabled === true) {
-      disabled = previousDisabled;
+      running = false;
     }
   }
 </script>

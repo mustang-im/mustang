@@ -44,5 +44,5 @@ async function openEMail(mime: Uint8Array) {
   let email = folder.newEMail();
   email.mime = mime;
   await email.parseMIME();
-  openEMailMessage(email);
+  await openEMailMessage(email);
 }

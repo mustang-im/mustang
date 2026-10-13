@@ -64,7 +64,7 @@
   async function onSaveLanguage() {
     saveUILocale(language);
     setUILocale(getUILocale());
-    onSaveDateTimeFormat();
+    await onSaveDateTimeFormat();
     await appGlobal.remoteApp.restartApp(); // unfortunately needed for the strings in ts modules
   }
 
