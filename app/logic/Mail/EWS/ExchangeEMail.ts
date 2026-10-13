@@ -1,5 +1,6 @@
 import { EMail } from "../EMail";
 import type { Tag } from "../../Abstract/Tag";
+import type { ExchangeMailAccount } from "./ExchangeMailAccount";
 
 export abstract class ExchangeEMail extends EMail {
   async markReplied() {
@@ -18,6 +19,9 @@ export abstract class ExchangeEMail extends EMail {
 
   async addTagOnServer(tag: Tag) {
     await this.updateTags();
+    let account = this.folder.account as ExchangeMailAccount;
+    await account.addCategory(tag)
+      .catch(account.errorCallback);
   }
 
   async removeTagOnServer(tag: Tag) {
