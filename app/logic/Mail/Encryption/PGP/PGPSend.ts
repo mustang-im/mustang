@@ -5,6 +5,7 @@ import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { sendAutoCryptHeader } from "./AutoCrypt";
+import { splitMIMEHeaders, kLineBreak, newBoundary } from "../MIME";
 import type { PersonUID } from "../../../Abstract/PersonUID";
 import { NotReached, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
@@ -31,7 +32,7 @@ export class PGPSend {
     let openPGP = await import("openpgp");
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
-      let message = await openPGP.createMessage({ text: PGPSend.protectHeaders(originalMIMEStr) });
+      let message = await openPGP.createMessage({ text: await PGPSend.protectHeaders(originalMIMEStr) });
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPersonUID(puid, PGPPublicKey));
       let recipientOpenPGPKeys: OpenPGP.PublicKey[] = [];
@@ -120,31 +121,17 @@ export class PGPSend {
    * `Subject` and other headers into that part, so that they are encrypted.
    * <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
    */
-  static protectHeaders(mime: string): string {
-    let splitPos = mime.indexOf(kLineBreak + kLineBreak);
-    let body = splitPos >= 0 ? mime.slice(splitPos + 4) : "";
-    let headerBlock = splitPos >= 0 ? mime.slice(0, splitPos) : mime;
-
-    // Unfold continuation lines (starting with space or tab)
-    let headers: string[] = [];
-    for (let line of headerBlock.split(kLineBreak)) {
-      if (/^[ \t]/.test(line) && headers.length) {
-        headers[headers.length - 1] += line;
-      } else {
-        headers.push(line);
-      }
-    }
-
+  static async protectHeaders(mime: string): Promise<string> {
+    let { headers, body } = await splitMIMEHeaders(mime);
     let messageHeaders: string[] = []; // Protected, e.g. From, To, Subject, Date, Message-ID
     let contentHeaders: string[] = []; // Describe the body and stay with it, e.g. Content-Type
     for (let header of headers) {
-      let name = header.slice(0, header.indexOf(":")).trim().toLowerCase();
-      if (name.startsWith("content-")) {
-        contentHeaders.push(header);
-      } else if (name == "mime-version") {
+      if (header.key.startsWith("content-")) {
+        contentHeaders.push(header.line);
+      } else if (header.key == "mime-version") {
         // stays on the outer message only
       } else {
-        messageHeaders.push(header);
+        messageHeaders.push(header.line);
       }
     }
 
@@ -283,10 +270,4 @@ export function toRFC822DateString(date: Date) {
       timeZone: "UTC",
     }) +
     " +0000";
-}
-
-const kLineBreak = "\r\n";
-
-function newBoundary(): string {
-  return "----" + crypto.randomUUID().replace(/-/g, "");
 }
