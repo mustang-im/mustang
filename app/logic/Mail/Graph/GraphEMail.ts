@@ -248,6 +248,9 @@ export class GraphEMail extends EMail {
 
   async addTagOnServer(tag: Tag) {
     await this.setFlagServer(tag.name, true);
+    let account = this.folder.account;
+    await account.addCategory(tag)
+      .catch(account.errorCallback);
   }
 
   async removeTagOnServer(tag: Tag) {
