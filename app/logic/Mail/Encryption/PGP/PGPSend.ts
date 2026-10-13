@@ -29,9 +29,9 @@ export class PGPSend {
     let originalMIMEStr = new TextDecoder().decode(originalMIME);
     originalMIMEStr = originalMIMEStr.replace(/User-Agent: [^\r]+\r\n/, "");
     let openPGP = await import("openpgp");
-    let message = await openPGP.createMessage({ text: originalMIMEStr });
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
+      let message = await openPGP.createMessage({ text: PGPSend.protectHeaders(originalMIMEStr) });
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPersonUID(puid, PGPPublicKey));
       let recipientOpenPGPKeys: OpenPGP.PublicKey[] = [];
@@ -46,6 +46,7 @@ export class PGPSend {
       });
       result.sendRawMIME = PGPSend.createMIMEForEncrypted(mail, encrypted, privateKey);
     } else if (mail.signedByKeyID) {
+      let message = await openPGP.createMessage({ text: originalMIMEStr });
       let signature = await openPGP.sign({
         message: message,
         signingKeys: privateOpenPGPKey,
@@ -89,7 +90,7 @@ export class PGPSend {
 
   static createMIMEForEncrypted(mail: EMail, encryptedMessage: string, privateKey: PGPPrivateKey): string {
     // RFC 3156 Sec 4 <https://www.rfc-editor.org/rfc/rfc3156>
-    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+    let boundary = newBoundary();
     let mime = [
       ...PGPSend.createMIMEHeader(mail, privateKey),
       `Subject: PGP encrypted message`,
@@ -110,13 +111,60 @@ export class PGPSend {
       encryptedMessage,
       ``,
       `--${boundary}--`,
-    ].join('\r\n');
+    ].join(kLineBreak);
     return mime;
+  }
+
+  /**
+   * Wraps the message in a `multipart/mixed; protected-headers="v1"` and moves the
+   * `Subject` and other headers into that part, so that they are encrypted.
+   * <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
+   */
+  static protectHeaders(mime: string): string {
+    let splitPos = mime.indexOf(kLineBreak + kLineBreak);
+    let body = splitPos >= 0 ? mime.slice(splitPos + 4) : "";
+    let headerBlock = splitPos >= 0 ? mime.slice(0, splitPos) : mime;
+
+    // Unfold continuation lines (starting with space or tab)
+    let headers: string[] = [];
+    for (let line of headerBlock.split(kLineBreak)) {
+      if (/^[ \t]/.test(line) && headers.length) {
+        headers[headers.length - 1] += line;
+      } else {
+        headers.push(line);
+      }
+    }
+
+    let messageHeaders: string[] = []; // Protected, e.g. From, To, Subject, Date, Message-ID
+    let contentHeaders: string[] = []; // Describe the body and stay with it, e.g. Content-Type
+    for (let header of headers) {
+      let name = header.slice(0, header.indexOf(":")).trim().toLowerCase();
+      if (name.startsWith("content-")) {
+        contentHeaders.push(header);
+      } else if (name == "mime-version") {
+        // stays on the outer message only
+      } else {
+        messageHeaders.push(header);
+      }
+    }
+
+    let boundary = newBoundary();
+    return [
+      `Content-Type: multipart/mixed; protected-headers="v1"; boundary="${boundary}"`,
+      ...messageHeaders,
+      ``,
+      `--${boundary}`,
+      ...contentHeaders,
+      ``,
+      body.replace(/(\r\n)+$/, ""), // trim trailing newlines
+      `--${boundary}--`,
+      ``,
+    ].join(kLineBreak);
   }
 
   static createMIMEForSignedDetached(mail: EMail, message: string, signature: string, privateKey: PGPPrivateKey): string {
     // RFC 3156 Sec 5 <https://www.rfc-editor.org/rfc/rfc3156>
-    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+    let boundary = newBoundary();
     let mime = [
       ...PGPSend.createMIMEHeader(mail, privateKey),
       ...this.wrapHeader(`Subject: ` + mail.subject),
@@ -129,10 +177,10 @@ export class PGPSend {
       `Content-Type: application/pgp-signature; name="signature.asc"`,
       `Content-Disposition: inline; filename="signature.asc"`,
       ``,
-      signature.replaceAll("\n", "\r\n"),
+      signature.replaceAll("\n", kLineBreak),
       ``,
       `--${boundary}--`,
-    ].join('\r\n');
+    ].join(kLineBreak);
     return mime;
   }
 
@@ -140,7 +188,7 @@ export class PGPSend {
     // <https://www.ietf.org/archive/id/draft-gallagher-email-unobtrusive-signatures-02.html#name-sig-header-field>
 
     // need to add `hp=clean` *sigh*
-    let msgLines = message.split("\r\n");
+    let msgLines = message.split(kLineBreak);
     for (let i = 0; i < msgLines.length; i++) {
       let msgLine = msgLines[i];
       if (msgLine.startsWith("Content-Type: ")) {
@@ -154,7 +202,7 @@ export class PGPSend {
       }
     }
 
-    let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+    let boundary = newBoundary();
     let mime = [
       ...PGPSend.createMIMEHeader(mail, privateKey),
       ...this.wrapHeader(`Subject: ` + mail.subject),
@@ -164,7 +212,7 @@ export class PGPSend {
       ...this.wrapHeader(`Sig: t=p; b=` + btoa(signature)),
       ...msgLines,
       `--${boundary}--`,
-    ].join('\r\n');
+    ].join(kLineBreak);
     return mime;
   }
 
@@ -235,4 +283,10 @@ export function toRFC822DateString(date: Date) {
       timeZone: "UTC",
     }) +
     " +0000";
+}
+
+const kLineBreak = "\r\n";
+
+function newBoundary(): string {
+  return "----" + crypto.randomUUID().replace(/-/g, "");
 }
