@@ -19,6 +19,10 @@ export function categoryColorToHex(color: number): string | null {
   return kCategoryColors[color] ?? null;
 }
 
+export function sanitizeCategoryColor(color: number | string | null | undefined): number {
+  return sanitize.integerRange(color, -1, kCategoryColors.length - 1, -1);
+}
+
 export function hexToCategoryColor(hex: string): number {
   let rgb = hexToRGB(hex);
   if (!rgb) {
@@ -55,7 +59,7 @@ export function categoriesFromXML(xml: Document): ExchangeCategory[] {
     .filter(element => element.localName == "category")
     .map(element => ({
       name: sanitize.nonemptylabel(element.getAttribute("name"), null),
-      color: sanitize.integerRange(element.getAttribute("color"), -1, kCategoryColors.length - 1, -1),
+      color: sanitizeCategoryColor(element.getAttribute("color")),
     }))
     .filter(category => category.name);
 }
