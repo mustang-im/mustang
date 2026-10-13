@@ -6,6 +6,7 @@ import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
 import { Oid, UTCTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData, SMIMECapabilities } from "./SMIMEASN1";
 import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
+import { splitMIMEHeaders } from "../MIME";
 import { assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 
@@ -29,14 +30,9 @@ export class SMIMESend {
     let mime = await CreateMIME.getMIME(mail);
     let mimeAsText = new TextDecoder().decode(mime);
     if (mail.signedByKeyID) {
-      // Only the body and content type are signed, not the headers.
-      let pos = mimeAsText.indexOf("\r\n\r\n");
-      // Split on CRLF, but keep folded continuation lines (those starting with
-      // whitespace) attached to their header.
-      let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
-      let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
-      let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
-      mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
+      // Only the body and the Content-* headers are signed, not the other headers.
+      let { content, otherHeaders } = await SMIMESend.splitOffContent(mimeAsText);
+      mimeAsText = content;
       let messageDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(mimeAsText)));
       // DER SET OF requires the elements sorted by their encoding (X.690
       // section 11.6). With these fixed value sizes, that is the order below:
@@ -121,18 +117,11 @@ export class SMIMESend {
         `--${boundary}--`,
         '',
       ].join("\r\n");
-      pos = mimeAsText.indexOf("\r\n\r\n");
     }
     if (mail.shouldEncrypt) {
-      // Only the body and content type are encrypted, not the headers.
-      let pos = mimeAsText.indexOf("\r\n\r\n");
-      // Split on CRLF, but keep folded continuation lines (those starting with
-      // whitespace) attached to their header.
-      let headers = mimeAsText.slice(0, pos).split(/\r\n(?![ \t])/);
-      let contentTypeHeader = headers.find(header => /^Content-Type: /i.test(header)) ?? "Content-Type: text/plain";
-      let otherHeaders = headers.filter(header => !/^Content-/i.test(header));
-      mimeAsText = contentTypeHeader + mimeAsText.slice(pos);
-      mime = new TextEncoder().encode(mimeAsText);
+      // Only the body and the Content-* headers are encrypted, not the other headers.
+      let { content, otherHeaders } = await SMIMESend.splitOffContent(mimeAsText);
+      mime = new TextEncoder().encode(content);
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPersonUID(puid, SMIMEPublicKey));
       if (!(await Promise.all(recipientKeys.map(key => key.matches(rawKey)))).some(Boolean)) {
@@ -194,6 +183,19 @@ export class SMIMESend {
     }
     result.sendRawMIME = mimeAsText;
     return result;
+  }
+
+  static async splitOffContent(mime: string): Promise<{ content: string, otherHeaders: string[] }> {
+    let { headers, body } = await splitMIMEHeaders(mime);
+    let contentHeaders = headers.filter(header => header.key.startsWith("content-")).map(header => header.line);
+    let otherHeaders = headers.filter(header => !header.key.startsWith("content-")).map(header => header.line);
+    if (!headers.some(header => header.key == "content-type")) {
+      contentHeaders.unshift("Content-Type: text/plain");
+    }
+    return {
+      content: [...contentHeaders, "", body].join("\r\n"),
+      otherHeaders,
+    };
   }
 }
 

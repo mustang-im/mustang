@@ -1,5 +1,6 @@
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
+import PostalMIME, { type HeaderLine } from "postal-mime";
 
 /**
  * Parse parameters from MIME header values
@@ -103,6 +104,15 @@ function indexOfBytes(haystack: Uint8Array, needle: Uint8Array, from: number): n
     return i;
   }
   return -1;
+}
+
+export async function splitMIMEHeaders(mime: string): Promise<{ headers: HeaderLine[], body: string }> {
+  let pos = mime.indexOf("\r\n\r\n");
+  let headerBlock = pos >= 0 ? mime.slice(0, pos) : mime;
+  let body = pos >= 0 ? mime.slice(pos + 4) : "";
+  let { headerLines } = await PostalMIME.parse(headerBlock);
+  let headers = headerLines.map(header => ({ key: header.key, line: header.line.replaceAll("\n", "\r\n") }));
+  return { headers, body };
 }
 
 export function toCRLF(content: string): string {
