@@ -19,9 +19,10 @@ import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaGetUserConfigurationRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
+import { decodeXMLData } from "../EWS/ExchangeUserConfiguration";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
@@ -672,6 +673,18 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
+  }
+
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<string | null> {
+    try {
+      let response = await this.callOWA(owaGetUserConfigurationRequest(name, distinguishedFolderID));
+      return decodeXMLData(sanitize.string(response.UserConfiguration?.XmlData, null));
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") {
+        return null;
+      }
+      throw ex;
+    }
   }
 
   /**

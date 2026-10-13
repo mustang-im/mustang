@@ -5,6 +5,7 @@ import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShar
 import { EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSSearchEMail } from "./EWSSearchEMail";
 import { deleteExchangePermissions, setExchangePermissions } from "./ExchangePermission";
+import { decodeXMLData } from "./ExchangeUserConfiguration";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -1079,6 +1080,29 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
+  }
+
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<string | null> {
+    let request = {
+      m$GetUserConfiguration: {
+        m$UserConfigurationName: {
+          Name: name,
+          t$DistinguishedFolderId: {
+            Id: distinguishedFolderID,
+          },
+        },
+        m$UserConfigurationProperties: "XmlData",
+      },
+    };
+    try {
+      let response = await this.callEWS(request);
+      return decodeXMLData(sanitize.string(response.UserConfiguration?.XmlData, null));
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") {
+        return null;
+      }
+      throw ex;
+    }
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
