@@ -2,8 +2,6 @@ import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import PostalMIME, { type HeaderLine } from "postal-mime";
 
-export const kLineBreak = "\r\n";
-
 /**
  * Parse parameters from MIME header values
  * E.g. `Content-Type: text/plain; name=value; name2="value2"`
@@ -131,3 +129,5 @@ export function toCRLF(content: string): string {
 export function newBoundary(): string {
   return "----" + crypto.randomUUID().replace(/-/g, "");
 }
+
+export const kLineBreak = "\r\n";
