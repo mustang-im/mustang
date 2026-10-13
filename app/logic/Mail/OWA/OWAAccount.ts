@@ -19,10 +19,10 @@ import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaGetCalendarFolderRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
-import type { PersonUID } from "../../Abstract/PersonUID";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
@@ -33,7 +33,8 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, NotSupported, NotReached } from "../../util/util";
+import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
+import { logError } from "../../../frontend/Util/error";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -631,7 +632,61 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
+    try {
+      for (let calendar of await this.listSharedCalendarShortcuts()) {
+        if (!accounts.find(account => account.protocol == "calendar-owa" &&
+              (account as OWACalendar).folderID == calendar.folderID)) {
+          accounts.add(calendar);
+        }
+      }
+    } catch (ex) {
+      logError(ex);
+    }
     return accounts;
+  }
+
+  protected async listSharedCalendarShortcuts(): Promise<OWACalendar[]> {
+    let response = await this.callOWA(new OWAGetCalendarFoldersRequest());
+    let calendars: OWACalendar[] = [];
+    for (let group of ensureArray(response?.CalendarGroups)) {
+      for (let entry of ensureArray(group?.Calendars)) {
+        let calendar = await this.createCalendarFromShortcut(entry).catch(() => null);
+        if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
+          calendars.push(calendar);
+        }
+      }
+    }
+    return calendars;
+  }
+
+  protected async createCalendarFromShortcut(entry: any): Promise<OWACalendar | null> {
+    let emailAddress = sanitize.emailAddress(entry?.OwnerEmailAddress, null);
+    if (!emailAddress || entry.IsOwnerEmailAddressInvalid || this.isMyEMailAddress(emailAddress)) {
+      return null;
+    }
+    let sharedFolderID = sanitize.nonemptystring(entry.SharedFolderId?.Id, null);
+    let isDefaultCalendar = !!entry.IsGeneralScheduleCalendar || !sharedFolderID;
+    let result = await this.callOWA(isDefaultCalendar
+      ? owaSharedFolderRequest(["calendar"], emailAddress)
+      : owaGetCalendarFolderRequest(sharedFolderID));
+    let folder = result.Folders?.[0];
+    if (folder?.FolderClass != "IPF.Appointment") {
+      return null;
+    }
+    let folderID = sanitize.nonemptystring(folder.FolderId?.Id);
+    if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
+          (account as OWACalendar).folderID == folderID)) {
+      return null;
+    }
+    let owner = new PersonUID(emailAddress);
+    let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
+    calendar.initFromMainAccount(this);
+    calendar.color = this.colorForSharedAccount(owner);
+    calendar.name = sanitize.label(entry.CalendarName, "") || `${emailAddress} ${sanitize.label(folder.DisplayName, "")}`;
+    calendar.username = emailAddress;
+    calendar.folderID = folderID;
+    calendar.useForInvitations = isDefaultCalendar;
+    return calendar;
   }
 
   private createAddressbookAccount(folder: any, isPrimary: boolean, dependentAcc?: OWAAccount): OWAAddressbook | null {
@@ -815,6 +870,12 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWAGetCalendarFoldersRequest {
+  get action() {
+    return "GetCalendarFolders";
+  }
 }
 
 class OWAGetPeopleFiltersRequest {

@@ -476,6 +476,24 @@ export function owaGetPermissionsRequest(folderID: string): OWARequest {
   });
 }
 
+export function owaGetCalendarFolderRequest(folderID: string): OWARequest {
+  return new OWARequest("GetFolder", {
+    __type: "GetFolderRequest:#Exchange",
+    FolderShape: {
+      __type: "FolderResponseShape:#Exchange",
+      BaseShape: "Default",
+      AdditionalProperties: [{
+        __type: "PropertyUri:#Exchange",
+        FieldURI: "folder:FolderClass",
+      }],
+    },
+    FolderIds: [{
+      __type: "FolderId:#Exchange",
+      Id: folderID,
+    }],
+  });
+}
+
 export function owaFolderCountsRequest(folderID: string): OWARequest {
   return new OWARequest("GetFolder", {
     __type: "GetFolderRequest:#Exchange",
