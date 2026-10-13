@@ -31,8 +31,6 @@ export class PGPSend {
     let openPGP = await import("openpgp");
     let privateOpenPGPKey = await privateKey.openPGPPrivateKey();
     if (mail.shouldEncrypt) {
-      // Protected headers: move the real subject etc. into the encrypted part,
-      // so that only `Subject: ...` is visible on the outer message.
       let message = await openPGP.createMessage({ text: PGPSend.protectHeaders(originalMIMEStr) });
       let recipientKeys = mail.allRecipients().contents.flatMap(puid =>
         getPublicKeyForPerson(puid.findPerson(), PGPPublicKey));
@@ -95,7 +93,7 @@ export class PGPSend {
     let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
     let mime = [
       ...PGPSend.createMIMEHeader(mail, privateKey),
-      `Subject: PGP encrypted message`, // real subject is in the protected headers, see `protectHeaders()`
+      `Subject: PGP encrypted message`,
       `Content-Type: multipart/encrypted; protocol="application/pgp-encrypted";`,
       ` boundary="${boundary}"`,
       ``,
@@ -118,11 +116,9 @@ export class PGPSend {
   }
 
   /**
-   * Protected headers, as sent by Thunderbird.
-   * Wraps the message in a `multipart/mixed; protected-headers="v1"` part and
-   * moves the message headers (esp. `Subject`) into that part, so that they are
-   * encrypted together with the body. The outer message then only shows
-   * `Subject: ...`, see `createMIMEForEncrypted()`.
+   * Wraps the message in a `multipart/mixed; protected-headers="v1"` and
+   * moves the `Subject` and other headers into that part, so that they are
+   * encrypted.
    * <https://www.ietf.org/archive/id/draft-autocrypt-lamps-protected-headers-02.html>
    */
   static protectHeaders(mime: string): string {
