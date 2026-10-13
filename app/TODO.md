@@ -273,9 +273,6 @@
 * Save/Load mail as .eml file
 * OS send file as email (dangerous) #315
 * Format/flowed
-* Encryption
-  * PGP
-  * S/MIME
 
 ### Editor
 * blockquote cite vs. third party

@@ -82,7 +82,7 @@ Created by the most experienced Thunderbird developers
   * PGP
     * Subject protection
     * AutoCrypt
-  * S/MIME (in progress)
+  * S/MIME
 
 ## Calendar
 
@@ -185,6 +185,7 @@ In development
   * Edit messages
   * Retract messages
   * Encryption with Megolm
+* Rocket.Chat (planned)
 * Teams (planned)
 * WhatsApp
   * 1:1 chat
