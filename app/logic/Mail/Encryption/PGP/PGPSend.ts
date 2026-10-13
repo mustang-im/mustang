@@ -5,7 +5,7 @@ import { CreateMIME } from "../../SMTP/CreateMIME";
 import { PGPPublicKey } from "./PGPPublicKey";
 import { PGPPrivateKey } from "./PGPPrivateKey";
 import { sendAutoCryptHeader } from "./AutoCrypt";
-import { splitMIMEHeaders } from "../MIME";
+import { splitMIMEHeaders, kLineBreak, newBoundary } from "../MIME";
 import type { PersonUID } from "../../../Abstract/PersonUID";
 import { NotReached, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
@@ -270,10 +270,4 @@ export function toRFC822DateString(date: Date) {
       timeZone: "UTC",
     }) +
     " +0000";
-}
-
-const kLineBreak = "\r\n";
-
-function newBoundary(): string {
-  return "----" + crypto.randomUUID().replace(/-/g, "");
 }

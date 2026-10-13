@@ -6,7 +6,7 @@ import { SMIMEPublicKey } from "./SMIMEPublicKey";
 import { SMIMEPrivateKey } from "./SMIMEPrivateKey";
 import { Oid, UTCTime, Attributes, DigestInfo, SignedData, Certificate, RSAPublicKey, Null, OctetString, EnvelopedData, SMIMECapabilities } from "./SMIMEASN1";
 import { decrypt, padFF, padRandom, encrypt } from "./SMIMERSAES";
-import { splitMIMEHeaders } from "../MIME";
+import { splitMIMEHeaders, kLineBreak, newBoundary } from "../MIME";
 import { assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 
@@ -100,7 +100,7 @@ export class SMIMESend {
       for (let cert of privateKey.chain) {
         signedData.content.certificates.push(Certificate.decodePEM(cert.certificate, { label: "CERTIFICATE" }));
       }
-      let boundary = "----" + crypto.randomUUID().replace(/-/g, "");
+      let boundary = newBoundary();
       mimeAsText = [
         `Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="${boundary}"`,
         ...otherHeaders,
@@ -116,7 +116,7 @@ export class SMIMESend {
         ... SignedData.encodeToBase64(signedData).match(/.{1,76}/g),
         `--${boundary}--`,
         '',
-      ].join("\r\n");
+      ].join(kLineBreak);
     }
     if (mail.shouldEncrypt) {
       // Only the body and the Content-* headers are encrypted, not the other headers.
@@ -179,7 +179,7 @@ export class SMIMESend {
         '',
         ...base64.match(/.{1,76}/g),
         '',
-      ].join("\r\n");
+      ].join(kLineBreak);
     }
     result.sendRawMIME = mimeAsText;
     return result;
@@ -193,7 +193,7 @@ export class SMIMESend {
       contentHeaders.unshift("Content-Type: text/plain");
     }
     return {
-      content: [...contentHeaders, "", body].join("\r\n"),
+      content: [...contentHeaders, "", body].join(kLineBreak),
       otherHeaders,
     };
   }
