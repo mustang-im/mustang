@@ -28,6 +28,8 @@ let localDir: string;        // where the app caches downloaded files
 let account: any;            // WebDAVAccount
 let ArrayColl: any;
 let WebDAVDirectoryCls: any;
+/** What the OS was asked to open, and what was in the file at that moment */
+let openedFiles: { path: string, contents: string | null }[] = [];
 
 async function startServer(): Promise<void> {
   storageDir = await fs.mkdtemp(path.join(os.tmpdir(), "mustang-webdav-test-"));
@@ -86,6 +88,10 @@ beforeAll(async () => {
     deleteFile: (filepath: string) => fs.unlink(filepath),
     fs,
     // </copied>
+    async openFileInNativeApp(filepath: string) {
+      let contents = filepath ? await fs.readFile(filepath, "utf8").catch(() => null) : null;
+      openedFiles.push({ path: filepath, contents });
+    },
   };
   await startServer();
   verify = webdavClient.createClient(`http://127.0.0.1:${port}/`, {
@@ -215,4 +221,40 @@ test("deleteIt removes file from the server", async () => {
 
   let onServer = await verify.getDirectoryContents("/") as webdavClient.FileStat[];
   expect(onServer.map(s => s.basename)).not.toContain("hello.txt");
+});
+
+test("Open in app, after the file changed on the server, opens the new version", async () => {
+  let root = account.rootDirs.first;
+  await verify.putFileContents("/open.txt", "Version 1\n");
+  await root.listContents();
+  let file = root.files.find(f => f.name == "open.txt");
+  expect(file).toBeDefined();
+
+  await file.openOSApp();
+  expect(openedFiles.pop()).toEqual({ path: file.filepathLocal, contents: "Version 1\n" });
+
+  // E.g. edited in the cloud app, or on another device
+  await verify.putFileContents("/open.txt", "Version 2, edited elsewhere\n");
+  await root.listContents();
+
+  await file.openOSApp();
+  let opened = openedFiles.pop();
+  expect(opened.path).toBeTruthy();
+  expect(opened.path).toBe(file.filepathLocal);
+  expect(opened.contents).toBe("Version 2, edited elsewhere\n");
+});
+
+test("Open in app checks the new contents of a file changed on the server", async () => {
+  let root = account.rootDirs.first;
+  await verify.putFileContents("/notes.txt", "Just some notes\n");
+  await root.listContents();
+  let file = root.files.find(f => f.name == "notes.txt");
+  await file.openOSApp();
+  expect(openedFiles.pop().contents).toBe("Just some notes\n");
+
+  await verify.putFileContents("/notes.txt", "#!/bin/sh\necho Now I am a script\n");
+  await root.listContents();
+
+  await expect(file.openOSApp()).rejects.toThrow(/script/);
+  expect(openedFiles.length).toBe(0);
 });

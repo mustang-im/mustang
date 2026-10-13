@@ -165,9 +165,12 @@ export class File extends FileOrDirectory {
 
   async deleteLocalCache() {
     this.clearURL();
-    if (this.filepathLocal) {
-      await appGlobal.remoteApp.deleteFile(this.filepathLocal);
-      this.filepathLocal = null; // the "on disk" marker, @see saveAsLocalFile()
+    this.contents = null;
+    this.executable = undefined;
+    let filepathLocal = this.filepathLocal;
+    this.filepathLocal = null; // the "on disk" marker, @see saveAsLocalFile()
+    if (filepathLocal) {
+      await appGlobal.remoteApp.deleteFile(filepathLocal);
     }
   }
 
