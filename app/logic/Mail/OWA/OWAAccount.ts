@@ -226,6 +226,9 @@ export class OWAAccount extends ExchangeMailAccount {
     if (this.oAuth2 instanceof OWAAuth) {
       this.oAuth2.isLoggedIn = false;
     }
+    if (!this.authorizationHeader) { // on-prem
+      await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    }
     this.notifyObserversOfSubaccounts();
     await this.disconnect();
   }
@@ -234,7 +237,7 @@ export class OWAAccount extends ExchangeMailAccount {
     this.hasLoggedIn = false;
     this.notifyObserversOfSubaccounts();
     await super.logout();
-    if (!this.oAuth2) {
+    if (!this.authorizationHeader) { // on-prem
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
     }
   }
