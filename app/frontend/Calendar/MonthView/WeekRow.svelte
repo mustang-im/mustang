@@ -22,7 +22,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { layoutDayRow, limitLanes } from "../eventLayout";
+  import { layoutDayRow, limitLanes } from "./WeekRow";
   import DayLabel from "./DayLabel.svelte";
   import DayCell from "./DayCell.svelte";
   import EventContainer from "./EventContainer.svelte";

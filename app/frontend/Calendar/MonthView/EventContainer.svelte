@@ -7,7 +7,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { EventInDayRow } from "../eventLayout";
+  import type { EventInDayRow } from "./WeekRow";
   import { selectedEvent } from "../selected";
   import EventContent from "./EventContent.svelte";
 

@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { layoutTimeColumn, kRowsPerHour, type EventInTimeColumn } from "../eventLayout";
+  import { layoutTimeColumn, kRowsPerHour, type EventInTimeColumn } from "./DayColumn";
   import HourSlot from "./HourSlot.svelte";
   import EventContainer from "./EventContainer.svelte";
   import EventContent from "./EventContent.svelte";

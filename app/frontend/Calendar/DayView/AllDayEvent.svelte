@@ -8,7 +8,7 @@
 </Clickable>
 
 <script lang="ts">
-  import type { EventInDayRow } from "../eventLayout";
+  import type { EventInDayRow } from "../MonthView/WeekRow";
   import Clickable from "../../Shared/Clickable.svelte";
   import { openEvent } from "../open";
   import { selectedEvent } from "../selected";

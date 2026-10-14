@@ -9,7 +9,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { layoutDayRow } from "../eventLayout";
+  import { layoutDayRow } from "../MonthView/WeekRow";
   import AllDayEvent from "./AllDayEvent.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
