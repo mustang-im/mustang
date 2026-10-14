@@ -113,3 +113,9 @@ export interface TGraphPersonUID {
 
 export interface TGraphFolderChanges {
 }
+
+export interface TGraphCategory {
+  id?: UUID,
+  displayName: string,
+  color: string,
+}

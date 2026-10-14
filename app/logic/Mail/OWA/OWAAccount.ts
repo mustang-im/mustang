@@ -22,11 +22,14 @@ import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotif
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
+import { hexToCategoryColor, sanitizeCategoryColor, type ExchangeCategory } from "../EWS/ExchangeCategories";
+import type { Tag } from "../../Abstract/Tag";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
+import { logError } from "../../../frontend/Util/error";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -205,6 +208,10 @@ export class OWAAccount extends ExchangeMailAccount {
             !appGlobal.searchOnlyAddressbooks.some(ab => ab.mainAccount == this)) {
           appGlobal.searchOnlyAddressbooks.add(new OWAGAL(this));
         }
+        if (!this.isDependentAccount) {
+          this.readCategories()
+            .catch(logError);
+        }
 
         await this.callOWA(new OWASubscribeToNotificationRequest());
 
@@ -377,16 +384,21 @@ export class OWAAccount extends ExchangeMailAccount {
       let mainAccount = this.mainAccount as OWAAccount;
       return await mainAccount.callOWA(aRequest, this.username);
     }
+    let body = JSON.stringify(aRequest);
+    let headers: Record<string, string> = {
+      Action: aRequest.action,
+      Authorization: this.authorizationHeader,
+      "Content-Type": "application/json",
+      "x-anchormailbox": mailbox ?? this.emailAddress,
+      "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
+      "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
+    };
+    if (aRequest.inURLPostData) {
+      headers["x-owa-urlpostdata"] = encodeURIComponent(body);
+    }
     return await this.callOWAShared(this.url + "service.svc", {
-      body: JSON.stringify(aRequest),
-      headers: {
-        Action: aRequest.action,
-        Authorization: this.authorizationHeader,
-        "Content-Type": "application/json",
-        "x-anchormailbox": mailbox ?? this.emailAddress,
-        "x-customowascenariodata": "MailboxAccess:SharedMailbox,ExplicitLogon",
-        "x-owa-explicitlogonuser": mailbox ?? this.emailAddress,
-      },
+      body,
+      headers,
       method: "POST",
     });
   }
@@ -464,6 +476,24 @@ export class OWAAccount extends ExchangeMailAccount {
       }
     }
     return items;
+  }
+
+  async readCategories(): Promise<void> {
+    let configuration = await this.callOWA(new OWAGetOwaUserConfigurationRequest());
+    await this.setCategories(owaCategories(configuration.MasterCategoryList?.MasterList));
+  }
+
+  protected async addCategoryOnServer(tag: Tag): Promise<void> {
+    let response = await this.callOWA(new OWAUpdateMasterCategoryListRequest([{
+      __type: "CategoryType:#Exchange",
+      Id: crypto.randomUUID(),
+      Name: tag.name,
+      Color: hexToCategoryColor(tag.color),
+      LastTimeUsed: new Date().toISOString(),
+    }]));
+    if (response.WasSuccessful === false) {
+      throw new OWAError({ message: gt`Could not add the tag ${tag.name} as category to the server`, json: response });
+    }
   }
 
   async listFolders(): Promise<void> {
@@ -836,6 +866,38 @@ class OWAGetPeopleFiltersRequest {
   get action() {
     return "GetPeopleFilters";
   }
+}
+
+class OWAGetOwaUserConfigurationRequest {
+  get action() {
+    return "GetOwaUserConfiguration";
+  }
+}
+
+class OWAUpdateMasterCategoryListRequest {
+  readonly request: any;
+
+  constructor(addCategories: any[]) {
+    this.request = {
+      __type: "UpdateMasterCategoryListRequest:#Exchange",
+      AddCategoryList: addCategories,
+    };
+  }
+
+  get action() {
+    return "UpdateMasterCategoryList";
+  }
+
+  get inURLPostData() {
+    return true;
+  }
+}
+
+function owaCategories(masterList: any[] | undefined): ExchangeCategory[] {
+  return sanitize.array(masterList, []).map(category => ({
+    name: sanitize.nonemptylabel(category?.Name, null),
+    color: sanitizeCategoryColor(category?.Color),
+  })).filter(category => category.name);
 }
 
 export const kMaxFetchCount = 50;

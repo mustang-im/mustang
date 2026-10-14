@@ -3,6 +3,9 @@ import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { Calendar } from "../../Calendar/Calendar";
 import { ExchangeCalendar } from "../../Calendar/EWS/ExchangeCalendar";
 import { appGlobal } from "../../app";
+import { addTagsFromServer, type Tag } from "../../Abstract/Tag";
+import { categoryColorToHex, type ExchangeCategory } from "./ExchangeCategories";
+import { Lock } from "../../util/flow/Lock";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class ExchangeMailAccount extends MailAccount {
@@ -10,6 +13,8 @@ export class ExchangeMailAccount extends MailAccount {
   readonly tls = TLSSocketType.TLS;
   readonly canSendOutgoingInvitations: boolean = false;
   deleteStrategy: DeleteStrategy = DeleteStrategy.MoveToTrash;
+  protected categoryNames = new Set<string>();
+  protected categoryLock = new Lock();
 
   get calendarsAvailable(): Collection<Calendar> {
     let mailboxCalendars = this.calendarsOfMailbox(this.username);
@@ -31,6 +36,41 @@ export class ExchangeMailAccount extends MailAccount {
       acc instanceof ExchangeCalendar &&
       acc.useForInvitations &&
       acc.username == username) as ArrayColl<Calendar>;
+  }
+
+  async readCategories(): Promise<void> {
+  }
+
+  protected async setCategories(categories: ExchangeCategory[]): Promise<void> {
+    this.categoryNames = new Set(categories.map(category => category.name.toLowerCase()));
+    await addTagsFromServer(categories.map(category => ({
+      name: category.name,
+      color: categoryColorToHex(category.color),
+    })));
+  }
+
+  async addCategory(tag: Tag): Promise<void> {
+    if (this.mainAccount) {
+      await (this.mainAccount as ExchangeMailAccount).addCategory(tag);
+      return;
+    }
+    let name = tag.name.toLowerCase();
+    if (name.includes(",")) {
+      return;
+    }
+    let lock = await this.categoryLock.lock();
+    try {
+      if (this.categoryNames.has(name)) {
+        return;
+      }
+      await this.addCategoryOnServer(tag);
+      this.categoryNames.add(name);
+    } finally {
+      lock.release();
+    }
+  }
+
+  protected async addCategoryOnServer(tag: Tag): Promise<void> {
   }
 
   async deleteIt(): Promise<void> {
