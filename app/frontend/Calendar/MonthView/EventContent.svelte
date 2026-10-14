@@ -44,6 +44,8 @@
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
     padding-inline-start: 4px;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
   }
   @media (prefers-color-scheme: dark) {
     .event {
@@ -61,6 +63,12 @@
   .time {
     margin-inline-end: 4px;
     font-weight: 600;
+  }
+  .title {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   :global(.cancelled) .time,
   :global(.cancelled) .title {
