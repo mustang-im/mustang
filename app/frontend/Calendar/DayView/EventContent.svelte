@@ -36,6 +36,8 @@
 
 <style>
   .event {
+    min-width: 0;
+    overflow: hidden;
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
@@ -59,6 +61,12 @@
   .title {
     margin-inline-start: 6px;
     margin-block-start: 5px;
+  }
+  .title {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   :global(.cancelled) .time,
   :global(.cancelled) .title {
