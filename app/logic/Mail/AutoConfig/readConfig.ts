@@ -14,6 +14,7 @@ import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileS
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { newMeetAccountForProtocol } from "../../Meet/AccountsList/MeetAccounts";
 import { SetupInfo } from "./SetupInfo";
+import { PersonUID, nameFromEmailAddress } from "../../Abstract/PersonUID";
 import { OWAAccount } from "../OWA/OWAAccount";
 import type { WebBasedAuth } from "../../Auth/WebBasedAuth";
 import { OWAAuth } from "../../Auth/OWAAuth";
@@ -39,8 +40,17 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
 
   forDomain ??= sanitize.hostname(xml.domain);
   let displayName = sanitize.label(xml.displayName, sanitize.label(xml["@id"], forDomain));
-  let realName = sanitize.label(autoconfigXML.clientConfig.realName, null);
-  let emailAddress = sanitize.emailAddress(autoconfigXML.clientConfig.emailAddress, null);
+  let user = fullXML.user ?? {};
+  let realName = sanitize.label(user.realName, null);
+  let emailAddress = sanitize.emailAddress(user.emailAddress, null);
+  let delegatedAccounts: PersonUID[] = [];
+  for (let delegate of ensureArray(user.$delegatedAccount)) {
+    let delegateEmailAddress = sanitize.emailAddress(delegate?.emailAddress, null);
+    if (delegateEmailAddress) {
+      let delegateName = sanitize.label(delegate.realName, nameFromEmailAddress(delegateEmailAddress));
+      delegatedAccounts.push(new PersonUID(delegateEmailAddress, delegateName));
+    }
+  }
   //let domains = xml.$domain.map(domain => sanitize.hostname(domain));
   assert(!forDomain || ensureArray(xml.$domain).includes(forDomain), "Need proper <domain> in XML");
   let firstError: Error;
@@ -51,6 +61,10 @@ export function readConfigFromXML(autoconfigXMLStr: string, forDomain: string | 
       let config = readServer(iX, displayName, fullXML, source, newAccountForProtocol) as MailAccount;
       config.emailAddress ??= emailAddress;
       config.realname = realName;
+      if (delegatedAccounts.length) {
+        config.setup ??= new SetupInfo();
+        config.setup.delegatedAccounts = delegatedAccounts;
+      }
       configs.push(config);
     } catch (ex) {
       firstError = ex;
