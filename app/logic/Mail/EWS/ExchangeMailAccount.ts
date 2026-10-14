@@ -2,9 +2,9 @@ import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { TLSSocketType } from "../../Abstract/TCPAccount";
 import { Calendar } from "../../Calendar/Calendar";
 import { ExchangeCalendar } from "../../Calendar/EWS/ExchangeCalendar";
-import type { PersonUID } from "../../Abstract/PersonUID";
-import { kOtherMailboxConfig, parseOtherMailboxes } from "./ExchangeUserConfiguration";
+import { PersonUID } from "../../Abstract/PersonUID";
 import { appGlobal } from "../../app";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 
 export class ExchangeMailAccount extends MailAccount {
@@ -40,9 +40,9 @@ export class ExchangeMailAccount extends MailAccount {
     if (this.mainAccount) {
       return persons;
     }
-    let xml = await this.getUserConfigurationXML(kOtherMailboxConfig, "root");
-    for (let person of parseOtherMailboxes(xml)) {
-      if (this.isMyEMailAddress(person.emailAddress) ||
+    for (let person of await this.listOtherMailboxes()) {
+      if (persons.find(other => other.emailAddress == person.emailAddress) ||
+          this.isMyEMailAddress(person.emailAddress) ||
           this.dependentAccounts().contents.some(account => account.protocol == this.protocol &&
             (account as MailAccount).isMyEMailAddress(person.emailAddress))) {
         continue;
@@ -52,8 +52,16 @@ export class ExchangeMailAccount extends MailAccount {
     return persons;
   }
 
-  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<string | null> {
-    return null;
+  async listOtherMailboxes(): Promise<PersonUID[]> {
+    return [];
+  }
+
+  protected newOtherMailbox(emailAddress: string, name: string): PersonUID | null {
+    let address = sanitize.emailAddress(emailAddress, null);
+    if (!address) {
+      return null;
+    }
+    return new PersonUID(address, sanitize.nonemptylabel(name, null) ?? undefined);
   }
 
   async deleteIt(): Promise<void> {

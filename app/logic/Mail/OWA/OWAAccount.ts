@@ -19,10 +19,9 @@ import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaGetUserConfigurationRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
-import { decodeXMLData } from "../EWS/ExchangeUserConfiguration";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
@@ -34,7 +33,7 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, NotSupported, NotReached } from "../../util/util";
+import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -675,16 +674,11 @@ export class OWAAccount extends ExchangeMailAccount {
     return calendar;
   }
 
-  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<string | null> {
-    try {
-      let response = await this.callOWA(owaGetUserConfigurationRequest(name, distinguishedFolderID));
-      return decodeXMLData(sanitize.string(response.UserConfiguration?.XmlData, null));
-    } catch (ex) {
-      if (ex.type == "ErrorItemNotFound") {
-        return null;
-      }
-      throw ex;
-    }
+  async listOtherMailboxes(): Promise<PersonUID[]> {
+    let response = await this.callOWA(new OWAGetOtherMailboxConfigurationRequest());
+    return ensureArray(response?.OtherMailboxEntries)
+      .map(entry => this.newOtherMailbox(entry?.PrincipalSMTPAddress, entry?.DisplayName))
+      .filter(Boolean);
   }
 
   /**
@@ -828,6 +822,12 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWAGetOtherMailboxConfigurationRequest {
+  get action() {
+    return "GetOtherMailboxConfiguration";
+  }
 }
 
 class OWAGetPeopleFiltersRequest {

@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
-import { parseOtherMailboxes } from "../../../../logic/Mail/EWS/ExchangeUserConfiguration";
 import { AuthMethod } from "../../../../logic/Abstract/Account";
 import { expect, test } from "vitest";
 
@@ -73,34 +72,6 @@ function newTestAccount(responseText: string): { account: EWSAccount, requests: 
   return { account, requests };
 }
 
-test("Read the mailboxes that the user added in Outlook on the web", () => {
-  let persons = parseOtherMailboxes(kOtherMailboxXML);
-
-  expect(persons.map(person => person.emailAddress)).toEqual(["bob@example.com", "juergen@example.com"]);
-  expect(persons.map(person => person.name)).toEqual(["Bob Builder", "Jürgen Müller"]);
-});
-
-test("Skip broken and duplicate entries", () => {
-  let persons = parseOtherMailboxes(`<OtherMailbox>` +
-    `<entry displayName="No address" rootFolderId=""></entry>` +
-    `<entry displayName="Broken" principalSMTPAddress="not an address"></entry>` +
-    `<entry principalSMTPAddress="bob@example.com"></entry>` +
-    `<entry displayName="Bob again" principalSMTPAddress="BOB@example.com"></entry>` +
-    `</OtherMailbox>`);
-
-  expect(persons.length).toBe(1);
-  expect(persons[0].emailAddress).toBe("bob@example.com");
-  expect(persons[0].name).toBeUndefined();
-});
-
-test("No or unexpected configuration", () => {
-  expect(parseOtherMailboxes(null)).toEqual([]);
-  expect(parseOtherMailboxes("")).toEqual([]);
-  expect(parseOtherMailboxes("<OtherMailbox/>")).toEqual([]);
-  expect(parseOtherMailboxes("<SomethingElse><entry principalSMTPAddress=\"bob@example.com\"/></SomethingElse>")).toEqual([]);
-  expect(parseOtherMailboxes("not XML")).toEqual([]);
-});
-
 test("EWS: Offer the mailboxes that the user added in Outlook on the web", async () => {
   let { account, requests } = newTestAccount(userConfigurationResponse(base64(kOtherMailboxXML)));
 
@@ -140,6 +111,40 @@ test("EWS: The user never added a mailbox in Outlook on the web", async () => {
   let persons = await account.availableSharedAccounts();
 
   expect(persons.length).toBe(0);
+});
+
+test("EWS: Skip broken and duplicate entries", async () => {
+  let { account } = newTestAccount(userConfigurationResponse(base64(`<OtherMailbox>` +
+    `<entry displayName="No address" rootFolderId=""></entry>` +
+    `<entry displayName="Broken" principalSMTPAddress="not an address"></entry>` +
+    `<entry principalSMTPAddress="bob@example.com"></entry>` +
+    `<entry displayName="Bob again" principalSMTPAddress="BOB@example.com"></entry>` +
+    `</OtherMailbox>`)));
+
+  let persons = await account.availableSharedAccounts();
+
+  expect(persons.length).toBe(1);
+  expect(persons.first.emailAddress).toBe("bob@example.com");
+  expect(persons.first.name).toBeUndefined();
+});
+
+test("EWS: A single mailbox", async () => {
+  let { account } = newTestAccount(userConfigurationResponse(base64(
+    `<OtherMailbox><entry displayName="Bob Builder" rootFolderId="" principalSMTPAddress="bob@example.com"/></OtherMailbox>`)));
+
+  let persons = await account.availableSharedAccounts();
+
+  expect(persons.contents.map(person => person.emailAddress)).toEqual(["bob@example.com"]);
+});
+
+test("EWS: Empty or unexpected configuration", async () => {
+  for (let xml of ["", "<OtherMailbox/>", `<SomethingElse><entry principalSMTPAddress="bob@example.com"/></SomethingElse>`, "not XML"]) {
+    let { account } = newTestAccount(userConfigurationResponse(base64(xml)));
+
+    let persons = await account.availableSharedAccounts();
+
+    expect(persons.length).toBe(0);
+  }
 });
 
 test("EWS: A mailbox shared with us does not offer further mailboxes", async () => {

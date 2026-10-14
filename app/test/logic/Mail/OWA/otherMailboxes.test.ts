@@ -1,26 +1,21 @@
 // @vitest-environment happy-dom
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
-import { OWAError } from "../../../../logic/Mail/OWA/OWAError";
 import { expect, test } from "vitest";
 
-/** What Outlook on the web saves when the user adds a shared mailbox */
-const kOtherMailboxXML = `<OtherMailbox>` +
-  `<entry displayName="Bob Builder" rootFolderId="" principalSMTPAddress="bob@example.com"></entry>` +
-  `</OtherMailbox>`;
-
-/** `callOWA()` returns the single response message of the server's answer */
+/** Outlook on the web reads the mailboxes that the user added with
+ * `GetOtherMailboxConfiguration`. The request is an empty JSON object. */
 class TestOWAAccount extends OWAAccount {
   readonly requests: any[] = [];
-  response: () => any;
+  response: any;
 
   async callOWA(request: any): Promise<any> {
-    this.requests.push(JSON.parse(JSON.stringify(request)));
-    return this.response();
+    this.requests.push({ action: request.action, body: JSON.stringify(request) });
+    return this.response;
   }
 }
 
-function newTestAccount(response: () => any): TestOWAAccount {
+function newTestAccount(response: any): TestOWAAccount {
   appGlobal.remoteApp ??= { OWA: {} } as any; // `OWAAccount` needs the backend only for the login
   let account = new TestOWAAccount();
   account.username = "alice@example.com";
@@ -30,56 +25,50 @@ function newTestAccount(response: () => any): TestOWAAccount {
 }
 
 test("OWA: Offer the mailboxes that the user added in Outlook on the web", async () => {
-  let account = newTestAccount(() => ({
-    __type: "GetUserConfigurationResponseMessage:#Exchange",
-    ResponseClass: "Success",
-    ResponseCode: "NoError",
-    UserConfiguration: {
-      __type: "ServiceUserConfiguration:#Exchange",
-      XmlData: Buffer.from(kOtherMailboxXML, "utf-8").toString("base64"),
-    },
-  }));
+  let account = newTestAccount({
+    OtherMailboxEntries: [{
+      DisplayName: "Shared Mailbox",
+      PrincipalSMTPAddress: "shared@example.onmicrosoft.com",
+    }, {
+      DisplayName: "Bob Builder",
+      PrincipalSMTPAddress: "Bob@Example.onmicrosoft.com",
+    }],
+  });
+
+  let persons = await account.availableSharedAccounts();
+
+  expect(persons.contents.map(person => person.emailAddress)).toEqual(["shared@example.onmicrosoft.com", "bob@example.onmicrosoft.com"]);
+  expect(persons.contents.map(person => person.name)).toEqual(["Shared Mailbox", "Bob Builder"]);
+  expect(account.requests).toEqual([{ action: "GetOtherMailboxConfiguration", body: "{}" }]);
+});
+
+test("OWA: Skip our own mailbox and broken entries", async () => {
+  let account = newTestAccount({
+    OtherMailboxEntries: [{
+      DisplayName: "Alice",
+      PrincipalSMTPAddress: "alice@example.com",
+    }, {
+      DisplayName: "No address",
+    }, {
+      DisplayName: "Broken",
+      PrincipalSMTPAddress: "not an address",
+    }, {
+      PrincipalSMTPAddress: "bob@example.com",
+    }],
+  });
 
   let persons = await account.availableSharedAccounts();
 
   expect(persons.contents.map(person => person.emailAddress)).toEqual(["bob@example.com"]);
-  expect(persons.first.name).toBe("Bob Builder");
-  expect(account.requests.length).toBe(1);
-  let request = account.requests[0];
-  expect(request.__type).toBe("GetUserConfigurationJsonRequest:#Exchange");
-  expect(request.Body).toEqual({
-    __type: "GetUserConfigurationRequest:#Exchange",
-    UserConfigurationName: {
-      __type: "UserConfigurationNameType:#Exchange",
-      Name: "OWA.OtherMailbox",
-      BaseFolderId: {
-        __type: "DistinguishedFolderId:#Exchange",
-        Id: "root",
-      },
-    },
-    UserConfigurationProperties: "XmlData",
-  });
+  expect(persons.first.name).toBeUndefined();
 });
 
 test("OWA: The user never added a mailbox in Outlook on the web", async () => {
-  let account = newTestAccount(() => {
-    throw new OWAError({
-      status: 200,
-      json: {
-        Body: {
-          ResponseMessages: {
-            Items: [{
-              ResponseClass: "Error",
-              ResponseCode: "ErrorItemNotFound",
-              MessageText: "The specified object was not found in the store.",
-            }],
-          },
-        },
-      },
-    });
-  });
+  for (let response of [{ OtherMailboxEntries: [] }, {}]) {
+    let account = newTestAccount(response);
 
-  let persons = await account.availableSharedAccounts();
+    let persons = await account.availableSharedAccounts();
 
-  expect(persons.length).toBe(0);
+    expect(persons.length).toBe(0);
+  }
 });

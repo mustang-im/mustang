@@ -5,7 +5,6 @@ import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShar
 import { EWSFolder, getEWSItem } from "./EWSFolder";
 import { EWSSearchEMail } from "./EWSSearchEMail";
 import { deleteExchangePermissions, setExchangePermissions } from "./ExchangePermission";
-import { decodeXMLData } from "./ExchangeUserConfiguration";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
 import type { EWSDeleteItemRequest } from "./Request/EWSDeleteItemRequest";
 import type { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
@@ -34,7 +33,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -1082,7 +1081,18 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return calendar;
   }
 
-  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<string | null> {
+  async listOtherMailboxes(): Promise<PersonUID[]> {
+    let config = await this.getUserConfigurationXML(kOtherMailboxConfig, "root");
+    if (config?.localName != "OtherMailbox") {
+      return [];
+    }
+    let json = XML2JSON(config) as any;
+    return ensureArray(json?.entry)
+      .map(entry => this.newOtherMailbox(entry?.principalSMTPAddress, entry?.displayName))
+      .filter(Boolean);
+  }
+
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Element | null> {
     let request = {
       m$GetUserConfiguration: {
         m$UserConfigurationName: {
@@ -1094,15 +1104,21 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         m$UserConfigurationProperties: "XmlData",
       },
     };
+    let response: any;
     try {
-      let response = await this.callEWS(request);
-      return decodeXMLData(sanitize.string(response.UserConfiguration?.XmlData, null));
+      response = await this.callEWS(request);
     } catch (ex) {
       if (ex.type == "ErrorItemNotFound") {
         return null;
       }
       throw ex;
     }
+    let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
+    if (!xmlData) {
+      return null;
+    }
+    let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
+    return this.parseXML(xml)?.documentElement ?? null;
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
@@ -1291,6 +1307,8 @@ const kXMLContentType = "text/xml; charset=utf-8";
 
 /** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";
+
+const kOtherMailboxConfig = "OWA.OtherMailbox";
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {
