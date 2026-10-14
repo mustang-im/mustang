@@ -11,7 +11,7 @@
 </Clickable>
 
 <script lang="ts">
-  import { kRowsPerHour } from "../eventLayout";
+  import { kRowsPerHour } from "./DayColumn";
   import Clickable from "../../Shared/Clickable.svelte";
   import { createEventDispatcher } from 'svelte';
   const dispatchEvent = createEventDispatcher<{ celldblclick: { start: Date, end: Date, mouseEvent: MouseEvent } }>();

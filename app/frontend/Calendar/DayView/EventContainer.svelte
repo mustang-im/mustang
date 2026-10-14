@@ -10,7 +10,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { EventInTimeColumn } from "../eventLayout";
+  import type { EventInTimeColumn } from "./DayColumn";
   import { selectedEvent } from "../selected";
 
   export let item: EventInTimeColumn;

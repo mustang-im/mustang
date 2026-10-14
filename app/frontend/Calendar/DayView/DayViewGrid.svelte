@@ -42,7 +42,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { selectedCalendar, type DateInterval } from "../selected";
-  import { kRowsPerHour } from "../eventLayout";
+  import { kRowsPerHour } from "./DayColumn";
   import { appGlobal } from "../../../logic/app";
   import TimeLabel from "./TimeLabel.svelte";
   import DayColumn from "./DayColumn.svelte";
