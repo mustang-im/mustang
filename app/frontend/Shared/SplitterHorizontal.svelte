@@ -123,4 +123,9 @@
   .bottom :global(> *:first-child) {
     flex: 1 0 0;
   }
+
+  .top,
+  .bottom {
+    overflow-y: clip;
+  }
 </style>

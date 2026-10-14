@@ -11,7 +11,7 @@
       on:pointerdown={onMouseDown}
       style="width: {barWidth}px;"
       />
-    <hbox class="right" style={
+    <hbox class="right" class:fixed-width={rightFixedWidth} style={
       rightFixedWidth
       ? `width: ${rightFixedWidth};`
       : `flex: ${rightRatio} 0 0; min-width: ${rightMinWidth}px;`
@@ -141,6 +141,12 @@
   .left :global(> *:first-child),
   .right :global(> *:first-child) {
     flex: 1 0 0;
+  }
+
+  .left,
+  .right:not(.fixed-width) {
+    overflow-x: clip;
+    contain: inline-size;
   }
 
   /*
