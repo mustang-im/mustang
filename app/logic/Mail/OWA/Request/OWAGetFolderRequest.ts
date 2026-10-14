@@ -1,7 +1,7 @@
 import { OWARequest } from "./OWARequest";
 
 export class OWAGetFolderRequest extends OWARequest {
-  constructor(folderID: string) {
+  constructor(folderID: object) {
     super("GetFolder", {
       __type: "GetFolderRequest:#Exchange",
       FolderShape: {
@@ -10,12 +10,12 @@ export class OWAGetFolderRequest extends OWARequest {
         AdditionalProperties: [{
           __type: "PropertyUri:#Exchange",
           FieldURI: "folder:FolderClass",
+        }, {
+          __type: "PropertyUri:#Exchange",
+          FieldURI: "folder:DistinguishedFolderId",
         }],
       },
-      FolderIds: [{
-        __type: "FolderId:#Exchange",
-        Id: folderID,
-      }],
+      FolderIds: [folderID],
     });
   }
 }

@@ -23,7 +23,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, JSON2XML } from "./XML2JSON";
-import { ExchangeNavigationShortcut } from "./ExchangeNavigationShortcut";
+import { EWSCalendarShortcut } from "../../Calendar/EWS/EWSCalendarShortcut";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -1067,7 +1067,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
             }, {
               FieldURI: "item:ItemClass",
             }],
-            t$ExtendedFieldURI: Object.values(ExchangeNavigationShortcut.kProperties).map(property => ({
+            t$ExtendedFieldURI: Object.values(EWSCalendarShortcut.kProperties).map(property => ({
               PropertyTag: "0x" + property.tag.toString(16).toUpperCase(),
               PropertyType: property.type,
             })),
@@ -1083,7 +1083,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let result = await this.callEWS(request);
     let items: any[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
     let shortcuts = items
-      .map(item => new ExchangeNavigationShortcut(item))
+      .map(item => new EWSCalendarShortcut(item))
       .filter(shortcut => shortcut.isCalendarOfOtherUser);
     let calendars: EWSCalendar[] = [];
     for (let shortcut of shortcuts) {
@@ -1093,7 +1093,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           calendars.push(calendar);
         }
       } catch (ex) {
-        if (!ExchangeNavigationShortcut.kStaleErrors.includes(ex.type)) {
+        if (!this.isStaleShortcutError(ex)) {
           logError(ex);
         }
       }
@@ -1122,27 +1122,27 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let folders: any[] = Object.values(result.RootFolder?.Folders ?? {}).flatMap(folders => ensureArray(folders));
-    let commonViews = folders.find(folder => folder?.DisplayName == ExchangeNavigationShortcut.kFolderName);
+    let commonViews = folders.find(folder => folder?.DisplayName == EWSCalendarShortcut.kFolderName);
     return sanitize.nonemptystring(commonViews?.FolderId?.Id, null);
   }
 
-  protected async createCalendarFromShortcut(shortcut: ExchangeNavigationShortcut): Promise<EWSCalendar | null> {
+  protected async createCalendarFromShortcut(shortcut: EWSCalendarShortcut): Promise<EWSCalendar | null> {
     let owner = await this.resolveLegacyDN(shortcut.ownerLegacyDN);
     if (!owner || this.isMyEMailAddress(owner.emailAddress)) {
       return null;
     }
-    let folderIDs = shortcut.isDefaultCalendar
+    let folderID = shortcut.hasFolder
       ? {
+        t$FolderId: {
+          Id: await this.convertEntryIDToEWSID(shortcut.folderEntryID.hex, owner.emailAddress),
+        },
+      }
+      : {
         t$DistinguishedFolderId: {
           Id: "calendar",
           t$Mailbox: {
             t$EmailAddress: owner.emailAddress,
           },
-        },
-      }
-      : {
-        t$FolderId: {
-          Id: await this.convertEntryIDToEWSID(shortcut.folderEntryID.hex, owner.emailAddress),
         },
       };
     let request = {
@@ -1150,12 +1150,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         m$FolderShape: {
           t$BaseShape: "Default",
           t$AdditionalProperties: {
-            t$FieldURI: {
+            t$FieldURI: [{
               FieldURI: "folder:FolderClass",
-            },
+            }, {
+              FieldURI: "folder:DistinguishedFolderId",
+            }],
           },
         },
-        m$FolderIds: folderIDs,
+        m$FolderIds: folderID,
       },
     };
     let result = await this.callEWS(request);
@@ -1163,19 +1165,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (folder?.FolderClass != "IPF.Appointment") {
       return null;
     }
-    let folderID = sanitize.nonemptystring(folder.FolderId?.Id);
-    if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
-          (account as EWSCalendar).folderID == folderID)) {
-      return null;
-    }
-    let calendar = newCalendarForProtocol("calendar-ews") as EWSCalendar;
-    calendar.initFromMainAccount(this);
-    calendar.color = this.colorForSharedAccount(owner);
-    calendar.name = shortcut.name || `${owner.nameOrEMail} ${sanitize.label(folder.DisplayName, "")}`;
-    calendar.username = owner.emailAddress;
-    calendar.folderID = folderID;
-    calendar.useForInvitations = shortcut.isDefaultCalendar;
-    return calendar;
+    return this.createCalendarAccount(folder, {
+      name: owner.nameOrEMail,
+      username: owner.emailAddress,
+      color: this.colorForSharedAccount(owner),
+    });
   }
 
   protected async resolveLegacyDN(legacyDN: string): Promise<PersonUID | null> {
@@ -1236,7 +1230,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, dependentAcc?: EWSAccount): EWSCalendar | null {
+  private createCalendarAccount(folder: any, owner?: { name: string, username: string, color: string }): EWSCalendar | null {
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
           (account as EWSCalendar).folderID == folder.FolderId.Id)) {
@@ -1246,12 +1240,12 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     calendar.initFromMainAccount(this);
     let isPrimary = folder.DistinguishedFolderId == "calendar";
     calendar.useForInvitations = isPrimary;
-    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
-      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if ((owner || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(owner || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (dependentAcc) {
-      calendar.username = dependentAcc.username;
-      calendar.color = dependentAcc.color;
+    if (owner) {
+      calendar.username = owner.username;
+      calendar.color = owner.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;

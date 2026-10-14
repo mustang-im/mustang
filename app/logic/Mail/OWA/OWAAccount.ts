@@ -23,11 +23,12 @@ import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFold
 import { OWAGetFolderRequest } from "./Request/OWAGetFolderRequest";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
-import { ExchangeNavigationShortcut } from "../EWS/ExchangeNavigationShortcut";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
+import { owaResolveNamesRequest } from "../../Contacts/OWA/Request/OWAPersonRequests";
+import { logError } from "../../../frontend/Util/error";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
@@ -36,7 +37,6 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
-import { logError } from "../../../frontend/Util/error";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -658,7 +658,7 @@ export class OWAAccount extends ExchangeMailAccount {
             calendars.push(calendar);
           }
         } catch (ex) {
-          if (!ExchangeNavigationShortcut.kStaleErrors.includes(ex.type)) {
+          if (!this.isStaleShortcutError(ex)) {
             logError(ex);
           }
         }
@@ -673,28 +673,43 @@ export class OWAAccount extends ExchangeMailAccount {
       return null;
     }
     let sharedFolderID = sanitize.nonemptystring(entry.SharedFolderId?.Id, null);
-    let isDefaultCalendar = !!entry.IsGeneralScheduleCalendar || !sharedFolderID;
-    let result = await this.callOWA(isDefaultCalendar
-      ? owaSharedFolderRequest(["calendar"], emailAddress)
-      : new OWAGetFolderRequest(sharedFolderID));
+    let folderID = sharedFolderID
+      ? {
+        __type: "FolderId:#Exchange",
+        Id: sharedFolderID,
+      }
+      : {
+        __type: "DistinguishedFolderId:#Exchange",
+        Id: "calendar",
+        Mailbox: {
+          EmailAddress: emailAddress,
+        },
+      };
+    let result = await this.callOWA(new OWAGetFolderRequest(folderID));
     let folder = result.Folders?.[0];
     if (folder?.FolderClass != "IPF.Appointment") {
       return null;
     }
-    let folderID = sanitize.nonemptystring(folder.FolderId?.Id);
-    if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
-          (account as OWACalendar).folderID == folderID)) {
-      return null;
+    let owner = await this.resolveOwner(emailAddress);
+    return this.createCalendarAccount(folder, {
+      name: owner.nameOrEMail,
+      username: owner.emailAddress,
+      color: this.colorForSharedAccount(owner),
+    });
+  }
+
+  protected async resolveOwner(emailAddress: string): Promise<PersonUID> {
+    try {
+      let response = await this.callOWA(owaResolveNamesRequest(emailAddress));
+      let resolution = ensureArray(response.ResolutionSet).find(candidate =>
+        candidate?.Mailbox?.EmailAddress?.toLowerCase() == emailAddress);
+      return new PersonUID(emailAddress, sanitize.nonemptylabel(resolution?.Mailbox?.Name, null) ?? undefined);
+    } catch (ex) {
+      if (ex.type != "ErrorNameResolutionNoResults") {
+        throw ex;
+      }
+      return new PersonUID(emailAddress);
     }
-    let owner = new PersonUID(emailAddress);
-    let calendar = newCalendarForProtocol("calendar-owa") as OWACalendar;
-    calendar.initFromMainAccount(this);
-    calendar.color = this.colorForSharedAccount(owner);
-    calendar.name = sanitize.label(entry.CalendarName, "") || `${emailAddress} ${sanitize.label(folder.DisplayName, "")}`;
-    calendar.username = emailAddress;
-    calendar.folderID = folderID;
-    calendar.useForInvitations = isDefaultCalendar;
-    return calendar;
   }
 
   private createAddressbookAccount(folder: any, isPrimary: boolean, dependentAcc?: OWAAccount): OWAAddressbook | null {
@@ -716,7 +731,7 @@ export class OWAAccount extends ExchangeMailAccount {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, dependentAcc?: OWAAccount): OWACalendar | null{
+  private createCalendarAccount(folder: any, owner?: { name: string, username: string, color: string }): OWACalendar | null{
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
           (account as OWACalendar).folderID == folder.FolderId.Id)) {
@@ -726,12 +741,12 @@ export class OWAAccount extends ExchangeMailAccount {
     calendar.initFromMainAccount(this);
     let isPrimary = folder.DistinguishedFolderId == "calendar";
     calendar.useForInvitations = isPrimary;
-    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
-      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if ((owner || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(owner || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (dependentAcc) {
-      calendar.username = dependentAcc.username;
-      calendar.color = dependentAcc.color;
+    if (owner) {
+      calendar.username = owner.username;
+      calendar.color = owner.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
@@ -880,16 +895,16 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
   })), "message:" + aType);
 }
 
-class OWAGetCalendarFoldersRequest {
-  get action() {
-    return "GetCalendarFolders";
-  }
-}
-
 class OWAGetPeopleFiltersRequest {
   /** This is an empty request, but it still needs an action. */
   get action() {
     return "GetPeopleFilters";
+  }
+}
+
+class OWAGetCalendarFoldersRequest {
+  get action() {
+    return "GetCalendarFolders";
   }
 }
 

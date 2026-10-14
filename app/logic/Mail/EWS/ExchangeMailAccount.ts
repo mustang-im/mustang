@@ -43,4 +43,14 @@ export class ExchangeMailAccount extends MailAccount {
     }
     await super.deleteIt();
   }
+
+  protected isStaleShortcutError(ex: any): boolean {
+    return [
+      "ErrorNameResolutionNoResults",
+      "ErrorNonExistentMailbox",
+      "ErrorFolderNotFound",
+      "ErrorItemNotFound",
+      "ErrorAccessDenied",
+    ].includes(ex?.type);
+  }
 }

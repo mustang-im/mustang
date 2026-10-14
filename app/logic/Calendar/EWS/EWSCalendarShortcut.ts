@@ -1,9 +1,10 @@
-import { MAPIAddressBookEntryID, MAPIEntryID, MAPIStoreEntryID } from "./MAPIEntryID";
+import { MAPIEntryID } from "../../Mail/EWS/MAPIEntryID";
+import { MAPIAddressBookEntryID } from "../../Mail/EWS/MAPIAddressBookEntryID";
+import { MAPIStoreEntryID } from "../../Mail/EWS/MAPIStoreEntryID";
 import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class ExchangeNavigationShortcut {
-  readonly name: string;
+export class EWSCalendarShortcut {
   readonly itemClass: string | null;
   readonly type: number | null;
   readonly section: number | null;
@@ -22,22 +23,14 @@ export class ExchangeNavigationShortcut {
     storeEntryID: { tag: 0x684E, type: "Binary" },
     addressBookEntryID: { tag: 0x6854, type: "Binary" },
   };
-  static readonly kStaleErrors = [
-    "ErrorNameResolutionNoResults",
-    "ErrorNonExistentMailbox",
-    "ErrorFolderNotFound",
-    "ErrorItemNotFound",
-    "ErrorAccessDenied",
-  ];
 
-  constructor(ewsItem: any) {
+  constructor(item: any) {
     let values = new Map<number, string>();
-    for (let property of ensureArray(ewsItem?.ExtendedProperty)) {
+    for (let property of ensureArray(item?.ExtendedProperty)) {
       values.set(Number(property?.ExtendedFieldURI?.PropertyTag), property?.Value);
     }
-    let properties = ExchangeNavigationShortcut.kProperties;
-    this.name = sanitize.label(ewsItem?.Subject, "");
-    this.itemClass = sanitize.string(ewsItem?.ItemClass, null);
+    let properties = EWSCalendarShortcut.kProperties;
+    this.itemClass = sanitize.string(item?.ItemClass, null);
     this.type = sanitize.integer(values.get(properties.type.tag), null);
     this.section = sanitize.integer(values.get(properties.section.tag), null);
     this.folderEntryID = MAPIEntryID.fromBase64(values.get(properties.folderEntryID.tag));
@@ -49,15 +42,15 @@ export class ExchangeNavigationShortcut {
     return this.addressBookEntryID?.legacyDN ?? this.storeEntryID?.mailboxDN ?? null;
   }
 
-  get isDefaultCalendar(): boolean {
-    return !!this.addressBookEntryID?.legacyDN;
+  get hasFolder(): boolean {
+    return !!this.folderEntryID?.bytes.length;
   }
 
   get isCalendarOfOtherUser(): boolean {
-    return this.itemClass == ExchangeNavigationShortcut.kItemClass &&
-      this.section == ExchangeNavigationShortcut.kCalendarSection &&
-      this.type == ExchangeNavigationShortcut.kSharedFolderType &&
+    return this.itemClass == EWSCalendarShortcut.kItemClass &&
+      this.section == EWSCalendarShortcut.kCalendarSection &&
+      this.type == EWSCalendarShortcut.kSharedFolderType &&
       !!this.ownerLegacyDN &&
-      (this.isDefaultCalendar || !!this.folderEntryID?.bytes.length);
+      (this.hasFolder || !!this.addressBookEntryID?.legacyDN);
   }
 }

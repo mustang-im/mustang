@@ -68,6 +68,13 @@ class TestOWAAccount extends OWAAccount {
         return { RootFolder: { Folders: [] } };
       case "GetCalendarFolders":
         return { CalendarGroups: kCalendarGroups, CalendarFolders: [] };
+      case "ResolveNames": {
+        let person = kPersons[request.Body.UnresolvedEntry];
+        if (!person) {
+          throw new OWAError({ status: 200, json: { ResponseMessages: { Items: [{ ResponseClass: "Error", ResponseCode: "ErrorNameResolutionNoResults", MessageText: "No results" }] } } });
+        }
+        return { ResolutionSet: [{ Mailbox: { Name: person, EmailAddress: request.Body.UnresolvedEntry } }] };
+      }
       case "GetFolder": {
         let folderID = request.Body.FolderIds[0];
         if (folderID.__type == "FolderId:#Exchange") {
@@ -79,14 +86,19 @@ class TestOWAAccount extends OWAAccount {
         if (this.bobCalendarError) {
           throw new OWAError({ status: 200, json: { ResponseMessages: { Items: [{ ResponseClass: "Error", ResponseCode: this.bobCalendarError, MessageText: this.bobCalendarError }] } } });
         }
-        return calendarFolder("bob-calendar-id", "Calendar");
+        return calendarFolder("bob-calendar-id", "Calendar", "calendar");
       }
     }
     throw new Error("Unexpected request " + request.action);
   }
 }
 
-function calendarFolder(id: string, displayName: string): any {
+const kPersons: Record<string, string> = {
+  "bob@example.com": "Bob Builder",
+  "carol@example.com": "Carol Singer",
+};
+
+function calendarFolder(id: string, displayName: string, distinguishedFolderID?: string): any {
   return {
     ResponseClass: "Success",
     Folders: [{
@@ -94,6 +106,7 @@ function calendarFolder(id: string, displayName: string): any {
       FolderId: { Id: id },
       DisplayName: displayName,
       FolderClass: "IPF.Appointment",
+      DistinguishedFolderId: distinguishedFolderID,
     }],
   };
 }
@@ -112,7 +125,7 @@ test("OWA: Offer the calendars of other users that the user opened in Outlook", 
 
   let calendars = (await account.listPossibleSubAccounts()).contents as OWACalendar[];
 
-  expect(calendars.map(calendar => calendar.name)).toEqual(["Bob Builder", "Carol: Projects"]);
+  expect(calendars.map(calendar => calendar.name)).toEqual(["Bob Builder Calendar", "Carol Singer Projects"]);
   let [bob, carol] = calendars;
   expect(bob.protocol).toBe("calendar-owa");
   expect(bob.username).toBe("bob@example.com");

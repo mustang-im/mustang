@@ -2,8 +2,9 @@
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import type { EWSCalendar } from "../../../../logic/Calendar/EWS/EWSCalendar";
-import { ExchangeNavigationShortcut } from "../../../../logic/Mail/EWS/ExchangeNavigationShortcut";
-import { MAPIAddressBookEntryID, MAPIStoreEntryID } from "../../../../logic/Mail/EWS/MAPIEntryID";
+import { EWSCalendarShortcut } from "../../../../logic/Calendar/EWS/EWSCalendarShortcut";
+import { MAPIAddressBookEntryID } from "../../../../logic/Mail/EWS/MAPIAddressBookEntryID";
+import { MAPIStoreEntryID } from "../../../../logic/Mail/EWS/MAPIStoreEntryID";
 import { newCalendarForProtocol } from "../../../../logic/Calendar/AccountsList/Calendars";
 import { AuthMethod } from "../../../../logic/Abstract/Account";
 import { expect, test, vi } from "vitest";
@@ -124,27 +125,26 @@ test("Owner of the shortcut, from the store EntryID", () => {
 });
 
 test("Default calendar of another user", () => {
-  let shortcut = new ExchangeNavigationShortcut(linkItem(kBobLink));
+  let shortcut = new EWSCalendarShortcut(linkItem(kBobLink));
 
   expect(shortcut.isCalendarOfOtherUser).toBe(true);
-  expect(shortcut.name).toBe("Bob Builder");
   expect(shortcut.ownerLegacyDN).toBe(kBobDN);
-  expect(shortcut.isDefaultCalendar).toBe(true);
+  // Outlook saves only the owner, which means: the owner's default calendar
+  expect(shortcut.hasFolder).toBe(false);
   expect(shortcut.folderEntryID).toBe(null);
 });
 
 test("Other calendar of another user", () => {
-  let shortcut = new ExchangeNavigationShortcut(linkItem(kCarolLink));
+  let shortcut = new EWSCalendarShortcut(linkItem(kCarolLink));
 
   expect(shortcut.isCalendarOfOtherUser).toBe(true);
-  expect(shortcut.name).toBe("Carol: Projects");
   expect(shortcut.ownerLegacyDN).toBe(kCarolDN);
-  expect(shortcut.isDefaultCalendar).toBe(false);
+  expect(shortcut.hasFolder).toBe(true);
   expect(shortcut.folderEntryID.hex).toBe(kCarolProjectsHex);
 });
 
 test("Ignore shortcuts that are not calendars of other users", () => {
-  let isCalendarOfOtherUser = (item: any) => new ExchangeNavigationShortcut(item).isCalendarOfOtherUser;
+  let isCalendarOfOtherUser = (item: any) => new EWSCalendarShortcut(item).isCalendarOfOtherUser;
   expect(isCalendarOfOtherUser(linkItem(kOwnCalendarLink))).toBe(false);
   expect(isCalendarOfOtherUser(linkItem(kGroupHeaderLink))).toBe(false);
   expect(isCalendarOfOtherUser(linkItem(kMailFavoriteLink))).toBe(false);
@@ -205,11 +205,12 @@ function linkXML(link: Link): string {
   </Message>`;
 }
 
-function calendarFolderXML(id: string, displayName: string): string {
+function calendarFolderXML(id: string, displayName: string, distinguishedFolderID?: string): string {
   return `<Folders><CalendarFolder ${kTypes}>
     <FolderId Id="${id}" ChangeKey="AgAAAA=="/>
     <DisplayName>${displayName}</DisplayName>
     <FolderClass>IPF.Appointment</FolderClass>
+    ${distinguishedFolderID ? `<DistinguishedFolderId>${distinguishedFolderID}</DistinguishedFolderId>` : ""}
   </CalendarFolder></Folders>`;
 }
 
@@ -278,7 +279,7 @@ class TestServer {
       if (this.bobCalendarError) {
         return error("GetFolder", this.bobCalendarError);
       }
-      return success("GetFolder", calendarFolderXML("bob-calendar-id", "Calendar"));
+      return success("GetFolder", calendarFolderXML("bob-calendar-id", "Calendar", "calendar"));
     }
     throw new Error("Unexpected request " + body);
   }
@@ -304,7 +305,7 @@ test("EWS: Offer the calendars of other users that the user opened in Outlook", 
 
   let calendars = (await account.listPossibleSubAccounts()).contents as EWSCalendar[];
 
-  expect(calendars.map(calendar => calendar.name)).toEqual(["Bob Builder", "Carol: Projects"]);
+  expect(calendars.map(calendar => calendar.name)).toEqual(["Bob Builder Calendar", "Carol Singer Projects"]);
   let [bob, carol] = calendars;
   expect(bob.protocol).toBe("calendar-ews");
   expect(bob.username).toBe("bob@example.com");
