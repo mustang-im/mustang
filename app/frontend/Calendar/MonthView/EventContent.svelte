@@ -1,7 +1,7 @@
 <Clickable onClick={onSelect} onDoubleClick={onOpen}>
   <hbox class="event font-small"
     title={eventAsText}>
-    {#if !$event.allDay && !isContinued}
+    {#if showTime}
       <hbox class="time">
         {startTime}
       </hbox>
@@ -19,8 +19,7 @@
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
-  /** Time where the cell (not the event) starts */
-  export let start: Date;
+  export let showTime = true;
 
   $: startTime = $event.startTime.toLocaleString(getDateTimeLocale(), {
     hour: "numeric",
@@ -29,7 +28,6 @@
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
-  $: isContinued = $event.startTime < start;
 
   function onSelect() {
     $selectedEvent = event;
