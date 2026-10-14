@@ -1,7 +1,7 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../logic/app";
 import { Event } from "../../../logic/Calendar/Event";
-import { layoutDayRow, layoutTimeColumn, kRowsPerHour } from "../../../frontend/Calendar/eventLayout";
+import { layoutDayRow, layoutTimeColumn, limitLanes, kRowsPerHour } from "../../../frontend/Calendar/eventLayout";
 import { expect, test } from "vitest";
 
 /** Monday */
@@ -138,4 +138,44 @@ test("Within a day, all-day events come first, then the others by time", () => {
     ["Morning", 1],
     ["Afternoon", 2],
   ]);
+});
+
+test("When all lanes fit, nothing is hidden", () => {
+  let events = [newEvent("A", at(0, 9), at(0, 10)), newEvent("B", at(0, 11), at(0, 12))];
+  let limited = limitLanes(layoutDayRow(events, weekDays()), 7, 2);
+  expect(limited.events.map(item => item.event.title)).toEqual(["A", "B"]);
+  expect(limited.hiddenEvents.every(hidden => hidden.length == 0)).toBe(true);
+});
+
+test("A day with too many events hides the rest, to make room for the '+N more'", () => {
+  let monday = [9, 10, 11, 12].map(hour => newEvent(`Mon ${hour}`, at(0, hour), at(0, hour, 30)));
+  let tuesday = [9, 10, 11].map(hour => newEvent(`Tue ${hour}`, at(1, hour), at(1, hour, 30)));
+  let limited = limitLanes(layoutDayRow([...monday, ...tuesday], weekDays()), 7, 3);
+  // Monday: 2 events, and the 3rd lane is for "+2"
+  expect(limited.hiddenEvents[0].map(event => event.title)).toEqual(["Mon 11", "Mon 12"]);
+  // Tuesday fits into 3 lanes, so it uses the 3rd lane for its event
+  expect(limited.hiddenEvents[1]).toEqual([]);
+  expect(limited.events.map(item => item.event.title)).toEqual(["Mon 9", "Mon 10", "Tue 9", "Tue 10", "Tue 11"]);
+});
+
+test("A multi-day event in the last lane is hidden on all its days, if one of its days overflows", () => {
+  let a = newEvent("A", at(0, 0), at(2, 0), true); // Mon-Tue, lane 0
+  let b = newEvent("B", at(0, 0), at(2, 0), true); // Mon-Tue, lane 1
+  let late = newEvent("Late", at(1, 0), at(3, 0), true); // Tue-Wed, lane 2
+  let wednesday = [9, 10, 11].map(hour => newEvent(`Wed ${hour}`, at(2, hour), at(2, hour, 30))); // lanes 0, 1, 3
+  let layout = layoutDayRow([a, b, late, ...wednesday], weekDays());
+  expect(layout.events.find(item => item.event == late)!.lane).toBe(2);
+  let limited = limitLanes(layout, 7, 3);
+  expect(limited.hiddenEvents[0]).toEqual([]);
+  // Tuesday itself has room, but "Late" can't be cut in half
+  expect(limited.hiddenEvents[1].map(event => event.title)).toEqual(["Late"]);
+  expect(limited.hiddenEvents[2].map(event => event.title)).toEqual(["Late", "Wed 11"]);
+  expect(limited.events.map(item => item.event.title)).toEqual(["A", "B", "Wed 9", "Wed 10"]);
+});
+
+test("With room for only 1 lane, all events of an overflowing day are hidden", () => {
+  let events = [newEvent("A", at(0, 9), at(0, 10)), newEvent("B", at(0, 11), at(0, 12)), newEvent("C", at(1, 9), at(1, 10))];
+  let limited = limitLanes(layoutDayRow(events, weekDays()), 7, 1);
+  expect(limited.hiddenEvents[0].map(event => event.title)).toEqual(["A", "B"]);
+  expect(limited.events.map(item => item.event.title)).toEqual(["C"]);
 });

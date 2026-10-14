@@ -118,3 +118,24 @@ export function layoutDayRow(events: Event[], days: Date[]): DayRowLayout {
   }
   return { events: items, lanes: occupied.length };
 }
+
+export interface LimitedDayRowLayout {
+  events: EventInDayRow[];
+  hiddenEvents: Event[][];
+}
+
+export function limitLanes(layout: DayRowLayout, dayCount: number, maxLanes: number): LimitedDayRowLayout {
+  let lastLane = maxLanes - 1;
+  let overflowingDays = new Array(dayCount).fill(false);
+  for (let item of layout.events) {
+    if (item.lane > lastLane) {
+      overflowingDays.fill(true, item.startDay, item.endDay);
+    }
+  }
+  let isShown = (item: EventInDayRow) => item.lane < lastLane ||
+    item.lane == lastLane && !overflowingDays.slice(item.startDay, item.endDay).some(Boolean);
+  let hiddenEvents = overflowingDays.map((_, day) => layout.events
+    .filter(item => !isShown(item) && item.startDay <= day && day < item.endDay)
+    .map(item => item.event));
+  return { events: layout.events.filter(isShown), hiddenEvents };
+}

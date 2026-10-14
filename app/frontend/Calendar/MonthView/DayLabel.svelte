@@ -1,5 +1,7 @@
 <Clickable onClick={selectDay} onDoubleClick={changeToDay}>
-  <hbox class="day font-small" class:today={day.getTime() == today.getTime()}>
+  <hbox class="day font-small"
+    style="grid-column: {column}"
+    class:today={day.getTime() == today.getTime()}>
     <hbox class="date-number">
       {day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}
     </hbox>
@@ -24,6 +26,7 @@
   import { getLocalStorage } from "../../Util/LocalStorage";
 
   export let day: Date
+  export let column: number;
   export let withMonthOnMonday = true;
   export let withMonthOnFirst = true;
 
@@ -43,6 +46,7 @@
 
 <style>
   .day {
+    grid-row: 1;
     padding: 4px 8px;
     border-left: 1px dotted var(--border);
     background-color: var(--bg);
