@@ -19,9 +19,11 @@ import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaGetCalendarFolderRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { OWAGetFolderRequest } from "./Request/OWAGetFolderRequest";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
+import { ExchangeNavigationShortcut } from "../EWS/ExchangeNavigationShortcut";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
@@ -650,9 +652,15 @@ export class OWAAccount extends ExchangeMailAccount {
     let calendars: OWACalendar[] = [];
     for (let group of ensureArray(response?.CalendarGroups)) {
       for (let entry of ensureArray(group?.Calendars)) {
-        let calendar = await this.createCalendarFromShortcut(entry).catch(() => null);
-        if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
-          calendars.push(calendar);
+        try {
+          let calendar = await this.createCalendarFromShortcut(entry);
+          if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
+            calendars.push(calendar);
+          }
+        } catch (ex) {
+          if (!ExchangeNavigationShortcut.kStaleErrors.includes(ex.type)) {
+            logError(ex);
+          }
         }
       }
     }
@@ -668,7 +676,7 @@ export class OWAAccount extends ExchangeMailAccount {
     let isDefaultCalendar = !!entry.IsGeneralScheduleCalendar || !sharedFolderID;
     let result = await this.callOWA(isDefaultCalendar
       ? owaSharedFolderRequest(["calendar"], emailAddress)
-      : owaGetCalendarFolderRequest(sharedFolderID));
+      : new OWAGetFolderRequest(sharedFolderID));
     let folder = result.Folders?.[0];
     if (folder?.FolderClass != "IPF.Appointment") {
       return null;

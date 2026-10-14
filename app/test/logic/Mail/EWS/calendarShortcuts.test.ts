@@ -2,10 +2,11 @@
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import type { EWSCalendar } from "../../../../logic/Calendar/EWS/EWSCalendar";
-import { legacyDNFromAddressBookEntryID, mailboxDNFromStoreEntryID, parseSharedCalendarShortcut, ShortcutProperty } from "../../../../logic/Mail/EWS/ExchangeCalendarShortcut";
+import { ExchangeNavigationShortcut } from "../../../../logic/Mail/EWS/ExchangeNavigationShortcut";
+import { MAPIAddressBookEntryID, MAPIStoreEntryID } from "../../../../logic/Mail/EWS/MAPIEntryID";
 import { newCalendarForProtocol } from "../../../../logic/Calendar/AccountsList/Calendars";
 import { AuthMethod } from "../../../../logic/Abstract/Account";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 
 /* Outlook (classic and new) and Outlook on the web save the calendars of
  * other users that the user opened as navigation shortcuts, which are
@@ -109,47 +110,50 @@ const kMailFavoriteLink: Link = { subject: "Inbox", type: 0, section: 1, entryID
 const kContactsLink: Link = { subject: "Bob's Contacts", type: 2, section: 4, addressBookEntryID: addressBookEntryID(kBobDN) };
 
 test("Owner of the shortcut, from the address book EntryID", () => {
-  expect(legacyDNFromAddressBookEntryID(Buffer.from(addressBookEntryID(kBobDN), "base64"))).toBe(kBobDN);
-  expect(legacyDNFromAddressBookEntryID(Buffer.from(storeEntryID("EXCH01", kBobDN), "base64"))).toBe(null);
-  expect(legacyDNFromAddressBookEntryID(new Uint8Array([0, 0, 0]))).toBe(null);
-  expect(legacyDNFromAddressBookEntryID(null)).toBe(null);
+  expect(MAPIAddressBookEntryID.fromBase64(addressBookEntryID(kBobDN)).legacyDN).toBe(kBobDN);
+  expect(MAPIAddressBookEntryID.fromBase64(storeEntryID("EXCH01", kBobDN)).legacyDN).toBe(null);
+  expect(new MAPIAddressBookEntryID(new Uint8Array([0, 0, 0])).legacyDN).toBe(null);
+  expect(MAPIAddressBookEntryID.fromBase64(null)).toBe(null);
 });
 
 test("Owner of the shortcut, from the store EntryID", () => {
-  expect(mailboxDNFromStoreEntryID(Buffer.from(storeEntryID("EXCH01", kCarolDN), "base64"))).toBe(kCarolDN);
-  expect(mailboxDNFromStoreEntryID(Buffer.from(addressBookEntryID(kCarolDN), "base64"))).toBe(null);
-  expect(mailboxDNFromStoreEntryID(new Uint8Array(70))).toBe(null);
-  expect(mailboxDNFromStoreEntryID(null)).toBe(null);
+  expect(MAPIStoreEntryID.fromBase64(storeEntryID("EXCH01", kCarolDN)).mailboxDN).toBe(kCarolDN);
+  expect(MAPIStoreEntryID.fromBase64(addressBookEntryID(kCarolDN)).mailboxDN).toBe(null);
+  expect(new MAPIStoreEntryID(new Uint8Array(70)).mailboxDN).toBe(null);
+  expect(MAPIStoreEntryID.fromBase64(undefined)).toBe(null);
 });
 
 test("Default calendar of another user", () => {
-  expect(parseSharedCalendarShortcut(linkItem(kBobLink))).toEqual({
-    name: "Bob Builder",
-    ownerLegacyDN: kBobDN,
-    isDefaultCalendar: true,
-    folderEntryID: null,
-  });
+  let shortcut = new ExchangeNavigationShortcut(linkItem(kBobLink));
+
+  expect(shortcut.isCalendarOfOtherUser).toBe(true);
+  expect(shortcut.name).toBe("Bob Builder");
+  expect(shortcut.ownerLegacyDN).toBe(kBobDN);
+  expect(shortcut.isDefaultCalendar).toBe(true);
+  expect(shortcut.folderEntryID).toBe(null);
 });
 
 test("Other calendar of another user", () => {
-  expect(parseSharedCalendarShortcut(linkItem(kCarolLink))).toEqual({
-    name: "Carol: Projects",
-    ownerLegacyDN: kCarolDN,
-    isDefaultCalendar: false,
-    folderEntryID: kCarolProjectsHex,
-  });
+  let shortcut = new ExchangeNavigationShortcut(linkItem(kCarolLink));
+
+  expect(shortcut.isCalendarOfOtherUser).toBe(true);
+  expect(shortcut.name).toBe("Carol: Projects");
+  expect(shortcut.ownerLegacyDN).toBe(kCarolDN);
+  expect(shortcut.isDefaultCalendar).toBe(false);
+  expect(shortcut.folderEntryID.hex).toBe(kCarolProjectsHex);
 });
 
 test("Ignore shortcuts that are not calendars of other users", () => {
-  expect(parseSharedCalendarShortcut(linkItem(kOwnCalendarLink))).toBe(null);
-  expect(parseSharedCalendarShortcut(linkItem(kGroupHeaderLink))).toBe(null);
-  expect(parseSharedCalendarShortcut(linkItem(kMailFavoriteLink))).toBe(null);
-  expect(parseSharedCalendarShortcut(linkItem(kContactsLink))).toBe(null);
-  expect(parseSharedCalendarShortcut(linkItem({ ...kBobLink, itemClass: "IPM.Microsoft.WunderBar.SFInfo" }))).toBe(null);
+  let isCalendarOfOtherUser = (item: any) => new ExchangeNavigationShortcut(item).isCalendarOfOtherUser;
+  expect(isCalendarOfOtherUser(linkItem(kOwnCalendarLink))).toBe(false);
+  expect(isCalendarOfOtherUser(linkItem(kGroupHeaderLink))).toBe(false);
+  expect(isCalendarOfOtherUser(linkItem(kMailFavoriteLink))).toBe(false);
+  expect(isCalendarOfOtherUser(linkItem(kContactsLink))).toBe(false);
+  expect(isCalendarOfOtherUser(linkItem({ ...kBobLink, itemClass: "IPM.Microsoft.WunderBar.SFInfo" }))).toBe(false);
   // Another calendar needs the folder
-  expect(parseSharedCalendarShortcut(linkItem({ ...kCarolLink, entryID: undefined }))).toBe(null);
-  expect(parseSharedCalendarShortcut(linkItem({ ...kCarolLink, storeEntryID: base64([1, 2, 3]) }))).toBe(null);
-  expect(parseSharedCalendarShortcut(null)).toBe(null);
+  expect(isCalendarOfOtherUser(linkItem({ ...kCarolLink, entryID: undefined }))).toBe(false);
+  expect(isCalendarOfOtherUser(linkItem({ ...kCarolLink, storeEntryID: base64([1, 2, 3]) }))).toBe(false);
+  expect(isCalendarOfOtherUser(null)).toBe(false);
 });
 
 /* The EWS server */
@@ -219,6 +223,8 @@ class TestServer {
   readonly requests: Document[] = [];
   links: Link[] = [kGroupHeaderLink, kOwnCalendarLink, kBobLink, kCarolLink, kDaveLink, kMailFavoriteLink, kContactsLink, kBobLink];
   haveCommonViews = true;
+  /** Error code for Bob's calendar, e.g. when he stopped sharing it */
+  bobCalendarError: string | null = null;
 
   respond(body: string): string {
     let request = new DOMParser().parseFromString(body, "text/xml");
@@ -269,6 +275,9 @@ class TestServer {
       expect(element("t:DistinguishedFolderId").getAttribute("Id")).toBe("calendar");
       let mailbox = element("t:EmailAddress").textContent;
       expect(mailbox).toBe("bob@example.com");
+      if (this.bobCalendarError) {
+        return error("GetFolder", this.bobCalendarError);
+      }
       return success("GetFolder", calendarFolderXML("bob-calendar-id", "Calendar"));
     }
     throw new Error("Unexpected request " + body);
@@ -326,6 +335,36 @@ test("EWS: Don't offer a calendar that we already added", async () => {
     expect(calendars.map(calendar => calendar.folderID)).toEqual(["carol-projects-id"]);
   } finally {
     appGlobal.calendars.remove(bobCalendar);
+  }
+});
+
+test("EWS: Skip a calendar that is not shared with us anymore", async () => {
+  let { account, server } = newTestAccount();
+  server.bobCalendarError = "ErrorAccessDenied";
+  let consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+  try {
+    let calendars = (await account.listPossibleSubAccounts()).contents as EWSCalendar[];
+
+    expect(calendars.map(calendar => calendar.folderID)).toEqual(["carol-projects-id"]);
+    expect(consoleError).not.toHaveBeenCalled();
+  } finally {
+    consoleError.mockRestore();
+  }
+});
+
+test("EWS: Log an unexpected error, but still offer the other calendars", async () => {
+  let { account, server } = newTestAccount();
+  server.bobCalendarError = "ErrorInternalServerError";
+  let consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+  try {
+    let calendars = (await account.listPossibleSubAccounts()).contents as EWSCalendar[];
+
+    expect(calendars.map(calendar => calendar.folderID)).toEqual(["carol-projects-id"]);
+    expect(consoleError).toHaveBeenCalled();
+  } finally {
+    consoleError.mockRestore();
   }
 });
 

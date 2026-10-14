@@ -23,7 +23,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, JSON2XML } from "./XML2JSON";
-import { kCommonViewsFolderName, kShortcutProperties, parseSharedCalendarShortcut, propertyTagHex, type SharedCalendarShortcut } from "./ExchangeCalendarShortcut";
+import { ExchangeNavigationShortcut } from "./ExchangeNavigationShortcut";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -1067,8 +1067,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
             }, {
               FieldURI: "item:ItemClass",
             }],
-            t$ExtendedFieldURI: kShortcutProperties.map(property => ({
-              PropertyTag: propertyTagHex(property.tag),
+            t$ExtendedFieldURI: Object.values(ExchangeNavigationShortcut.kProperties).map(property => ({
+              PropertyTag: "0x" + property.tag.toString(16).toUpperCase(),
               PropertyType: property.type,
             })),
           },
@@ -1082,11 +1082,20 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let items: any[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
+    let shortcuts = items
+      .map(item => new ExchangeNavigationShortcut(item))
+      .filter(shortcut => shortcut.isCalendarOfOtherUser);
     let calendars: EWSCalendar[] = [];
-    for (let shortcut of items.map(parseSharedCalendarShortcut).filter(Boolean)) {
-      let calendar = await this.createCalendarFromShortcut(shortcut).catch(() => null);
-      if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
-        calendars.push(calendar);
+    for (let shortcut of shortcuts) {
+      try {
+        let calendar = await this.createCalendarFromShortcut(shortcut);
+        if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
+          calendars.push(calendar);
+        }
+      } catch (ex) {
+        if (!ExchangeNavigationShortcut.kStaleErrors.includes(ex.type)) {
+          logError(ex);
+        }
       }
     }
     return calendars;
@@ -1113,11 +1122,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     };
     let result = await this.callEWS(request);
     let folders: any[] = Object.values(result.RootFolder?.Folders ?? {}).flatMap(folders => ensureArray(folders));
-    let commonViews = folders.find(folder => folder?.DisplayName == kCommonViewsFolderName);
+    let commonViews = folders.find(folder => folder?.DisplayName == ExchangeNavigationShortcut.kFolderName);
     return sanitize.nonemptystring(commonViews?.FolderId?.Id, null);
   }
 
-  protected async createCalendarFromShortcut(shortcut: SharedCalendarShortcut): Promise<EWSCalendar | null> {
+  protected async createCalendarFromShortcut(shortcut: ExchangeNavigationShortcut): Promise<EWSCalendar | null> {
     let owner = await this.resolveLegacyDN(shortcut.ownerLegacyDN);
     if (!owner || this.isMyEMailAddress(owner.emailAddress)) {
       return null;
@@ -1133,7 +1142,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       }
       : {
         t$FolderId: {
-          Id: await this.convertEntryIDToEWSID(shortcut.folderEntryID, owner.emailAddress),
+          Id: await this.convertEntryIDToEWSID(shortcut.folderEntryID.hex, owner.emailAddress),
         },
       };
     let request = {

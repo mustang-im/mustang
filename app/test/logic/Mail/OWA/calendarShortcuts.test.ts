@@ -2,6 +2,7 @@
 import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
 import type { OWACalendar } from "../../../../logic/Calendar/OWA/OWACalendar";
+import { OWAError } from "../../../../logic/Mail/OWA/OWAError";
 import { expect, test } from "vitest";
 
 /* Outlook on the web reads the calendar shortcuts in "Common Views" on the
@@ -55,6 +56,8 @@ const kCalendarGroups = [{
 /** `callOWA()` returns the single response message of the server's answer */
 class TestOWAAccount extends OWAAccount {
   readonly requests: any[] = [];
+  /** Error code for Bob's calendar, e.g. when he stopped sharing it */
+  bobCalendarError: string | null = null;
 
   async callOWA(request: any): Promise<any> {
     this.requests.push({ action: request.action, ...JSON.parse(JSON.stringify(request)) });
@@ -73,6 +76,9 @@ class TestOWAAccount extends OWAAccount {
         }
         expect(folderID.Id).toBe("calendar");
         expect(folderID.Mailbox.EmailAddress).toBe("bob@example.com");
+        if (this.bobCalendarError) {
+          throw new OWAError({ status: 200, json: { ResponseMessages: { Items: [{ ResponseClass: "Error", ResponseCode: this.bobCalendarError, MessageText: this.bobCalendarError }] } } });
+        }
         return calendarFolder("bob-calendar-id", "Calendar");
       }
     }
@@ -117,4 +123,13 @@ test("OWA: Offer the calendars of other users that the user opened in Outlook", 
   expect(carol.folderID).toBe("carol-projects-id");
   expect(carol.useForInvitations).toBe(false);
   expect(account.requests.find(request => request.action == "GetCalendarFolders")).toBeDefined();
+});
+
+test("OWA: Skip a calendar that is not shared with us anymore", async () => {
+  let account = newTestAccount();
+  account.bobCalendarError = "ErrorAccessDenied";
+
+  let calendars = (await account.listPossibleSubAccounts()).contents as OWACalendar[];
+
+  expect(calendars.map(calendar => calendar.folderID)).toEqual(["carol-projects-id"]);
 });
