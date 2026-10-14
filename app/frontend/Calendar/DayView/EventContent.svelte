@@ -4,12 +4,8 @@
     {#if showTime}
       <!--{event.startTime.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })}-->
       <hbox class="time">{startTime}</hbox>
-    {:else if forceShowText}
-      <hbox class="time">…</hbox>
     {/if}
-    {#if showTitle}
-      <hbox class="title">{$event.title}</hbox>
-    {/if}
+    <hbox class="title">{$event.title}</hbox>
   </hbox>
 </Clickable>
 
@@ -22,16 +18,12 @@
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
-  export let start: Date;
-  export let end: Date;
-  export let forceShowText = false;
+  export let showTime = true;
 
   $: startTime = $event.startTime.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" });
   $: eventAsText = ($event.allDay ? "" : `${startTime} – ${getDurationString(event.endTime.getTime() - event.startTime.getTime())}\n`) +
      event.title +
      (event.participants.isEmpty ? "" : "\n" + event.participants.getIndexRange(0, 4).map(person => person.name).join(", "));
-  $: showTime = start <= $event.startTime && event.startTime < end || start.getHours() == 0;
-  $: showTitle = showTime || forceShowText;
 
   function onSelect(ev: MouseEvent) {
     $selectedEvent = event;
@@ -44,6 +36,8 @@
 
 <style>
   .event {
+    min-width: 0;
+    overflow: hidden;
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
   }
@@ -67,6 +61,12 @@
   .title {
     margin-inline-start: 6px;
     margin-block-start: 5px;
+  }
+  .title {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   :global(.cancelled) .time,
   :global(.cancelled) .title {

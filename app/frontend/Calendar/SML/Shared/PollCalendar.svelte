@@ -51,8 +51,7 @@
   .range-header {
     justify-content: center;
   }
-  .calendar :global(.top-left.header),
-  .calendar :global(.day-header) {
+  .calendar :global(.header) {
     background-color: var(--leftbar-bg);
   }
   .calendar :global(.day-header) {

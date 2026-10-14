@@ -1,22 +1,21 @@
 <Clickable onClick={onSelect} onDoubleClick={onOpen}>
   <hbox class="event font-small"
     title={eventAsText}
-    style="--account-color: {event.calendar?.color}"
+    style="grid-column: {item.startDay + 1} / {item.endDay + 1}; grid-row: {item.lane + 1}; --account-color: {event.calendar?.color}"
     class:selected={$selectedEvent == event}>
     <hbox class="title">{event.title}</hbox>
   </hbox>
 </Clickable>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import type { EventInDayRow } from "../eventLayout";
   import Clickable from "../../Shared/Clickable.svelte";
   import { openEvent } from "../open";
   import { selectedEvent } from "../selected";
 
-  export let event: Event;
-  /** Time where the cell (not the event) starts */
-  export let start: Date;
+  export let item: EventInDayRow;
 
+  $: event = item.event;
   $: eventAsText = event.title;
 
   function onSelect() {
@@ -33,9 +32,11 @@
     position: relative;
     padding: 4px;
     margin-block-end: 1px;
+    margin-inline-start: 1px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    opacity: 85%;
 
     background-color: var(--account-color);
     color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);
