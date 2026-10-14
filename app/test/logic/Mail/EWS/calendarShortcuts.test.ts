@@ -3,8 +3,7 @@ import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import type { EWSCalendar } from "../../../../logic/Calendar/EWS/EWSCalendar";
 import { EWSCalendarShortcut } from "../../../../logic/Calendar/EWS/EWSCalendarShortcut";
-import { MAPIAddressBookEntryID } from "../../../../logic/Mail/EWS/MAPIAddressBookEntryID";
-import { MAPIStoreEntryID } from "../../../../logic/Mail/EWS/MAPIStoreEntryID";
+import { MAPIAddressBookEntryID, MAPIStoreEntryID } from "../../../../logic/Mail/EWS/MAPIEntryID";
 import { newCalendarForProtocol } from "../../../../logic/Calendar/AccountsList/Calendars";
 import { AuthMethod } from "../../../../logic/Abstract/Account";
 import { expect, test, vi } from "vitest";
@@ -125,7 +124,7 @@ test("Owner of the shortcut, from the store EntryID", () => {
 });
 
 test("Default calendar of another user", () => {
-  let shortcut = new EWSCalendarShortcut(linkItem(kBobLink));
+  let shortcut = new EWSCalendarShortcut(new EWSAccount(), linkItem(kBobLink));
 
   expect(shortcut.isCalendarOfOtherUser).toBe(true);
   expect(shortcut.ownerLegacyDN).toBe(kBobDN);
@@ -135,7 +134,7 @@ test("Default calendar of another user", () => {
 });
 
 test("Other calendar of another user", () => {
-  let shortcut = new EWSCalendarShortcut(linkItem(kCarolLink));
+  let shortcut = new EWSCalendarShortcut(new EWSAccount(), linkItem(kCarolLink));
 
   expect(shortcut.isCalendarOfOtherUser).toBe(true);
   expect(shortcut.ownerLegacyDN).toBe(kCarolDN);
@@ -144,7 +143,7 @@ test("Other calendar of another user", () => {
 });
 
 test("Ignore shortcuts that are not calendars of other users", () => {
-  let isCalendarOfOtherUser = (item: any) => new EWSCalendarShortcut(item).isCalendarOfOtherUser;
+  let isCalendarOfOtherUser = (item: any) => new EWSCalendarShortcut(new EWSAccount(), item).isCalendarOfOtherUser;
   expect(isCalendarOfOtherUser(linkItem(kOwnCalendarLink))).toBe(false);
   expect(isCalendarOfOtherUser(linkItem(kGroupHeaderLink))).toBe(false);
   expect(isCalendarOfOtherUser(linkItem(kMailFavoriteLink))).toBe(false);

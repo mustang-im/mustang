@@ -15,7 +15,7 @@ import { EWSGAL } from "../../Contacts/EWS/EWSGAL";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol} from "../../Calendar/AccountsList/Calendars";
-import { PersonUID } from "../../Abstract/PersonUID";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { NTLMConnectionPool } from "../../Auth/NTLM/NTLMConnectionPool";
 import { NTLMChromiumSession } from "../../Auth/NTLM/NTLMChromiumSession";
@@ -1039,7 +1039,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
     try {
-      for (let calendar of await this.listSharedCalendarShortcuts()) {
+      for (let calendar of await EWSCalendarShortcut.listCalendars(this)) {
         if (!accounts.find(account => account.protocol == "calendar-ews" &&
               (account as EWSCalendar).folderID == calendar.folderID)) {
           accounts.add(calendar);
@@ -1049,165 +1049,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       logError(ex);
     }
     return accounts;
-  }
-
-  protected async listSharedCalendarShortcuts(): Promise<EWSCalendar[]> {
-    let commonViewsID = await this.findCommonViewsFolderID();
-    if (!commonViewsID) {
-      return [];
-    }
-    let request = {
-      m$FindItem: {
-        Traversal: "Associated",
-        m$ItemShape: {
-          t$BaseShape: "IdOnly",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "item:Subject",
-            }, {
-              FieldURI: "item:ItemClass",
-            }],
-            t$ExtendedFieldURI: Object.values(EWSCalendarShortcut.kProperties).map(property => ({
-              PropertyTag: "0x" + property.tag.toString(16).toUpperCase(),
-              PropertyType: property.type,
-            })),
-          },
-        },
-        m$ParentFolderIds: {
-          t$FolderId: {
-            Id: commonViewsID,
-          },
-        },
-      },
-    };
-    let result = await this.callEWS(request);
-    let items: any[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
-    let shortcuts = items
-      .map(item => new EWSCalendarShortcut(item))
-      .filter(shortcut => shortcut.isCalendarOfOtherUser);
-    let calendars: EWSCalendar[] = [];
-    for (let shortcut of shortcuts) {
-      try {
-        let calendar = await this.createCalendarFromShortcut(shortcut);
-        if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
-          calendars.push(calendar);
-        }
-      } catch (ex) {
-        if (!this.isStaleShortcutError(ex)) {
-          logError(ex);
-        }
-      }
-    }
-    return calendars;
-  }
-
-  protected async findCommonViewsFolderID(): Promise<string | null> {
-    let request = {
-      m$FindFolder: {
-        Traversal: "Shallow",
-        m$FolderShape: {
-          t$BaseShape: "IdOnly",
-          t$AdditionalProperties: {
-            t$FieldURI: {
-              FieldURI: "folder:DisplayName",
-            },
-          },
-        },
-        m$ParentFolderIds: {
-          t$DistinguishedFolderId: {
-            Id: "root",
-          },
-        },
-      },
-    };
-    let result = await this.callEWS(request);
-    let folders: any[] = Object.values(result.RootFolder?.Folders ?? {}).flatMap(folders => ensureArray(folders));
-    let commonViews = folders.find(folder => folder?.DisplayName == EWSCalendarShortcut.kFolderName);
-    return sanitize.nonemptystring(commonViews?.FolderId?.Id, null);
-  }
-
-  protected async createCalendarFromShortcut(shortcut: EWSCalendarShortcut): Promise<EWSCalendar | null> {
-    let owner = await this.resolveLegacyDN(shortcut.ownerLegacyDN);
-    if (!owner || this.isMyEMailAddress(owner.emailAddress)) {
-      return null;
-    }
-    let folderID = shortcut.hasFolder
-      ? {
-        t$FolderId: {
-          Id: await this.convertEntryIDToEWSID(shortcut.folderEntryID.hex, owner.emailAddress),
-        },
-      }
-      : {
-        t$DistinguishedFolderId: {
-          Id: "calendar",
-          t$Mailbox: {
-            t$EmailAddress: owner.emailAddress,
-          },
-        },
-      };
-    let request = {
-      m$GetFolder: {
-        m$FolderShape: {
-          t$BaseShape: "Default",
-          t$AdditionalProperties: {
-            t$FieldURI: [{
-              FieldURI: "folder:FolderClass",
-            }, {
-              FieldURI: "folder:DistinguishedFolderId",
-            }],
-          },
-        },
-        m$FolderIds: folderID,
-      },
-    };
-    let result = await this.callEWS(request);
-    let folder = result.Folders?.CalendarFolder;
-    if (folder?.FolderClass != "IPF.Appointment") {
-      return null;
-    }
-    return this.createCalendarAccount(folder, {
-      name: owner.nameOrEMail,
-      username: owner.emailAddress,
-      color: this.colorForSharedAccount(owner),
-    });
-  }
-
-  protected async resolveLegacyDN(legacyDN: string): Promise<PersonUID | null> {
-    let request = {
-      m$ResolveNames: {
-        ReturnFullContactData: false,
-        SearchScope: "ActiveDirectory",
-        m$UnresolvedEntry: legacyDN,
-      },
-    };
-    let response = await this.callEWS(request);
-    let resolutions = ensureArray(response.ResolutionSet?.Resolution);
-    if (resolutions.length != 1) {
-      return null;
-    }
-    let mailbox = resolutions[0].Mailbox;
-    let emailAddress = sanitize.emailAddress(mailbox?.EmailAddress, null);
-    if (!emailAddress) {
-      return null;
-    }
-    return new PersonUID(emailAddress, sanitize.nonemptylabel(mailbox.Name, null) ?? undefined);
-  }
-
-  protected async convertEntryIDToEWSID(hexEntryID: string, mailbox: string): Promise<string> {
-    let request = {
-      m$ConvertId: {
-        DestinationFormat: "EwsId",
-        m$SourceIds: {
-          t$AlternateId: {
-            Format: "HexEntryId",
-            Id: hexEntryID,
-            Mailbox: mailbox,
-          },
-        },
-      },
-    };
-    let response = await this.callEWS(request);
-    return sanitize.nonemptystring(response.AlternateId?.Id);
   }
 
   private createAddressbookAccount(folder: any, dependentAcc?: EWSAccount): EWSAddressbook | null {
@@ -1230,7 +1071,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, owner?: { name: string, username: string, color: string }): EWSCalendar | null {
+  createCalendarAccount(folder: any, owner?: EWSAccount | { name: string, username: string, color: string }): EWSCalendar | null {
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
           (account as EWSCalendar).folderID == folder.FolderId.Id)) {

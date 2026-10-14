@@ -20,14 +20,13 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
-import { OWAGetFolderRequest } from "./Request/OWAGetFolderRequest";
+import { OWACalendarShortcut } from "../../Calendar/OWA/OWACalendarShortcut";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
-import { PersonUID } from "../../Abstract/PersonUID";
+import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
-import { owaResolveNamesRequest } from "../../Contacts/OWA/Request/OWAPersonRequests";
 import { logError } from "../../../frontend/Util/error";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
@@ -36,7 +35,7 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
+import { assert, NotSupported, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -635,7 +634,7 @@ export class OWAAccount extends ExchangeMailAccount {
     accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
     try {
-      for (let calendar of await this.listSharedCalendarShortcuts()) {
+      for (let calendar of await OWACalendarShortcut.listCalendars(this)) {
         if (!accounts.find(account => account.protocol == "calendar-owa" &&
               (account as OWACalendar).folderID == calendar.folderID)) {
           accounts.add(calendar);
@@ -645,71 +644,6 @@ export class OWAAccount extends ExchangeMailAccount {
       logError(ex);
     }
     return accounts;
-  }
-
-  protected async listSharedCalendarShortcuts(): Promise<OWACalendar[]> {
-    let response = await this.callOWA(new OWAGetCalendarFoldersRequest());
-    let calendars: OWACalendar[] = [];
-    for (let group of ensureArray(response?.CalendarGroups)) {
-      for (let entry of ensureArray(group?.Calendars)) {
-        try {
-          let calendar = await this.createCalendarFromShortcut(entry);
-          if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
-            calendars.push(calendar);
-          }
-        } catch (ex) {
-          if (!this.isStaleShortcutError(ex)) {
-            logError(ex);
-          }
-        }
-      }
-    }
-    return calendars;
-  }
-
-  protected async createCalendarFromShortcut(entry: any): Promise<OWACalendar | null> {
-    let emailAddress = sanitize.emailAddress(entry?.OwnerEmailAddress, null);
-    if (!emailAddress || entry.IsOwnerEmailAddressInvalid || this.isMyEMailAddress(emailAddress)) {
-      return null;
-    }
-    let sharedFolderID = sanitize.nonemptystring(entry.SharedFolderId?.Id, null);
-    let folderID = sharedFolderID
-      ? {
-        __type: "FolderId:#Exchange",
-        Id: sharedFolderID,
-      }
-      : {
-        __type: "DistinguishedFolderId:#Exchange",
-        Id: "calendar",
-        Mailbox: {
-          EmailAddress: emailAddress,
-        },
-      };
-    let result = await this.callOWA(new OWAGetFolderRequest(folderID));
-    let folder = result.Folders?.[0];
-    if (folder?.FolderClass != "IPF.Appointment") {
-      return null;
-    }
-    let owner = await this.resolveOwner(emailAddress);
-    return this.createCalendarAccount(folder, {
-      name: owner.nameOrEMail,
-      username: owner.emailAddress,
-      color: this.colorForSharedAccount(owner),
-    });
-  }
-
-  protected async resolveOwner(emailAddress: string): Promise<PersonUID> {
-    try {
-      let response = await this.callOWA(owaResolveNamesRequest(emailAddress));
-      let resolution = ensureArray(response.ResolutionSet).find(candidate =>
-        candidate?.Mailbox?.EmailAddress?.toLowerCase() == emailAddress);
-      return new PersonUID(emailAddress, sanitize.nonemptylabel(resolution?.Mailbox?.Name, null) ?? undefined);
-    } catch (ex) {
-      if (ex.type != "ErrorNameResolutionNoResults") {
-        throw ex;
-      }
-      return new PersonUID(emailAddress);
-    }
   }
 
   private createAddressbookAccount(folder: any, isPrimary: boolean, dependentAcc?: OWAAccount): OWAAddressbook | null {
@@ -731,7 +665,7 @@ export class OWAAccount extends ExchangeMailAccount {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, owner?: { name: string, username: string, color: string }): OWACalendar | null{
+  createCalendarAccount(folder: any, owner?: OWAAccount | { name: string, username: string, color: string }): OWACalendar | null{
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
           (account as OWACalendar).folderID == folder.FolderId.Id)) {
@@ -899,12 +833,6 @@ class OWAGetPeopleFiltersRequest {
   /** This is an empty request, but it still needs an action. */
   get action() {
     return "GetPeopleFilters";
-  }
-}
-
-class OWAGetCalendarFoldersRequest {
-  get action() {
-    return "GetCalendarFolders";
   }
 }
 
