@@ -11,9 +11,9 @@
       on:pointerdown={onMouseDown}
       style="width: {barWidth}px;"
       />
-    <hbox class="right" class:fixed-width={rightFixedWidth} style={
+    <hbox class="right" style={
       rightFixedWidth
-      ? `width: ${rightFixedWidth};`
+      ? `width: ${rightFixedWidth}px;`
       : `flex: ${rightRatio} 0 0; min-width: ${rightMinWidth}px;`
       }>
       <ErrorBoundary>
@@ -144,9 +144,9 @@
   }
 
   .left,
-  .right:not(.fixed-width) {
+  .right {
     overflow-x: clip;
-    contain: inline-size;
+    contain: inline-size; /* else content width widens the window. Vertically, height: 100% prevents that */
   }
 
   /*
