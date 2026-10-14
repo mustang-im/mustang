@@ -13,7 +13,7 @@
       />
     <hbox class="right" style={
       rightFixedWidth
-      ? `width: ${rightFixedWidth};`
+      ? `width: ${rightFixedWidth}px;`
       : `flex: ${rightRatio} 0 0; min-width: ${rightMinWidth}px;`
       }>
       <ErrorBoundary>
@@ -141,6 +141,12 @@
   .left :global(> *:first-child),
   .right :global(> *:first-child) {
     flex: 1 0 0;
+  }
+
+  .left,
+  .right {
+    overflow-x: clip;
+    contain: inline-size; /* else content width widens the window. Vertically, height: 100% prevents that */
   }
 
   /*
