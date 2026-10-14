@@ -960,7 +960,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   async readCategories(): Promise<void> {
     let xml = await this.getCategoryListXML();
-    await this.setCategories(xml ? categoriesFromXML(xml) : []);
+    if (xml) {
+      await this.setCategories(categoriesFromXML(xml));
+    }
   }
 
   protected async addCategoryOnServer(tag: Tag): Promise<void> {
