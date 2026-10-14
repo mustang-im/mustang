@@ -219,11 +219,25 @@ export class OWAAccount extends ExchangeMailAccount {
     });
   }
 
+  /** The server ended our session. Unlike `logout()`, this keeps the cookies,
+   * e.g. "Stay signed in", so that the next login can reuse them. */
+  protected async sessionExpired(): Promise<void> {
+    this.hasLoggedIn = false;
+    if (this.oAuth2 instanceof OWAAuth) {
+      this.oAuth2.isLoggedIn = false;
+    }
+    if (!this.authorizationHeader) { // on-prem
+      await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    }
+    this.notifyObserversOfSubaccounts();
+    await this.disconnect();
+  }
+
   async logout(): Promise<void> {
     this.hasLoggedIn = false;
     this.notifyObserversOfSubaccounts();
     await super.logout();
-    if (!this.oAuth2) {
+    if (!this.authorizationHeader) { // on-prem
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
     }
   }
@@ -408,13 +422,13 @@ export class OWAAccount extends ExchangeMailAccount {
       lock.release();
     }
     if ([401, 440].includes(response.status)) {
-      await this.logout();
+      await this.sessionExpired();
       throw new LoginError(null, gt`Please login`);
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);
       if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
-        await this.logout();
+        await this.sessionExpired();
         throw new Error(response.statusText);
       }
       throw new OWAError(response);
