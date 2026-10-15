@@ -20,7 +20,7 @@
 <script lang="ts">
   import type { CalendarViewType } from "../CalendarSettings";
   import { CalendarActions } from "../CalendarActions";
-  import ContextMenu from "../../../frontend/Shared/Menu/ContextMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";

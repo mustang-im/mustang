@@ -53,7 +53,7 @@
   import { FolderTreeActions } from "./FolderTreeActions";
   import FolderContextMenu from "./FolderContextMenu.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
-  import ContextMenu from "../../../frontend/Shared/Menu/ContextMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
