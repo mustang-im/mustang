@@ -42,39 +42,25 @@
         </button>
         <grid class="fields">
           {#if showFromRow}
-            <button class="field-button" on:click={onFromButton} tabindex={-1}>
-              {$t`From`} <ChevronDownIcon size={14} />
-            </button>
-            <hbox class="field from" bind:this={fromFieldEl}>
-              <IdentitySelector bind:selectedIdentity={fromIdentity}
-                bind:fromAddress={mail.from.emailAddress}
-                bind:fromName={mail.from.name} />
-              <hbox class="from-address lo-secondary">{$mail.from.emailAddress ?? ""}</hbox>
-            </hbox>
+            <FromField bind:selectedIdentity={fromIdentity}
+              bind:fromAddress={mail.from.emailAddress}
+              bind:fromName={mail.from.name} />
           {/if}
           <button class="field-button" on:click={() => openSelectNames(RecipientField.To)} tabindex={-1}
             title={$t`Select recipients from the address book`}>
             {$t`To`}
           </button>
           <hbox class="field">
-            <MailAutocomplete addresses={mail.to} placeholder="" tabindex={1} autofocus={mail.to.isEmpty}>
-              <svelte:fragment slot="person-popup-buttons" let:person>
-                <Button plain label={$t`Cc`} onClick={() => onMoveToCC(person)} />
-                <Button plain label={$t`Bcc`} onClick={() => onMoveToBCC(person)} />
-              </svelte:fragment>
-            </MailAutocomplete>
+            <AddressField recipients={mail.to} label={$t`To`} chips={isChips} tabindex={1}
+              autofocus={mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
           </hbox>
           <button class="field-button" on:click={() => openSelectNames(RecipientField.Cc)} tabindex={-1}
             title={$t`Select recipients from the address book`}>
             {$t`Cc`}
           </button>
           <hbox class="field">
-            <MailAutocomplete addresses={mail.cc} placeholder="" tabindex={1}>
-              <svelte:fragment slot="person-popup-buttons" let:person>
-                <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
-                <Button plain label={$t`Bcc`} onClick={() => onMoveToBCC(person)} />
-              </svelte:fragment>
-            </MailAutocomplete>
+            <AddressField recipients={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
+              onAdd={onRecipientAdded} bind:this={ccField} />
           </hbox>
           {#if showBCC}
             <button class="field-button" on:click={() => openSelectNames(RecipientField.Bcc)} tabindex={-1}
@@ -82,12 +68,8 @@
               {$t`Bcc`}
             </button>
             <hbox class="field">
-              <MailAutocomplete addresses={mail.bcc} placeholder="" tabindex={1}>
-                <svelte:fragment slot="person-popup-buttons" let:person>
-                  <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
-                  <Button plain label={$t`Cc`} onClick={() => onMoveToCC(person)} />
-                </svelte:fragment>
-              </MailAutocomplete>
+              <AddressField recipients={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
+                onAdd={onRecipientAdded} bind:this={bccField} />
             </hbox>
           {/if}
           <label class="subject-label" for="composer-subject">{$t`Subject`}</label>
@@ -175,6 +157,7 @@
   import { insertImage } from "../../../frontend/Shared/Editor/InsertImage";
   import { WriteMailMustangApp, mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
   import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
@@ -186,8 +169,8 @@
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import LinkDialog from "./LinkDialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import MailAutocomplete from "../../../frontend/Mail/Composer/MailAutocomplete.svelte";
-  import IdentitySelector from "../../../frontend/Mail/Composer/IdentitySelector.svelte";
+  import AddressField from "./AddressField.svelte";
+  import FromField from "./FromField.svelte";
   import EncryptionDetails from "../../../frontend/Mail/Composer/EncryptionDetails.svelte";
   import SMLComposer from "../../../frontend/Mail/Composer/SMLComposer.svelte";
   import AttachmentEntry from "../../../frontend/Mail/Composer/Attachments/AttachmentEntry.svelte";
@@ -195,13 +178,11 @@
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import GraphicSelector from "../../../frontend/Chat/Emoji/GraphicSelector.svelte";
-  import Button from "../../../frontend/Shared/Button.svelte";
   import Spinner from "../../../frontend/Shared/Spinner.svelte";
   import SendIcon from "lucide-svelte/icons/send";
   import SaveIcon from "lucide-svelte/icons/save";
   import DiscardIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
-  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import LockIcon from "lucide-svelte/icons/lock";
   import SignIcon from "lucide-svelte/icons/signature";
   import { t, gt } from "../../../l10n/l10n";
@@ -224,7 +205,11 @@
   let selectNamesField = RecipientField.To;
   let showSaveChanges = false;
   let showLinkDialog = false;
-  let fromFieldEl: HTMLElement;
+  let ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  $: isChips = $ribbonLayout.value == "simplified";
+  let toField: AddressField;
+  let ccField: AddressField;
+  let bccField: AddressField;
 
   // <copied from="../../../frontend/Mail/Composer/MailComposer.svelte">
   // HACK to reload the HTMLEditor to force it to load the new text
@@ -300,20 +285,12 @@
     }
   }
 
-  function onMoveToCC(person: PersonUID) {
-    mail.bcc.remove(person);
-    mail.to.remove(person);
-    mail.cc.add(person);
-  }
-  function onMoveToBCC(person: PersonUID) {
-    mail.cc.remove(person);
-    mail.to.remove(person);
-    mail.bcc.add(person);
-  }
-  function onMoveToTo(person: PersonUID) {
-    mail.cc.remove(person);
-    mail.bcc.remove(person);
-    mail.to.add(person);
+  function onRecipientAdded(recipient: PersonUID) {
+    // <copied from="../../../frontend/Mail/Composer/MailAutocomplete.svelte" onAddPerson()>
+    // Get the certificate now, so that we can show whether we can encrypt
+    recipient.findPerson()?.fetchEncryptionKeys()
+      .catch(showError);
+    // </copied>
   }
 
   let fileSelector: FileSelector;
@@ -445,19 +422,6 @@
     }
   }
 
-  function onFromButton() {
-    let select = fromFieldEl?.querySelector("select");
-    if (!select) {
-      return;
-    }
-    select.focus();
-    try {
-      select.showPicker();
-    } catch (ex) {
-      console.log(ex);
-    }
-  }
-
   function onKeyDown(event: KeyboardEvent) {
     let command = ComposerShortcuts.commandFor(event);
     if (!command || selectNames || showSaveChanges || showLinkDialog) {
@@ -567,7 +531,7 @@
     column-gap: 12px;
     row-gap: 6px;
   }
-  .field-button {
+  .fields :global(.field-button) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -580,7 +544,7 @@
     color: var(--lo-fg);
     font-size: var(--lo-font-size);
   }
-  .field-button:hover {
+  .fields :global(.field-button:hover) {
     background-color: var(--lo-hover-bg);
     border-color: var(--lo-border-strong);
   }
@@ -594,39 +558,15 @@
     border-block-end-color: var(--lo-accent);
     box-shadow: 0 1px 0 0 var(--lo-accent);
   }
-  .field :global(.persons-autocomplete),
   .field > :global(*) {
     flex: 1 1 0;
     min-width: 0;
   }
-  .field :global(input) {
-    border-block-end: none !important;
+  .field input {
+    border: none;
+    outline: none;
     background-color: transparent;
-  }
-  .field :global(.persons-autocomplete) {
-    border-block-end: none;
-    padding: 0;
-  }
-  .field :global(.person-autocomplete input) {
-    box-shadow: none;
-    padding: 0 4px !important;
-    background-color: transparent;
-  }
-  .field.from {
-    gap: 12px;
-  }
-  .field.from :global(.identity-selector) {
-    flex: 0 1 auto;
-  }
-  .field.from :global(select) {
-    font-size: var(--lo-font-size);
-    padding: 4px 0;
-  }
-  .from-address {
-    flex: 0 1 auto !important;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    color: var(--lo-fg);
   }
   .subject-label {
     justify-self: center;
@@ -634,7 +574,8 @@
   }
   .subject input {
     height: 30px;
-    font-size: var(--lo-font-size);
+    padding: 0 2px;
+    font: inherit;
   }
   .info-bar {
     flex-shrink: 0;
