@@ -41,6 +41,11 @@
   --lo-success: #2D7D3A;
   --lo-warning: #A85F00;
 
+  --lo-infobar-bg: #FFF6D9;
+  --lo-infobar-border: #EBD58F;
+  --lo-infobar-error-bg: #FCE9E7;
+  --lo-infobar-error-border: #EDB9B4;
+
   --lo-radius: 8px;
   --lo-radius-small: 4px;
   --lo-shadow-card: 0 0 2px rgba(0, 0, 0, 0.10), 0 1px 2px rgba(0, 0, 0, 0.08);
@@ -90,6 +95,11 @@
     --lo-danger-fg: #FFFFFF;
     --lo-success: #5BB36A;
     --lo-warning: #E0A040;
+
+    --lo-infobar-bg: #3A3322;
+    --lo-infobar-border: #65582F;
+    --lo-infobar-error-bg: #3D2526;
+    --lo-infobar-error-border: #6E3B3A;
 
     --lo-shadow-card: 0 0 2px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
     --lo-shadow-popup: 0 0 2px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.45);
