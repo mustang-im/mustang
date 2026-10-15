@@ -118,13 +118,8 @@ export class RecurrencePattern {
 
   applyTo(event: Event) {
     let master = event.parentEvent ?? event;
-    // <copied from="../../../frontend/Calendar/EditEvent/RepeatBox.svelte">
     master.startEditing();
-    master.startTime = new Date(event.startTime);
-    master.timezone = event.timezone;
-    master.duration = event.duration;
-    // </copied>
-    let { frequency, interval, week, weekdays } = this.ruleParams(event.startTime);
+    let { frequency, interval, week, weekdays } = this.ruleParams(master.startTime);
     master.newRecurrenceRule(frequency, interval, week, weekdays);
   }
 

@@ -145,7 +145,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { EventEditFlow } from "./EventEditFlow";
-  import type { EventTimeEditor } from "./EventTimeEditor";
+  import { EventTimeEditor } from "./EventTimeEditor";
   import { RecurrencePattern, type MonthlyMode } from "./RecurrencePattern";
   import { TimeOptions } from "./TimeOptions";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
@@ -161,13 +161,15 @@
   export let timeEditor: EventTimeEditor;
   export let onClose: () => void;
 
+  const series = flow.master;
+  const seriesTimes = series == event ? timeEditor : new EventTimeEditor(series);
   const isMeeting = event.participants.hasItems;
-  const allDay = event.allDay;
-  const hasRecurrence = !!flow.master.recurrenceRule;
+  const allDay = series.allDay;
+  const hasRecurrence = !!series.recurrenceRule;
   let pattern = flow.pattern.clone();
-  let rangeStart = new Date(event.startTime);
-  let startTime = new Date(event.startTime);
-  let durationMinutes = Math.round(event.duration / 60);
+  let rangeStart = new Date(series.startTime);
+  let startTime = new Date(series.startTime);
+  let durationMinutes = Math.round(series.duration / 60);
 
   const frequencies = [
     { value: Frequency.Daily, label: gt`Daily` },
@@ -248,14 +250,15 @@
     if (pattern.monthlyMode != "day") {
       pattern.monthlyMode = weekMode;
     }
+    series.startEditing();
     if (!allDay) {
       let start = new Date(rangeStart);
       start.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
-      timeEditor.setStart(start);
-      timeEditor.setEnd(new Date(start.getTime() + durationMinutes * 60000));
+      seriesTimes.setStart(start);
+      seriesTimes.setEnd(new Date(start.getTime() + durationMinutes * 60000));
     } else {
-      timeEditor.setStartDate(rangeStart);
-      event.durationDays = Math.max(1, Math.round(durationMinutes / 1440));
+      seriesTimes.setStartDate(rangeStart);
+      series.durationDays = Math.max(1, Math.round(durationMinutes / 1440));
     }
     flow.applyPattern(pattern);
   }

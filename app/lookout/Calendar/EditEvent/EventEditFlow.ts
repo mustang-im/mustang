@@ -126,7 +126,7 @@ export class EventEditFlow {
 
   applyPattern(pattern: RecurrencePattern) {
     this.pattern = pattern;
-    pattern.applyTo(this.event);
+    pattern.applyTo(this.master);
   }
 
   removeRecurrence() {
@@ -176,26 +176,60 @@ export class EventEditFlow {
     }
     await event.save();
   }
+  // </copied>
 
   async changeAll() {
     let event = this.event;
-    let skipped = this.skippedOccurrences();
-    // Lookout: Frontend's RepeatBox does this already when the editor opens
-    if (event.parentEvent?.recurrenceRule) {
-      this.pattern.applyTo(event);
-    }
+    let master = event.parentEvent;
+    let before = master.calendar.newEvent();
+    before.copyFrom(master);
+    master.startEditing();
+    this.applyOccurrenceToSeries();
     if (!this.confirmAndChangeRecurrenceRule()) {
+      master.copyFrom(before);
       return;
     }
-    let master = event.parentEvent;
-    master.startEditing();
-    master.copyEditableFieldsFrom(event);
-    await this.pattern.applyEndTo(master, skipped);
+    await this.pattern.applyEndTo(master);
     await master.save();
     master.finishEditing();
     this.close();
   }
 
+  // Unlike frontend, the series keeps its first occurrence. A changed day or time of the occurrence moves all occurrences.
+  protected applyOccurrenceToSeries() {
+    let event = this.event;
+    let master = event.parentEvent;
+    let original = event.unedited ?? event;
+    let start = new Date(master.startTime);
+    let dayShift = EventEditFlow.daysBetween(original.startTime, event.startTime);
+    start.setDate(start.getDate() + dayShift);
+    if (event.startTime.getTime() != original.startTime.getTime()) {
+      start.setHours(event.startTime.getHours(), event.startTime.getMinutes(), 0, 0);
+    }
+    let duration = event.duration != original.duration ? event.duration : master.duration;
+    let reminderMS = event.alarm ? event.startTime.getTime() - event.alarm.getTime() : null;
+    let timesChanged = start.getTime() != master.startTime.getTime() || duration != master.duration ||
+      event.allDay != master.allDay || event.timezone != original.timezone;
+    let rule = master.recurrenceRule;
+    let timezone = master.timezone;
+    master.copyEditableFieldsFrom(event);
+    master.startTime = start;
+    master.duration = duration;
+    master.alarm = reminderMS == null ? null : new Date(start.getTime() - reminderMS);
+    if (!timesChanged) {
+      master.timezone = timezone;
+    } else if (rule) {
+      let { frequency, interval, week, weekdays } = rule;
+      master.newRecurrenceRule(frequency, interval, week, weekdays?.map(weekday => (weekday + dayShift % 7 + 7) % 7));
+    }
+  }
+
+  static daysBetween(from: Date, to: Date): number {
+    return Math.round((Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) -
+      Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / (24 * 60 * 60 * 1000));
+  }
+
+  // <copied from="../../../frontend/Calendar/EditEvent/DialogHeader.svelte">
   async changeRemainder() {
     let event = this.event;
     let skipped = this.skippedOccurrences();
