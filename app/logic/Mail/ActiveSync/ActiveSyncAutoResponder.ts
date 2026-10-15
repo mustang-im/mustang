@@ -75,19 +75,19 @@ export class ActiveSyncAutoResponder extends AutoResponder {
     }
     let external = this.fromHTML(this.externalHTML);
     set.OofMessage = [
-      oofMessage("AppliesToInternal", true, this.fromHTML(this.internalHTML)),
-      oofMessage("AppliesToExternalKnown", this.externalAudience != AutoResponderAudience.None, external),
-      oofMessage("AppliesToExternalUnknown", this.externalAudience == AutoResponderAudience.All, external),
+      this.oofMessage("AppliesToInternal", true, this.fromHTML(this.internalHTML)),
+      this.oofMessage("AppliesToExternalKnown", this.externalAudience != AutoResponderAudience.None, external),
+      this.oofMessage("AppliesToExternalUnknown", this.externalAudience == AutoResponderAudience.All, external),
     ];
     return set;
   }
-}
 
-function oofMessage(appliesTo: string, enabled: boolean, message: string) {
-  return {
-    [appliesTo]: {},
-    Enabled: enabled ? "1" : "0",
-    ReplyMessage: message,
-    BodyType: "HTML",
-  };
+  protected oofMessage(appliesTo: string, enabled: boolean, message: string) {
+    return {
+      [appliesTo]: {},
+      Enabled: enabled ? "1" : "0",
+      ReplyMessage: message,
+      BodyType: "HTML",
+    };
+  }
 }
