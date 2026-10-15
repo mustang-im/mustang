@@ -40,8 +40,8 @@ test("A multi-day bar spans its days, before the timed events", () => {
 
 test("Overflow: the last line becomes '+N more' on that day only", () => {
   let events = [1, 2, 3, 4].map(i => newEvent("E" + i, at(0, 8 + i), at(0, 9 + i)));
-  let other = newEvent("Tuesday", at(1, 9), at(1, 10));
-  let layout = new MonthWeekLayout([...events, other], kDays, 3);
+  let tuesday = newEvent("Tuesday", at(1, 9), at(1, 10));
+  let layout = new MonthWeekLayout([...events, tuesday], kDays, 3);
   expect(layout.shown.map(item => item.event.title)).toEqual(["E1", "E2", "Tuesday"]);
   expect(layout.hiddenCounts).toEqual([2, 0, 0, 0, 0, 0, 0]);
 });

@@ -84,11 +84,12 @@ export class CalendarActions {
     event.title = title;
     event.allDay = selection.allDay;
     setNewEventTime(event, true, selection.start, selection.end);
-    // <copied from="../../frontend/Calendar/EditEvent/DialogHeader.svelte" />
+    // <copied from="../../frontend/Calendar/EditEvent/DialogHeader.svelte">
     if (!event.calendar.events.contains(event)) {
       event.calendar.events.add(event);
     }
     await event.save();
+    // </copied>
     event.finishEditing();
     if (!get(selectedSlots)) {
       selectedEvent.set(event);
