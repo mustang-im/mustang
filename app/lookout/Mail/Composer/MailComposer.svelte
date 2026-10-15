@@ -147,8 +147,9 @@
   </vbox>
 </vbox>
 
-{#if selectNamesField}
-  <SelectNamesDialog {mail} defaultField={selectNamesField} onDone={() => selectNamesField = null} />
+{#if selectNames}
+  <SelectNamesDialog fields={selectNames.fields} defaultField={selectNames.field(selectNamesField)}
+    onOK={onSelectNamesOK} onCancel={() => selectNames = null} />
 {/if}
 {#if showSaveChanges}
   <SaveChangesDialog
@@ -179,7 +180,7 @@
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
   import { ComposerEncryption } from "./ComposerEncryption";
   import { DraftContent } from "./DraftContent";
-  import { RecipientField } from "./SelectNames";
+  import { RecipientField, SelectNames } from "./SelectNames";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
@@ -219,7 +220,8 @@
   let showBccSetting = getLocalStorage("lookout.mail.compose.showBcc", false);
   let encryptionError: string | null = null;
   let showEmojis = false;
-  let selectNamesField: RecipientField | null = null;
+  let selectNames: SelectNames | null = null;
+  let selectNamesField = RecipientField.To;
   let showSaveChanges = false;
   let showLinkDialog = false;
   let fromFieldEl: HTMLElement;
@@ -427,6 +429,12 @@
 
   function openSelectNames(field: RecipientField) {
     selectNamesField = field;
+    selectNames = new SelectNames(mail);
+  }
+
+  function onSelectNamesOK() {
+    selectNames.apply(mail);
+    selectNames = null;
   }
 
   let imageSelector: FileSelector;
@@ -452,7 +460,7 @@
 
   function onKeyDown(event: KeyboardEvent) {
     let command = ComposerShortcuts.commandFor(event);
-    if (!command || selectNamesField || showSaveChanges || showLinkDialog) {
+    if (!command || selectNames || showSaveChanges || showLinkDialog) {
       return;
     }
     event.preventDefault();

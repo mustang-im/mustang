@@ -1,10 +1,13 @@
-<hbox class="selected-names">
-  {#each $picks.each as recipient (recipient)}
-    <hbox class="name" title={recipient.emailAddress}>
-      <span>{recipient.name || recipient.emailAddress}</span>
-      <button class="remove" title={$t`Remove`} aria-label={$t`Remove`} on:click={() => onRemove(recipient)}>
+<hbox class="selected-names" role="list">
+  {#each $picks.each as recipient, index (recipient)}
+    <hbox class="name" role="listitem" title={recipient.emailAddress}>
+      <span class="resolved">{recipient.name || recipient.emailAddress}</span>
+      <button type="button" class="remove" title={$t`Remove`} aria-label={$t`Remove`} on:click={() => onRemove(recipient)}>
         <RemoveIcon size={12} />
       </button>
+      {#if index < $picks.length - 1}
+        <span class="separator">;</span>
+      {/if}
     </hbox>
   {/each}
 </hbox>
@@ -23,32 +26,39 @@
   .selected-names {
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
-    min-height: 32px;
+    column-gap: 4px;
+    min-height: 30px;
     max-height: 64px;
     overflow-y: auto;
-    padding: 2px 4px;
-    border-block-end: 1px solid var(--lo-input-border);
+    padding: 2px 6px;
+    box-sizing: border-box;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-input-bg);
   }
   .name {
     align-items: center;
-    gap: 2px;
-    padding: 1px 2px 1px 8px;
-    border-radius: 12px;
-    background-color: var(--lo-accent-tint);
-    color: var(--lo-fg);
-    font-size: var(--lo-font-size-small);
+  }
+  .resolved {
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
   .remove {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+    padding: 0;
     border: none;
     border-radius: 50%;
     background: none;
     color: var(--lo-fg-secondary);
+    opacity: 0;
+  }
+  .name:hover .remove,
+  .remove:focus-visible {
+    opacity: 1;
   }
   .remove:hover {
     background-color: var(--lo-hover-bg);

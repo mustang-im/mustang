@@ -3,6 +3,7 @@ import type { Person, ContactEntry } from "../../../logic/Abstract/Person";
 import type { Addressbook } from "../../../logic/Contacts/Addressbook";
 import { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
+import { gt } from "../../../l10n/l10n";
 
 export enum RecipientField {
   To = "to",
@@ -12,25 +13,61 @@ export enum RecipientField {
 
 export type Recipients = Pick<EMail, "to" | "cc" | "bcc">;
 
+export class SelectNamesField {
+  readonly picks: ArrayColl<PersonUID>;
+
+  constructor(readonly label: string, initial: PersonUID[] = [], readonly single = false) {
+    this.picks = new ArrayColl(initial);
+  }
+
+  add(persons: Iterable<Person>) {
+    for (let person of persons) {
+      let entry = SelectNames.preferredEMail(person);
+      if (!entry?.value || this.picks.some(pick => pick.emailAddress == entry.value)) {
+        continue;
+      }
+      let pick = PersonUID.fromContactEntry(person, entry);
+      if (this.single) {
+        this.picks.replaceAll([pick]);
+        return;
+      }
+      this.picks.add(pick);
+    }
+  }
+
+  remove(recipient: PersonUID) {
+    this.picks.remove(recipient);
+  }
+}
+
 export class SelectNames {
-  readonly picks: Record<RecipientField, ArrayColl<PersonUID>>;
+  protected readonly fieldOf: Record<RecipientField, SelectNamesField>;
 
   constructor(recipients: Recipients) {
-    this.picks = {
-      [RecipientField.To]: new ArrayColl(recipients.to.contents),
-      [RecipientField.Cc]: new ArrayColl(recipients.cc.contents),
-      [RecipientField.Bcc]: new ArrayColl(recipients.bcc.contents),
+    this.fieldOf = {
+      [RecipientField.To]: new SelectNamesField(gt`To`, recipients.to.contents),
+      [RecipientField.Cc]: new SelectNamesField(gt`Cc`, recipients.cc.contents),
+      [RecipientField.Bcc]: new SelectNamesField(gt`Bcc`, recipients.bcc.contents),
     };
   }
 
-  static persons(addressbooks: Iterable<Addressbook>, searchTerm: string): Collection<Person> {
+  get fields(): SelectNamesField[] {
+    return Object.values(this.fieldOf);
+  }
+
+  field(kind: RecipientField): SelectNamesField {
+    return this.fieldOf[kind];
+  }
+
+  static persons(addressbooks: Iterable<Addressbook>, searchTerm: string, nameOnly = false): Collection<Person> {
     let term = searchTerm.trim().toLowerCase();
     let results = new ArrayColl<Collection<Person>>();
     for (let addressbook of addressbooks) {
-      results.add(term ? addressbook.quickSearch(term) : addressbook.persons);
+      results.add(term ? addressbook.quickSearch(term, !nameOnly) : addressbook.persons);
     }
     return mergeColls(results)
-      .filterObservable(person => person.emailAddresses.hasItems)
+      .filterObservable(person => person.emailAddresses.hasItems &&
+        (!nameOnly || !term || !!person.name?.toLowerCase().includes(term)))
       .sortBy(person => person.name?.toLowerCase() ?? "");
   }
 
@@ -38,24 +75,14 @@ export class SelectNames {
     return person.emailAddresses.sortBy(entry => entry.preference).first ?? null;
   }
 
-  add(field: RecipientField, persons: Iterable<Person>) {
-    let picks = this.picks[field];
-    for (let person of persons) {
-      let entry = SelectNames.preferredEMail(person);
-      if (!entry?.value || picks.some(pick => pick.emailAddress == entry.value)) {
-        continue;
-      }
-      picks.add(PersonUID.fromContactEntry(person, entry));
-    }
-  }
-
-  remove(field: RecipientField, recipient: PersonUID) {
-    this.picks[field].remove(recipient);
+  static businessPhone(person: Person): string {
+    let phones = person.phoneNumbers.sortBy(entry => entry.preference);
+    return (phones.find(entry => entry.purpose == "work") ?? phones.first)?.value ?? "";
   }
 
   apply(recipients: Recipients) {
-    recipients.to.replaceAll(this.picks[RecipientField.To].contents);
-    recipients.cc.replaceAll(this.picks[RecipientField.Cc].contents);
-    recipients.bcc.replaceAll(this.picks[RecipientField.Bcc].contents);
+    recipients.to.replaceAll(this.fieldOf[RecipientField.To].picks.contents);
+    recipients.cc.replaceAll(this.fieldOf[RecipientField.Cc].picks.contents);
+    recipients.bcc.replaceAll(this.fieldOf[RecipientField.Bcc].picks.contents);
   }
 }
