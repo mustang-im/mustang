@@ -3,15 +3,16 @@
 </Menu>
 
 <script lang="ts">
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
+  import Menu from "./Menu.svelte";
 
-  let isMenuOpen = false;
-  let pointerAnchor: any;
+  export let isMenuOpen = false;
+
+  let pointerAnchor: HTMLElement;
   export function onContextMenu(event: MouseEvent) {
     let pointer = new DOMRect(event.clientX, event.clientY, 0, 0);
     pointerAnchor = {
       getBoundingClientRect: () => pointer,
-    };
+    } as HTMLElement;
     isMenuOpen = true;
   }
 </script>

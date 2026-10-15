@@ -2,6 +2,26 @@ import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { writable, get, type Writable } from "svelte/store";
 
 export type RibbonLayout = "classic" | "simplified";
+export type RibbonItemSize = "large" | "small";
+export type RibbonItemLook = "large" | "small" | "small-icon" | "simplified" | "simplified-icon" | "list";
+
+export enum ClassicStage { Designed, SmallButtons, IconsOnly, Collapsed }
+export enum SimplifiedStage { Labels, IconsOnly, InMoreMenu }
+
+export interface RibbonMetrics {
+  largeWidth: number;
+  smallWidth: number;
+  smallIconWidth: number;
+  simplifiedWidth: number;
+  simplifiedIconWidth: number;
+  gap: number;
+  groupChrome: number;
+}
+
+export interface RibbonItemInfo {
+  size: RibbonItemSize;
+  fixedWidth?: number;
+}
 
 export class RibbonModel {
   static readonly contextKey = "lookout-ribbon";
@@ -9,6 +29,7 @@ export class RibbonModel {
   readonly selectedTab: Writable<RibbonTabModel> = writable(null);
   readonly layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   readonly collapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
+  readonly metrics: Writable<RibbonMetrics> = writable(null);
 
   addTab(tab: RibbonTabModel) {
     this.tabs.update(tabs => [...tabs, tab]);
@@ -54,12 +75,23 @@ export class RibbonModel {
   setCollapsed(collapsed: boolean) {
     this.collapsed.value = collapsed;
   }
+
+  setMetrics(metrics: RibbonMetrics) {
+    let old = get(this.metrics);
+    if (old && Object.keys(metrics).every(key => old[key] == metrics[key])) {
+      return;
+    }
+    this.metrics.set(metrics);
+  }
 }
 
 export class RibbonTabModel {
   static readonly contextKey = "lookout-ribbon-tab";
   label: string;
   readonly groups: RibbonGroupModel[] = [];
+  readonly overflowGroups: Writable<RibbonGroupModel[]> = writable([]);
+  readonly isMoreMenuOpen: Writable<boolean> = writable(false);
+  overflowWidth = 0;
   protected availableWidth = 0;
 
   constructor(label: string) {
@@ -67,7 +99,9 @@ export class RibbonTabModel {
   }
 
   addGroup(group: RibbonGroupModel) {
-    this.groups.push(group);
+    let pos = this.groups.findIndex(existing => existing.el && group.el &&
+      group.el.compareDocumentPosition(existing.el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    this.groups.splice(pos < 0 ? this.groups.length : pos, 0, group);
     this.fitGroups();
   }
 
@@ -84,45 +118,69 @@ export class RibbonTabModel {
     this.fitGroups();
   }
 
+  closeMoreMenu() {
+    this.isMoreMenuOpen.set(false);
+  }
+
+  setOverflowWidth(width: number) {
+    if (this.overflowWidth == width) {
+      return;
+    }
+    this.overflowWidth = width;
+    this.fitGroups();
+  }
+
   fitGroups() {
     if (!this.availableWidth) {
       return;
     }
-    let widths = this.groups.map(group => group.expandedWidth);
+    let stages = this.stagesFor(this.availableWidth);
+    if (this.overflowWidth && this.groups.some((group, i) => group.isOverflowStage(stages[i]))) {
+      stages = this.stagesFor(this.availableWidth - this.overflowWidth);
+    }
+    this.groups.forEach((group, i) => group.setStage(stages[i]));
+    let overflowGroups = this.groups.filter(group => group.isOverflowStage(get(group.stage)));
+    let old = get(this.overflowGroups);
+    if (old.length != overflowGroups.length || old.some((group, i) => group != overflowGroups[i])) {
+      this.overflowGroups.set(overflowGroups);
+    }
+  }
+
+  protected stagesFor(availableWidth: number): number[] {
+    let stages = this.groups.map(() => 0);
+    let widths = this.groups.map(group => group.widthAt(0));
     let totalWidth = widths.reduce((sum, width) => sum + width, 0);
-    let compact = this.groups.map(() => false);
-    let collapse = this.groups.map(() => false);
-    for (let i = this.groups.length - 1; i >= 0 && totalWidth > this.availableWidth; i--) {
-      let saving = widths[i] - this.groups[i].compactWidth;
-      if (saving <= 0) {
-        continue;
+    let maxStage = Math.max(0, ...this.groups.map(group => group.lastStage));
+    for (let stage = 1; stage <= maxStage && totalWidth > availableWidth; stage++) {
+      for (let i = this.groups.length - 1; i >= 0 && totalWidth > availableWidth; i--) {
+        let group = this.groups[i];
+        if (stage > group.lastStage) {
+          continue;
+        }
+        let width = group.widthAt(stage);
+        if (width >= widths[i]) {
+          continue;
+        }
+        totalWidth -= widths[i] - width;
+        widths[i] = width;
+        stages[i] = stage;
       }
-      totalWidth -= saving;
-      widths[i] = this.groups[i].compactWidth;
-      compact[i] = true;
     }
-    for (let i = this.groups.length - 1; i >= 0 && totalWidth > this.availableWidth; i--) {
-      let saving = widths[i] - this.groups[i].collapsedWidth;
-      if (saving <= 0) {
-        continue;
-      }
-      totalWidth -= saving;
-      compact[i] = false;
-      collapse[i] = true;
-    }
-    this.groups.forEach((group, i) => group.setFit(compact[i], collapse[i]));
+    return stages;
   }
 }
 
 export class RibbonGroupModel {
   static readonly contextKey = "lookout-ribbon-group";
   label: string;
-  expandedWidth = 0;
-  compactWidth = 0;
-  collapsedWidth = 0;
   firstIcon: ConstructorOfATypedSvelteComponent = null;
-  readonly compact: Writable<boolean> = writable(false);
+  stageWidths: number[] = [0];
+  readonly stage: Writable<number> = writable(0);
   readonly collapsed: Writable<boolean> = writable(false);
+  readonly layout: Writable<RibbonLayout> = writable("classic");
+  hasOverflowStage = false;
+  el: HTMLElement = null;
+  bodyEl: HTMLElement = null;
 
   constructor(label: string) {
     this.label = label;
@@ -134,18 +192,90 @@ export class RibbonGroupModel {
     }
   }
 
-  setWidths(expandedWidth: number, collapsedWidth: number, compactWidth = expandedWidth) {
-    this.expandedWidth = expandedWidth;
-    this.collapsedWidth = collapsedWidth;
-    this.compactWidth = compactWidth;
+  get lastStage(): number {
+    return this.stageWidths.length - 1;
   }
 
-  setFit(compact: boolean, collapsed: boolean) {
-    if (get(this.compact) != compact) {
-      this.compact.set(compact);
+  widthAt(stage: number): number {
+    return this.stageWidths[Math.min(stage, this.lastStage)] ?? 0;
+  }
+
+  isOverflowStage(stage: number): boolean {
+    return this.hasOverflowStage && stage > 0 && stage == this.lastStage;
+  }
+
+  setStageWidths(widths: number[], hasOverflowStage = false) {
+    this.stageWidths = widths.length ? widths : [0];
+    this.hasOverflowStage = hasOverflowStage;
+  }
+
+  setWidths(expandedWidth: number, collapsedWidth: number) {
+    this.setStageWidths([expandedWidth, collapsedWidth]);
+  }
+
+  setStage(stage: number) {
+    let collapsed = stage > 0 && stage == this.lastStage;
+    if (get(this.stage) != stage) {
+      this.stage.set(stage);
     }
     if (get(this.collapsed) != collapsed) {
       this.collapsed.set(collapsed);
     }
+  }
+
+  static computeStageWidths(layout: RibbonLayout, items: RibbonItemInfo[], metrics: RibbonMetrics): number[] {
+    let chrome = metrics.groupChrome;
+    if (layout == "simplified") {
+      let row = (width: (item: RibbonItemInfo) => number) =>
+        items.reduce((sum, item) => sum + width(item), 0) + metrics.gap * Math.max(0, items.length - 1) + chrome;
+      let simplifiedWidths: number[] = [];
+      simplifiedWidths[SimplifiedStage.Labels] = row(item => item.fixedWidth || metrics.simplifiedWidth);
+      simplifiedWidths[SimplifiedStage.IconsOnly] = row(item => item.fixedWidth || metrics.simplifiedIconWidth);
+      simplifiedWidths[SimplifiedStage.InMoreMenu] = 0;
+      return simplifiedWidths;
+    }
+    let designed = RibbonGroupModel.columnsWidth(items.map(item => ({
+      rows: item.size == "large" && !item.fixedWidth ? 3 : 1,
+      width: item.fixedWidth || (item.size == "large" ? metrics.largeWidth : metrics.smallWidth),
+    })), metrics.gap);
+    let small = RibbonGroupModel.columnsWidth(items.map(item => ({
+      rows: 1,
+      width: item.fixedWidth || metrics.smallWidth,
+    })), metrics.gap);
+    let icons = RibbonGroupModel.columnsWidth(items.map(item => ({
+      rows: 1,
+      width: item.fixedWidth || metrics.smallIconWidth,
+    })), metrics.gap);
+    let classicWidths: number[] = [];
+    classicWidths[ClassicStage.Designed] = designed + chrome;
+    classicWidths[ClassicStage.SmallButtons] = small + chrome;
+    classicWidths[ClassicStage.IconsOnly] = icons + chrome;
+    classicWidths[ClassicStage.Collapsed] = metrics.largeWidth + chrome;
+    return classicWidths;
+  }
+
+  static columnsWidth(cells: { rows: number, width: number }[], gap: number): number {
+    const kRows = 3;
+    let columns: number[] = [];
+    let row = kRows;
+    for (let cell of cells) {
+      if (row + cell.rows > kRows) {
+        columns.push(0);
+        row = 0;
+      }
+      columns[columns.length - 1] = Math.max(columns[columns.length - 1], cell.width);
+      row += cell.rows;
+    }
+    return columns.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, columns.length - 1);
+  }
+
+  static itemLook(layout: RibbonLayout, stage: number, collapsed: boolean, size: RibbonItemSize): RibbonItemLook {
+    if (layout == "simplified") {
+      return collapsed ? "list" : stage >= SimplifiedStage.IconsOnly ? "simplified-icon" : "simplified";
+    }
+    if (collapsed || stage == ClassicStage.Designed) {
+      return size;
+    }
+    return stage >= ClassicStage.IconsOnly ? "small-icon" : "small";
   }
 }

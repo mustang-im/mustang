@@ -72,13 +72,13 @@ test("Removing a group re-fits the others", () => {
   expect(collapsedStates(tab)).toEqual([false, false]);
 });
 
-function compactStates(tab: RibbonTabModel): boolean[] {
-  return tab.groups.map(group => get(group.compact));
+function stages(tab: RibbonTabModel): number[] {
+  return tab.groups.map(group => get(group.stage));
 }
 
-function makeSimplifiedGroup(label: string, expandedWidth: number, compactWidth: number): RibbonGroupModel {
+function makeSimplifiedGroup(label: string, labelsWidth: number, iconsWidth: number): RibbonGroupModel {
   let group = new RibbonGroupModel(label);
-  group.setWidths(expandedWidth, 54, compactWidth);
+  group.setStageWidths([labelsWidth, iconsWidth, 0], true);
   return group;
 }
 
@@ -89,40 +89,111 @@ test("Simplified: groups first show only icons, from the end", () => {
   tab.addGroup(makeSimplifiedGroup("Tags", 280, 120));
   // total 830
   tab.setAvailableWidth(900);
-  expect(compactStates(tab)).toEqual([false, false, false]);
-  expect(collapsedStates(tab)).toEqual([false, false, false]);
+  expect(stages(tab)).toEqual([0, 0, 0]);
   // Icons only for "Tags" saves 160 -> 670
   tab.setAvailableWidth(700);
-  expect(compactStates(tab)).toEqual([false, false, true]);
+  expect(stages(tab)).toEqual([0, 0, 1]);
   expect(collapsedStates(tab)).toEqual([false, false, false]);
   // Icons only for "Respond" too saves 190 -> 480
   tab.setAvailableWidth(500);
-  expect(compactStates(tab)).toEqual([false, true, true]);
-  expect(collapsedStates(tab)).toEqual([false, false, false]);
+  expect(stages(tab)).toEqual([0, 1, 1]);
 });
 
-test("Simplified: groups collapse only when all of them show only icons", () => {
+test("Simplified: groups move into the More menu only when all of them show only icons", () => {
   let tab = new RibbonTabModel("Home");
+  tab.setOverflowWidth(50);
   tab.addGroup(makeSimplifiedGroup("New", 250, 86));
   tab.addGroup(makeSimplifiedGroup("Respond", 300, 110));
   tab.addGroup(makeSimplifiedGroup("Tags", 280, 120));
-  // All icons only: 316. Collapsing "Tags" saves 66 -> 250
+  // All icons only: 316. "Tags" into the More menu saves 120, but the More button takes 50 -> 246
   tab.setAvailableWidth(300);
-  expect(compactStates(tab)).toEqual([true, true, false]);
+  expect(stages(tab)).toEqual([1, 1, 2]);
   expect(collapsedStates(tab)).toEqual([false, false, true]);
+  expect(get(tab.overflowGroups).map(group => group.label)).toEqual(["Tags"]);
+  // 250 still fits: 196 for the icons of "New" and "Respond", plus 50 for the More button
+  tab.setAvailableWidth(250);
+  expect(stages(tab)).toEqual([1, 1, 2]);
+  // 240: also "Respond" into the More menu
+  tab.setAvailableWidth(240);
+  expect(stages(tab)).toEqual([1, 2, 2]);
+  expect(get(tab.overflowGroups).map(group => group.label)).toEqual(["Respond", "Tags"]);
   // Growing again shows the labels again
   tab.setAvailableWidth(1000);
-  expect(compactStates(tab)).toEqual([false, false, false]);
-  expect(collapsedStates(tab)).toEqual([false, false, false]);
+  expect(stages(tab)).toEqual([0, 0, 0]);
+  expect(get(tab.overflowGroups)).toEqual([]);
 });
 
-test("Classic: without an icon-only width, groups never become compact", () => {
+test("Classic: large buttons become small, then icons only, before any group collapses", () => {
   let tab = new RibbonTabModel("Home");
-  tab.addGroup(makeGroup("New", 154));
-  tab.addGroup(makeGroup("Delete", 226));
+  let metrics = { largeWidth: 80, smallWidth: 120, smallIconWidth: 36, simplifiedWidth: 110, simplifiedIconWidth: 40, gap: 2, groupChrome: 10 };
+  let newGroup = new RibbonGroupModel("New");
+  newGroup.setStageWidths(RibbonGroupModel.computeStageWidths("classic", [{ size: "large" }, { size: "large" }], metrics));
+  let respond = new RibbonGroupModel("Respond");
+  respond.setStageWidths(RibbonGroupModel.computeStageWidths("classic", [{ size: "small" }, { size: "small" }, { size: "small" }, { size: "small" }], metrics));
+  tab.addGroup(newGroup);
+  tab.addGroup(respond);
+  expect(newGroup.stageWidths).toEqual([172, 130, 46, 90]);
+  expect(respond.stageWidths).toEqual([252, 252, 84, 90]);
+  // 424 fits
+  tab.setAvailableWidth(424);
+  expect(stages(tab)).toEqual([0, 0]);
+  // "Respond" has no large buttons, so "New" gets small buttons first: 382
+  tab.setAvailableWidth(400);
+  expect(stages(tab)).toEqual([1, 0]);
+  // Then icons only, from the end: 130 + 84 = 214
   tab.setAvailableWidth(300);
-  expect(compactStates(tab)).toEqual([false, false]);
-  expect(collapsedStates(tab)).toEqual([false, true]);
+  expect(stages(tab)).toEqual([1, 2]);
+  // Collapsing saves nothing here, icons only is narrower
+  tab.setAvailableWidth(100);
+  expect(stages(tab)).toEqual([2, 2]);
+  expect(collapsedStates(tab)).toEqual([false, false]);
+});
+
+test("Classic: a group with a text box collapses after its buttons show only icons", () => {
+  let metrics = { largeWidth: 80, smallWidth: 120, smallIconWidth: 36, simplifiedWidth: 110, simplifiedIconWidth: 40, gap: 2, groupChrome: 10 };
+  let widths = RibbonGroupModel.computeStageWidths("classic", [{ size: "small", fixedWidth: 160 }, { size: "small" }, { size: "small" }], metrics);
+  // One column of 3 rows, as wide as the text box
+  expect(widths).toEqual([170, 170, 170, 90]);
+  let tab = new RibbonTabModel("Home");
+  let find = new RibbonGroupModel("Find");
+  find.setStageWidths(widths);
+  tab.addGroup(find);
+  tab.setAvailableWidth(120);
+  expect(stages(tab)).toEqual([3]);
+  expect(collapsedStates(tab)).toEqual([true]);
+});
+
+test("Classic: small buttons fill columns of 3, a large button starts a new column", () => {
+  // small, large, small, small, small, small
+  let cells = [
+    { rows: 1, width: 100 },
+    { rows: 3, width: 80 },
+    { rows: 1, width: 100 },
+    { rows: 1, width: 120 },
+    { rows: 1, width: 100 },
+    { rows: 1, width: 100 },
+  ];
+  // Columns: [100] [80] [100, 120, 100] [100]
+  expect(RibbonGroupModel.columnsWidth(cells, 2)).toBe(100 + 80 + 120 + 100 + 3 * 2);
+  expect(RibbonGroupModel.columnsWidth([], 2)).toBe(0);
+});
+
+test("Simplified: one row, uniform widths", () => {
+  let metrics = { largeWidth: 80, smallWidth: 120, smallIconWidth: 36, simplifiedWidth: 110, simplifiedIconWidth: 40, gap: 2, groupChrome: 10 };
+  let widths = RibbonGroupModel.computeStageWidths("simplified", [{ size: "large" }, { size: "small" }, { size: "small", fixedWidth: 150 }], metrics);
+  expect(widths).toEqual([110 + 110 + 150 + 4 + 10, 40 + 40 + 150 + 4 + 10, 0]);
+});
+
+test("Button look depends on layout, stage and size", () => {
+  expect(RibbonGroupModel.itemLook("classic", 0, false, "large")).toBe("large");
+  expect(RibbonGroupModel.itemLook("classic", 0, false, "small")).toBe("small");
+  expect(RibbonGroupModel.itemLook("classic", 1, false, "large")).toBe("small");
+  expect(RibbonGroupModel.itemLook("classic", 2, false, "large")).toBe("small-icon");
+  // The popup of a collapsed group shows the buttons as designed
+  expect(RibbonGroupModel.itemLook("classic", 3, true, "large")).toBe("large");
+  expect(RibbonGroupModel.itemLook("simplified", 0, false, "large")).toBe("simplified");
+  expect(RibbonGroupModel.itemLook("simplified", 1, false, "small")).toBe("simplified-icon");
+  expect(RibbonGroupModel.itemLook("simplified", 2, true, "small")).toBe("list");
 });
 
 test("First button icon is the group icon", () => {
