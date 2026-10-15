@@ -1,0 +1,43 @@
+<OptionsPage icon={AdvancedIcon} description={$t`Options for working with ${appName}.`}>
+  <OptionsSection title={$t`${appName} panes`}>
+    <OptionsRow icon={PanesIcon}>
+      <hbox>{$t`Customize ${appName} panes.`}</hbox>
+      <DialogButton slot="button" label={$t`Reading Pane…`} onClick={() => { isReadingPaneOpen = true; }} />
+    </OptionsRow>
+  </OptionsSection>
+
+  <OptionsSection title={$t`Reminders`}>
+    <OptionsRow icon={RemindersIcon}>
+      <label>
+        <input type="checkbox" bind:checked={options.showReminders.value} />
+        {$t`Show reminders`}
+      </label>
+      <label>
+        <input type="checkbox" bind:checked={options.reminderSound.value} />
+        {$t`Play reminder sound`}
+      </label>
+    </OptionsRow>
+  </OptionsSection>
+</OptionsPage>
+
+{#if isReadingPaneOpen}
+  <ReadingPaneOptionsDialog on:close={() => isReadingPaneOpen = false} />
+{/if}
+
+<script lang="ts">
+  import type { OptionsModel } from "./OptionsModel";
+  import OptionsPage from "./OptionsPage.svelte";
+  import OptionsSection from "./OptionsSection.svelte";
+  import OptionsRow from "./OptionsRow.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import ReadingPaneOptionsDialog from "../../Mail/Dialogs/ReadingPaneOptionsDialog.svelte";
+  import { appName } from "../../../logic/build";
+  import AdvancedIcon from "lucide-svelte/icons/sliders-horizontal";
+  import PanesIcon from "lucide-svelte/icons/panels-top-left";
+  import RemindersIcon from "lucide-svelte/icons/bell-ring";
+  import { t } from "../../../l10n/l10n";
+
+  export let options: OptionsModel;
+
+  let isReadingPaneOpen = false;
+</script>
