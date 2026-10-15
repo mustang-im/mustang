@@ -1,5 +1,5 @@
-<hbox class="ribbon-menu-button">
-  <RibbonButtonBase {label} {icon} {tooltip} {shortCutInfo} {disabled}
+<div class="ribbon-menu-button">
+  <RibbonButtonBase {label} {icon} {tooltip} {shortCutInfo} {disabled} {size}
     classes="menu-trigger {classes}"
     hasMenu pressed={isMenuOpen}
     onClick={onToggleMenu}
@@ -8,16 +8,18 @@
   <Menu bind:isMenuOpen anchor={buttonEl} placement="bottom-start">
     <slot />
   </Menu>
-</hbox>
+</div>
 
 <script lang="ts">
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
+  import Menu from "../Menu/Menu.svelte";
+  import type { RibbonItemSize } from "./Ribbon";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let isMenuOpen = false;
   export let disabled: boolean | string = false;
+  export let size: RibbonItemSize = "large";
   export let tooltip: string = null;
   export let shortCutInfo: string = null;
   export let classes = "";
@@ -30,6 +32,6 @@
 
 <style>
   .ribbon-menu-button {
-    flex: 0 0 auto;
+    display: contents;
   }
 </style>

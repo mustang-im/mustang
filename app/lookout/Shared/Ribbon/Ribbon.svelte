@@ -32,35 +32,44 @@
     </hbox>
     <Menu bind:isMenuOpen={isOptionsOpen} anchor={optionsEl} placement="bottom-end">
       <MenuLabel label={$t`Ribbon layout`} />
-      <MenuItem label={$t`Classic ribbon`} icon={layout == "classic" ? CheckIcon : BlankIcon}
+      <MenuItem label={$t`Classic ribbon`} checked={layout == "classic"}
         onClick={() => ribbon.setLayout("classic")} />
-      <MenuItem label={$t`Simplified ribbon`} icon={layout == "simplified" ? CheckIcon : BlankIcon}
+      <MenuItem label={$t`Simplified ribbon`} checked={layout == "simplified"}
         onClick={() => ribbon.setLayout("simplified")} />
-      <MenuDivider />
       <MenuLabel label={$t`Show ribbon`} />
-      <MenuItem label={$t`Always show ribbon`} icon={isCollapsed ? BlankIcon : CheckIcon}
+      <MenuItem label={$t`Always show ribbon`} checked={!isCollapsed}
         onClick={() => ribbon.setCollapsed(false)} />
-      <MenuItem label={$t`Show tabs only`} icon={isCollapsed ? CheckIcon : BlankIcon}
+      <MenuItem label={$t`Show tabs only`} checked={isCollapsed}
         onClick={() => ribbon.setCollapsed(true)} />
     </Menu>
   </hbox>
   <hbox class="ribbon-content" on:click|capture={onClickContent}>
     <slot />
   </hbox>
+  <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
+    <div class="probe-classic">
+      <div data-metric="largeWidth" style="width: var(--lo-ribbon-large-width)"></div>
+      <div data-metric="smallWidth" style="width: var(--lo-ribbon-small-width)"></div>
+      <div data-metric="smallIconWidth" style="width: var(--lo-ribbon-small-icon-width)"></div>
+    </div>
+    <div class="probe-simplified">
+      <div data-metric="simplifiedWidth" style="width: var(--lo-ribbon-simplified-width)"></div>
+      <div data-metric="simplifiedIconWidth" style="width: var(--lo-ribbon-simplified-icon-width)"></div>
+    </div>
+    <div data-metric="gap" style="width: var(--lo-ribbon-gap)"></div>
+    <div data-metric="groupChrome" style="width: calc(2 * var(--lo-ribbon-group-padding))"></div>
+  </div>
 </vbox>
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} />
 
 <script lang="ts">
-  import { RibbonModel, type RibbonTabModel, type RibbonLayout } from "./Ribbon";
+  import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./Ribbon";
   import { backstageState } from "../../Settings/BackstageState";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuLabel from "../../../frontend/Shared/Menu/MenuLabel.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import Menu from "../Menu/Menu.svelte";
+  import MenuItem from "../Menu/MenuItem.svelte";
+  import MenuLabel from "../Menu/MenuLabel.svelte";
   import OptionsIcon from "lucide-svelte/icons/chevron-down";
-  import CheckIcon from "lucide-svelte/icons/check";
-  import BlankIcon from "../Menu/BlankIcon.svelte";
-  import { setContext } from "svelte";
+  import { setContext, onMount, onDestroy, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   const ribbon = new RibbonModel();
@@ -76,6 +85,33 @@
 
   let ribbonEl: HTMLElement;
   let optionsEl: HTMLElement;
+  let probeEl: HTMLElement;
+
+  let probeObserver: ResizeObserver;
+  onMount(() => {
+    probeObserver = new ResizeObserver(measureMetrics);
+    for (let probe of probeEl.querySelectorAll("[data-metric]")) {
+      probeObserver.observe(probe);
+    }
+    measureMetrics();
+  });
+  onDestroy(() => probeObserver?.disconnect());
+
+  $: $layoutSetting, measureMetricsLater();
+  async function measureMetricsLater() {
+    await tick();
+    measureMetrics();
+  }
+  function measureMetrics() {
+    if (!probeEl) {
+      return;
+    }
+    let metrics = {} as RibbonMetrics;
+    for (let probe of probeEl.querySelectorAll<HTMLElement>("[data-metric]")) {
+      metrics[probe.dataset.metric] = probe.getBoundingClientRect().width;
+    }
+    ribbon.setMetrics(metrics);
+  }
   let isOptionsOpen = false;
   let isTempOpen = false;
 
@@ -148,16 +184,33 @@
     color: var(--lo-fg);
     z-index: 10;
   }
-  .ribbon.classic {
-    --lo-ribbon-button-width: max(72px, calc(6px + 11ch));
-    --lo-ribbon-button-height: 64px;
-    --lo-ribbon-icon-size: 24px;
-  }
-  .ribbon.simplified {
+  .ribbon {
+    --lo-ribbon-large-width: max(72px, calc(6px + 11ch));
+    --lo-ribbon-row-height: 22px;
+    --lo-ribbon-large-height: calc(3 * var(--lo-ribbon-row-height));
+    --lo-ribbon-small-width: calc(38px + 11ch);
+    --lo-ribbon-small-icon-width: 36px;
     --lo-ribbon-button-height: 32px;
-    --lo-ribbon-icon-size: 18px;
-    --lo-ribbon-icon-only-width: 32px;
-    --lo-ribbon-icon-only-menu-width: 44px;
+    --lo-ribbon-simplified-width: calc(48px + 10ch);
+    --lo-ribbon-simplified-icon-width: 40px;
+    --lo-ribbon-gap: 2px;
+    --lo-ribbon-group-padding: 5px;
+  }
+  .metrics-probe {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+    height: 0;
+    overflow: hidden;
+  }
+  .metrics-probe div {
+    height: 1px;
+  }
+  .probe-classic {
+    font-size: var(--lo-font-size-small);
+  }
+  .probe-simplified {
+    font-size: 13px;
   }
 
   .tab-row {

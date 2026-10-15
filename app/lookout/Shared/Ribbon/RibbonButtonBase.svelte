@@ -1,33 +1,35 @@
-<button class="ribbon-button {classes}"
+<button class="ribbon-button look-{look} part-{part} {classes}"
+  class:ribbon-item={isItem}
   class:pressed
   class:disabled={isDisabled}
   class:has-menu={hasMenu}
+  data-size={isItem ? size : undefined}
   disabled={isDisabled}
   title={tooltipCalc}
-  aria-label={label}
+  aria-label={ariaLabel ?? label}
   aria-pressed={toggle ? pressed : undefined}
   aria-haspopup={hasMenu ? "menu" : undefined}
   aria-expanded={hasMenu ? pressed : undefined}
   bind:this={buttonEl}
   on:click={myOnClick}
   >
-  <hbox class="icon">
+  <span class="icon">
     {#if loading}
-      <hbox class="loading"><LoadingIcon size="24" /></hbox>
+      <span class="loading"><LoadingIcon /></span>
     {:else if icon}
-      <svelte:component this={icon} size="24" />
-    {/if}
-  </hbox>
-  <span class="label">
-    <span class="text">{labelStart}{#if hasMenu}<span class="last-word">{labelEnd}{#if isOneWord}<span class="classic-line-break"><br /></span>{/if}<span class="chevron classic-chevron"><ChevronDownIcon size="12" /></span></span>{/if}</span>
-    {#if hasMenu}
-      <span class="chevron simplified-chevron"><ChevronDownIcon size="12" /></span>
+      <svelte:component this={icon} />
     {/if}
   </span>
+  <span class="label">
+    <span class="text">{labelStart}{#if hasMenu}<span class="last-word">{labelEnd}{#if isOneWord}<br class="large-line-break" />{/if}<span class="chevron large-chevron"><ChevronDownIcon size="12" /></span></span>{/if}</span>
+  </span>
+  {#if hasMenu}
+    <span class="chevron line-chevron"><ChevronDownIcon size="12" /></span>
+  {/if}
 </button>
 
 <script lang="ts">
-  import { RibbonGroupModel } from "./Ribbon";
+  import { RibbonGroupModel, type RibbonItemLook, type RibbonItemSize } from "./Ribbon";
   import { showError } from "../../../frontend/Util/error";
   import LoadingIcon from "lucide-svelte/icons/loader-circle";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
@@ -42,18 +44,31 @@
   export let pressed = false;
   export let toggle = false;
   export let hasMenu = false;
+  export let size: RibbonItemSize = "large";
+  export let fixedLook: RibbonItemLook = null;
+  export let part: "whole" | "main" | "arrow" = "whole";
+  export let isItem = true;
+  export let ariaLabel: string = null;
   export let classes = "";
   export let onClick: (event: Event) => void | Promise<void> = null;
   export let errorCallback = showError;
   export let buttonEl: HTMLButtonElement = null;
   export let loadDelayMS = 500;
 
-  getContext<RibbonGroupModel>(RibbonGroupModel.contextKey)?.offerIcon(icon);
+  const group = getContext<RibbonGroupModel>(RibbonGroupModel.contextKey) ?? new RibbonGroupModel("");
+  if (part != "arrow") {
+    group.offerIcon(icon);
+  }
+  const layout = group.layout;
+  const stage = group.stage;
+  const collapsed = group.collapsed;
+  let look: RibbonItemLook;
+  $: look = fixedLook ?? RibbonGroupModel.itemLook($layout, $stage, $collapsed, size);
 
   // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.
   // Chrome also never breaks after a slash, so "Send/Receive" gets a zero-width space there.
-  $: wrappingLabel = label?.replace(/\/(?=\S)/g, "/\u200B") ?? "";
-  $: lastBreak = hasMenu ? Math.max(wrappingLabel.lastIndexOf(" "), wrappingLabel.lastIndexOf("\u200B")) : -1;
+  $: wrappingLabel = label?.replace(/\/(?=\S)/g, "/​") ?? "";
+  $: lastBreak = hasMenu ? Math.max(wrappingLabel.lastIndexOf(" "), wrappingLabel.lastIndexOf("​")) : -1;
   $: isOneWord = hasMenu && lastBreak < 0;
   $: labelStart = hasMenu ? wrappingLabel.slice(0, lastBreak + 1) : wrappingLabel;
   $: labelEnd = hasMenu ? wrappingLabel.slice(lastBreak + 1) : "";
@@ -99,16 +114,14 @@
 <style>
   .ribbon-button {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
     box-sizing: border-box;
-    width: min-content;
-    min-width: var(--lo-ribbon-button-width, 72px);
-    height: var(--lo-ribbon-button-height, 64px);
     flex: 0 0 auto;
+    min-width: 0;
     margin: 0;
-    padding: 6px 2px 0 2px;
+    padding: 0 4px;
+    gap: 4px;
     border: 1px solid transparent;
     border-radius: var(--lo-radius-small);
     background-color: transparent;
@@ -116,7 +129,8 @@
     font-family: inherit;
     font-size: var(--lo-font-size-small);
     line-height: 15px;
-    text-align: center;
+    text-align: start;
+    white-space: nowrap;
     cursor: default;
   }
   .ribbon-button:hover:not(.disabled) {
@@ -140,22 +154,26 @@
     outline-offset: -2px;
   }
   .icon {
+    display: flex;
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    width: var(--lo-ribbon-icon-size, 24px);
-    height: var(--lo-ribbon-icon-size, 24px);
+    width: 16px;
+    height: 16px;
     color: var(--lo-ribbon-icon-color, var(--lo-accent-text));
   }
   .disabled .icon {
     color: var(--lo-fg-disabled);
   }
   .icon :global(svg) {
-    width: var(--lo-ribbon-icon-size, 24px);
-    height: var(--lo-ribbon-icon-size, 24px);
-    stroke-width: 1.6;
+    width: 100%;
+    height: 100%;
+    stroke-width: 1.75;
   }
   .loading {
+    display: flex;
+    width: 100%;
+    height: 100%;
     animation: lo-ribbon-spin 1s linear infinite;
   }
   @keyframes lo-ribbon-spin {
@@ -164,13 +182,9 @@
     }
   }
   .label {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
-    margin-block-start: 3px;
-    max-width: 100%;
     text-overflow: ellipsis;
   }
   .last-word {
@@ -178,56 +192,152 @@
   }
   .chevron {
     display: inline-flex;
+    flex: 0 0 auto;
     vertical-align: middle;
-    margin-inline-start: 1px;
+    color: var(--lo-fg-secondary);
   }
-  .simplified-chevron {
+  .large-chevron,
+  .large-line-break {
     display: none;
   }
 
-  :global(.ribbon.simplified) .ribbon-button {
+  .look-large {
+    flex-direction: column;
+    justify-content: flex-start;
+    width: var(--lo-ribbon-large-width);
+    height: var(--lo-ribbon-large-height);
+    padding: 5px 2px 0 2px;
+    gap: 0;
+    text-align: center;
+    white-space: normal;
+  }
+  .look-large .icon {
+    width: 26px;
+    height: 26px;
+  }
+  .look-large .icon :global(svg) {
+    stroke-width: 1.5;
+  }
+  .look-large .label {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    flex: 0 0 auto;
+    max-width: 100%;
+    margin-block-start: 3px;
+  }
+  .look-large .large-chevron {
+    display: inline-flex;
+    margin-inline-start: 1px;
+  }
+  .look-large .large-line-break {
+    display: inline;
+  }
+  .look-large .line-chevron {
+    display: none;
+  }
+
+  .look-small {
+    width: 100%;
+    min-width: var(--lo-ribbon-small-width);
+    height: var(--lo-ribbon-row-height);
+  }
+  .look-small-icon {
+    justify-content: center;
+    width: var(--lo-ribbon-small-icon-width);
+    height: var(--lo-ribbon-row-height);
+    gap: 1px;
+  }
+
+  .look-simplified,
+  .look-simplified-icon,
+  .look-list {
+    height: var(--lo-ribbon-button-height);
+    padding: 0 8px;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .look-simplified {
+    width: var(--lo-ribbon-simplified-width);
+  }
+  .look-simplified-icon {
+    justify-content: center;
+    width: var(--lo-ribbon-simplified-icon-width);
+    padding: 0;
+    gap: 1px;
+  }
+  .look-list {
+    width: 100%;
+  }
+  .look-simplified .icon,
+  .look-simplified-icon .icon,
+  .look-list .icon {
+    width: 18px;
+    height: 18px;
+  }
+  .look-list .label {
+    overflow: visible;
+  }
+
+  .look-small-icon .label,
+  .look-simplified-icon .label {
+    display: none;
+  }
+
+  .part-main,
+  .part-arrow {
     width: auto;
     min-width: 0;
-    flex-direction: row;
-    justify-content: flex-start;
-    padding: 0 8px;
-    font-size: 13px;
-    text-align: start;
   }
-  :global(.ribbon.simplified) .label {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex: 0 0 auto;
-    margin-block-start: 0;
-    margin-inline-start: 6px;
-    white-space: nowrap;
+  .part-main:not(.look-large) {
+    flex: 1 1 auto;
   }
-  :global(.ribbon.simplified) .classic-chevron,
-  :global(.ribbon.simplified) .classic-line-break {
-    display: none;
-  }
-  :global(.ribbon.simplified) .simplified-chevron {
-    display: inline-flex;
-    margin-inline-start: 2px;
-  }
-  :global(.ribbon.simplified .ribbon-group.compact) .ribbon-button,
-  :global(.ribbon.simplified) .ribbon-button:global(.group-collapsed-button) {
-    justify-content: center;
-    width: var(--lo-ribbon-icon-only-width);
-    min-width: 0;
+  .part-main.look-small-icon,
+  .part-main.look-simplified-icon {
+    flex: 1 1 auto;
     padding: 0;
   }
-  :global(.ribbon.simplified .ribbon-group.compact) .ribbon-button.has-menu,
-  :global(.ribbon.simplified) .ribbon-button:global(.group-collapsed-button) {
-    width: var(--lo-ribbon-icon-only-menu-width);
+  .part-arrow:not(.look-large) {
+    justify-content: center;
+    padding: 0;
   }
-  :global(.ribbon.simplified .ribbon-group.compact) .text,
-  :global(.ribbon.simplified) :global(.group-collapsed-button) .text {
+  .part-arrow:not(.look-large) .icon,
+  .part-arrow:not(.look-large) .label {
     display: none;
   }
-  :global(.ribbon.simplified .ribbon-group.compact) .label,
-  :global(.ribbon.simplified) :global(.group-collapsed-button) .label {
-    margin-inline-start: 0;
+  .part-arrow.look-small,
+  .part-arrow.look-small-icon {
+    width: 16px;
+  }
+  .part-arrow.look-simplified,
+  .part-arrow.look-simplified-icon {
+    width: 20px;
+  }
+  .part-arrow.look-list {
+    width: 28px;
+  }
+  .part-main.look-large {
+    width: 100%;
+    height: 38px;
+    padding-top: 5px;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .part-main.look-large .label {
+    display: none;
+  }
+  .part-arrow.look-large {
+    width: 100%;
+    height: calc(var(--lo-ribbon-large-height) - 38px);
+    padding-top: 0;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+  }
+  .part-arrow.look-large .icon {
+    display: none;
+  }
+  .part-arrow.look-large .label {
+    margin-block-start: 0;
   }
 </style>

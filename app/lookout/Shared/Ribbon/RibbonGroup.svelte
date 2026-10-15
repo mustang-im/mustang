@@ -1,44 +1,71 @@
-<vbox class="ribbon-group" class:collapsed={$collapsed} class:compact={$compact}
+<div class="ribbon-group {$layout}" class:collapsed={$collapsed} class:in-more-menu={isInMoreMenu}
   role="group" aria-label={label}
   bind:this={groupEl}>
-  {#if $collapsed}
+  {#if $collapsed && !isInMoreMenu}
     <RibbonButtonBase {label} icon={icon ?? group.firstIcon}
       classes="group-collapsed-button menu-trigger"
+      size="large" fixedLook="large"
       hasMenu pressed={isPopupOpen}
       onClick={onTogglePopup}
       bind:buttonEl={collapsedButtonEl}
       />
   {/if}
-  <hbox class="group-buttons"
-    class:popup={$collapsed}
-    class:open={$collapsed && isPopupOpen}
-    style={$collapsed ? popupStyle : ""}
-    on:click|capture={onClickInside}
-    bind:this={buttonsEl}>
-    <slot />
-  </hbox>
+  <div class="body-home" bind:this={homeEl}>
+    <div class="group-body" bind:this={bodyEl}>
+      <div class="more-menu-label">{label}</div>
+      <div class="group-buttons stage-{$stage}"
+        class:popup={$collapsed && !isInMoreMenu}
+        class:open={$collapsed && !isInMoreMenu && isPopupOpen}
+        style={$collapsed && !isInMoreMenu ? popupStyle : ""}
+        on:click|capture={onClickInside}
+        bind:this={buttonsEl}>
+        <slot />
+      </div>
+    </div>
+  </div>
   {#if !$collapsed}
-    <hbox class="group-label">{label}</hbox>
+    <div class="group-label">
+      <span class="group-label-text">{label}</span>
+      {#if onLauncher}
+        <button class="launcher" title={launcherTooltip ?? label} aria-label={launcherTooltip ?? label}
+          on:click={onLauncherClicked}>
+          <LauncherIcon size="12" />
+        </button>
+      {/if}
+    </div>
   {/if}
-</vbox>
+</div>
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closePopup} />
 
 <script lang="ts">
-  import { RibbonGroupModel, RibbonTabModel } from "./Ribbon";
+  import { RibbonGroupModel, RibbonModel, RibbonTabModel, type RibbonItemInfo, type RibbonLayout } from "./Ribbon";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
+  import { showError } from "../../../frontend/Util/error";
+  import LauncherIcon from "lucide-svelte/icons/arrow-down-right";
   import { getContext, setContext, onMount, onDestroy } from "svelte";
+  import { writable } from "svelte/store";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent = null;
+  export let onLauncher: () => void | Promise<void> = null;
+  export let launcherTooltip: string = null;
 
+  const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
   const tab = getContext<RibbonTabModel>(RibbonTabModel.contextKey);
   const group = new RibbonGroupModel(label);
   setContext(RibbonGroupModel.contextKey, group);
   const collapsed = group.collapsed;
-  const compact = group.compact;
+  const stage = group.stage;
+  const layout = group.layout;
+  const layoutSetting = ribbon?.layout ?? writable(null);
+  const metrics = ribbon?.metrics ?? writable(null);
   $: group.label = label;
+  $: $layoutSetting, layout.set(ribbon?.currentLayout ?? "classic");
+  $: isInMoreMenu = $collapsed && $layout == "simplified";
 
   let groupEl: HTMLElement;
+  let homeEl: HTMLElement;
+  let bodyEl: HTMLElement;
   let buttonsEl: HTMLElement;
   let collapsedButtonEl: HTMLButtonElement;
   let isPopupOpen = false;
@@ -46,8 +73,10 @@
 
   let resizeObserver: ResizeObserver;
   onMount(() => {
+    group.el = groupEl;
+    group.bodyEl = bodyEl;
     tab?.addGroup(group);
-    resizeObserver = new ResizeObserver(measure);
+    resizeObserver = new ResizeObserver(() => measure());
     resizeObserver.observe(buttonsEl);
     measure();
   });
@@ -56,35 +85,31 @@
     tab?.removeGroup(group);
   });
 
-  function measure() {
-    if (!groupEl || !buttonsEl) {
+  $: measure($metrics, $layout);
+  function measure(..._dependencies: any[]) {
+    if (!buttonsEl || !$metrics) {
       return;
     }
-    let style = getComputedStyle(groupEl);
-    let chrome = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
-      parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-    let buttonsStyle = getComputedStyle(buttonsEl);
-    let popupChrome = parseFloat(buttonsStyle.paddingLeft) + parseFloat(buttonsStyle.paddingRight) +
-      parseFloat(buttonsStyle.borderLeftWidth) + parseFloat(buttonsStyle.borderRightWidth);
-    let iconOnlyWidth = parseFloat(style.getPropertyValue("--lo-ribbon-icon-only-width"));
-    let iconOnlyMenuWidth = parseFloat(style.getPropertyValue("--lo-ribbon-icon-only-menu-width"));
-    let hasIconOnly = !isNaN(iconOnlyWidth) && !isNaN(iconOnlyMenuWidth);
-    let expandedWidth = hasIconOnly && $compact
-      ? group.expandedWidth
-      : buttonsEl.offsetWidth - popupChrome + chrome;
-    if (!hasIconOnly) {
-      let buttonWidths = Array.from(groupEl.querySelectorAll<HTMLElement>(".ribbon-button"), button => button.offsetWidth);
-      let buttonWidth = buttonWidths.length ? Math.min(...buttonWidths) : buttonsEl.offsetWidth;
-      group.setWidths(expandedWidth, buttonWidth + chrome);
-    } else {
-      let buttons = Array.from(buttonsEl.querySelectorAll(".ribbon-button"));
-      let gap = parseFloat(buttonsStyle.columnGap) || 0;
-      let iconsWidth = buttons.reduce((sum, button) =>
-        sum + (button.classList.contains("has-menu") ? iconOnlyMenuWidth : iconOnlyWidth), 0) +
-        gap * Math.max(0, buttons.length - 1);
-      group.setWidths(expandedWidth, iconOnlyMenuWidth + chrome, iconsWidth + chrome);
+    let items = Array.from(buttonsEl.querySelectorAll<HTMLElement>(".ribbon-item"))
+      .filter(item => !item.parentElement.closest(".ribbon-item"));
+    let fixedItems = items.filter(item => item.classList.contains("fixed-width"));
+    if (fixedItems.some(item => !item.offsetWidth)) {
+      return;
     }
+    let infos: RibbonItemInfo[] = items.map(item => ({
+      size: item.dataset.size == "small" ? "small" : "large",
+      fixedWidth: fixedItems.includes(item) ? item.offsetWidth : 0,
+    }));
+    let currentLayout: RibbonLayout = $layout;
+    group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics), currentLayout == "simplified");
     tab?.fitGroups();
+  }
+
+  $: placeBody(isInMoreMenu);
+  function placeBody(inMoreMenu: boolean) {
+    if (!inMoreMenu && bodyEl && bodyEl.parentElement != homeEl) {
+      homeEl.appendChild(bodyEl);
+    }
   }
 
   $: if (!$collapsed) {
@@ -107,14 +132,15 @@
   }
 
   function onClickInside(event: MouseEvent) {
-    if (!$collapsed || !isPopupOpen) {
+    if (!$collapsed || (!isPopupOpen && !isInMoreMenu)) {
       return;
     }
     let target = event.target as HTMLElement;
-    if (target.closest(".menu-trigger")) {
+    if (target.closest(".menu-trigger") || !target.closest("button")) {
       return;
     }
     closePopup();
+    tab?.closeMoreMenu();
   }
 
   function onClickOutside(event: MouseEvent) {
@@ -130,13 +156,26 @@
       collapsedButtonEl?.focus();
     }
   }
+
+  async function onLauncherClicked() {
+    try {
+      await onLauncher?.();
+    } catch (ex) {
+      showError(ex);
+    }
+  }
 </script>
 
 <style>
   .ribbon-group {
     position: relative;
+    display: flex;
+    flex-direction: column;
     flex: 0 0 auto;
-    padding: 0 5px;
+    padding: 0 var(--lo-ribbon-group-padding);
+  }
+  .ribbon-group.in-more-menu {
+    display: none;
   }
   .ribbon-group:not(:last-child)::after {
     content: "";
@@ -147,11 +186,36 @@
     width: 1px;
     background-color: var(--lo-divider);
   }
-  .group-buttons {
+  .body-home {
+    display: flex;
     flex: 1 0 auto;
-    align-items: flex-start;
-    gap: 2px;
+  }
+  .group-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .more-menu-label {
+    display: none;
+  }
+  .group-buttons {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(3, var(--lo-ribbon-row-height));
+    grid-auto-columns: max-content;
+    align-items: center;
+    justify-items: stretch;
+    column-gap: var(--lo-ribbon-gap);
     width: max-content;
+  }
+  .ribbon-group.simplified .group-buttons {
+    grid-template-rows: var(--lo-ribbon-button-height);
+  }
+  .group-buttons :global(.ribbon-item.look-large) {
+    grid-row: span 3;
+    align-self: start;
+  }
+  .group-buttons :global(.ribbon-item.fixed-width) {
+    justify-self: start;
   }
   .group-buttons.popup {
     position: fixed;
@@ -169,18 +233,60 @@
     visibility: visible;
   }
   .group-label {
+    position: relative;
+    display: flex;
     justify-content: center;
+    align-items: center;
     width: 0;
     min-width: 100%;
     height: 18px;
     font-size: 11px;
     line-height: 18px;
     color: var(--lo-fg-secondary);
+  }
+  .group-label-text {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  :global(.ribbon.simplified) .group-label {
+  .launcher {
+    position: absolute;
+    inset-inline-end: -2px;
+    top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+    background: none;
+    color: var(--lo-fg-secondary);
+  }
+  .launcher:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  .ribbon-group.simplified .group-label {
     display: none;
+  }
+
+  :global(.ribbon-more-menu) .group-body {
+    width: 100%;
+  }
+  :global(.ribbon-more-menu) .more-menu-label {
+    display: block;
+    padding: 6px 8px 2px 8px;
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
+    font-weight: 600;
+  }
+  :global(.ribbon-more-menu) .group-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: auto;
+    gap: 0;
   }
 </style>
