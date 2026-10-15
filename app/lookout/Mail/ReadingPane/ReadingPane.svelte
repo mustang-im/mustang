@@ -7,9 +7,13 @@
         <hbox class="attachments">
           <AttachmentsUI attachments={shownMessage.attachments} />
         </hbox>
-        <vbox class="sml">
-          <SMLDisplayKinds message={shownMessage} sml={shownMessage.sml} />
-        </vbox>
+        {#if MailInvitation.isInvitationMail(shownMessage)}
+          <InvitationBar message={shownMessage} />
+        {:else}
+          <vbox class="sml">
+            <SMLDisplayKinds message={shownMessage} sml={shownMessage.sml} />
+          </vbox>
+        {/if}
         <vbox flex class="body">
           <MessageBody message={shownMessage} />
         </vbox>
@@ -37,6 +41,8 @@
   import InfoBars from "./InfoBars.svelte";
   import AttachmentsUI from "../../../frontend/Mail/Message/AttachmentsUI.svelte";
   import SMLDisplayKinds from "../../../frontend/Mail/SML/SMLDisplayKinds.svelte";
+  import InvitationBar from "../../Calendar/EditEvent/InvitationBar.svelte";
+  import { MailInvitation } from "../../Calendar/EditEvent/MailInvitation";
   import MessageBody from "../../../frontend/Mail/Message/MessageBody.svelte";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import MultipleIcon from "lucide-svelte/icons/mails";

@@ -109,8 +109,8 @@ export class EventFormInfo {
     ].join("\t")).join("\n");
   }
 
-  static myResponseText(event: Event): string {
-    switch (event.myParticipation) {
+  static myResponseText(response: InvitationResponse): string {
+    switch (response) {
     case InvitationResponse.Accept:
       return gt`You accepted this meeting.`;
     case InvitationResponse.Tentative:
@@ -157,7 +157,7 @@ export class EventFormInfo {
       if (event.isCancelled) {
         messages.push({ kind: "cancelled", text: gt`This meeting has been cancelled by the organizer.` });
       } else {
-        messages.push({ kind: "info", text: EventFormInfo.myResponseText(event) });
+        messages.push({ kind: "info", text: EventFormInfo.myResponseText(event.myParticipation) });
       }
     } else if (isMeeting) {
       messages.push(EventFormInfo.isSaved(event)
