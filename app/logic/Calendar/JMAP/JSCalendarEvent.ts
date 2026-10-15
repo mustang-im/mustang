@@ -85,11 +85,11 @@ export class JSCalendarEvent {
     // Meeting with other participants
     event.isCancelled = jmap.status == "cancelled";
     if (jmap.participants) {
-      let organizer = this.toEmailAddress(jmap.organizerCalendarAddress);
+      let organizer = toEmailAddress(jmap.organizerCalendarAddress);
       let participants = new ArrayColl<Participant>();
       for (let id in jmap.participants) {
         let participant = jmap.participants[id];
-        let emailAddress = this.toEmailAddress(participant.calendarAddress);
+        let emailAddress = toEmailAddress(participant.calendarAddress);
         let response =
           emailAddress && emailAddress == organizer ? InvitationResponse.Organizer :
             !participant.participationStatus || participant.participationStatus == "needs-action" ? InvitationResponse.NoResponseReceived :
@@ -241,7 +241,7 @@ export class JSCalendarEvent {
       jmap.participants ??= {};
       for (let id of Object.keys(jmap.participants)) {
         let participant = jmap.participants[id];
-        let emailAddress = this.toEmailAddress(participant.calendarAddress);
+        let emailAddress = toEmailAddress(participant.calendarAddress);
         let p = emailAddress
           ? event.participants.find(p => p.emailAddress?.toLowerCase() == emailAddress)
           : event.participants.find(p => p.name == participant.name);
@@ -265,7 +265,7 @@ export class JSCalendarEvent {
       // Add the participants that are not in the JSCalendar event yet
       for (let p of event.participants) {
         let existing = Object.values(jmap.participants).find(participant => {
-          let emailAddress = this.toEmailAddress(participant.calendarAddress);
+          let emailAddress = toEmailAddress(participant.calendarAddress);
           return emailAddress
             ? emailAddress == p.emailAddress?.toLowerCase()
             : participant.name == p.name;
@@ -294,10 +294,6 @@ export class JSCalendarEvent {
     }
 
     jmap.color = event.color;
-  }
-
-  static toEmailAddress(calendarAddress: string | undefined): string | null {
-    return sanitize.emailAddress(calendarAddress?.replace(/^mailto:/i, ""), null);
   }
 
   /** When the alert fires. null, if there is none, or we don't know the trigger. */
@@ -382,6 +378,14 @@ function fromSeconds(seconds: number): string {
     return sign + "PT" + abs / k1MinuteS + "M";
   }
   return sign + "PT" + abs + "S";
+}
+
+/**
+ * @param calendarAddress mailto: URI, e.g. "mailto:fred@example.com"
+ * @returns e.g. "fred@example.com", or null, if it's not a mailto: URI with a valid email address
+ */
+function toEmailAddress(calendarAddress: string | undefined): string | null {
+  return sanitize.emailAddress(calendarAddress?.replace(/^mailto:/i, ""), null);
 }
 
 const kLocationNameDescriptionSeparator = "\n---\n";
