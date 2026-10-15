@@ -51,7 +51,7 @@
             <ForwardIcon size={18} />
           </button>
         </hbox>
-        <button class="more" bind:this={moreEl} on:click={() => isMoreOpen = !isMoreOpen}
+        <button class="more" bind:this={moreEl} on:click|stopPropagation={() => isMoreOpen = !isMoreOpen}
           title={$t`More actions`} aria-label={$t`More actions`} aria-haspopup="menu">
           <MoreIcon size={18} />
         </button>
@@ -113,8 +113,9 @@
   <MenuDivider />
   <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => MessageActions.print(message)} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon} onClick={() => MessageActions.saveAs(message)} />
-  <MenuItem label={$contentRendering.value == DisplayMode.Source ? $t`View Message` : $t`View Source`} icon={SourceIcon}
-    onClick={() => MessageActions.toggleSource()} />
+  <SubMenuItem label={$t`View`} icon={SourceIcon}>
+    <DisplayMenuItems />
+  </SubMenuItem>
 </Menu>
 
 <script lang="ts">
@@ -122,11 +123,10 @@
   import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "../MessageList/MessageDates";
-  import { MailView } from "../MailView";
-  import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import SubMenuItem from "../Menu/SubMenuItem.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
+  import DisplayMenuItems from "./DisplayMenuItems.svelte";
   import Recipient from "../../../frontend/Mail/Message/Recipient.svelte";
   import RecipientsList from "../../../frontend/Mail/Message/RecipientsList.svelte";
   import EncryptionButtons from "../../../frontend/Mail/Message/EncryptionButtons.svelte";
@@ -158,7 +158,6 @@
 
   export let message: EMail;
 
-  const contentRendering = MailView.contentRendering;
   $: to = message.to;
   $: cc = message.cc;
   $: bcc = message.bcc;

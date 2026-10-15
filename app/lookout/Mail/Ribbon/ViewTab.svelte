@@ -57,19 +57,9 @@
       <MenuItem label={$t`Options…`} icon={OptionsIcon} onClick={() => MailDialogs.open({ kind: "reading-pane-options" })} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Message`}>
-    <RibbonMenuButton label={$t`Message Format`} icon={FormatIcon}>
-      {#each displayModes as mode}
-        <MenuItem label={mode.label} tooltip={mode.tooltip}
-          icon={$contentRendering.value == mode.id ? CheckIcon : BlankIcon}
-          onClick={() => $contentRendering.value = mode.id} />
-      {/each}
-    </RibbonMenuButton>
-  </RibbonGroup>
 </RibbonTab>
 
 <script lang="ts">
-  import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { ArrangeBy } from "../MessageList/MessageGrouping";
   import { FolderPaneMode, MailView, ReadingPanePosition } from "../MailView";
   import { MailDialogs } from "../Dialogs/MailDialogs";
@@ -92,7 +82,6 @@
   import RightIcon from "lucide-svelte/icons/panel-right";
   import BottomIcon from "lucide-svelte/icons/panel-bottom";
   import OffIcon from "lucide-svelte/icons/square";
-  import FormatIcon from "lucide-svelte/icons/file-code";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
@@ -112,7 +101,6 @@
   const showAsConversations = MailView.showAsConversations;
   const folderPane = MailView.folderPane;
   const readingPane = MailView.readingPane;
-  const contentRendering = MailView.contentRendering;
 
   const previewOptions = [
     { lines: 0, label: gt`Off` },
@@ -127,11 +115,5 @@
     { id: ArrangeBy.Size, label: gt`Size` },
     { id: ArrangeBy.Importance, label: gt`Importance` },
     { id: ArrangeBy.Flag, label: gt`Flag Status` },
-  ];
-  const displayModes = [
-    { id: DisplayMode.HTML, label: gt`Formatted`, tooltip: gt`Show the message as the sender formatted it, without content from the Internet` },
-    { id: DisplayMode.HTMLWithExternal, label: gt`With Pictures from the Internet`, tooltip: gt`Also load pictures from the Internet. This allows the sender to track you.` },
-    { id: DisplayMode.Plaintext, label: gt`Plain Text`, tooltip: gt`Show only the text of the message` },
-    { id: DisplayMode.Source, label: gt`Source`, tooltip: gt`Show the on-the-wire format of the message` },
   ];
 </script>
