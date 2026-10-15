@@ -43,11 +43,16 @@
       <RibbonMenuButton label={$t`Add Calendar`} icon={AddCalendarIcon}>
         <MenuItem label={$t`New Calendar Account…`} icon={AddCalendarIcon}
           onClick={() => CalendarActions.addCalendarAccount()} />
-        {#each sharingAccounts as account (account.id)}
-          <MenuItem label={sharingAccounts.length > 1 ? $t`Open Shared Calendar of a colleague in ${account.name}…` : $t`Open Shared Calendar…`}
-            icon={SharedCalendarIcon}
-            onClick={() => CalendarActions.openSharedCalendar(account)} />
-        {/each}
+        {#if sharingAccounts.length == 1}
+          <MenuItem label={$t`Open Shared Calendar…`} icon={SharedCalendarIcon}
+            onClick={() => CalendarActions.openSharedCalendar(sharingAccounts[0])} />
+        {:else if sharingAccounts.length > 1}
+          <MenuLabel label={$t`Open Shared Calendar`} />
+          {#each sharingAccounts as account (account.id)}
+            <MenuItem label={account.name} icon={SharedCalendarIcon}
+              onClick={() => CalendarActions.openSharedCalendar(account)} />
+          {/each}
+        {/if}
       </RibbonMenuButton>
       <RibbonButton label={$t`Calendar Properties`} icon={PropertiesIcon}
         onClick={() => CalendarActions.openProperties($selectedCalendar)}
@@ -139,6 +144,7 @@
   import RibbonToggleButton from "../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";
   import MenuItem from "../../frontend/Shared/Menu/MenuItem.svelte";
+  import MenuLabel from "../../frontend/Shared/Menu/MenuLabel.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
   import NewItemsIcon from "lucide-svelte/icons/calendar-plus-2";
@@ -182,6 +188,7 @@
   const timeScales = [60, 30, 15, 10, 6, 5];
 
   let calendars = appGlobal.calendars;
+  let sharingAccounts = CalendarActions.accountsWithSharedCalendars();
   let isDay = false;
   let isWorkWeek = false;
   let isWeek = false;
@@ -194,7 +201,8 @@
     isMonth = view == "month";
   }
 
-  $: sharingAccounts = CalendarActions.accountsWithSharedCalendars();
+  let emailAccounts = appGlobal.emailAccounts;
+  $: $emailAccounts, sharingAccounts = CalendarActions.accountsWithSharedCalendars();
   $: isSharedCalendar = !!$selectedCalendar && CalendarGroups.isShared($selectedCalendar);
 
   function selectView(newView: CalendarViewType) {
