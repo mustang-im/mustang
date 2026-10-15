@@ -1,4 +1,4 @@
-<hbox class="date-field" class:disabled title={label}>
+<hbox class="date-field" class:disabled title={label} on:keydown={onKeyDown}>
   <span class="weekday">{weekday}</span>
   <DateInput {date} {disabled} on:change={event => onChange(event.detail)} />
 </hbox>
@@ -13,6 +13,14 @@
   export let onChange: (date: Date) => void;
 
   $: weekday = date?.toLocaleDateString(getDateTimeLocale(), { weekday: "short" }) ?? "";
+
+  function onKeyDown(event: KeyboardEvent) {
+    // DateInput applies typed dates with a delay, but immediately on blur, and a dialog submits on Enter
+    if (event.key == "Enter" && event.target instanceof HTMLInputElement) {
+      event.target.blur();
+      event.target.focus();
+    }
+  }
 </script>
 
 <style>

@@ -149,8 +149,8 @@
   import { RecurrencePattern, type MonthlyMode } from "./RecurrencePattern";
   import { TimeOptions } from "./TimeOptions";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
-  import Dialog from "../../Mail/Dialogs/Dialog.svelte";
-  import DialogButton from "./DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import TimeCombo from "./TimeCombo.svelte";
   import DateField from "./DateField.svelte";
   import { kAllWeekdays, weekdayLabel } from "../../../frontend/Util/date";
