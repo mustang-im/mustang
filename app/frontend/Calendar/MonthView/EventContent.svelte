@@ -43,6 +43,8 @@
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
     padding-inline-start: 4px;
+    margin-inline-end: 3px;
+    border-radius: 3px;
     width: 100%;
     min-width: 0;
     overflow: hidden;

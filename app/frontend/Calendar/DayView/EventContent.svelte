@@ -40,6 +40,9 @@
     overflow: hidden;
     background-color: var(--color);
     color: lch(from var(--color) calc((49.44 - l) * infinity) 0 0);
+    margin-block-end: 2px;
+    margin-inline-end: 3px;
+    border-radius: 3px;
   }
   @media (prefers-color-scheme: dark) {
     .event {
