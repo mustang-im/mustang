@@ -30,10 +30,12 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@huggingface/transformers": "^4.3.0",
     "adm-zip": "^0.5.16",
     "better-sqlite3": "^12.8.0",
     "bufferutil": "^4.1.0",
     "electron-updater": "^6.3.3",
+    "sqlite-vec": "^0.1.9",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.19.0"
   },
