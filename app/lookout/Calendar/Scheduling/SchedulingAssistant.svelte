@@ -2,7 +2,7 @@
   <hbox class="header">
     <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
     <grid class="fields">
-      <TimeRows {event} editor={timeEditor} pattern={flow.pattern} showSummary={false} {onRecurrence} />
+      <TimeRows {event} editor={timeEditor} {flow} showSummary={false} {onRecurrence} />
     </grid>
   </hbox>
   <FreeBusyGrid {event} {timeEditor} bind:this={grid} />

@@ -116,7 +116,7 @@
   let hasChanges = false;
   let saveDisabled: string | false = false;
   function updateState(_editor: Editor) {
-    messages = EventFormInfo.messages(event, shownCalendarEvents.contents);
+    messages = EventFormInfo.messages(event, shownCalendarEvents.contents, new Date(), flow.pattern);
     hasChanges = flow.hasChanges;
     saveDisabled = flow.missingPropsReason ?? false;
   }

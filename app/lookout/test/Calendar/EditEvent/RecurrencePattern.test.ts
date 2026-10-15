@@ -222,6 +222,19 @@ test("A weekly rule without weekdays, opened from an exception on another day, i
   expect(pattern.weekdays).toEqual([4]);
 });
 
+test("The same rule, also with another end, but not with other weekdays or interval", () => {
+  let pattern = RecurrencePattern.fromEvent(newEvent());
+  let changed = pattern.clone();
+  changed.end = "count";
+  changed.count = 5;
+  expect(changed.hasSameRuleAs(pattern)).toBe(true);
+  changed.weekdays = [4, 1];
+  expect(changed.hasSameRuleAs(pattern)).toBe(false);
+  changed = pattern.clone();
+  changed.interval = 2;
+  expect(changed.hasSameRuleAs(pattern)).toBe(false);
+});
+
 test("Summary", async () => {
   let event = newEvent();
   let pattern = RecurrencePattern.fromEvent(event);

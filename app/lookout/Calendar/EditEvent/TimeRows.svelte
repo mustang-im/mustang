@@ -48,7 +48,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import type { RecurrencePattern } from "./RecurrencePattern";
+  import type { EventEditFlow } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
   import { TimeOptions } from "./TimeOptions";
   import TimeCombo from "./TimeCombo.svelte";
@@ -60,7 +60,7 @@
 
   export let event: Event;
   export let editor: EventTimeEditor;
-  export let pattern: RecurrencePattern = null;
+  export let flow: EventEditFlow = null;
   export let readOnly = false;
   export let showSummary = true;
   export let showRecurrenceLink = true;
@@ -69,7 +69,7 @@
   $: parentEvent = $event.parentEvent;
   $: isSeriesMaster = !!$event.recurrenceRule && !$event.parentEvent;
   $: isRecurring = isSeriesMaster || !!$parentEvent?.recurrenceRule;
-  $: summary = $event && pattern ? pattern.summary(event) : "";
+  $: summary = $event && flow ? flow.pattern.summary(event) : "";
   $: startOptions = TimeOptions.startTimes($event.startTime);
   $: lastDay = EventTimeEditor.lastDay($event);
   $: endOptions = TimeOptions.endTimes($event.startTime, $event.endTime);

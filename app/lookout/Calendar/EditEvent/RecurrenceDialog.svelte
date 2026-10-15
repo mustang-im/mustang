@@ -170,6 +170,7 @@
   let rangeStart = new Date(series.startTime);
   let startTime = new Date(series.startTime);
   let durationMinutes = Math.round(series.duration / 60);
+  let timesChanged = false;
 
   const frequencies = [
     { value: Frequency.Daily, label: gt`Daily` },
@@ -214,6 +215,7 @@
 
   function setStartTime(time: Date) {
     startTime = time;
+    timesChanged = true;
   }
 
   function setEndTime(time: Date) {
@@ -222,16 +224,19 @@
       minutes += 24 * 60;
     }
     durationMinutes = minutes;
+    timesChanged = true;
   }
 
   function onDurationChanged(changeEvent: globalThis.Event) {
     durationMinutes = Number((changeEvent.target as HTMLSelectElement).value);
+    timesChanged = true;
   }
 
   function setRangeStart(day: Date) {
     rangeStart = day;
     startTime.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
     startTime = startTime;
+    timesChanged = true;
   }
 
   function toggleWeekday(weekday: number) {
@@ -249,6 +254,10 @@
   function onOK() {
     if (pattern.monthlyMode != "day") {
       pattern.monthlyMode = weekMode;
+    }
+    if (hasRecurrence && !timesChanged && pattern.hasSameRuleAs(flow.pattern)) {
+      flow.pattern = pattern;
+      return;
     }
     series.startEditing();
     if (!allDay) {

@@ -23,6 +23,12 @@ export class RecurrencePattern {
     return pattern;
   }
 
+  hasSameRuleAs(pattern: RecurrencePattern): boolean {
+    return this.frequency == pattern.frequency && this.interval == pattern.interval &&
+      this.dailyMode == pattern.dailyMode && this.monthlyMode == pattern.monthlyMode &&
+      this.weekdays.length == pattern.weekdays.length && this.weekdays.every(weekday => pattern.weekdays.includes(weekday));
+  }
+
   static fromEvent(event: Event): RecurrencePattern {
     let pattern = new RecurrencePattern();
     let series = event.parentEvent ?? event;
