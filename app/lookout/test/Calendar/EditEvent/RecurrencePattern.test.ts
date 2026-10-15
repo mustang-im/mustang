@@ -2,7 +2,7 @@
 import "../../../../logic/app"; // first, to resolve the import cycle around Abstract/Account.ts
 import { Calendar } from "../../../../logic/Calendar/Calendar";
 import { Event, RecurrenceCase } from "../../../../logic/Calendar/Event";
-import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
+import { Frequency, RecurrenceRule } from "../../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { RecurrencePattern } from "../../../Calendar/EditEvent/RecurrencePattern";
 import { expect, test } from "vitest";
@@ -205,6 +205,21 @@ test("An occurrence changes the recurrence of its series, which keeps its start"
   expect(event.recurrenceRule.frequency).toBe(Frequency.Daily);
   expect(event.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
   expect(event.hasChanged()).toBe(true);
+});
+
+test("A weekly rule without weekdays, opened from an exception on another day, is on the weekday of the series", async () => {
+  let event = newEvent(); // Thursday
+  event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.timezone, event.startTime, "RRULE:FREQ=WEEKLY");
+  expect(event.recurrenceRule.weekdays).toBe(null);
+  event.calendar.events.add(event);
+  await event.save();
+  let exception = event.instances.get(1);
+  exception.startEditing();
+  exception.startTime = new Date(2026, 9, 23, 10, 0);
+  exception.endTime = new Date(2026, 9, 23, 10, 30);
+  await exception.save();
+  let pattern = RecurrencePattern.fromEvent(exception);
+  expect(pattern.weekdays).toEqual([4]);
 });
 
 test("Summary", async () => {

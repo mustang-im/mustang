@@ -4,6 +4,7 @@ import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { openExternalURL } from "../../../logic/util/os-integration";
 import { RecurrencePattern } from "./RecurrencePattern";
+import { Reminder } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
 import { selectedEvent } from "../../../frontend/Calendar/selected";
@@ -199,28 +200,39 @@ export class EventEditFlow {
     let event = this.event;
     let master = event.parentEvent;
     let original = event.unedited ?? event;
-    let start = new Date(master.startTime);
     let dayShift = EventEditFlow.daysBetween(original.startTime, event.startTime);
-    start.setDate(start.getDate() + dayShift);
-    if (event.startTime.getTime() != original.startTime.getTime()) {
-      start.setHours(event.startTime.getHours(), event.startTime.getMinutes(), 0, 0);
-    }
+    let start = EventEditFlow.shift(master.startTime, dayShift, EventEditFlow.minutesOfDayBetween(original.startTime, event.startTime));
     let duration = event.duration != original.duration ? event.duration : master.duration;
-    let reminderMS = event.alarm ? event.startTime.getTime() - event.alarm.getTime() : null;
     let timesChanged = start.getTime() != master.startTime.getTime() || duration != master.duration ||
       event.allDay != master.allDay || event.timezone != original.timezone;
-    let rule = master.recurrenceRule;
-    let timezone = master.timezone;
+    let { startTime, endTime, timezone, recurrenceRule: rule } = master;
     master.copyEditableFieldsFrom(event);
-    master.startTime = start;
-    master.duration = duration;
-    master.alarm = reminderMS == null ? null : new Date(start.getTime() - reminderMS);
-    if (!timesChanged) {
+    if (timesChanged) {
+      master.startTime = start;
+      master.duration = duration;
+    } else {
+      master.startTime = startTime;
+      master.endTime = endTime;
       master.timezone = timezone;
-    } else if (rule) {
+    }
+    Reminder.setMinutesBefore(master, Reminder.minutesBefore(event));
+    if (timesChanged && rule) {
       let { frequency, interval, week, weekdays } = rule;
       master.newRecurrenceRule(frequency, interval, week, weekdays?.map(weekday => (weekday + dayShift % 7 + 7) % 7));
     }
+  }
+
+  protected applySeriesTimesTo(remainder: Event) {
+    let series = this.event.parentEvent;
+    let before = series.unedited;
+    if (!before) {
+      return;
+    }
+    let duration = series.duration != before.duration ? series.duration : remainder.duration;
+    let reminder = Reminder.minutesBefore(remainder);
+    remainder.startTime = EventEditFlow.shift(remainder.startTime, 0, EventEditFlow.minutesOfDayBetween(before.startTime, series.startTime));
+    remainder.duration = duration;
+    Reminder.setMinutesBefore(remainder, reminder);
   }
 
   static daysBetween(from: Date, to: Date): number {
@@ -228,13 +240,25 @@ export class EventEditFlow {
       Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / (24 * 60 * 60 * 1000));
   }
 
-  // <copied from="../../../frontend/Calendar/EditEvent/DialogHeader.svelte">
+  static minutesOfDayBetween(from: Date, to: Date): number {
+    return (to.getHours() - from.getHours()) * 60 + to.getMinutes() - from.getMinutes();
+  }
+
+  static shift(time: Date, days: number, minutes: number): Date {
+    let shifted = new Date(time);
+    shifted.setDate(shifted.getDate() + days);
+    shifted.setMinutes(shifted.getMinutes() + minutes);
+    return shifted;
+  }
+
+  // <copied from="../../../frontend/Calendar/EditEvent/DialogHeader.svelte">, plus the series end and the time from the recurrence dialog
   async changeRemainder() {
     let event = this.event;
     let skipped = this.skippedOccurrences();
     let master = event.calendar.newEvent();
     master.startEditing();
     master.copyEditableFieldsFrom(event);
+    this.applySeriesTimesTo(master);
     master.calUID = null;
     if (event.parentEvent.recurrenceRule) {
       let { frequency, interval, week, weekdays } = event.parentEvent.recurrenceRule;

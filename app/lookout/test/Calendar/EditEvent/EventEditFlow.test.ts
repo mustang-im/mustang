@@ -7,8 +7,12 @@ import { InvitationResponse } from "../../../../logic/Calendar/Invitation/Invita
 import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { EventEditFlow } from "../../../Calendar/EditEvent/EventEditFlow";
-import { expect, test, vi } from "vitest";
+import { EventTimeEditor } from "../../../Calendar/EditEvent/EventTimeEditor";
+import { afterAll, expect, test, vi } from "vitest";
 
+// A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
+vi.stubEnv("TZ", "Europe/Berlin");
+afterAll(() => vi.unstubAllEnvs());
 vi.stubGlobal("confirm", () => true);
 
 function newCalendar(): Calendar {
@@ -132,7 +136,7 @@ test("A changed title for the entire series, from an occurrence, keeps the serie
   expect(confirm).not.toHaveBeenCalled();
   expect(master.title).toBe("Weekly planning");
   expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
-  expect(master.recurrenceRule.seriesStartTime).toEqual(new Date(2026, 9, 15, 10, 0));
+  expect(master.recurrenceRule.getOccurrenceByIndex(0)).toEqual(new Date(2026, 9, 15, 10, 0));
   expect(master.recurrenceRule.weekdays.sort()).toEqual([1, 4]);
 });
 
@@ -152,6 +156,141 @@ test("A later time and another day of an occurrence, for the entire series, move
   expect(master.alarm).toEqual(new Date(2026, 9, 16, 13, 45));
   expect(master.location).toBe("Room 1");
   expect(master.recurrenceRule.weekdays.sort()).toEqual([2, 5]);
+});
+
+async function savedSeries(start: Date, frequency: Frequency, allDay = false): Promise<Event> {
+  let calendar = newCalendar();
+  let master = newEvent(calendar, start);
+  if (allDay) {
+    master.allDay = true;
+    master.endTime = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+  }
+  master.newRecurrenceRule(frequency);
+  calendar.events.add(master);
+  await master.save();
+  return master;
+}
+
+function occurrenceOn(master: Event, day: Date): Event {
+  let occurrence = master.instances.contents.find(instance => instance.startTime.toDateString() == day.toDateString());
+  occurrence.startEditing();
+  return occurrence;
+}
+
+test("A later time of a summer occurrence, for the entire series, moves the winter start to the same time of day", async () => {
+  let master = await savedSeries(new Date(2026, 2, 19, 10, 0), Frequency.Weekly);
+  let occurrence = occurrenceOn(master, new Date(2026, 3, 2));
+  new EventTimeEditor(occurrence).setStart(new Date(2026, 3, 2, 11, 0));
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  expect(master.startTime).toEqual(new Date(2026, 2, 19, 11, 0));
+  expect(master.endTime).toEqual(new Date(2026, 2, 19, 11, 30));
+  expect(master.recurrenceRule.getOccurrenceByIndex(2)).toEqual(new Date(2026, 3, 2, 11, 0));
+});
+
+test("Moving an occurrence to the next day across the change to summer time moves the series by one day", async () => {
+  expect(new Date(2026, 2, 28).getTimezoneOffset()).not.toBe(new Date(2026, 2, 30).getTimezoneOffset());
+  let master = await savedSeries(new Date(2026, 2, 20, 10, 0), Frequency.Daily);
+  let occurrence = occurrenceOn(master, new Date(2026, 2, 28));
+  new EventTimeEditor(occurrence).setStartDate(new Date(2026, 2, 29));
+  expect(occurrence.startTime).toEqual(new Date(2026, 2, 29, 10, 0));
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  expect(master.startTime).toEqual(new Date(2026, 2, 21, 10, 0));
+  expect(master.recurrenceRule.getOccurrenceByIndex(8)).toEqual(new Date(2026, 2, 29, 10, 0));
+});
+
+test("A moved exception, for the entire series, moves the series by the same days and minutes", async () => {
+  let master = await savedWeeklySeries(); // Monday and Thursday at 10:00
+  let exception = master.instances.get(2);
+  exception.startEditing();
+  new EventTimeEditor(exception).setStart(new Date(exception.startTime.getFullYear(), exception.startTime.getMonth(), exception.startTime.getDate(), 14, 0));
+  await new EventEditFlow(exception, () => {}).saveWith("occurrence");
+  expect(master.exceptions.contents).toContain(exception);
+
+  exception.startEditing();
+  new EventTimeEditor(exception).setStart(new Date(exception.startTime.getTime() + 24 * 60 * 60000 + 30 * 60000));
+  let flow = new EventEditFlow(exception, () => {});
+  flow.pattern.end = "count";
+  flow.pattern.count = 20;
+  expect(flow.seriesChoices()).toContain("series");
+  await flow.saveWith("series");
+  expect(master.startTime).toEqual(new Date(2026, 9, 16, 10, 30));
+  expect(master.recurrenceRule.weekdays.sort()).toEqual([2, 5]);
+  expect(master.recurrenceRule.count).toBe(20);
+});
+
+test("Only a new title for the entire series keeps the times and the exceptions", async () => {
+  let master = await savedWeeklySeries();
+  let exception = master.instances.get(2);
+  exception.startEditing();
+  exception.location = "Room 2";
+  await new EventEditFlow(exception, () => {}).saveWith("occurrence");
+  let occurrence = master.instances.get(4);
+  occurrence.startEditing();
+  occurrence.title = "Weekly planning";
+  occurrence.alarm = new Date(occurrence.startTime.getTime() - 10 * 60000);
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
+  expect(master.endTime).toEqual(new Date(2026, 9, 15, 10, 30));
+  expect(master.alarm).toEqual(new Date(2026, 9, 15, 9, 50));
+  expect(master.exceptions.contents).toContain(exception);
+});
+
+test("An all-day occurrence moved by a day, for the entire series, keeps the series all day", async () => {
+  let master = await savedSeries(new Date(2026, 2, 26), Frequency.Weekly, true);
+  let occurrence = occurrenceOn(master, new Date(2026, 3, 2));
+  new EventTimeEditor(occurrence).setStartDate(new Date(2026, 3, 3));
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  expect(master.allDay).toBe(true);
+  expect(master.startTime).toEqual(new Date(2026, 2, 27));
+  expect(master.endTime).toEqual(new Date(2026, 2, 28));
+  expect(master.recurrenceRule.weekdays).toEqual([5]);
+  expect(master.recurrenceRule.getOccurrenceByIndex(1)).toEqual(new Date(2026, 3, 3));
+});
+
+test("All day for an occurrence, for the entire series, makes the series all day", async () => {
+  let master = await savedSeries(new Date(2026, 9, 15, 10, 0), Frequency.Weekly);
+  let occurrence = occurrenceOn(master, new Date(2026, 9, 29));
+  new EventTimeEditor(occurrence).setAllDay(true);
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  expect(master.allDay).toBe(true);
+  expect(master.startTime).toEqual(new Date(2026, 9, 15));
+  expect(master.endTime).toEqual(new Date(2026, 9, 16));
+});
+
+test("This and following occurrences take the time that the recurrence dialog set for the series", async () => {
+  let master = await savedSeries(new Date(2026, 9, 15, 10, 0), Frequency.Weekly);
+  let occurrence = occurrenceOn(master, new Date(2026, 10, 5));
+  occurrence.alarm = new Date(occurrence.startTime.getTime() - 15 * 60000);
+  let flow = new EventEditFlow(occurrence, () => {});
+  // What the recurrence dialog does on OK
+  master.startEditing();
+  let seriesTimes = new EventTimeEditor(master);
+  seriesTimes.setStart(new Date(2026, 9, 15, 11, 0));
+  seriesTimes.setEnd(new Date(2026, 9, 15, 12, 0));
+  flow.applyPattern(flow.pattern);
+  expect(flow.seriesChoices()).toEqual(["occurrence", "following", "series"]);
+  await flow.saveWith("following");
+  let following = master.calendar.events.contents.find(event => event != master && event.recurrenceRule);
+  expect(following.startTime).toEqual(new Date(2026, 10, 5, 11, 0));
+  expect(following.endTime).toEqual(new Date(2026, 10, 5, 12, 0));
+  expect(following.alarm).toEqual(new Date(2026, 10, 5, 10, 45));
+  expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
+  expect(master.recurrenceRule.count).toBe(3);
+});
+
+test("A series end with a time of day from the server is no change", async () => {
+  let master = await savedSeries(new Date(2026, 9, 15, 10, 0), Frequency.Weekly);
+  await master.setRecurrenceEndTime(new Date(2026, 11, 17, 9, 0));
+  await master.save();
+  let occurrence = master.instances.get(1);
+  occurrence.startEditing();
+  let flow = new EventEditFlow(occurrence, () => {});
+  expect(flow.pattern.end).toBe("date");
+  expect(flow.seriesEndChanged).toBe(false);
+  expect(flow.hasChanges).toBe(false);
+  expect(flow.needsSeriesChoice).toBe(false);
+  flow.pattern.endDate = new Date(2026, 11, 24);
+  expect(flow.seriesEndChanged).toBe(true);
 });
 
 test("Deleting an occurrence excludes it from the series and closes the form", async () => {

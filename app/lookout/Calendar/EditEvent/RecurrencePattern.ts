@@ -25,8 +25,9 @@ export class RecurrencePattern {
 
   static fromEvent(event: Event): RecurrencePattern {
     let pattern = new RecurrencePattern();
-    let start = event.startTime;
-    let rule = (event.parentEvent ?? event).recurrenceRule;
+    let series = event.parentEvent ?? event;
+    let start = series.startTime;
+    let rule = series.recurrenceRule;
     pattern.weekdays = [start.getDay()];
     pattern.endDate = new Date(start);
     pattern.endDate.setMonth(pattern.endDate.getMonth() + 3);
@@ -157,11 +158,14 @@ export class RecurrencePattern {
         await master.setRecurrenceCount(count);
       }
     } else if (this.end == "date") {
-      let endTime = this.endTime();
-      if (rule.seriesEndTime?.getTime() != endTime.getTime()) {
-        await master.setRecurrenceEndTime(endTime);
+      if (this.endDateDiffersFrom(rule)) {
+        await master.setRecurrenceEndTime(this.endTime());
       }
     }
+  }
+
+  protected endDateDiffersFrom(rule: RecurrenceRule): boolean {
+    return rule.seriesEndTime?.toDateString() != this.endDate.toDateString();
   }
 
   endDiffersFrom(rule: RecurrenceRule | null): boolean {
@@ -173,7 +177,7 @@ export class RecurrencePattern {
     } else if (this.end == "count") {
       return !!rule.seriesEndTime || rule.count != this.occurrences;
     } else {
-      return rule.seriesEndTime?.getTime() != this.endTime().getTime();
+      return this.endDateDiffersFrom(rule);
     }
   }
 

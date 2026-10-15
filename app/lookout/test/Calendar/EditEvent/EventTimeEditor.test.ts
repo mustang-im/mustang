@@ -34,6 +34,19 @@ test("An end before the start becomes one hour after the start", () => {
   expect(event.endTime).toEqual(new Date(2026, 9, 15, 11, 0));
 });
 
+test("An end at the start is an appointment of 0 minutes, but an all-day event keeps one day", () => {
+  let event = newEvent();
+  let editor = new EventTimeEditor(event);
+  editor.setEnd(new Date(2026, 9, 15, 10, 0));
+  expect(event.endTime).toEqual(new Date(2026, 9, 15, 10, 0));
+  expect(event.duration).toBe(0);
+
+  editor.setAllDay(true);
+  editor.setEndDate(new Date(2026, 9, 14));
+  expect(event.startTime).toEqual(new Date(2026, 9, 15));
+  expect(event.endTime).toEqual(new Date(2026, 9, 16));
+});
+
 test("The end date keeps the end time", () => {
   let event = newEvent();
   let editor = new EventTimeEditor(event);
