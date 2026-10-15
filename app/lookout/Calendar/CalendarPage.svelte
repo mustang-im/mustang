@@ -1,4 +1,4 @@
-<vbox flex class="calendar-page">
+<vbox flex class="calendar-page" bind:this={pageEl}>
   <CalendarRibbon {view}
     bind:splitView bind:timeScale bind:showFolderPane bind:showWeekNumbers bind:showDeclined
     onView={setView} onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate} />
@@ -14,26 +14,34 @@
       <vbox flex class="main lo-card" slot="right">
         <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
         <vbox flex class="grid-area">
-          {#if view == "month"}
+          {#if $globalSearchTerm}
+            <vbox flex class="search-results">
+              <ListViewWithSearch events={visibleEvents} />
+            </vbox>
+          {:else if view == "month"}
             <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
           {:else}
             <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
           {/if}
-          <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+          {#if !$globalSearchTerm}
+            <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+          {/if}
         </vbox>
       </vbox>
     </Splitter>
   </hbox>
-</vbox>
 
-<EventContextMenu bind:this={eventMenu} />
-<SlotContextMenu bind:this={slotMenu} onToday={goToToday} onNext7Days={showNext7Days} onView={setView} />
-<GoToDateDialog bind:this={goToDateDialog} onGoTo={goToDate} />
-{#if $eventPeek}
-  {#key $eventPeek}
-    <EventPeek peek={$eventPeek} />
-  {/key}
-{/if}
+  <EventContextMenu bind:this={eventMenu} />
+  <SlotContextMenu bind:this={slotMenu} onToday={goToToday} onNext7Days={showNext7Days} onView={setView} />
+  {#if isGoToDateOpen}
+    <GoToDateDialog date={$startDate} {view} onGoTo={goToDate} on:close={() => isGoToDateOpen = false} />
+  {/if}
+  {#if $eventPeek}
+    {#key $eventPeek}
+      <EventPeek peek={$eventPeek} />
+    {/key}
+  {/if}
+</vbox>
 
 <svelte:window on:keydown={onKeyDown} />
 
@@ -61,7 +69,9 @@
   import SlotContextMenu from "./View/SlotContextMenu.svelte";
   import GoToDateDialog from "./View/GoToDateDialog.svelte";
   import AdjacentEventTabs from "./View/AdjacentEventTabs.svelte";
+  import ListViewWithSearch from "../../frontend/Calendar/ListView/ListViewWithSearch.svelte";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
+  import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import type { Collection } from "svelte-collections";
   import { onDestroy, setContext } from "svelte";
   import { t } from "../../l10n/l10n";
@@ -77,7 +87,8 @@
   let folderPaneHeight = 0;
   let eventMenu: EventContextMenu;
   let slotMenu: SlotContextMenu;
-  let goToDateDialog: GoToDateDialog;
+  let isGoToDateOpen = false;
+  let pageEl: HTMLElement;
 
   setContext<CalendarMenus>(kCalendarMenus, {
     openEventMenu(mouseEvent: MouseEvent, event: Event) {
@@ -165,7 +176,7 @@
   }
 
   function openGoToDate() {
-    goToDateDialog.open($startDate, view);
+    isGoToDateOpen = true;
   }
 
   function goToDate(date: Date, newView: CalendarViewType) {
@@ -176,6 +187,7 @@
   function onKeyDown(keyEvent: KeyboardEvent) {
     let target = keyEvent.target as HTMLElement;
     if (keyEvent.defaultPrevented ||
+        !pageEl?.contains(target) && target != document.body ||
         target?.closest?.("input, textarea, select, [contenteditable=''], [contenteditable='true'], dialog")) {
       return;
     }
@@ -273,6 +285,11 @@
   .grid-area {
     position: relative;
     min-height: 0;
+  }
+  .search-results {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 12px;
   }
   .main {
     min-width: 0;
