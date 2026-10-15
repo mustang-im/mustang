@@ -46,6 +46,7 @@
     margin-inline-end: 3px;
     border-radius: 3px;
     width: 100%;
+    height: 100%;
     min-width: 0;
     overflow: hidden;
   }

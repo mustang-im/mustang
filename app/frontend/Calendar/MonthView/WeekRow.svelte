@@ -3,18 +3,19 @@
     <DayLabel {day} column={i + 1} />
   {/each}
   <grid class="lanes font-small"
-    style="grid-template-rows: repeat({maxLanes}, var(--lane-height)) minmax(0, 1fr)"
+    style="grid-template-rows: repeat({rows}, var(--row-height)) minmax(0, 1fr); --rows-per-line: {WeekRowLayout.kRowsPerLine}"
     bind:this={lanesE}
     bind:clientHeight={lanesHeight}>
     {#each days as day, i}
       <DayCell start={day} column={i + 1} withMonthOnFirst={true} withMonthOnMonday={true} on:celldblclick />
     {/each}
-    {#each limited.events as item (item.event)}
+    {#each $layout.events as item}
       <EventContainer {item} />
     {/each}
-    {#each limited.hiddenEvents as hiddenEvents, i}
+    {#each $layout.hiddenEvents as hiddenEvents, i}
       {#if hiddenEvents.length}
-        <MoreEvents day={days[i]} events={hiddenEvents} column={i + 1} row={maxLanes} />
+        <MoreEvents day={days[i]} events={hiddenEvents} column={i + 1}
+          startRow={rows - WeekRowLayout.kRowsPerLine} endRow={rows} />
       {/if}
     {/each}
   </grid>
@@ -22,7 +23,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { layoutDayRow, limitLanes } from "./WeekRow";
+  import { WeekRowLayout } from "./WeekRow";
   import DayLabel from "./DayLabel.svelte";
   import DayCell from "./DayCell.svelte";
   import EventContainer from "./EventContainer.svelte";
@@ -42,21 +43,19 @@
     weekEvents = events.filterObservable(ev => ev.startTime && ev.startTime < weekEnd && ev.endTime > weekStart);
   }
 
-  $: layout = derived([...$weekEvents.contents], eventsInWeek => layoutDayRow(eventsInWeek, days));
-
   let lanesE: HTMLElement;
   let lanesHeight = 0;
-  let maxLanes = 1;
-  $: lanesE, lanesHeight, setMaxLanes();
-  function setMaxLanes() {
+  let rows = WeekRowLayout.kRowsPerLine;
+  $: lanesE, lanesHeight, setRows();
+  function setRows() {
     if (!lanesE) {
       return;
     }
-    let laneHeight = parseFloat(getComputedStyle(lanesE).gridTemplateRows);
-    maxLanes = Math.max(1, Math.floor(lanesHeight / laneHeight));
+    let rowHeight = parseFloat(getComputedStyle(lanesE).gridTemplateRows);
+    rows = Math.max(WeekRowLayout.kRowsPerLine, Math.floor(lanesHeight / rowHeight));
   }
 
-  $: limited = limitLanes($layout, days.length, maxLanes);
+  $: layout = derived([...$weekEvents.contents], eventsInWeek => new WeekRowLayout(eventsInWeek, days, rows));
 </script>
 
 <style>
@@ -73,6 +72,6 @@
     display: grid;
     grid-template-columns: subgrid;
     overflow: hidden;
-    --lane-height: calc(1.4em + 1px);
+    --row-height: calc((1.4em + 1px) / var(--rows-per-line));
   }
 </style>
