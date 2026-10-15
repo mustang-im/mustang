@@ -7,6 +7,7 @@
     <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
       <MenuItem label={$t`Email Message`} icon={NewMailIcon} onClick={() => MessageActions.newMail(folder)} />
       <MenuItem label={$t`Appointment`} icon={AppointmentIcon} onClick={() => MessageActions.newAppointment()} />
+      <MenuItem label={$t`Meeting`} icon={MeetingIcon} onClick={() => MessageActions.newMeeting()} />
       <MenuItem label={$t`Contact`} icon={ContactIcon} onClick={() => MessageActions.newContact()} />
     </RibbonMenuButton>
   </RibbonGroup>
@@ -78,7 +79,7 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Find`}>
     <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
-      onClick={() => MessageActions.openAddressBook()} />
+      onClick={() => MessageActions.openAddressBook()} shortCutInfo="Ctrl+Shift+B" />
     <RibbonMenuButton label={$t`Filter Email`} icon={FilterIcon}>
       <FilterMenuItems />
     </RibbonMenuButton>
@@ -112,6 +113,7 @@
   import NewMailIcon from "lucide-svelte/icons/mail-plus";
   import NewItemsIcon from "lucide-svelte/icons/square-plus";
   import AppointmentIcon from "lucide-svelte/icons/calendar-plus";
+  import MeetingIcon from "lucide-svelte/icons/users-round";
   import ContactIcon from "lucide-svelte/icons/user-round-plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ArchiveIcon from "lucide-svelte/icons/archive";

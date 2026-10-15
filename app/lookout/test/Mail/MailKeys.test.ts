@@ -30,6 +30,7 @@ test("Folders, sync, search, navigation", () => {
   expect(MailKeys.actionFor({ key: "P", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.NewSearchFolder);
   expect(MailKeys.actionFor({ key: "I", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.GoToInbox);
   expect(MailKeys.actionFor({ key: "y", ctrlKey: true })).toBe(MailKeyAction.GoToFolder);
+  expect(MailKeys.actionFor({ key: "B", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.AddressBook);
   expect(MailKeys.actionFor({ key: "F9" })).toBe(MailKeyAction.SendReceiveAll);
   expect(MailKeys.actionFor({ key: "m", ctrlKey: true })).toBe(MailKeyAction.SendReceiveAll);
   expect(MailKeys.actionFor({ key: "F9", shiftKey: true })).toBe(MailKeyAction.UpdateFolder);

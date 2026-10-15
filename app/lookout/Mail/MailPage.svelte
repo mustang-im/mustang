@@ -374,6 +374,8 @@
         return MailDialogs.open({ kind: "new-search-folder", account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : null });
       case MailKeyAction.GoToFolder:
         return MailDialogs.open({ kind: "go-to-folder" });
+      case MailKeyAction.AddressBook:
+        return MessageActions.openAddressBook();
       case MailKeyAction.GoToInbox: {
         let account = MailSearch.isRealFolder(folder) ? folder.account : $accounts.first;
         if (account?.inbox) {

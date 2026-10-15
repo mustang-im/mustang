@@ -11,6 +11,7 @@ import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
 import { selectedCalendar } from "../../frontend/Calendar/selected";
 import { createNewEvent } from "../../frontend/Calendar/event";
+import { CalendarActions } from "../Calendar/CalendarActions";
 import { newPerson } from "../../frontend/Contacts/Person/Selected";
 import { selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
@@ -44,6 +45,12 @@ export class MessageActions {
 
   static newAppointment() {
     createNewEvent(get(selectedCalendar), new Date(), false);
+  }
+
+  static newMeeting() {
+    let start = new Date();
+    start.setHours(start.getHours() + 1, 0, 0, 0);
+    CalendarActions.newEvent(null, start, null, "meeting");
   }
 
   static newContact() {
