@@ -1,51 +1,62 @@
-<vbox class="rule-description" class:empty={!rule}>
-  {#if rule}
-    {#each lines as line, i}
-      <div class="line" class:first={i == 0}>
-        {#each RuleDescription.parts(line) as part}
-          {#if part.isValue}
-            <button class="value" on:click={onEdit} title={$t`Edit the rule`}>{part.text}</button>
-          {:else}
-            {part.text}
-          {/if}
-        {/each}
-      </div>
-    {/each}
+<vbox class="rule-description" class:empty={!lines.length} class:fill>
+  {#each lines as line, i}
+    <div class="line" class:continued={isContinued(i)}>
+      {#if isContinued(i)}{$t`and`}{/if}
+      {#each line.parts as part}
+        {#if part.isValue && line.item && onValueClick}
+          <button type="button" class="value" class:placeholder={part.isPlaceholder}
+            on:click={() => onValueClick(line.item)}>{part.text}</button>
+        {:else if part.isValue}
+          <span class="value">{part.text}</span>
+        {:else}
+          {part.text}
+        {/if}
+      {/each}
+    </div>
+  {/each}
+  {#if example}
+    <hbox class="example">{$t`Example: ${example}`}</hbox>
   {/if}
 </vbox>
 
 <script lang="ts">
-  import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
-  import { RuleDescription } from "./RuleDescription";
+  import type { RuleDescriptionLine } from "./RuleDescription";
+  import type { RuleItem } from "./RuleItems";
   import { t } from "../../../l10n/l10n";
 
-  export let rule: FilterRuleAction | null;
-  export let onEdit: () => void;
+  export let lines: RuleDescriptionLine[];
+  export let onValueClick: ((item: RuleItem) => void) | null = null;
+  export let example: string | null = null;
+  export let fill = false;
 
-  $: criteria = rule?.criteria;
-  $: addTags = rule?.addTags;
-  $: lines = rule && $rule && $criteria && $addTags ? RuleDescription.lines(rule) : [];
+  function isContinued(index: number): boolean {
+    let item = lines[index]?.item;
+    let previous = lines[index - 1]?.item;
+    return !!item && !!previous && item.isAction == previous.isAction;
+  }
 </script>
 
 <style>
   .rule-description {
-    min-height: 88px;
-    max-height: 120px;
+    flex-shrink: 0;
+    min-height: 96px;
+    max-height: 132px;
     overflow-y: auto;
-    padding: 6px 10px;
-    border: 1px solid var(--lo-border);
+    padding: 4px 8px;
+    border: 1px solid var(--lo-input-border);
     border-radius: var(--lo-radius-small);
-    background-color: var(--lo-pane-bg);
-    line-height: 1.5;
+    background-color: var(--lo-input-bg);
+    line-height: 20px;
+  }
+  .rule-description.fill {
+    flex: 1 1 0;
+    max-height: none;
   }
   .rule-description.empty {
     background-color: var(--lo-pane-alt-bg);
   }
-  .line {
-    padding-inline-start: 16px;
-  }
-  .line.first {
-    padding-inline-start: 0;
+  .line.continued {
+    padding-inline-start: 8px;
   }
   .value {
     display: inline;
@@ -54,10 +65,20 @@
     background: none;
     color: var(--lo-accent-text);
     font: inherit;
+    line-height: inherit;
     text-decoration: underline;
     cursor: pointer;
   }
+  span.value {
+    cursor: default;
+  }
   .value:hover {
     color: var(--lo-accent-hover);
+  }
+  .example {
+    margin-block-start: 8px;
+    padding-block-start: 6px;
+    border-block-start: 1px solid var(--lo-divider);
+    font-weight: 600;
   }
 </style>

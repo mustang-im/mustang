@@ -28,7 +28,7 @@
   .cell {
     align-items: center;
     gap: 6px;
-    height: 28px;
+    height: 24px;
     padding: 0 8px !important;
     white-space: nowrap;
     cursor: default;

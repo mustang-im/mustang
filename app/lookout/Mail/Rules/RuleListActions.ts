@@ -1,5 +1,6 @@
-import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
+import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
 import type { Folder } from "../../../logic/Mail/Folder";
+import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -32,6 +33,27 @@ export class RuleListActions {
     } else {
       rules.splice(index + 1, 0, copy);
     }
+    return copy;
+  }
+
+  static cannotCopyTo(rule: FilterRuleAction, account: MailAccount): string | false {
+    if (account == rule.account) {
+      return false;
+    }
+    if (rule.toFolderID || rule.criteria.folderID) {
+      return gt`This rule uses a folder of ${rule.account.name}, so it can only be copied within that account`;
+    }
+    return false;
+  }
+
+  static copyToAccount(rule: FilterRuleAction, account: MailAccount, rules: ArrayColl<FilterRuleAction>): FilterRuleAction {
+    if (account == rule.account) {
+      return RuleListActions.copy(rules, rule);
+    }
+    let copy = new FilterRuleAction(account);
+    copy.fromJSON(rule.toJSON());
+    copy.name = rule.name;
+    rules.add(copy);
     return copy;
   }
 
