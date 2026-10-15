@@ -16,12 +16,14 @@ export interface ArrangeableMessage {
   baseSubject: string;
   isImportant: boolean;
   isStarred: boolean;
+  threadID?: string | null;
 }
 
 export interface MessageGroup<T> {
   id: string;
   label: string;
   messages: T[];
+  threads?: Map<T, T[]>;
 }
 
 export interface GroupKey {
@@ -95,35 +97,70 @@ export class MessageGrouping<T extends ArrangeableMessage> {
   readonly arrangeBy: ArrangeBy;
   readonly reversed: boolean;
   readonly showInGroups: boolean;
+  readonly asConversations: boolean;
   protected readonly nameOf: (message: T) => string;
   protected readonly dateGroups: DateGroups;
 
-  constructor(arrangeBy: ArrangeBy, reversed: boolean, showInGroups: boolean, nameOf: (message: T) => string, now = new Date()) {
+  constructor(arrangeBy: ArrangeBy, reversed: boolean, showInGroups: boolean, nameOf: (message: T) => string, now = new Date(), asConversations = false) {
     this.arrangeBy = arrangeBy;
     this.reversed = reversed;
     this.showInGroups = showInGroups;
+    this.asConversations = asConversations;
     this.nameOf = nameOf;
     this.dateGroups = new DateGroups(now);
   }
 
   arrange(messages: T[], isSortedNewestFirst = false): MessageGroup<T>[] {
     let sorted = this.sort(messages, isSortedNewestFirst);
+    let threads = this.asConversations ? MessageGrouping.threadsOf(sorted) : null;
+    let leads = threads ? sorted.filter(message => !threads.followers.has(message)) : sorted;
     if (!this.showInGroups) {
-      return [{ id: "all", label: "", messages: sorted }];
+      return [{ id: "all", label: "", messages: leads, threads: threads?.byLead }];
     }
     let groups: MessageGroup<T>[] = [];
     let byID = new Map<string, MessageGroup<T>>();
-    for (let message of sorted) {
+    for (let message of leads) {
       let key = this.groupOf(message);
       let group = byID.get(key.id);
       if (!group) {
-        group = { id: key.id, label: key.label, messages: [] };
+        group = { id: key.id, label: key.label, messages: [], threads: threads ? new Map() : undefined };
         byID.set(key.id, group);
         groups.push(group);
       }
       group.messages.push(message);
+      let thread = threads?.byLead.get(message);
+      if (thread) {
+        group.threads.set(message, thread);
+      }
     }
     return groups;
+  }
+
+  static threadsOf<M extends ArrangeableMessage>(sorted: M[]): { byLead: Map<M, M[]>, followers: Set<M> } {
+    let byThreadID = new Map<string, M[]>();
+    for (let message of sorted) {
+      if (!message.threadID) {
+        continue;
+      }
+      let thread = byThreadID.get(message.threadID);
+      if (thread) {
+        thread.push(message);
+      } else {
+        byThreadID.set(message.threadID, [message]);
+      }
+    }
+    let byLead = new Map<M, M[]>();
+    let followers = new Set<M>();
+    for (let thread of byThreadID.values()) {
+      if (thread.length < 2) {
+        continue;
+      }
+      byLead.set(thread[0], thread);
+      for (let follower of thread.slice(1)) {
+        followers.add(follower);
+      }
+    }
+    return { byLead, followers };
   }
 
   sort(messages: T[], isSortedNewestFirst = false): T[] {

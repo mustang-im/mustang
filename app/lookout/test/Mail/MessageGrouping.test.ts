@@ -135,3 +135,26 @@ test("Without groups: one group with all messages, sorted", () => {
   expect(groups.length).toBe(1);
   expect(groups[0].messages).toEqual([b, a]);
 });
+
+test("Conversations: the newest message of a thread leads it, in its date group", () => {
+  let newest = msg(at(2026, 10, 14, 10), { threadID: "t1" });
+  let other = msg(at(2026, 10, 13), { threadID: "t2" });
+  let older = msg(at(2026, 9, 1), { threadID: "t1" });
+  let single = msg(at(2026, 9, 1, 8));
+  let grouping = new MessageGrouping<TestMessage>(ArrangeBy.Date, false, true, m => m.name, now, true);
+  let groups = grouping.arrange([newest, other, older, single], true);
+  expect(groups.map(group => group.id)).toEqual(["today", "yesterday", "last-month"]);
+  expect(groups[0].messages).toEqual([newest]);
+  expect(groups[0].threads.get(newest)).toEqual([newest, older]);
+  expect(groups[1].threads.size).toBe(0);
+  expect(groups[2].messages).toEqual([single]);
+});
+
+test("Without conversations, messages of a thread are listed separately", () => {
+  let newest = msg(at(2026, 10, 14, 10), { threadID: "t1" });
+  let older = msg(at(2026, 9, 1), { threadID: "t1" });
+  let grouping = new MessageGrouping<TestMessage>(ArrangeBy.Date, false, false, m => m.name, now);
+  let groups = grouping.arrange([newest, older], true);
+  expect(groups[0].messages).toEqual([newest, older]);
+  expect(groups[0].threads).toBeUndefined();
+});

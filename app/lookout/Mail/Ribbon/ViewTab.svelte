@@ -4,6 +4,11 @@
       tooltip={$t`Reset the message list and the layout to the default settings`}
       onClick={() => MailView.resetView()} />
   </RibbonGroup>
+  <RibbonGroup label={$t`Messages`}>
+    <RibbonToggleButton label={$t`Show as Conversations`} icon={ConversationsIcon}
+      checked={!!$showAsConversations.value}
+      onChange={checked => { $showAsConversations.value = checked; }} />
+  </RibbonGroup>
   <RibbonGroup label={$t`Arrangement`}>
     <RibbonMenuButton label={$t`Message Preview`} icon={PreviewIcon}>
       {#each previewOptions as option}
@@ -80,6 +85,7 @@
   import ArrangeIcon from "lucide-svelte/icons/arrow-down-up";
   import ReverseIcon from "lucide-svelte/icons/arrow-up-down";
   import GroupsIcon from "lucide-svelte/icons/list-tree";
+  import ConversationsIcon from "lucide-svelte/icons/messages-square";
   import ExpandCollapseIcon from "lucide-svelte/icons/list-collapse";
   import FolderPaneIcon from "lucide-svelte/icons/panel-left";
   import ReadingPaneIcon from "lucide-svelte/icons/columns-2";
@@ -103,6 +109,7 @@
   const arrangeBy = MailView.arrangeBy;
   const reverseSort = MailView.reverseSort;
   const showInGroups = MailView.showInGroups;
+  const showAsConversations = MailView.showAsConversations;
   const folderPane = MailView.folderPane;
   const readingPane = MailView.readingPane;
   const contentRendering = MailView.contentRendering;

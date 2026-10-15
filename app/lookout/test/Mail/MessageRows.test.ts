@@ -52,3 +52,23 @@ test("Empty list", () => {
   expect(rows.indexAt(10)).toBe(-1);
   expect(rows.totalHeight).toBe(0);
 });
+
+test("Conversations: collapsed show the lead only, expanded add the other messages", () => {
+  let group: MessageGroup<string> = {
+    id: "today",
+    label: "Today",
+    messages: ["a", "x"],
+    threads: new Map([["a", ["a", "b", "c"]]]),
+  };
+  let collapsed = new MessageRows([group], new Set(), true, 30, 70);
+  expect(collapsed.messages).toEqual(["a", "x"]);
+  let lead = collapsed.rows[1];
+  expect(lead.kind == "message" && lead.thread).toEqual(["a", "b", "c"]);
+  expect(lead.kind == "message" && lead.isThreadExpanded).toBe(false);
+
+  let expanded = new MessageRows([group], new Set(), true, 30, 70, new Set(["a"]));
+  expect(expanded.messages).toEqual(["a", "b", "c", "x"]);
+  expect(expanded.rows.map(row => row.kind == "message" && row.isThreadChild)).toEqual([false, false, true, true, false]);
+  expect(expanded.totalHeight).toBe(30 + 4 * 70);
+  expect(expanded.indexOfMessage("c")).toBe(3);
+});

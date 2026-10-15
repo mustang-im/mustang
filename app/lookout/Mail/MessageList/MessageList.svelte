@@ -26,6 +26,10 @@
           <MessageListItem message={row.message}
             isSelected={$selection.contains(row.message)}
             {previewLines}
+            threadSize={row.thread?.length ?? 0}
+            isThreadExpanded={row.isThreadExpanded}
+            isThreadChild={row.isThreadChild}
+            on:toggleThread={() => toggleThread(row.message)}
             on:click={event => onClickMessage(row.message, event)}
             on:dblclick={() => MessageActions.openDraft(row.message)}
             on:contextmenu={event => onContextMenu(row.message, event)} />
@@ -49,6 +53,7 @@
   import ContextMenu from "../../../frontend/Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import type { ArrayColl } from "svelte-collections";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -61,11 +66,12 @@
 
   const kHeaderHeight = 30;
   let collapsedGroups = new Set<string>();
+  let expandedThreads = new Set<EMail>();
   let viewHeight = 400;
   let scrollTop = 0;
 
   $: messageHeight = 53 + 18 * previewLines;
-  $: rows = new MessageRows(groups, collapsedGroups, showGroupHeaders, kHeaderHeight, messageHeight);
+  $: rows = new MessageRows(groups, collapsedGroups, showGroupHeaders, kHeaderHeight, messageHeight, expandedThreads);
   $: visibleIndexes = visibleRange(rows, scrollTop, viewHeight);
   $: MessageMetadata.load(visibleMessages(visibleIndexes));
 
@@ -146,6 +152,42 @@
     select([target], target);
     anchor = target;
     scrollIntoView(target);
+  }
+
+  function toggleThread(lead: EMail) {
+    if (expandedThreads.has(lead)) {
+      expandedThreads.delete(lead);
+    } else {
+      expandedThreads.add(lead);
+    }
+    expandedThreads = expandedThreads;
+  }
+
+  function threadLeadOf(message: EMail): EMail | null {
+    let row = rows.rows[rows.indexOfMessage(message)];
+    if (row?.kind != "message") {
+      return null;
+    }
+    if (row.thread) {
+      return message;
+    }
+    if (row.isThreadChild) {
+      return [...row.group.threads?.entries() ?? []].find(([, thread]) => thread.includes(message))?.[0] ?? null;
+    }
+    return null;
+  }
+
+  function setThreadExpanded(message: EMail, expanded: boolean): boolean {
+    let lead = threadLeadOf(message);
+    if (!lead || expandedThreads.has(lead) == expanded) {
+      return false;
+    }
+    toggleThread(lead);
+    if (!expanded && message != lead) {
+      select([lead], lead);
+      anchor = lead;
+    }
+    return true;
   }
 
   export function setAllGroupsCollapsed(collapsed: boolean) {
@@ -235,13 +277,17 @@
       event.stopPropagation();
       select(messages, current ?? messages[0]);
       return;
-    } else if (event.key == "ArrowLeft" && showGroupHeaders && !event.ctrlKey) {
+    } else if (event.key == "ArrowLeft" && !event.ctrlKey) {
       event.preventDefault();
-      setGroupOfSelectionCollapsed(true);
+      if (!(current && setThreadExpanded(current, false)) && showGroupHeaders) {
+        setGroupOfSelectionCollapsed(true);
+      }
       return;
-    } else if (event.key == "ArrowRight" && showGroupHeaders && !event.ctrlKey) {
+    } else if (event.key == "ArrowRight" && !event.ctrlKey) {
       event.preventDefault();
-      setGroupOfSelectionCollapsed(false);
+      if (!(current && setThreadExpanded(current, true)) && showGroupHeaders) {
+        setGroupOfSelectionCollapsed(false);
+      }
       return;
     } else if (event.key == "Enter" && current) {
       event.preventDefault();
@@ -293,6 +339,18 @@
       select([replacement], replacement);
     } else {
       selectedMessage = null;
+    }
+  }
+
+  let isInitialScrollDone = false;
+  $: if (!isInitialScrollDone && listEl && rows.length) {
+    isInitialScrollDone = true;
+    catchErrors(scrollToSelectionOnMount);
+  }
+  async function scrollToSelectionOnMount() {
+    await tick();
+    if (selectedMessage) {
+      scrollIntoView(selectedMessage);
     }
   }
 

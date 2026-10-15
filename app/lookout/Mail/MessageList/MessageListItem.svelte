@@ -4,6 +4,7 @@
   class:selected={isSelected}
   class:flagged={$message.isStarred}
   class:deleted={$message.isDeleted}
+  class:thread-child={isThreadChild}
   role="option"
   tabindex="-1"
   aria-selected={isSelected}
@@ -14,7 +15,18 @@
   on:contextmenu
   >
   <hbox class="line first-line">
+    {#if threadSize > 1}
+      <button class="thread-expander" tabindex="-1"
+        title={isThreadExpanded ? $t`Collapse the conversation` : $t`Expand the conversation`}
+        aria-expanded={isThreadExpanded}
+        on:click|stopPropagation={() => dispatch("toggleThread")}>
+        <ChevronIcon size={14} class="chevron {isThreadExpanded ? 'expanded' : ''}" />
+      </button>
+    {/if}
     <span class="sender" title={senderTooltip}>{senderName}</span>
+    {#if threadSize > 1}
+      <span class="thread-size" title={$t`${threadSize} messages in this conversation`}>{threadSize}</span>
+    {/if}
     <hbox flex />
     {#if $tags.hasItems}
       <hbox class="categories">
@@ -101,12 +113,19 @@
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import RepliedIcon from "lucide-svelte/icons/reply";
   import ForwardedIcon from "lucide-svelte/icons/forward";
+  import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   export let isSelected = false;
   export let previewLines = 1;
+  export let threadSize = 0;
+  export let isThreadExpanded = false;
+  export let isThreadChild = false;
+
+  const dispatch = createEventDispatcher<{ toggleThread: void }>();
 
   $: tags = message.tags;
   $: senderName = $message && ListName.of(message);
@@ -155,6 +174,43 @@
   }
   .message-item.deleted {
     opacity: 0.5;
+  }
+  .message-item.thread-child {
+    padding-inline-start: 40px;
+  }
+  .thread-expander {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-inline: -6px 4px;
+    padding: 0;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg-secondary);
+    cursor: pointer;
+  }
+  .thread-expander:hover {
+    background-color: var(--lo-pressed-bg);
+  }
+  .thread-expander :global(.chevron) {
+    transition: transform 0.1s;
+  }
+  .thread-expander :global(.chevron.expanded) {
+    transform: rotate(90deg);
+  }
+  .thread-size {
+    flex-shrink: 0;
+    margin-inline-start: 6px;
+    padding: 0 5px;
+    border-radius: 8px;
+    background-color: var(--lo-pressed-bg);
+    color: var(--lo-fg-secondary);
+    font-size: 11px;
+    line-height: 16px;
   }
   .line {
     align-items: center;

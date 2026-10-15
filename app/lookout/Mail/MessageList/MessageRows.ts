@@ -2,7 +2,7 @@ import type { MessageGroup } from "./MessageGrouping";
 
 export type MessageRow<T> =
   { kind: "header", group: MessageGroup<T>, isCollapsed: boolean } |
-  { kind: "message", group: MessageGroup<T>, message: T, position: number };
+  { kind: "message", group: MessageGroup<T>, message: T, position: number, thread: T[] | null, isThreadExpanded: boolean, isThreadChild: boolean };
 
 export class MessageRows<T> {
   readonly rows: MessageRow<T>[] = [];
@@ -13,7 +13,7 @@ export class MessageRows<T> {
   protected readonly headerHeight: number;
   protected readonly messageHeight: number;
 
-  constructor(groups: MessageGroup<T>[], collapsedGroupIDs: Set<string>, showHeaders: boolean, headerHeight: number, messageHeight: number) {
+  constructor(groups: MessageGroup<T>[], collapsedGroupIDs: Set<string>, showHeaders: boolean, headerHeight: number, messageHeight: number, expandedThreads = new Set<T>()) {
     this.headerHeight = headerHeight;
     this.messageHeight = messageHeight;
     let y = 0;
@@ -28,14 +28,25 @@ export class MessageRows<T> {
         continue;
       }
       for (let message of group.messages) {
-        this.rowOfMessage.set(message, this.rows.length);
-        this.tops.push(y);
-        this.rows.push({ kind: "message", group, message, position: this.messages.length });
-        this.messages.push(message);
-        y += messageHeight;
+        let thread = group.threads?.get(message) ?? null;
+        let isThreadExpanded = !!thread && expandedThreads.has(message);
+        y = this.addMessage(group, message, thread, isThreadExpanded, false, y);
+        if (isThreadExpanded) {
+          for (let follower of thread.slice(1)) {
+            y = this.addMessage(group, follower, null, false, true, y);
+          }
+        }
       }
     }
     this.totalHeight = y;
+  }
+
+  protected addMessage(group: MessageGroup<T>, message: T, thread: T[] | null, isThreadExpanded: boolean, isThreadChild: boolean, y: number): number {
+    this.rowOfMessage.set(message, this.rows.length);
+    this.tops.push(y);
+    this.rows.push({ kind: "message", group, message, position: this.messages.length, thread, isThreadExpanded, isThreadChild });
+    this.messages.push(message);
+    return y + this.messageHeight;
   }
 
   get length(): number {
