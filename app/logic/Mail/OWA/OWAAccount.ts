@@ -450,7 +450,7 @@ export class OWAAccount extends ExchangeMailAccount {
     if (this.isThrottleError(result)) {
       return await this.callOWAShared(url, options);
     }
-    if (result.MessageText) {
+    if (result.MessageText || result.WasSuccessful === false) {
       this.throttle.waitForSecond(1);
       throw new OWAError(response);
     }
