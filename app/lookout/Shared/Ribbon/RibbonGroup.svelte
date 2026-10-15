@@ -62,7 +62,7 @@
     let style = getComputedStyle(groupEl);
     let chrome = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
       parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-    let buttonWidth = parseFloat(style.getPropertyValue("--lo-ribbon-button-width")) || 72;
+    let buttonWidth = (groupEl.querySelector<HTMLElement>(".ribbon-button") ?? buttonsEl).offsetWidth;
     let buttonsStyle = getComputedStyle(buttonsEl);
     let popupChrome = parseFloat(buttonsStyle.paddingLeft) + parseFloat(buttonsStyle.paddingRight) +
       parseFloat(buttonsStyle.borderLeftWidth) + parseFloat(buttonsStyle.borderRightWidth);

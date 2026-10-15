@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { RibbonGroupModel, RibbonModel, RibbonTabModel } from "../Shared/Ribbon/Ribbon";
+import { RibbonGroupModel, RibbonModel, RibbonTabModel } from "../../Shared/Ribbon/Ribbon";
 import { expect, test } from "vitest";
 import { get } from "svelte/store";
 
