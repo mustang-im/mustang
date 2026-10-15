@@ -28,7 +28,7 @@
   <Menu bind:isMenuOpen={isScopeOpen} anchor={scopeButton} placement="bottom-start">
     {#each scopes as option}
       <MenuItem label={MailSearch.scopeLabel(option)}
-        icon={option == scope ? CheckIcon : BlankIcon}
+        checkable checked={option == scope}
         disabled={!MailSearch.isScopeAvailable(option, $selectedAccount, $selectedFolder) && $t`Select a folder of an account first`}
         onClick={() => MailSearch.update({ scope: option })} />
     {/each}
@@ -47,14 +47,12 @@
   import { MailSearch, SearchScope } from "./MailSearch";
   import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
   import AdvancedSearchPanel from "./AdvancedSearchPanel.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import ClearIcon from "lucide-svelte/icons/x";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
-  import CheckIcon from "lucide-svelte/icons/check";
   import { get } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
