@@ -8,7 +8,7 @@
 </Dialog>
 
 <script lang="ts">
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import TagsSettings from "../../../frontend/Settings/Mail/Tags.svelte";
   import { t } from "../../../l10n/l10n";
 </script>

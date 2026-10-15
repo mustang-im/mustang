@@ -1,4 +1,4 @@
-<Dialog title={$t`Select Names: ${addressbook?.name ?? $t`All address books`}`} onClose={onCancel} width="720px" height="600px">
+<Dialog title={$t`Select Names: ${addressbook?.name ?? $t`All address books`}`} on:close={onCancel} width="720px" height="600px">
   <hbox class="search-row">
     <vbox flex class="search">
       <label for="select-names-search">{$t`Search`}</label>
@@ -56,8 +56,8 @@
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../../logic/app";
   import { SelectNames, RecipientField } from "./SelectNames";
-  import Dialog from "./Dialog.svelte";
-  import DialogButton from "./DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import SelectedNames from "./SelectedNames.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import UserIcon from "lucide-svelte/icons/user-round";

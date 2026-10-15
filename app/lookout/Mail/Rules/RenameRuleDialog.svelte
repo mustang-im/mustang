@@ -1,4 +1,4 @@
-<Dialog title={$t`Rename`} onClose={onCancel} width="400px">
+<Dialog title={$t`Rename`} on:close={onCancel} width="400px">
   <vbox class="content">
     <label for="rename-rule-name">{$t`New name of rule:`}</label>
     <input id="rename-rule-name" type="text" bind:value={name} autofocus
@@ -12,8 +12,8 @@
 
 <script lang="ts">
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
-  import Dialog from "../Composer/Dialog.svelte";
-  import DialogButton from "../Composer/DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import { showError } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
 

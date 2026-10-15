@@ -11,7 +11,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import SharingOutgoing from "../../../frontend/Settings/Mail/SharingOutgoing.svelte";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;

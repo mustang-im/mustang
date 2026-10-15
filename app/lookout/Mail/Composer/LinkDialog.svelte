@@ -1,4 +1,4 @@
-<Dialog title={$t`Insert Link`} onClose={onCancel} width="480px">
+<Dialog title={$t`Insert Link`} on:close={onCancel} width="480px">
   <grid class="fields">
     {#if !hasSelection}
       <label for="link-text">{$t`Text to display`}</label>
@@ -20,8 +20,8 @@
 </Dialog>
 
 <script lang="ts">
-  import Dialog from "./Dialog.svelte";
-  import DialogButton from "./DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 

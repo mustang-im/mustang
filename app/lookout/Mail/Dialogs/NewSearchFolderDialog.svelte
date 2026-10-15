@@ -62,7 +62,7 @@
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import PersonPicker from "./PersonPicker.svelte";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let defaultAccount: MailAccount | null = null;

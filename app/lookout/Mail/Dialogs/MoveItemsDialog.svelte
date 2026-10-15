@@ -14,18 +14,15 @@
       <hbox class="new-folder">
         <input type="text" bind:value={newFolderName} placeholder={$t`Name of the new folder`}
           on:keydown={onNewFolderKey} use:focus />
-        <button type="button" class="small-button" on:click={() => catchErrors(onCreateFolder)} disabled={!newFolderName?.trim()}>
-          {$t`Create`}
-        </button>
+        <DialogButton label={$t`Create`} onClick={onCreateFolder} disabled={!newFolderName?.trim()} />
       </hbox>
     {/if}
   </vbox>
-  <button slot="buttons-start" type="button" class="small-button"
-    on:click={() => isCreating = true}
-    disabled={!targetAccount || isCreating}
-    title={target ? $t`Create a subfolder of ${target.name}` : $t`Create a new folder`}>
-    {$t`New…`}
-  </button>
+  <svelte:fragment slot="buttons-start">
+    <DialogButton label={$t`New…`} onClick={() => { isCreating = true; }}
+      disabled={!targetAccount || isCreating}
+      tooltip={target ? $t`Create a subfolder of ${target.name}` : $t`Create a new folder`} />
+  </svelte:fragment>
 </Dialog>
 
 <script lang="ts">
@@ -33,7 +30,8 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { MessageActions } from "../MessageActions";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FolderPicker from "./FolderPicker.svelte";
   import { catchErrors, showError } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
@@ -112,22 +110,5 @@
     background-color: var(--lo-input-bg);
     color: var(--lo-fg);
     font: inherit;
-  }
-  .small-button {
-    height: 30px;
-    padding: 0 12px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-pane-bg);
-    color: var(--lo-fg);
-    font: inherit;
-    cursor: pointer;
-  }
-  .small-button:hover:not(:disabled) {
-    background-color: var(--lo-hover-bg);
-  }
-  .small-button:disabled {
-    opacity: 0.5;
-    cursor: default;
   }
 </style>

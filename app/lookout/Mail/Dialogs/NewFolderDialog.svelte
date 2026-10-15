@@ -18,7 +18,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { MailView } from "../MailView";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderPicker from "./FolderPicker.svelte";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
