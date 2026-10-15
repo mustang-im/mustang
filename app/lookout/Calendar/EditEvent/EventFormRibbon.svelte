@@ -101,7 +101,7 @@
     {/if}
   </RibbonTab>
 
-  {#if isMeeting && !isIncoming}
+  {#if canSchedule && isMeeting && !isIncoming}
     <RibbonTab label={schedulingLabel}>
       <RibbonGroup label={$t`Scheduling`}>
         <RibbonButton label={$t`Refresh Availability`} icon={RefreshIcon}
@@ -228,6 +228,7 @@
   export let editor: Editor = null;
   export let actions: EventFormActions;
   export let saveDisabled: string | false = false;
+  export let canSchedule = false;
   export let schedulingLabel: string;
   export let trackingLabel: string;
   export let selectedLabel: string = null;

@@ -350,7 +350,6 @@ export class EventEditFlow {
     this.event.isOnline = true;
     this.inviteAttendees();
     // </copied>
-    this.event.createOnlineMeetingWithAccount ??= this.event.calendar.meetAccount;
   }
 
   // <copied from="../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte">
