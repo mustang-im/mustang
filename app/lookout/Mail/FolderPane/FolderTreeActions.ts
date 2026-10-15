@@ -1,4 +1,5 @@
 import { type Folder, SpecialFolder, specialFolderNames } from "../../../logic/Mail/Folder";
+import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { assert } from "../../../logic/util/util";
@@ -15,6 +16,10 @@ export class FolderTreeActions {
       return folder.name;
     }
     return specialFolderNames[folder.specialFolder] ?? folder.name;
+  }
+
+  static canShare(account: MailAccount | null): boolean {
+    return !!account && account.canShareWithPersons() && !account.isDependentAccount;
   }
 
   static isVirtual(folder: Folder): boolean {

@@ -16,7 +16,9 @@ export type MailDialog =
   { kind: "new-search-folder", account: MailAccount | null } |
   { kind: "save-search", search: SearchEMail } |
   { kind: "rule-from-search", search: SearchEMail, account: MailAccount } |
-  { kind: "search-person" };
+  { kind: "search-person" } |
+  { kind: "shared-folder", account: MailAccount } |
+  { kind: "folder-permissions", account: MailAccount };
 
 export class MailDialogs {
   static readonly current = writable<MailDialog | null>(null);

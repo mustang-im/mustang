@@ -4,6 +4,11 @@
   onClick={onGetNewMail} />
 <MenuItem label={$t`New Folder…`} icon={NewFolderIcon}
   onClick={() => MailDialogs.open({ kind: "new-folder", account, parent: null })} />
+{#if FolderTreeActions.canShare(account)}
+  <MenuItem label={$t`Open Shared Folder…`} icon={SharedFolderIcon}
+    tooltip={$t`Open the folders that colleagues shared with you`}
+    onClick={() => MailDialogs.open({ kind: "shared-folder", account })} />
+{/if}
 <MenuItem label={$t`Manage Rules & Alerts…`} icon={RulesIcon}
   onClick={() => MessageActions.openRules(account)} />
 <MenuDivider />
@@ -24,12 +29,14 @@
   import { openSettingsCategoryForAccount } from "../../../frontend/Settings/Window/CategoriesUtils";
   import { MessageActions } from "../MessageActions";
   import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { FolderTreeActions } from "./FolderTreeActions";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../../frontend/Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
   import UpdateIcon from "lucide-svelte/icons/refresh-cw";
   import NewFolderIcon from "lucide-svelte/icons/folder-plus";
   import RulesIcon from "lucide-svelte/icons/list-filter";
+  import SharedFolderIcon from "lucide-svelte/icons/folder-open-dot";
   import SettingsIcon from "lucide-svelte/icons/settings";
   import DisconnectIcon from "lucide-svelte/icons/unplug";
   import ConnectIcon from "lucide-svelte/icons/plug";
