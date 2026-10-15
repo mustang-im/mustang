@@ -53,10 +53,10 @@
   // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.
   // Chrome also never breaks after a slash, so "Send/Receive" gets a zero-width space there.
   $: wrappingLabel = label?.replace(/\/(?=\S)/g, "/\u200B") ?? "";
-  $: lastSpace = hasMenu ? wrappingLabel.lastIndexOf(" ") : -1;
-  $: isOneWord = hasMenu && lastSpace < 0;
-  $: labelStart = hasMenu ? wrappingLabel.slice(0, lastSpace + 1) : wrappingLabel;
-  $: labelEnd = hasMenu ? wrappingLabel.slice(lastSpace + 1) : "";
+  $: lastBreak = hasMenu ? Math.max(wrappingLabel.lastIndexOf(" "), wrappingLabel.lastIndexOf("\u200B")) : -1;
+  $: isOneWord = hasMenu && lastBreak < 0;
+  $: labelStart = hasMenu ? wrappingLabel.slice(0, lastBreak + 1) : wrappingLabel;
+  $: labelEnd = hasMenu ? wrappingLabel.slice(lastBreak + 1) : "";
 
   /* <copied from="../../../frontend/Shared/Button.svelte"> */
   $: tooltipCalc = typeof(disabled) == "string"
@@ -103,7 +103,8 @@
     align-items: center;
     justify-content: flex-start;
     box-sizing: border-box;
-    width: var(--lo-ribbon-button-width, 72px);
+    width: min-content;
+    min-width: var(--lo-ribbon-button-width, 72px);
     height: var(--lo-ribbon-button-height, 64px);
     flex: 0 0 auto;
     margin: 0;
@@ -185,6 +186,8 @@
   }
 
   :global(.ribbon.simplified) .ribbon-button {
+    width: auto;
+    min-width: 0;
     flex-direction: row;
     justify-content: flex-start;
     padding: 0 8px;
@@ -212,6 +215,7 @@
   :global(.ribbon.simplified) .ribbon-button:global(.group-collapsed-button) {
     justify-content: center;
     width: var(--lo-ribbon-icon-only-width);
+    min-width: 0;
     padding: 0;
   }
   :global(.ribbon.simplified .ribbon-group.compact) .ribbon-button.has-menu,

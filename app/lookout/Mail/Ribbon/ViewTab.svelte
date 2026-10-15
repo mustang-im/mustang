@@ -28,7 +28,7 @@
     <RibbonToggleButton label={$t`Show in Groups`} icon={GroupsIcon}
       checked={!!$showInGroups.value}
       onChange={checked => { $showInGroups.value = checked; }} />
-    <RibbonMenuButton label={$t`Expand/ Collapse`} icon={ExpandCollapseIcon}
+    <RibbonMenuButton label={$t`Expand/Collapse`} icon={ExpandCollapseIcon}
       disabled={!$showInGroups.value && $t`Turn on Show in Groups first`}>
       <MenuItem label={$t`Collapse This Group`} icon={CollapseIcon} onClick={() => onCollapseGroup(true)} />
       <MenuItem label={$t`Expand This Group`} icon={ExpandIcon} onClick={() => onCollapseGroup(false)} />

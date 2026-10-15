@@ -154,7 +154,6 @@
     --lo-ribbon-icon-size: 24px;
   }
   .ribbon.simplified {
-    --lo-ribbon-button-width: auto;
     --lo-ribbon-button-height: 32px;
     --lo-ribbon-icon-size: 18px;
     --lo-ribbon-icon-only-width: 32px;
