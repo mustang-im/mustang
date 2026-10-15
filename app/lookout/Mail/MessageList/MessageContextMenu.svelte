@@ -27,6 +27,10 @@
 {/if}
 <MenuDivider />
 {#if single}
+  <SubMenuItem label={$t`Find Related`} icon={FindRelatedIcon}>
+    <FindRelatedMenuItems message={single} />
+  </SubMenuItem>
+  <MenuDivider />
   <SubMenuItem label={$t`Rules`} icon={RulesIcon}>
     <RulesMenuItems message={single} account={single.folder?.account} />
   </SubMenuItem>
@@ -65,6 +69,7 @@
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import MoveMenuItems from "../Menu/MoveMenuItems.svelte";
   import RulesMenuItems from "../Menu/RulesMenuItems.svelte";
+  import FindRelatedMenuItems from "../Menu/FindRelatedMenuItems.svelte";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
   import ReplyIcon from "lucide-svelte/icons/reply";
@@ -75,6 +80,7 @@
   import CategorizeIcon from "lucide-svelte/icons/tag";
   import FlagIcon from "lucide-svelte/icons/flag";
   import ClearFlagIcon from "lucide-svelte/icons/flag-off";
+  import FindRelatedIcon from "lucide-svelte/icons/text-search";
   import RulesIcon from "lucide-svelte/icons/list-filter";
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import DeleteIcon from "lucide-svelte/icons/trash-2";

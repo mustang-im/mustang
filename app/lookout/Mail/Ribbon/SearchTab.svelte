@@ -36,6 +36,12 @@
           onClick={() => MailSearch.update({ person: null })} />
       {/if}
     </RibbonMenuButton>
+    {#if $options.threadID}
+      <RibbonToggleButton label={$t`This Conversation`} icon={ConversationIcon}
+        checked={true}
+        tooltip={$t`Only messages of the conversation that you chose with Find Related`}
+        onChange={checked => !checked && MailSearch.update({ threadID: null })} />
+    {/if}
     <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
       disabled={!$tags.hasItems && $t`There are no categories yet`}>
       {#each $tags.each as tag (tag)}
@@ -85,6 +91,7 @@
   import FlagIcon from "lucide-svelte/icons/flag";
   import SentIcon from "lucide-svelte/icons/send";
   import CategorizeIcon from "lucide-svelte/icons/tag";
+  import ConversationIcon from "lucide-svelte/icons/messages-square";
   import PersonIcon from "lucide-svelte/icons/user-search";
   import RemoveIcon from "lucide-svelte/icons/user-x";
   import SaveSearchIcon from "lucide-svelte/icons/folder-search";
