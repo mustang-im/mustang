@@ -61,7 +61,13 @@
     {#if isDraft}
       <span class="draft">{$t`[Draft]`}</span>
     {/if}
-    <span class="subject" title={$message.subject}>{$message.subject || $t`(no subject)`}</span>
+    <span class="subject" title={$message.subject}>
+      {#if $message.subject}
+        {#each TextHighlight.split($message.subject, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
+      {:else}
+        {$t`(no subject)`}
+      {/if}
+    </span>
     <hbox flex />
     <hbox class="status-icons">
       {#if $message.isSending}
@@ -88,10 +94,20 @@
         <span title={$t`Flagged`}><FlagIcon size={14} class="flag" /></span>
       {/if}
     </hbox>
+    {#if folderName && previewLines == 0}
+      <span class="folder-name" title={folderTooltip}>{folderName}</span>
+    {/if}
     <span class="date" title={MessageDates.fullDate($message.sent)}>{MessageDates.listDate($message.sent)}</span>
   </hbox>
   {#if previewLines > 0}
-    <div class="preview" style="-webkit-line-clamp: {previewLines};">{preview}</div>
+    <hbox class="preview-line">
+      <div class="preview" style="-webkit-line-clamp: {previewLines};">
+        {#each TextHighlight.split(preview, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
+      </div>
+      {#if folderName}
+        <span class="folder-name" title={folderTooltip}>{folderName}</span>
+      {/if}
+    </hbox>
   {/if}
 </div>
 
@@ -102,6 +118,7 @@
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "./MessageDates";
   import { ListName } from "./ListName";
+  import { TextHighlight } from "./TextHighlight";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
@@ -124,6 +141,8 @@
   export let threadSize = 0;
   export let isThreadExpanded = false;
   export let isThreadChild = false;
+  export let folderName: string | null = null;
+  export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
 
@@ -132,6 +151,7 @@
   $: senderTooltip = ListName.showsRecipient(message)
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
+  $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;
   $: isDraft = $message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts;
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
 </script>
@@ -287,7 +307,29 @@
     80% { opacity: 1; }
     100% { opacity: 0; transform: translate(3px, -2px); }
   }
+  mark {
+    border-radius: 2px;
+    background-color: color-mix(in srgb, var(--lo-warning) 28%, transparent);
+    color: inherit;
+  }
+  .preview-line {
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .folder-name {
+    flex-shrink: 0;
+    max-width: 40%;
+    margin-inline-start: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--lo-fg-secondary);
+    font-size: 12px;
+    line-height: 18px;
+  }
   .preview {
+    flex: 1 1 0;
+    min-width: 0;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
