@@ -2,11 +2,15 @@ import type { Folder } from "../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { Tag } from "../../../logic/Abstract/Tag";
 import type { Person } from "../../../logic/Abstract/Person";
+import type { EMail } from "../../../logic/Mail/EMail";
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
 import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { appGlobal } from "../../../logic/app";
+import { assert } from "../../../logic/util/util";
+import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
+import { gt } from "../../../l10n/l10n";
 import { get, writable } from "svelte/store";
 
 export enum SearchScope {
@@ -23,6 +27,7 @@ export interface SearchOptions {
   sentByMe: boolean;
   tags: Tag[];
   person: Person | null;
+  threadID: string | null;
 }
 
 export class MailSearch {
@@ -38,6 +43,7 @@ export class MailSearch {
       sentByMe: false,
       tags: [],
       person: null,
+      threadID: null,
     };
   }
 
@@ -51,6 +57,32 @@ export class MailSearch {
 
   static update(change: Partial<SearchOptions>) {
     MailSearch.options.update(options => ({ ...options, ...change }));
+  }
+
+  static hasCriteria(term: string | null, options: SearchOptions): boolean {
+    return !!term || !!options.person || !!options.threadID;
+  }
+
+  static close() {
+    globalSearchTerm.set(null);
+    MailSearch.options.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope }));
+  }
+
+  static findRelated(change: Partial<SearchOptions>) {
+    globalSearchTerm.set(null);
+    MailSearch.options.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope, ...change }));
+  }
+
+  static isInConversation(message: EMail): boolean {
+    return !!(message.threadID ?? message.inReplyTo);
+  }
+
+  static async findConversation(message: EMail) {
+    // <copied from="../../../frontend/Mail/Thread/ThreadPane.svelte">
+    await message.findThread(message.folder.messages);
+    // </copied>
+    assert(message.threadID, gt`This message is not part of a conversation`);
+    MailSearch.findRelated({ threadID: message.threadID });
   }
 
   static toggleTag(options: SearchOptions, tag: Tag) {
@@ -89,7 +121,7 @@ export class MailSearch {
       : SearchScope.AllAccounts;
   }
 
-  static newSearch(term: string, options: SearchOptions, account: MailAccount | null, folder: Folder | null): SearchEMail {
+  static newSearch(term: string | null, options: SearchOptions, account: MailAccount | null, folder: Folder | null): SearchEMail {
     let search = newServerSearchEMail();
     search.bodyText = term;
     let scope = MailSearch.effectiveScope(options, account, folder);
@@ -115,6 +147,9 @@ export class MailSearch {
     }
     if (options.person) {
       search.includesPerson = options.person;
+    }
+    if (options.threadID) {
+      search.threadID = options.threadID;
     }
     return search;
   }

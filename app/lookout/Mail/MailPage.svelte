@@ -137,7 +137,7 @@
     if (folder == shownFolder) {
       return;
     }
-    if (shownFolder && $globalSearchTerm) {
+    if (shownFolder && hasSearchCriteria) {
       closeSearch();
     }
     shownFolder = folder;
@@ -184,7 +184,8 @@
 
   $: searchTerm = $globalSearchTerm?.trim() || null;
   let isSearchFocused = false;
-  $: isSearchActive = !!searchTerm || isSearchFocused;
+  $: hasSearchCriteria = MailSearch.hasCriteria(searchTerm, $searchOptions);
+  $: isSearchActive = hasSearchCriteria || isSearchFocused;
   let currentSearch: SearchEMail | null = null;
   let searchResults: Collection<EMail> | null = null;
   let isSearching = false;
@@ -192,7 +193,7 @@
   const startSearchDebounced = debounce(() => catchErrors(startSearch), 300);
   let lastCriteria: string = null;
   async function startSearch() {
-    if (!searchTerm) {
+    if (!MailSearch.hasCriteria(searchTerm, $searchOptions)) {
       currentSearch = null;
       searchResults = null;
       lastCriteria = null;
@@ -225,7 +226,7 @@
   onDestroy(() => startSearchDebounced.cancel());
 
   function closeSearch() {
-    $globalSearchTerm = null;
+    MailSearch.close();
     isSearchFocused = false;
     titleSearchInput()?.blur();
   }
