@@ -6,8 +6,8 @@
 </Dialog>
 
 <script lang="ts">
-  import Dialog from "../../Mail/Dialogs/Dialog.svelte";
-  import DialogButton from "./DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
 
   export let title: string;
   export let question: string;

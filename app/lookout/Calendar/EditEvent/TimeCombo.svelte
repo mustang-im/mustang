@@ -52,17 +52,19 @@
 
   $: text = time ? TimeOptions.timeLabel(time) : "";
 
-  function onTextChanged() {
+  function onTextChanged(): boolean {
     try {
       let newTime = TimeOptions.parseTime(text, time);
       if (newTime.getTime() != time.getTime()) {
         onChange(newTime);
       }
       text = TimeOptions.timeLabel(time);
+      return true;
     } catch (ex) {
       invalid = true;
       text = TimeOptions.timeLabel(time);
       showError(ex);
+      return false;
     }
   }
 
@@ -86,6 +88,11 @@
     if (event.altKey && event.key == "ArrowDown") {
       event.preventDefault();
       onToggle();
+    } else if (event.key == "Enter") {
+      // A dialog submits on Enter, and that cancels the native change event
+      if (!onTextChanged()) {
+        event.preventDefault();
+      }
     } else if (event.key == "Escape" && isOpen) {
       event.stopPropagation();
       isOpen = false;

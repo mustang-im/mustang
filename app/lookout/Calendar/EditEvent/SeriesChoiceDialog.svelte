@@ -12,7 +12,7 @@
 
 <script lang="ts">
   import type { SeriesChoice } from "./EventEditFlow";
-  import Dialog from "../../Mail/Dialogs/Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let title: string;
