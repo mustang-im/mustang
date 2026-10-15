@@ -11,7 +11,7 @@ export class CalendarRange {
     this.month = new Date(date.getFullYear(), date.getMonth(), 1);
     let first: Date;
     let count: number;
-    if (view == "day") {
+    if (view == "day" || view == "schedule") {
       first = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       count = Math.min(Math.max(Math.round(dayCount), 1), 10);
     } else if (view == "workweek") {
@@ -72,7 +72,7 @@ export class CalendarRange {
     if (view == "month") {
       return new Date(date.getFullYear(), date.getMonth() + direction, 1);
     }
-    let days = view == "day" ? new CalendarRange(view, date, dayCount).days.length : 7;
+    let days = view == "day" || view == "schedule" ? new CalendarRange(view, date, dayCount).days.length : 7;
     return new Date(date.getFullYear(), date.getMonth(), date.getDate() + direction * days);
   }
 }

@@ -16,6 +16,7 @@
         <option value="workweek">{$t`Work Week Calendar`}</option>
         <option value="week">{$t`Week Calendar`}</option>
         <option value="month">{$t`Month Calendar`}</option>
+        <option value="schedule">{$t`Schedule View`}</option>
       </select>
     </label>
   </vbox>

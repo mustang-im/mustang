@@ -33,10 +33,13 @@
         bind:checked={isWeek} onChange={() => selectView("week")} />
       <RibbonToggleButton label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4"
         bind:checked={isMonth} onChange={() => selectView("month")} />
+      <RibbonToggleButton label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5"
+        tooltip={$t`Show the calendars in rows, with the time running from left to right`}
+        bind:checked={isSchedule} onChange={() => selectView("schedule")} />
       <RibbonToggleButton label={$t`Split View`} icon={SplitViewIcon}
         tooltip={$t`Show the calendars side by side`}
         bind:checked={splitView}
-        disabled={view == "month" && $t`Split view is available in the Day, Work Week and Week views`}
+        disabled={(view == "month" || view == "schedule") && $t`Split view is available in the Day, Work Week and Week views`}
         onChange={onSplitView} />
     </RibbonGroup>
     <RibbonGroup label={$t`Manage Calendars`}>
@@ -113,13 +116,16 @@
         bind:checked={isWeek} onChange={() => selectView("week")} />
       <RibbonToggleButton label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4"
         bind:checked={isMonth} onChange={() => selectView("month")} />
+      <RibbonToggleButton label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5"
+        tooltip={$t`Show the calendars in rows, with the time running from left to right`}
+        bind:checked={isSchedule} onChange={() => selectView("schedule")} />
       <RibbonToggleButton label={$t`Split View`} icon={SplitViewIcon}
         tooltip={$t`Show the calendars side by side`}
         bind:checked={splitView}
-        disabled={view == "month" && $t`Split view is available in the Day, Work Week and Week views`}
+        disabled={(view == "month" || view == "schedule") && $t`Split view is available in the Day, Work Week and Week views`}
         onChange={onSplitView} />
       <RibbonMenuButton label={$t`Time Scale`} icon={TimeScaleIcon}
-        disabled={view == "month" && $t`The time scale applies to the Day, Work Week and Week views`}>
+        disabled={view == "month" && $t`The time scale applies to the Day, Work Week, Week and Schedule views`}>
         {#each timeScales as scale}
           <MenuItem label={timeScaleLabel(scale)} icon={scale == timeScale ? CheckIcon : BlankIcon}
             onClick={() => onTimeScale(scale)} />
@@ -169,6 +175,7 @@
   import WorkWeekIcon from "lucide-svelte/icons/columns-4";
   import WeekIcon from "lucide-svelte/icons/calendar-range";
   import MonthIcon from "lucide-svelte/icons/calendar-days";
+  import ScheduleIcon from "lucide-svelte/icons/chart-gantt";
   import SplitViewIcon from "lucide-svelte/icons/columns-2";
   import AddCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import SharedCalendarIcon from "lucide-svelte/icons/users-round";
@@ -208,6 +215,7 @@
   let isWorkWeek = false;
   let isWeek = false;
   let isMonth = false;
+  let isSchedule = false;
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
   $: setViewToggles(view, isTable);
   function setViewToggles(view: CalendarViewType, isTable: boolean) {
@@ -215,6 +223,7 @@
     isWorkWeek = !isTable && view == "workweek";
     isWeek = !isTable && view == "week";
     isMonth = !isTable && view == "month";
+    isSchedule = !isTable && view == "schedule";
   }
 
   let emailAccounts = appGlobal.emailAccounts;

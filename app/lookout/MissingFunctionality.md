@@ -81,7 +81,7 @@ New message, reply and forward, with the Message, Insert, Options and Format Tex
 | Direct Replies To, Save Sent Item To | Options tab > More Options | A per-message `replyTo` and sent folder in `send()` |
 | Sensitivity (Private, Confidential), Do Not Forward, sensitivity labels | Options tab; Message tab | A sensitivity header; rights management |
 | HTML / Plain Text / Rich Text per message | Format Text tab > Format | A per-message override of the `mail.send.format` setting in `CreateMIME` and the protocol senders; RTF / TNEF for Rich Text |
-| Signature menu, several named signatures, a separate signature for replies, the signature visible in the editor | Insert tab > Signature | Named signatures per `MailIdentity` with defaults for new mail and replies, inserted when composing. Today `signatureHTML` is appended when sending. |
+| Several named signatures per account (New, Rename, Delete), "Choose default signature" for new messages and for replies / forwards, the own signature visible in the editor, Personal Stationery | Signature menu > Signatures… | Named signatures per `MailIdentity` with defaults for new mail and replies, inserted when composing. Today each identity has one `signatureHTML`, appended when sending. Lookout's Signature menu lists one signature per identity and inserts the others; Signatures… edits them. |
 | Font family, size, color, highlight, alignment, indent, line spacing | Message tab > Basic Text; Format Text tab | Editor extensions (`@tiptap/extension-text-style` is installed), and a sanitizer that keeps these styles |
 | Tables, online pictures, shapes, icons, screenshots, Quick Parts, date and time, symbols, equations | Insert tab | Editor features. Lookout offers Attach File, Pictures, Link, Quote, Horizontal Line and Emoji. |
 | Attach Item: a message, a business card, a calendar | Insert tab > Include | Attaching an `EMail` as `.eml`, a `Person` as vCard, a calendar range as iCalendar |
@@ -144,7 +144,7 @@ Date navigator, calendar list, Day / Work Week / Week / Month and split view.
 | Print (Daily, Weekly, Monthly, Tri-fold) | File > Print | Print layouts and printing in the desktop app |
 | Holidays | File > Options > Calendar > Add Holidays | Holiday calendars per country |
 | Weather and work location in the day headers | Day headers (new Outlook) | A weather service; the Exchange work location API |
-| Schedule View, List view, conditional formatting, drag an event onto the date navigator | Home tab > Arrange; View tab | *UI only*; conditional formatting also needs a rule engine |
+| Conditional formatting, drag an event onto the date navigator | View tab > View Settings; date navigator | Conditional formatting needs a rule engine; dragging onto the navigator is *UI only* |
 
 ## Event form and scheduling
 

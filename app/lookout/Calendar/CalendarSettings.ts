@@ -1,6 +1,6 @@
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 
-export type CalendarViewType = "day" | "workweek" | "week" | "month";
+export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule";
 
 export enum CalendarCurrentView {
   Calendar = "calendar",

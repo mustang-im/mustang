@@ -18,7 +18,8 @@ test("Views", () => {
   expect(CalendarKeys.commandFor(press("2", { ctrlKey: true, altKey: true }))).toEqual({ command: "view", view: "workweek" });
   expect(CalendarKeys.commandFor(press("3", { ctrlKey: true, altKey: true }))).toEqual({ command: "view", view: "week" });
   expect(CalendarKeys.commandFor(press("4", { ctrlKey: true, altKey: true }))).toEqual({ command: "view", view: "month" });
-  expect(CalendarKeys.commandFor(press("5", { ctrlKey: true, altKey: true }))).toBe(null);
+  expect(CalendarKeys.commandFor(press("5", { ctrlKey: true, altKey: true }))).toEqual({ command: "view", view: "schedule" });
+  expect(CalendarKeys.commandFor(press("6", { ctrlKey: true, altKey: true }))).toBe(null);
   expect(CalendarKeys.commandFor(press("-", { altKey: true }))).toEqual({ command: "view", view: "week" });
   expect(CalendarKeys.commandFor(press("=", { altKey: true }))).toEqual({ command: "view", view: "month" });
 });
