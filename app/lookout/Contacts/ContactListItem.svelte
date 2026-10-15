@@ -39,6 +39,7 @@
 
 <style>
   .contact-item {
+    position: relative;
     align-items: center;
     box-sizing: border-box;
     height: 56px;
@@ -53,6 +54,15 @@
   }
   :global(.row.selected) > .contact-item:hover {
     background-color: var(--lo-selected-hover-bg);
+  }
+  :global(.row.selected) > .contact-item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--lo-accent);
   }
   .text {
     flex: 1;
