@@ -17,7 +17,9 @@
         </label>
       {/each}
     </vbox>
-    {#if selected?.id == "categorized"}
+    {#if selected?.id == "person"}
+      <PersonPicker label={$t`Show mail from and to`} bind:selected={person} height="160px" />
+    {:else if selected?.id == "categorized"}
       <label class="field">
         {$t`Category:`}
         <select bind:value={tag}>
@@ -56,8 +58,10 @@
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+  import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
+  import PersonPicker from "./PersonPicker.svelte";
   import Dialog from "./Dialog.svelte";
   import { gt, t } from "../../../l10n/l10n";
 
@@ -73,6 +77,7 @@
   const templates: SearchTemplate[] = [
     { id: "unread", label: gt`Unread mail`, section: gt`Reading Mail`, apply: search => search.isRead = false },
     { id: "flagged", label: gt`Mail flagged for follow up`, apply: search => search.isStarred = true },
+    { id: "person", label: gt`Mail from and to specific people`, section: gt`Mail from People and Lists`, apply: search => search.includesPerson = person },
     { id: "categorized", label: gt`Categorized mail`, section: gt`Organizing Mail`, apply: search => search.tags.add(tag) },
     { id: "large", label: gt`Large mail`, apply: search => search.sizeMin = sizeKB * 1024 },
     { id: "attachments", label: gt`Mail with attachments`, apply: search => search.hasAttachment = true },
@@ -81,25 +86,29 @@
   const tags = availableTags;
   const accounts = appGlobal.emailAccounts;
   let selected = templates[0];
+  let person: Person | null = null;
   let tag: Tag = availableTags.first;
   let sizeKB = 100;
   let account: MailAccount | null = defaultAccount && appGlobal.emailAccounts.contains(defaultAccount) ? defaultAccount : null;
   let name = templates[0].label;
-  let lastTemplate = selected;
-  $: if (selected != lastTemplate) {
-    if (name == lastTemplate.label || !name) {
-      name = selected.label;
+  $: defaultName = selected.id == "person" && person ? $t`Mail from and to ${person.name}` : selected.label;
+  let lastDefaultName = name;
+  $: if (defaultName != lastDefaultName) {
+    if (name == lastDefaultName || !name) {
+      name = defaultName;
     }
-    lastTemplate = selected;
+    lastDefaultName = defaultName;
   }
 
   $: disabledReason = !name?.trim()
     ? $t`Enter a name`
-    : selected?.id == "categorized" && !tag
-      ? $t`Create a category first`
-      : selected?.id == "large" && !(sizeKB > 0)
-        ? $t`Enter a size`
-        : false;
+    : selected?.id == "person" && !person
+      ? $t`Select a person`
+      : selected?.id == "categorized" && !tag
+        ? $t`Create a category first`
+        : selected?.id == "large" && !(sizeKB > 0)
+          ? $t`Enter a size`
+          : false;
 
   async function onCreate() {
     let search = newSearchEMail();

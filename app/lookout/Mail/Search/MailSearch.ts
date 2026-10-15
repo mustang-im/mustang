@@ -7,7 +7,7 @@ import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { appGlobal } from "../../../logic/app";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 export enum SearchScope {
   AllAccounts = "all",
@@ -39,6 +39,10 @@ export class MailSearch {
       tags: [],
       person: null,
     };
+  }
+
+  static current(): SearchOptions {
+    return get(MailSearch.options);
   }
 
   static reset() {
