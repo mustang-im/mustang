@@ -1,0 +1,26 @@
+{#each displayModes as mode}
+  <MenuItem label={mode.label} tooltip={mode.tooltip}
+    icon={isCurrent(mode.id, $contentRendering.value) ? CheckIcon : BlankIcon}
+    onClick={() => $contentRendering.value = mode.id} />
+{/each}
+
+<script lang="ts">
+  import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
+  import { MailView } from "../MailView";
+  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import CheckIcon from "lucide-svelte/icons/check";
+  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
+  import { gt } from "../../../l10n/l10n";
+
+  const contentRendering = MailView.contentRendering;
+
+  const displayModes = [
+    { id: DisplayMode.HTML, label: gt`Display as HTML`, tooltip: gt`Show the message as the sender formatted it` },
+    { id: DisplayMode.Plaintext, label: gt`Display as Plain Text`, tooltip: gt`Show only the text of the message` },
+    { id: DisplayMode.Source, label: gt`View Message Source`, tooltip: gt`Show the on-the-wire format of the message` },
+  ];
+
+  function isCurrent(mode: string, current: string): boolean {
+    return mode == current || mode == DisplayMode.HTML && current == DisplayMode.HTMLWithExternal;
+  }
+</script>

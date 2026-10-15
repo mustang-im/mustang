@@ -15,7 +15,7 @@
       </hbox>
     {/if}
     <hbox flex />
-    <button class="arrange" bind:this={arrangeEl} on:click={() => isArrangeMenuOpen = !isArrangeMenuOpen}
+    <button class="arrange" bind:this={arrangeEl} on:click|stopPropagation={() => isArrangeMenuOpen = !isArrangeMenuOpen}
       title={$t`Arrange By`} aria-haspopup="menu">
       {arrangeLabel}
       <ChevronIcon size={14} />

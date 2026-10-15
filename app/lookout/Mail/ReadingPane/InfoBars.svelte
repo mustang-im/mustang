@@ -29,6 +29,15 @@
     <span>{$t`You replied to this message.`}</span>
   </hbox>
 {/if}
+{#if $contentRendering.value == DisplayMode.Plaintext || $contentRendering.value == DisplayMode.Source}
+  <hbox class="info-bar">
+    <PlainTextIcon size={16} />
+    <span>{$contentRendering.value == DisplayMode.Source
+      ? $t`You're viewing the source of this message.`
+      : $t`This message is shown as plain text.`}</span>
+    <button class="link" on:click={() => MailView.contentRendering.value = DisplayMode.HTML}>{$t`Display as HTML`}</button>
+  </hbox>
+{/if}
 {#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && ExternalContent.hasExternalContent($message.rawHTMLDangerous)}
   <hbox class="info-bar">
     <PicturesIcon size={16} />
@@ -49,6 +58,7 @@
   import RepliedIcon from "lucide-svelte/icons/reply";
   import ForwardedIcon from "lucide-svelte/icons/forward";
   import PicturesIcon from "lucide-svelte/icons/image-off";
+  import PlainTextIcon from "lucide-svelte/icons/file-text";
   import { catchErrors } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
 
