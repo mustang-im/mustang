@@ -149,7 +149,7 @@
     z-index: 10;
   }
   .ribbon.classic {
-    --lo-ribbon-button-width: max(72px, calc(6px + 10ch));
+    --lo-ribbon-button-width: max(72px, calc(6px + 11ch));
     --lo-ribbon-button-height: 64px;
     --lo-ribbon-icon-size: 24px;
   }
