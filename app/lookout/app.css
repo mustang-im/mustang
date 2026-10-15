@@ -210,6 +210,12 @@ input[type="checkbox"] {
   color: var(--lo-fg);
   font: inherit;
 }
+input[type="date"].lo-text-field {
+  background-image: none;
+}
+input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+}
 :is(input, select).lo-text-field:focus {
   outline: none;
   border-color: var(--lo-accent);
