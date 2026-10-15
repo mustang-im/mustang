@@ -27,6 +27,9 @@
       <RibbonButton label={$t`Attach File`} icon={AttachIcon} onClick={onAttachFile} />
       <RibbonButton label={$t`Link`} icon={LinkIcon} shortCutInfo="Ctrl+K"
         disabled={!editor} onClick={onInsertLink} />
+      <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
+        <SignatureMenuItems {identity} {editor} {onSignatures} />
+      </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Editor`}>
       <RibbonToggleButton label={$t`Spelling`} icon={SpellingIcon}
@@ -38,6 +41,9 @@
   <RibbonTab label={$t`Insert`}>
     <RibbonGroup label={$t`Include`}>
       <RibbonButton label={$t`Attach File`} icon={AttachIcon} onClick={onAttachFile} />
+      <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
+        <SignatureMenuItems {identity} {editor} {onSignatures} />
+      </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Illustrations`}>
       <RibbonButton label={$t`Pictures`} icon={PictureIcon}
@@ -168,6 +174,7 @@
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
+  import SignatureMenuItems from "./SignatureMenuItems.svelte";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
   import BoldIcon from "lucide-svelte/icons/bold";
@@ -190,6 +197,7 @@
   import FromIcon from "lucide-svelte/icons/user-round";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import SignIcon from "lucide-svelte/icons/signature";
+  import SignatureIcon from "lucide-svelte/icons/pen-line";
   import StylesIcon from "lucide-svelte/icons/heading";
   import NormalIcon from "lucide-svelte/icons/pilcrow";
   import Heading1Icon from "lucide-svelte/icons/heading-1";
@@ -215,6 +223,7 @@
   export let onAttachFile: () => Promise<void>;
   export let onInsertPicture: () => Promise<void>;
   export let onInsertLink: () => void;
+  export let onSignatures: () => void;
 
   function run(command: (chain: ChainedCommands) => ChainedCommands) {
     command(editor.chain().focus()).run();
