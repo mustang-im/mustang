@@ -1,4 +1,4 @@
-<vbox class="ribbon-group" class:collapsed={$collapsed}
+<vbox class="ribbon-group" class:collapsed={$collapsed} class:compact={$compact}
   role="group" aria-label={label}
   bind:this={groupEl}>
   {#if $collapsed}
@@ -35,6 +35,7 @@
   const group = new RibbonGroupModel(label);
   setContext(RibbonGroupModel.contextKey, group);
   const collapsed = group.collapsed;
+  const compact = group.compact;
   $: group.label = label;
 
   let groupEl: HTMLElement;
@@ -62,11 +63,26 @@
     let style = getComputedStyle(groupEl);
     let chrome = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
       parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-    let buttonWidth = (groupEl.querySelector<HTMLElement>(".ribbon-button") ?? buttonsEl).offsetWidth;
     let buttonsStyle = getComputedStyle(buttonsEl);
     let popupChrome = parseFloat(buttonsStyle.paddingLeft) + parseFloat(buttonsStyle.paddingRight) +
       parseFloat(buttonsStyle.borderLeftWidth) + parseFloat(buttonsStyle.borderRightWidth);
-    group.setWidths(buttonsEl.offsetWidth - popupChrome + chrome, buttonWidth + chrome);
+    let iconOnlyWidth = parseFloat(style.getPropertyValue("--lo-ribbon-icon-only-width"));
+    let iconOnlyMenuWidth = parseFloat(style.getPropertyValue("--lo-ribbon-icon-only-menu-width"));
+    let hasIconOnly = !isNaN(iconOnlyWidth) && !isNaN(iconOnlyMenuWidth);
+    let expandedWidth = hasIconOnly && $compact
+      ? group.expandedWidth
+      : buttonsEl.offsetWidth - popupChrome + chrome;
+    if (!hasIconOnly) {
+      let buttonWidth = (groupEl.querySelector<HTMLElement>(".ribbon-button") ?? buttonsEl).offsetWidth;
+      group.setWidths(expandedWidth, buttonWidth + chrome);
+    } else {
+      let buttons = Array.from(buttonsEl.querySelectorAll(".ribbon-button"));
+      let gap = parseFloat(buttonsStyle.columnGap) || 0;
+      let iconsWidth = buttons.reduce((sum, button) =>
+        sum + (button.classList.contains("has-menu") ? iconOnlyMenuWidth : iconOnlyWidth), 0) +
+        gap * Math.max(0, buttons.length - 1);
+      group.setWidths(expandedWidth, iconOnlyMenuWidth + chrome, iconsWidth + chrome);
+    }
     tab?.fitGroups();
   }
 

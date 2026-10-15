@@ -72,6 +72,59 @@ test("Removing a group re-fits the others", () => {
   expect(collapsedStates(tab)).toEqual([false, false]);
 });
 
+function compactStates(tab: RibbonTabModel): boolean[] {
+  return tab.groups.map(group => get(group.compact));
+}
+
+function makeSimplifiedGroup(label: string, expandedWidth: number, compactWidth: number): RibbonGroupModel {
+  let group = new RibbonGroupModel(label);
+  group.setWidths(expandedWidth, 54, compactWidth);
+  return group;
+}
+
+test("Simplified: groups first show only icons, from the end", () => {
+  let tab = new RibbonTabModel("Home");
+  tab.addGroup(makeSimplifiedGroup("New", 250, 86));
+  tab.addGroup(makeSimplifiedGroup("Respond", 300, 110));
+  tab.addGroup(makeSimplifiedGroup("Tags", 280, 120));
+  // total 830
+  tab.setAvailableWidth(900);
+  expect(compactStates(tab)).toEqual([false, false, false]);
+  expect(collapsedStates(tab)).toEqual([false, false, false]);
+  // Icons only for "Tags" saves 160 -> 670
+  tab.setAvailableWidth(700);
+  expect(compactStates(tab)).toEqual([false, false, true]);
+  expect(collapsedStates(tab)).toEqual([false, false, false]);
+  // Icons only for "Respond" too saves 190 -> 480
+  tab.setAvailableWidth(500);
+  expect(compactStates(tab)).toEqual([false, true, true]);
+  expect(collapsedStates(tab)).toEqual([false, false, false]);
+});
+
+test("Simplified: groups collapse only when all of them show only icons", () => {
+  let tab = new RibbonTabModel("Home");
+  tab.addGroup(makeSimplifiedGroup("New", 250, 86));
+  tab.addGroup(makeSimplifiedGroup("Respond", 300, 110));
+  tab.addGroup(makeSimplifiedGroup("Tags", 280, 120));
+  // All icons only: 316. Collapsing "Tags" saves 66 -> 250
+  tab.setAvailableWidth(300);
+  expect(compactStates(tab)).toEqual([true, true, false]);
+  expect(collapsedStates(tab)).toEqual([false, false, true]);
+  // Growing again shows the labels again
+  tab.setAvailableWidth(1000);
+  expect(compactStates(tab)).toEqual([false, false, false]);
+  expect(collapsedStates(tab)).toEqual([false, false, false]);
+});
+
+test("Classic: without an icon-only width, groups never become compact", () => {
+  let tab = new RibbonTabModel("Home");
+  tab.addGroup(makeGroup("New", 154));
+  tab.addGroup(makeGroup("Delete", 226));
+  tab.setAvailableWidth(300);
+  expect(compactStates(tab)).toEqual([false, false]);
+  expect(collapsedStates(tab)).toEqual([false, true]);
+});
+
 test("First button icon is the group icon", () => {
   let group = new RibbonGroupModel("New");
   let firstIcon = (() => null) as any;
