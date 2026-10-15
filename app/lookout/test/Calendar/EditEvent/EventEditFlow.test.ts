@@ -154,6 +154,41 @@ test("A later time and another day of an occurrence, for the entire series, move
   expect(master.recurrenceRule.weekdays.sort()).toEqual([2, 5]);
 });
 
+test("Deleting an occurrence excludes it from the series and closes the form", async () => {
+  let master = await savedWeeklySeries();
+  let occurrence = master.instances.get(2);
+  let start = occurrence.recurrenceStartTime;
+  occurrence.startEditing();
+  let onClosed = vi.fn();
+  await new EventEditFlow(occurrence, onClosed).deleteIt();
+  expect(master.exclusions.contents.map(date => date.getTime())).toContain(start.getTime());
+  expect(master.instances.contents.some(instance => instance.startTime.getTime() == start.getTime())).toBe(false);
+  expect(onClosed).toHaveBeenCalledOnce();
+});
+
+test("Deleting this and the following occurrences ends the series before it", async () => {
+  let master = await savedWeeklySeries();
+  let occurrence = master.instances.get(3);
+  occurrence.startEditing();
+  await new EventEditFlow(occurrence, () => {}).deleteRemainder();
+  expect(master.recurrenceRule.count).toBe(3);
+});
+
+test("Deleting the entire series asks first", async () => {
+  let master = await savedWeeklySeries();
+  let occurrence = master.instances.get(3);
+  occurrence.startEditing();
+  let onClosed = vi.fn();
+  vi.stubGlobal("confirm", () => false);
+  await new EventEditFlow(occurrence, onClosed).deleteAll();
+  vi.stubGlobal("confirm", () => true);
+  expect(master.calendar.events.contains(master)).toBe(true);
+  expect(onClosed).not.toHaveBeenCalled();
+  await new EventEditFlow(occurrence, onClosed).deleteAll();
+  expect(master.calendar.events.contains(master)).toBe(false);
+  expect(onClosed).toHaveBeenCalledOnce();
+});
+
 test("Days between dates, also across a change to daylight saving time", () => {
   expect(EventEditFlow.daysBetween(new Date(2026, 2, 28, 23, 0), new Date(2026, 2, 30, 1, 0))).toBe(2);
   expect(EventEditFlow.daysBetween(new Date(2026, 9, 16), new Date(2026, 9, 15))).toBe(-1);
