@@ -1,0 +1,709 @@
+<vbox flex class="composer-page" on:keydown|capture={onKeyDown}>
+  <ComposerRibbon {mail} {editor} identity={fromIdentity}
+    canEncrypt={!!privateKey}
+    canShowFrom={hasSeveralIdentities}
+    bccLocked={hasBCC}
+    bind:showFrom={$showFromSetting.value}
+    bind:showBcc={$showBccSetting.value}
+    bind:showEmojis
+    bind:spellcheck={$spellcheckEnabled.value}
+    onAddressBook={() => openSelectNames(RecipientField.To)}
+    onAttachFile={onAddAttachment}
+    onInsertPicture={onInsertPicture}
+    onInsertLink={() => showLinkDialog = true}
+    />
+  <vbox flex class="composer lo-card">
+    <FileDropTarget
+      on:add-files={(event) => catchErrors(() => onFilesDrop(event))}
+      on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))}
+      allowInline={true}>
+      <hbox class="title-row">
+        <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$t`Message`}</span></h1>
+        <hbox flex />
+        <hbox class="title-buttons">
+          <DialogButton label={$t`Save`} icon={SaveIcon} classes="plain"
+            tooltip={$t`Save as draft (Ctrl+S)`}
+            disabled={saveDisabledReason ?? false}
+            onClick={onSave} />
+          <DialogButton label={$t`Discard`} icon={DiscardIcon} classes="plain"
+            onClick={onDiscard} />
+          <button class="close" title={$t`Close`} aria-label={$t`Close`} on:click={onCloseRequest}>
+            <CloseIcon size={18} />
+          </button>
+        </hbox>
+      </hbox>
+      <hbox class="header">
+        <button class="send" on:click={() => catchErrors(onSendRequest)}
+          class:disabled={!!sendDisabledTooltip}
+          title={sendDisabledTooltip ?? $t`Send (Ctrl+Enter)`}
+          tabindex={2}>
+          <SendIcon size={24} strokeWidth={1.5} />
+          <span>{$t`Send`}</span>
+        </button>
+        <grid class="fields">
+          {#if showFromRow}
+            <button class="field-button" on:click={onFromButton} tabindex={-1}>
+              {$t`From`} <ChevronDownIcon size={14} />
+            </button>
+            <hbox class="field from" bind:this={fromFieldEl}>
+              <IdentitySelector bind:selectedIdentity={fromIdentity}
+                bind:fromAddress={mail.from.emailAddress}
+                bind:fromName={mail.from.name} />
+              <hbox class="from-address lo-secondary">{$mail.from.emailAddress ?? ""}</hbox>
+            </hbox>
+          {/if}
+          <button class="field-button" on:click={() => openSelectNames(RecipientField.To)} tabindex={-1}
+            title={$t`Select recipients from the address book`}>
+            {$t`To`}
+          </button>
+          <hbox class="field">
+            <MailAutocomplete addresses={mail.to} placeholder="" tabindex={1} autofocus={mail.to.isEmpty}>
+              <svelte:fragment slot="person-popup-buttons" let:person>
+                <Button plain label={$t`Cc`} onClick={() => onMoveToCC(person)} />
+                <Button plain label={$t`Bcc`} onClick={() => onMoveToBCC(person)} />
+              </svelte:fragment>
+            </MailAutocomplete>
+          </hbox>
+          <button class="field-button" on:click={() => openSelectNames(RecipientField.Cc)} tabindex={-1}
+            title={$t`Select recipients from the address book`}>
+            {$t`Cc`}
+          </button>
+          <hbox class="field">
+            <MailAutocomplete addresses={mail.cc} placeholder="" tabindex={1}>
+              <svelte:fragment slot="person-popup-buttons" let:person>
+                <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
+                <Button plain label={$t`Bcc`} onClick={() => onMoveToBCC(person)} />
+              </svelte:fragment>
+            </MailAutocomplete>
+          </hbox>
+          {#if showBCC}
+            <button class="field-button" on:click={() => openSelectNames(RecipientField.Bcc)} tabindex={-1}
+              title={$t`Select recipients from the address book`}>
+              {$t`Bcc`}
+            </button>
+            <hbox class="field">
+              <MailAutocomplete addresses={mail.bcc} placeholder="" tabindex={1}>
+                <svelte:fragment slot="person-popup-buttons" let:person>
+                  <Button plain label={$t`To`} onClick={() => onMoveToTo(person)} />
+                  <Button plain label={$t`Cc`} onClick={() => onMoveToCC(person)} />
+                </svelte:fragment>
+              </MailAutocomplete>
+            </hbox>
+          {/if}
+          <label class="subject-label" for="composer-subject">{$t`Subject`}</label>
+          <hbox class="field subject">
+            <input id="composer-subject" type="text" bind:value={mail.subject} tabindex={1} />
+          </hbox>
+        </grid>
+      </hbox>
+      {#if $mail.shouldEncrypt || $mail.signedByKeyID}
+        <hbox class="info-bar">
+          {#if $mail.shouldEncrypt}
+            <LockIcon size={16} />
+            {$t`This message will be encrypted and digitally signed.`}
+          {:else}
+            <SignIcon size={16} />
+            {$t`This message will be digitally signed.`}
+          {/if}
+        </hbox>
+      {/if}
+      {#if $mail.shouldEncrypt}
+        <vbox class="encryption-details">
+          <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
+        </vbox>
+      {/if}
+      {#if hasAttachments}
+        <hbox class="attachments">
+          {#each $attachmentsList.each as attachment (attachment)}
+            <vbox class="attachment-card">
+              <AttachmentEntry {attachment} attachments={attachmentsList} />
+            </vbox>
+          {/each}
+        </hbox>
+      {/if}
+      <hbox flex class="body">
+        <vbox flex class="editor-scroll">
+          {#if loading}
+            <hbox class="loading"><Spinner size="32px" /></hbox>
+          {/if}
+          <SMLComposer {mail} />
+          <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
+            <!-- The html in the mail passed in MUST already be sanitized HTML.
+            Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
+            <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
+          </vbox>
+        </vbox>
+        {#if showEmojis}
+          <vbox class="emojis">
+            <GraphicSelector
+              on:select={onEmoji}
+              on:backspace={() => catchErrors(onEmojiBackspace)}
+              bind:isOpen={showEmojis}
+              />
+          </vbox>
+        {/if}
+      </hbox>
+    </FileDropTarget>
+  </vbox>
+</vbox>
+
+{#if selectNamesField}
+  <SelectNamesDialog {mail} defaultField={selectNamesField} onDone={() => selectNamesField = null} />
+{/if}
+{#if showSaveChanges}
+  <SaveChangesDialog
+    yesDisabled={saveDisabledReason}
+    onYes={onSaveAndClose}
+    onNo={onDiscard}
+    onCancel={() => showSaveChanges = false} />
+{/if}
+{#if showLinkDialog && editor}
+  <LinkDialog {editor} onDone={() => showLinkDialog = false} />
+{/if}
+<FileSelector bind:this={fileSelector} />
+<FileSelector bind:this={imageSelector} acceptFileTypes={["image/png", "image/jpeg", "image/gif"]} />
+
+<script lang="ts">
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
+  import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { appGlobal } from "../../../logic/app";
+  import { UserError, assert } from "../../../logic/util/util";
+  import { insertImage } from "../../../frontend/Shared/Editor/InsertImage";
+  import { WriteMailMustangApp, mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import { goBack } from "../../../frontend/AppsBar/selectedApp";
+  import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
+  import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
+  import { ComposerEncryption } from "./ComposerEncryption";
+  import { DraftContent } from "./DraftContent";
+  import { RecipientField } from "./SelectNames";
+  import ComposerRibbon from "./ComposerRibbon.svelte";
+  import SelectNamesDialog from "./SelectNamesDialog.svelte";
+  import SaveChangesDialog from "./SaveChangesDialog.svelte";
+  import LinkDialog from "./LinkDialog.svelte";
+  import DialogButton from "./DialogButton.svelte";
+  import MailAutocomplete from "../../../frontend/Mail/Composer/MailAutocomplete.svelte";
+  import IdentitySelector from "../../../frontend/Mail/Composer/IdentitySelector.svelte";
+  import EncryptionDetails from "../../../frontend/Mail/Composer/EncryptionDetails.svelte";
+  import SMLComposer from "../../../frontend/Mail/Composer/SMLComposer.svelte";
+  import AttachmentEntry from "../../../frontend/Mail/Composer/Attachments/AttachmentEntry.svelte";
+  import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
+  import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
+  import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
+  import GraphicSelector from "../../../frontend/Chat/Emoji/GraphicSelector.svelte";
+  import Button from "../../../frontend/Shared/Button.svelte";
+  import Spinner from "../../../frontend/Shared/Spinner.svelte";
+  import SendIcon from "lucide-svelte/icons/send";
+  import SaveIcon from "lucide-svelte/icons/save";
+  import DiscardIcon from "lucide-svelte/icons/trash-2";
+  import CloseIcon from "lucide-svelte/icons/x";
+  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
+  import LockIcon from "lucide-svelte/icons/lock";
+  import SignIcon from "lucide-svelte/icons/signature";
+  import { t, gt } from "../../../l10n/l10n";
+  import { tick } from "svelte";
+  import type { Editor } from "@tiptap/core";
+
+  export let mail: EMail;
+
+  let editor: Editor;
+  $: to = mail.to;
+  let fromIdentity: MailIdentity;
+  let identities = findAllIdentities();
+  $: hasSeveralIdentities = $identities.length > 1 || !!fromIdentity?.isCatchAll;
+  let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
+  let showFromSetting = getLocalStorage("lookout.mail.compose.showFrom", true);
+  let showBccSetting = getLocalStorage("lookout.mail.compose.showBcc", false);
+  let encryptionError: string | null = null;
+  let showEmojis = false;
+  let selectNamesField: RecipientField | null = null;
+  let showSaveChanges = false;
+  let showLinkDialog = false;
+  let fromFieldEl: HTMLElement;
+
+  // <copied from="../../../frontend/Mail/Composer/MailComposer.svelte">
+  // HACK to reload the HTMLEditor to force it to load the new text
+  // See <https://github.com/ueberdosis/tiptap/issues/4918>
+  let lastMail = null;
+  $: differentMailLoaded(mail);
+  function differentMailLoaded(_dummy: any) {
+    if (closing) {
+      return;
+    }
+    if (mail == lastMail || !mail) {
+      return;
+    }
+    lastMail = mail;
+
+    fromIdentity = mail.identity
+      ?? mail.folder?.account.identities.first
+      ?? appGlobal.emailAccounts.first?.identities.first;
+    assert(fromIdentity, "Composer: Need identity or account for email");
+    // setAuthor() called
+
+    if (mail.from?.emailAddress) {
+      let recipients = [mail.from, ...mail.to.contents, ...mail.cc.contents, ...mail.bcc.contents];
+      checkInvalidRecipients(recipients);
+    }
+
+    loadText()
+      .catch(backgroundError);
+  }
+
+  let loading = false;
+  async function loadText() {
+    if (!mail.hasHTML) {
+      return;
+    }
+    loading = true;
+    await mail.loadBody();
+    loading = false;
+    if (!editor) {
+      await tick();
+    }
+    editor.commands.setContent(mail.html);
+    setCursorDefault();
+  }
+
+  function setCursorDefault() {
+    if (mail.to.isEmpty) {
+      return;
+    }
+    let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
+    let below = quoteSetting == "below";
+    editor.commands.focus(below ? 'start' : 'end');
+  }
+
+  $: fromIdentity && setAuthor()
+  function setAuthor() {
+    mail.identity = fromIdentity;
+    mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
+      ?? fromIdentity.account.inbox;
+    if (fromIdentity == mail.identity) {
+      return; // don't overwrite concrete email address for catch-all identity
+    }
+    mail.from = fromIdentity.asPersonUID();
+  }
+
+  function checkInvalidRecipients(recipients: PersonUID[]) {
+    const kNoReplyRegExp = /no[\-_t]*reply@|invalid$/;
+    let invalidTo = recipients.find(person =>
+      !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
+    if (invalidTo) {
+      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
+      doOnClose.push(() => notification.remove());
+    }
+  }
+
+  function onMoveToCC(person: PersonUID) {
+    mail.bcc.remove(person);
+    mail.to.remove(person);
+    mail.cc.add(person);
+  }
+  function onMoveToBCC(person: PersonUID) {
+    mail.cc.remove(person);
+    mail.to.remove(person);
+    mail.bcc.add(person);
+  }
+  function onMoveToTo(person: PersonUID) {
+    mail.cc.remove(person);
+    mail.bcc.remove(person);
+    mail.to.add(person);
+  }
+
+  let fileSelector: FileSelector;
+  async function onAddAttachment() {
+    let files = await fileSelector.selectFiles();
+    if (!files?.length) {
+      return;
+    }
+    addFilesAsAttachments(mail, files);
+  }
+
+  function onFilesDrop(event: CustomEvent) {
+    addFilesAsAttachments(mail, event.detail.files as File[]);
+  }
+
+  async function onFileInlineDrop(event: CustomEvent) {
+    let files = event.detail.files as File[];
+    for (let file of files) {
+      await insertImage(editor, file, mail);
+    }
+  }
+
+  function onEmoji(ev: CustomEvent) {
+    let emoji = ev.detail.emoji;
+    if (emoji) {
+      editor.commands.insertContent(emoji);
+    }
+  }
+
+  function onEmojiBackspace() {
+    editor.view.focus();
+    document.execCommand("delete");
+  }
+
+  $: sendDisabledTooltip =
+    !mail.subject ? $t`Please enter a subject` :
+    $to.isEmpty ? $t`Please add some recipients` :
+    encryptionError ??
+    null;
+
+  async function onSend() {
+    try {
+      await mail.compose.send(onClose);
+    } catch (ex) {
+      if (closing) { // Already closed. Re-open, to not lose the mail.
+        mailMustangApp.writeMail(mail);
+      }
+      throw ex;
+    }
+  }
+
+  let closing = false;
+  let doOnClose: (() => void)[] = [];
+  function onClose() {
+    closing = true;
+    for (let func of doOnClose) {
+      func();
+    }
+    doOnClose = [];
+
+    let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
+    mailMustangApp.subApps.remove(me);
+    goBack();
+  }
+
+  $: bccList = mail.bcc;
+  $: attachmentsList = mail.attachments;
+  $: hasBCC = $bccList.hasItems;
+  $: hasAttachments = $attachmentsList.hasItems;
+  // </copied>
+  $: showBCC = $showBccSetting.value || hasBCC;
+  $: showFromRow = $showFromSetting.value && hasSeveralIdentities;
+
+  $: privateKey = ComposerEncryption.privateKey(fromIdentity);
+  $: privateKey, fromIdentity && catchErrors(() => ComposerEncryption.applyIdentityDefaults(mail, privateKey));
+
+  $: saveDisabledReason = $mail.shouldEncrypt ? $t`Encrypted drafts are not supported yet` : null;
+
+  async function onSendRequest() {
+    if (sendDisabledTooltip) {
+      throw new UserError(sendDisabledTooltip);
+    }
+    await onSend();
+  }
+
+  async function onSave() {
+    if (saveDisabledReason) {
+      throw new UserError(saveDisabledReason);
+    }
+    await mail.compose.saveAsDraft();
+  }
+
+  async function onSaveAndClose() {
+    await onSave();
+    showSaveChanges = false;
+    onClose();
+  }
+
+  async function onDiscard() {
+    // <copied from="../../../frontend/Mail/Composer/CloseButton.svelte" onDelete()>
+    onClose();
+    await mail.compose.deleteDrafts();
+    // </copied>
+  }
+
+  function onCloseRequest() {
+    if (DraftContent.hasUserText(mail.html)) {
+      showSaveChanges = true;
+    } else {
+      onClose();
+    }
+  }
+
+  function openSelectNames(field: RecipientField) {
+    selectNamesField = field;
+  }
+
+  let imageSelector: FileSelector;
+  async function onInsertPicture() {
+    let files = await imageSelector.selectFiles();
+    for (let file of files ?? []) {
+      await insertImage(editor, file, mail);
+    }
+  }
+
+  function onFromButton() {
+    let select = fromFieldEl?.querySelector("select");
+    if (!select) {
+      return;
+    }
+    select.focus();
+    try {
+      select.showPicker();
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
+  function onKeyDown(event: KeyboardEvent) {
+    let command = ComposerShortcuts.commandFor(event);
+    if (!command || selectNamesField || showSaveChanges || showLinkDialog) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (command == ComposerCommand.Send) {
+      catchErrors(onSendRequest);
+    } else if (command == ComposerCommand.Save) {
+      onSave().catch(showError);
+    } else if (command == ComposerCommand.Link && editor) {
+      showLinkDialog = true;
+    }
+  }
+</script>
+
+<style>
+  .composer-page {
+    min-height: 0;
+  }
+  .composer {
+    min-height: 0;
+    margin: 0 8px 8px 8px;
+    overflow: hidden;
+  }
+  .composer :global(.container),
+  .composer :global(.container > .content) {
+    min-height: 0;
+  }
+  .title-row {
+    flex-shrink: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px 6px 24px;
+  }
+  h1 {
+    margin: 0;
+    font-size: var(--lo-font-size-large);
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  h1 .kind {
+    margin-inline-start: 8px;
+    font-weight: normal;
+    color: var(--lo-fg-secondary);
+  }
+  .title-buttons {
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+  }
+  .close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg-secondary);
+  }
+  .close:hover {
+    background-color: var(--lo-danger);
+    color: var(--lo-danger-fg);
+  }
+  .header {
+    flex-shrink: 0;
+    align-items: start;
+    gap: 12px;
+    padding: 8px 24px 12px 24px;
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  .send {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 64px;
+    height: 76px;
+    margin-block-start: 2px;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-accent);
+    color: var(--lo-accent-fg);
+    font-size: var(--lo-font-size);
+  }
+  .send:hover {
+    background-color: var(--lo-accent-hover);
+  }
+  .send:active {
+    background-color: var(--lo-accent-pressed);
+  }
+  .send.disabled {
+    opacity: 0.55;
+  }
+  .fields {
+    flex: 1 1 0;
+    min-width: 0;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 6px;
+  }
+  .field-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-pane-bg);
+    color: var(--lo-fg);
+    font-size: var(--lo-font-size);
+  }
+  .field-button:hover {
+    background-color: var(--lo-hover-bg);
+    border-color: var(--lo-border-strong);
+  }
+  .field {
+    min-width: 0;
+    min-height: 32px;
+    align-items: center;
+    border-block-end: 1px solid var(--lo-input-border);
+  }
+  .field:focus-within {
+    border-block-end-color: var(--lo-accent);
+    box-shadow: 0 1px 0 0 var(--lo-accent);
+  }
+  .field :global(.persons-autocomplete),
+  .field > :global(*) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .field :global(input) {
+    border-block-end: none !important;
+    background-color: transparent;
+  }
+  .field :global(.persons-autocomplete) {
+    border-block-end: none;
+    padding: 0;
+  }
+  .field :global(.person-autocomplete input) {
+    box-shadow: none;
+    padding: 0 4px !important;
+    background-color: transparent;
+  }
+  .field.from {
+    gap: 12px;
+  }
+  .field.from :global(.identity-selector) {
+    flex: 0 1 auto;
+  }
+  .field.from :global(select) {
+    font-size: var(--lo-font-size);
+    padding: 4px 0;
+  }
+  .from-address {
+    flex: 0 1 auto !important;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .subject-label {
+    justify-self: center;
+    color: var(--lo-fg-secondary);
+  }
+  .subject input {
+    height: 30px;
+    font-size: var(--lo-font-size);
+  }
+  .info-bar {
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 24px 0 24px;
+    padding: 6px 12px;
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-accent-tint);
+    color: var(--lo-fg);
+    font-size: var(--lo-font-size-small);
+  }
+  .info-bar :global(svg) {
+    color: var(--lo-accent-text);
+  }
+  .encryption-details {
+    flex-shrink: 0;
+    margin: 4px 24px 0 24px;
+  }
+  .attachments {
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 132px;
+    overflow-y: auto;
+    padding: 10px 24px;
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  .attachment-card {
+    width: 260px;
+  }
+  .attachment-card :global(.attachment) {
+    margin: 0;
+    padding: 6px 8px;
+    border: 1px solid var(--lo-border);
+    border-radius: var(--lo-radius-small);
+    box-shadow: none;
+    background-color: var(--lo-pane-bg);
+  }
+  .attachment-card :global(.attachment:hover) {
+    background-color: var(--lo-hover-bg);
+  }
+  .attachment-card :global(.attachment .size),
+  .attachment-card :global(.attachment .icon),
+  .attachment-card :global(.attachment .buttons svg) {
+    color: var(--lo-fg-secondary);
+  }
+  .attachment-card :global(.attachment .name) {
+    flex-wrap: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+  }
+  .body {
+    min-height: 0;
+  }
+  .editor-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 24px;
+  }
+  .editor {
+    min-height: 200px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .editor :global(.ProseMirror) {
+    min-height: 200px;
+  }
+  .loading {
+    justify-content: center;
+    padding: 16px;
+  }
+  .emojis {
+    width: 360px;
+    min-height: 0;
+    border-inline-start: 1px solid var(--lo-divider);
+  }
+</style>
