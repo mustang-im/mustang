@@ -86,6 +86,46 @@
     min-width: 0;
     min-height: 0;
   }
+  .app-area > :global(.notification-bar) {
+    min-height: 34px;
+    margin: 0 8px 6px 8px;
+    padding-inline-start: 4px;
+    border: 1px solid var(--lo-infobar-border);
+    border-radius: var(--lo-radius);
+    background-color: var(--lo-infobar-bg);
+    color: var(--lo-fg);
+    box-shadow: none;
+  }
+  .app-area > :global(.notification-bar[severity="error"]) {
+    border-color: var(--lo-infobar-error-border);
+    background-color: var(--lo-infobar-error-bg);
+  }
+  .app-area > :global(.notification-bar[severity="meltdown"]) {
+    border-color: var(--lo-danger);
+    background-color: var(--lo-danger);
+    color: var(--lo-danger-fg);
+  }
+  .app-area > :global(.notification-bar[severity="info"]),
+  .app-area > :global(.notification-bar[severity="logged-out"]) {
+    border-color: var(--lo-selected-bg);
+    background-color: var(--lo-accent-tint);
+  }
+  .app-area > :global(.notification-bar > hbox:first-child) {
+    display: none;
+  }
+  .app-area > :global(.notification-bar button) {
+    border-color: transparent;
+    background-color: transparent;
+    color: inherit;
+  }
+  .app-area > :global(.notification-bar button:hover) {
+    background-color: var(--lo-hover-bg);
+  }
+  .app-area > :global(.notification-bar button.action) {
+    border-color: var(--lo-input-border);
+    background-color: var(--lo-pane-bg);
+    color: var(--lo-fg);
+  }
   .sidebar {
     box-shadow: var(--lo-shadow-card);
     z-index: 2;
