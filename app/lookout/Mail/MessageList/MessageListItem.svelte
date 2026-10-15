@@ -113,7 +113,6 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "./MessageDates";
@@ -152,7 +151,7 @@
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
   $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;
-  $: isDraft = $message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts;
+  $: isDraft = $message && MessageActions.isDraft(message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
 </script>
 

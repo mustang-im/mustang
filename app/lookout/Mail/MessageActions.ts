@@ -111,12 +111,18 @@ export class MessageActions {
     mailMustangApp.writeMail(message.compose.newToAll());
   }
 
-  static openDraft(message: EMail): boolean {
-    if (!message?.isDraft) {
-      return false;
+  static isDraft(message: EMail): boolean {
+    return message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts;
+  }
+
+  static async openDraft(message: EMail) {
+    if (!MessageActions.isDraft(message)) {
+      return;
     }
+    // <copied from="../../frontend/Mail/Message/MessageToolbar.svelte" editDraft()>
+    await message.loadMIME();
     mailMustangApp.writeMail(message);
-    return true;
+    // </copied>
   }
 
   static async delete(messages: EMail[]) {
