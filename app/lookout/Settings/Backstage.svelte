@@ -20,30 +20,7 @@
   </vbox>
   <vbox flex class="backstage-page">
     {#if $backstageState.page == "info"}
-      <vbox flex class="info">
-        <h1>{$t`Account Information`}</h1>
-        <vbox class="accounts">
-          {#each $emailAccounts.each as account (account.id)}
-            <hbox class="account lo-card">
-              <hbox class="account-icon"><AccountIcon size="24" /></hbox>
-              <vbox flex class="account-names">
-                <hbox class="account-name">{account.name}</hbox>
-                <hbox class="account-address lo-secondary">{account.emailAddress ?? ""}</hbox>
-              </vbox>
-              <button class="action" on:click={() => catchErrors(() => onAccountSettings(account))}>
-                <AccountSettingsIcon size="16" />
-                {$t`Account Settings`}
-              </button>
-            </hbox>
-          {/each}
-        </vbox>
-        <hbox>
-          <button class="action add" on:click={() => catchErrors(onAddAccount)}>
-            <AddIcon size="16" />
-            {$t`Add Account`}
-          </button>
-        </hbox>
-      </vbox>
+      <InfoPage />
     {/if}
   </vbox>
 </hbox>
@@ -51,35 +28,16 @@
 
 <script lang="ts">
   import { backstageState } from "./BackstageState";
-  import type { MailAccount } from "../../logic/Mail/MailAccount";
-  import { appGlobal } from "../../logic/app";
-  import { goTo } from "../../frontend/AppsBar/selectedApp";
-  import { openSettingsCategoryForAccount } from "../../frontend/Settings/Window/CategoriesUtils";
   import { SettingsDialogs } from "./SettingsDialogs";
-  import { catchErrors } from "../../frontend/Util/error";
+  import InfoPage from "./Backstage/InfoPage.svelte";
   import BackIcon from "lucide-svelte/icons/arrow-left";
   import InfoIcon from "lucide-svelte/icons/info";
   import OptionsIcon from "lucide-svelte/icons/sliders-horizontal";
   import ExitIcon from "lucide-svelte/icons/log-out";
-  import AccountIcon from "lucide-svelte/icons/mail";
-  import AccountSettingsIcon from "lucide-svelte/icons/settings";
-  import AddIcon from "lucide-svelte/icons/plus";
   import { t } from "../../l10n/l10n";
-
-  const emailAccounts = appGlobal.emailAccounts;
 
   function onBack() {
     backstageState.close();
-  }
-
-  function onAddAccount() {
-    backstageState.close();
-    goTo("/setup/mail", {});
-  }
-
-  function onAccountSettings(account: MailAccount) {
-    backstageState.close();
-    openSettingsCategoryForAccount(account);
   }
 
   function onExit() {
@@ -87,7 +45,7 @@
   }
 
   function onKeyDown(event: KeyboardEvent) {
-    if (event.key == "Escape") {
+    if (event.key == "Escape" && !event.defaultPrevented) {
       backstageState.close();
     }
   }
@@ -151,59 +109,5 @@
     min-width: 0;
     min-height: 0;
     overflow: auto;
-  }
-  .info {
-    padding: 24px 40px;
-    gap: 16px;
-    max-width: 760px;
-  }
-  h1 {
-    margin: 0 0 8px 0;
-    font-size: 28px;
-    font-weight: 300;
-  }
-  .accounts {
-    gap: 8px;
-  }
-  .account {
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border: 1px solid var(--lo-border);
-    box-shadow: none;
-  }
-  .account-icon {
-    color: var(--lo-accent-text);
-  }
-  .account-name {
-    font-weight: 600;
-  }
-  .account-address {
-    font-size: var(--lo-font-size-small);
-  }
-  .action {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
-    height: 32px;
-    padding: 0 12px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-pane-bg);
-    color: var(--lo-fg);
-    font-family: inherit;
-    font-size: var(--lo-font-size);
-  }
-  .action:hover {
-    background-color: var(--lo-hover-bg);
-  }
-  .action.add {
-    background-color: var(--lo-accent);
-    border-color: var(--lo-accent);
-    color: var(--lo-accent-fg);
-  }
-  .action.add:hover {
-    background-color: var(--lo-accent-hover);
   }
 </style>
