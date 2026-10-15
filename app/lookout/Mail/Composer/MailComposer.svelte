@@ -11,6 +11,7 @@
     onAttachFile={onAddAttachment}
     onInsertPicture={onInsertPicture}
     onInsertLink={() => showLinkDialog = true}
+    onSignatures={() => showSignatures = true}
     />
   <vbox flex class="composer lo-card">
     <FileDropTarget
@@ -143,6 +144,9 @@
 {#if showLinkDialog && editor}
   <LinkDialog {editor} onDone={() => showLinkDialog = false} />
 {/if}
+{#if showSignatures}
+  <SignaturesDialog identity={fromIdentity} onDone={() => showSignatures = false} />
+{/if}
 <FileSelector bind:this={fileSelector} />
 <FileSelector bind:this={imageSelector} acceptFileTypes={["image/png", "image/jpeg", "image/gif"]} />
 
@@ -168,6 +172,7 @@
   import SelectNamesDialog from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import LinkDialog from "./LinkDialog.svelte";
+  import SignaturesDialog from "./SignaturesDialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import AddressField from "./AddressField.svelte";
   import FromField from "./FromField.svelte";
@@ -205,6 +210,7 @@
   let selectNamesField = RecipientField.To;
   let showSaveChanges = false;
   let showLinkDialog = false;
+  let showSignatures = false;
   let ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isChips = $ribbonLayout.value == "simplified";
   let toField: AddressField;
@@ -424,7 +430,7 @@
 
   function onKeyDown(event: KeyboardEvent) {
     let command = ComposerShortcuts.commandFor(event);
-    if (!command || selectNames || showSaveChanges || showLinkDialog) {
+    if (!command || selectNames || showSaveChanges || showLinkDialog || showSignatures) {
       return;
     }
     event.preventDefault();

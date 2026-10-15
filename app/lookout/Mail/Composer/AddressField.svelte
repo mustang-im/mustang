@@ -43,7 +43,7 @@
   <MenuItem label={$t`Cut`} icon={CutIcon} disabled={disabled} onClick={() => onCut(menuRecipient)} />
   <MenuItem label={$t`Remove`} icon={RemoveIcon} disabled={disabled} onClick={() => remove(menuRecipient)} />
   <MenuDivider />
-  <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Outlook Contacts`}
+  <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}
     icon={ContactIcon} onClick={() => onOpenContact(menuRecipient)} />
 </ContextMenu>
 
@@ -111,7 +111,7 @@
     if (stillUnresolved.length) {
       await updateSuggestions();
       if (!suggestions.length) {
-        throw new UserError($t`Outlook does not recognize ${stillUnresolved.join("; ")}.`);
+        throw new UserError($t`No contact matches ${stillUnresolved.join("; ")}`);
       }
       return false;
     }
