@@ -1,9 +1,14 @@
+import type { Account } from "../../logic/Abstract/Account";
 import { writable } from "svelte/store";
 
 export type OptionsCategory = "general" | "mail" | "calendar" | "language" | "advanced" | "trust-center";
+export type AccountSettingsTab = "email" | "calendars" | "addressbooks";
+export type ChangeAccountPage = "general" | "server";
 
 export type SettingsDialog =
-  { kind: "options", category: OptionsCategory };
+  { kind: "options", category: OptionsCategory } |
+  { kind: "account-settings", tab: AccountSettingsTab } |
+  { kind: "change-account", account: Account, page: ChangeAccountPage };
 
 export class SettingsDialogs {
   static readonly current = writable<SettingsDialog | null>(null);
