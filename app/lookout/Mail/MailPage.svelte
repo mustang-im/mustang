@@ -216,7 +216,7 @@
     isAutoSelectPending = true;
     isSearching = true;
     try {
-      let result = await search.startSearch(MailSearch.kLimit + 1);
+      let result = await MailSearch.startSearch(search);
       if (currentSearch == search) {
         searchResults = result;
       }

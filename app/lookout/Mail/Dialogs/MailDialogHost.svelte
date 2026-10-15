@@ -15,7 +15,7 @@
 {:else if $dialog?.kind == "rule-from-search"}
   <RuleFromSearchDialog search={$dialog.search} account={$dialog.account} on:close={onClose} />
 {:else if $dialog?.kind == "search-person"}
-  <SearchPersonDialog on:close={onClose} />
+  <SearchPersonDialog fieldLabel={$dialog.fieldLabel} person={$dialog.person} onPick={$dialog.onPick} on:close={onClose} />
 {:else if $dialog?.kind == "shared-folder"}
   <SharedFolderDialog account={$dialog.account} on:close={onClose} />
 {:else if $dialog?.kind == "folder-permissions"}

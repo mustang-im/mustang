@@ -3,14 +3,16 @@ import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { Tag } from "../../../logic/Abstract/Tag";
 import type { Person } from "../../../logic/Abstract/Person";
 import type { EMail } from "../../../logic/Mail/EMail";
-import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
 import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { appGlobal } from "../../../logic/app";
 import { assert } from "../../../logic/util/util";
 import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
+import { ReceivedRange, ReceivedRanges, SizeRange, SizeRanges } from "./SearchRanges";
 import { gt } from "../../../l10n/l10n";
+import type { Collection } from "svelte-collections";
 import { get, writable } from "svelte/store";
 
 export enum SearchScope {
@@ -21,28 +23,39 @@ export enum SearchScope {
 
 export interface SearchOptions {
   scope: SearchScope;
-  hasAttachment: boolean;
-  unread: boolean;
-  flagged: boolean;
-  sentByMe: boolean;
-  tags: Tag[];
   person: Person | null;
+  isOutgoing: boolean | null;
+  isRead: boolean | null;
+  hasAttachment: boolean;
+  flagged: boolean;
+  replied: boolean;
+  tags: Tag[];
+  received: ReceivedRange;
+  receivedStart: Date | null;
+  receivedEnd: Date | null;
+  size: SizeRange;
   threadID: string | null;
 }
 
 export class MailSearch {
   static readonly kLimit = 200;
   static readonly options = writable<SearchOptions>(MailSearch.defaultOptions());
+  static readonly isAdvancedSearchOpen = writable(false);
 
   static defaultOptions(): SearchOptions {
     return {
       scope: SearchScope.CurrentAccount,
-      hasAttachment: false,
-      unread: false,
-      flagged: false,
-      sentByMe: false,
-      tags: [],
       person: null,
+      isOutgoing: null,
+      isRead: null,
+      hasAttachment: false,
+      flagged: false,
+      replied: false,
+      tags: [],
+      received: ReceivedRange.Any,
+      receivedStart: null,
+      receivedEnd: null,
+      size: SizeRange.Any,
       threadID: null,
     };
   }
@@ -60,12 +73,29 @@ export class MailSearch {
   }
 
   static hasCriteria(term: string | null, options: SearchOptions): boolean {
-    return !!term || !!options.person || !!options.threadID;
+    return !!term || MailSearch.hasRefiners(options);
+  }
+
+  static hasRefiners(options: SearchOptions): boolean {
+    return !!options.person ||
+      options.isOutgoing != null ||
+      options.isRead != null ||
+      options.hasAttachment ||
+      options.flagged ||
+      options.replied ||
+      options.tags.length > 0 ||
+      options.received != ReceivedRange.Any ||
+      options.size != SizeRange.Any ||
+      !!options.threadID;
+  }
+
+  static clearRefiners() {
+    MailSearch.options.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope }));
   }
 
   static close() {
     globalSearchTerm.set(null);
-    MailSearch.options.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope }));
+    MailSearch.clearRefiners();
   }
 
   static findRelated(change: Partial<SearchOptions>) {
@@ -91,6 +121,30 @@ export class MailSearch {
         ? options.tags.filter(existing => existing != tag)
         : [...options.tags, tag],
     });
+  }
+
+  static isFrom(options: SearchOptions): boolean {
+    return !!options.person && options.isOutgoing !== true;
+  }
+
+  static isSentTo(options: SearchOptions): boolean {
+    return !!options.person && options.isOutgoing === true;
+  }
+
+  static isSentByMe(options: SearchOptions): boolean {
+    return !options.person && options.isOutgoing === true;
+  }
+
+  static setFrom(person: Person | null) {
+    MailSearch.update(person ? { person, isOutgoing: false } : { person: null, isOutgoing: null });
+  }
+
+  static setSentTo(person: Person | null) {
+    MailSearch.update(person ? { person, isOutgoing: true } : { person: null, isOutgoing: null });
+  }
+
+  static setSentByMe(sentByMe: boolean) {
+    MailSearch.update({ person: null, isOutgoing: sentByMe ? true : null });
   }
 
   static isRealFolder(folder: Folder | null): boolean {
@@ -121,7 +175,16 @@ export class MailSearch {
       : SearchScope.AllAccounts;
   }
 
-  static newSearch(term: string | null, options: SearchOptions, account: MailAccount | null, folder: Folder | null): SearchEMail {
+  static scopeLabel(scope: SearchScope): string {
+    switch (scope) {
+      case SearchScope.AllAccounts: return gt`All Mailboxes`;
+      case SearchScope.CurrentAccount: return gt`Current Mailbox`;
+      case SearchScope.CurrentFolder: return gt`Current Folder`;
+    }
+  }
+
+  static newSearch(term: string | null, options: SearchOptions, account: MailAccount | null, folder: Folder | null,
+      now = new Date()): SearchEMail {
     let search = newServerSearchEMail();
     search.bodyText = term;
     let scope = MailSearch.effectiveScope(options, account, folder);
@@ -130,27 +193,44 @@ export class MailSearch {
     } else if (scope == SearchScope.CurrentAccount) {
       search.account = MailSearch.isRealFolder(folder) ? folder.account : account;
     }
+    search.includesPerson = options.person;
+    search.isOutgoing = options.isOutgoing;
+    search.isRead = options.isRead;
     if (options.hasAttachment) {
       search.hasAttachment = true;
-    }
-    if (options.unread) {
-      search.isRead = false;
     }
     if (options.flagged) {
       search.isStarred = true;
     }
-    if (options.sentByMe) {
-      search.isOutgoing = true;
+    if (options.replied) {
+      search.isReplied = true;
     }
     for (let tag of options.tags) {
       search.tags.add(tag);
     }
-    if (options.person) {
-      search.includesPerson = options.person;
-    }
-    if (options.threadID) {
-      search.threadID = options.threadID;
-    }
+    let dates = ReceivedRanges.dates(options.received, now, options.receivedStart, options.receivedEnd);
+    search.sentDateMin = dates.start;
+    search.sentDateMax = dates.end;
+    let sizes = SizeRanges.bytes(options.size);
+    search.sizeMin = sizes.min;
+    search.sizeMax = sizes.max;
+    search.threadID = options.threadID;
     return search;
+  }
+
+  static hasDates(search: SearchEMail): boolean {
+    return !!search.sentDateMin || !!search.sentDateMax;
+  }
+
+  /** The database and the servers ignore the dates, so we search without limit and keep only the dates that match */
+  static async startSearch(search: SearchEMail): Promise<Collection<EMail>> {
+    if (!MailSearch.hasDates(search)) {
+      return await search.startSearch(MailSearch.kLimit + 1);
+    }
+    let dateFilter = new SearchEMail();
+    dateFilter.sentDateMin = search.sentDateMin;
+    dateFilter.sentDateMax = search.sentDateMax;
+    let results = await search.startSearch();
+    return results.filter(email => !!email.sent && dateFilter.matches(email));
   }
 }

@@ -2,6 +2,7 @@ import type { EMail } from "../../../logic/Mail/EMail";
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import type { Person } from "../../../logic/Abstract/Person";
 import { writable } from "svelte/store";
 
 export type MailDialog =
@@ -14,7 +15,7 @@ export type MailDialog =
   { kind: "new-search-folder", account: MailAccount | null } |
   { kind: "save-search", search: SearchEMail } |
   { kind: "rule-from-search", search: SearchEMail, account: MailAccount } |
-  { kind: "search-person" } |
+  { kind: "search-person", fieldLabel: string, person: Person | null, onPick: (person: Person | null) => void } |
   { kind: "shared-folder", account: MailAccount } |
   { kind: "folder-permissions", account: MailAccount };
 
