@@ -607,6 +607,10 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.Organizer;
   }
 
+  get isUnanswered(): boolean {
+    return this.myParticipation == InvitationResponse.NoResponseReceived;
+  }
+
   async createOnlineMeeting() {
     if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
       return;

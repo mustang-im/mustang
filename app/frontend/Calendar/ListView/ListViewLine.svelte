@@ -14,6 +14,8 @@
   style="--color: {event.color ?? event.calendar?.color}"
   class:all-day={$event.allDay}
   class:selected={$selectedEvent == event}
+  class:unanswered={$event.isUnanswered}
+  class:cancelled={$event.isCancelled}
   >
   {$event.title}
 </hbox>
@@ -49,6 +51,7 @@
     text-overflow: ellipsis;
 
     background-color: var(--color);
+    --stripe-color: rgb(from var(--color) r g b / 50%);
   }
   @media (prefers-color-scheme: dark) {
     .event {
@@ -57,8 +60,27 @@
         linear-gradient(#000000AA, #000000AA);
       background-blend-mode: overlay;
       background-color: unset;
+      --stripe-color: rgb(from var(--color) r g b / 25%);
     }
   }
+  /* <copied from="../DayView/EventContent.svelte"> */
+  .event.unanswered {
+    background-image: repeating-linear-gradient(-45deg, transparent 0 4px, var(--stripe-color) 4px 8px);
+    background-blend-mode: normal;
+    background-color: transparent;
+  }
+  .event.cancelled {
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 8px, var(--stripe-color) 8px 12px),
+      repeating-linear-gradient(-45deg, transparent 0 8px, var(--stripe-color) 8px 12px);
+    background-blend-mode: normal;
+    background-color: transparent;
+    text-decoration: line-through;
+  }
+  .event.cancelled.unanswered {
+    opacity: 10%;
+  }
+  /* </copied> */
   .event:hover {
     background-color: #20AF9E70;
   }

@@ -1,7 +1,6 @@
 <hbox class="event font-small"
   style="grid-column: {item.startDay + 1} / {item.endDay + 1}; grid-row: {item.startRow + 1} / {item.endRow + 1}; --lane: {item.lane}; --lanes: {item.lanes}; --color: {$event.color ?? $event.calendar?.color}"
   class:all-day={$event.allDay}
-  class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   <EventContent {event} showTime={!$event.allDay && !item.continuesBefore} />
 </hbox>
@@ -28,8 +27,5 @@
   }
   .event.all-day {
     opacity: 85%;
-  }
-  .event.cancelled {
-    opacity: 30%;
   }
 </style>

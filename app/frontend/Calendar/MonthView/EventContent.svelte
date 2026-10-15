@@ -1,5 +1,7 @@
 <Clickable onClick={onSelect} onDoubleClick={onOpen}>
   <hbox class="event font-small"
+    class:unanswered={$event.isUnanswered}
+    class:cancelled={$event.isCancelled}
     title={eventAsText}>
     {#if showTime}
       <hbox class="time">
@@ -49,6 +51,7 @@
     height: 100%;
     min-width: 0;
     overflow: hidden;
+    --stripe-color: rgb(from var(--color) r g b / 50%);
   }
   @media (prefers-color-scheme: dark) {
     .event {
@@ -58,8 +61,32 @@
       background-blend-mode: overlay;
       background-color: unset;
       color: unset;
+      --stripe-color: rgb(from var(--color) r g b / 25%);
     }
   }
+  /* <copied from="../DayView/EventContent.svelte"> */
+  .event.unanswered {
+    background-image: repeating-linear-gradient(-45deg, transparent 0 4px, var(--stripe-color) 4px 8px);
+    background-blend-mode: normal;
+    background-color: transparent;
+    color: unset;
+  }
+  .event.cancelled {
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 8px, var(--stripe-color) 8px 12px),
+      repeating-linear-gradient(-45deg, transparent 0 8px, var(--stripe-color) 8px 12px);
+    background-blend-mode: normal;
+    background-color: transparent;
+    color: unset;
+  }
+  .event.cancelled.unanswered {
+    opacity: 10%;
+  }
+  .cancelled .time,
+  .cancelled .title {
+    text-decoration: line-through;
+  }
+  /* </copied> */
   .event:hover {
     background-color: #20AF9E70;
   }
@@ -72,9 +99,5 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  :global(.cancelled) .time,
-  :global(.cancelled) .title {
-    text-decoration: line-through;
   }
 </style>
