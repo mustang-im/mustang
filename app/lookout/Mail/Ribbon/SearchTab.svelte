@@ -1,40 +1,55 @@
 <RibbonTab label={$t`Search`}>
-  <RibbonGroup label={$t`Scope`}>
-    <RibbonToggleButton label={$t`All Accounts`} icon={AllAccountsIcon}
-      checked={scope == SearchScope.AllAccounts} isRadio
-      onChange={() => MailSearch.update({ scope: SearchScope.AllAccounts })}
-      shortCutInfo="Ctrl+Alt+A" />
-    <RibbonToggleButton label={$t`Current Account`} icon={AccountIcon}
-      checked={scope == SearchScope.CurrentAccount} isRadio
-      disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
-      onChange={() => MailSearch.update({ scope: SearchScope.CurrentAccount })} />
-    <RibbonToggleButton label={$t`Current Folder`} icon={FolderIcon}
-      checked={scope == SearchScope.CurrentFolder} isRadio
-      disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
-      onChange={() => MailSearch.update({ scope: SearchScope.CurrentFolder })}
-      shortCutInfo="Ctrl+Alt+K" />
-  </RibbonGroup>
   <RibbonGroup label={$t`Refine`}>
+    <RibbonToggleButton label={$t`From`} icon={FromIcon}
+      checked={MailSearch.isFrom($options)}
+      tooltip={MailSearch.isFrom($options) ? $t`From: ${$options.person.name}` : $t`Only messages from a person`}
+      onChange={checked => checked ? pickPerson($t`From`, person => MailSearch.setFrom(person)) : MailSearch.setFrom(null)} />
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
       checked={$options.hasAttachment}
       onChange={checked => MailSearch.update({ hasAttachment: checked })} />
+    <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
+      disabled={!$tags.hasItems && $t`There are no categories yet`}>
+      <CategoryMenuItems selected={$options.tags} onToggle={tag => MailSearch.toggleTag($options, tag)} />
+    </RibbonMenuButton>
+    <RibbonMenuButton label={$options.received == ReceivedRange.Any || $options.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($options.received)}
+      icon={ReceivedIcon}
+      tooltip={$t`Received`}>
+      <ReceivedMenuItems selected={$options.received}
+        onSelect={received => MailSearch.update({ received, receivedStart: null, receivedEnd: null })} />
+    </RibbonMenuButton>
+    <RibbonMenuButton label={$t`Sent To`} icon={SentToIcon}
+      tooltip={MailSearch.isSentTo($options) ? $t`Sent To: ${$options.person.name}` : $t`Sent To`}>
+      <MenuItem label={$t`Sent To Another Recipient…`} icon={MailSearch.isSentTo($options) ? CheckIcon : BlankIcon}
+        onClick={() => pickPerson($t`To`, person => MailSearch.setSentTo(person))} />
+      <MenuItem label={$t`Sent by Me`} icon={MailSearch.isSentByMe($options) ? CheckIcon : BlankIcon}
+        onClick={() => MailSearch.setSentByMe(!MailSearch.isSentByMe($options))} />
+    </RibbonMenuButton>
     <RibbonToggleButton label={$t`Unread`} icon={UnreadIcon}
-      checked={$options.unread}
-      onChange={checked => MailSearch.update({ unread: checked })} />
+      checked={$options.isRead === false}
+      onChange={checked => MailSearch.update({ isRead: checked ? false : null })} />
     <RibbonToggleButton label={$t`Flagged`} icon={FlagIcon}
       checked={$options.flagged}
       onChange={checked => MailSearch.update({ flagged: checked })} />
-    <RibbonToggleButton label={$t`Sent by Me`} icon={SentIcon}
-      checked={$options.sentByMe}
-      onChange={checked => MailSearch.update({ sentByMe: checked })} />
-    <RibbonMenuButton label={$options.person ? $options.person.name : $t`Person`} icon={PersonIcon}
-      tooltip={$t`Only messages from or to a person in your address books`}>
-      <MenuItem label={$t`Choose Person…`} icon={PersonIcon}
-        onClick={() => MailDialogs.open({ kind: "search-person" })} />
-      {#if $options.person}
-        <MenuItem label={$t`Any Person`} icon={RemoveIcon}
-          onClick={() => MailSearch.update({ person: null })} />
-      {/if}
+    <RibbonMenuButton label={$t`More`} icon={MoreIcon}
+      tooltip={$t`More refiners`}>
+      <SubMenuItem label={$t`Received`}>
+        <ReceivedMenuItems selected={$options.received}
+          onSelect={received => MailSearch.update({ received, receivedStart: null, receivedEnd: null })} />
+      </SubMenuItem>
+      <SubMenuItem label={$t`Size`}>
+        <SizeMenuItems selected={$options.size} onSelect={size => MailSearch.update({ size })} />
+      </SubMenuItem>
+      <SubMenuItem label={$t`Read`}>
+        <MenuItem label={$t`Read`} icon={$options.isRead === true ? CheckIcon : BlankIcon}
+          onClick={() => MailSearch.update({ isRead: $options.isRead === true ? null : true })} />
+        <MenuItem label={$t`Unread`} icon={$options.isRead === false ? CheckIcon : BlankIcon}
+          onClick={() => MailSearch.update({ isRead: $options.isRead === false ? null : false })} />
+      </SubMenuItem>
+      <MenuItem label={$t`Replied`} icon={$options.replied ? CheckIcon : BlankIcon}
+        onClick={() => MailSearch.update({ replied: !$options.replied })} />
+      <MenuDivider />
+      <MenuItem label={$t`Advanced Search…`} icon={AdvancedIcon}
+        onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
     </RibbonMenuButton>
     {#if $options.threadID}
       <RibbonToggleButton label={$t`This Conversation`} icon={ConversationIcon}
@@ -42,21 +57,31 @@
         tooltip={$t`Only messages of the conversation that you chose with Find Related`}
         onChange={checked => !checked && MailSearch.update({ threadID: null })} />
     {/if}
-    <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
-      disabled={!$tags.hasItems && $t`There are no categories yet`}>
-      {#each $tags.each as tag (tag)}
-        <MenuItem label={tag.name} selected={$options.tags.includes(tag)}
-          onClick={() => MailSearch.toggleTag($options, tag)}>
-          <CategorySquare slot="icon" color={tag.color} state={$options.tags.includes(tag) ? TagState.All : TagState.None} />
-        </MenuItem>
-      {/each}
-    </RibbonMenuButton>
+  </RibbonGroup>
+  <RibbonGroup label={$t`Scope`}>
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
+      checked={scope == SearchScope.AllAccounts} isRadio
+      onChange={() => MailSearch.update({ scope: SearchScope.AllAccounts })}
+      shortCutInfo="Ctrl+Alt+A" />
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
+      checked={scope == SearchScope.CurrentAccount} isRadio
+      disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
+      onChange={() => MailSearch.update({ scope: SearchScope.CurrentAccount })} />
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} icon={FolderIcon}
+      checked={scope == SearchScope.CurrentFolder} isRadio
+      disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
+      onChange={() => MailSearch.update({ scope: SearchScope.CurrentFolder })}
+      shortCutInfo="Ctrl+Alt+K" />
   </RibbonGroup>
   <RibbonGroup label={$t`Options`}>
-    <RibbonButton label={$t`Save Search`} icon={SaveSearchIcon}
+    <RibbonMenuButton label={$t`Search Tools`} icon={SearchToolsIcon}>
+      <MenuItem label={$t`Advanced Find…`} icon={AdvancedIcon} shortCutInfo="Ctrl+Shift+F"
+        onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
+    </RibbonMenuButton>
+    <RibbonButton label={$t`Save as Search Folder`} icon={SaveSearchIcon}
       tooltip={$t`Save this search as a Search Folder`}
       onClick={onSaveSearch}
-      disabled={!search && $t`Type a search term first`} />
+      disabled={saveDisabledReason} />
     <RibbonButton label={$t`Create Rule`} icon={CreateRuleIcon}
       tooltip={$t`Handle new messages that match this search automatically`}
       onClick={onCreateRule}
@@ -71,9 +96,11 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Person } from "../../../logic/Abstract/Person";
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "../Search/MailSearch";
+  import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
   import { MailDialogs } from "../Dialogs/MailDialogs";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -81,19 +108,27 @@
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import CategorySquare from "../Menu/CategorySquare.svelte";
-  import { TagState } from "../SelectionState";
-  import AllAccountsIcon from "lucide-svelte/icons/inbox";
-  import AccountIcon from "lucide-svelte/icons/at-sign";
-  import FolderIcon from "lucide-svelte/icons/folder";
+  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
+  import SubMenuItem from "../Menu/SubMenuItem.svelte";
+  import CategoryMenuItems from "../Search/CategoryMenuItems.svelte";
+  import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
+  import SizeMenuItems from "../Search/SizeMenuItems.svelte";
+  import FromIcon from "lucide-svelte/icons/user-round";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import CategorizeIcon from "lucide-svelte/icons/tags";
+  import ReceivedIcon from "lucide-svelte/icons/calendar-range";
+  import SentToIcon from "lucide-svelte/icons/send";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
-  import SentIcon from "lucide-svelte/icons/send";
-  import CategorizeIcon from "lucide-svelte/icons/tag";
+  import MoreIcon from "lucide-svelte/icons/plus";
+  import CheckIcon from "lucide-svelte/icons/check";
+  import AdvancedIcon from "lucide-svelte/icons/sliders-horizontal";
   import ConversationIcon from "lucide-svelte/icons/messages-square";
-  import PersonIcon from "lucide-svelte/icons/user-search";
-  import RemoveIcon from "lucide-svelte/icons/user-x";
+  import AllAccountsIcon from "lucide-svelte/icons/mails";
+  import AccountIcon from "lucide-svelte/icons/inbox";
+  import FolderIcon from "lucide-svelte/icons/folder";
+  import SearchToolsIcon from "lucide-svelte/icons/wrench";
   import SaveSearchIcon from "lucide-svelte/icons/folder-search";
   import CreateRuleIcon from "lucide-svelte/icons/list-plus";
   import CloseIcon from "lucide-svelte/icons/x";
@@ -108,6 +143,17 @@
   const tags = availableTags;
   $: scope = MailSearch.effectiveScope($options, account, folder);
 
+  function pickPerson(fieldLabel: string, onPick: (person: Person) => void) {
+    MailDialogs.open({ kind: "search-person", fieldLabel, person: $options.person, onPick });
+    // The From toggle shows as pressed only once the person is picked
+    MailSearch.update({});
+  }
+
+  $: saveDisabledReason = !search
+    ? $t`Type a search term first`
+    : MailSearch.hasDates(search)
+      ? $t`Search Folders can't filter by the received date`
+      : false;
   function onSaveSearch() {
     MailDialogs.open({ kind: "save-search", search });
   }
