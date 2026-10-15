@@ -2,8 +2,6 @@
   <MoveItemsDialog messages={$dialog.messages} copy={$dialog.copy} on:close={onClose} />
 {:else if $dialog?.kind == "new-folder"}
   <NewFolderDialog account={$dialog.account} parent={$dialog.parent} on:close={onClose} />
-{:else if $dialog?.kind == "move-folder"}
-  <MoveFolderDialog folder={$dialog.folder} on:close={onClose} />
 {:else if $dialog?.kind == "go-to-folder"}
   <GoToFolderDialog on:close={onClose} />
 {:else if $dialog?.kind == "folder-properties"}
@@ -30,7 +28,6 @@
   import { MailDialogs } from "./MailDialogs";
   import MoveItemsDialog from "./MoveItemsDialog.svelte";
   import NewFolderDialog from "./NewFolderDialog.svelte";
-  import MoveFolderDialog from "./MoveFolderDialog.svelte";
   import GoToFolderDialog from "./GoToFolderDialog.svelte";
   import FolderPropertiesDialog from "./FolderPropertiesDialog.svelte";
   import ReadingPaneOptionsDialog from "./ReadingPaneOptionsDialog.svelte";

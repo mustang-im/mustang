@@ -12,9 +12,6 @@
     <RibbonButton label={$t`Rename Folder`} icon={RenameIcon}
       onClick={() => FolderTreeActions.renaming.set(folder)}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot rename this folder` : $folderStore?.disableRename()} />
-    <RibbonButton label={$t`Move Folder`} icon={MoveFolderIcon}
-      onClick={() => MailDialogs.open({ kind: "move-folder", folder })}
-      disabled={!folder ? $t`Select a folder first` : FolderTreeActions.disableMove(folder)} />
     <RibbonButton label={$t`Delete Folder`} icon={DeleteFolderIcon}
       onClick={async () => { await FolderTreeActions.deleteFolder(folder); }}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot delete this folder` : $folderStore?.disableDelete()} />
@@ -57,7 +54,6 @@
   import NewFolderIcon from "lucide-svelte/icons/folder-plus";
   import NewSearchFolderIcon from "lucide-svelte/icons/folder-search";
   import RenameIcon from "lucide-svelte/icons/folder-pen";
-  import MoveFolderIcon from "lucide-svelte/icons/folder-input";
   import DeleteFolderIcon from "lucide-svelte/icons/folder-x";
   import MarkAllReadIcon from "lucide-svelte/icons/mail-check";
   import DeleteAllIcon from "lucide-svelte/icons/trash-2";

@@ -9,7 +9,6 @@ import { gt } from "../../../l10n/l10n";
 
 export class FolderTreeActions {
   static readonly renaming = writable<Folder | null>(null);
-  protected static draggedFolder: Folder | null = null;
 
   static displayName(folder: Folder): string {
     if (!folder.specialFolder || folder.specialFolder == SpecialFolder.Normal || folder.specialFolder == SpecialFolder.Search) {
@@ -40,16 +39,6 @@ export class FolderTreeActions {
       sum + ((total ? counted.countTotal : counted.countUnread) || 0), 0));
   }
 
-  static disableMove(folder: Folder): string | false {
-    if (FolderTreeActions.isVirtual(folder)) {
-      return gt`This is not a real folder`;
-    }
-    if (folder.specialFolder && folder.specialFolder != SpecialFolder.Normal) {
-      return gt`You cannot move this folder, because it has a special use. See Use As.`;
-    }
-    return false;
-  }
-
   static isInside(folder: Folder, ancestor: Folder): boolean {
     for (let current = folder; current; current = current.parent) {
       if (current == ancestor) {
@@ -57,21 +46,6 @@ export class FolderTreeActions {
       }
     }
     return false;
-  }
-
-  static canMoveFolderInto(folder: Folder, target: Folder): boolean {
-    return !!folder && !!target &&
-      !FolderTreeActions.disableMove(folder) &&
-      !FolderTreeActions.isVirtual(target) &&
-      folder.account == target.account &&
-      folder.parent != target &&
-      !FolderTreeActions.isInside(target, folder) &&
-      !target.disableSubfolders();
-  }
-
-  static async moveFolder(folder: Folder, target: Folder) {
-    assert(FolderTreeActions.canMoveFolderInto(folder, target), gt`You cannot move the folder ${folder.name} into ${target.name}`);
-    await target.moveFolderHere(folder);
   }
 
   static async rename(folder: Folder, name: string) {
@@ -121,33 +95,5 @@ export class FolderTreeActions {
       selectedFolder.set(next);
     }
     return next;
-  }
-
-  static startDrag(event: DragEvent, folder: Folder) {
-    if (FolderTreeActions.disableMove(folder)) {
-      event.preventDefault();
-      return;
-    }
-    FolderTreeActions.draggedFolder = folder;
-    event.dataTransfer.setData("lookout/folder", folder.id);
-    event.dataTransfer.effectAllowed = "move";
-  }
-
-  static endDrag() {
-    FolderTreeActions.draggedFolder = null;
-  }
-
-  static isFolderDrag(event: DragEvent): boolean {
-    return !!FolderTreeActions.draggedFolder && event.dataTransfer?.types.includes("lookout/folder");
-  }
-
-  static canDropFolder(target: Folder): boolean {
-    return FolderTreeActions.canMoveFolderInto(FolderTreeActions.draggedFolder, target);
-  }
-
-  static async dropFolder(target: Folder) {
-    let folder = FolderTreeActions.draggedFolder;
-    FolderTreeActions.draggedFolder = null;
-    await FolderTreeActions.moveFolder(folder, target);
   }
 }
