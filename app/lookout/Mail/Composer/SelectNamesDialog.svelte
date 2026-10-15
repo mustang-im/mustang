@@ -7,7 +7,7 @@
     </vbox>
     <vbox class="addressbook">
       <label for="select-names-addressbook">{$t`Address Book`}</label>
-      <select id="select-names-addressbook" bind:value={addressbook}>
+      <select id="select-names-addressbook" class="lo-text-field" bind:value={addressbook}>
         <option value={null}>{$t`All address books`}</option>
         {#each $addressbooks.each as book}
           <option value={book}>{book.name}</option>
@@ -111,10 +111,6 @@
   .addressbook select {
     min-width: 200px;
     height: 28px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
   }
   .list {
     position: relative;

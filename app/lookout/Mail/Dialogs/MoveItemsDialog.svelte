@@ -12,7 +12,7 @@
       on:choose={onChoose} />
     {#if isCreating}
       <hbox class="new-folder">
-        <input type="text" bind:value={newFolderName} placeholder={$t`Name of the new folder`}
+        <input class="lo-text-field" type="text" bind:value={newFolderName} placeholder={$t`Name of the new folder`}
           on:keydown={onNewFolderKey} use:focus />
         <DialogButton label={$t`Create`} onClick={onCreateFolder} disabled={!newFolderName?.trim()} />
       </hbox>
@@ -103,12 +103,5 @@
   }
   .new-folder input {
     flex: 1;
-    height: 30px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
 </style>

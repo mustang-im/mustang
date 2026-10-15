@@ -10,7 +10,7 @@
     </label>
     <label class="delay" class:disabled={!isMarkingRead}>
       {$t`Wait`}
-      <input type="number" min="0" max="20" step="1" bind:value={delay} disabled={!isMarkingRead} />
+      <input class="lo-text-field" type="number" min="0" max="20" step="1" bind:value={delay} disabled={!isMarkingRead} />
       {$t`seconds before marking item as read`}
     </label>
   </vbox>
@@ -53,10 +53,5 @@
     width: 56px;
     height: 28px;
     padding: 0 6px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
 </style>

@@ -5,7 +5,7 @@
   on:close>
   <vbox class="dialog-content">
     <label for="save-search-name">{$t`Name of the Search Folder:`}</label>
-    <input id="save-search-name" type="text" bind:value={name} />
+    <input id="save-search-name" class="lo-text-field" type="text" bind:value={name} />
   </vbox>
 </Dialog>
 
@@ -37,14 +37,5 @@
 <style>
   .dialog-content {
     gap: 6px;
-  }
-  input {
-    height: 32px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
 </style>
