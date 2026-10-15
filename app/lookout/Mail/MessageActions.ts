@@ -12,6 +12,7 @@ import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
 import { selectedCalendar } from "../../frontend/Calendar/selected";
 import { createNewEvent } from "../../frontend/Calendar/event";
 import { newPerson } from "../../frontend/Contacts/Person/Selected";
+import { selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { saveBlobAsFile, URLPart } from "../../frontend/Util/util";
@@ -179,7 +180,9 @@ export class MessageActions {
       return;
     }
     recentFolders.add(folder);
-    await folder.moveMessagesHere(new ArrayColl(messages));
+    for (let fromSameFolder of MessageActions.bySourceFolder(messages)) {
+      await folder.moveMessagesHere(new ArrayColl(fromSameFolder));
+    }
   }
 
   static async copyTo(messages: EMail[], folder: Folder) {
@@ -187,8 +190,46 @@ export class MessageActions {
       return;
     }
     recentFolders.add(folder);
-    await folder.copyMessagesHere(new ArrayColl(messages));
+    for (let fromSameFolder of MessageActions.bySourceFolder(messages)) {
+      await folder.copyMessagesHere(new ArrayColl(fromSameFolder));
+    }
   }
+
+  static bySourceFolder(messages: EMail[]): EMail[][] {
+    let byFolder = new Map<Folder, EMail[]>();
+    for (let message of messages) {
+      let list = byFolder.get(message.folder) ?? [];
+      list.push(message);
+      byFolder.set(message.folder, list);
+    }
+    return [...byFolder.values()];
+  }
+
+  // <copied from="../../frontend/Mail/Message/drag.ts">
+  static async dropMessages(event: DragEvent, folder: Folder) {
+    event.preventDefault();
+    let message = get(selectedMessage);
+    let msgIDsStr = event.dataTransfer.getData("message/drag-ids");
+    if (!message || !msgIDsStr) {
+      return;
+    }
+    let msgIDs = msgIDsStr.split(",");
+    let messages = get(selectedMessages).contents;
+    if (msgIDs.length == 0) {
+      return;
+    } else if (msgIDs.length == 1) {
+      assert(msgIDs[0] == message.id, gt`Drag&drop failed: Selected message ID doesn't match the drag data`);
+      messages = [ message ];
+    } else {
+      assert(messages.every(msg => msgIDs.includes(msg.id)), gt`Drag&drop failed: Selected message IDs don't match the drag data`);
+    }
+    if (event.ctrlKey || event.metaKey) {
+      await MessageActions.copyTo(messages, folder);
+    } else {
+      await MessageActions.moveTo(messages, folder);
+    }
+  }
+  // </copied>
 
   static isInFolder(messages: EMail[], folder: Folder): boolean {
     return messages.length > 0 && messages.every(message => message.folder == folder);

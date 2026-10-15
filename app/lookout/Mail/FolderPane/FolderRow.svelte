@@ -51,7 +51,8 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import { onDropMail, onDragOverMail } from "../../../frontend/Mail/Message/drag";
+  import { onDragOverMail } from "../../../frontend/Mail/Message/drag";
+  import { MessageActions } from "../MessageActions";
   import { FolderTreeActions } from "./FolderTreeActions";
   import FolderContextMenu from "./FolderContextMenu.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
@@ -116,7 +117,7 @@
       catchErrors(() => FolderTreeActions.dropFolder(folder));
       return;
     }
-    catchErrors(() => onDropMail(event, folder));
+    catchErrors(() => MessageActions.dropMessages(event, folder));
   }
 
   $: isRenaming = $renaming == folder;
