@@ -278,6 +278,51 @@ test("This and following occurrences take the time that the recurrence dialog se
   expect(master.recurrenceRule.count).toBe(3);
 });
 
+test("A series with another time and day from the Scheduling Assistant moves its recurrence", async () => {
+  let master = await savedSeries(new Date(2026, 9, 15, 10, 0), Frequency.Weekly);
+  master.startEditing();
+  let flow = new EventEditFlow(master, () => {});
+  let times = new EventTimeEditor(master);
+  times.moveTo(new Date(2026, 9, 16, 11, 0));
+  times.setEnd(new Date(2026, 9, 16, 12, 0));
+  await flow.saveWith(null);
+  expect(master.recurrenceRule.weekdays).toEqual([5]);
+  expect(master.recurrenceRule.getOccurrenceByIndex(0)).toEqual(new Date(2026, 9, 16, 11, 0));
+  expect(master.recurrenceRule.getOccurrenceByIndex(1)).toEqual(new Date(2026, 9, 23, 11, 0));
+  expect(master.instances.get(1).endTime).toEqual(new Date(2026, 9, 23, 12, 0));
+});
+
+test("A series time from the Scheduling Assistant after the recurrence dialog keeps the dialog's weekdays", async () => {
+  let event = newEvent(newCalendar(), new Date(2026, 9, 15, 10, 0)); // Thursday
+  event.startEditing();
+  let flow = new EventEditFlow(event, () => {});
+  let pattern = flow.pattern.clone();
+  pattern.weekdays = [1, 4];
+  flow.applyPattern(pattern);
+  new EventTimeEditor(event).setStart(new Date(2026, 9, 15, 14, 0));
+  await flow.saveWith(null);
+  expect(event.recurrenceRule.weekdays.sort()).toEqual([1, 4]);
+  expect(event.recurrenceRule.getOccurrenceByIndex(1)).toEqual(new Date(2026, 9, 19, 14, 0));
+});
+
+test("A series with only a new title keeps its recurrence and exceptions", async () => {
+  let master = await savedWeeklySeries();
+  let exception = master.instances.get(2);
+  exception.startEditing();
+  exception.location = "Room 2";
+  await new EventEditFlow(exception, () => {}).saveWith("occurrence");
+  let rule = master.recurrenceRule;
+  master.startEditing();
+  master.title = "Weekly planning";
+  let confirm = vi.fn(() => true);
+  vi.stubGlobal("confirm", confirm);
+  await new EventEditFlow(master, () => {}).saveWith(null);
+  vi.stubGlobal("confirm", () => true);
+  expect(confirm).not.toHaveBeenCalled();
+  expect(master.recurrenceRule).toBe(rule);
+  expect(master.exceptions.contents).toContain(exception);
+});
+
 test("A series end with a time of day from the server is no change", async () => {
   let master = await savedSeries(new Date(2026, 9, 15, 10, 0), Frequency.Weekly);
   await master.setRecurrenceEndTime(new Date(2026, 11, 17, 9, 0));
