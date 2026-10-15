@@ -35,7 +35,7 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, NotSupported, NotReached } from "../../util/util";
+import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -700,6 +700,13 @@ export class OWAAccount extends ExchangeMailAccount {
     return calendar;
   }
 
+  async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
+    let response = await this.callOWA(new OWAGetOtherMailboxConfigurationRequest());
+    return ensureArray(response?.OtherMailboxEntries)
+      .map(entry => this.newSharedAccountPerson(entry?.PrincipalSMTPAddress, entry?.DisplayName))
+      .filter(Boolean);
+  }
+
   /**
    * Used by the sharing UI to identify whether this user has access to any of
    * the specified known folders of another user given their email address,
@@ -841,6 +848,12 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWAGetOtherMailboxConfigurationRequest {
+  get action() {
+    return "GetOtherMailboxConfiguration";
+  }
 }
 
 class OWAGetPeopleFiltersRequest {

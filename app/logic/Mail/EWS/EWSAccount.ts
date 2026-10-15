@@ -34,7 +34,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, base64ToUint8Array, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -955,6 +955,39 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return folder;
   }
 
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Json | null> {
+    let request = {
+      m$GetUserConfiguration: {
+        m$UserConfigurationName: {
+          Name: name,
+          t$DistinguishedFolderId: {
+            Id: distinguishedFolderID,
+          },
+        },
+        m$UserConfigurationProperties: "XmlData",
+      },
+    };
+    let response: any;
+    try {
+      response = await this.callEWS(request);
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") {
+        return null;
+      }
+      throw ex;
+    }
+    let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
+    if (!xmlData) {
+      return null;
+    }
+    let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
+    let root = this.parseXML(xml)?.documentElement;
+    if (!root) {
+      return null;
+    }
+    return { [root.localName]: XML2JSON(root) };
+  }
+
   get mayHaveSubAccounts(): boolean {
     return true;
   }
@@ -1090,6 +1123,13 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
+  }
+
+  async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
+    let config = await this.getUserConfigurationXML("OWA.OtherMailbox", "root") as any;
+    return ensureArray(config?.OtherMailbox?.entry)
+      .map(entry => this.newSharedAccountPerson(entry?.principalSMTPAddress, entry?.displayName))
+      .filter(Boolean);
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {
