@@ -77,6 +77,7 @@
 
   export let event: Event;
 
+  event.startEditing();
   const flow = new EventEditFlow(event);
   const timeEditor = new EventTimeEditor(event);
   const schedulingLabel = gt`Scheduling Assistant`;
