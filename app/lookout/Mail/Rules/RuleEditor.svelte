@@ -12,10 +12,10 @@
       </hbox>
       <grid class="step-content name-grid">
         <label for="rule-name">{$t`Name`}</label>
-        <input id="rule-name" type="text" bind:value={rule.name} autofocus
+        <input id="rule-name" class="lo-text-field" type="text" bind:value={rule.name} autofocus
           placeholder={$t`Name your rule`} />
         <label for="rule-when">{$t`When`}</label>
-        <select id="rule-when" bind:value={rule.when}>
+        <select id="rule-when" class="lo-text-field" bind:value={rule.when}>
           <option value={FilterMoment.IncomingBeforeSpam}>{$t`New mail arrives`}</option>
           <option value={FilterMoment.IncomingAfterSpam}>{$t`New mail arrives, after junk filtering`}</option>
           <option value={FilterMoment.Outgoing}>{$t`I send mail`}</option>
@@ -30,7 +30,7 @@
         <h3>{$t`Conditions`}</h3>
         <hbox class="text-condition">
           <label for="rule-text">{$t`Subject or body contains`}</label>
-          <input id="rule-text" type="text" bind:value={rule.criteria.bodyText}
+          <input id="rule-text" class="lo-text-field" type="text" bind:value={rule.criteria.bodyText}
             placeholder={$t`Specific words`} />
         </hbox>
         <vbox class="criteria">

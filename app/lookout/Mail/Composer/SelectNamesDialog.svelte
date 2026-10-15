@@ -2,7 +2,7 @@
   <hbox class="search-row">
     <vbox flex class="search">
       <label for="select-names-search">{$t`Search`}</label>
-      <input id="select-names-search" type="search" bind:value={searchTerm} autofocus
+      <input id="select-names-search" class="lo-text-field" type="search" bind:value={searchTerm} autofocus
         placeholder={$t`Name or email address`} />
     </vbox>
     <vbox class="addressbook">
@@ -110,7 +110,6 @@
   }
   .addressbook select {
     min-width: 200px;
-    height: 28px;
   }
   .list {
     position: relative;
