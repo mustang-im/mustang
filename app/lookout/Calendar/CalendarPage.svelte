@@ -1,7 +1,13 @@
 <vbox flex class="calendar-page" bind:this={pageEl}>
-  <CalendarRibbon {view}
+  <CalendarRibbon {view} {currentView}
     bind:splitView bind:timeScale bind:showFolderPane bind:showWeekNumbers bind:showDeclined
-    onView={setView} onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate} />
+    onView={setView} onCurrentView={setCurrentView} onResetView={resetView}
+    onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
+    {#if isSearch}
+      <CalendarSearchTab organizers={searchOrganizers} hasSelectedCalendar={!!$selectedCalendar} />
+      <RibbonTabSelector label={$t`Search`} />
+    {/if}
+  </CalendarRibbon>
   <hbox flex class="panes">
     <Splitter name="lookout.calendar.folderPane" hasLeft={showFolderPane}
       initialRightRatio={5} leftMinWidth={230} rightMinWidth={480}>
@@ -12,21 +18,20 @@
         <CalendarList />
       </vbox>
       <vbox flex class="main lo-card" slot="right">
-        <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
-        <vbox flex class="grid-area">
-          {#if $globalSearchTerm}
-            <vbox flex class="search-results">
-              <ListViewWithSearch events={visibleEvents} />
-            </vbox>
-          {:else if view == "month"}
-            <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
-          {:else}
-            <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
-          {/if}
-          {#if !$globalSearchTerm}
+        {#if tableEvents}
+          <EventTable events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
+            showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
+        {:else}
+          <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
+          <vbox flex class="grid-area">
+            {#if view == "month"}
+              <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
+            {:else}
+              <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
+            {/if}
             <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
-          {/if}
-        </vbox>
+          </vbox>
+        {/if}
       </vbox>
     </Splitter>
   </hbox>
@@ -48,7 +53,7 @@
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import { InvitationResponse } from "../../logic/Calendar/Invitation/InvitationStatus";
-  import { CalendarSettings, type CalendarViewType } from "./CalendarSettings";
+  import { CalendarCurrentView, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
@@ -69,7 +74,11 @@
   import SlotContextMenu from "./View/SlotContextMenu.svelte";
   import GoToDateDialog from "./View/GoToDateDialog.svelte";
   import AdjacentEventTabs from "./View/AdjacentEventTabs.svelte";
-  import ListViewWithSearch from "../../frontend/Calendar/ListView/ListViewWithSearch.svelte";
+  import EventTable from "./ListView/EventTable.svelte";
+  import CalendarSearchTab from "./ListView/CalendarSearchTab.svelte";
+  import RibbonTabSelector from "../Mail/Ribbon/RibbonTabSelector.svelte";
+  import { EventLists } from "./ListView/EventLists";
+  import { CalendarSearch, CalendarSearchScope } from "./ListView/CalendarSearch";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import type { Collection } from "svelte-collections";
@@ -77,6 +86,7 @@
   import { t } from "../../l10n/l10n";
 
   let view = CalendarSettings.view.value;
+  let currentView = CalendarSettings.currentView.value;
   let dayCount = CalendarSettings.dayCount.value;
   let timeScale = CalendarSettings.timeScale.value;
   let splitView = CalendarSettings.splitView.value;
@@ -118,10 +128,25 @@
     : [{ calendar: null, events: visibleEvents }]) as CalendarColumnGroup[];
 
   $: eventsInRange = visibleEvents.filterObservable(event => event.startTime < range.end && event.endTime > range.start);
+
+  const searchOptions = CalendarSearch.options;
+  $: searchTerm = $globalSearchTerm?.trim() || null;
+  $: isSearch = !!searchTerm;
+  $: searchResults = searchTerm
+    ? EventLists.searchResults(searchTerm, $searchOptions, $selectedCalendar)
+    : null;
+  $: searchOrganizers = searchTerm ? CalendarSearch.organizers(EventLists.searchResults(searchTerm, { ...$searchOptions, organizerEMail: null }, $selectedCalendar).contents) : [];
+  $: listEvents = currentView == CalendarCurrentView.List ? EventLists.shown
+    : currentView == CalendarCurrentView.Active ? EventLists.active()
+    : null;
+  $: tableEvents = searchResults ?? listEvents;
+  $: tableLabel = isSearch ? $t`Search results` : currentView == CalendarCurrentView.Active ? $t`Active appointments` : $t`All appointments`;
+  $: tableEmptyText = isSearch ? $t`We didn't find anything to show here.` : $t`There are no items to show in this view.`;
+
   const status = statusBar.addSection();
   onDestroy(() => status.remove());
   const updatingCount = CalendarActions.updatingCount;
-  $: status.left = [ { label: $t`Items: ${$eventsInRange.length}` } ];
+  $: status.left = [ { label: $t`Items: ${tableEvents ? $tableEvents.length : $eventsInRange.length}` } ];
   $: status.right = $updatingCount ? [ { label: $t`Updating calendars…`, busy: true } ] : [];
 
   function setView(newView: CalendarViewType) {
@@ -131,6 +156,36 @@
     view = newView;
     CalendarSettings.view.value = newView;
     $eventPeek = null;
+    showCalendar();
+  }
+
+  function setCurrentView(newView: CalendarCurrentView) {
+    currentView = newView;
+    CalendarSettings.currentView.value = newView;
+    $eventPeek = null;
+    if (isSearch) {
+      CalendarSearch.close();
+    }
+  }
+
+  function showCalendar() {
+    if (currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active) {
+      setCurrentView(CalendarCurrentView.Calendar);
+    } else if (isSearch) {
+      CalendarSearch.close();
+    }
+  }
+
+  function resetView() {
+    setCurrentView(CalendarCurrentView.Calendar);
+    setView("workweek");
+    setSplitView(false);
+    timeScale = 30;
+    CalendarSettings.timeScale.value = 30;
+    CalendarSettings.listSortColumn.value = CalendarSettings.listSortColumn.defaultValue;
+    CalendarSettings.listSortAscending.value = CalendarSettings.listSortAscending.defaultValue;
+    CalendarSettings.listGrouping.value = CalendarSettings.listGrouping.defaultValue;
+    CalendarSettings.listColumns.value = CalendarSettings.listColumns.defaultValue;
   }
 
   function setDayCount(days: number) {
@@ -146,6 +201,7 @@
   function goToToday() {
     $startDate = getToday();
     $selectedDate = getToday();
+    showCalendar();
   }
 
   function showNext7Days() {
@@ -163,6 +219,7 @@
   function selectDay(day: Date) {
     $startDate = day;
     $selectedDate = day;
+    showCalendar();
   }
 
   function openDay(day: Date) {
@@ -256,6 +313,9 @@
       }
       break;
     case "escape":
+      if (isSearch) {
+        CalendarSearch.close();
+      }
       $eventPeek = null;
       $inlineTitle = null;
       $selectedSlots = null;
@@ -285,11 +345,6 @@
   .grid-area {
     position: relative;
     min-height: 0;
-  }
-  .search-results {
-    min-height: 0;
-    overflow-y: auto;
-    padding: 0 12px;
   }
   .main {
     min-width: 0;

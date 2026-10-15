@@ -31,6 +31,9 @@
     {#if lines >= 3 && look.organizerName}
       <div class="line">{look.organizerName}</div>
     {/if}
+    {#if isPreview && notesLines > 0 && $event.hasDescription}
+      <div class="notes" style:-webkit-line-clamp={notesLines}>{$event.descriptionText}</div>
+    {/if}
   </div>
 </div>
 
@@ -41,6 +44,7 @@
   import { EventDrag, type EventDragMode } from "../TimeGrid/EventDrag";
   import { CurrentTime } from "../View/CurrentTime";
   import { kCalendarMenus, type CalendarMenus } from "../Selected";
+  import { CalendarCurrentView, CalendarSettings } from "../CalendarSettings";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "./EventIcons.svelte";
   import "./EventLook.css";
@@ -53,6 +57,7 @@
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
   const now = CurrentTime.minute;
+  const currentView = CalendarSettings.currentView;
 
   $: event = item.event;
   $: look = new EventLook($event);
@@ -60,6 +65,8 @@
   $: top = item.startMinute * pxPerMinute;
   $: height = Math.max((item.endMinute - item.startMinute) * pxPerMinute - 1, 6);
   $: lines = Math.floor((height - 4) / 15);
+  $: isPreview = $currentView.value == CalendarCurrentView.Preview;
+  $: notesLines = lines - 1 - ($event.location ? 1 : 0) - (look.organizerName ? 1 : 0);
 
   function startDrag(pointerEvent: PointerEvent): EventDrag | null {
     if (!event.isEditable) {
@@ -133,6 +140,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .notes {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--lo-fg-secondary);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
   }
   .join {
     flex: none;
