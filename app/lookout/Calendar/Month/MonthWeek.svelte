@@ -51,6 +51,7 @@
   import { MonthWeekLayout } from "./MonthWeekLayout";
   import { CurrentTime } from "../View/CurrentTime";
   import { CalendarActions } from "../CalendarActions";
+  import { DayAtPoint } from "../View/DayAtPoint";
   import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../Selected";
   import { selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -89,9 +90,7 @@
   $: layout = derived([...$weekEvents.contents], eventsInWeek => new MonthWeekLayout(eventsInWeek, days, maxLines));
 
   function dayAt(clientX: number): Date {
-    let rect = weekEl.getBoundingClientRect();
-    let index = Math.floor((clientX - rect.left) / rect.width * days.length);
-    return days[Math.min(Math.max(index, 0), days.length - 1)];
+    return DayAtPoint.find(weekEl, clientX, days);
   }
 
   function selectDay(day: Date) {
