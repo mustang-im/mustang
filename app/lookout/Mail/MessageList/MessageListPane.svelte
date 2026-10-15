@@ -85,6 +85,7 @@
   import { ListName } from "./ListName";
   import { MailView } from "../MailView";
   import { MailFilters, QuickFilter } from "../MailFilters";
+  import { CurrentTime } from "../../Calendar/View/CurrentTime";
   import MessageList from "./MessageList.svelte";
   import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
@@ -112,6 +113,7 @@
   const showInGroups = MailView.showInGroups;
   const showAsConversations = MailView.showAsConversations;
   const previewLines = MailView.previewLines;
+  const currentMinute = CurrentTime.minute;
 
   let messageList: MessageList;
   let arrangeEl: HTMLButtonElement;
@@ -128,7 +130,9 @@
   $: arrangeLabel = arrangements.find(arrangement => arrangement.id == $arrangeBy.value)?.button ?? gt`By Date`;
   $: sortOrderLabels = MessageGrouping.sortOrderLabels($arrangeBy.value);
 
-  $: grouping = new MessageGrouping<EMail>($arrangeBy.value, !!$reverseSort.value, !!$showInGroups.value,
+  let grouping: MessageGrouping<EMail>;
+  $: todayStart = new Date($currentMinute).setHours(0, 0, 0, 0);
+  $: todayStart, grouping = new MessageGrouping<EMail>($arrangeBy.value, !!$reverseSort.value, !!$showInGroups.value,
     message => ListName.of(message), new Date(), !!$showAsConversations.value);
   $: groups = grouping.arrange($listMessages.contents, listMessages instanceof EMailCollection);
 
