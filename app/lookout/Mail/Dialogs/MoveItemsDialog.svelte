@@ -1,4 +1,4 @@
-<Dialog title={copy ? $t`Copy Items` : $t`Move Items`}
+<Dialog title={copy ? $t`Copy Items` : $t`Move Items`} bind:this={dialog}
   okLabel={$t`OK`}
   okDisabled={!target && $t`Select a folder first`}
   onOK={onMove}
@@ -9,7 +9,7 @@
     </span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
       disableFolder={folder => !copy && MessageActions.isInFolder(messages, folder) && $t`The items are already in this folder`}
-      on:choose={onChoose} />
+      on:choose={() => dialog.submit()} />
     {#if isCreating}
       <hbox class="new-folder">
         <input class="lo-text-field" type="text" bind:value={newFolderName} placeholder={$t`Name of the new folder`}
@@ -33,14 +33,13 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FolderPicker from "./FolderPicker.svelte";
-  import { catchErrors, showError } from "../../../frontend/Util/error";
-  import { createEventDispatcher } from "svelte";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let messages: EMail[];
   export let copy = false;
 
-  const dispatch = createEventDispatcher<{ close: void }>();
+  let dialog: Dialog;
   let target: Folder | null = null;
   let targetAccount: MailAccount | null = messages[0]?.folder?.account ?? null;
 
@@ -49,15 +48,6 @@
       await MessageActions.copyTo(messages, target);
     } else {
       await MessageActions.moveTo(messages, target);
-    }
-  }
-
-  async function onChoose() {
-    try {
-      await onMove();
-      dispatch("close");
-    } catch (ex) {
-      showError(ex);
     }
   }
 

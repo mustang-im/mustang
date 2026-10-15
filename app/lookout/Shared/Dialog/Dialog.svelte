@@ -19,7 +19,7 @@
         <slot name="buttons-start" />
         <hbox flex />
         {#if okLabel}
-          <DialogButton label={okLabel} primary disabled={okDisabled || isRunning} onClick={onSubmit} />
+          <DialogButton label={okLabel} primary disabled={okDisabled || isRunning} onClick={submit} />
         {/if}
         <DialogButton label={cancelLabel ?? $t`Cancel`} onClick={onCancel} />
       {/if}
@@ -59,7 +59,7 @@
     return () => dialogEl?.close();
   });
 
-  async function onSubmit() {
+  export async function submit() {
     if (okDisabled || isRunning) {
       return;
     }
@@ -82,7 +82,7 @@
     event.stopPropagation();
     if (event.key == "Enter" && okLabel && !event.defaultPrevented && !event.isComposing && isTextInput(event.target)) {
       event.preventDefault();
-      onSubmit().catch(showError);
+      submit().catch(showError);
     }
   }
 
