@@ -6,7 +6,11 @@
     <hbox class="app-name">{appName}</hbox>
   </hbox>
   <hbox class="search-box">
-    <SearchField bind:searchTerm={$globalSearchTerm} placeholder={$t`Search`} />
+    {#if isMail}
+      <MailSearchBox />
+    {:else}
+      <SearchField bind:searchTerm={$globalSearchTerm} placeholder={$t`Search`} />
+    {/if}
   </hbox>
   <hbox class="window-buttons">
     {#if !webMail}
@@ -29,10 +33,12 @@
 </grid>
 
 <script lang="ts">
-  import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
+  import { globalSearchTerm, selectedApp } from "../../frontend/AppsBar/selectedApp";
+  import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
   import { appGlobal } from "../../logic/app";
   import { appName, webMail } from "../../logic/build";
   import SearchField from "../../frontend/Shared/SearchField.svelte";
+  import MailSearchBox from "../Mail/Search/MailSearchBox.svelte";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
   import logo from "../../frontend/asset/icon/general/logo.svg?raw";
   import MinimizeIcon from "lucide-svelte/icons/minus";
@@ -43,6 +49,8 @@
   import { catchErrors } from "../../frontend/Util/error";
   import { rtlLocales } from "../../l10n/list";
   import { t } from "../../l10n/l10n";
+
+  $: isMail = !!$selectedApp && ($selectedApp == mailMustangApp || mailMustangApp.subApps.includes($selectedApp));
 
   /* <copied from="../../frontend/MainWindow/WindowHeader.svelte"> */
   const mac = (!webMail && getOSName() == "macintosh") ? true : false;
@@ -70,7 +78,7 @@
 
 <style>
   .title-bar {
-    grid-template-columns: minmax(0, 1fr) minmax(200px, 600px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 680px) minmax(0, 1fr);
     align-items: stretch;
     height: var(--lo-titlebar-height);
     background-color: var(--lo-titlebar-bg);
