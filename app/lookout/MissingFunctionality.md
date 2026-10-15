@@ -154,7 +154,7 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 |---|---|---|
 | Show As, Private, Categorize, High / Low Importance | Appointment tab > Options and Tags | `Event.showAs`, `Event.isPrivate`, `Event.categories` (see Calendar views) and `Event.importance` (EWS `Importance`, iCalendar `PRIORITY`) |
 | Optional attendees and resources (rooms) | Optional field; Scheduling Assistant | `Participant.role` mapped to EWS `OptionalAttendees` / `Resources`, iCalendar `ROLE` / `CUTYPE`, JSCalendar `roles` / `kind`. Lookout has one Required field. |
-| Address Book and Check Names for attendees | Meeting tab > Attendees; "Required" button | *UI only*: the composer's Select Names dialog could be shared. Lookout's Required button focuses the attendee field. |
+| Check Names for attendees | Meeting tab > Attendees | Resolving typed names against the address books and the directory. Address Book and the Required button open Select Names. |
 | Room Finder, Add Rooms, location suggestions | Location; Scheduling Assistant | A room list API (EWS `GetRoomLists` / `GetRooms`) |
 | AutoPick, suggested times | Scheduling Assistant | Availability suggestions (EWS `GetUserAvailability` with suggestions) |
 | Tentative, Out of Office and Working Elsewhere in the free/busy rows, attendees' working hours, calendar details | Scheduling Assistant | `Calendar.arePersonsFree()` returns only free or busy. It would need the busy type, working hours and the detailed view (EWS `DetailedMerged`). |
@@ -163,7 +163,10 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 | Response Options: Request Responses, Allow New Time Proposals, Allow Forwarding, Hide Attendee List | Meeting tab > Response Options | Event properties (EWS `IsResponseRequested`, `AllowNewTimeProposal`; iCalendar `RSVP`) |
 | Save a meeting without sending; send updates only to added or removed attendees | Save; Send Update dialog | A send parameter on `Event.save()` / `OutgoingInvitation.sendInvitations()`. `save()` always sends. |
 | A note to the attendees with a cancellation | Cancel Meeting | A message parameter on `Event.deleteIt()` / `sendCancellations()` |
-| Edit the response before sending; Do not send a response | Accept / Tentative / Decline menus | A comment and a send parameter on `Event.respondToInvitation()`. Lookout's buttons always send. |
+| Edit the Response before Sending; Do Not Send a Response | Accept / Tentative / Decline menus | A comment and a send parameter on `Event.respondToInvitation()`. Lookout's menus have only Send the Response Now, and the reading pane buttons always send. |
+| From ▾ (organizer identity) | Meeting form, above Title | Choosing the identity for `OutgoingInvitation.createOrganizer()`, which always uses the calendar's `inviteAs` identity |
+| Copy to My Calendar | Actions group, for events in shared calendars | Copying an event into another calendar (moving events between calendars is disabled, #1277) |
+| Meeting Options (online meeting settings) | Online Meeting group | Settings of the meeting on the meeting server, `MeetAccount` has only `createMeetingURL()` |
 | Propose New Time, Accept Proposal | Respond menu | iTIP `COUNTER` / `DECLINECOUNTER`, EWS proposed times |
 | Reply / Reply All to the attendees by mail | Meeting tab > Respond | Creating a mail from an event |
 | Time zone per event, separate start and end time zones | Appointment tab > Time Zones | A time zone picker (commented out in `frontend/`) and `Event.endTimezone`. Lookout shows the event's time zone when it differs from the local one. |

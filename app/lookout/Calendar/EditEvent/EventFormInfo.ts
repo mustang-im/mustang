@@ -89,7 +89,11 @@ export class EventFormInfo {
   }
 
   static responseLabel(participant: Participant): string {
-    switch (participant.response) {
+    return EventFormInfo.responseText(participant.response);
+  }
+
+  static responseText(response: InvitationResponse): string {
+    switch (response) {
     case InvitationResponse.Accept:
       return gt`Accepted`;
     case InvitationResponse.Tentative:

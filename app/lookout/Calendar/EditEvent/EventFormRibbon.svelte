@@ -7,33 +7,47 @@
           <RibbonButton label={$t`Remove from Calendar`} icon={RemoveIcon}
             onClick={actions.onDelete} />
         {:else}
-          <RibbonToggleButton label={$t`Accept`} icon={AcceptIcon} classes="accept"
-            checked={$event.myParticipation == InvitationResponse.Accept}
-            onChange={() => flow.respond(InvitationResponse.Accept)} />
-          <RibbonToggleButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative"
-            checked={$event.myParticipation == InvitationResponse.Tentative}
-            onChange={() => flow.respond(InvitationResponse.Tentative)} />
-          <RibbonToggleButton label={$t`Decline`} icon={DeclineIcon} classes="decline"
-            checked={$event.myParticipation == InvitationResponse.Decline}
-            onChange={() => flow.respond(InvitationResponse.Decline)} />
+          <RibbonMenuButton label={$t`Accept`} icon={AcceptIcon} classes="accept">
+            <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
+              selected={$event.myParticipation == InvitationResponse.Accept}
+              onClick={() => flow.respond(InvitationResponse.Accept)} />
+          </RibbonMenuButton>
+          <RibbonMenuButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative">
+            <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
+              selected={$event.myParticipation == InvitationResponse.Tentative}
+              onClick={() => flow.respond(InvitationResponse.Tentative)} />
+          </RibbonMenuButton>
+          <RibbonMenuButton label={$t`Decline`} icon={DeclineIcon} classes="decline">
+            <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
+              selected={$event.myParticipation == InvitationResponse.Decline}
+              onClick={() => flow.respond(InvitationResponse.Decline)} />
+          </RibbonMenuButton>
         {/if}
       </RibbonGroup>
       <RibbonGroup label={$t`Actions`}>
         {#if isInstance}
           <RibbonMenuButton label={$t`Delete`} icon={DeleteIcon}>
+            <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} onClick={actions.onDelete} />
             <MenuItem label={$t`Delete Series`} icon={DeleteIcon} onClick={actions.onDeleteSeries} />
           </RibbonMenuButton>
-        {:else if !$event.isCancelled}
+        {:else}
           <RibbonButton label={$t`Delete`} icon={DeleteIcon}
+            disabled={$event.isCancelled && $t`Use Remove from Calendar`}
             tooltip={$t`Delete the meeting and decline it`}
             onClick={actions.onDelete} />
         {/if}
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
           onClick={() => flow.forward()} />
       </RibbonGroup>
-      {#if $event.isOnline && $event.onlineMeetingURL}
-        <RibbonGroup label={$t`Online`}>
+      <RibbonGroup label={$t`Calendar`}>
+        <RibbonButton label={$t`Calendar…`} icon={CalendarIcon}
+          tooltip={$t`Show this day in the calendar`}
+          onClick={() => flow.showInCalendar()} />
+      </RibbonGroup>
+      {#if $event.isOnline}
+        <RibbonGroup label={$t`Online Meeting`}>
           <RibbonButton label={$t`Join Online Meeting`} icon={JoinIcon}
+            disabled={!$event.onlineMeetingURL && $t`This meeting has no link to an online meeting`}
             onClick={() => flow.joinOnlineMeeting()} />
         </RibbonGroup>
       {/if}
@@ -67,20 +81,34 @@
           disabled={!flow.isSaved && (isMeeting ? $t`Send the meeting first` : $t`Save the appointment first`)}
           onClick={() => flow.forward()} />
       </RibbonGroup>
-      <RibbonGroup label={$t`Online`}>
-        <RibbonToggleButton label={$t`Online Meeting`} icon={OnlineMeetingIcon}
-          tooltip={$t`Add a link to an online meeting`}
-          checked={$event.isOnline}
-          onChange={onOnlineMeeting} />
-        {#if $event.isOnline && $event.onlineMeetingURL}
+      <RibbonGroup label={$t`Online Meeting`}>
+        {#if $event.isOnline}
           <RibbonButton label={$t`Join Online Meeting`} icon={JoinIcon}
+            disabled={!$event.onlineMeetingURL && $t`The link is created when you send the invitation`}
             onClick={() => flow.joinOnlineMeeting()} />
+          <RibbonButton label={$t`Don't Host Online`} icon={OfflineIcon}
+            tooltip={$t`Remove the online meeting`}
+            onClick={onOffline} />
+        {:else}
+          <RibbonMenuButton label={$t`Online Meeting`} icon={OnlineMeetingIcon}
+            tooltip={$t`Add a link to an online meeting`}>
+            {#each $meetAccounts.each as account}
+              <MenuItem label={account.name} icon={OnlineMeetingIcon}
+                onClick={() => onOnline(account)} />
+            {/each}
+            {#if $meetAccounts.hasItems}
+              <MenuDivider />
+            {/if}
+            <MenuItem label={$t`Paste a Meeting Link`} icon={LinkIcon}
+              onClick={() => onOnline(null)} />
+          </RibbonMenuButton>
         {/if}
       </RibbonGroup>
       <RibbonGroup label={$t`Attendees`}>
         {#if isMeeting}
-          <RibbonButton label={$t`Add Attendees`} icon={AddAttendeesIcon}
-            onClick={actions.onAddAttendees} />
+          <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
+            tooltip={$t`Select attendees from the address book`}
+            onClick={actions.onAddressBook} />
         {:else}
           <RibbonButton label={$t`Invite Attendees`} icon={InviteIcon}
             tooltip={$t`Turn this appointment into a meeting`}
@@ -88,7 +116,7 @@
         {/if}
       </RibbonGroup>
       <RibbonGroup label={$t`Options`}>
-        <RibbonMenuButton label={reminderLabel} icon={ReminderIcon}
+        <RibbonMenuButton label={$t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} icon={ReminderIcon}
           tooltip={$t`Reminder: ${reminderLabel}`}>
           {#each reminderChoices as minutes}
             <MenuItem label={Reminder.label(minutes)} selected={minutes == reminderMinutes}
@@ -109,7 +137,8 @@
       </RibbonGroup>
       <RibbonGroup label={$t`Attendees`}>
         <RibbonButton label={$t`Add Attendees`} icon={AddAttendeesIcon}
-          onClick={actions.onAddAttendees} />
+          tooltip={$t`Select attendees from the address book`}
+          onClick={actions.onAddressBook} />
       </RibbonGroup>
     </RibbonTab>
   {/if}
@@ -173,7 +202,7 @@
     onDeleteRemainder: () => Promise<void>;
     onDeleteSeries: () => Promise<void>;
     onInviteAttendees: () => void;
-    onAddAttendees: () => void;
+    onAddressBook: () => void;
     onRecurrence: () => void;
     onRefreshAvailability: () => void;
     onAttachFile: () => Promise<void>;
@@ -183,7 +212,6 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import type { EventEditFlow } from "./EventEditFlow";
   import { EventFormInfo } from "./EventFormInfo";
   import { Reminder } from "./Reminder";
   import Ribbon from "../../Shared/Ribbon/Ribbon.svelte";
@@ -193,7 +221,10 @@
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import RibbonTabWatcher from "./RibbonTabWatcher.svelte";
+  import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
+  import { EventEditFlow } from "./EventEditFlow";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CancelIcon from "lucide-svelte/icons/calendar-x-2";
@@ -204,6 +235,11 @@
   import DeclineIcon from "lucide-svelte/icons/x";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import JoinIcon from "lucide-svelte/icons/log-in";
+  import OfflineIcon from "lucide-svelte/icons/video-off";
+  import LinkIcon from "lucide-svelte/icons/link";
+  import SendIcon from "lucide-svelte/icons/send";
+  import CalendarIcon from "lucide-svelte/icons/calendar-days";
+  import AddressBookIcon from "lucide-svelte/icons/book-user";
   import InviteIcon from "lucide-svelte/icons/users-round";
   import AddAttendeesIcon from "lucide-svelte/icons/user-round-plus";
   import ReminderIcon from "lucide-svelte/icons/bell";
@@ -240,15 +276,17 @@
   $: isSent = $event.isOutgoingMeeting && $event && flow.isSaved;
   $: tabLabel = $event && EventFormInfo.tabLabel(event);
   $: reminderMinutes = $event && Reminder.minutesBefore(event);
-  $: reminderLabel = reminderMinutes == null ? $t`No Reminder` : Reminder.label(reminderMinutes);
+  $: reminderLabel = Reminder.label(reminderMinutes);
   $: reminderChoices = Reminder.choices(reminderMinutes);
+  const meetAccounts = EventEditFlow.meetAccounts();
 
-  function onOnlineMeeting(checked: boolean) {
-    if (checked) {
-      flow.setOnline();
-    } else {
-      flow.setOffline();
-    }
+  function onOnline(account: MeetAccount | null) {
+    flow.setOnlineWith(account);
+    event.notifyObservers();
+  }
+
+  function onOffline() {
+    flow.setOffline();
     event.notifyObservers();
   }
 

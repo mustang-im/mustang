@@ -12,7 +12,7 @@
     {/if}
     <span class="row-label">{$t`Required`}</span>
     <hbox class="value attendees">
-      <AttendeesField {event} readOnly />
+      <AttendeeList {event} />
     </hbox>
     <span class="row-label">{$t`When`}</span>
     <span class="value">{when}</span>
@@ -30,10 +30,13 @@
       </hbox>
     {/if}
   </grid>
+  <vbox class="preview">
+    <DayPreview {event} onShowInCalendar={() => flow.showInCalendar()} />
+  </vbox>
   {#if $attachments.hasItems}
-    <vbox class="attachments">
+    <hbox class="attachments">
       <Attachments {attachments} />
-    </vbox>
+    </hbox>
   {/if}
   <vbox flex class="body">
     {#if $event.hasDescription}
@@ -47,7 +50,8 @@
   import type { EventEditFlow } from "./EventEditFlow";
   import { EventFormInfo, type InfoMessage } from "./EventFormInfo";
   import InfoBar from "./InfoBar.svelte";
-  import AttendeesField from "./AttendeesField.svelte";
+  import AttendeeList from "./AttendeeList.svelte";
+  import DayPreview from "./DayPreview.svelte";
   import Attachments from "../../../frontend/Mail/Message/AttachmentsUI.svelte";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
@@ -80,8 +84,7 @@
     align-items: center;
     column-gap: 16px;
     row-gap: 10px;
-    padding: 8px 24px 16px 24px;
-    border-block-end: 1px solid var(--lo-divider);
+    padding: 8px 24px 4px 24px;
   }
   .row-label {
     min-width: 80px;
@@ -96,10 +99,6 @@
   }
   .organizer .name {
     font-weight: 600;
-  }
-  .attendees :global(.persons-autocomplete) {
-    border-block-end: none;
-    padding: 0;
   }
   .join {
     display: flex;
@@ -122,9 +121,45 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+  .preview {
+    flex-shrink: 0;
+    padding: 8px 24px 16px 24px;
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  /* <copied from="../../Mail/ReadingPane/ReadingPane.svelte"> */
   .attachments {
     flex-shrink: 0;
-    padding: 8px 24px;
+    padding: 0 12px;
+  }
+  .attachments :global(.attachments) {
+    min-height: 0;
+  }
+  .attachments :global(.attachments-list .attachment) {
+    border: 1px solid var(--lo-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-pane-bg);
+  }
+  .attachments :global(.attachments-list .attachment:hover) {
+    background-color: var(--lo-hover-bg);
+  }
+  .attachments :global(.attachments-list .attachment .icon),
+  .attachments :global(.attachments-list .attachment:hover .icon) {
+    padding-inline-start: 6px;
+    background-color: transparent;
+    color: var(--lo-fg-secondary);
+  }
+  .attachments :global(.attachments-list .attachment .info) {
+    width: 200px;
+    background-color: transparent;
+    color: var(--lo-fg);
+    box-shadow: none;
+  }
+  .attachments :global(.attachments-list .attachment .size) {
+    color: var(--lo-fg-secondary);
+  }
+  /* </copied> */
+  .attachments {
+    padding: 8px 12px;
     border-block-end: 1px solid var(--lo-divider);
   }
   .body {
