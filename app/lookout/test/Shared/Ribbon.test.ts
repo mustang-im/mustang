@@ -107,3 +107,16 @@ test("Layout setting", () => {
   expect(ribbon.collapsed.value).toBe(true);
   ribbon.setCollapsed(false);
 });
+
+test("Select a tab by its label", () => {
+  let ribbon = new RibbonModel();
+  let home = new RibbonTabModel("Home");
+  let search = new RibbonTabModel("Search");
+  ribbon.addTab(home);
+  ribbon.addTab(search);
+  ribbon.selectTabByLabel("Search");
+  expect(get(ribbon.selectedTab)).toBe(search);
+  // An unknown label keeps the selection
+  ribbon.selectTabByLabel("Nonexistent");
+  expect(get(ribbon.selectedTab)).toBe(search);
+});
