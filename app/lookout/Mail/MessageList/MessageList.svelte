@@ -53,7 +53,7 @@
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import MessageListItem from "./MessageListItem.svelte";
   import MessageContextMenu from "./MessageContextMenu.svelte";
-  import ContextMenu from "../../../frontend/Shared/Menu/ContextMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import type { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../../frontend/Util/error";

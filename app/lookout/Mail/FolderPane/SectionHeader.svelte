@@ -18,7 +18,7 @@
   import { MailView } from "../MailView";
   import AccountContextMenu from "./AccountContextMenu.svelte";
   import CollapsibleHeader from "../../Shared/CollapsibleHeader.svelte";
-  import ContextMenu from "../../../frontend/Shared/Menu/ContextMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ErrorIcon from "lucide-svelte/icons/circle-alert";
 
   export let id: string;

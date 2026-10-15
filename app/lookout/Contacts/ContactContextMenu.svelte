@@ -34,7 +34,7 @@
   import type { Contact } from "../../logic/Abstract/Contact";
   import { Person } from "../../logic/Abstract/Person";
   import { ContactActions } from "./ContactActions";
-  import ContextMenu from "../../frontend/Shared/Menu/ContextMenu.svelte";
+  import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../../frontend/Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../frontend/Shared/Menu/MenuDivider.svelte";
   import OpenIcon from "lucide-svelte/icons/square-pen";
