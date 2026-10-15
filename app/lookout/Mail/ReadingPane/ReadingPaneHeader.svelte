@@ -201,6 +201,7 @@
   .sender-name {
     flex: 0 1 auto;
     min-width: 0;
+    overflow: hidden;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -228,12 +229,27 @@
   .recipients-label {
     flex-shrink: 0;
   }
-  .recipients :global(.recipients) {
-    flex-wrap: wrap;
+  /* Line breaks only after the commas, never between a name and its comma */
+  .recipients :global(.persons) {
+    display: block;
+    min-width: 0;
+    font-size: 0;
+    white-space: nowrap;
   }
-  .recipients :global(.recipient),
-  .recipients :global(.recipients) {
+  .sender-info .recipients :global(.persons > *) {
+    display: inline-flex;
+    max-width: 100%;
+    overflow: hidden;
+    vertical-align: baseline;
     font-size: 13px;
+    line-height: 20px;
+  }
+  .sender-info .recipients :global(.persons > .separator) {
+    display: inline;
+    white-space: normal;
+  }
+  .sender-info .recipients :global(.persons > .separator::after) {
+    content: " ";
   }
   .top-right {
     flex-shrink: 0;
