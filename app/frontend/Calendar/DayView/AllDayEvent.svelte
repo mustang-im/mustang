@@ -30,9 +30,12 @@
 <style>
   .event {
     position: relative;
-    padding: 4px;
-    margin-block-end: 1px;
+    padding-block: 4px;
+    padding-inline: 6px;
+    margin-block-end: 2px;
     margin-inline-start: 1px;
+    margin-inline-end: 3px;
+    border-radius: 3px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
