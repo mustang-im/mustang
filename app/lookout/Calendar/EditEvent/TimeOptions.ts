@@ -1,0 +1,94 @@
+import { getDateTimeLocale, gPlural, gt } from "../../../l10n/l10n";
+import { UserError } from "../../../logic/util/util";
+
+export interface TimeOption {
+  time: Date;
+  label: string;
+  durationLabel?: string;
+}
+
+export class TimeOptions {
+  static readonly kStepMinutes = 30;
+
+  static startTimes(day: Date): TimeOption[] {
+    let time = new Date(day);
+    time.setHours(0, 0, 0, 0);
+    let options: TimeOption[] = [];
+    while (time.getDate() == day.getDate()) {
+      options.push({ time: new Date(time), label: TimeOptions.timeLabel(time) });
+      time.setMinutes(time.getMinutes() + TimeOptions.kStepMinutes);
+    }
+    return options;
+  }
+
+  static endTimes(start: Date, endDay: Date = start): TimeOption[] {
+    let time = new Date(endDay);
+    if (endDay.toDateString() == start.toDateString()) {
+      time.setTime(start.getTime());
+    } else {
+      time.setHours(0, 0, 0, 0);
+    }
+    let options: TimeOption[] = [];
+    while (time.toDateString() == endDay.toDateString()) {
+      if (time.getTime() >= start.getTime()) {
+        let minutes = Math.round((time.getTime() - start.getTime()) / 60000);
+        options.push({
+          time: new Date(time),
+          label: TimeOptions.timeLabel(time),
+          durationLabel: TimeOptions.durationLabel(minutes),
+        });
+      }
+      time.setMinutes(time.getMinutes() + TimeOptions.kStepMinutes);
+    }
+    return options;
+  }
+
+  static timeLabel(time: Date): string {
+    return time.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" });
+  }
+
+  static durationLabel(minutes: number): string {
+    if (minutes < 60) {
+      return TimeOptions.amount(minutes, { one: "minute", other: "minutes" });
+    }
+    if (minutes >= 24 * 60 && minutes % (12 * 60) == 0) {
+      return TimeOptions.amount(minutes / (24 * 60), { one: "day", other: "days" });
+    }
+    return TimeOptions.amount(minutes / 60, { one: "hour", other: "hours" });
+  }
+
+  static amount(value: number, units: Record<string, string>): string {
+    let number = value.toLocaleString(getDateTimeLocale(), { maximumFractionDigits: 2 });
+    let pluralNumber = Number.isInteger(value) ? value : 2;
+    return number + " " + gPlural(pluralNumber, units);
+  }
+
+  static parseTime(text: string, day: Date): Date {
+    // <copied from="../../../frontend/Calendar/EditEvent/TimeInput.svelte" onChange()>
+    // Also accepts "a.m." and a space before the minutes, as Outlook does
+    let parts = text.trim().replace(/\./g, "").match(/^(\d{1,2})(?:[:\s]?(\d\d))?\s*(am?|(pm?))?$/i);
+    if (!parts) {
+      throw new UserError(gt`Could not interpret value as a time`);
+    }
+    let hour = Number(parts[1]);
+    if (parts[3]) {
+      if (hour < 1 || hour > 12) {
+        throw new UserError(gt`Hour must be between 1 and 12 when using am or pm`);
+      }
+      hour %= 12;
+      if (parts[4]) {
+        hour += 12;
+      }
+    } else if (hour >= 24) {
+      throw new UserError(gt`Hour must be less than 24`);
+    }
+    let minute = Number(parts[2] || 0);
+    if (minute >= 60) {
+      throw new UserError(gt`Minute must be less than 60`);
+    }
+    let time = new Date(day);
+    time.setHours(hour, minute, 0, 0);
+    return time;
+    // </copied>
+  }
+}
