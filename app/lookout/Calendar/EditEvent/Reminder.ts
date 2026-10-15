@@ -21,7 +21,7 @@ export class Reminder {
   }
 
   static choices(current: ReminderMinutes): ReminderMinutes[] {
-    const kChoices: ReminderMinutes[] = [null, 0, 5, 10, 15, 30, 60, 120, 180, 240, 480, 720, 1080, 1440, 2880, 4320, 10080, 20160];
+    const kChoices: ReminderMinutes[] = [null, 0, 5, 10, 15, 30, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 1080, 1440, 2880, 4320, 5760, 10080, 20160];
     if (kChoices.includes(current)) {
       return kChoices;
     }

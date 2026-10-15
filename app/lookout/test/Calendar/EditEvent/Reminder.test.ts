@@ -58,3 +58,11 @@ test("Choices contain a custom current value, in order", () => {
   expect(custom.indexOf(45)).toBe(custom.indexOf(30) + 1);
   expect(Reminder.choices(null)).toEqual(standard);
 });
+
+test("The list of Outlook classic", () => {
+  expect(Reminder.choices(15).map(minutes => Reminder.label(minutes))).toEqual([
+    "None", "0 minutes", "5 minutes", "10 minutes", "15 minutes", "30 minutes",
+    "1 hour", "2 hours", "3 hours", "4 hours", "5 hours", "6 hours", "7 hours", "8 hours", "9 hours", "10 hours", "11 hours",
+    "0.5 days", "18 hours", "1 day", "2 days", "3 days", "4 days", "1 week", "2 weeks",
+  ]);
+});
