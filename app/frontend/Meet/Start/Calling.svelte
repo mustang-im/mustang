@@ -144,7 +144,7 @@
 <svelte:window on:keydown={ev => catchErrors(() => onKeyEnter(ev, accept))} />
 
 {#if $meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall }
-  <audio src="sound/ringtone1.mp3" loop autoplay />
+  <audio src={ringtoneURL} loop autoplay />
 {/if}
 
 {#if ($meeting.state == MeetingState.IncomingCall || $meeting.state == MeetingState.OutgoingCall) &&
@@ -180,6 +180,7 @@
   import { onKeyEnter } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
+  import ringtoneURL from "../../../public/sound/ringtone1.mp3?url";
 
   export let meeting: VideoConfMeeting;
 
