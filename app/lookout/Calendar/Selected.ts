@@ -16,6 +16,7 @@ export interface EventPeek {
 
 export const selectedSlots = writable<SlotSelection | null>(null);
 export const eventPeek = writable<EventPeek | null>(null);
+export const inlineTitle = writable<string | null>(null);
 
 export interface CalendarMenus {
   openEventMenu(mouseEvent: MouseEvent, event: Event): void;

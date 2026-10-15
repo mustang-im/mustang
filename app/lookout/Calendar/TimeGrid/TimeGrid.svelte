@@ -11,13 +11,13 @@
     <div class="row" style="grid-template-columns: {columns}">
       {#each groups as group, g}
         {#each range.days as day, d}
-          <DayHeader {day} column={firstColumnOf(g) + d} isToday={CurrentTime.isToday(day, $now)} {onOpenDay} />
+          <DayHeader {day} column={firstColumnOf(g) + d} calendar={group.calendar} isToday={CurrentTime.isToday(day, $now)} {onOpenDay} />
         {/each}
       {/each}
     </div>
     <div class="row all-day-row" style="grid-template-columns: {columns}">
       {#each groupEvents as group, g}
-        <AllDayStrip days={range.days} firstColumn={firstColumnOf(g)} events={group.allDay} calendar={group.calendar} />
+        <AllDayStrip days={range.days} firstColumn={firstColumnOf(g)} events={group.allDay} calendar={group.calendar} group={g} />
       {/each}
     </div>
   </div>
@@ -30,7 +30,7 @@
         {/each}
       </div>
       {#each range.days as day, d}
-        <DayColumn {day} column={firstColumnOf(g) + d} events={group.timed} calendar={group.calendar}
+        <DayColumn {day} column={firstColumnOf(g) + d} dayIndex={d} group={g} events={group.timed} calendar={group.calendar}
           {pxPerMinute} {timeScale}
           isToday={CurrentTime.isToday(day, $now)}
           showsPastTimeLine={showsToday && CurrentTime.isBeforeToday(day, $now)} />

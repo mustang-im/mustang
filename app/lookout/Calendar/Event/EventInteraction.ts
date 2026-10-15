@@ -3,10 +3,12 @@ import { selectedEvent } from "../../../frontend/Calendar/selected";
 import { catchErrors } from "../../../frontend/Util/error";
 import { CalendarActions } from "../CalendarActions";
 import { eventPeek, selectedSlots, type CalendarMenus } from "../Selected";
+import type { EventDrag } from "../TimeGrid/EventDrag";
 
 export interface EventInteractionParams {
   event: Event;
   menus: CalendarMenus;
+  startDrag?: (pointerEvent: PointerEvent) => EventDrag | null;
 }
 
 export class EventInteraction {
@@ -16,8 +18,14 @@ export class EventInteraction {
       selectedEvent.set(current.event);
       selectedSlots.set(null);
     };
+    let drag: EventDrag | null = null;
+    let wasDragged = false;
     let onClick = (mouseEvent: MouseEvent) => {
       mouseEvent.stopPropagation();
+      if (wasDragged) {
+        wasDragged = false;
+        return;
+      }
       select();
       eventPeek.set({ event: current.event, anchor: element });
     };
@@ -46,13 +54,55 @@ export class EventInteraction {
       }
     };
     let onFocus = () => select();
-    let onPointerDown = (pointerEvent: PointerEvent) => pointerEvent.stopPropagation();
+    let onPointerDown = (pointerEvent: PointerEvent) => {
+      pointerEvent.stopPropagation();
+      CalendarActions.commitInlineTitle();
+      wasDragged = false;
+      if (pointerEvent.button != 0 || !current.startDrag) {
+        return;
+      }
+      drag = current.startDrag(pointerEvent);
+      if (drag) {
+        element.setPointerCapture(pointerEvent.pointerId);
+      }
+    };
+    let onPointerMove = (pointerEvent: PointerEvent) => {
+      if (!drag) {
+        return;
+      }
+      drag.move(pointerEvent);
+      if (drag.hasMoved) {
+        element.classList.add("dragging");
+        eventPeek.set(null);
+        drag.preview(element);
+      }
+    };
+    let onPointerUp = () => {
+      if (!drag) {
+        return;
+      }
+      let finishedDrag = drag;
+      drag = null;
+      finishedDrag.endPreview(element);
+      element.classList.remove("dragging");
+      if (!finishedDrag.hasMoved) {
+        return;
+      }
+      wasDragged = true;
+      if (finishedDrag.changesTime) {
+        let { start, end } = finishedDrag.newTimes();
+        catchErrors(() => CalendarActions.changeTime(current.event, start, end));
+      }
+    };
     element.addEventListener("click", onClick);
     element.addEventListener("dblclick", onDoubleClick);
     element.addEventListener("contextmenu", onContextMenu);
     element.addEventListener("keydown", onKeyDown);
     element.addEventListener("focus", onFocus);
     element.addEventListener("pointerdown", onPointerDown);
+    element.addEventListener("pointermove", onPointerMove);
+    element.addEventListener("pointerup", onPointerUp);
+    element.addEventListener("pointercancel", onPointerUp);
     return {
       update(newParams: EventInteractionParams) {
         current = newParams;
@@ -64,6 +114,9 @@ export class EventInteraction {
         element.removeEventListener("keydown", onKeyDown);
         element.removeEventListener("focus", onFocus);
         element.removeEventListener("pointerdown", onPointerDown);
+        element.removeEventListener("pointermove", onPointerMove);
+        element.removeEventListener("pointerup", onPointerUp);
+        element.removeEventListener("pointercancel", onPointerUp);
       },
     };
   }

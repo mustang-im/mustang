@@ -40,7 +40,7 @@
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, selectedSlots, kCalendarMenus, type CalendarMenus, type SlotSelection } from "./Selected";
+  import { eventPeek, inlineTitle, selectedSlots, kCalendarMenus, type CalendarMenus, type SlotSelection } from "./Selected";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../frontend/Util/date";
@@ -167,6 +167,13 @@
       return;
     }
     let command = CalendarKeys.commandFor(keyEvent);
+    if (!command && $selectedSlots && keyEvent.key.length == 1 && keyEvent.key != " " &&
+        !keyEvent.ctrlKey && !keyEvent.metaKey && !keyEvent.altKey) {
+      keyEvent.preventDefault();
+      $eventPeek = null;
+      $inlineTitle = keyEvent.key;
+      return;
+    }
     if (!command || command.command == "open" && target?.closest?.("button, a")) {
       return;
     }
@@ -225,6 +232,7 @@
       break;
     case "escape":
       $eventPeek = null;
+      $inlineTitle = null;
       $selectedSlots = null;
       break;
     }

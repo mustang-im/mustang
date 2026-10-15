@@ -1,40 +1,59 @@
-<button class="day-header" class:today={isToday}
-  style="grid-column: {column}"
-  title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
-  on:click={() => onOpenDay(day)}
-  bind:clientWidth={width}>
-  <span class="number">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</span>
-  <span class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: width >= 90 ? "long" : "short" })}</span>
-</button>
+<div class="day-header" class:today={isToday} style="grid-column: {column}" bind:clientWidth={width}>
+  <button class="day-button"
+    title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
+    on:click={() => onOpenDay(day)}>
+    <span class="number">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</span>
+    <span class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: width >= 90 ? "long" : "short" })}</span>
+  </button>
+  <button class="add-button" title={$t`New appointment on this day`} on:click={onAdd}>
+    <AddIcon size="14" />
+  </button>
+</div>
 
 <script lang="ts">
-  import { getDateTimeLocale } from "../../../l10n/l10n";
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import { CalendarActions } from "../CalendarActions";
+  import { WorkingHours } from "../View/WorkingHours";
+  import { catchErrors } from "../../../frontend/Util/error";
+  import AddIcon from "lucide-svelte/icons/circle-plus";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let day: Date;
   export let column: number;
+  export let calendar: Calendar | null = null;
   export let isToday = false;
   export let onOpenDay: (day: Date) => void;
 
   let width = 100;
+
+  function onAdd() {
+    let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WorkingHours.startHour);
+    catchErrors(() => CalendarActions.newEvent(calendar, start, null));
+  }
 </script>
 
 <style>
   .day-header {
     position: relative;
     display: flex;
+    min-width: 0;
+    border-inline-start: 1px solid var(--lo-divider);
+  }
+  .day-button {
+    flex: 1 1 0;
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     min-width: 0;
     padding: 6px 8px 4px 8px;
     border: none;
-    border-inline-start: 1px solid var(--lo-divider);
     background: none;
     color: var(--lo-fg);
     font: inherit;
     text-align: start;
     cursor: pointer;
   }
-  .day-header:hover {
+  .day-button:hover {
     background-color: var(--lo-hover-bg);
   }
   .number {
@@ -64,5 +83,30 @@
     inset-inline: 0;
     height: 3px;
     background-color: var(--lo-accent);
+    z-index: 1;
+  }
+  .add-button {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--lo-accent-text);
+    cursor: pointer;
+    opacity: 0;
+  }
+  .day-header:hover .add-button,
+  .add-button:focus-visible {
+    opacity: 1;
+  }
+  .add-button:hover {
+    background-color: var(--lo-hover-bg);
   }
 </style>

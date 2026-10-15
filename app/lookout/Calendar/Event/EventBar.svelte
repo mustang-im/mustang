@@ -9,7 +9,7 @@
   role="button"
   tabindex="0"
   aria-label={tooltip}
-  use:EventInteraction.attach={{ event, menus }}>
+  use:EventInteraction.attach={{ event, menus, startDrag }}>
   <div class="lo-event-bar" />
   <div class="content">
     {#if continuesBefore}
@@ -30,6 +30,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventLook } from "./EventLook";
   import { EventInteraction } from "./EventInteraction";
+  import { EventDrag } from "../TimeGrid/EventDrag";
   import { CurrentTime } from "../View/CurrentTime";
   import { kCalendarMenus, type CalendarMenus } from "../Selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
@@ -51,6 +52,10 @@
   $: look = new EventLook($event);
   $: tooltip = look.tooltip(getDateTimeLocale());
   $: showStartTime = !$event.allDay && !continuesBefore;
+
+  function startDrag(pointerEvent: PointerEvent): EventDrag | null {
+    return event.isEditable ? new EventDrag(event, "move-days", pointerEvent) : null;
+  }
 </script>
 
 <style>

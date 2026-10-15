@@ -2,6 +2,8 @@
 <div class="day-column"
   class:today={isToday}
   style="grid-column: {column}; --click-margin: 8px"
+  data-day-index={dayIndex}
+  data-group={group}
   on:pointerdown={onPointerDown}
   on:pointermove={onPointerMove}
   on:pointerup={onPointerUp}
@@ -17,10 +19,12 @@
   {/if}
   {#if selectionHere}
     <div class="slot-selection"
-      style="top: {selectionStart * pxPerMinute}px; height: {(selectionEnd - selectionStart) * pxPerMinute}px" />
+      style="top: {selectionStart * pxPerMinute}px; height: {(selectionEnd - selectionStart) * pxPerMinute}px">
+      <InlineEventTitle />
+    </div>
   {/if}
   {#each $layout as item (item.event)}
-    <EventBlock {item} {pxPerMinute} />
+    <EventBlock {item} {pxPerMinute} snapMinutes={Math.min(timeScale, 15)} />
   {/each}
   {#if isToday || showsPastTimeLine}
     <div class="current-time" class:past={!isToday}
@@ -39,12 +43,15 @@
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventBlock from "../Event/EventBlock.svelte";
+  import InlineEventTitle from "../View/InlineEventTitle.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import { getContext } from "svelte";
 
   export let day: Date;
   export let column: number;
+  export let dayIndex: number;
+  export let group: number;
   export let events: Collection<Event>;
   export let calendar: Calendar | null;
   export let pxPerMinute: number;
@@ -91,6 +98,7 @@
   }
 
   function select(fromMinute: number, toMinute: number) {
+    CalendarActions.commitInlineTitle();
     $selectedSlots = { start: timeAt(fromMinute), end: timeAt(toMinute), allDay: false, calendar };
   }
 
