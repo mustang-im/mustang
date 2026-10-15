@@ -1,5 +1,6 @@
 import { EWSCalendarShortcut } from "../EWS/EWSCalendarShortcut";
 import type { OWACalendar } from "./OWACalendar";
+import type { TOWACalendarEntry } from "./TOWACalendar";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
 import { OWAGetFolderRequest } from "../../Mail/OWA/Request/OWAGetFolderRequest";
 import { owaResolveNamesRequest } from "../../Contacts/OWA/Request/OWAPersonRequests";
@@ -13,15 +14,7 @@ export class OWACalendarShortcut {
   readonly ownerEmailAddress: string | null;
   readonly sharedFolderID: string | null;
 
-  /**
-   * @param entry A `CalendarEntry`, as OWA's `GetCalendarFolders` returns it in
-   *   `CalendarGroups[].Calendars[]`. Only a `LinkedCalendarEntry`, i.e. the
-   *   calendar of another user, has `OwnerEmailAddress` and
-   *   `IsOwnerEmailAddressInvalid`, and `SharedFolderId: { Id }`,
-   *   if the shortcut is to a specific folder of the owner,
-   *   not their default calendar.
-   */
-  constructor(account: OWAAccount, entry: any) {
+  constructor(account: OWAAccount, entry: TOWACalendarEntry) {
     this.account = account;
     this.ownerEmailAddress = entry?.IsOwnerEmailAddressInvalid
       ? null
@@ -31,7 +24,7 @@ export class OWACalendarShortcut {
 
   static async listCalendars(account: OWAAccount): Promise<OWACalendar[]> {
     let response = await account.callOWA(new OWAGetCalendarFoldersRequest());
-    let entries = ensureArray(response?.CalendarGroups).flatMap(group => ensureArray(group?.Calendars));
+    let entries: TOWACalendarEntry[] = ensureArray(response?.CalendarGroups).flatMap(group => ensureArray(group?.Calendars));
     let calendars: OWACalendar[] = [];
     for (let entry of entries) {
       let shortcut = new OWACalendarShortcut(account, entry);

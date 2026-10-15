@@ -1,4 +1,5 @@
 import type { EWSCalendar } from "./EWSCalendar";
+import type { TEWSCalendarShortcutItem } from "./TEWSCalendar";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { MAPIAddressBookEntryID, MAPIEntryID, MAPIStoreEntryID } from "../../Mail/EWS/MAPIEntryID";
 import { PersonUID } from "../../Abstract/PersonUID";
@@ -27,14 +28,7 @@ export class EWSCalendarShortcut {
     addressBookEntryID: { tag: 0x6854, type: "Binary" },
   };
 
-  /**
-   * @param item A navigation shortcut, as EWS `FindItem` returns it from the
-   *   folder "Common Views", after `XML2JSON()`: a folder-associated item with
-   *   `ItemClass` "IPM.Microsoft.WunderBar.Link" and `ExtendedProperty`,
-   *   an object or array of `{ ExtendedFieldURI: { PropertyTag, PropertyType }, Value }`
-   *   with the properties in `kProperties`. Binary values are base64.
-   */
-  constructor(account: EWSAccount, item: any) {
+  constructor(account: EWSAccount, item: TEWSCalendarShortcutItem) {
     this.account = account;
     let values = new Map<number, string>();
     for (let property of ensureArray(item?.ExtendedProperty)) {
@@ -77,7 +71,7 @@ export class EWSCalendarShortcut {
       },
     };
     let result = await account.callEWS(request);
-    let items: any[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
+    let items: TEWSCalendarShortcutItem[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
     let calendars: EWSCalendar[] = [];
     for (let item of items) {
       let shortcut = new EWSCalendarShortcut(account, item);
