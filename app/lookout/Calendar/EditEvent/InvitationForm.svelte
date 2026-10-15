@@ -72,6 +72,7 @@
 <style>
   .invitation-form {
     min-height: 0;
+    overflow-y: auto;
   }
   .fields {
     flex-shrink: 0;
@@ -127,7 +128,8 @@
     border-block-end: 1px solid var(--lo-divider);
   }
   .body {
-    min-height: 0;
+    flex: 1 0 auto;
+    min-height: 160px;
     padding: 8px 16px;
   }
 </style>

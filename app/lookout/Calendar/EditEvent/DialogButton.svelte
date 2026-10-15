@@ -28,4 +28,7 @@
     cursor: default;
   }
   /* </copied> */
+  .dialog-button {
+    white-space: nowrap;
+  }
 </style>

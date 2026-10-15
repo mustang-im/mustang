@@ -15,12 +15,14 @@
       <tbody>
         {#each $participants.each as participant (participant)}
           <tr>
-            <td class="name">
-              <ParticipantConfirmIcon {participant} />
-              <span>{participant.name || participant.emailAddress}</span>
-              {#if participant.name && participant.emailAddress}
-                <span class="lo-secondary">{participant.emailAddress}</span>
-              {/if}
+            <td>
+              <hbox class="name">
+                <ParticipantConfirmIcon {participant} />
+                <span>{participant.name || participant.emailAddress}</span>
+                {#if participant.name && participant.emailAddress}
+                  <span class="lo-secondary">{participant.emailAddress}</span>
+                {/if}
+              </hbox>
             </td>
             <td>{EventFormInfo.attendanceLabel(participant)}</td>
             <td>{participant.response == InvitationResponse.Organizer ? "" : EventFormInfo.responseLabel(participant)}</td>
@@ -84,9 +86,9 @@
     padding: 6px 12px;
     border-block-end: 1px solid var(--lo-divider);
   }
-  td.name {
-    display: flex;
+  .name {
     align-items: center;
     gap: 8px;
+    min-height: 20px;
   }
 </style>

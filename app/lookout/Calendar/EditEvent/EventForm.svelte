@@ -91,6 +91,7 @@
 <style>
   .event-form {
     min-height: 0;
+    overflow-y: auto;
   }
   .header {
     flex-shrink: 0;
@@ -184,12 +185,15 @@
     background-color: var(--lo-pane-bg);
   }
   .body {
-    min-height: 120px;
-    overflow: auto;
+    flex: 1 0 auto;
+    min-height: 160px;
     padding: 12px 24px;
   }
+  .body > :global(*) {
+    flex: 1 0 auto;
+  }
   .body :global(.ProseMirror) {
-    min-height: 100%;
+    min-height: 136px;
     outline: none;
   }
 </style>

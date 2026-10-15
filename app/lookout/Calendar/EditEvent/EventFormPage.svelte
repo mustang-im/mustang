@@ -42,7 +42,7 @@
     onClose={() => seriesChoice = null} />
 {/if}
 {#if showSaveChanges}
-  <SaveChangesDialog question={saveChangesText.question}
+  <SaveChangesDialog title={kindLabel} question={saveChangesText.question}
     saveLabel={saveChangesText.save} discardLabel={saveChangesText.discard}
     saveDisabled={flow.missingPropsReason ?? false}
     onSave={onSaveFromClose}
