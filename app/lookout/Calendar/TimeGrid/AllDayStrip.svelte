@@ -26,6 +26,7 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { layoutDayRow } from "../../../frontend/Calendar/MonthView/WeekRow";
   import { CalendarActions } from "../CalendarActions";
+  import { DayAtPoint } from "../View/DayAtPoint";
   import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../Selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -48,9 +49,7 @@
   $: layout = derived([...$events.contents], allDayEvents => layoutDayRow(allDayEvents, days));
 
   function dayAt(clientX: number): Date {
-    let rect = stripEl.getBoundingClientRect();
-    let index = Math.floor((clientX - rect.left) / rect.width * days.length);
-    return days[Math.min(Math.max(index, 0), days.length - 1)];
+    return DayAtPoint.find(stripEl, clientX, days);
   }
 
   function selectDay(day: Date) {
