@@ -27,6 +27,15 @@
     <RibbonToggleButton label={$t`Sent by Me`} icon={SentIcon}
       checked={$options.sentByMe}
       onChange={checked => MailSearch.update({ sentByMe: checked })} />
+    <RibbonMenuButton label={$options.person ? $options.person.name : $t`Person`} icon={PersonIcon}
+      tooltip={$t`Only messages from or to a person in your address books`}>
+      <MenuItem label={$t`Choose Person…`} icon={PersonIcon}
+        onClick={() => MailDialogs.open({ kind: "search-person" })} />
+      {#if $options.person}
+        <MenuItem label={$t`Any Person`} icon={RemoveIcon}
+          onClick={() => MailSearch.update({ person: null })} />
+      {/if}
+    </RibbonMenuButton>
     <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
       disabled={!$tags.hasItems && $t`There are no categories yet`}>
       {#each $tags.each as tag (tag)}
@@ -72,6 +81,8 @@
   import FlagIcon from "lucide-svelte/icons/flag";
   import SentIcon from "lucide-svelte/icons/send";
   import CategorizeIcon from "lucide-svelte/icons/tag";
+  import PersonIcon from "lucide-svelte/icons/user-search";
+  import RemoveIcon from "lucide-svelte/icons/user-x";
   import SaveSearchIcon from "lucide-svelte/icons/folder-search";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";

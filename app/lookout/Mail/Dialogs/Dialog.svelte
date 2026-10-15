@@ -48,6 +48,11 @@
 
   onMount(() => {
     dialogEl.showModal();
+    let firstField = dialogEl.querySelector<HTMLElement>(".content :is(input:not([type=radio]):not([type=checkbox]), select, textarea)");
+    firstField?.focus();
+    if (firstField instanceof HTMLInputElement) {
+      firstField.select();
+    }
     return () => dialogEl?.close();
   });
 

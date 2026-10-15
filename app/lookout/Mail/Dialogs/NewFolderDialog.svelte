@@ -5,7 +5,7 @@
   on:close>
   <vbox class="dialog-content">
     <label for="new-folder-name">{$t`Name:`}</label>
-    <input id="new-folder-name" type="text" bind:value={name} use:focus />
+    <input id="new-folder-name" type="text" bind:value={name} />
     <span class="caption">{$t`Select where to place the folder:`}</span>
     <FolderPicker label={$t`Folders`} allowAccount
       bind:selectedFolder={parent} bind:selectedAccount={account}
@@ -40,9 +40,6 @@
     $selectedFolder = folder;
   }
 
-  function focus(input: HTMLInputElement) {
-    input.focus();
-  }
 </script>
 
 <style>
