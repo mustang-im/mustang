@@ -6,6 +6,10 @@
       class:other-month={!range.isInMonth(day)}
       class:today={CurrentTime.isToday(day, $now)}
       class:selected={isSelected(day, $selectedSlots)}>
+      <button class="add-button" title={$t`New appointment on this day`}
+        on:click|stopPropagation={() => onAdd(day)} on:dblclick|stopPropagation>
+        <AddIcon size="14" />
+      </button>
       {#if isSelected(day, $selectedSlots) && day.getTime() == $selectedSlots.start.getTime()}
         <div class="inline-title-area">
           <InlineEventTitle />
@@ -52,6 +56,8 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import EventBar from "../Event/EventBar.svelte";
   import InlineEventTitle from "../View/InlineEventTitle.svelte";
+  import { WorkingHours } from "../View/WorkingHours";
+  import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import { getContext } from "svelte";
@@ -115,6 +121,11 @@
     catchErrors(() => CalendarActions.newEvent(null, day, null, "all-day"));
   }
 
+  function onAdd(day: Date) {
+    let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WorkingHours.startHour);
+    catchErrors(() => CalendarActions.newEvent(null, start, null));
+  }
+
   function onContextMenu(mouseEvent: MouseEvent) {
     mouseEvent.preventDefault();
     let day = dayAt(mouseEvent.clientX);
@@ -139,6 +150,32 @@
     grid-row: 1 / -1;
     position: relative;
     border-inline-start: 1px solid var(--lo-divider);
+  }
+  .add-button {
+    position: absolute;
+    top: 1px;
+    inset-inline-end: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--lo-accent-text);
+    cursor: pointer;
+    opacity: 0;
+    z-index: 2;
+  }
+  .cell:hover .add-button,
+  .cell:has(+ .day-number:hover) .add-button,
+  .add-button:focus-visible {
+    opacity: 1;
+  }
+  .add-button:hover {
+    background-color: var(--lo-hover-bg);
   }
   .inline-title-area {
     position: absolute;
