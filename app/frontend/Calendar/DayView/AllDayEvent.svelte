@@ -2,7 +2,9 @@
   <hbox class="event font-small"
     title={eventAsText}
     style="grid-column: {item.startDay + 1} / {item.endDay + 1}; grid-row: {item.lane + 1}; --account-color: {event.calendar?.color}"
-    class:selected={$selectedEvent == event}>
+    class:selected={$selectedEvent == event}
+    class:unanswered={$event.isUnanswered}
+    class:cancelled={$event.isCancelled}>
     <hbox class="title">{event.title}</hbox>
   </hbox>
 </Clickable>
@@ -43,6 +45,7 @@
 
     background-color: var(--account-color);
     color: lch(from var(--account-color) calc((49.44 - l) * infinity) 0 0);
+    --stripe-color: rgb(from var(--account-color) r g b / 50%);
   }
   @media (prefers-color-scheme: dark) {
     .event {
@@ -52,8 +55,31 @@
       background-blend-mode: overlay;
       background-color: unset;
       color: unset;
+      --stripe-color: rgb(from var(--account-color) r g b / 25%);
     }
   }
+  /* <copied from="EventContent.svelte"> */
+  .event.unanswered {
+    background-image: repeating-linear-gradient(-45deg, transparent 0 4px, var(--stripe-color) 4px 8px);
+    background-blend-mode: normal;
+    background-color: transparent;
+    color: unset;
+  }
+  .event.cancelled {
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 8px, var(--stripe-color) 8px 12px),
+      repeating-linear-gradient(-45deg, transparent 0 8px, var(--stripe-color) 8px 12px);
+    background-blend-mode: normal;
+    background-color: transparent;
+    color: unset;
+  }
+  .event.cancelled.unanswered {
+    opacity: 10%;
+  }
+  .cancelled .title {
+    text-decoration: line-through;
+  }
+  /* </copied> */
   .event:hover {
     background-color: #20AF9E70;
   }

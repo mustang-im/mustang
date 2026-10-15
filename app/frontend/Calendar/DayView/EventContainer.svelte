@@ -4,7 +4,6 @@
     --lane: {item.lane};
     --lanes: {item.lanes};
     --color: {$event.color ?? $event.calendar?.color}"
-  class:cancelled={$event.isCancelled}
   class:selected={$selectedEvent == event}>
   <slot />
 </hbox>
@@ -29,8 +28,5 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-  }
-  .event.cancelled {
-    opacity: 30%;
   }
 </style>
