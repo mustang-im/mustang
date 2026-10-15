@@ -51,7 +51,7 @@
   --lo-backstage-nav-hover-bg: rgba(255, 255, 255, 0.14);
   --lo-backstage-nav-selected-bg: rgba(255, 255, 255, 0.24);
 
-  --lo-nav-rail-width: 60px;
+  --lo-nav-rail-width: 64px;
   --lo-titlebar-height: 40px;
   --lo-statusbar-height: 24px;
 }
@@ -215,4 +215,18 @@ input[type="checkbox"] {
   border: 1px solid var(--lo-border);
   border-radius: var(--lo-radius);
   box-shadow: var(--lo-shadow-popup);
+}
+
+.lookout-window .checkbox {
+  position: relative;
+}
+.lookout-window .checkbox > input:not(:checked) {
+  background-color: var(--lo-input-bg);
+  border-color: var(--lo-input-border);
+}
+.lookout-window .checkbox > input:checked {
+  background-color: var(--lo-accent);
+}
+.lookout-window .checkbox > .state-icon-wrapper {
+  color: var(--lo-accent-fg);
 }
