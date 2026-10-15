@@ -1,5 +1,6 @@
-<div class="time-grid" bind:this={scrollEl} on:scroll={onScroll}>
-  <div class="head">
+<div class="time-grid" bind:this={scrollEl} on:scroll={onScroll} bind:clientHeight={viewHeight}
+  style="--head-height: {headHeight}px">
+  <div class="head" bind:offsetHeight={headHeight}>
     {#if isSplit}
       <div class="row" style="grid-template-columns: {columns}">
         {#each groups as group, g}
@@ -33,7 +34,8 @@
         <DayColumn {day} column={firstColumnOf(g) + d} dayIndex={d} group={g} events={group.timed} calendar={group.calendar}
           {pxPerMinute} {timeScale}
           isToday={CurrentTime.isToday(day, $now)}
-          showsPastTimeLine={showsToday && CurrentTime.isBeforeToday(day, $now)} />
+          showsPastTimeLine={showsToday && CurrentTime.isBeforeToday(day, $now)}
+          visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} onScrollToMinute={scrollToMinute} />
       {/each}
     {/each}
   </div>
@@ -75,6 +77,8 @@
   const now = CurrentTime.minute;
 
   let scrollEl: HTMLDivElement;
+  let viewHeight = 0;
+  let headHeight = 0;
 
   $: isSplit = groups.length > 1;
   $: pxPerMinute = kSlotHeight / timeScale;
@@ -101,6 +105,13 @@
   function onScroll() {
     topMinute = scrollEl.scrollTop / pxPerMinute;
     $eventPeek = null;
+  }
+
+  $: visibleFromMinute = (topMinute ?? 0) + 1;
+  $: visibleToMinute = (topMinute ?? 0) + Math.max(viewHeight - headHeight, 0) / pxPerMinute - 1;
+
+  function scrollToMinute(minute: number) {
+    scrollEl.scrollTo({ top: Math.max(minute - timeScale, 0) * pxPerMinute, behavior: "smooth" });
   }
 
   $: pxPerMinute, restoreScroll();

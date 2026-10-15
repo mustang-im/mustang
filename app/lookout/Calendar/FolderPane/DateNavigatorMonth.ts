@@ -18,6 +18,12 @@ export class DateNavigatorMonth {
     }
   }
 
+  shownWeeks(showDaysBefore: boolean, showDaysAfter: boolean): (Date | null)[][] {
+    let weeks = this.weeks.map(week => week.map(day =>
+      this.isInMonth(day) || showDaysBefore && day < this.month || showDaysAfter && day > this.month ? day : null));
+    return weeks.filter(week => week.some(day => day && this.isInMonth(day)) || showDaysAfter && week.some(Boolean));
+  }
+
   isInMonth(day: Date): boolean {
     return day.getFullYear() == this.month.getFullYear() && day.getMonth() == this.month.getMonth();
   }

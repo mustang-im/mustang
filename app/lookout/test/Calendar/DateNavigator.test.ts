@@ -26,6 +26,22 @@ test("Month grid: 6 weeks from Monday, with the days of the neighbor months", ()
   expect(month.next(-10).title("en-US")).toBe("December 2025");
 });
 
+test("Stacked months show the neighbor month's days only at the outer ends", () => {
+  let october = new DateNavigatorMonth(new Date(2026, 9, 15));
+  let first = october.shownWeeks(true, false);
+  expect(first.length).toBe(5);
+  expect(first[0][0]).toEqual(new Date(2026, 8, 28));
+  expect(first[4]).toEqual([26, 27, 28, 29, 30, 31].map(day => new Date(2026, 9, day)).concat([null]));
+  let november = october.next(1).shownWeeks(false, true);
+  expect(november.length).toBe(6);
+  expect(november[0].slice(0, 6)).toEqual([null, null, null, null, null, null]);
+  expect(november[0][6]).toEqual(new Date(2026, 10, 1));
+  expect(november[5][6]).toEqual(new Date(2026, 11, 6));
+  let single = october.shownWeeks(true, true);
+  expect(single.length).toBe(6);
+  expect(single.flat().every(Boolean)).toBe(true);
+});
+
 test("Weekday labels with 2 letters", () => {
   let month = new DateNavigatorMonth(new Date(2026, 9, 15));
   expect(month.weekdayLabels("en-US")).toEqual(["MO", "TU", "WE", "TH", "FR", "SA", "SU"]);

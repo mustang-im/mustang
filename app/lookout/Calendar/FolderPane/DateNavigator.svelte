@@ -1,40 +1,50 @@
 <vbox class="date-navigator" class:week-numbers={showWeekNumbers}>
-  <hbox class="title-row">
-    <button class="arrow" title={$t`Previous month`} on:click={() => month = month.next(-1)}>
-      <PreviousIcon size="16" />
-    </button>
-    <hbox flex class="title">{month.title(getDateTimeLocale())}</hbox>
-    <button class="arrow" title={$t`Next month`} on:click={() => month = month.next(1)}>
-      <NextIcon size="16" />
-    </button>
-  </hbox>
-  <div class="grid" role="grid" aria-label={month.title(getDateTimeLocale())}>
-    {#if showWeekNumbers}
-      <span class="weekday week-number">#</span>
-    {/if}
-    {#each month.weekdayLabels(getDateTimeLocale()) as label}
-      <span class="weekday">{label}</span>
-    {/each}
-    {#each month.weeks as week}
-      {#if showWeekNumbers}
-        <span class="week-number">{WeekNumber.of(week[0])}</span>
-      {/if}
-      {#each week as day}
-        {@const inRange = range.contains(day)}
-        <button class="day"
-          class:other-month={!month.isInMonth(day)}
-          class:today={CurrentTime.isToday(day, $now)}
-          class:in-range={inRange}
-          class:range-start={inRange && !range.contains(dayBefore(day))}
-          class:range-end={inRange && !range.contains(dayAfter(day))}
-          class:has-events={daysWithEvents.has(DateNavigatorMonth.dayKey(day))}
-          title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
-          on:click={() => onSelectDay(day)}>
-          <span class="number">{day.getDate()}</span>
+  {#each months as shownMonth, i (shownMonth.month.getTime())}
+    <hbox class="title-row">
+      {#if i == 0}
+        <button class="arrow" title={$t`Previous month`} on:click={() => month = month.next(-1)}>
+          <PreviousIcon size="16" />
         </button>
+      {/if}
+      <hbox flex class="title">{shownMonth.title(getDateTimeLocale())}</hbox>
+      {#if i == 0}
+        <button class="arrow" title={$t`Next month`} on:click={() => month = month.next(1)}>
+          <NextIcon size="16" />
+        </button>
+      {/if}
+    </hbox>
+    <div class="grid" role="grid" aria-label={shownMonth.title(getDateTimeLocale())}>
+      {#if showWeekNumbers}
+        <span class="weekday week-number">#</span>
+      {/if}
+      {#each shownMonth.weekdayLabels(getDateTimeLocale()) as label}
+        <span class="weekday">{label}</span>
       {/each}
-    {/each}
-  </div>
+      {#each shownMonth.shownWeeks(i == 0, i == months.length - 1) as week}
+        {#if showWeekNumbers}
+          <span class="week-number">{WeekNumber.of(firstDay(week))}</span>
+        {/if}
+        {#each week as day}
+          {#if day}
+            {@const inRange = range.contains(day)}
+            <button class="day"
+              class:other-month={!shownMonth.isInMonth(day)}
+              class:today={CurrentTime.isToday(day, $now)}
+              class:in-range={inRange}
+              class:range-start={inRange && !range.contains(dayBefore(day))}
+              class:range-end={inRange && !range.contains(dayAfter(day))}
+              class:has-events={daysWithEvents.has(DateNavigatorMonth.dayKey(day))}
+              title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
+              on:click={() => onSelectDay(day)}>
+              <span class="number">{day.getDate()}</span>
+            </button>
+          {:else}
+            <span class="day empty" />
+          {/if}
+        {/each}
+      {/each}
+    </div>
+  {/each}
 </vbox>
 
 <script lang="ts">
@@ -50,6 +60,7 @@
   export let range: CalendarRange;
   export let date: Date;
   export let showWeekNumbers = false;
+  export let monthCount = 1;
   export let onSelectDay: (day: Date) => void;
 
   const now = CurrentTime.minute;
@@ -57,12 +68,17 @@
   let month = new DateNavigatorMonth(date);
   $: followDate(date);
   function followDate(date: Date) {
-    if (!month.isInMonth(date)) {
+    if (!months?.some(shownMonth => shownMonth.isInMonth(date))) {
       month = new DateNavigatorMonth(date);
     }
   }
 
-  $: daysWithEvents = month.daysWithEvents($shownCalendarEvents.contents);
+  $: months = Array.from({ length: Math.max(monthCount, 1) }, (_, i) => month.next(i));
+  $: daysWithEvents = new Set(months.flatMap(shownMonth => [...shownMonth.daysWithEvents($shownCalendarEvents.contents)]));
+
+  function firstDay(week: (Date | null)[]): Date {
+    return week.find(day => !!day);
+  }
 
   function dayBefore(day: Date): Date {
     return new Date(day.getFullYear(), day.getMonth(), day.getDate() - 1);
@@ -81,6 +97,9 @@
   .title-row {
     align-items: center;
     height: 32px;
+  }
+  .grid + .title-row {
+    margin-block-start: 8px;
   }
   .title {
     justify-content: center;

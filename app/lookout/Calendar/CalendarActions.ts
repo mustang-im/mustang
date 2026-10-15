@@ -19,11 +19,13 @@ import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
 import { catchErrors } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
-import { get } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 export type NewEventKind = "appointment" | "meeting" | "all-day" | "recurring";
 
 export class CalendarActions {
+  static readonly updatingCount = writable(0);
+
   static newEvent(calendar: Calendar | null, start: Date, end: Date | null, kind: NewEventKind = "appointment") {
     calendar ??= get(selectedCalendar) ?? appGlobal.calendars.first;
     assert(calendar, gt`Please set up a calendar first`);
@@ -176,7 +178,12 @@ export class CalendarActions {
   }
 
   static async update(calendars: Calendar[]) {
-    await Promise.all(calendars.map(calendar => calendar.listEvents()));
+    CalendarActions.updatingCount.update(count => count + 1);
+    try {
+      await Promise.all(calendars.map(calendar => calendar.listEvents()));
+    } finally {
+      CalendarActions.updatingCount.update(count => count - 1);
+    }
   }
 
   static showOnly(calendar: Calendar) {

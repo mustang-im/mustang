@@ -6,11 +6,9 @@
         <span class="dot" />
         <span class="name">{$event.calendar?.name ?? ""}</span>
       </hbox>
-      {#if $event.isEditable}
-        <button class="icon-button" title={$t`Open`} on:click={onOpen}>
-          <OpenIcon size="16" />
-        </button>
-      {/if}
+      <button class="icon-button" title={$t`Open`} on:click={onOpen}>
+        <OpenIcon size="16" />
+      </button>
       <button class="icon-button" title={deleteLabel} on:click={onDelete}>
         <DeleteIcon size="16" />
       </button>
@@ -170,8 +168,8 @@
   .title.muted {
     color: var(--lo-fg-secondary);
   }
-  .details {
-    font-size: 13px;
+  .details :global(.font-normal) {
+    font-size: var(--lo-font-size);
   }
   .notice {
     margin-block-start: 12px;
