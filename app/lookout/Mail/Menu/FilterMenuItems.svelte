@@ -1,25 +1,24 @@
-<MenuItem label={$t`Unread`} icon={isUnread ? CheckIcon : UnreadIcon}
+<MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={isUnread}
   onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
-<MenuItem label={$t`Has Attachments`} icon={hasAttachments ? CheckIcon : AttachmentIcon}
+<MenuItem label={$t`Has Attachments`} icon={AttachmentIcon} checkable checked={hasAttachments}
   onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
-<SubMenuItem label={$t`This Week`}
-  icon={$options.received != ReceivedRange.Any ? CheckIcon : ReceivedIcon}>
+<SubMenu label={$t`This Week`} icon={ReceivedIcon}>
   <ReceivedMenuItems selected={$options.received}
     onSelect={received => MailFilters.searchInFolder({ received, receivedStart: null, receivedEnd: null })} />
-</SubMenuItem>
-<SubMenuItem label={$t`Categorized`} icon={$options.tags.length ? CheckIcon : CategorizeIcon}
+</SubMenu>
+<SubMenu label={$t`Categorized`} icon={CategorizeIcon}
   disabled={!$tags.hasItems && $t`There are no categories yet`}>
   <CategoryMenuItems selected={$options.tags}
     onToggle={tag => MailFilters.searchInFolder({ tags: $options.tags.includes(tag) ? $options.tags.filter(existing => existing != tag) : [...$options.tags, tag] })} />
-</SubMenuItem>
-<MenuItem label={$t`Flagged`} icon={isFlagged ? CheckIcon : FlagIcon}
+</SubMenu>
+<MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={isFlagged}
   onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
-<SubMenuItem label={$t`Sent To`} icon={$options.isOutgoing === true ? CheckIcon : SentToIcon}>
-  <MenuItem label={$t`Sent To Another Recipient…`} icon={MailSearch.isSentTo($options) ? CheckIcon : BlankIcon}
+<SubMenu label={$t`Sent To`} icon={SentToIcon}>
+  <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={MailSearch.isSentTo($options)}
     onClick={onSentTo} />
-  <MenuItem label={$t`Sent by Me`} icon={MailSearch.isSentByMe($options) ? CheckIcon : BlankIcon}
+  <MenuItem label={$t`Sent by Me`} checkable checked={MailSearch.isSentByMe($options)}
     onClick={() => MailFilters.searchInFolder({ person: null, isOutgoing: MailSearch.isSentByMe($options) ? null : true })} />
-</SubMenuItem>
+</SubMenu>
 <MenuItem label={$t`More Filters…`} icon={MoreFiltersIcon}
   onClick={() => MailFilters.moreFilters()} />
 {#if hasFilter}
@@ -34,15 +33,12 @@
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { MailFilters, QuickFilter } from "../MailFilters";
   import { MailSearch } from "../Search/MailSearch";
-  import { ReceivedRange } from "../Search/SearchRanges";
   import { MailDialogs } from "../Dialogs/MailDialogs";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
-  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
-  import SubMenuItem from "./SubMenuItem.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
+  import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
   import CategoryMenuItems from "../Search/CategoryMenuItems.svelte";
-  import CheckIcon from "lucide-svelte/icons/check";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import ReceivedIcon from "lucide-svelte/icons/calendar-range";

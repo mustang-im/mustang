@@ -73,7 +73,7 @@
         <ChevronIcon size={14} />
       </button>
       <Menu bind:isMenuOpen={isCategoriesOpen} anchor={categoriesButton} placement="bottom-start">
-        <CategoryMenuItems selected={draft.tags} onToggle={tag => { draft.toggleTag(tag); draft = draft; }} />
+        <CategoryMenuItems selected={draft.tags} keepOpen onToggle={tag => { draft.toggleTag(tag); draft = draft; }} />
       </Menu>
     </hbox>
     <label for="advanced-search-read">{$t`Read status`}</label>
@@ -122,7 +122,7 @@
   import SearchPersonDialog from "../Dialogs/SearchPersonDialog.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
   import RemoveIcon from "lucide-svelte/icons/x";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";

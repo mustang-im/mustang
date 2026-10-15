@@ -17,42 +17,42 @@
       <ReceivedMenuItems selected={$options.received}
         onSelect={received => MailSearch.update({ received, receivedStart: null, receivedEnd: null })} />
     </RibbonMenuButton>
-    <RibbonMenuButton label={$t`Sent To`} icon={SentToIcon}
+    <RibbonMenuButton label={$t`Sent To`} icon={SentToIcon} size="small"
       tooltip={MailSearch.isSentTo($options) ? $t`Sent To: ${$options.person.name}` : $t`Sent To`}>
-      <MenuItem label={$t`Sent To Another Recipient…`} icon={MailSearch.isSentTo($options) ? CheckIcon : BlankIcon}
+      <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={MailSearch.isSentTo($options)}
         onClick={() => pickPerson($t`To`, person => MailSearch.setSentTo(person))} />
-      <MenuItem label={$t`Sent by Me`} icon={MailSearch.isSentByMe($options) ? CheckIcon : BlankIcon}
+      <MenuItem label={$t`Sent by Me`} checkable checked={MailSearch.isSentByMe($options)}
         onClick={() => MailSearch.setSentByMe(!MailSearch.isSentByMe($options))} />
     </RibbonMenuButton>
-    <RibbonToggleButton label={$t`Unread`} icon={UnreadIcon}
+    <RibbonToggleButton label={$t`Unread`} icon={UnreadIcon} size="small"
       checked={$options.isRead === false}
       onChange={checked => MailSearch.update({ isRead: checked ? false : null })} />
-    <RibbonToggleButton label={$t`Flagged`} icon={FlagIcon}
+    <RibbonToggleButton label={$t`Flagged`} icon={FlagIcon} size="small"
       checked={$options.flagged}
       onChange={checked => MailSearch.update({ flagged: checked })} />
-    <RibbonMenuButton label={$t`More`} icon={MoreIcon}
+    <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small"
       tooltip={$t`More refiners`}>
-      <SubMenuItem label={$t`Received`}>
+      <SubMenu label={$t`Received`}>
         <ReceivedMenuItems selected={$options.received}
           onSelect={received => MailSearch.update({ received, receivedStart: null, receivedEnd: null })} />
-      </SubMenuItem>
-      <SubMenuItem label={$t`Size`}>
+      </SubMenu>
+      <SubMenu label={$t`Size`}>
         <SizeMenuItems selected={$options.size} onSelect={size => MailSearch.update({ size })} />
-      </SubMenuItem>
-      <SubMenuItem label={$t`Read`}>
-        <MenuItem label={$t`Read`} icon={$options.isRead === true ? CheckIcon : BlankIcon}
+      </SubMenu>
+      <SubMenu label={$t`Read`}>
+        <MenuItem label={$t`Read`} checkable checked={$options.isRead === true}
           onClick={() => MailSearch.update({ isRead: $options.isRead === true ? null : true })} />
-        <MenuItem label={$t`Unread`} icon={$options.isRead === false ? CheckIcon : BlankIcon}
+        <MenuItem label={$t`Unread`} checkable checked={$options.isRead === false}
           onClick={() => MailSearch.update({ isRead: $options.isRead === false ? null : false })} />
-      </SubMenuItem>
-      <MenuItem label={$t`Replied`} icon={$options.replied ? CheckIcon : BlankIcon}
+      </SubMenu>
+      <MenuItem label={$t`Replied`} checkable checked={$options.replied}
         onClick={() => MailSearch.update({ replied: !$options.replied })} />
       <MenuDivider />
       <MenuItem label={$t`Advanced Search…`} icon={AdvancedIcon}
         onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
     </RibbonMenuButton>
     {#if $options.threadID}
-      <RibbonToggleButton label={$t`This Conversation`} icon={ConversationIcon}
+      <RibbonToggleButton label={$t`This Conversation`} icon={ConversationIcon} size="small"
         checked={true}
         tooltip={$t`Only messages of the conversation that you chose with Find Related`}
         onChange={checked => !checked && MailSearch.update({ threadID: null })} />
@@ -67,7 +67,7 @@
       checked={scope == SearchScope.CurrentAccount} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
       onChange={() => MailSearch.update({ scope: SearchScope.CurrentAccount })} />
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} icon={FolderIcon}
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
       checked={scope == SearchScope.CurrentFolder} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
       onChange={() => MailSearch.update({ scope: SearchScope.CurrentFolder })}
@@ -78,11 +78,11 @@
       <MenuItem label={$t`Advanced Find…`} icon={AdvancedIcon} shortCutInfo="Ctrl+Shift+F"
         onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
     </RibbonMenuButton>
-    <RibbonButton label={$t`Save as Search Folder`} icon={SaveSearchIcon}
+    <RibbonButton label={$t`Save as Search Folder`} icon={SaveSearchIcon} size="small"
       tooltip={$t`Save this search as a Search Folder`}
       onClick={onSaveSearch}
       disabled={saveDisabledReason} />
-    <RibbonButton label={$t`Create Rule`} icon={CreateRuleIcon}
+    <RibbonButton label={$t`Create Rule`} icon={CreateRuleIcon} size="small"
       tooltip={$t`Handle new messages that match this search automatically`}
       onClick={onCreateRule}
       disabled={(!search && $t`Type a search term first`) || (!ruleAccount && $t`Select a folder of an account first`)} />
@@ -107,10 +107,9 @@
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
-  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
-  import SubMenuItem from "../Menu/SubMenuItem.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
+  import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import CategoryMenuItems from "../Search/CategoryMenuItems.svelte";
   import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
   import SizeMenuItems from "../Search/SizeMenuItems.svelte";
@@ -122,7 +121,6 @@
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
   import MoreIcon from "lucide-svelte/icons/plus";
-  import CheckIcon from "lucide-svelte/icons/check";
   import AdvancedIcon from "lucide-svelte/icons/sliders-horizontal";
   import ConversationIcon from "lucide-svelte/icons/messages-square";
   import AllAccountsIcon from "lucide-svelte/icons/mails";
