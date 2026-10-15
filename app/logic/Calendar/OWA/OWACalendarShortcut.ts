@@ -1,6 +1,5 @@
 import { EWSCalendarShortcut } from "../EWS/EWSCalendarShortcut";
 import type { OWACalendar } from "./OWACalendar";
-import type { TOWACalendarEntry } from "./TOWACalendar";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
 import { OWAGetFolderRequest } from "../../Mail/OWA/Request/OWAGetFolderRequest";
 import { owaResolveNamesRequest } from "../../Contacts/OWA/Request/OWAPersonRequests";
@@ -14,7 +13,8 @@ export class OWACalendarShortcut {
   readonly ownerEmailAddress: string | null;
   readonly sharedFolderID: string | null;
 
-  constructor(account: OWAAccount, entry: TOWACalendarEntry) {
+  /** @param entry as returned by `GetCalendarFolders` in `listCalendars()` */
+  constructor(account: OWAAccount, entry: any) {
     this.account = account;
     this.ownerEmailAddress = entry?.IsOwnerEmailAddressInvalid
       ? null
@@ -24,7 +24,7 @@ export class OWACalendarShortcut {
 
   static async listCalendars(account: OWAAccount): Promise<OWACalendar[]> {
     let response = await account.callOWA(new OWAGetCalendarFoldersRequest());
-    let entries: TOWACalendarEntry[] = ensureArray(response?.CalendarGroups).flatMap(group => ensureArray(group?.Calendars));
+    let entries = ensureArray(response?.CalendarGroups).flatMap(group => ensureArray(group?.Calendars));
     let calendars: OWACalendar[] = [];
     for (let entry of entries) {
       let shortcut = new OWACalendarShortcut(account, entry);

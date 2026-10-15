@@ -1,5 +1,4 @@
 import type { EWSCalendar } from "./EWSCalendar";
-import type { TEWSCalendarShortcutItem } from "./TEWSCalendar";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { MAPIAddressBookEntryID, MAPIEntryID, MAPIStoreEntryID } from "../../Mail/EWS/MAPIEntryID";
 import { PersonUID } from "../../Abstract/PersonUID";
@@ -28,7 +27,8 @@ export class EWSCalendarShortcut {
     addressBookEntryID: { tag: 0x6854, type: "Binary" },
   };
 
-  constructor(account: EWSAccount, item: TEWSCalendarShortcutItem) {
+  /** @param item as returned by `FindItem` in `listCalendars()` */
+  constructor(account: EWSAccount, item: any) {
     this.account = account;
     let values = new Map<number, string>();
     for (let property of ensureArray(item?.ExtendedProperty)) {
@@ -71,7 +71,7 @@ export class EWSCalendarShortcut {
       },
     };
     let result = await account.callEWS(request);
-    let items: TEWSCalendarShortcutItem[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
+    let items: any[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
     let calendars: EWSCalendar[] = [];
     for (let item of items) {
       let shortcut = new EWSCalendarShortcut(account, item);
