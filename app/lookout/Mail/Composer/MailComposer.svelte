@@ -697,6 +697,9 @@
   .editor :global(.ProseMirror) {
     min-height: 200px;
   }
+  .editor :global(.html-editor blockquote) {
+    border-left-color: var(--lo-accent);
+  }
   .loading {
     justify-content: center;
     padding: 16px;
