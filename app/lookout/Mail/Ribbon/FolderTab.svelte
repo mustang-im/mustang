@@ -32,6 +32,11 @@
     <RibbonButton label={$t`Folder Properties`} icon={PropertiesIcon}
       onClick={() => MailDialogs.open({ kind: "folder-properties", folder })}
       disabled={!folder ? $t`Select a folder first` : isVirtual && $t`This is not a real folder`} />
+    <RibbonButton label={$t`Folder Permissions`} icon={PermissionsIcon}
+      onClick={() => MailDialogs.open({ kind: "folder-permissions", account: realAccount })}
+      disabled={!realAccount
+        ? $t`Select a folder of an account first`
+        : !FolderTreeActions.canShare(realAccount) && $t`This account cannot share folders with colleagues`} />
     <RibbonButton label={$t`Account Settings`} icon={AccountSettingsIcon}
       onClick={() => openSettingsCategoryForAccount(realAccount)}
       disabled={!realAccount && $t`Select a folder of an account first`} />
@@ -58,6 +63,7 @@
   import DeleteAllIcon from "lucide-svelte/icons/trash-2";
   import PropertiesIcon from "lucide-svelte/icons/folder-cog";
   import AccountSettingsIcon from "lucide-svelte/icons/user-cog";
+  import PermissionsIcon from "lucide-svelte/icons/folder-key";
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder | null = null;

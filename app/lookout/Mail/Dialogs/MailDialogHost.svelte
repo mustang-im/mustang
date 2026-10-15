@@ -18,6 +18,10 @@
   <RuleFromSearchDialog search={$dialog.search} account={$dialog.account} on:close={onClose} />
 {:else if $dialog?.kind == "search-person"}
   <SearchPersonDialog on:close={onClose} />
+{:else if $dialog?.kind == "shared-folder"}
+  <SharedFolderDialog account={$dialog.account} on:close={onClose} />
+{:else if $dialog?.kind == "folder-permissions"}
+  <FolderPermissionsDialog account={$dialog.account} on:close={onClose} />
 {:else if $dialog?.kind == "new-search-folder"}
   <NewSearchFolderDialog defaultAccount={$dialog.account} on:close={onClose} />
 {/if}
@@ -35,6 +39,8 @@
   import SaveSearchDialog from "./SaveSearchDialog.svelte";
   import SearchPersonDialog from "./SearchPersonDialog.svelte";
   import RuleFromSearchDialog from "./RuleFromSearchDialog.svelte";
+  import SharedFolderDialog from "./SharedFolderDialog.svelte";
+  import FolderPermissionsDialog from "./FolderPermissionsDialog.svelte";
   import { onDestroy } from "svelte";
 
   const dialog = MailDialogs.current;
