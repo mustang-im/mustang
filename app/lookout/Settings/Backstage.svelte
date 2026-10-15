@@ -9,8 +9,7 @@
       <hbox class="label">{$t`Info`}</hbox>
     </button>
     <vbox flex class="spacer" />
-    <button class="nav-item" class:selected={$backstageState.page == "options"}
-      on:click={() => backstageState.open("options")}>
+    <button class="nav-item" on:click={() => SettingsDialogs.openOptions()}>
       <OptionsIcon size="18" />
       <hbox class="label">{$t`Options`}</hbox>
     </button>
@@ -20,11 +19,7 @@
     </button>
   </vbox>
   <vbox flex class="backstage-page">
-    {#if $backstageState.page == "options"}
-      <vbox flex class="options">
-        <SettingsApp />
-      </vbox>
-    {:else}
+    {#if $backstageState.page == "info"}
       <vbox flex class="info">
         <h1>{$t`Account Information`}</h1>
         <vbox class="accounts">
@@ -60,7 +55,7 @@
   import { appGlobal } from "../../logic/app";
   import { goTo } from "../../frontend/AppsBar/selectedApp";
   import { openSettingsCategoryForAccount } from "../../frontend/Settings/Window/CategoriesUtils";
-  import SettingsApp from "../../frontend/Settings/Window/SettingsApp.svelte";
+  import { SettingsDialogs } from "./SettingsDialogs";
   import { catchErrors } from "../../frontend/Util/error";
   import BackIcon from "lucide-svelte/icons/arrow-left";
   import InfoIcon from "lucide-svelte/icons/info";

@@ -24,6 +24,7 @@
       </vbox>
     {/if}
   </vbox>
+  <SettingsDialogHost />
 </vbox>
 
 <script lang="ts">
@@ -37,6 +38,7 @@
   import NavRail from "../AppsBar/NavRail.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
   import Backstage from "../Settings/Backstage.svelte";
+  import SettingsDialogHost from "../Settings/SettingsDialogHost.svelte";
   import NotificationBar from "../../frontend/MainWindow/NotificationBar.svelte";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import { getUILocale } from "../../l10n/l10n";

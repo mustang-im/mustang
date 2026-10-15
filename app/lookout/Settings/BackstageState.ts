@@ -1,6 +1,6 @@
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
 
-export type BackstagePage = "info" | "options";
+export type BackstagePage = "info";
 
 export class BackstageState extends Observable {
   @notifyChangedProperty
