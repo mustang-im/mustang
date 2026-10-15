@@ -1,0 +1,54 @@
+<Dialog title={$t`Save Search`}
+  okLabel={$t`OK`}
+  okDisabled={!name?.trim() && $t`Enter a name`}
+  onOK={onSave}
+  on:close>
+  <vbox class="dialog-content">
+    <label for="save-search-name">{$t`Name of the Search Folder:`}</label>
+    <input id="save-search-name" type="text" bind:value={name} use:focus />
+  </vbox>
+</Dialog>
+
+<script lang="ts">
+  import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
+  import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
+  import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
+  import Dialog from "./Dialog.svelte";
+  import { t } from "../../../l10n/l10n";
+
+  export let search: SearchEMail;
+
+  let name = search.bodyText ?? "";
+
+  async function onSave() {
+    // <copied from="../../../frontend/Mail/Search/SavedSearchUI.svelte">
+    let folder = new SavedSearchFolder(search.clone());
+    folder.name = name.trim();
+    await folder.save();
+
+    $selectedAccount = allAccountsAccount;
+    $selectedFolder = folder;
+    // </copied>
+  }
+
+  function focus(input: HTMLInputElement) {
+    input.focus();
+    input.select();
+  }
+</script>
+
+<style>
+  .dialog-content {
+    gap: 6px;
+  }
+  input {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-input-bg);
+    color: var(--lo-fg);
+    font: inherit;
+  }
+</style>
