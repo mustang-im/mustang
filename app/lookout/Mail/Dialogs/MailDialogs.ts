@@ -15,6 +15,7 @@ export type MailDialog =
   { kind: "color-categories" } |
   { kind: "new-search-folder", account: MailAccount | null } |
   { kind: "save-search", search: SearchEMail } |
+  { kind: "rule-from-search", search: SearchEMail, account: MailAccount } |
   { kind: "search-person" };
 
 export class MailDialogs {
