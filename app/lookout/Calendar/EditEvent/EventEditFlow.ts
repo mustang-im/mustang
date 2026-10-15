@@ -2,13 +2,15 @@ import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
 import type { RecurrenceRule } from "../../../logic/Calendar/RecurrenceRule";
 import { Participant } from "../../../logic/Calendar/Participant";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
+import { appGlobal } from "../../../logic/app";
 import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { openExternalURL } from "../../../logic/util/os-integration";
 import { RecurrencePattern } from "./RecurrencePattern";
 import { Reminder } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
-import { selectedEvent } from "../../../frontend/Calendar/selected";
+import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
 import { goBack } from "../../../frontend/AppsBar/selectedApp";
 import { showError } from "../../../frontend/Util/error";
 import { gt } from "../../../l10n/l10n";
@@ -350,6 +352,15 @@ export class EventEditFlow {
     this.close();
   }
 
+  showInCalendar() {
+    let event = this.event;
+    let day = new Date(event.startTime);
+    this.close();
+    selectedEvent.set(event);
+    selectedDate.set(day);
+    startDate.set(day);
+  }
+
   async forward() {
     await CalendarActions.forward(this.event);
   }
@@ -365,6 +376,23 @@ export class EventEditFlow {
   }
   // </copied>
 
+  setAttendees(persons: PersonUID[]) {
+    let event = this.event;
+    if (persons.length) {
+      this.inviteAttendees();
+    }
+    for (let attendee of this.attendees) {
+      if (!persons.some(person => person.emailAddress == attendee.emailAddress)) {
+        event.participants.remove(attendee);
+      }
+    }
+    for (let person of persons) {
+      if (!event.participants.some(participant => participant.emailAddress == person.emailAddress)) {
+        EventEditFlow.addParticipant(event, person);
+      }
+    }
+  }
+
   inviteAttendees() {
     // <copied from="../../../frontend/Calendar/EditEvent/EditEvent.svelte" expandParticipants()>
     if (this.event.myParticipation == InvitationResponse.Organizer) {
@@ -379,6 +407,15 @@ export class EventEditFlow {
     this.event.isOnline = true;
     this.inviteAttendees();
     // </copied>
+  }
+
+  static meetAccounts() {
+    return appGlobal.meetAccounts.filterObservable(account => account.canCreateURL);
+  }
+
+  setOnlineWith(account: MeetAccount | null) {
+    this.event.createOnlineMeetingWithAccount = account;
+    this.setOnline();
   }
 
   // <copied from="../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte">

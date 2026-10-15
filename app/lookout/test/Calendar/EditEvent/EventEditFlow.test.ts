@@ -3,6 +3,7 @@ import "../../../../logic/app"; // first, to resolve the import cycle around Abs
 import { Calendar } from "../../../../logic/Calendar/Calendar";
 import type { Event } from "../../../../logic/Calendar/Event";
 import { Participant } from "../../../../logic/Calendar/Participant";
+import { PersonUID } from "../../../../logic/Abstract/PersonUID";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
@@ -386,4 +387,20 @@ test("Removing the recurrence makes the series single again", () => {
   flow.removeRecurrence();
   expect(event.recurrenceRule).toBe(null);
   expect(flow.pattern.end).toBe("none");
+});
+
+test("Select Names sets the attendees and keeps the organizer", () => {
+  let event = newEvent();
+  event.startEditing();
+  event.myParticipation = InvitationResponse.Organizer;
+  event.participants.add(new Participant("me@example.com", "Me", InvitationResponse.Organizer));
+  event.participants.add(new Participant("anna@example.com", "Anna", InvitationResponse.Accept));
+  event.participants.add(new Participant("bert@example.com", "Bert", InvitationResponse.Tentative));
+  let flow = new EventEditFlow(event, () => {});
+  flow.setAttendees([new PersonUID("bert@example.com", "Bert"), new PersonUID("cleo@example.com", "Cleo")]);
+  expect(event.participants.contents.map(participant => participant.emailAddress))
+    .toEqual(["me@example.com", "bert@example.com", "cleo@example.com"]);
+  expect(event.participants.find(participant => participant.emailAddress == "bert@example.com").response)
+    .toBe(InvitationResponse.Tentative);
+  expect(flow.attendees.map(participant => participant.name)).toEqual(["Bert", "Cleo"]);
 });

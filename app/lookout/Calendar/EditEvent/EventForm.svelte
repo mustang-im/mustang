@@ -10,8 +10,8 @@
         <input id="event-form-title" class="field title" type="text" bind:value={event.title}
           autofocus={!event.title} />
         {#if isMeeting}
-          <button class="field-button" tabindex="-1" on:click={() => attendeesField.focus()}
-            title={$t`Add attendees`}>
+          <button class="field-button" on:click={onAddressBook}
+            title={$t`Select attendees from the address book`}>
             {$t`Required`}
           </button>
           <hbox class="field attendees">
@@ -23,9 +23,7 @@
         <input id="event-form-location" class="field location" type="text" bind:value={event.location} />
         {#if $event.isOnline}
           <span class="row-label">{$t`Online meeting`}</span>
-          <hbox class="online-meeting">
-            <OnlineMeetingBox {event} />
-          </hbox>
+          <OnlineMeetingRow {event} />
         {/if}
       </grid>
     </hbox>
@@ -55,7 +53,7 @@
   import SendButton from "./SendButton.svelte";
   import TimeRows from "./TimeRows.svelte";
   import AttendeesField from "./AttendeesField.svelte";
-  import OnlineMeetingBox from "../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte";
+  import OnlineMeetingRow from "./OnlineMeetingRow.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import AttachmentEntry from "../../../frontend/Mail/Composer/Attachments/AttachmentEntry.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
@@ -72,6 +70,7 @@
   export let sendDisabled: string | false = false;
   export let onSend: () => Promise<void>;
   export let onRecurrence: () => void;
+  export let onAddressBook: () => void;
 
   let attendeesField: AttendeesField;
 
@@ -158,18 +157,6 @@
   }
   .field.attendees {
     align-items: center;
-  }
-  .online-meeting {
-    align-items: center;
-    min-height: 32px;
-  }
-  .online-meeting :global(input) {
-    height: 30px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
   }
   .attachments {
     flex-shrink: 0;

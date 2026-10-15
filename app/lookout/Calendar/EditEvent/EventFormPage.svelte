@@ -28,7 +28,8 @@
       <TrackingView {event} />
     {:else}
       <EventForm {event} {flow} {timeEditor} {messages} bind:editor bind:this={form}
-        {sendLabel} {sendDisabled} onSend={onSave} onRecurrence={openRecurrence} />
+        {sendLabel} {sendDisabled} onSend={onSave} onRecurrence={openRecurrence}
+        onAddressBook={openAddressBook} />
     {/if}
   </vbox>
 </vbox>
@@ -49,6 +50,10 @@
     onDiscard={onDiscard}
     onCancel={() => showSaveChanges = false} />
 {/if}
+{#if attendeesField}
+  <SelectNamesDialog title={$t`Select Attendees and Resources`} fields={[attendeesField]}
+    onOK={onAttendeesPicked} onCancel={() => attendeesField = null} />
+{/if}
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
@@ -66,6 +71,8 @@
   import SeriesChoiceDialog from "./SeriesChoiceDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import SchedulingAssistant from "../Scheduling/SchedulingAssistant.svelte";
+  import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
+  import { SelectNamesField } from "../../Mail/Composer/SelectNames";
   import { FreeBusy } from "../Scheduling/FreeBusy";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
@@ -143,7 +150,7 @@
     onDeleteRemainder: () => flow.deleteRemainder(),
     onDeleteSeries,
     onInviteAttendees,
-    onAddAttendees,
+    onAddressBook: openAddressBook,
     onRecurrence: openRecurrence,
     onRefreshAvailability: () => scheduling?.refresh(),
     onAttachFile,
@@ -213,12 +220,14 @@
     form?.focusAttendees();
   }
 
-  function onAddAttendees() {
-    if (showScheduling) {
-      scheduling?.focusAddAttendee();
-    } else {
-      form?.focusAttendees();
-    }
+  let attendeesField: SelectNamesField = null;
+  function openAddressBook() {
+    attendeesField = new SelectNamesField(gt`Required`, flow.attendees);
+  }
+
+  function onAttendeesPicked() {
+    flow.setAttendees(attendeesField.picks.contents);
+    attendeesField = null;
   }
 
   function openRecurrence() {
@@ -247,7 +256,7 @@
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
-    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice) {
+    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice || attendeesField) {
       return;
     }
     let key = keyEvent.key.toLowerCase();

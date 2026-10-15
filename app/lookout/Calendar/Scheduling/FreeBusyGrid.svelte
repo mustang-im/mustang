@@ -1,4 +1,4 @@
-<vbox flex class="free-busy-grid" style="--hour-width: {kHourWidth}px; --row-height: {kRowHeight}px">
+<vbox flex class="free-busy-grid" style="--hour-width: {hourWidth}px; --row-height: {kRowHeight}px">
   <hbox class="day-bar">
     <button class="nav" title={$t`Previous day`} aria-label={$t`Previous day`} on:click={() => stepDay(-1)}>
       <PreviousIcon size={16} />
@@ -22,9 +22,7 @@
       <hbox class="row all-attendees">{$t`All Attendees`}</hbox>
       {#each $participants.each as participant (participant)}
         <hbox class="row person">
-          <hbox class="response-icon">
-            <ParticipantConfirmIcon {participant} />
-          </hbox>
+          <ResponseIcon response={participant.response} />
           <vbox flex class="person-text">
             <span class="name" title={participant.emailAddress}>{participant.name || participant.emailAddress}</span>
             {#if freeBusy && !loading}
@@ -87,6 +85,18 @@
   <hbox class="legend">
     <span class="legend-item"><span class="swatch swatch-busy" /> {$t`Busy`}</span>
     <span class="legend-item"><span class="swatch swatch-no-info" /> {$t`No information`}</span>
+    <hbox flex />
+    <button class="zoom" bind:this={zoomButton} class:open={isZoomMenuOpen}
+      title={$t`Zoom`} aria-haspopup="menu" on:click|stopPropagation={() => isZoomMenuOpen = !isZoomMenuOpen}>
+      <ZoomIcon size={14} />
+      {zoomLabel(zoom)}
+      <ChevronIcon size={12} />
+    </button>
+    <Menu bind:isMenuOpen={isZoomMenuOpen} anchor={zoomButton} placement="top-end">
+      {#each kZoomLevels as level}
+        <MenuItem label={zoomLabel(level)} selected={level == zoom} onClick={() => setZoom(level)} />
+      {/each}
+    </Menu>
   </hbox>
 </vbox>
 
@@ -98,11 +108,15 @@
   import { Timeline } from "./Timeline";
   import { EventEditFlow } from "../EditEvent/EventEditFlow";
   import type { EventTimeEditor } from "../EditEvent/EventTimeEditor";
-  import ParticipantConfirmIcon from "../../../frontend/Calendar/EditEvent/ParticipantConfirmIcon.svelte";
+  import ResponseIcon from "../EditEvent/ResponseIcon.svelte";
+  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
+  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
   import PersonAutocomplete from "../../../frontend/Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import RemoveIcon from "lucide-svelte/icons/x";
+  import ZoomIcon from "lucide-svelte/icons/zoom-in";
+  import ChevronIcon from "lucide-svelte/icons/chevron-up";
   import { onMount, tick } from "svelte";
   import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
 
@@ -112,6 +126,12 @@
 
   const kHourWidth = 88;
   const kRowHeight = 44;
+  const kZoomLevels = [0.5, 1, 2];
+
+  let zoom = 1;
+  let zoomButton: HTMLButtonElement;
+  let isZoomMenuOpen = false;
+  $: hourWidth = kHourWidth * zoom;
 
   let day = startOfDay(event.startTime);
   let freeBusy: FreeBusy | null = null;
@@ -124,7 +144,7 @@
   let lastStartTime = event.startTime.getTime();
 
   $: participants = event.participants;
-  $: timeline = new Timeline(day, kHourWidth);
+  $: timeline = new Timeline(day, hourWidth);
   $: hours = timeline.hours();
   $: dayLabel = day.toLocaleDateString(getDateTimeLocale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
   $: meeting = $event && timeline.span(event.startTime, event.endTime);
@@ -194,7 +214,7 @@
     if (!scrollEl) {
       return;
     }
-    let target = meeting && !event.allDay ? meeting.left - kHourWidth : timeline.x(new Date(day.getFullYear(), day.getMonth(), day.getDate(), 7));
+    let target = meeting && !event.allDay ? meeting.left - hourWidth : timeline.x(new Date(day.getFullYear(), day.getMonth(), day.getDate(), 7));
     scrollEl.scrollLeft = Math.max(0, target);
   }
 
@@ -221,6 +241,15 @@
     default:
       return gt`No information`;
     }
+  }
+
+  function zoomLabel(level: number): string {
+    return new Intl.NumberFormat(getDateTimeLocale(), { style: "percent" }).format(level);
+  }
+
+  function setZoom(level: number) {
+    zoom = level;
+    scrollToMeeting();
   }
 
   function hourLabel(hour: Date): string {
@@ -333,11 +362,6 @@
   .names .all-attendees {
     font-weight: 600;
     background-color: var(--lo-pane-alt-bg);
-  }
-  .response-icon {
-    flex: none;
-    width: 16px;
-    color: var(--lo-fg-secondary);
   }
   .person-text {
     min-width: 0;
@@ -462,6 +486,25 @@
     padding: 8px 24px 12px 24px;
     font-size: var(--lo-font-size-small);
     color: var(--lo-fg-secondary);
+  }
+  .zoom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 24px;
+    margin-block: -4px;
+    padding: 0 6px;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg-secondary);
+    font: inherit;
+    cursor: pointer;
+  }
+  .zoom:hover,
+  .zoom.open {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
   }
   .legend-item {
     display: flex;
