@@ -167,7 +167,7 @@
     overflow: hidden;
     margin-block-start: 3px;
     max-width: 100%;
-    overflow-wrap: break-word;
+    text-overflow: ellipsis;
   }
   .last-word {
     white-space: nowrap;
