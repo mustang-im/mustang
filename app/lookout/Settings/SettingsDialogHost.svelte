@@ -4,6 +4,8 @@
   <AccountSettingsDialog tab={$dialog.tab} on:close={onClose} />
 {:else if $dialog?.kind == "change-account"}
   <ChangeAccountDialog account={$dialog.account} page={$dialog.page} on:close={onClose} />
+{:else if $dialog?.kind == "import-export"}
+  <ImportExportWizard preselected={$dialog.preselected} on:close={onClose} />
 {/if}
 
 <script lang="ts">
@@ -11,6 +13,7 @@
   import OptionsDialog from "./Options/OptionsDialog.svelte";
   import AccountSettingsDialog from "./Accounts/AccountSettingsDialog.svelte";
   import ChangeAccountDialog from "./Accounts/ChangeAccountDialog.svelte";
+  import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
 
   const dialog = SettingsDialogs.current;
 

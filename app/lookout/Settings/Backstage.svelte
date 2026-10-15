@@ -8,6 +8,11 @@
       <InfoIcon size="18" />
       <hbox class="label">{$t`Info`}</hbox>
     </button>
+    <button class="nav-item" class:selected={$backstageState.page == "open-export"}
+      on:click={() => backstageState.open("open-export")}>
+      <OpenExportIcon size="18" />
+      <hbox class="label">{$t`Open & Export`}</hbox>
+    </button>
     <vbox flex class="spacer" />
     <button class="nav-item" on:click={() => SettingsDialogs.openOptions()}>
       <OptionsIcon size="18" />
@@ -21,6 +26,8 @@
   <vbox flex class="backstage-page">
     {#if $backstageState.page == "info"}
       <InfoPage />
+    {:else if $backstageState.page == "open-export"}
+      <OpenExportPage />
     {/if}
   </vbox>
 </hbox>
@@ -30,8 +37,10 @@
   import { backstageState } from "./BackstageState";
   import { SettingsDialogs } from "./SettingsDialogs";
   import InfoPage from "./Backstage/InfoPage.svelte";
+  import OpenExportPage from "./Backstage/OpenExportPage.svelte";
   import BackIcon from "lucide-svelte/icons/arrow-left";
   import InfoIcon from "lucide-svelte/icons/info";
+  import OpenExportIcon from "lucide-svelte/icons/folder-open";
   import OptionsIcon from "lucide-svelte/icons/sliders-horizontal";
   import ExitIcon from "lucide-svelte/icons/log-out";
   import { t } from "../../l10n/l10n";
