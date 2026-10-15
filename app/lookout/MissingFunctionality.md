@@ -1,0 +1,207 @@
+# Lookout: Missing functionality
+
+Lookout is an Outlook look-alike frontend for Mustang. It uses Mustang's logic (`app/logic/`) unchanged, the same way `app/frontend/` does. Where Outlook has a feature that the logic does not support, Lookout leaves the command out instead of building new functionality.
+
+This file lists those Outlook features, so that they can be planned as logic work. Each entry says where the feature is in Outlook and what the logic would need. Entries marked *UI only* already have what they need in the logic and only lack the Lookout UI.
+
+Features that belong to Microsoft services and don't apply to Mustang are not listed: Notes, Groups and Bookings apps, Office Account, Feedback, Teams meeting options, Loop components, Meeting Notes, Dictate, Immersive Reader, Share to Teams and Send to OneNote.
+
+## Window and ribbon
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Undo / Redo of delete, move, mark read, flag, and of event and contact changes | Quick Access Toolbar; Ctrl+Z | An undo stack for mail, calendar and contact actions |
+| Tasks (To Do) and the "My Day" pane | Navigation rail; title bar | Task objects and task accounts (CalDAV VTODO, EWS / Graph tasks). The agenda part of My Day is *UI only*. |
+| Search scope (current folder, current account, all accounts) and suggestions in the title bar search | Title bar search box | A search scope model and a search history. Today the global search is a single term. |
+| Pop-out windows: a message, the composer or a form in its own window | Double-click a message; Pop Out | Multi-window support in the desktop app and in the frontend router |
+| Sync summary ("All folders are up to date", "Synchronizing *folder*", "Connected to Microsoft Exchange") | Status bar | An aggregated sync state per account: in progress, last sync time, errors. Lookout shows the syncs that it started itself, and the connection state. |
+| Storage quota bar ("*x* GB free"), Mailbox Cleanup | File > Info; status bar | Quota queries (IMAP QUOTA, EWS, Graph) on `MailAccount` |
+| Account manager in the title bar: profile picture, sign out, switch account | Title bar | Pictures for all account types; a logout API for every account type |
+| Import / Export of PST files, Open Outlook Data File | File > Open & Export | A PST / OST reader and writer |
+| Unread count on the taskbar or tray icon | Taskbar | Wiring the desktop backend's `setBadgeCount()` / `setTrayIcon()` to the unread counts |
+| Zoom slider, Reading view | Status bar | A zoom / text scale setting that the frontend applies |
+| Notification center (bell) with a history of reminders and notifications | Title bar | *UI only*. Notifications exist, Lookout shows them as a bar. |
+| KeyTips (Alt + letter), command search ("Tell me"), Customize Ribbon and Quick Access Toolbar | Ribbon; title bar search; File > Options | *UI only* |
+
+## Mail
+
+Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, View and Search tabs.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Editable Favorites (add and remove folders, drag a folder to Favorites); unified Deleted Items | Folder pane; Folder tab > Favorites | A stored list of favorite folders across accounts; a unified Trash in `AllAccounts.specialFolders`. Lookout shows the fixed unified Inbox, Sent and Drafts. |
+| Move Folder, Copy Folder | Folder tab; folder context menu; dragging a folder | A working `Folder.moveFolderHere()` (see [Logic bugs](#logic-bugs-found-while-building-lookout)), `MailAccount.moveFolderHere()` for the top level, and a recursive `Folder.copyFolderHere()` |
+| Empty Folder for any folder | Folder context menu | `Folder.empty()` on the server (IMAP expunge, EWS EmptyFolder). Lookout offers "Delete All" in Trash and Junk only, like `frontend/`. |
+| Clean Up Folder / Conversation, Ignore Conversation | Home tab > Delete | Detection of redundant quoted messages in a thread; a per-thread ignore list applied to new mail |
+| Recover Deleted Items, AutoArchive, retention policies | Folder tab | Exchange recoverable items; an archive policy engine |
+| More Search Folder templates: unread or flagged, important, sent directly to me, from (only) specific people, old mail, words in the subject | Folder tab > New Search Folder | OR-combined, importance, "to me only", sender-only, subject-only and date criteria in `SearchEMail`. Lookout offers "Mail from and to specific people". |
+| IMAP folder subscriptions, Purge, Download Headers, Process Marked Headers | Folder tab > IMAP; Send / Receive tab | Subscription management and a header-only mode in the IMAP logic |
+| Focused Inbox (Focused / Other) | Message list | Message classification per account |
+| Conversations that include messages from other folders (e.g. own replies in Sent Items), conversation settings, actions on a whole conversation | View tab > Messages | A thread index across folders. Lookout groups by `threadID` within the folder, and actions apply to the selected messages. |
+| Arrange by To, Categories, Attachments, Account, Type, flag dates | View tab > Arrange By | These fields as main properties of all messages (`SQLEMail.readAllMainProperties()`) |
+| Low importance | Message list; reading pane; composer | A three-state importance in `EMail` (today the boolean `isImportant`) |
+| Follow-up flags with dates (Today, Tomorrow, This Week, Next Week, Custom), reminders, Mark Complete, the "Follow up" InfoBar | Home tab > Follow Up; flag on hover | Flag start, due and completed dates and reminders in `EMail`. Lookout offers Flag / Clear Flag (`markStarred`). |
+| Pin, Snooze | Hover actions (new Outlook) | A pinned state and a snooze time per message |
+| Block Sender, Never Block Sender / Domain, Safe Senders, always download pictures from a sender, Report Phishing | Home tab > Junk; Report; Pictures InfoBar | Blocked and safe sender lists, ideally synced with the server; a reporting service. Lookout offers Junk / Not Junk and "Download pictures" for the shown message. |
+| Quick Steps, Sweep | Home tab | Stored action macros; bulk actions by sender |
+| Rename categories, category shortcut keys, Quick Click | Categorize > All Categories | Renaming tags, which the servers store by name. Color editing exists (`frontend/` settings). |
+| "You replied to this message on *date*" with the date | Reading pane InfoBar | Reply and forward timestamps. Today there are only the booleans `isReplied` and `isForwarded`. |
+| "External" sender tag, "*X* on behalf of *Y*" | Reading pane header | The organization's domains per account; separate `sender` and `from` in `EMail` |
+| Profile card of the sender (organization, files, meetings) | Click on the sender | Directory lookups (GAL, Graph) |
+| Previews of Office and PDF attachments; Save All Attachments | Attachment card | File previewers. Save All is *UI only*. |
+| Translate, Read Aloud | Home tab; message menu | A translation service (`MessageMenu.translate()` throws `NotImplemented`); text to speech |
+| Reactions on mail | Reading pane (new Outlook) | `setMyReactionOnServer()` for mail protocols (it exists only for chat) |
+| "Mark item as read when selection changes", single-key reading with the space bar | View > Reading Pane > Options | A "mark when leaving" mode for `mail.read.after`. Space bar paging is *UI only*. |
+| Forward several messages as attachments at once | Home tab > Respond > More | `forwardAsAttachment()` for a list of messages |
+| Reply with Meeting | Home tab > Respond | Creating an event from a message |
+| Drag a message to the desktop, or onto Calendar or People in the navigation rail | Message list | `.eml` drag-out from Electron; creating an `Event` or `Person` from an `EMail` |
+| "Click here to view it in a web browser" | Reading pane InfoBar | Writing the HTML to a temporary file and opening the system browser |
+| Save As `.msg` / `.txt` / `.html`, Message Properties with all Internet headers | File > Save As; File > Info > Properties | Exporters; the full header map in `EMail`. Lookout saves `.eml` and shows the source. |
+| Find Related > Messages from Sender, also for unknown senders and for "from" only | Message context menu | A free-text sender criterion in `SearchEMail`. `includesPerson` needs a `Person` and also matches recipients. |
+| Folder permissions per folder with Outlook's roles (Owner, Editor, Reviewer ...) | Folder tab > Folder Permissions | Per-folder permissions. Lookout shows the account-wide sharing settings of `frontend/`. |
+| Send All (Outbox), Send / Receive Groups, Show Progress, Cancel All, Work Offline | Send / Receive tab | A send queue, sync schedules per account, progress and cancellation, an offline mode |
+| Search query syntax (`from:`, `subject:`, `received:`), suggestions, recent searches, Advanced Find | Search box; Search tab | A query parser for `SearchEMail`; a search history |
+| Search scopes "Subfolders" and "All Outlook Items" | Search tab > Scope | `SearchEMail` over a folder subtree; search across apps |
+| Search refiners and filters: From / Sent To as free text, Subject only, Important, Mentioned, This Week, To me / Cc me, Categorized | Search tab > Refine; Home tab > Filter Email | These criteria in `SearchEMail`, `QuickSearchEMail` and `SQLSearchEMail` |
+| Single-line column view, Add Columns, View Settings, conditional formatting, Manage Views | View tab > Current View | *UI only*; conditional formatting also needs a rule engine |
+
+## Composer
+
+New message, reply and forward, with the Message, Insert, Options and Format Text tabs.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Automatic saving of drafts, "Draft saved at *time*" | File > Options > Mail > Save messages | A save timer around `ComposeActions.saveAsDraft()` |
+| Saving drafts of encrypted messages | Save; "Save changes?" on close | Encryption before `saveAsDraft()`, which asserts `!shouldEncrypt` today. Lookout disables Save and says why. |
+| High / Low Importance for outgoing mail | Message tab > Tags | Writing `Importance` / `X-Priority` (MIME) and the EWS / Graph importance when sending. `isImportant` is only read. |
+| Follow Up flag for me or for recipients | Message tab > Tags | Flag dates (see Mail) and the flag in the sent message |
+| Delivery receipt, read receipt | Options tab > Tracking | DSN and `Disposition-Notification-To`, the EWS receipt flags, and handling of incoming receipt requests |
+| Voting buttons | Options tab > Tracking | Exchange voting properties |
+| Delay Delivery, Schedule Send | Options tab > More Options; Send menu | An outbox with send times, or EWS `DeferredSendTime` |
+| Direct Replies To, Save Sent Item To | Options tab > More Options | A per-message `replyTo` and sent folder in `send()` |
+| Sensitivity (Private, Confidential), Do Not Forward, sensitivity labels | Options tab; Message tab | A sensitivity header; rights management |
+| HTML / Plain Text / Rich Text per message | Format Text tab > Format | A per-message override of the `mail.send.format` setting in `CreateMIME` and the protocol senders; RTF / TNEF for Rich Text |
+| Signature menu, several named signatures, a separate signature for replies, the signature visible in the editor | Insert tab > Signature | Named signatures per `MailIdentity` with defaults for new mail and replies, inserted when composing. Today `signatureHTML` is appended when sending. |
+| Font family, size, color, highlight, alignment, indent, line spacing | Message tab > Basic Text; Format Text tab | Editor extensions (`@tiptap/extension-text-style` is installed), and a sanitizer that keeps these styles |
+| Tables, online pictures, shapes, icons, screenshots, Quick Parts, date and time, symbols, equations | Insert tab | Editor features. Lookout offers Attach File, Pictures, Link, Quote, Horizontal Line and Emoji. |
+| Attach Item: a message, a business card, a calendar | Insert tab > Include | Attaching an `EMail` as `.eml`, a `Person` as vCard, a calendar range as iCalendar |
+| Check Names, choosing between ambiguous names, the company directory in Select Names | Message tab > Names; Select Names dialog | Address resolution against the address books and the server directory (GAL). Lookout's Select Names searches the local address books. |
+| From: "Other E-mail Address…" | From menu | Sending with any From address. Today only identities and catch-all identities can send. |
+| Outlook-style reply header (From / Sent / To / Subject block) | Reply body | A quote format option in `ComposeActions`. The logic writes "*name* wrote on *date*:" and a blockquote. |
+| MailTips (recipient is out of office, large audience, external recipients) | InfoBars in the composer | EWS `GetMailTips`, Graph mail tips |
+| Inline reply in the reading pane | Reading pane | *UI only*. Lookout opens replies in the composer. |
+| Paste / Cut / Copy buttons, Format Painter, Zoom, Thesaurus, Word Count | Message tab; Review tab | *UI only* or editor features. The keyboard shortcuts work, and Spelling toggles the spell check. |
+
+## Rules
+
+Rules and Alerts and Create Rule. All Mustang rules are client rules that run when Mustang downloads new mail.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Turn a rule on or off | Checkbox in the rule list | An `enabled` property in `FilterRuleAction`, honored by `EMail.processMessage()` |
+| Run Rules Now (choose rules, folder, subfolders, read / unread) | Folder tab; Rules Wizard; rule list | A method that applies rules to the messages already in a folder |
+| Exceptions ("except if …") | Rules Wizard | Negated criteria in `FilterRuleAction` |
+| Stop processing more rules | Rules Wizard | A flag in `FilterRuleAction` that ends the rule loop in `processMessage()` |
+| More actions: forward, forward as attachment, redirect, reply with a template, flag with a date, clear categories, set importance, play a sound, display an alert, run a script | Rules Wizard; Change Rule menu | New action types in `FilterRuleAction.doAction()`. Lookout offers move, copy, delete, mark read / unread, flag, categories and junk / not junk. |
+| More conditions: subject only, sender or recipient address (free text), header contains, sent only to me, my name in To / Cc, importance, sensitivity, meeting invitation, through a specific account | Rules Wizard; Create Rule | New criteria in `SearchEMail`. Without a free-text address, rules from senders who are not in an address book and "Always Move Messages From / To" can't be created, because `includesPerson` needs a `Person`. |
+| Permanently delete; size range, date range, "which I replied to" | Rules Wizard | *UI only*: the logic has `deleteImmediately`, `sizeMin` / `sizeMax`, `sentDateMin` / `sentDateMax` and `isReplied`, but the reused `frontend/` rule editor doesn't offer them. Lookout shows them in the rule description. |
+| Server-side rules (Exchange inbox rules, Sieve, JMAP), "client-only" marker | Rules and Alerts | Reading and writing server rules per protocol |
+| Copy a rule to another account, "Create this rule on all accounts" | Rules and Alerts > Copy | Cloning a rule into another account with a folder mapping. Lookout copies within the same account. |
+| Import / Export rules | Rules and Alerts > Options | A rules file format |
+| Rules Wizard templates; OK / Cancel / Apply for all changes at once | Rules and Alerts | *UI only*. Lookout saves each change immediately, like the new Outlook. |
+
+## Automatic Replies (Out of Office)
+
+Not built: Mustang has no automatic-reply logic for any protocol.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Automatic replies on / off, messages for inside and outside the organization, time range, "My contacts only" | File > Info > Automatic Replies | Server auto-reply settings per protocol: EWS `GetUserOofSettings` / `SetUserOofSettings`, Graph `automaticRepliesSetting`, JMAP `VacationResponse`, ManageSieve `vacation` for IMAP |
+| "Automatic replies are being sent for this account" InfoBar with Turn Off | Below the ribbon | Reading the state above at start and periodically |
+| Automatic Reply Rules | Automatic Replies > Rules | Exchange OOF rules |
+| Block my calendar, decline new invitations, cancel my meetings during the period | Automatic replies (new Outlook) | Calendar integration of the above |
+| Auto reply for IMAP and POP accounts without server support | Rules Wizard: "reply using a specific template" | A reply action in rules |
+
+## Calendar views
+
+Date navigator, calendar list, Day / Work Week / Week / Month and split view.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Show As (Free, Working Elsewhere, Tentative, Busy, Out of Office), with its patterns on the event blocks | Event blocks; Appointment tab > Options; context menu | `Event.showAs`, mapped to EWS `LegacyFreeBusyStatus`, JMAP `freeBusyStatus`, iCalendar `TRANSP` / `X-MICROSOFT-CDO-BUSYSTATUS`. Lookout shows own events as Busy, and invitations by their response. |
+| Private appointments (lock icon) | Event blocks; Appointment tab > Tags | `Event.isPrivate` (EWS `Sensitivity`, iCalendar `CLASS`, JSCalendar `privacy`) |
+| Categories with colors on events | Event blocks; Categorize | `Event.categories` and category colors per account. Only JMAP has `Event.color`, which Lookout uses like `frontend/`. |
+| Work hours, work days, first day of the week | File > Options > Calendar | Settings, or the server's `WorkingHours`. Lookout shades outside 8:00 to 17:00, Monday to Friday, and weeks start on Monday, like `frontend/`. |
+| Second and third time zone in the time ruler | File > Options > Calendar | *UI only* (a setting) |
+| Calendar groups | Home tab > Calendar Groups | Stored groups of calendars (EWS "Common Views") |
+| Create, rename, copy, move or delete a calendar on the server | Home tab > Add Calendar; calendar context menu | Calendar folder management per protocol. Lookout opens the account settings for Properties and removes only shared calendars. |
+| Add Calendar from a room list or from the Internet (ICS subscription), Publish Online, E-mail Calendar | Home tab > Add Calendar; Share | A room list API; read-only ICS subscription accounts; publishing |
+| Delegates, meetings "on behalf of" | Share Calendar > Delegate | Delegate APIs (EWS `AddDelegate`) and organizer handling for delegated calendars |
+| Read-only shared calendars and their permission level | Folder pane; Calendar Permissions | `myRights` / read-only state on `Calendar` (EWS `EffectiveRights`, JMAP `myRights`, CalDAV privileges). Lookout allows edits, and the server refuses them. |
+| Move an event to another calendar; copy an event (Ctrl+drag, Copy to My Calendar) | Dragging between calendars; context menu; Appointment tab | `Event.moveToCalendar()` exists, but `frontend/` disabled it because of bugs (#1277), so Lookout drags only within a calendar. Copy semantics for events (new UID, organizer). |
+| "Send update?" choices after changing a meeting: send, don't send, send only to added or removed attendees | Dialog after moving or editing a meeting | A send parameter on `Event.save()` / `sendInvitations()`. The logic always sends, so Lookout only asks whether to move the meeting and send the update. |
+| Reminders window with Snooze, Dismiss, Dismiss All | Reminders window | Reminder state per occurrence (dismissed, snoozed until), synced (EWS `ReminderNextTime`) |
+| Print (Daily, Weekly, Monthly, Tri-fold) | File > Print | Print layouts and printing in the desktop app |
+| Holidays | File > Options > Calendar > Add Holidays | Holiday calendars per country |
+| Weather and work location in the day headers | Day headers (new Outlook) | A weather service; the Exchange work location API |
+| Schedule View, List view, conditional formatting, drag an event onto the date navigator | Home tab > Arrange; View tab | *UI only*; conditional formatting also needs a rule engine |
+
+## Event form and scheduling
+
+Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Show As, Private, Categorize, High / Low Importance | Appointment tab > Options and Tags | `Event.showAs`, `Event.isPrivate`, `Event.categories` (see Calendar views) and `Event.importance` (EWS `Importance`, iCalendar `PRIORITY`) |
+| Optional attendees and resources (rooms) | Optional field; Scheduling Assistant | `Participant.role` mapped to EWS `OptionalAttendees` / `Resources`, iCalendar `ROLE` / `CUTYPE`, JSCalendar `roles` / `kind`. Lookout has one Required field. |
+| Address Book and Check Names for attendees | Meeting tab > Attendees; "Required" button | *UI only*: the composer's Select Names dialog could be shared. Lookout's Required button focuses the attendee field. |
+| Room Finder, Add Rooms, location suggestions | Location; Scheduling Assistant | A room list API (EWS `GetRoomLists` / `GetRooms`) |
+| AutoPick, suggested times | Scheduling Assistant | Availability suggestions (EWS `GetUserAvailability` with suggestions) |
+| Tentative, Out of Office and Working Elsewhere in the free/busy rows, attendees' working hours, calendar details | Scheduling Assistant | `Calendar.arePersonsFree()` returns only free or busy. It would need the busy type, working hours and the detailed view (EWS `DetailedMerged`). |
+| Free/busy for CalDAV and JMAP calendars | Scheduling Assistant | `arePersonsFree()` for CalDAV (free-busy query) and JMAP (`Principal/getAvailability`). Lookout hides the Scheduling Assistant for these calendars. |
+| Cancel Invitation (turn an unsent meeting back into an appointment) | Meeting tab > Attendees | Removing the organizer and the attendees from an event |
+| Response Options: Request Responses, Allow New Time Proposals, Allow Forwarding, Hide Attendee List | Meeting tab > Response Options | Event properties (EWS `IsResponseRequested`, `AllowNewTimeProposal`; iCalendar `RSVP`) |
+| Save a meeting without sending; send updates only to added or removed attendees | Save; Send Update dialog | A send parameter on `Event.save()` / `OutgoingInvitation.sendInvitations()`. `save()` always sends. |
+| A note to the attendees with a cancellation | Cancel Meeting | A message parameter on `Event.deleteIt()` / `sendCancellations()` |
+| Edit the response before sending; Do not send a response | Accept / Tentative / Decline menus | A comment and a send parameter on `Event.respondToInvitation()`. Lookout's buttons always send. |
+| Propose New Time, Accept Proposal | Respond menu | iTIP `COUNTER` / `DECLINECOUNTER`, EWS proposed times |
+| Reply / Reply All to the attendees by mail | Meeting tab > Respond | Creating a mail from an event |
+| Time zone per event, separate start and end time zones | Appointment tab > Time Zones | A time zone picker (commented out in `frontend/`) and `Event.endTimezone`. Lookout shows the event's time zone when it differs from the local one. |
+| Default reminders (15 minutes, 18 hours for all-day events) | File > Options > Calendar | A calendar setting |
+| Save an appointment without a title ("(No subject)") | Save & Close | `hasMinimalProps()` requires a title |
+| Forward as iCalendar | Forward menu | Only `forwardEventByMail()` exists, which is what Forward does |
+| Pictures and tables in the event description | Insert tab | Editor features. Lookout offers Attach File and the text formatting of the editor. |
+
+## People
+
+Address books, contact list, contact card, contact and contact group forms.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| "Save changes?" when closing a contact form, discarding changes | Contact form | An edit copy for `Person` and `Group`, like `Event.startEditing()` / `finishEditing()`. The form edits the live object (as in `frontend/`), so Lookout has no Cancel button. |
+| Middle name, title, suffix, nickname, File As; sorting by last name | Contact form > Full Name; list order | These fields on `Person` with vCard, JSContact and EWS mapping, and a File As rule. Lookout sorts by the display name. |
+| Birthday, anniversary, spouse, assistant, manager | Contact form > Details | Date and relation fields on `Person`; birthdays could then show in the calendar |
+| Categories, Follow Up and Private flags on contacts | Home tab > Tags | `Person.tags` like `EMail.tags`, and flag fields, with server mapping (EWS `Categories`, vCard `CATEGORIES`) |
+| Favorites | People (new Outlook) | A favorite flag on `Person`, synced where the server supports it |
+| Deleted contacts, restore | Deleted folder (new Outlook); Deleted Items | A trash for contacts, or server-side soft delete. `deleteIt()` deletes permanently. |
+| Create, rename and delete address books | Folder tab | Address book management on the server (CardDAV MKCOL, EWS CreateFolder, JMAP `AddressBook/set`). Today address books come only from account setup. |
+| Forward Contact as vCard, Forward Group | Home tab > Share; contact group form | An `Attachment` from generated data for a new `EMail`. The logic can already write vCards. |
+| Add a one-off email address to a contact group; Update Now | Contact group form > Members | One-off members in `Group` (today only `Person` objects); a directory lookup per member |
+| Address Book dialog to browse the company directory | Home tab > Find > Address Book | Listing and paging in `SearchOnlyAddressbook`, which can only search. Lookout searches the directories from the left pane. |
+| Presence badge on the contact picture | Contact list; contact card | Presence from chat accounts, mapped to persons |
+| Linked contacts, duplicate merging | Profile card > Manage sources (new Outlook) | A duplicate finder (same email address or name). `Person.merge()` exists. |
+| Organization: manager, direct reports | Profile card (new Outlook) | Directory lookups (EWS, Graph) |
+| Mail merge, printing contacts | Home tab > Actions; File > Print | Printing in the desktop app; a mail merge generator |
+| Business Card, Card and Phone views; sort by other columns, column chooser, grouping; Map It | Home tab > Current View; View tab; contact form | *UI only*. Lookout has the People and List views. |
+| Contact history (recent mail and meetings), encryption keys in the contact form, a Lookout-styled Import / Export | Profile card; contact form > Certificates; File > Open & Export | *UI only*: `frontend/` has `ContactHistory`, `PersonPage/Encryption` and the Import / Export settings page, which Lookout opens. |
+
+## Logic bugs found while building Lookout
+
+These are bugs in `app/logic/`, which Lookout must not change. They are not fixed on this branch.
+
+- **`Folder.moveFolderHere()` always throws** (`logic/Mail/Folder.ts`). Its asserts reject every normal folder: `assert(!folder.specialFolder)` fails because `SpecialFolder.Normal` is the non-empty string `"normal"`. And `assert(this.subFolders.contains(folder))` is inverted: it requires the folder to already be a subfolder of the target. All protocol subclasses call it first. Lookout therefore has no Move Folder. The removed UI (Folder tab button, context menu, folder drag and drop, dialog) is in commit "Lookout: Mail: Remove Move Folder, which the logic cannot do yet" and can be restored once this is fixed.
+- **All-day events on the day the clocks go back count as 2 days** (`Event.duration`). For all-day events it rounds the real number of seconds up to whole days, and that day has 25 hours (e.g. Europe/Berlin, 2026-10-25). Changing the start date of such an event in the form makes it 2 days long. `frontend/` has the same bug. `duration` should count calendar days between the local dates.
+- **No update to the attendees when only the series end changes.** `RecurrenceRule.matches()` / `timesMatch()` ignore the series end, so `Event.hasChanged()` is false, and `sendInvitationsDirectly()` sends nothing. The new end is saved.
+- **No update to the attendees after "This and following" or "Delete this and following"** (`Event.truncateRecurrence()`). The shortened old series is saved after `cancelEditing()`, so `hasChanged()` is false, and no update is sent. `frontend/` behaves the same.
+- **Turning "Online meeting" off still creates a meeting link.** `Event.createOnlineMeetingWithAccount` stays set, and `Event.createOnlineMeeting()` doesn't check `isOnline`. `frontend/` behaves the same.
+- **A weekly rule without weekdays counts as every day in `RecurrenceRule.timesMatch()`.** Servers can send a weekly rule without BYDAY (meaning: the weekday of the series start). Rebuilding the same series with its weekday then counts as a time change, which asks "Save changes?" and, on saving, removes all exceptions. Lookout's recurrence dialog keeps an unchanged rule as it is, so this doesn't happen there; `frontend/`'s recurrence editor triggers it just by opening.
