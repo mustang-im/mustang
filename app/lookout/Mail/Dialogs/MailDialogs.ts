@@ -14,7 +14,8 @@ export type MailDialog =
   { kind: "reading-pane-options" } |
   { kind: "color-categories" } |
   { kind: "new-search-folder", account: MailAccount | null } |
-  { kind: "save-search", search: SearchEMail };
+  { kind: "save-search", search: SearchEMail } |
+  { kind: "search-person" };
 
 export class MailDialogs {
   static readonly current = writable<MailDialog | null>(null);

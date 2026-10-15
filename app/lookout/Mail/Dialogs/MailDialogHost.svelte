@@ -14,6 +14,8 @@
   <ColorCategoriesDialog on:close={onClose} />
 {:else if $dialog?.kind == "save-search"}
   <SaveSearchDialog search={$dialog.search} on:close={onClose} />
+{:else if $dialog?.kind == "search-person"}
+  <SearchPersonDialog on:close={onClose} />
 {:else if $dialog?.kind == "new-search-folder"}
   <NewSearchFolderDialog defaultAccount={$dialog.account} on:close={onClose} />
 {/if}
@@ -29,6 +31,7 @@
   import ColorCategoriesDialog from "./ColorCategoriesDialog.svelte";
   import NewSearchFolderDialog from "./NewSearchFolderDialog.svelte";
   import SaveSearchDialog from "./SaveSearchDialog.svelte";
+  import SearchPersonDialog from "./SearchPersonDialog.svelte";
   import { onDestroy } from "svelte";
 
   const dialog = MailDialogs.current;

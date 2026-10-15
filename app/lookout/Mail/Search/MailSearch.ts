@@ -1,6 +1,7 @@
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { Tag } from "../../../logic/Abstract/Tag";
+import type { Person } from "../../../logic/Abstract/Person";
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
 import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
@@ -21,6 +22,7 @@ export interface SearchOptions {
   flagged: boolean;
   sentByMe: boolean;
   tags: Tag[];
+  person: Person | null;
 }
 
 export class MailSearch {
@@ -35,6 +37,7 @@ export class MailSearch {
       flagged: false,
       sentByMe: false,
       tags: [],
+      person: null,
     };
   }
 
@@ -105,6 +108,9 @@ export class MailSearch {
     }
     for (let tag of options.tags) {
       search.tags.add(tag);
+    }
+    if (options.person) {
+      search.includesPerson = options.person;
     }
     return search;
   }

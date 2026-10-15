@@ -5,7 +5,7 @@
   on:close>
   <vbox class="dialog-content">
     <label for="save-search-name">{$t`Name of the Search Folder:`}</label>
-    <input id="save-search-name" type="text" bind:value={name} use:focus />
+    <input id="save-search-name" type="text" bind:value={name} />
   </vbox>
 </Dialog>
 
@@ -32,10 +32,6 @@
     // </copied>
   }
 
-  function focus(input: HTMLInputElement) {
-    input.focus();
-    input.select();
-  }
 </script>
 
 <style>
