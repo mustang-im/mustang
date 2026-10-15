@@ -40,8 +40,8 @@ export class ExchangeMailAccount extends MailAccount {
     if (this.mainAccount) {
       return persons;
     }
-    for (let person of await this.listOtherMailboxes()) {
-      if (persons.find(other => other.emailAddress == person.emailAddress) ||
+    for (let person of await this.listSharedMailboxesAddedInOutlook()) {
+      if (persons.find(existing => existing.emailAddress == person.emailAddress) ||
           this.isMyEMailAddress(person.emailAddress) ||
           this.dependentAccounts().contents.some(account => account.protocol == this.protocol &&
             (account as MailAccount).isMyEMailAddress(person.emailAddress))) {
@@ -52,11 +52,11 @@ export class ExchangeMailAccount extends MailAccount {
     return persons;
   }
 
-  async listOtherMailboxes(): Promise<PersonUID[]> {
+  async listSharedMailboxesAddedInOutlook(): Promise<PersonUID[]> {
     return [];
   }
 
-  protected newOtherMailbox(emailAddress: string, name: string): PersonUID | null {
+  protected newSharedMailboxPerson(emailAddress: string, name: string): PersonUID | null {
     let address = sanitize.emailAddress(emailAddress, null);
     if (!address) {
       return null;

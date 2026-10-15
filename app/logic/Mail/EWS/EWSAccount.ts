@@ -1081,14 +1081,15 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return calendar;
   }
 
-  async listOtherMailboxes(): Promise<PersonUID[]> {
-    let config = await this.getUserConfigurationXML(kOtherMailboxConfig, "root");
+  async listSharedMailboxesAddedInOutlook(): Promise<PersonUID[]> {
+    const kConfigName = "OWA.OtherMailbox";
+    let config = await this.getUserConfigurationXML(kConfigName, "root");
     if (config?.localName != "OtherMailbox") {
       return [];
     }
     let json = XML2JSON(config) as any;
     return ensureArray(json?.entry)
-      .map(entry => this.newOtherMailbox(entry?.principalSMTPAddress, entry?.displayName))
+      .map(entry => this.newSharedMailboxPerson(entry?.principalSMTPAddress, entry?.displayName))
       .filter(Boolean);
   }
 
@@ -1307,8 +1308,6 @@ const kXMLContentType = "text/xml; charset=utf-8";
 
 /** @see <https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxprops/01b52d3c-d194-4a8c-83ee-4ac7506339da> */
 const HiddenPidTag = "0x10F4";
-
-const kOtherMailboxConfig = "OWA.OtherMailbox";
 
 function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): void {
   if (!aRecipients.length) {
