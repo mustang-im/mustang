@@ -1,0 +1,81 @@
+.lo-event {
+  display: flex;
+  flex-direction: row;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--lo-event-border);
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--event-color) calc(var(--lo-event-fill) * var(--lo-event-fill-boost)), var(--lo-pane-bg));
+  color: var(--lo-fg);
+  font-size: var(--lo-font-size-small);
+  cursor: default;
+  --lo-event-fill: 22%;
+  --lo-event-fill-boost: 1;
+  --lo-event-border: color-mix(in srgb, var(--event-color) 45%, transparent);
+  --lo-event-bar: var(--event-color);
+}
+@media (prefers-color-scheme: dark) {
+  .lo-event {
+    --lo-event-fill-boost: 1.6;
+  }
+}
+.lo-event:hover {
+  --lo-event-fill: 30%;
+}
+.lo-event.selected {
+  --lo-event-fill: 40%;
+  outline: 2px solid var(--event-color);
+  outline-offset: -1px;
+}
+.lo-event:focus-visible {
+  outline: 2px solid var(--lo-focus-ring);
+  outline-offset: 1px;
+}
+.lo-event > .lo-event-bar {
+  flex: none;
+  width: 4px;
+  margin-block: -1px;
+  margin-inline-start: -1px;
+  background: var(--lo-event-bar);
+}
+.lo-event.status-tentative,
+.lo-event.status-unanswered {
+  --lo-event-bar: repeating-linear-gradient(-45deg, var(--event-color) 0 2px, var(--lo-pane-bg) 2px 4px);
+}
+.lo-event.status-unanswered {
+  background-color: var(--lo-pane-bg);
+  background-image: repeating-linear-gradient(-45deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--event-color) calc(var(--lo-event-fill) * var(--lo-event-fill-boost)), transparent) 6px 9px);
+  --lo-event-border: var(--event-color);
+}
+.lo-event.status-declined,
+.lo-event.status-cancelled {
+  background-color: var(--lo-pane-bg);
+  background-image: none;
+  color: var(--lo-fg-secondary);
+  --lo-event-border: var(--lo-border-strong);
+  --lo-event-bar: transparent;
+}
+.lo-event.past {
+  --lo-event-fill: 11%;
+  color: var(--lo-fg-secondary);
+}
+.lo-event.past:hover {
+  --lo-event-fill: 18%;
+}
+.lo-event.past.selected {
+  --lo-event-fill: 26%;
+}
+.lo-event.past > .lo-event-bar {
+  opacity: 55%;
+}
+.lo-event .lo-event-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

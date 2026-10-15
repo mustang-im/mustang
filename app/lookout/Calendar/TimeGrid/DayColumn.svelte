@@ -1,0 +1,207 @@
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="day-column"
+  class:today={isToday}
+  style="grid-column: {column}; --click-margin: 8px"
+  on:pointerdown={onPointerDown}
+  on:pointermove={onPointerMove}
+  on:pointerup={onPointerUp}
+  on:pointercancel={onPointerUp}
+  on:dblclick={onDoubleClick}
+  on:contextmenu={onContextMenu}
+  bind:this={columnEl}>
+  {#if WorkingHours.isWorkDay(day)}
+    <div class="off-hours" style="top: 0; height: {WorkingHours.startHour * 60 * pxPerMinute}px" />
+    <div class="off-hours" style="top: {WorkingHours.endHour * 60 * pxPerMinute}px; bottom: 0" />
+  {:else}
+    <div class="off-hours" style="top: 0; bottom: 0" />
+  {/if}
+  {#if selectionHere}
+    <div class="slot-selection"
+      style="top: {selectionStart * pxPerMinute}px; height: {(selectionEnd - selectionStart) * pxPerMinute}px" />
+  {/if}
+  {#each $layout as item (item.event)}
+    <EventBlock {item} {pxPerMinute} />
+  {/each}
+  {#if isToday || showsPastTimeLine}
+    <div class="current-time" class:past={!isToday}
+      style="top: {($now.getHours() * 60 + $now.getMinutes()) * pxPerMinute}px" />
+  {/if}
+</div>
+
+<script lang="ts">
+  import type { Event } from "../../../logic/Calendar/Event";
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import { TimeColumnLayout } from "./TimeColumnLayout";
+  import { WorkingHours } from "../View/WorkingHours";
+  import { CurrentTime } from "../View/CurrentTime";
+  import { CalendarActions } from "../CalendarActions";
+  import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../Selected";
+  import { selectedEvent } from "../../../frontend/Calendar/selected";
+  import { catchErrors } from "../../../frontend/Util/error";
+  import EventBlock from "../Event/EventBlock.svelte";
+  import type { Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
+  import { getContext } from "svelte";
+
+  export let day: Date;
+  export let column: number;
+  export let events: Collection<Event>;
+  export let calendar: Calendar | null;
+  export let pxPerMinute: number;
+  export let timeScale: number;
+  export let isToday = false;
+  export let showsPastTimeLine = false;
+
+  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  const now = CurrentTime.minute;
+
+  let columnEl: HTMLDivElement;
+
+  let dayEvents: Collection<Event>;
+  $: day, events, filterDay();
+  function filterDay() {
+    let dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    let dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
+    dayEvents = events.filterObservable(event => event.startTime < dayEnd && event.endTime > dayStart);
+  }
+  $: layout = derived([...$dayEvents.contents], eventsInDay =>
+    new TimeColumnLayout(eventsInDay, day, timeScale).items);
+
+  $: selectionHere = !!$selectedSlots && !$selectedSlots.allDay &&
+    $selectedSlots.calendar == calendar &&
+    $selectedSlots.start.toDateString() == day.toDateString();
+  $: selectionStart = selectionHere ? minuteOfDay($selectedSlots.start) : 0;
+  $: selectionEnd = selectionHere ? minuteOfDay($selectedSlots.end, true) : 0;
+
+  function minuteOfDay(time: Date, isEnd = false): number {
+    if (isEnd && time.toDateString() != day.toDateString()) {
+      return TimeColumnLayout.kMinutesPerDay;
+    }
+    return time.getHours() * 60 + time.getMinutes();
+  }
+
+  function slotAt(clientY: number): number {
+    let rect = columnEl.getBoundingClientRect();
+    let minute = Math.min(Math.max((clientY - rect.top) / pxPerMinute, 0), TimeColumnLayout.kMinutesPerDay - 1);
+    return Math.floor(minute / timeScale) * timeScale;
+  }
+
+  function timeAt(minute: number): Date {
+    return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minute);
+  }
+
+  function select(fromMinute: number, toMinute: number) {
+    $selectedSlots = { start: timeAt(fromMinute), end: timeAt(toMinute), allDay: false, calendar };
+  }
+
+  let dragAnchor: number | null = null;
+  function onPointerDown(pointerEvent: PointerEvent) {
+    if (pointerEvent.button != 0) {
+      return;
+    }
+    $selectedEvent = null;
+    $eventPeek = null;
+    dragAnchor = slotAt(pointerEvent.clientY);
+    select(dragAnchor, dragAnchor + timeScale);
+    columnEl.setPointerCapture(pointerEvent.pointerId);
+  }
+
+  function onPointerMove(pointerEvent: PointerEvent) {
+    if (dragAnchor == null) {
+      return;
+    }
+    let slot = slotAt(pointerEvent.clientY);
+    if (slot >= dragAnchor) {
+      select(dragAnchor, slot + timeScale);
+    } else {
+      select(slot, dragAnchor + timeScale);
+    }
+  }
+
+  function onPointerUp() {
+    dragAnchor = null;
+  }
+
+  function isInSelection(minute: number): boolean {
+    return selectionHere && selectionStart <= minute && minute < selectionEnd;
+  }
+
+  function onDoubleClick(mouseEvent: MouseEvent) {
+    let slot = slotAt(mouseEvent.clientY);
+    if (!isInSelection(slot)) {
+      select(slot, slot + timeScale);
+    }
+    let isRange = selectionEnd - selectionStart > timeScale;
+    let start = timeAt(isRange ? selectionStart : slot);
+    let end = isRange ? timeAt(selectionEnd) : null;
+    catchErrors(() => CalendarActions.newEvent(calendar, start, end));
+  }
+
+  function onContextMenu(mouseEvent: MouseEvent) {
+    mouseEvent.preventDefault();
+    let slot = slotAt(mouseEvent.clientY);
+    if (!isInSelection(slot)) {
+      select(slot, slot + timeScale);
+    }
+    $selectedEvent = null;
+    $eventPeek = null;
+    menus.openSlotMenu(mouseEvent, $selectedSlots);
+  }
+</script>
+
+<style>
+  .day-column {
+    position: relative;
+    grid-row: 1;
+    border-inline-start: 1px solid var(--lo-divider);
+    touch-action: none;
+    outline: none;
+  }
+  .day-column.today::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: color-mix(in srgb, var(--lo-accent) 5%, transparent);
+    pointer-events: none;
+  }
+  .off-hours {
+    position: absolute;
+    inset-inline: 0;
+    background-color: color-mix(in srgb, black 4%, var(--lo-pane-bg));
+    pointer-events: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    .off-hours {
+      background-color: color-mix(in srgb, black 16%, var(--lo-pane-bg));
+    }
+  }
+  .slot-selection {
+    position: absolute;
+    inset-inline: 0;
+    background-color: color-mix(in srgb, var(--lo-accent) 22%, transparent);
+    pointer-events: none;
+  }
+  .current-time {
+    position: absolute;
+    inset-inline: 0;
+    height: 0;
+    margin-block-start: -1px;
+    border-top: 2px solid var(--lo-accent);
+    z-index: 4;
+    pointer-events: none;
+  }
+  .current-time:not(.past)::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -5px;
+    top: -6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--lo-accent);
+  }
+  .current-time.past {
+    border-top: 1px dashed color-mix(in srgb, var(--lo-accent) 70%, transparent);
+    margin-block-start: 0;
+  }
+</style>
