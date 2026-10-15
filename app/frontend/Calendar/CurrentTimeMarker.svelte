@@ -31,11 +31,13 @@
 <style>
   .current-time-marker {
     position: absolute;
+    z-index: 1;
+    pointer-events: none;
+
     inset-inline: 0px;
     margin-block-start: -1px;
     border-top: 2px solid red;
-    z-index: 1;
-    pointer-events: none;
+    opacity: 70%;
   }
   .current-time-marker::before {
     content: "";
