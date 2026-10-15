@@ -46,10 +46,10 @@
   --lo-shadow-card: 0 0 2px rgba(0, 0, 0, 0.10), 0 1px 2px rgba(0, 0, 0, 0.08);
   --lo-shadow-popup: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
 
-  --lo-backstage-nav-bg: var(--lo-accent);
-  --lo-backstage-nav-fg: var(--lo-accent-fg);
-  --lo-backstage-nav-hover-bg: rgba(255, 255, 255, 0.14);
-  --lo-backstage-nav-selected-bg: rgba(255, 255, 255, 0.24);
+  --lo-backstage-nav-bg: var(--lo-window-bg);
+  --lo-backstage-nav-fg: var(--lo-fg);
+  --lo-backstage-nav-hover-bg: var(--lo-pressed-bg);
+  --lo-backstage-nav-selected-bg: var(--lo-selected-bg);
 
   --lo-nav-rail-width: 64px;
   --lo-titlebar-height: 40px;
@@ -90,11 +90,6 @@
     --lo-danger-fg: #FFFFFF;
     --lo-success: #5BB36A;
     --lo-warning: #E0A040;
-
-    --lo-backstage-nav-bg: #1D3D63;
-    --lo-backstage-nav-fg: var(--lo-fg);
-    --lo-backstage-nav-hover-bg: rgba(255, 255, 255, 0.08);
-    --lo-backstage-nav-selected-bg: rgba(255, 255, 255, 0.16);
 
     --lo-shadow-card: 0 0 2px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
     --lo-shadow-popup: 0 0 2px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.45);

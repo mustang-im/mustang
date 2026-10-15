@@ -8,12 +8,12 @@
       <InfoIcon size="18" />
       <hbox class="label">{$t`Info`}</hbox>
     </button>
+    <vbox flex class="spacer" />
     <button class="nav-item" class:selected={$backstageState.page == "options"}
       on:click={() => backstageState.open("options")}>
       <OptionsIcon size="18" />
       <hbox class="label">{$t`Options`}</hbox>
     </button>
-    <vbox flex class="spacer" />
     <button class="nav-item" on:click={onExit}>
       <ExitIcon size="18" />
       <hbox class="label">{$t`Exit`}</hbox>
@@ -112,6 +112,7 @@
     color: var(--lo-backstage-nav-fg);
   }
   .nav-item {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -126,11 +127,12 @@
     text-align: start;
   }
   .nav-item.back {
-    width: 40px;
-    height: 40px;
-    margin: 0 0 12px 8px;
+    width: 34px;
+    height: 34px;
+    margin: 4px 0 16px 16px;
     padding: 0;
     justify-content: center;
+    border: 1px solid var(--lo-border-strong);
     border-radius: 50%;
   }
   .nav-item:hover {
@@ -139,6 +141,16 @@
   .nav-item.selected {
     background-color: var(--lo-backstage-nav-selected-bg);
     font-weight: 600;
+  }
+  .nav-item.selected::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 2px;
+    background-color: var(--lo-accent);
   }
   .backstage-page {
     min-width: 0;
