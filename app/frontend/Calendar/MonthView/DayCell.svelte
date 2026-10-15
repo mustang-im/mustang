@@ -8,12 +8,17 @@
         {start.toLocaleDateString(getDateTimeLocale(), { month: "long" })}
       </hbox>
     {/if}
+    <vbox class="current-time-marker-range">
+      <CurrentTimeMarker day={start} startHour={WeekRowLayout.kStartHour} endHour={WeekRowLayout.kEndHour} />
+    </vbox>
   </vbox>
 </Clickable>
 
 <script lang="ts">
   import { selectedDate } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
+  import CurrentTimeMarker from "../CurrentTimeMarker.svelte";
+  import { WeekRowLayout } from "./WeekRow";
   import { k1HourMS } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import { createEventDispatcher } from "svelte";
@@ -65,6 +70,12 @@
       background-color: var(--selected-hover-bg);
       color: var(--selected-hover-fg);
     }
+  }
+  .current-time-marker-range {
+    position: absolute;
+    top: 0px;
+    inset-inline: 0px;
+    height: calc(var(--rows) * var(--row-height));
   }
   .month-name {
     position: absolute;

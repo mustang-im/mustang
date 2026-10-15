@@ -13,6 +13,7 @@
       {/if}
     </EventContainer>
   {/each}
+  <CurrentTimeMarker {day} {startHour} {endHour} />
 </grid>
 
 <script lang="ts">
@@ -21,6 +22,7 @@
   import HourSlot from "./HourSlot.svelte";
   import EventContainer from "./EventContainer.svelte";
   import EventContent from "./EventContent.svelte";
+  import CurrentTimeMarker from "../CurrentTimeMarker.svelte";
   import { ArrayColl, type Collection } from "svelte-collections";
   import { derived } from "svelte/store";
 
@@ -65,6 +67,7 @@
     display: grid;
     grid-template-rows: subgrid;
     grid-template-columns: minmax(0, 1fr);
+    position: relative;
     border-left: 1px dotted var(--border);
   }
 </style>

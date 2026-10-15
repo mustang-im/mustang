@@ -3,7 +3,7 @@
     <DayLabel {day} column={i + 1} />
   {/each}
   <grid class="lanes font-small"
-    style="grid-template-rows: repeat({rows}, var(--row-height)) minmax(0, 1fr); --rows-per-line: {WeekRowLayout.kRowsPerLine}"
+    style="--rows: {rows}; --rows-per-line: {WeekRowLayout.kRowsPerLine}"
     bind:this={lanesE}
     bind:clientHeight={lanesHeight}>
     {#each days as day, i}
@@ -71,6 +71,7 @@
     grid-row: 2;
     display: grid;
     grid-template-columns: subgrid;
+    grid-template-rows: repeat(var(--rows), var(--row-height)) minmax(0, 1fr);
     overflow: hidden;
     --row-height: calc((1.4em + 1px) / var(--rows-per-line));
   }
