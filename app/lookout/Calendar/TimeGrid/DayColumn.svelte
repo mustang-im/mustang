@@ -11,6 +11,24 @@
   on:dblclick={onDoubleClick}
   on:contextmenu={onContextMenu}
   bind:this={columnEl}>
+  <div class="hidden-badge-anchor top">
+    {#if hiddenAbove.length}
+      <button class="hidden-badge" title={$t`${hiddenAbove.length} more items above`}
+        on:pointerdown|stopPropagation on:dblclick|stopPropagation
+        on:click|stopPropagation={() => onScrollToMinute(Math.max(...hiddenAbove.map(item => item.startMinute)))}>
+        +{hiddenAbove.length} <UpIcon size="12" />
+      </button>
+    {/if}
+  </div>
+  <div class="hidden-badge-anchor bottom">
+    {#if hiddenBelow.length}
+      <button class="hidden-badge" title={$t`${hiddenBelow.length} more items below`}
+        on:pointerdown|stopPropagation on:dblclick|stopPropagation
+        on:click|stopPropagation={() => onScrollToMinute(Math.min(...hiddenBelow.map(item => item.startMinute)))}>
+        +{hiddenBelow.length} <DownIcon size="12" />
+      </button>
+    {/if}
+  </div>
   {#if WorkingHours.isWorkDay(day)}
     <div class="off-hours" style="top: 0; height: {WorkingHours.startHour * 60 * pxPerMinute}px" />
     <div class="off-hours" style="top: {WorkingHours.endHour * 60 * pxPerMinute}px; bottom: 0" />
@@ -44,6 +62,9 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import EventBlock from "../Event/EventBlock.svelte";
   import InlineEventTitle from "../View/InlineEventTitle.svelte";
+  import UpIcon from "lucide-svelte/icons/chevron-up";
+  import DownIcon from "lucide-svelte/icons/chevron-down";
+  import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import { getContext } from "svelte";
@@ -58,6 +79,9 @@
   export let timeScale: number;
   export let isToday = false;
   export let showsPastTimeLine = false;
+  export let visibleFromMinute = 0;
+  export let visibleToMinute = TimeColumnLayout.kMinutesPerDay;
+  export let onScrollToMinute: (minute: number) => void;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
   const now = CurrentTime.minute;
@@ -73,6 +97,9 @@
   }
   $: layout = derived([...$dayEvents.contents], eventsInDay =>
     new TimeColumnLayout(eventsInDay, day, timeScale).items);
+
+  $: hiddenAbove = $layout.filter(item => item.endMinute <= visibleFromMinute);
+  $: hiddenBelow = $layout.filter(item => item.startMinute >= visibleToMinute);
 
   $: selectionHere = !!$selectedSlots && !$selectedSlots.allDay &&
     $selectedSlots.calendar == calendar &&
@@ -160,6 +187,9 @@
 <style>
   .day-column {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     grid-row: 1;
     border-inline-start: 1px solid var(--lo-divider);
     touch-action: none;
@@ -172,6 +202,41 @@
     background-color: color-mix(in srgb, var(--lo-accent) 5%, transparent);
     pointer-events: none;
   }
+  .hidden-badge-anchor {
+    position: sticky;
+    display: flex;
+    justify-content: center;
+    height: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .hidden-badge-anchor.top {
+    top: calc(var(--head-height) + 4px);
+  }
+  .hidden-badge-anchor.bottom {
+    bottom: 22px;
+  }
+  .hidden-badge {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 18px;
+    padding: 0 6px;
+    border: 1px solid var(--lo-border-strong);
+    border-radius: 9px;
+    background-color: var(--lo-pane-bg);
+    box-shadow: var(--lo-shadow-card);
+    color: var(--lo-fg-secondary);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .hidden-badge:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
   .off-hours {
     position: absolute;
     inset-inline: 0;
@@ -179,7 +244,42 @@
     pointer-events: none;
   }
   @media (prefers-color-scheme: dark) {
-    .off-hours {
+    .hidden-badge-anchor {
+    position: sticky;
+    display: flex;
+    justify-content: center;
+    height: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .hidden-badge-anchor.top {
+    top: calc(var(--head-height) + 4px);
+  }
+  .hidden-badge-anchor.bottom {
+    bottom: 22px;
+  }
+  .hidden-badge {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 18px;
+    padding: 0 6px;
+    border: 1px solid var(--lo-border-strong);
+    border-radius: 9px;
+    background-color: var(--lo-pane-bg);
+    box-shadow: var(--lo-shadow-card);
+    color: var(--lo-fg-secondary);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .hidden-badge:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  .off-hours {
       background-color: color-mix(in srgb, black 16%, var(--lo-pane-bg));
     }
   }

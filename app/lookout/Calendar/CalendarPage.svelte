@@ -5,18 +5,22 @@
   <hbox flex class="panes">
     <Splitter name="lookout.calendar.folderPane" hasLeft={showFolderPane}
       initialRightRatio={5} leftMinWidth={230} rightMinWidth={480}>
-      <vbox flex class="folder-pane" slot="left">
-        <DateNavigator {range} date={$startDate} {showWeekNumbers} onSelectDay={selectDay} />
+      <vbox flex class="folder-pane" slot="left" bind:clientHeight={folderPaneHeight}>
+        <DateNavigator {range} date={$startDate} {showWeekNumbers} monthCount={folderPaneHeight >= 760 ? 2 : 1}
+          onSelectDay={selectDay} />
         <hbox class="divider" />
         <CalendarList />
       </vbox>
       <vbox flex class="main lo-card" slot="right">
         <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
-        {#if view == "month"}
-          <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
-        {:else}
-          <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
-        {/if}
+        <vbox flex class="grid-area">
+          {#if view == "month"}
+            <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
+          {:else}
+            <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
+          {/if}
+          <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+        </vbox>
       </vbox>
     </Splitter>
   </hbox>
@@ -56,6 +60,7 @@
   import EventPeek from "./Event/EventPeek.svelte";
   import SlotContextMenu from "./View/SlotContextMenu.svelte";
   import GoToDateDialog from "./View/GoToDateDialog.svelte";
+  import AdjacentEventTabs from "./View/AdjacentEventTabs.svelte";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
   import { onDestroy, setContext } from "svelte";
@@ -69,6 +74,7 @@
   let showWeekNumbers = CalendarSettings.weekNumbers.value;
   let showDeclined = CalendarSettings.showDeclined.value;
 
+  let folderPaneHeight = 0;
   let eventMenu: EventContextMenu;
   let slotMenu: SlotContextMenu;
   let goToDateDialog: GoToDateDialog;
@@ -103,7 +109,9 @@
   $: eventsInRange = visibleEvents.filterObservable(event => event.startTime < range.end && event.endTime > range.start);
   const status = statusBar.addSection();
   onDestroy(() => status.remove());
+  const updatingCount = CalendarActions.updatingCount;
   $: status.left = [ { label: $t`Items: ${$eventsInRange.length}` } ];
+  $: status.right = $updatingCount ? [ { label: $t`Updating calendars…`, busy: true } ] : [];
 
   function setView(newView: CalendarViewType) {
     if (newView == "day") {
@@ -149,6 +157,11 @@
   function openDay(day: Date) {
     selectDay(day);
     setView("day");
+  }
+
+  function goToEvent(event: Event) {
+    selectDay(event.startTime);
+    $selectedEvent = event;
   }
 
   function openGoToDate() {
@@ -256,6 +269,10 @@
     height: 1px;
     margin: 4px 12px;
     background-color: var(--lo-divider);
+  }
+  .grid-area {
+    position: relative;
+    min-height: 0;
   }
   .main {
     min-width: 0;
