@@ -112,6 +112,7 @@ interface TJSCalendarEventBase {
   replyTo?: string[];
   /** Sent by identifier */
   sentBy?: string;
+  organizerCalendarAddress?: string;
   /** Map of participant IDs to Participant objects */
   participants?: Record<string, TJSCalendarParticipant>;
   /** Request status (iTIP) */
@@ -253,7 +254,7 @@ export interface TJSCalendarParticipant {
   /** Email address */
   email?: string;
   /** Calendar user address (mailto: URI) */
-  calendarUserAddress?: string;
+  calendarAddress?: string;
   /** Participant roles */
   roles?: Record<TJSCalendarParticipationRole, true>;
   /** Participation status */
