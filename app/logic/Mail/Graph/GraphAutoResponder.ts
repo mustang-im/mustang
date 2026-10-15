@@ -56,7 +56,7 @@ export class GraphAutoResponder extends AutoResponder {
     let status = sanitize.string(json.status, "").toLowerCase();
     this.enabled = status == "alwaysenabled" || status == "scheduled";
     this.scheduled = status == "scheduled";
-    this.setTimes(parseTime(json.scheduledStartDateTime), parseTime(json.scheduledEndDateTime));
+    this.setTimes(this.parseTime(json.scheduledStartDateTime), this.parseTime(json.scheduledEndDateTime));
     let audience = sanitize.string(json.externalAudience, "").toLowerCase();
     this.externalAudience =
       audience == "all" ? AutoResponderAudience.All :
@@ -78,24 +78,24 @@ export class GraphAutoResponder extends AutoResponder {
     };
     // Omit, not null, which the backend would send
     if (this.scheduled) {
-      settings.scheduledStartDateTime = toTime(this.startTime);
-      settings.scheduledEndDateTime = toTime(this.endTime);
+      settings.scheduledStartDateTime = this.toTime(this.startTime);
+      settings.scheduledEndDateTime = this.toTime(this.endTime);
     }
     return settings;
   }
-}
 
-/** Exchange keeps them in UTC */
-function parseTime(time: TGraphDateTimeZone): Date | null {
-  if (!time?.dateTime || time.timeZone && time.timeZone != "UTC") {
-    return null;
+  /** Exchange keeps them in UTC */
+  protected parseTime(time: TGraphDateTimeZone): Date | null {
+    if (!time?.dateTime || time.timeZone && time.timeZone != "UTC") {
+      return null;
+    }
+    return sanitize.date(time.dateTime + "Z", null);
   }
-  return sanitize.date(time.dateTime + "Z", null);
-}
 
-function toTime(date: Date): TGraphDateTimeZone {
-  return {
-    dateTime: date.toISOString().replace("Z", ""),
-    timeZone: "UTC",
-  };
+  protected toTime(date: Date): TGraphDateTimeZone {
+    return {
+      dateTime: date.toISOString().replace("Z", ""),
+      timeZone: "UTC",
+    };
+  }
 }
