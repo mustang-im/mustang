@@ -954,7 +954,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return folder;
   }
 
-  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Element | null> {
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Json | null> {
     let request = {
       m$GetUserConfiguration: {
         m$UserConfigurationName: {
@@ -980,7 +980,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       return null;
     }
     let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
-    return this.parseXML(xml)?.documentElement ?? null;
+    let root = this.parseXML(xml)?.documentElement;
+    if (!root) {
+      return null;
+    }
+    return { [root.localName]: XML2JSON(root) };
   }
 
   get mayHaveSubAccounts(): boolean {
@@ -1112,12 +1116,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
     const kConfigName = "OWA.OtherMailbox";
-    let config = await this.getUserConfigurationXML(kConfigName, "root");
-    if (config?.localName != "OtherMailbox") {
-      return [];
-    }
-    let json = XML2JSON(config) as any;
-    return ensureArray(json?.entry)
+    let config = await this.getUserConfigurationXML(kConfigName, "root") as any;
+    return ensureArray(config?.OtherMailbox?.entry)
       .map(entry => this.newSharedAccountPerson(entry?.principalSMTPAddress, entry?.displayName))
       .filter(Boolean);
   }
