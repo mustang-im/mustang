@@ -1,4 +1,5 @@
 import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
+import type { RecurrenceRule } from "../../../logic/Calendar/RecurrenceRule";
 import { Participant } from "../../../logic/Calendar/Participant";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
@@ -35,10 +36,6 @@ export class EventEditFlow {
 
   get isSaved(): boolean {
     return !this.master.isNew;
-  }
-
-  get isSentMeeting(): boolean {
-    return this.event.isOutgoingMeeting && this.isSaved;
   }
 
   get attendees(): Participant[] {
@@ -161,9 +158,12 @@ export class EventEditFlow {
   async save() {
     let event = this.event;
     event.parentEvent?.cancelEditing();
-    // Lookout: Also confirms changes of the series rule here, and sets the series end, which `hasChanged()` does not see
-    if (!event.parentEvent && !this.confirmAndChangeRecurrenceRule()) {
-      return;
+    // Lookout: Also moves the recurrence with the series, confirms changes of the series rule here, and sets the series end, which `hasChanged()` does not see
+    if (!event.parentEvent) {
+      this.moveRecurrenceWithSeries();
+      if (!this.confirmAndChangeRecurrenceRule()) {
+        return;
+      }
     }
     await this.pattern.applyEndTo(event);
     await this.saveEvent(event);
@@ -217,9 +217,30 @@ export class EventEditFlow {
     }
     Reminder.setMinutesBefore(master, Reminder.minutesBefore(event));
     if (timesChanged && rule) {
-      let { frequency, interval, week, weekdays } = rule;
-      master.newRecurrenceRule(frequency, interval, week, weekdays?.map(weekday => (weekday + dayShift % 7 + 7) % 7));
+      EventEditFlow.moveRecurrence(master, rule, dayShift);
     }
+  }
+
+  // The Scheduling Assistant changes the times of a series directly, without the recurrence dialog
+  protected moveRecurrenceWithSeries() {
+    let master = this.event;
+    let rule = master.recurrenceRule;
+    let before = master.unedited;
+    if (!rule || !before) {
+      return;
+    }
+    let isRuleBefore = rule == before.recurrenceRule;
+    let ruleStart = isRuleBefore ? before.startTime : rule.getOccurrenceByIndex(0);
+    let ruleDuration = isRuleBefore ? before.duration : rule.masterDuration;
+    if (master.startTime.getTime() == ruleStart.getTime() && master.duration == ruleDuration) {
+      return;
+    }
+    EventEditFlow.moveRecurrence(master, rule, EventEditFlow.daysBetween(ruleStart, master.startTime));
+  }
+
+  protected static moveRecurrence(master: Event, rule: RecurrenceRule, dayShift: number) {
+    let { frequency, interval, week, weekdays } = rule;
+    master.newRecurrenceRule(frequency, interval, week, weekdays?.map(weekday => (weekday + dayShift % 7 + 7) % 7));
   }
 
   protected applySeriesTimesTo(remainder: Event) {
