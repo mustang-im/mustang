@@ -19,7 +19,8 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../../logic/app";
-  import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
+  import { SelectNames } from "../Composer/SelectNames";
+  import type { Collection } from "svelte-collections";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -30,14 +31,12 @@
   const dispatch = createEventDispatcher<{ choose: Person }>();
   let searchTerm = "";
 
-  $: found = findPersons(searchTerm.trim().toLowerCase());
+  $: found = findPersons(searchTerm);
   function findPersons(term: string): Collection<Person> {
-    let addressbooks: Addressbook[] = term
+    let addressbooks: Addressbook[] = term.trim()
       ? [...appGlobal.addressbooks.contents, ...appGlobal.searchOnlyAddressbooks.contents]
       : appGlobal.addressbooks.contents;
-    return mergeColls(new ArrayColl(addressbooks.map(addressbook => addressbook.quickSearch(term))))
-      .filterObservable(person => person.emailAddresses.hasItems)
-      .sortBy(person => person.name?.toLowerCase() ?? "");
+    return SelectNames.persons(addressbooks, term);
   }
 
   function onChoose(person: Person) {
