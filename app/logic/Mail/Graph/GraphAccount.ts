@@ -12,7 +12,7 @@ import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbo
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { ensureLicensed } from "../../util/LicenseClient";
+import { license } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { RunOnce } from "../../util/flow/RunOnce";
@@ -43,7 +43,7 @@ export class GraphAccount extends ExchangeMailAccount {
 
   async login(interactive: boolean): Promise<void> {
     await this.loginRunOnce.runOnce(async () => {
-      await ensureLicensed();
+      await license.ensureLicensed();
       await super.login(interactive);
       if (!this.dbID) {
         await this.storage.saveAccount(this);

@@ -6,7 +6,7 @@ import { MeetingParticipant } from "../../../logic/Meet/Participant";
 import type { Person } from "../../../logic/Abstract/Person";
 import { Event } from "../../../logic/Calendar/Event";
 import { joinConferenceByURL } from "../../../logic/Meet/StartCall";
-import { isLicensed } from "../../../logic/util/LicenseClient";
+import { license } from "../../../logic/util/LicenseClient";
 import { appGlobal } from "../../../logic/app";
 import { LocalMediaDeviceStreams } from "../../../logic/Meet/LocalMediaDeviceStreams";
 import { gt } from "../../../l10n/l10n";
@@ -103,7 +103,7 @@ export async function createMustangMeetAccountIfPossible() {
   // For paying users only, create a free Meet account for demo purposes
   if (!appGlobal.meetAccounts.find(acc => acc.url == "https://meet.mustang.im") &&
       appGlobal.emailAccounts.hasItems &&
-      await isLicensed()) {
+      await license.isLicensed()) {
     let account = new LiveKitAccount();
     account.name = "Demo";
     account.url = "https://meet.mustang.im";

@@ -14,7 +14,7 @@ import type { ActiveSyncCalendar } from "../../Calendar/ActiveSync/ActiveSyncCal
 import { getOAuth2BuiltIn } from "../../Auth/OAuth2Util";
 import { request2WBXML, WBXML2JSON } from "./WBXML";
 import { ConnectError, LoginError } from "../../Abstract/Account";
-import { ensureLicensed } from "../../util/LicenseClient";
+import { license } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -73,7 +73,7 @@ export class ActiveSyncAccount extends ExchangeMailAccount {
 
   async login(interactive: boolean): Promise<void> {
     await this.loginRunOnce.runOnce(async () => {
-      await ensureLicensed();
+      await license.ensureLicensed();
       await super.login(interactive);
       if (this.authMethod == AuthMethod.OAuth2) {
         this.oAuth2 ??= getOAuth2BuiltIn(this);

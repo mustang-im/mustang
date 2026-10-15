@@ -1,7 +1,7 @@
 import { Account } from "../Abstract/Account";
 import type { VideoConfMeeting } from "./VideoConfMeeting";
 import { appGlobal } from "../app";
-import { ensureLicensed } from "../util/LicenseClient";
+import { license } from "../util/LicenseClient";
 import { AbstractFunction, type URLString } from "../util/util";
 
 export class MeetAccount extends Account {
@@ -23,7 +23,7 @@ export class MeetAccount extends Account {
   canCreateURL: boolean;
 
   async login(interactive: boolean) {
-    await ensureLicensed();
+    await license.ensureLicensed();
     await super.login(interactive);
   }
 

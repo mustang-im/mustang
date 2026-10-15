@@ -31,18 +31,21 @@
  */
 
 import { gLicense } from "./License";
-import { siteRoot } from "../build";
-import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "../../frontend/Util/date";
 import { appGlobal } from "../app";
-import { catchErrors, logError } from "../../frontend/Util/error";
+import { siteRoot } from "../build";
+import { Observable, notifyChangedProperty } from "./Observable";
+import { RunOnce } from "./flow/RunOnce";
+import { openExternalURL } from "./os-integration";
+import type { URLString } from "./util";
+import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "../../frontend/Util/date";
+import { logError } from "../../frontend/Util/error";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
-import { openExternalURL } from "./os-integration";
-import { sleep, type URLString } from "./util";
+import { Buffer } from "buffer";
 
 const kLicenseServerURL = `https://api.beonex.com/parula-license/`;
-// cat license.pem.pub, and append the part between "-----" after "base64,"
-const kPublicKey = `data:application/octet-stream;base64,MIIBI
+// cat license.pem.pub, the part between "-----"
+const kPublicKey = `MIIBI
 jANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxFMLzKJp3iEqjbnej/I8
 JB9pPvYqFqxwa9MZkvuHwpDLf00mKq86KGvxhbRiGz944NXk8Fb6jKbcnr85CWHy
 S/e4qc5MgfQMyJ51DkzTc5/tvEWzb8xjgbI3Qwr/emqmRgL3UtFSN+Za2Whwmp0I
@@ -51,59 +54,256 @@ gWuDyHfr2GRiHb8iRPQlxTPg3zkR3nDjSp9JH7kwWwmDBrV4oC8rOCdkCAYW2ScB
 y0sjmpvA6wc8/NnsJkZg9veeoCDmeC2qSWdZFon1SUHnGcUGVGvVJedhBblAgRjh
 fQIDAQAB`;
 
-export class Ticket {
-  /* The user currently has a valid license */
-  valid: boolean = false;
-  /** When this ticket expires */
-  expiresOn: Date = new Date();
-  /** Should re-fetch from server */
-  requiresRefresh: boolean = false;
+export class License extends Observable {
+  /** null = The user never had a license */
+  @notifyChangedProperty
+  expiresOn: Date | null = null;
+  @notifyChangedProperty
+  refreshOn: Date | null = null;
+  /** The user bought or renewed the license while the app was running */
+  @notifyChangedProperty
+  paidJustNow = false;
+  protected readonly fetchTicketOnce = new RunOnce<void>();
+  protected paymentPoller: ReturnType<typeof setInterval> | null = null;
+  protected trialRequested = false;
+  protected publicKey: Promise<CryptoKey> | null = null;
 
-  /** How much time is left until this ticket expires.
-   * Negative numbers show the time since it expired.
+  /** Negative numbers show the time since it expired.
    * @unit milliseconds */
   get expiresIn(): number {
-    return this.expiresOn.getTime() - Date.now();
+    return (this.expiresOn?.getTime() ?? 0) - Date.now();
   }
 
-  /** How many full days until the license expires.
-   * Negative numbers show the days since it expired.
-   * @unit days */
+  /** Full days until the license expires.
+   * Negative numbers show the days since it expired. */
   get daysLeft(): number {
     return Math.floor(this.expiresIn / k1DayMS);
   }
 
+  get valid(): boolean {
+    return this.expiresIn > 0;
+  }
+
   get isExpired(): boolean {
-    return this.valid && this.expiresIn < 0;
+    return !!this.expiresOn && !this.valid;
   }
 
   get isSoonExpiring(): boolean {
-    const kSoonExpiring = 2 * k1WeekMS; // 2 weeks
-    return this.valid && !this.isExpired && this.expiresIn < kSoonExpiring;
+    return this.valid && this.expiresIn < 2 * k1WeekMS;
   }
 
   get hasRecentlyExpired(): boolean {
-    const kRecentlyExpired = k1MonthMS; // 1 month
-    return this.valid && this.isExpired && this.expiresIn > -kRecentlyExpired;
+    return this.isExpired && this.expiresIn > -k1MonthMS;
+  }
+
+  get requiresRefresh(): boolean {
+    return this.valid && this.refreshOn?.getTime() < Date.now();
+  }
+
+  /**
+   * Called for every server call, so it must be fast.
+   *
+   * @throws NoValidLicense
+   */
+  async ensureLicensed() {
+    if (gLicense.license?.valid && !this.requiresRefresh) {
+      return;
+    }
+    if (this.isExpired && !this.hasRecentlyExpired) {
+      throw new NoValidLicense(); // We lost that user. Stop polling.
+    }
+    await this.fetchTicket();
+    if (!this.valid) {
+      throw new NoValidLicense();
+    }
+  }
+
+  async isLicensed(): Promise<boolean> {
+    try {
+      await this.ensureLicensed();
+      return true;
+    } catch (ex) {
+      return false;
+    }
+  }
+
+  async startup() {
+    gLicense.license = this; // Lets the Open-Source parts check whether this is a paid version
+    await this.readSavedTicket();
+    appGlobal.emailAccounts.subscribe(accounts => {
+      if (accounts.hasItems) {
+        this.poll().catch(logError);
+      }
+    });
+    setInterval(() => this.poll().catch(logError), k1DayMS);
+  }
+
+  protected async poll() {
+    if (this.isSoonExpiring || this.hasRecentlyExpired || this.requiresRefresh) {
+      await this.fetchTicket();
+    }
+  }
+
+  /** Downloads a new ticket from the server, or starts a trial */
+  async fetchTicket() {
+    await this.fetchTicketOnce.runOnce(async () => {
+      let response = await this.callServer("ticket");
+      if (response.ok) {
+        await this.saveTicket(await response.json());
+      } else if (response.status == 410) { // Gone
+        // The server explicitly deletes the license, e.g. after a refund.
+        // A specific error code, so that a server bug doesn't purge it.
+        await this.saveTicket(null);
+      }
+      if (!this.valid) {
+        await this.startTrial();
+      }
+    });
+  }
+
+  protected async startTrial() {
+    if (this.trialRequested || this.savedTicket()) {
+      return;
+    }
+    this.trialRequested = true;
+    let response = await this.callServer("start-trial");
+    if (!response.ok) {
+      return;
+    }
+    await this.saveTicket(await response.json());
+
+    let isFirstRun = !localStorage.getItem("firstRun");
+    localStorage.setItem("firstRun", new Date().toISOString());
+    if (isFirstRun) {
+      this.openPurchasePage("welcome").catch(logError);
+    }
+  }
+
+  protected async callServer(action: "ticket" | "start-trial"): Promise<Response> {
+    let emailAddresses = new SetColl<string>();
+    let name: string | null = null;
+    for (let account of appGlobal.emailAccounts) {
+      for (let identity of account.identities) {
+        emailAddresses.add(identity.isCatchAll ? identity.emailAddress.replace("*", "any") : identity.emailAddress);
+        name ??= identity.realname;
+      }
+    }
+    if (emailAddresses.isEmpty) {
+      throw new AccountMissingError();
+    }
+    let url = kLicenseServerURL + action + "/" + emailAddresses.first + "?" +
+      new URLSearchParams({
+        name: name ?? "",
+        aliases: emailAddresses.contents.slice(1).join(","),
+        tbversion: "100",
+      });
+    return await fetch(url, { cache: "reload" });
+  }
+
+  /** Manually add a ticket, e.g. from an email */
+  async addTicket(signedTicketJSON: string) {
+    await this.saveTicket(JSON.parse(signedTicketJSON));
+    await this.ensureLicensed();
+  }
+
+  /** @throws if the signature is wrong */
+  protected async saveTicket(signedTicket: SignedTicket | null) {
+    let ticket = signedTicket ? await this.verifySignature(signedTicket) : null;
+    localStorage.setItem("license", signedTicket ? JSON.stringify(signedTicket) : "");
+    this.fromTicket(ticket);
+  }
+
+  protected async readSavedTicket() {
+    let signedTicket = this.savedTicket();
+    try {
+      this.fromTicket(signedTicket ? await this.verifySignature(signedTicket) : null);
+    } catch (ex) {
+      ex.parameters = signedTicket;
+      logError(ex);
+      await this.saveTicket(null);
+    }
+  }
+
+  savedTicket(): SignedTicket | null {
+    let signedTicketJSON = localStorage.getItem("license");
+    return signedTicketJSON ? JSON.parse(signedTicketJSON) : null;
+  }
+
+  protected fromTicket(ticket: Ticket | null) {
+    this.expiresOn = ticket ? new Date(ticket.end) : null;
+    this.refreshOn = ticket ? new Date(ticket.refresh) : null;
+  }
+
+  protected async verifySignature(signedTicket: SignedTicket): Promise<Ticket> {
+    if (typeof signedTicket.json != "string" || typeof signedTicket.signature != "string") {
+      throw new LicenseError("Required properties not found on ticket");
+    }
+    let algorithm = {
+      name: "RSA-PSS",
+      modulusLength: 1024,
+      publicExponent: Uint8Array.from([1, 0, 1]),
+      hash: { name: "SHA-256" },
+      saltLength: 222,
+    };
+    this.publicKey ??= crypto.subtle.importKey("spki", Buffer.from(kPublicKey, "base64"), algorithm, false, ["verify"]);
+    let signature = Buffer.from(signedTicket.signature, "hex");
+    if (!await crypto.subtle.verify(algorithm, await this.publicKey, signature, new TextEncoder().encode(signedTicket.json))) {
+      throw new LicenseError("Ticket signature verification failed");
+    }
+    return JSON.parse(signedTicket.json);
+  }
+
+  /** Opens our website in the browser, and waits for the purchase */
+  async openPurchasePage(mode: "welcome" | "purchase" = "purchase") {
+    await openExternalURL(License.purchasePageURL(mode));
+    this.waitForPayment();
+  }
+
+  static purchasePageURL(mode: "welcome" | "purchase" | "inline-payment" = "purchase"): URLString {
+    let params: Record<string, string> = {
+      lang: getUILocale(),
+      goal: mode,
+    };
+    let identity = appGlobal.emailAccounts.first?.identities.first;
+    if (identity) {
+      params.email = identity.emailAddress;
+      params.name = identity.realname;
+    }
+    return siteRoot + "?" + new URLSearchParams(params) + "#purchase";
+  }
+
+  /** Polls the server for the new license, while the user is paying */
+  waitForPayment() {
+    this.stopWaitingForPayment();
+    let oldExpiry = this.expiresOn?.getTime() ?? 0;
+    let giveUp = Date.now() + 30 * k1MinuteMS;
+    this.paymentPoller = setInterval(async () => {
+      try {
+        await this.fetchTicket();
+        if (this.expiresOn?.getTime() > oldExpiry) {
+          this.paidJustNow = true;
+          this.stopWaitingForPayment();
+        }
+      } catch (ex) {
+        logError(ex);
+      }
+      if (Date.now() > giveUp) {
+        this.stopWaitingForPayment();
+      }
+    }, 10 * 1000);
+  }
+
+  stopWaitingForPayment() {
+    clearInterval(this.paymentPoller);
+    this.paymentPoller = null;
   }
 }
 
-export class BadTicket extends Ticket {
-  constructor() {
-    super();
-    this.valid = false;
-  }
-}
+export const license = new License();
 
-interface TicketFromServer {
-  end: string;
-  refresh: string;
-}
+license.startup() // Hack, to avoid that Open-Source code depends on this file
+  .catch(logError);
 
-interface SignedTicketFromServer {
-  json: TicketFromServer;
-  signature: string;
-}
 
 export class LicenseError extends Error {
   doNotLog: boolean = true;
@@ -115,349 +315,13 @@ export class AccountMissingError extends LicenseError {
   message = gt`No account set up yet`;
 }
 
-/**
- * Downloads a new license ticket if the poll interval has elasped.
- *
- * This is the public function that you should call from outside this module.
- * This is called for every server call, so it should be efficient.
- *
- * @throws If there is no valid license
- */
-export async function ensureLicensed() {
-  let ticket = gLicense.license as Ticket;
-  if (ticket?.valid && !ticket.requiresRefresh) {
-    return;
-  }
-  ticket = await checkSavedLicense();
-  //console.log("saved license", ticket);
-  /* `gLicense` allows the Open-Source parts - e.g. email signatures - to check whether
-   * this is a paid version.
-   * Also a cache, to avoid re-validating the ticket cryptographically for every server call. */
-  gLicense.license = ticket;
-  if (ticket?.valid && !ticket.requiresRefresh) {
-    return;
-  }
-  if (ticket.isExpired && !ticket.hasRecentlyExpired) {
-    //console.log("we lost that user on", ticket.expiresOn);
-    // We lost that user. Stop polling.
-    throw new NoValidLicense();
-  }
-  ticket = await fetchTicket();
-  //console.log("fetched license", ticket);
-  if (!ticket?.valid) {
-    //console.log("fetched license not valid", ticket.expiresOn);
-    throw new NoValidLicense();
-  }
+interface SignedTicket {
+  json: string;
+  /** Hex */
+  signature: string;
 }
 
-export async function isLicensed(): Promise<boolean> {
-  try {
-    await ensureLicensed();
-    return true;
-  } catch (ex) {
-    return false;
-  }
+interface Ticket {
+  end: string;
+  refresh: string;
 }
-
-/** Whether we started the poller that refreshes the license */
-let gPolling: boolean = false;
-
-/**
- * Polls for a new ticket, in case the ticket is expired or expiring soon,
- * and on startup
- */
-async function nextPoll() {
-  if (gPolling) {
-    return;
-  }
-  gPolling = true;
-  try {
-    let ticket = await checkSavedLicense();
-    if (ticket.isSoonExpiring || ticket.hasRecentlyExpired || ticket.requiresRefresh) {
-      await fetchTicket();
-    }
-    gLicense.license = ticket;
-  } catch (ex) {
-    logError(ex);
-  } finally {
-    gPolling = false;
-  }
-}
-
-export async function fetchLicenseFromServer(): Promise<Ticket> {
-  return await fetchTicket();
-}
-
-/** A promise that resolves when a ticket refresh finishes */
-let gFetchingTicket: Promise<Ticket> | null = null;
-
-/**
- * Downloads a new license ticket, but avoids downloading twice in parallel.
- */
-async function fetchTicket(): Promise<Ticket> {
-  if (!gFetchingTicket) {
-    gFetchingTicket = fetchTicketUnqueued();
-  }
-  // TODO check for races
-  try {
-    return await gFetchingTicket;
-  } finally {
-    gFetchingTicket = null; // also after an error, otherwise all later fetches fail with it
-  }
-}
-
-/**
- * Downloads a new license ticket.
- */
-async function fetchTicketUnqueued(): Promise<Ticket> {
-  let { emailAddresses, name } = getUserEMailAddresses(); // can throw
-  let url = kLicenseServerURL + "ticket/" + emailAddresses.first + "?" +
-    new URLSearchParams({
-      name: name ?? "",
-      aliases: emailAddresses.contents.slice(1).join(","),
-      tbversion: "100",
-    });
-  let response = await fetch(url, { cache: "reload" });
-  if (response.ok) {
-    let signedTicket = await response.json();
-    saveTicket(signedTicket);
-  } else if (response.status == 410) { // Gone
-    // Server explicitly deletes the license/ticket, e.g. after a refund.
-    // (We use a specific error code for this, because we don't want
-    // this purge to happen accidentally, even after a server bug.)
-    saveTicket(null);
-  }
-  let ticket = await checkSavedLicense();
-  if (!ticket?.valid) {
-    await startTrial(emailAddresses.contents, name);
-    ticket = await checkSavedLicense();
-  }
-  return ticket;
-}
-
-function getUserEMailAddresses(): { emailAddresses: SetColl<string>, name: string } {
-  let name: string | null = null;
-  let emailAddresses = new SetColl<string>();
-  console.log("license client: user email addresses");
-  for (let account of appGlobal.emailAccounts) {
-    console.log("  account", account.name, account.emailAddress);
-    for (let identity of account.identities) {
-      console.log("    identity", identity.emailAddress);
-      let emailAddress = identity.emailAddress;
-      if (identity.isCatchAll) {
-        emailAddress = emailAddress.replace("*", "any");
-      }
-      emailAddresses.add(emailAddress);
-      name ??= identity.realname;
-    }
-  }
-  console.log("user email addresses", emailAddresses.contents);
-  if (emailAddresses.isEmpty) {
-    throw new AccountMissingError();
-  }
-  return { emailAddresses, name };
-}
-
-/** Whether this user is known to have had a trial license */
-let gHadTrial = false;
-
-async function startTrial(emailAddresses: string[], name: string) {
-  if (gHadTrial) {
-    return;
-  }
-  gHadTrial = true; // avoid firing several server calls in parallel
-  if (getSavedTicket()) {
-    // already had a trial
-    return;
-  }
-
-  let url = kLicenseServerURL + "start-trial/" + emailAddresses[0] + "?" +
-    new URLSearchParams({
-      name: name,
-      aliases: emailAddresses.slice(1).join(","),
-      tbversion: "100",
-    });
-  let response = await fetch(url);
-  if (!response.ok) {
-    return;
-  }
-  let signedTicket = await response.json();
-  saveTicket(signedTicket);
-
-  if (isFirstRun()) {
-    openPurchasePage(null, "welcome")
-      .catch(logError);
-  }
-}
-
-/**
- * Manually add a ticket from an email.
- */
-export async function addTicketFromString(signedTicketStr: string) {
-  let signedTicket = JSON.parse(signedTicketStr);
-  await verifyTicketSignature(signedTicket);
-  saveTicket(signedTicket);
-  await ensureLicensed();
-}
-
-/**
- * Checks the saved ticket to see whether it is valid.
- */
-export async function checkSavedLicense(): Promise<Ticket> {
-  let signedTicket = getSavedTicket();
-  if (!signedTicket) {
-    return new BadTicket();
-  }
-  let ticketJSON: TicketFromServer;
-  try {
-    ticketJSON = await verifyTicketSignature(signedTicket);
-  } catch (ex) {
-    ex.parameters = signedTicket;
-    logError(ex);
-    saveTicket(null);
-    return new BadTicket();
-  }
-  let ticket = new Ticket();
-  let end = Date.parse(ticketJSON.end);
-  let refresh = Date.parse(ticketJSON.refresh);
-  ticket.expiresOn = new Date(end);
-  ticket.valid = !ticket.isExpired;
-  ticket.requiresRefresh = ticket.valid && refresh < Date.now(); // ticket expired. poll on every call.
-  return ticket;
-}
-
-/** The crypto key for verifying ticket signatures */
-let gKeyPromise: Promise<CryptoKey> | null = null;
-
-/**
- * Verify a ticket.
- *
- * @param signedTicket  The JSON encoded ticket to verify
- * @returns       The decoded JSON
- * @throws        If the ticket is invalid
- * */
-async function verifyTicketSignature(signedTicket: SignedTicketFromServer): Promise<TicketFromServer> {
-  if (typeof signedTicket.json != "string" || typeof signedTicket.signature != "string") {
-    throw new LicenseError("Required properties not found on ticket");
-  }
-  let algorithm = {
-    name: "RSA-PSS",
-    modulusLength: 1024,
-    publicExponent: Uint8Array.from([1, 0, 1]),
-    hash: { name: "SHA-256" },
-    saltLength: 222,
-  };
-  if (!gKeyPromise) {
-    let response = await fetch(kPublicKey);
-    let keyArrayBuffer = await response.arrayBuffer();
-    gKeyPromise = crypto.subtle.importKey("spki", keyArrayBuffer, algorithm, false, ["verify"]);
-  }
-  let key = await gKeyPromise;
-  let signatureArrayBuffer = new Uint8Array(signedTicket.signature.length / 2);
-  for (let i = 0; i < signatureArrayBuffer.length; i++) {
-    signatureArrayBuffer[i] = parseInt(signedTicket.signature.substring(i * 2, i * 2 + 2), 16);
-  }
-  if (!await crypto.subtle.verify(algorithm, key, signatureArrayBuffer, (new TextEncoder).encode(signedTicket.json))) {
-    throw new LicenseError("Ticket signature verification failed");
-  }
-  return JSON.parse(signedTicket.json);
-}
-
-/** Read ticket from local settings */
-export function getSavedTicket(): SignedTicketFromServer | null {
-  let signedTicketStr = localStorage.getItem("license");
-  if (!signedTicketStr) {
-    return null;
-  }
-  return JSON.parse(signedTicketStr);
-}
-
-/** Save ticket from local settings */
-function saveTicket(ticket: SignedTicketFromServer | null) {
-  localStorage.setItem("license", ticket ? JSON.stringify(ticket) : "");
-}
-
-/** This is the first time ever that the user starts the app
- * (or we run this function */
-function isFirstRun(): boolean {
-  let isFirstRun = !localStorage.getItem("firstRun");
-  localStorage.setItem("firstRun", new Date().toISOString());
-  return isFirstRun;
-}
-
-/** Called from [Bug] button in license bar and in settings page,
- * and on first run */
-export async function openPurchasePage(paidCallback?: (license: Ticket) => void, mode: "welcome" | "purchase" = "purchase") {
-  let pageURL = purchagePageURL(mode);
-  console.log("Opening payment page in browser", pageURL);
-  await openExternalURL(pageURL);
-  startFastPolling(paidCallback);
-}
-
-const kGetLicenseURL = siteRoot;
-
-export function purchagePageURL(mode: "welcome" | "purchase" | "inline-payment" = "purchase"): URLString {
-  let params = {
-    lang: getUILocale(),
-    goal: mode,
-  } as any;
-  let primaryIdentity = appGlobal.emailAccounts.first?.identities.first;
-  if (primaryIdentity) {
-    params.email = primaryIdentity?.emailAddress;
-    params.name = primaryIdentity?.realname;
-  }
-  return kGetLicenseURL + "?" + new URLSearchParams(params) + "#purchase";
-}
-
-let purchasePoller: NodeJS.Timeout | null = null;
-
-export function startFastPolling(paidCallback?: (license: Ticket) => void) {
-  /** How often to poll after the user clicked [Buy] */
-  const kPurchasePollInterval = 10 * 1000; // 10 seconds
-  /** For how long to poll after the user clicked [Buy] */
-  const kPurchasePollFor = 30 * k1MinuteMS; // 30 minutes
-
-  stopFastPolling();
-  purchasePoller = setInterval(async () => {
-    try {
-      let ticket = await fetchTicket();
-      if (ticket.valid && paidCallback) {
-        stopFastPolling();
-        paidCallback(ticket);
-        paidCallback = null;
-      }
-    } catch (ex) {
-      logError(ex);
-    }
-  }, kPurchasePollInterval);
-
-  setTimeout(stopFastPolling, kPurchasePollFor);
-}
-
-export function stopFastPolling() {
-  if (purchasePoller) {
-    clearInterval(purchasePoller);
-  }
-  purchasePoller = null;
-}
-
-async function startup() {
-  if (appGlobal.emailAccounts.isEmpty) {
-    await sleep(2); // wait for accounts to be loaded
-  }
-  if (appGlobal.emailAccounts.isEmpty) {
-    await sleep(10);
-  }
-
-  appGlobal.emailAccounts.subscribe(() => {
-    // Clear license cache when accounts are added or removed, e.g. after setup
-    gLicense.license = null;
-  });
-
-  nextPoll()
-    .catch(logError);
-  const kSoonExpiringPollInterval = k1DayMS; // 1 day
-  setInterval(() => catchErrors(nextPoll, logError), kSoonExpiringPollInterval);
-}
-startup() // Hack, to avoid that Open-Source code depends on this file
-  .catch(logError);

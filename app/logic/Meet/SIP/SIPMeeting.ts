@@ -4,7 +4,7 @@ import { MeetingState } from "../VideoConfMeeting";
 import { MeetingParticipant, ParticipantRole } from "../Participant";
 import { VideoStream } from "../VideoStream";
 import { LocalMediaDeviceStreams } from "../LocalMediaDeviceStreams";
-import { ensureLicensed } from "../../util/LicenseClient";
+import { license } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { getDateTimeLocale, gt } from "../../../l10n/l10n";
@@ -45,7 +45,7 @@ export class SIPMeeting extends PhoneCall {
    * URL form: e.g. `tel:+49-611-000000`
    */
   async join(url: URLString) {
-    await ensureLicensed();
+    await license.ensureLicensed();
     await this.login(true);
     let urlParsed = new URL(url);
     assert(urlParsed.protocol == "tel:", gt`Only tel: URLs are supported`);
