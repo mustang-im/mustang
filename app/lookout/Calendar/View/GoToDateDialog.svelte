@@ -7,11 +7,11 @@
   <vbox class="fields">
     <label class="field">
       <span class="label">{$t`Date`}</span>
-      <input type="date" required bind:value={dateValue} />
+      <input type="date" class="lo-text-field" required bind:value={dateValue} />
     </label>
     <label class="field">
       <span class="label">{$t`Show in`}</span>
-      <select bind:value={view}>
+      <select class="lo-text-field" bind:value={view}>
         <option value="day">{$t`Day Calendar`}</option>
         <option value="workweek">{$t`Work Week Calendar`}</option>
         <option value="week">{$t`Week Calendar`}</option>
@@ -59,15 +59,5 @@
   .label {
     font-size: var(--lo-font-size-small);
     color: var(--lo-fg-secondary);
-  }
-  input,
-  select {
-    height: 32px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
 </style>
