@@ -19,7 +19,7 @@
     {/if}
   </hbox>
   <span class="label">
-    <span class="text">{labelStart}{#if hasMenu}<span class="last-word">{labelEnd}<span class="chevron classic-chevron"><ChevronDownIcon size="12" /></span></span>{/if}</span>
+    <span class="text">{labelStart}{#if hasMenu}<span class="last-word">{labelEnd}{#if isOneWord}<span class="classic-line-break"><br /></span>{/if}<span class="chevron classic-chevron"><ChevronDownIcon size="12" /></span></span>{/if}</span>
     {#if hasMenu}
       <span class="chevron simplified-chevron"><ChevronDownIcon size="12" /></span>
     {/if}
@@ -50,10 +50,13 @@
 
   getContext<RibbonGroupModel>(RibbonGroupModel.contextKey)?.offerIcon(icon);
 
-  // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box
-  $: lastSpace = hasMenu ? label?.lastIndexOf(" ") ?? -1 : -1;
-  $: labelStart = hasMenu ? label?.slice(0, lastSpace + 1) : label;
-  $: labelEnd = hasMenu ? label?.slice(lastSpace + 1) : "";
+  // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.
+  // Chrome also never breaks after a slash, so "Send/Receive" gets a zero-width space there.
+  $: wrappingLabel = label?.replace(/\/(?=\S)/g, "/\u200B") ?? "";
+  $: lastSpace = hasMenu ? wrappingLabel.lastIndexOf(" ") : -1;
+  $: isOneWord = hasMenu && lastSpace < 0;
+  $: labelStart = hasMenu ? wrappingLabel.slice(0, lastSpace + 1) : wrappingLabel;
+  $: labelEnd = hasMenu ? wrappingLabel.slice(lastSpace + 1) : "";
 
   /* <copied from="../../../frontend/Shared/Button.svelte"> */
   $: tooltipCalc = typeof(disabled) == "string"
@@ -184,7 +187,7 @@
   :global(.ribbon.simplified) .ribbon-button {
     flex-direction: row;
     justify-content: flex-start;
-    padding: 0 6px;
+    padding: 0 8px;
     font-size: 13px;
     text-align: start;
   }
@@ -192,21 +195,35 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 0 0 auto;
     margin-block-start: 0;
     margin-inline-start: 6px;
     white-space: nowrap;
   }
-  :global(.ribbon.simplified) .text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  :global(.ribbon.simplified) .classic-chevron {
+  :global(.ribbon.simplified) .classic-chevron,
+  :global(.ribbon.simplified) .classic-line-break {
     display: none;
   }
   :global(.ribbon.simplified) .simplified-chevron {
     display: inline-flex;
     margin-inline-start: 2px;
+  }
+  :global(.ribbon.simplified .ribbon-group.compact) .ribbon-button,
+  :global(.ribbon.simplified) .ribbon-button:global(.group-collapsed-button) {
+    justify-content: center;
+    width: var(--lo-ribbon-icon-only-width);
+    padding: 0;
+  }
+  :global(.ribbon.simplified .ribbon-group.compact) .ribbon-button.has-menu,
+  :global(.ribbon.simplified) .ribbon-button:global(.group-collapsed-button) {
+    width: var(--lo-ribbon-icon-only-menu-width);
+  }
+  :global(.ribbon.simplified .ribbon-group.compact) .text,
+  :global(.ribbon.simplified) :global(.group-collapsed-button) .text {
+    display: none;
+  }
+  :global(.ribbon.simplified .ribbon-group.compact) .label,
+  :global(.ribbon.simplified) :global(.group-collapsed-button) .label {
+    margin-inline-start: 0;
   }
 </style>

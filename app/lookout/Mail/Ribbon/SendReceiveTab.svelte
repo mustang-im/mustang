@@ -1,6 +1,6 @@
 <RibbonTab label={$t`Send / Receive`}>
   <RibbonGroup label={$t`Send & Receive`}>
-    <RibbonButton label={$t`Send/ Receive All Folders`} icon={SendReceiveIcon}
+    <RibbonButton label={$t`Send/Receive All Folders`} icon={SendReceiveIcon}
       onClick={() => MessageActions.sendReceiveAll()}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
       shortCutInfo="F9" />

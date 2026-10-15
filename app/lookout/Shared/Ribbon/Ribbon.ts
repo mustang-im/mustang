@@ -88,18 +88,29 @@ export class RibbonTabModel {
     if (!this.availableWidth) {
       return;
     }
-    let totalWidth = this.groups.reduce((sum, group) => sum + group.expandedWidth, 0);
+    let widths = this.groups.map(group => group.expandedWidth);
+    let totalWidth = widths.reduce((sum, width) => sum + width, 0);
+    let compact = this.groups.map(() => false);
     let collapse = this.groups.map(() => false);
     for (let i = this.groups.length - 1; i >= 0 && totalWidth > this.availableWidth; i--) {
-      let group = this.groups[i];
-      let saving = group.expandedWidth - group.collapsedWidth;
+      let saving = widths[i] - this.groups[i].compactWidth;
       if (saving <= 0) {
         continue;
       }
       totalWidth -= saving;
+      widths[i] = this.groups[i].compactWidth;
+      compact[i] = true;
+    }
+    for (let i = this.groups.length - 1; i >= 0 && totalWidth > this.availableWidth; i--) {
+      let saving = widths[i] - this.groups[i].collapsedWidth;
+      if (saving <= 0) {
+        continue;
+      }
+      totalWidth -= saving;
+      compact[i] = false;
       collapse[i] = true;
     }
-    this.groups.forEach((group, i) => group.setCollapsed(collapse[i]));
+    this.groups.forEach((group, i) => group.setFit(compact[i], collapse[i]));
   }
 }
 
@@ -107,8 +118,10 @@ export class RibbonGroupModel {
   static readonly contextKey = "lookout-ribbon-group";
   label: string;
   expandedWidth = 0;
+  compactWidth = 0;
   collapsedWidth = 0;
   firstIcon: ConstructorOfATypedSvelteComponent = null;
+  readonly compact: Writable<boolean> = writable(false);
   readonly collapsed: Writable<boolean> = writable(false);
 
   constructor(label: string) {
@@ -121,12 +134,16 @@ export class RibbonGroupModel {
     }
   }
 
-  setWidths(expandedWidth: number, collapsedWidth: number) {
+  setWidths(expandedWidth: number, collapsedWidth: number, compactWidth = expandedWidth) {
     this.expandedWidth = expandedWidth;
     this.collapsedWidth = collapsedWidth;
+    this.compactWidth = compactWidth;
   }
 
-  setCollapsed(collapsed: boolean) {
+  setFit(compact: boolean, collapsed: boolean) {
+    if (get(this.compact) != compact) {
+      this.compact.set(compact);
+    }
     if (get(this.collapsed) != collapsed) {
       this.collapsed.set(collapsed);
     }
