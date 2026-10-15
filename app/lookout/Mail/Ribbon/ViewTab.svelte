@@ -99,7 +99,7 @@
   import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
   import OptionsIcon from "lucide-svelte/icons/settings-2";
   import CheckIcon from "lucide-svelte/icons/check";
-  import BlankIcon from "../Menu/BlankIcon.svelte";
+  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let onCollapseGroup: (collapsed: boolean) => void;

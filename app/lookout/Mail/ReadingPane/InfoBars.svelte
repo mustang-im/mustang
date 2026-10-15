@@ -2,7 +2,7 @@
   <hbox class="info-bar">
     <DraftIcon size={16} />
     <span>{$t`This message hasn't been sent.`}</span>
-    <button class="link" on:click={() => MessageActions.openDraft(message)}>{$t`Edit`}</button>
+    <button class="link" on:click={() => catchErrors(() => MessageActions.openDraft(message))}>{$t`Edit`}</button>
   </hbox>
 {/if}
 {#if isJunk}

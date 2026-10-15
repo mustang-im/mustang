@@ -253,7 +253,7 @@ export class MessageActions {
   }
 
   static async print(message: EMail) {
-    assert(MessageActions.printer, "Printing is not available here");
+    assert(MessageActions.printer, gt`Printing is not available here`);
     await MessageActions.printer.print(message);
   }
 

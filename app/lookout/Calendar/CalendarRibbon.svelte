@@ -170,8 +170,8 @@
   import FolderPaneIcon from "lucide-svelte/icons/panel-left";
   import WeekNumbersIcon from "lucide-svelte/icons/hash";
   import DeclinedIcon from "lucide-svelte/icons/calendar-x-2";
-  import CheckIcon from "lucide-svelte/icons/circle-dot";
-  import BlankIcon from "lucide-svelte/icons/circle";
+  import CheckIcon from "lucide-svelte/icons/check";
+  import BlankIcon from "../Shared/Menu/BlankIcon.svelte";
   import { t } from "../../l10n/l10n";
 
   export let view: CalendarViewType;
