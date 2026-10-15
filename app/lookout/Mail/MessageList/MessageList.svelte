@@ -296,7 +296,7 @@
       return;
     } else if (event.key == "Enter" && current) {
       event.preventDefault();
-      MessageActions.openDraft(current);
+      catchErrors(() => MessageActions.openDraft(current));
       return;
     }
     if (newPos == null) {

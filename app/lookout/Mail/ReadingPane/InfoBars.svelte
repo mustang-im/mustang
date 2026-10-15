@@ -39,7 +39,6 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MessageActions } from "../MessageActions";
   import { MailView } from "../MailView";
@@ -56,8 +55,8 @@
   export let message: EMail;
 
   const contentRendering = MailView.contentRendering;
-  $: isDraft = $message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts;
-  $: isJunk = $message.isSpam || message.folder?.specialFolder == SpecialFolder.Spam;
+  $: isDraft = $message && MessageActions.isDraft(message);
+  $: isJunk = $message && MessageActions.isJunk([message]);
 
   function onDownloadPictures() {
     MailView.contentRendering.value = DisplayMode.HTMLWithExternal;
