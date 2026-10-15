@@ -39,10 +39,10 @@
     background-color: var(--lo-hover-bg);
   }
   .calendar-item.selected {
-    background-color: var(--lo-selected-bg);
+    background-color: color-mix(in srgb, var(--calendar-color) 22%, var(--lo-window-bg));
   }
   .calendar-item.selected:hover {
-    background-color: var(--lo-selected-hover-bg);
+    background-color: color-mix(in srgb, var(--calendar-color) 30%, var(--lo-window-bg));
   }
   .calendar-item.selected::before {
     content: "";
@@ -52,7 +52,7 @@
     bottom: 8px;
     width: 3px;
     border-radius: 2px;
-    background-color: var(--lo-accent);
+    background-color: var(--calendar-color);
   }
   .checkbox {
     position: relative;
