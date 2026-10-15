@@ -3,7 +3,8 @@
     <h2 class="subject" title={$message.subject}>{$message.subject || $t`(no subject)`}</h2>
   </hbox>
   <hbox class="sender-row">
-    <SenderPicture person={$message.from} size={40} />
+    <PersonCircle name={personDisplayName($message.from)} picture={$message.from?.findPerson()?.picture}
+      colorKey={$message.from?.emailAddress} size={40} title={personDisplayName($message.from)} />
     <vbox flex class="sender-info">
       <hbox class="from">
         <hbox class="sender-name">
@@ -118,11 +119,11 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
+  import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "../MessageList/MessageDates";
   import { MailView } from "../MailView";
-  import SenderPicture from "./SenderPicture.svelte";
+  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import SubMenuItem from "../Menu/SubMenuItem.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import Recipient from "../../../frontend/Mail/Message/Recipient.svelte";
