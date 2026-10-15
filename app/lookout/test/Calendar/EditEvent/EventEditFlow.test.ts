@@ -106,7 +106,57 @@ test("A changed series end allows to save the series, from an occurrence", async
   expect(flow.canSaveSeries).toBe(true);
   expect(flow.seriesChoices()).toEqual(["following", "series"]);
   await flow.saveWith("series");
-  expect(master.recurrenceRule.count).toBe(4);
+  expect(master.recurrenceRule.count).toBe(5);
+  expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
+});
+
+async function savedWeeklySeries(): Promise<Event> {
+  let calendar = newCalendar();
+  let master = newEvent(calendar); // Thursday
+  master.location = "Room 1";
+  master.newRecurrenceRule(Frequency.Weekly, 1, 0, [1, 4]);
+  calendar.events.add(master);
+  await master.save();
+  return master;
+}
+
+test("A changed title for the entire series, from an occurrence, keeps the series start and its times", async () => {
+  let master = await savedWeeklySeries();
+  let occurrence = master.instances.get(3);
+  occurrence.startEditing();
+  occurrence.title = "Weekly planning";
+  let confirm = vi.fn(() => true);
+  vi.stubGlobal("confirm", confirm);
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  vi.stubGlobal("confirm", () => true);
+  expect(confirm).not.toHaveBeenCalled();
+  expect(master.title).toBe("Weekly planning");
+  expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
+  expect(master.recurrenceRule.seriesStartTime).toEqual(new Date(2026, 9, 15, 10, 0));
+  expect(master.recurrenceRule.weekdays.sort()).toEqual([1, 4]);
+});
+
+test("A later time and another day of an occurrence, for the entire series, move all occurrences", async () => {
+  let master = await savedWeeklySeries();
+  let occurrence = master.instances.contents.find(instance => instance.startTime.getDay() == 4 && instance.startTime > master.startTime);
+  occurrence.startEditing();
+  let moved = new Date(occurrence.startTime);
+  moved.setDate(moved.getDate() + 1);
+  moved.setHours(14, 0);
+  occurrence.startTime = moved;
+  occurrence.endTime = new Date(moved.getTime() + 60 * 60000);
+  occurrence.alarm = new Date(moved.getTime() - 15 * 60000);
+  await new EventEditFlow(occurrence, () => {}).saveWith("series");
+  expect(master.startTime).toEqual(new Date(2026, 9, 16, 14, 0));
+  expect(master.endTime).toEqual(new Date(2026, 9, 16, 15, 0));
+  expect(master.alarm).toEqual(new Date(2026, 9, 16, 13, 45));
+  expect(master.location).toBe("Room 1");
+  expect(master.recurrenceRule.weekdays.sort()).toEqual([2, 5]);
+});
+
+test("Days between dates, also across a change to daylight saving time", () => {
+  expect(EventEditFlow.daysBetween(new Date(2026, 2, 28, 23, 0), new Date(2026, 2, 30, 1, 0))).toBe(2);
+  expect(EventEditFlow.daysBetween(new Date(2026, 9, 16), new Date(2026, 9, 15))).toBe(-1);
 });
 
 test("Removing the recurrence makes the series single again", () => {

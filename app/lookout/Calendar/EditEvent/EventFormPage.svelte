@@ -154,7 +154,7 @@
     }
     if (flow.needsSeriesChoice) {
       seriesChoice = {
-        title: flow.willSend ? gt`Send Update` : gt`Save`,
+        title: flow.isMeeting ? gt`Recurring Meeting` : gt`Recurring Appointment`,
         okLabel: flow.willSend ? gt`Send` : gt`Save`,
         choices: flow.seriesChoices(),
         onChoose: choice => flow.saveWith(choice),

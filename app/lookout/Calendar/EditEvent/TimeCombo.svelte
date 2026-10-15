@@ -75,7 +75,10 @@
     isOpen = !isOpen;
     if (isOpen) {
       await tick();
-      listEl?.querySelector(".selected")?.scrollIntoView({ block: "center" });
+      let selected = listEl?.querySelector<HTMLElement>(".selected");
+      if (selected) {
+        listEl.scrollTop = selected.offsetTop - listEl.clientHeight / 2 + selected.offsetHeight / 2;
+      }
     }
   }
 
@@ -161,6 +164,7 @@
     box-shadow: var(--lo-shadow-popup);
   }
   .option {
+    flex-shrink: 0;
     display: flex;
     gap: 6px;
     align-items: center;

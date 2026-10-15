@@ -192,7 +192,7 @@ test("Remove the recurrence", () => {
   expect(event.recurrenceCase).toBe(RecurrenceCase.Normal);
 });
 
-test("An occurrence changes the recurrence of its series, starting at the occurrence", () => {
+test("An occurrence changes the recurrence of its series, which keeps its start", () => {
   let event = newEvent();
   RecurrencePattern.fromEvent(event).applyTo(event);
   event.calendar.events.add(event);
@@ -203,7 +203,7 @@ test("An occurrence changes the recurrence of its series, starting at the occurr
   pattern.frequency = Frequency.Daily;
   pattern.applyTo(occurrence);
   expect(event.recurrenceRule.frequency).toBe(Frequency.Daily);
-  expect(event.startTime).toEqual(occurrence.startTime);
+  expect(event.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
   expect(event.hasChanged()).toBe(true);
 });
 
