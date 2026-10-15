@@ -73,7 +73,9 @@
     {#each fields as field}
       <DialogButton label={field.label + " ->"} onClick={() => onAdd(field)}
         disabled={$selectedItems.isEmpty && $t`Select a name first`} />
-      <SelectedNames picks={field.picks} onRemove={recipient => onRemove(field, recipient)} />
+      <hbox class="pick-field">
+        <AddressField recipients={field.picks} label={field.label} />
+      </hbox>
     {/each}
   </grid>
   <svelte:fragment slot="footer">
@@ -84,13 +86,12 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../../logic/app";
   import { SelectNames, SelectNamesField } from "./SelectNames";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import SelectedNames from "./SelectedNames.svelte";
+  import AddressField from "./AddressField.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import UserIcon from "lucide-svelte/icons/user-round";
   import GoIcon from "lucide-svelte/icons/arrow-right";
@@ -143,12 +144,6 @@
 
   function onAdd(field: SelectNamesField) {
     field.add(selectedItems);
-    fields = fields;
-  }
-
-  function onRemove(field: SelectNamesField, recipient: PersonUID) {
-    field.remove(recipient);
-    fields = fields;
   }
 </script>
 
@@ -246,5 +241,17 @@
   }
   .picks > :global(button) {
     width: 96px;
+  }
+  .pick-field {
+    min-width: 0;
+    max-height: 64px;
+    overflow-y: auto;
+    padding: 0 6px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-input-bg);
+  }
+  .pick-field:focus-within {
+    border-color: var(--lo-accent);
   }
 </style>
