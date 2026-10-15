@@ -43,6 +43,7 @@
     margin-block-end: 2px;
     margin-inline-end: 3px;
     border-radius: 3px;
+    container-type: inline-size;
   }
   @media (prefers-color-scheme: dark) {
     .event {
@@ -70,6 +71,16 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  @container (width < 3ch) {
+    .time {
+      display: none;
+    }
+    .title {
+      writing-mode: sideways-lr;
+      margin-block: auto;
+      line-height: 1;
+    }
   }
   :global(.cancelled) .time,
   :global(.cancelled) .title {
