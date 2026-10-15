@@ -14,7 +14,7 @@
           <input type="checkbox" bind:checked={quickRule.hasText} />
           {$t`Subject or body contains`}
         </label>
-        <input type="text" class="value" bind:value={quickRule.text}
+        <input type="text" class="value lo-text-field" bind:value={quickRule.text}
           aria-label={$t`Subject or body contains`}
           on:input={() => quickRule.hasText = !!quickRule.text} />
       </hbox>
@@ -34,7 +34,7 @@
           <input type="checkbox" bind:checked={quickRule.moveToFolder} />
           {$t`Move the item to folder:`}
         </label>
-        <input type="text" class="value folder" readonly value={quickRule.folder?.name ?? ""}
+        <input type="text" class="value folder lo-text-field" readonly value={quickRule.folder?.name ?? ""}
           aria-label={$t`Folder`} />
         <DialogButton label={$t`Select Folder…`} onClick={() => { isChoosingFolder = true; }} />
       </hbox>
@@ -121,7 +121,6 @@
   .value {
     flex: 1 1 0;
     min-width: 0;
-    height: 28px;
   }
   .value.folder {
     background-color: var(--lo-pane-alt-bg);

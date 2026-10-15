@@ -5,10 +5,10 @@
   <grid class="fields">
     {#if !hasSelection}
       <label for="link-text">{$t`Text to display`}</label>
-      <input id="link-text" type="text" bind:value={linkText} />
+      <input id="link-text" class="lo-text-field" type="text" bind:value={linkText} />
     {/if}
     <label for="link-address">{$t`Address`}</label>
-    <input id="link-address" type="url" bind:value={linkTargetURL} autofocus
+    <input id="link-address" class="lo-text-field" type="url" bind:value={linkTargetURL} autofocus
       placeholder="https://" />
   </grid>
   <svelte:fragment slot="buttons-start">

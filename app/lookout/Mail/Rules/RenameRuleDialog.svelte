@@ -4,7 +4,7 @@
   onOK={onOK}>
   <vbox class="content">
     <label for="rename-rule-name">{$t`New name of rule:`}</label>
-    <input id="rename-rule-name" type="text" bind:value={name} autofocus />
+    <input id="rename-rule-name" class="lo-text-field" type="text" bind:value={name} autofocus />
   </vbox>
 </Dialog>
 

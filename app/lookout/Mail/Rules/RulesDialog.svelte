@@ -4,7 +4,7 @@
   {:else}
     <hbox class="account-row">
       <label for="rules-account">{$t`Apply changes to this account:`}</label>
-      <select id="rules-account" bind:value={account}>
+      <select id="rules-account" class="lo-text-field" bind:value={account}>
         {#each $accounts.each as mailAccount}
           <option value={mailAccount}>{mailAccount.name}</option>
         {/each}
@@ -198,7 +198,6 @@
   }
   .account-row select {
     min-width: 260px;
-    height: 30px;
   }
   .toolbar {
     flex-shrink: 0;
