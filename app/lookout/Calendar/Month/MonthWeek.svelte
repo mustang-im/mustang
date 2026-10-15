@@ -2,10 +2,16 @@
 <div class="month-week" style="--lines: {maxLines}" bind:clientHeight={height} bind:this={weekEl}
   on:click={onClick} on:dblclick={onDoubleClick} on:contextmenu={onContextMenu}>
   {#each days as day, i}
-    <div class="cell" style="grid-column: {i + 1}"
+    <div class="cell drop-day" style="grid-column: {i + 1}" data-day-index={weekIndex * 7 + i}
       class:other-month={!range.isInMonth(day)}
       class:today={CurrentTime.isToday(day, $now)}
-      class:selected={isSelected(day, $selectedSlots)} />
+      class:selected={isSelected(day, $selectedSlots)}>
+      {#if isSelected(day, $selectedSlots) && day.getTime() == $selectedSlots.start.getTime()}
+        <div class="inline-title-area">
+          <InlineEventTitle />
+        </div>
+      {/if}
+    </div>
     <button class="day-number" style="grid-column: {i + 1}"
       class:other-month={!range.isInMonth(day)}
       class:today={CurrentTime.isToday(day, $now)}
@@ -45,12 +51,14 @@
   import { selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventBar from "../Event/EventBar.svelte";
+  import InlineEventTitle from "../View/InlineEventTitle.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import { getContext } from "svelte";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let days: Date[];
+  export let weekIndex: number;
   export let range: CalendarRange;
   export let events: Collection<Event>;
   export let onOpenDay: (day: Date) => void;
@@ -81,6 +89,7 @@
   }
 
   function selectDay(day: Date) {
+    CalendarActions.commitInlineTitle();
     $selectedEvent = null;
     $eventPeek = null;
     $selectedDate = day;
@@ -130,6 +139,15 @@
     grid-row: 1 / -1;
     position: relative;
     border-inline-start: 1px solid var(--lo-divider);
+  }
+  .inline-title-area {
+    position: absolute;
+    top: 24px;
+    inset-inline: 0;
+  }
+  .cell:global(.drop-target) {
+    outline: 2px dashed var(--lo-accent);
+    outline-offset: -2px;
   }
   .cell.other-month {
     background-color: var(--lo-pane-alt-bg);

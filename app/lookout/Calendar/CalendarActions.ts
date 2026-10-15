@@ -4,7 +4,7 @@ import type { InvitationResponseInMessage } from "../../logic/Calendar/Invitatio
 import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
-import { selectedSlots } from "./Selected";
+import { inlineTitle, selectedSlots, type SlotSelection } from "./Selected";
 import { CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
 import { WorkingHours } from "./View/WorkingHours";
@@ -17,6 +17,7 @@ import { goTo } from "../../frontend/AppsBar/selectedApp";
 import { MailAccount } from "../../logic/Mail/MailAccount";
 import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
+import { catchErrors } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
 import { get } from "svelte/store";
 
@@ -62,8 +63,57 @@ export class CalendarActions {
     CalendarActions.newEvent(calendar ?? slots?.calendar, start, null, kind);
   }
 
+  static commitInlineTitle() {
+    let title = get(inlineTitle)?.trim();
+    let selection = get(selectedSlots);
+    inlineTitle.set(null);
+    if (!title || !selection) {
+      return;
+    }
+    selectedSlots.set(null);
+    catchErrors(() => CalendarActions.newEventWithTitle(selection, title));
+  }
+
+  static async newEventWithTitle(selection: SlotSelection, title: string) {
+    let calendar = selection.calendar ?? get(selectedCalendar) ?? appGlobal.calendars.first;
+    assert(calendar, gt`Please set up a calendar first`);
+    let event = calendar.newEvent();
+    event.startEditing();
+    event.title = title;
+    event.allDay = selection.allDay;
+    setNewEventTime(event, true, selection.start, selection.end);
+    // <copied from="../../frontend/Calendar/EditEvent/DialogHeader.svelte" />
+    if (!event.calendar.events.contains(event)) {
+      event.calendar.events.add(event);
+    }
+    await event.save();
+    event.finishEditing();
+    if (!get(selectedSlots)) {
+      selectedEvent.set(event);
+    }
+  }
+
   static open(event: Event) {
     openEvent(event, true);
+  }
+
+  static async changeTime(event: Event, start: Date, end: Date) {
+    assert(event.isEditable, gt`You cannot change the time of a meeting that someone else organized`);
+    if (event.isOutgoingMeeting && event.participants.length > 1 &&
+        !confirm(gt`Move the meeting "${event.title ?? ""}" and send an update to the attendees?`)) {
+      return;
+    }
+    event.startEditing();
+    event.parentEvent?.cancelEditing();
+    event.startTime = start;
+    event.endTime = end;
+    try {
+      await event.save();
+    } catch (ex) {
+      event.cancelEditing();
+      throw ex;
+    }
+    event.finishEditing();
   }
 
   static async respond(event: Event, response: InvitationResponseInMessage) {

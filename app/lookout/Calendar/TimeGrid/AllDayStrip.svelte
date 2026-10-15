@@ -6,8 +6,12 @@
   on:click={onClick}
   bind:this={stripEl}>
   {#each days as day, i}
-    <div class="day" style="grid-column: {i + 1}"
-      class:selected={isSelected(day, $selectedSlots)} />
+    <div class="day drop-day" style="grid-column: {i + 1}" data-day-index={i} data-group={group}
+      class:selected={isSelected(day, $selectedSlots)}>
+      {#if isSelected(day, $selectedSlots) && day.getTime() == $selectedSlots.start.getTime()}
+        <InlineEventTitle />
+      {/if}
+    </div>
   {/each}
   {#each $layout.events as item (item.event)}
     <div class="item" style="grid-column: {item.startDay + 1} / {item.endDay + 1}; grid-row: {item.lane + 1}">
@@ -26,6 +30,7 @@
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventBar from "../Event/EventBar.svelte";
+  import InlineEventTitle from "../View/InlineEventTitle.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import { getContext } from "svelte";
@@ -34,6 +39,7 @@
   export let firstColumn: number;
   export let events: Collection<Event>;
   export let calendar: Calendar | null;
+  export let group: number;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
 
@@ -48,6 +54,7 @@
   }
 
   function selectDay(day: Date) {
+    CalendarActions.commitInlineTitle();
     $selectedEvent = null;
     $eventPeek = null;
     $selectedSlots = {
@@ -93,8 +100,13 @@
     border-block-end: 1px solid var(--lo-border);
   }
   .day {
+    position: relative;
     grid-row: 1 / -1;
     border-inline-start: 1px solid var(--lo-divider);
+  }
+  .day:global(.drop-target) {
+    outline: 2px dashed var(--lo-accent);
+    outline-offset: -2px;
   }
   .day.selected {
     background-color: color-mix(in srgb, var(--lo-accent) 22%, transparent);

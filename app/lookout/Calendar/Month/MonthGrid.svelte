@@ -9,12 +9,12 @@
       </div>
     {/each}
   </div>
-  {#each range.weeks as week (week[0].getTime())}
+  {#each range.weeks as week, weekIndex (week[0].getTime())}
     <hbox flex class="week-row">
       {#if showWeekNumbers}
         <div class="week-number" title={$t`Week ${WeekNumber.of(week[0])}`}>{WeekNumber.of(week[0])}</div>
       {/if}
-      <MonthWeek days={week} {range} events={inRange} {onOpenDay} />
+      <MonthWeek days={week} {weekIndex} {range} events={inRange} {onOpenDay} />
     </hbox>
   {/each}
 </vbox>
