@@ -1,12 +1,12 @@
-import { ExchangeCalendarShortcut } from "./ExchangeCalendarShortcut";
 import type { EWSCalendar } from "./EWSCalendar";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { MAPIAddressBookEntryID, MAPIEntryID, MAPIStoreEntryID } from "../../Mail/EWS/MAPIEntryID";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { ensureArray } from "../../util/util";
+import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class EWSCalendarShortcut extends ExchangeCalendarShortcut<EWSCalendar> {
+export class EWSCalendarShortcut {
   readonly account: EWSAccount;
   readonly itemClass: string | null;
   readonly type: number | null;
@@ -27,8 +27,14 @@ export class EWSCalendarShortcut extends ExchangeCalendarShortcut<EWSCalendar> {
     addressBookEntryID: { tag: 0x6854, type: "Binary" },
   };
 
+  /**
+   * @param item A navigation shortcut, as EWS `FindItem` returns it from the
+   *   folder "Common Views", after `XML2JSON()`: a folder-associated item with
+   *   `ItemClass` "IPM.Microsoft.WunderBar.Link" and `ExtendedProperty`,
+   *   an object or array of `{ ExtendedFieldURI: { PropertyTag, PropertyType }, Value }`
+   *   with the properties in `kProperties`. Binary values are base64.
+   */
   constructor(account: EWSAccount, item: any) {
-    super();
     this.account = account;
     let values = new Map<number, string>();
     for (let property of ensureArray(item?.ExtendedProperty)) {
@@ -72,8 +78,34 @@ export class EWSCalendarShortcut extends ExchangeCalendarShortcut<EWSCalendar> {
     };
     let result = await account.callEWS(request);
     let items: any[] = Object.values(result.RootFolder?.Items ?? {}).flatMap(items => ensureArray(items));
-    let shortcuts = items.map(item => new EWSCalendarShortcut(account, item));
-    return await ExchangeCalendarShortcut.createCalendars(shortcuts);
+    let calendars: EWSCalendar[] = [];
+    for (let item of items) {
+      let shortcut = new EWSCalendarShortcut(account, item);
+      if (!shortcut.isCalendarOfOtherUser) {
+        continue;
+      }
+      try {
+        let calendar = await shortcut.createCalendar();
+        if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
+          calendars.push(calendar);
+        }
+      } catch (ex) {
+        if (!EWSCalendarShortcut.isStaleError(ex)) {
+          logError(ex);
+        }
+      }
+    }
+    return calendars;
+  }
+
+  static isStaleError(ex: any): boolean {
+    return [
+      "ErrorNameResolutionNoResults",
+      "ErrorNonExistentMailbox",
+      "ErrorFolderNotFound",
+      "ErrorItemNotFound",
+      "ErrorAccessDenied",
+    ].includes(ex?.type);
   }
 
   protected static async findFolderID(account: EWSAccount): Promise<string | null> {

@@ -1,19 +1,27 @@
-import { ExchangeCalendarShortcut } from "../EWS/ExchangeCalendarShortcut";
+import { EWSCalendarShortcut } from "../EWS/EWSCalendarShortcut";
 import type { OWACalendar } from "./OWACalendar";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
 import { OWAGetFolderRequest } from "../../Mail/OWA/Request/OWAGetFolderRequest";
 import { owaResolveNamesRequest } from "../../Contacts/OWA/Request/OWAPersonRequests";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { ensureArray } from "../../util/util";
+import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
-export class OWACalendarShortcut extends ExchangeCalendarShortcut<OWACalendar> {
+export class OWACalendarShortcut {
   readonly account: OWAAccount;
   readonly ownerEmailAddress: string | null;
   readonly sharedFolderID: string | null;
 
+  /**
+   * @param entry A `CalendarEntry`, as OWA's `GetCalendarFolders` returns it in
+   *   `CalendarGroups[].Calendars[]`. Only a `LinkedCalendarEntry`, i.e. the
+   *   calendar of another user, has `OwnerEmailAddress` and
+   *   `IsOwnerEmailAddressInvalid`, and `SharedFolderId: { Id }`,
+   *   if the shortcut is to a specific folder of the owner,
+   *   not their default calendar.
+   */
   constructor(account: OWAAccount, entry: any) {
-    super();
     this.account = account;
     this.ownerEmailAddress = entry?.IsOwnerEmailAddressInvalid
       ? null
@@ -23,10 +31,25 @@ export class OWACalendarShortcut extends ExchangeCalendarShortcut<OWACalendar> {
 
   static async listCalendars(account: OWAAccount): Promise<OWACalendar[]> {
     let response = await account.callOWA(new OWAGetCalendarFoldersRequest());
-    let shortcuts = ensureArray(response?.CalendarGroups)
-      .flatMap(group => ensureArray(group?.Calendars))
-      .map(entry => new OWACalendarShortcut(account, entry));
-    return await ExchangeCalendarShortcut.createCalendars(shortcuts);
+    let entries = ensureArray(response?.CalendarGroups).flatMap(group => ensureArray(group?.Calendars));
+    let calendars: OWACalendar[] = [];
+    for (let entry of entries) {
+      let shortcut = new OWACalendarShortcut(account, entry);
+      if (!shortcut.isCalendarOfOtherUser) {
+        continue;
+      }
+      try {
+        let calendar = await shortcut.createCalendar();
+        if (calendar && !calendars.some(other => other.folderID == calendar.folderID)) {
+          calendars.push(calendar);
+        }
+      } catch (ex) {
+        if (!EWSCalendarShortcut.isStaleError(ex)) {
+          logError(ex);
+        }
+      }
+    }
+    return calendars;
   }
 
   get isCalendarOfOtherUser(): boolean {
