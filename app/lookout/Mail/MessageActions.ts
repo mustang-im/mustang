@@ -7,6 +7,7 @@ import type { Tag } from "../../logic/Abstract/Tag";
 import { Person } from "../../logic/Abstract/Person";
 import { appGlobal } from "../../logic/app";
 import { SelectionState } from "./SelectionState";
+import { MailView } from "./MailView";
 import { recentFolders } from "./RecentFolders";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
@@ -265,12 +266,11 @@ export class MessageActions {
   }
 
   static isViewingSource(): boolean {
-    return getLocalStorage("mail.contentRendering", "html").value == "source";
+    return MailView.contentRendering.value == "source";
   }
 
   static toggleSource() {
-    let setting = getLocalStorage("mail.contentRendering", "html");
-    setting.value = setting.value == "source" ? "html" : "source";
+    MailView.contentRendering.value = MessageActions.isViewingSource() ? "html" : "source";
   }
 
   static senderPerson(message: EMail): Person | null {

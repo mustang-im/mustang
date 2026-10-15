@@ -113,7 +113,7 @@
   <MenuDivider />
   <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => MessageActions.print(message)} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon} onClick={() => MessageActions.saveAs(message)} />
-  <MenuItem label={$contentRendering.value == "source" ? $t`View Message` : $t`View Source`} icon={SourceIcon}
+  <MenuItem label={$contentRendering.value == DisplayMode.Source ? $t`View Message` : $t`View Source`} icon={SourceIcon}
     onClick={() => MessageActions.toggleSource()} />
 </Menu>
 
@@ -123,6 +123,7 @@
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "../MessageList/MessageDates";
   import { MailView } from "../MailView";
+  import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import SubMenuItem from "../Menu/SubMenuItem.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
