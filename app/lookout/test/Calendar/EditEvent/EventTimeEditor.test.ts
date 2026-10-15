@@ -4,7 +4,11 @@ import { Calendar } from "../../../../logic/Calendar/Calendar";
 import type { Event } from "../../../../logic/Calendar/Event";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { EventTimeEditor } from "../../../Calendar/EditEvent/EventTimeEditor";
-import { expect, test } from "vitest";
+import { afterAll, expect, test, vi } from "vitest";
+
+// A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
+vi.stubEnv("TZ", "Europe/Berlin");
+afterAll(() => vi.unstubAllEnvs());
 
 function newEvent(start = new Date(2026, 9, 15, 10, 0), minutes = 30): Event {
   let calendar = new Calendar();
@@ -104,4 +108,19 @@ test("Moving keeps the duration, and all-day events stay whole days", () => {
   editor.moveTo(new Date(2026, 9, 20, 13, 0));
   expect(event.startTime).toEqual(new Date(2026, 9, 20));
   expect(event.endTime).toEqual(new Date(2026, 9, 21));
+});
+
+test("A new start date across the change to summer time keeps the time of day and the length", () => {
+  let event = newEvent(new Date(2026, 2, 28, 10, 0), 60);
+  let editor = new EventTimeEditor(event);
+  editor.setStartDate(new Date(2026, 2, 30));
+  expect(event.startTime).toEqual(new Date(2026, 2, 30, 10, 0));
+  expect(event.endTime).toEqual(new Date(2026, 2, 30, 11, 0));
+
+  let allDay = newEvent(new Date(2026, 2, 27), 2 * 24 * 60);
+  allDay.allDay = true;
+  new EventTimeEditor(allDay).setStartDate(new Date(2026, 2, 28));
+  expect(allDay.startTime).toEqual(new Date(2026, 2, 28));
+  expect(allDay.endTime).toEqual(new Date(2026, 2, 30));
+  expect(EventTimeEditor.lastDay(allDay)).toEqual(new Date(2026, 2, 29));
 });

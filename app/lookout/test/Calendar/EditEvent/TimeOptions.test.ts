@@ -1,6 +1,10 @@
 // @vitest-environment happy-dom
 import { TimeOptions } from "../../../Calendar/EditEvent/TimeOptions";
-import { expect, test } from "vitest";
+import { afterAll, expect, test, vi } from "vitest";
+
+// A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
+vi.stubEnv("TZ", "Europe/Berlin");
+afterAll(() => vi.unstubAllEnvs());
 
 test("Start times: every half hour of the day", () => {
   let options = TimeOptions.startTimes(new Date(2026, 9, 15, 14, 20));
@@ -40,6 +44,24 @@ test("End times on a later day are relative to the start", () => {
   expect(sameTimeNextDay.durationLabel).toBe("1 day");
   let dayAndAHalf = options.find(option => option.time.getHours() == 22 && option.time.getMinutes() == 0);
   expect(dayAndAHalf.durationLabel).toBe("1.5 days");
+});
+
+test("On the day of the change to summer time, the lists skip 2:00 and show the real durations", () => {
+  let starts = TimeOptions.startTimes(new Date(2026, 2, 29, 10, 0));
+  expect(starts.length).toBe(46);
+  expect(starts[4].time).toEqual(new Date(2026, 2, 29, 3, 0));
+  let ends = TimeOptions.endTimes(new Date(2026, 2, 29, 1, 0));
+  expect(ends[2].time).toEqual(new Date(2026, 2, 29, 3, 0));
+  expect(ends[2].durationLabel).toBe("1 hour");
+  expect(ends.at(-1).time).toEqual(new Date(2026, 2, 29, 23, 30));
+});
+
+test("On the day of the change to winter time, the lists end at the end of the day", () => {
+  let starts = TimeOptions.startTimes(new Date(2026, 9, 25, 10, 0));
+  expect(starts.at(-1).time).toEqual(new Date(2026, 9, 25, 23, 30));
+  let ends = TimeOptions.endTimes(new Date(2026, 9, 25, 1, 0));
+  expect(ends.find(option => option.time.getHours() == 3).durationLabel).toBe("3 hours");
+  expect(ends.at(-1).time).toEqual(new Date(2026, 9, 25, 23, 30));
 });
 
 test("Duration labels", () => {
