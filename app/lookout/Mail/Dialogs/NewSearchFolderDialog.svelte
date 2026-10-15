@@ -22,7 +22,7 @@
     {:else if selected?.id == "categorized"}
       <label class="field">
         {$t`Category:`}
-        <select bind:value={tag}>
+        <select class="lo-text-field" bind:value={tag}>
           {#each $tags.each as availableTag}
             <option value={availableTag}>{availableTag.name}</option>
           {/each}
@@ -31,13 +31,13 @@
     {:else if selected?.id == "large"}
       <label class="field">
         {$t`Show mail greater than:`}
-        <input type="number" min="1" bind:value={sizeKB} />
+        <input class="lo-text-field" type="number" min="1" bind:value={sizeKB} />
         {$t`KB`}
       </label>
     {/if}
     <label class="field">
       {$t`Search mail in:`}
-      <select bind:value={account}>
+      <select class="lo-text-field" bind:value={account}>
         <option value={null}>{$t`All accounts`}</option>
         {#each $accounts.each as mailAccount}
           <option value={mailAccount}>{mailAccount.name}</option>
@@ -46,7 +46,7 @@
     </label>
     <label class="field">
       {$t`Name:`}
-      <input type="text" class="name" bind:value={name} />
+      <input type="text" class="name lo-text-field" bind:value={name} />
     </label>
   </vbox>
 </Dialog>
@@ -158,16 +158,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-  .field select,
-  .field input {
-    height: 30px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
   .field input[type="number"] {
     width: 80px;

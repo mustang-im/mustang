@@ -11,7 +11,7 @@
       {$t`When a message arrives in ${account.name} that matches this search`}
     </span>
     <label for="rule-name">{$t`Name of the rule:`}</label>
-    <input id="rule-name" type="text" bind:value={name} />
+    <input id="rule-name" class="lo-text-field" type="text" bind:value={name} />
     <span class="caption">{$t`Do the following:`}</span>
     <label class="checkbox" class:disabled={isJunk || deleteIt}>
       <input type="checkbox" bind:checked={moveToFolder} disabled={isJunk || deleteIt} />
@@ -132,15 +132,6 @@
   }
   .caption:not(:first-child) {
     margin-block-start: 10px;
-  }
-  #rule-name {
-    height: 32px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
   .checkbox {
     display: flex;

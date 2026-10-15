@@ -5,7 +5,7 @@
   on:close>
   <vbox class="dialog-content">
     <label for="new-folder-name">{$t`Name:`}</label>
-    <input id="new-folder-name" type="text" bind:value={name} />
+    <input id="new-folder-name" class="lo-text-field" type="text" bind:value={name} />
     <span class="caption">{$t`Select where to place the folder:`}</span>
     <FolderPicker label={$t`Folders`} allowAccount
       bind:selectedFolder={parent} bind:selectedAccount={account}
@@ -48,19 +48,5 @@
   }
   .caption {
     margin-block-start: 8px;
-  }
-  input {
-    height: 32px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
-  }
-  input:focus {
-    outline: none;
-    border-color: var(--lo-accent);
-    box-shadow: inset 0 -1px 0 var(--lo-accent);
   }
 </style>

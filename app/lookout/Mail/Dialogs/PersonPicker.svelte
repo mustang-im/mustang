@@ -1,5 +1,5 @@
 <vbox class="person-picker">
-  <input type="search" bind:value={searchTerm} placeholder={$t`Name or email address`} aria-label={label} />
+  <input class="lo-text-field" type="search" bind:value={searchTerm} placeholder={$t`Name or email address`} aria-label={label} />
   <vbox class="persons" role="listbox" aria-label={label} style:height={height}>
     {#each $found.contents.slice(0, 100) as person (person)}
       <button type="button" class="person" class:selected={selected == person}
@@ -49,15 +49,6 @@
 <style>
   .person-picker {
     gap: 8px;
-  }
-  input {
-    height: 32px;
-    padding: 0 8px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
   }
   .persons {
     padding: 4px;

@@ -195,6 +195,22 @@ input[type="checkbox"] {
   color: var(--lo-fg-secondary);
 }
 
+:is(input, select).lo-text-field {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--lo-input-border);
+  border-radius: var(--lo-radius-small);
+  background-color: var(--lo-input-bg);
+  color: var(--lo-fg);
+  font: inherit;
+}
+:is(input, select).lo-text-field:focus {
+  outline: none;
+  border-color: var(--lo-accent);
+  box-shadow: inset 0 -1px 0 var(--lo-accent);
+}
+
 .lookout-window .popup > .menu {
   border: 1px solid var(--lo-border);
   border-radius: var(--lo-radius);
