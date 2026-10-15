@@ -197,10 +197,19 @@
     align-items: center;
     gap: 6px;
     min-width: 0;
-    flex-wrap: wrap;
   }
   .sender-name {
+    flex: 0 1 auto;
+    min-width: 0;
     font-weight: 600;
+    white-space: nowrap;
+  }
+  .sender-address {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .sender-name :global(.domain) {
     color: var(--lo-fg-secondary);
