@@ -7,13 +7,13 @@
   <RibbonGroup label={$t`Arrangement`}>
     <RibbonMenuButton label={$t`Message Preview`} icon={PreviewIcon}>
       {#each previewOptions as option}
-        <MenuItem label={option.label} icon={$previewLines.value == option.lines ? CheckIcon : null}
+        <MenuItem label={option.label} icon={$previewLines.value == option.lines ? CheckIcon : BlankIcon}
           onClick={() => $previewLines.value = option.lines} />
       {/each}
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`Arrange By`} icon={ArrangeIcon}>
       {#each arrangements as arrangement}
-        <MenuItem label={arrangement.label} icon={$arrangeBy.value == arrangement.id ? CheckIcon : null}
+        <MenuItem label={arrangement.label} icon={$arrangeBy.value == arrangement.id ? CheckIcon : BlankIcon}
           onClick={() => $arrangeBy.value = arrangement.id} />
       {/each}
     </RibbonMenuButton>
@@ -25,20 +25,20 @@
       onChange={checked => { $showInGroups.value = checked; }} />
     <RibbonMenuButton label={$t`Expand/ Collapse`} icon={ExpandCollapseIcon}
       disabled={!$showInGroups.value && $t`Turn on Show in Groups first`}>
-      <MenuItem label={$t`Collapse This Group`} onClick={() => onCollapseGroup(true)} />
-      <MenuItem label={$t`Expand This Group`} onClick={() => onCollapseGroup(false)} />
+      <MenuItem label={$t`Collapse This Group`} icon={CollapseIcon} onClick={() => onCollapseGroup(true)} />
+      <MenuItem label={$t`Expand This Group`} icon={ExpandIcon} onClick={() => onCollapseGroup(false)} />
       <MenuDivider />
-      <MenuItem label={$t`Collapse All Groups`} onClick={() => onCollapseAll(true)} />
-      <MenuItem label={$t`Expand All Groups`} onClick={() => onCollapseAll(false)} />
+      <MenuItem label={$t`Collapse All Groups`} icon={CollapseAllIcon} onClick={() => onCollapseAll(true)} />
+      <MenuItem label={$t`Expand All Groups`} icon={ExpandAllIcon} onClick={() => onCollapseAll(false)} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Layout`}>
     <RibbonMenuButton label={$t`Folder Pane`} icon={FolderPaneIcon}>
-      <MenuItem label={$t`Normal`} icon={$folderPane.value == FolderPaneMode.Normal ? CheckIcon : null}
+      <MenuItem label={$t`Normal`} icon={$folderPane.value == FolderPaneMode.Normal ? CheckIcon : BlankIcon}
         onClick={() => $folderPane.value = FolderPaneMode.Normal} />
-      <MenuItem label={$t`Minimized`} icon={$folderPane.value == FolderPaneMode.Minimized ? CheckIcon : null}
+      <MenuItem label={$t`Minimized`} icon={$folderPane.value == FolderPaneMode.Minimized ? CheckIcon : BlankIcon}
         onClick={() => $folderPane.value = FolderPaneMode.Minimized} />
-      <MenuItem label={$t`Off`} icon={$folderPane.value == FolderPaneMode.Off ? CheckIcon : null}
+      <MenuItem label={$t`Off`} icon={$folderPane.value == FolderPaneMode.Off ? CheckIcon : BlankIcon}
         onClick={() => $folderPane.value = FolderPaneMode.Off} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`Reading Pane`} icon={ReadingPaneIcon}>
@@ -49,14 +49,14 @@
       <MenuItem label={$t`Off`} icon={$readingPane.value == ReadingPanePosition.Off ? CheckIcon : OffIcon}
         onClick={() => $readingPane.value = ReadingPanePosition.Off} />
       <MenuDivider />
-      <MenuItem label={$t`Options…`} onClick={() => MailDialogs.open({ kind: "reading-pane-options" })} />
+      <MenuItem label={$t`Options…`} icon={OptionsIcon} onClick={() => MailDialogs.open({ kind: "reading-pane-options" })} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Message`}>
     <RibbonMenuButton label={$t`Message Format`} icon={FormatIcon}>
       {#each displayModes as mode}
         <MenuItem label={mode.label} tooltip={mode.tooltip}
-          icon={$contentRendering.value == mode.id ? CheckIcon : null}
+          icon={$contentRendering.value == mode.id ? CheckIcon : BlankIcon}
           onClick={() => $contentRendering.value = mode.id} />
       {/each}
     </RibbonMenuButton>
@@ -87,7 +87,13 @@
   import BottomIcon from "lucide-svelte/icons/panel-bottom";
   import OffIcon from "lucide-svelte/icons/square";
   import FormatIcon from "lucide-svelte/icons/file-code";
+  import CollapseIcon from "lucide-svelte/icons/chevron-up";
+  import ExpandIcon from "lucide-svelte/icons/chevron-down";
+  import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
+  import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
+  import OptionsIcon from "lucide-svelte/icons/settings-2";
   import CheckIcon from "lucide-svelte/icons/check";
+  import BlankIcon from "../Menu/BlankIcon.svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let onCollapseGroup: (collapsed: boolean) => void;

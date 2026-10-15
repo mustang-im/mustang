@@ -320,9 +320,6 @@
     overflow-x: hidden;
     outline: none;
   }
-  .message-list:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--lo-focus-ring);
-  }
   .canvas {
     position: relative;
     width: 100%;

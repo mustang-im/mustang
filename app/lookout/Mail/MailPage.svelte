@@ -169,7 +169,10 @@
   // </copied>
 
   let filteredMessages: Collection<EMail> | null = null;
-  $: folderMessages = $selectedFolder?.messages;
+  let folderMessages: Collection<EMail> | null = null;
+  $: if ($selectedFolder?.messages != folderMessages) {
+    folderMessages = $selectedFolder?.messages ?? null;
+  }
   // <copied from="../../frontend/Mail/LeftPane/FolderFooter.svelte">
   $: quickSearch.folder = $selectedFolder;
   $: $selectedFolder && $quickSearch && $folderMessages && catchErrors(startQuickSearch, showError);
@@ -238,7 +241,14 @@
     }, 0);
   }
 
-  $: listMessages = searchResults ?? (hasFilter ? filteredMessages : null) ?? folderMessages ?? new ArrayColl<EMail>();
+  let listMessages: Collection<EMail> = new ArrayColl<EMail>();
+  $: updateListMessages(searchResults, hasFilter, filteredMessages, folderMessages);
+  function updateListMessages(results: Collection<EMail>, isFiltered: boolean, filtered: Collection<EMail>, all: Collection<EMail>) {
+    let list = results ?? (isFiltered ? filtered : null) ?? all ?? new ArrayColl<EMail>();
+    if (list != listMessages) {
+      listMessages = list;
+    }
+  }
 
   let isAutoSelectPending = true;
   $: if (isAutoSelectPending && $listMessages?.hasItems && listPane) {

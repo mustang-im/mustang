@@ -1,4 +1,4 @@
-<MenuLabel label={$t`${$folder.countTotal} items (${$folder.countUnread} unread)`} />
+<MenuLabel label={$t`${Math.max($folder.countTotal, $messages.length)} items (${$folder.countUnread} unread)`} />
 <MenuItem label={$t`New Folder…`} icon={NewFolderIcon}
   disabled={isVirtual ? $t`Select a folder of an account first` : folder.disableSubfolders()}
   onClick={() => MailDialogs.open({ kind: "new-folder", account: folder.account, parent: folder })} />
