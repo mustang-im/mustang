@@ -24,9 +24,27 @@ export class FreeBusy {
     this.isSupported = isSupported;
   }
 
+  protected static supportedCalendars = new Map<Calendar, boolean>();
+
+  static async isSupported(calendar: Calendar, participants: Participant[]): Promise<boolean> {
+    let known = FreeBusy.supportedCalendars.get(calendar);
+    if (known != null) {
+      return known;
+    }
+    let from = new Date();
+    from.setHours(0, 0, 0, 0);
+    let to = new Date(from);
+    to.setDate(to.getDate() + 1);
+    let freeBusy = await FreeBusy.load(calendar, participants, from, to);
+    if (participants.length) {
+      FreeBusy.supportedCalendars.set(calendar, freeBusy.isSupported);
+    }
+    return freeBusy.isSupported;
+  }
+
   static async load(calendar: Calendar, participants: Participant[], from: Date, to: Date): Promise<FreeBusy> {
     if (!participants.length) {
-      return new FreeBusy([]);
+      return new FreeBusy([], false);
     }
     let availability = await calendar.arePersonsFree(participants, from, to);
     return FreeBusy.fromAvailability(participants, availability);

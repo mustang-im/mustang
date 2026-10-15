@@ -1,6 +1,6 @@
 <vbox flex class="event-form-page" on:keydown={onKeyDown}>
   {#key ribbonKey}
-    <EventFormRibbon {event} {flow} {editor} {actions} {saveDisabled}
+    <EventFormRibbon {event} {flow} {editor} {actions} {saveDisabled} {canSchedule}
       {schedulingLabel} {trackingLabel}
       bind:selectedLabel bind:this={ribbon} />
   {/key}
@@ -66,6 +66,7 @@
   import SeriesChoiceDialog from "./SeriesChoiceDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import SchedulingAssistant from "../Scheduling/SchedulingAssistant.svelte";
+  import { FreeBusy } from "../Scheduling/FreeBusy";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -102,9 +103,10 @@
   $: isIncoming = $event.isIncomingMeeting;
   $: isSaved = $event && flow.isSaved;
   $: isSent = isMeeting && $event.isOutgoingMeeting && isSaved;
-  $: ribbonKey = `${isMeeting}-${isSent}-${isIncoming}`;
+  $: ribbonKey = `${isMeeting}-${isSent}-${isIncoming}-${canSchedule}`;
+  $: isMeeting && !isIncoming && checkScheduling();
   $: kindLabel = $event && $participants && EventFormInfo.tabLabel(event);
-  $: showScheduling = isMeeting && !isIncoming && selectedLabel == schedulingLabel;
+  $: showScheduling = canSchedule && isMeeting && !isIncoming && selectedLabel == schedulingLabel;
   $: showTracking = isSent && selectedLabel == trackingLabel;
   $: $event, $participants, $parentEvent, $shownCalendarEvents, updateState(editor);
   $: sendLabel = isSaved ? $t`Send Update` : $t`Send`;
@@ -118,6 +120,15 @@
     messages = EventFormInfo.messages(event, shownCalendarEvents.contents);
     hasChanges = flow.hasChanges;
     saveDisabled = flow.missingPropsReason ?? false;
+  }
+
+  let canSchedule = false;
+  async function checkScheduling() {
+    try {
+      canSchedule = await FreeBusy.isSupported(event.calendar, event.participants.contents);
+    } catch (ex) {
+      canSchedule = true;
+    }
   }
 
   onMount(() => {
