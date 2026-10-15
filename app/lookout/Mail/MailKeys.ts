@@ -25,6 +25,7 @@ export enum MailKeyAction {
   NextMessage = "next-message",
   PreviousMessage = "previous-message",
   Print = "print",
+  AddressBook = "address-book",
 }
 
 export interface KeyPress {
@@ -62,6 +63,7 @@ export class MailKeys {
         case "e": return MailKeyAction.NewFolder;
         case "p": return MailKeyAction.NewSearchFolder;
         case "i": return MailKeyAction.GoToInbox;
+        case "b": return MailKeyAction.AddressBook;
       }
       return null;
     }
