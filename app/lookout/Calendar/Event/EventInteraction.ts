@@ -77,15 +77,19 @@ export class EventInteraction {
         drag.preview(element);
       }
     };
-    let onPointerUp = () => {
-      if (!drag) {
-        return;
-      }
+    let endDrag = (): EventDrag | null => {
       let finishedDrag = drag;
       drag = null;
-      finishedDrag.endPreview(element);
+      finishedDrag?.endPreview(element);
       element.classList.remove("dragging");
-      if (!finishedDrag.hasMoved) {
+      return finishedDrag;
+    };
+    let onPointerCancel = () => {
+      endDrag();
+    };
+    let onPointerUp = () => {
+      let finishedDrag = endDrag();
+      if (!finishedDrag?.hasMoved) {
         return;
       }
       wasDragged = true;
@@ -102,7 +106,7 @@ export class EventInteraction {
     element.addEventListener("pointerdown", onPointerDown);
     element.addEventListener("pointermove", onPointerMove);
     element.addEventListener("pointerup", onPointerUp);
-    element.addEventListener("pointercancel", onPointerUp);
+    element.addEventListener("pointercancel", onPointerCancel);
     return {
       update(newParams: EventInteractionParams) {
         current = newParams;
@@ -116,7 +120,7 @@ export class EventInteraction {
         element.removeEventListener("pointerdown", onPointerDown);
         element.removeEventListener("pointermove", onPointerMove);
         element.removeEventListener("pointerup", onPointerUp);
-        element.removeEventListener("pointercancel", onPointerUp);
+        element.removeEventListener("pointercancel", onPointerCancel);
       },
     };
   }
