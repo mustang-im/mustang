@@ -2,7 +2,7 @@
   {#key ribbonKey}
     <EventFormRibbon {event} {flow} {editor} {actions} {saveDisabled} {canSchedule}
       {schedulingLabel} {trackingLabel}
-      bind:selectedLabel bind:this={ribbon} />
+      bind:selectedLabel />
   {/key}
   <vbox flex class="form-card lo-card">
     <hbox class="title-row">
@@ -82,7 +82,6 @@
   const schedulingLabel = gt`Scheduling Assistant`;
   const trackingLabel = gt`Tracking`;
 
-  let ribbon: EventFormRibbon;
   let form: EventForm;
   let scheduling: SchedulingAssistant;
   let fileSelector: FileSelector;

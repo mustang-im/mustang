@@ -1,5 +1,5 @@
 <Ribbon>
-  <RibbonTabWatcher bind:selectedLabel bind:this={tabWatcher} />
+  <RibbonTabWatcher bind:selectedLabel />
   <RibbonTab label={tabLabel}>
     {#if isIncoming}
       <RibbonGroup label={$t`Respond`}>
@@ -233,8 +233,6 @@
   export let trackingLabel: string;
   export let selectedLabel: string = null;
 
-  let tabWatcher: RibbonTabWatcher;
-
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;
   $: isIncoming = $event.isIncomingMeeting;
@@ -244,14 +242,6 @@
   $: reminderMinutes = $event && Reminder.minutesBefore(event);
   $: reminderLabel = reminderMinutes == null ? $t`No Reminder` : Reminder.label(reminderMinutes);
   $: reminderChoices = Reminder.choices(reminderMinutes);
-
-  export function selectTab(label: string) {
-    tabWatcher?.select(label);
-  }
-
-  export function selectFirstTab() {
-    tabWatcher?.selectFirst();
-  }
 
   function onOnlineMeeting(checked: boolean) {
     if (checked) {
