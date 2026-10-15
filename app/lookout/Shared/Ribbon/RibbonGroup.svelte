@@ -73,7 +73,8 @@
       ? group.expandedWidth
       : buttonsEl.offsetWidth - popupChrome + chrome;
     if (!hasIconOnly) {
-      let buttonWidth = (groupEl.querySelector<HTMLElement>(".ribbon-button") ?? buttonsEl).offsetWidth;
+      let buttonWidths = Array.from(groupEl.querySelectorAll<HTMLElement>(".ribbon-button"), button => button.offsetWidth);
+      let buttonWidth = buttonWidths.length ? Math.min(...buttonWidths) : buttonsEl.offsetWidth;
       group.setWidths(expandedWidth, buttonWidth + chrome);
     } else {
       let buttons = Array.from(buttonsEl.querySelectorAll(".ribbon-button"));
