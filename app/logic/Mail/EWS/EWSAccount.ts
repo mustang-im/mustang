@@ -23,6 +23,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, JSON2XML } from "./XML2JSON";
+import { EWSCalendarShortcut } from "../../Calendar/EWS/EWSCalendarShortcut";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -1037,6 +1038,16 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
+    try {
+      for (let calendar of await EWSCalendarShortcut.listCalendars(this)) {
+        if (!accounts.find(account => account.protocol == "calendar-ews" &&
+              (account as EWSCalendar).folderID == calendar.folderID)) {
+          accounts.add(calendar);
+        }
+      }
+    } catch (ex) {
+      logError(ex);
+    }
     return accounts;
   }
 
@@ -1060,7 +1071,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, dependentAcc?: EWSAccount): EWSCalendar | null {
+  createCalendarAccount(folder: any, owner?: EWSAccount | { name: string, username: string, color: string }): EWSCalendar | null {
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
           (account as EWSCalendar).folderID == folder.FolderId.Id)) {
@@ -1070,12 +1081,12 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     calendar.initFromMainAccount(this);
     let isPrimary = folder.DistinguishedFolderId == "calendar";
     calendar.useForInvitations = isPrimary;
-    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
-      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if ((owner || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(owner || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (dependentAcc) {
-      calendar.username = dependentAcc.username;
-      calendar.color = dependentAcc.color;
+    if (owner) {
+      calendar.username = owner.username;
+      calendar.color = owner.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;

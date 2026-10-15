@@ -20,12 +20,14 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { OWACalendarShortcut } from "../../Calendar/OWA/OWACalendarShortcut";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
+import { logError } from "../../../frontend/Util/error";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
@@ -645,6 +647,16 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
+    try {
+      for (let calendar of await OWACalendarShortcut.listCalendars(this)) {
+        if (!accounts.find(account => account.protocol == "calendar-owa" &&
+              (account as OWACalendar).folderID == calendar.folderID)) {
+          accounts.add(calendar);
+        }
+      }
+    } catch (ex) {
+      logError(ex);
+    }
     return accounts;
   }
 
@@ -667,7 +679,7 @@ export class OWAAccount extends ExchangeMailAccount {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, dependentAcc?: OWAAccount): OWACalendar | null{
+  createCalendarAccount(folder: any, owner?: OWAAccount | { name: string, username: string, color: string }): OWACalendar | null{
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
           (account as OWACalendar).folderID == folder.FolderId.Id)) {
@@ -677,12 +689,12 @@ export class OWAAccount extends ExchangeMailAccount {
     calendar.initFromMainAccount(this);
     let isPrimary = folder.DistinguishedFolderId == "calendar";
     calendar.useForInvitations = isPrimary;
-    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
-      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if ((owner || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(owner || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (dependentAcc) {
-      calendar.username = dependentAcc.username;
-      calendar.color = dependentAcc.color;
+    if (owner) {
+      calendar.username = owner.username;
+      calendar.color = owner.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
