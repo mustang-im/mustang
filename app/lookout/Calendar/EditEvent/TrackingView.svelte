@@ -7,17 +7,24 @@
     <table>
       <thead>
         <tr>
-          <th>{$t`Name`}</th>
-          <th>{$t`Attendance`}</th>
-          <th>{$t`Response`}</th>
+          {#each columns as column}
+            <th aria-sort={sortColumn == column.id ? (ascending ? "ascending" : "descending") : "none"}>
+              <button class="column-header" on:click={() => onSort(column.id)}>
+                {column.label}
+                {#if sortColumn == column.id}
+                  <svelte:component this={ascending ? AscendingIcon : DescendingIcon} size={12} />
+                {/if}
+              </button>
+            </th>
+          {/each}
         </tr>
       </thead>
       <tbody>
-        {#each $participants.each as participant (participant)}
+        {#each rows as participant (participant)}
           <tr>
             <td>
               <hbox class="name">
-                <ParticipantConfirmIcon {participant} />
+                <ResponseIcon response={participant.response} />
                 <span>{participant.name || participant.emailAddress}</span>
                 {#if participant.name && participant.emailAddress}
                   <span class="lo-secondary">{participant.emailAddress}</span>
@@ -25,7 +32,7 @@
               </hbox>
             </td>
             <td>{EventFormInfo.attendanceLabel(participant)}</td>
-            <td>{participant.response == InvitationResponse.Organizer ? "" : EventFormInfo.responseLabel(participant)}</td>
+            <td>{EventFormInfo.responseLabel(participant)}</td>
           </tr>
         {/each}
       </tbody>
@@ -35,16 +42,31 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { EventFormInfo } from "./EventFormInfo";
-  import ParticipantConfirmIcon from "../../../frontend/Calendar/EditEvent/ParticipantConfirmIcon.svelte";
+  import { EventFormInfo, type TrackingColumn } from "./EventFormInfo";
+  import ResponseIcon from "./ResponseIcon.svelte";
   import InfoIcon from "lucide-svelte/icons/info";
+  import AscendingIcon from "lucide-svelte/icons/chevron-up";
+  import DescendingIcon from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
 
+  let sortColumn: TrackingColumn = null;
+  let ascending = true;
+
   $: participants = event.participants;
   $: summary = $participants && EventFormInfo.responseSummary(event);
+  $: rows = EventFormInfo.sortForTracking($participants.contents, sortColumn, ascending);
+  $: columns = [
+    { id: "name" as TrackingColumn, label: $t`Name` },
+    { id: "attendance" as TrackingColumn, label: $t`Attendance` },
+    { id: "response" as TrackingColumn, label: $t`Response` },
+  ];
+
+  function onSort(column: TrackingColumn) {
+    ascending = sortColumn == column ? !ascending : true;
+    sortColumn = column;
+  }
 </script>
 
 <style>
@@ -75,12 +97,29 @@
   th {
     position: sticky;
     top: 0;
-    padding: 6px 12px;
+    padding: 0;
     border-block-end: 1px solid var(--lo-border);
     background-color: var(--lo-pane-alt-bg);
     color: var(--lo-fg-secondary);
     font-weight: normal;
     text-align: start;
+  }
+  .column-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .column-header:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
   }
   td {
     padding: 6px 12px;

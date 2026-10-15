@@ -11,6 +11,8 @@ export interface InfoMessage {
   text: string;
 }
 
+export type TrackingColumn = "name" | "attendance" | "response" | null;
+
 export interface ResponseCounts {
   accepted: number;
   tentative: number;
@@ -103,6 +105,19 @@ export class EventFormInfo {
     default:
       return gt`None *=> No response`;
     }
+  }
+
+  static sortForTracking(participants: Participant[], column: TrackingColumn, ascending: boolean): Participant[] {
+    if (!column) {
+      return participants;
+    }
+    let key = (participant: Participant) => column == "name"
+      ? participant.name || participant.emailAddress || ""
+      : column == "attendance"
+        ? EventFormInfo.attendanceLabel(participant)
+        : EventFormInfo.responseLabel(participant);
+    let direction = ascending ? 1 : -1;
+    return [...participants].sort((a, b) => key(a).localeCompare(key(b)) * direction);
   }
 
   static trackingText(event: Event): string {

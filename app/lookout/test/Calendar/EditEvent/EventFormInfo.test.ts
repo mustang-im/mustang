@@ -122,3 +122,15 @@ test("When and tracking texts", () => {
     "Person 1\tRequired Attendee\tNone",
   ]);
 });
+
+test("Tracking table sorts by name, attendance and response", () => {
+  let event = newEvent();
+  organize(event, InvitationResponse.Tentative, InvitationResponse.Accept, InvitationResponse.NoResponseReceived);
+  let participants = event.participants.contents;
+  let names = (column: Parameters<typeof EventFormInfo.sortForTracking>[1], ascending: boolean) =>
+    EventFormInfo.sortForTracking(participants, column, ascending).map(participant => participant.name);
+  expect(names(null, true)).toEqual(["Me", "Person 0", "Person 1", "Person 2"]);
+  expect(names("name", false)).toEqual(["Person 2", "Person 1", "Person 0", "Me"]);
+  expect(names("attendance", true)[0]).toBe("Me");
+  expect(names("response", true)).toEqual(["Person 1", "Me", "Person 2", "Person 0"]);
+});
