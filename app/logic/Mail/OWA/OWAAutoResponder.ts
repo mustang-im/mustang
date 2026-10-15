@@ -1,62 +1,40 @@
 import { ExchangeAutoResponder } from "../EWS/ExchangeAutoResponder";
+import { AutoResponderAudience } from "../AutoResponder";
 import type { OWAAccount } from "./OWAAccount";
-import { OWARequest } from "./Request/OWARequest";
-import { OWAError } from "./OWAError";
+import { OWAGetMailboxAutoReplyConfigurationRequest, OWASetMailboxAutoReplyConfigurationRequest } from "./Request/OWAMailboxAutoReplyConfigurationRequests";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class OWAAutoResponder extends ExchangeAutoResponder {
   declare readonly account: OWAAccount;
 
   async load(): Promise<void> {
-    let response = await this.callOOF(new OWARequest("GetUserOofSettings", {
-      __type: "GetUserOofSettingsRequest:#Exchange",
-      Mailbox: this.mailbox,
-    }));
-    this.fromExchange(response);
+    let response = await this.account.callOWA(new OWAGetMailboxAutoReplyConfigurationRequest());
+    this.fromOWA(response.Options);
   }
 
   async save(): Promise<void> {
     this.validate();
-    await this.callOOF(new OWARequest("SetUserOofSettings", {
-      __type: "SetUserOofSettingsRequest:#Exchange",
-      Mailbox: this.mailbox,
-      UserOofSettings: this.toOWA(),
-    }));
+    await this.account.callOWA(new OWASetMailboxAutoReplyConfigurationRequest(this.toOWA()));
   }
 
-  /** As in EWS, a lone `ResponseMessage`, which `callOWA()` does not check */
-  protected async callOOF(request: OWARequest): Promise<any> {
-    let response = await this.account.callOWA(request);
-    if (response?.ResponseMessage?.ResponseClass == "Error") {
-      throw new OWAError({ json: response.ResponseMessage });
-    }
-    return response;
-  }
-
-  protected get mailbox() {
-    return {
-      __type: "EmailAddress:#Exchange",
-      Address: this.account.emailAddress,
-    };
+  /** @param options as returned by `GetMailboxAutoReplyConfiguration` in `load()` */
+  fromOWA(options: any) {
+    this.oofState = options.AutoReplyState;
+    this.setTimes(sanitize.date(options.StartTime, null), sanitize.date(options.EndTime, null));
+    this.externalAudience = this.toAudience(options.ExternalAudience, AutoResponderAudience.None);
+    this.internalHTML = this.toHTML(options.InternalMessage);
+    this.externalHTML = this.toHTML(options.ExternalMessage);
   }
 
   toOWA() {
     return {
-      __type: "UserOofSettings:#Exchange",
-      OofState: this.oofState,
+      __type: "MailboxAutoReplyConfigurationOptions:#Exchange",
+      AutoReplyState: this.oofState,
+      StartTime: this.scheduled ? this.startTime.toISOString() : undefined,
+      EndTime: this.scheduled ? this.endTime.toISOString() : undefined,
       ExternalAudience: this.oofAudience,
-      Duration: this.scheduled ? {
-        __type: "Duration:#Exchange",
-        StartTime: this.startTime.toISOString(),
-        EndTime: this.endTime.toISOString(),
-      } : undefined,
-      InternalReply: {
-        __type: "ReplyBody:#Exchange",
-        Message: this.fromHTML(this.internalHTML),
-      },
-      ExternalReply: {
-        __type: "ReplyBody:#Exchange",
-        Message: this.fromHTML(this.externalHTML),
-      },
+      InternalMessage: this.fromHTML(this.internalHTML),
+      ExternalMessage: this.fromHTML(this.externalHTML),
     };
   }
 }

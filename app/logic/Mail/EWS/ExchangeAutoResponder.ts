@@ -1,6 +1,5 @@
 import { AutoResponder, AutoResponderAudience } from "../AutoResponder";
 import type { ExchangeMailAccount } from "./ExchangeMailAccount";
-import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 /** Exchange Out of Office (OOF), as EWS and OWA have it.
  * Exchange replies only once per sender, and never to
@@ -22,38 +21,38 @@ export class ExchangeAutoResponder extends AutoResponder {
     return true;
   }
 
-  /** @param json `GetUserOofSettingsResponse` */
-  fromExchange(json: Record<string, any>) {
-    let settings = json.OofSettings;
-    let state = sanitize.enum(settings.OofState, ["Disabled", "Enabled", "Scheduled"], "Disabled");
-    this.enabled = state != "Disabled";
-    this.scheduled = state == "Scheduled";
-    this.setTimes(parseUTC(settings.Duration?.StartTime), parseUTC(settings.Duration?.EndTime));
-    this.externalAudience = kAudiences[settings.ExternalAudience] ?? AutoResponderAudience.None;
-    this.maxAudience = kAudiences[json.AllowExternalOof] ?? AutoResponderAudience.All;
-    this.internalHTML = this.toHTML(settings.InternalReply?.Message);
-    this.externalHTML = this.toHTML(settings.ExternalReply?.Message);
+  protected get oofState(): OOFState {
+    return !this.enabled ? OOFState.Disabled : this.scheduled ? OOFState.Scheduled : OOFState.Enabled;
   }
 
-  protected get oofState(): string {
-    return !this.enabled ? "Disabled" : this.scheduled ? "Scheduled" : "Enabled";
+  protected set oofState(state: OOFState) {
+    this.enabled = state == OOFState.Enabled || state == OOFState.Scheduled;
+    this.scheduled = state == OOFState.Scheduled;
   }
 
-  protected get oofAudience(): string {
-    return Object.keys(kAudiences).find(key => kAudiences[key] == this.externalAudience) ?? "None";
+  protected get oofAudience(): OOFAudience {
+    return ExchangeAutoResponder.kAudiences.indexOf(this.externalAudience);
   }
+
+  protected toAudience(audience: OOFAudience, fallback: AutoResponderAudience): AutoResponderAudience {
+    return ExchangeAutoResponder.kAudiences[audience] ?? fallback;
+  }
+
+  protected static readonly kAudiences = [
+    AutoResponderAudience.None,
+    AutoResponderAudience.Contacts,
+    AutoResponderAudience.All,
+  ];
 }
 
-const kAudiences: Record<string, AutoResponderAudience> = {
-  None: AutoResponderAudience.None,
-  Known: AutoResponderAudience.Contacts,
-  All: AutoResponderAudience.All,
-};
+export enum OOFState {
+  Disabled = 0,
+  Enabled = 1,
+  Scheduled = 2,
+}
 
-/** @param time E.g. "2026-10-05T07:00:00". Exchange omits the time zone, but means UTC. */
-function parseUTC(time: string): Date | null {
-  if (!time || typeof (time) != "string") {
-    return null;
-  }
-  return sanitize.date(/(Z|[+-]\d\d:?\d\d)$/i.test(time) ? time : time + "Z", null);
+export enum OOFAudience {
+  None = 0,
+  Known = 1,
+  All = 2,
 }

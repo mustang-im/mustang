@@ -46,35 +46,42 @@ function newAccount(): TestOWAAccount {
   return account;
 }
 
-function body(json: any) {
-  return { Header: { ServerVersionInfo: { MajorVersion: 15 } }, Body: json };
-}
-
-const kSuccess = { ResponseClass: "Success", ResponseCode: "NoError" };
-
-// The same as EWS, but as JSON
-const kGetResponse = body({
-  __type: "GetUserOofSettingsResponse:#Exchange",
-  ResponseMessage: kSuccess,
-  OofSettings: {
-    __type: "UserOofSettings:#Exchange",
-    OofState: "Scheduled",
-    ExternalAudience: "Known",
-    Duration: {
-      __type: "Duration:#Exchange",
-      StartTime: "2026-10-05T07:00:00",
-      EndTime: "2026-10-19T16:00:00",
-    },
-    InternalReply: { __type: "ReplyBody:#Exchange", Message: "<html><body><p>Back on the <b>19th</b>.</p></body></html>" },
-    ExternalReply: { __type: "ReplyBody:#Exchange", Message: "I am out of office." },
+// As Exchange 2019 sends it, from a capture of Outlook on the web
+const kGetResponse = {
+  Header: { ServerVersionInfo: { MajorVersion: 15, MinorVersion: 2, Version: "V2017_07_11" } },
+  ErrorCode: 0,
+  ErrorMessage: null,
+  IsUserError: false,
+  UserPrompt: null,
+  WasSuccessful: true,
+  Options: {
+    AutoDeclineFutureRequestsWhenOOF: false,
+    AutoReplyState: 2,
+    CreateOOFEvent: false,
+    DeclineAllEventsForScheduledOOF: false,
+    DeclineEventsForScheduledOOF: false,
+    DeclineMeetingMessage: "",
+    DeclineMeetingMessageText: "\r\n",
+    StartTime: "2026-10-05T07:00:00Z",
+    EndTime: "2026-10-19T16:00:00Z",
+    EventsToDeleteIDs: null,
+    ExternalAudience: 1,
+    ExternalMessage: "I am out of office.",
+    ExternalMessageText: "I am out of office.\r\n",
+    InternalMessage: "<html><body><p>Back on the <b>19th</b>.</p></body></html>",
+    InternalMessageText: "Back on the 19th.\r\n",
+    OOFEventSubject: "",
   },
-  AllowExternalOof: "Known",
-});
+};
 
-const kSetResponse = body({
-  __type: "SetUserOofSettingsResponse:#Exchange",
-  ResponseMessage: kSuccess,
-});
+const kSetResponse = {
+  Header: { ServerVersionInfo: { MajorVersion: 15 } },
+  ErrorCode: 0,
+  ErrorMessage: null,
+  IsUserError: false,
+  UserPrompt: null,
+  WasSuccessful: true,
+};
 
 test("Reads the settings from the server", async () => {
   let account = newAccount();
@@ -84,35 +91,71 @@ test("Reads the settings from the server", async () => {
 
   expect(calls.length).toBe(1);
   expect(calls[0].url).toBe("https://mail.example.com/owa/service.svc");
-  expect(calls[0].action).toBe("GetUserOofSettings");
-  expect(calls[0].body.__type).toBe("GetUserOofSettingsJsonRequest:#Exchange");
-  expect(calls[0].body.Header.RequestServerVersion).toBe("Exchange2013");
-  expect(calls[0].body.Body).toEqual({
-    __type: "GetUserOofSettingsRequest:#Exchange",
-    Mailbox: { __type: "EmailAddress:#Exchange", Address: "user1@example.com" },
-  });
+  expect(calls[0].action).toBe("GetMailboxAutoReplyConfiguration");
+  expect(calls[0].body).toEqual({});
 
   expect(autoResponder.enabled).toBe(true);
   expect(autoResponder.scheduled).toBe(true);
   expect(autoResponder.startTime.toISOString()).toBe("2026-10-05T07:00:00.000Z");
   expect(autoResponder.endTime.toISOString()).toBe("2026-10-19T16:00:00.000Z");
   expect(autoResponder.externalAudience).toBe(AutoResponderAudience.Contacts);
-  expect(autoResponder.maxAudience).toBe(AutoResponderAudience.Contacts);
+  // OWA does not tell us what the admin allows
+  expect(autoResponder.maxAudience).toBe(AutoResponderAudience.All);
+  // The HTML, not the plaintext that Exchange derives from it
   expect(autoResponder.internalHTML).toBe("sanitized:<html><body><p>Back on the <b>19th</b>.</p></body></html>");
   expect(autoResponder.externalHTML).toBe("converted:I am out of office.");
+});
+
+test("Times with a time zone offset", async () => {
+  let account = newAccount();
+  response = structuredClone(kGetResponse);
+  response.Options.StartTime = "2026-10-05T09:00:00+02:00";
+  response.Options.EndTime = "2026-10-19T18:00:00+02:00";
+  let autoResponder = account.autoResponder;
+  await autoResponder.load();
+
+  expect(autoResponder.startTime.toISOString()).toBe("2026-10-05T07:00:00.000Z");
+  expect(autoResponder.endTime.toISOString()).toBe("2026-10-19T16:00:00.000Z");
 });
 
 test("Old dates of a disabled responder are not kept", async () => {
   let account = newAccount();
   response = structuredClone(kGetResponse);
-  response.Body.OofSettings.OofState = "Disabled";
-  response.Body.OofSettings.Duration = { StartTime: "2006-10-05T07:00:00", EndTime: "2006-10-19T16:00:00" };
+  response.Options.AutoReplyState = 0;
+  response.Options.StartTime = "2006-10-05T07:00:00Z";
+  response.Options.EndTime = "2006-10-19T16:00:00Z";
   let autoResponder = account.autoResponder;
   await autoResponder.load();
 
   expect(autoResponder.enabled).toBe(false);
   expect(autoResponder.scheduled).toBe(false);
   expect(autoResponder.startTime.getTime()).toBeGreaterThan(Date.now());
+});
+
+test("Always on, for everybody", async () => {
+  let account = newAccount();
+  response = structuredClone(kGetResponse);
+  response.Options.AutoReplyState = 1;
+  response.Options.ExternalAudience = 2;
+  let autoResponder = account.autoResponder;
+  await autoResponder.load();
+
+  expect(autoResponder.enabled).toBe(true);
+  expect(autoResponder.scheduled).toBe(false);
+  expect(autoResponder.externalAudience).toBe(AutoResponderAudience.All);
+});
+
+test("Unknown values are read as off", async () => {
+  let account = newAccount();
+  response = structuredClone(kGetResponse);
+  response.Options.AutoReplyState = 7;
+  response.Options.ExternalAudience = 7;
+  let autoResponder = account.autoResponder;
+  await autoResponder.load();
+
+  expect(autoResponder.enabled).toBe(false);
+  expect(autoResponder.scheduled).toBe(false);
+  expect(autoResponder.externalAudience).toBe(AutoResponderAudience.None);
 });
 
 test("Writes the settings to the server", async () => {
@@ -128,27 +171,27 @@ test("Writes the settings to the server", async () => {
   autoResponder.externalHTML = "<p></p>";
   await autoResponder.save();
 
-  expect(calls[0].action).toBe("SetUserOofSettings");
-  expect(calls[0].body.__type).toBe("SetUserOofSettingsJsonRequest:#Exchange");
-  expect(calls[0].body.Body).toEqual({
-    __type: "SetUserOofSettingsRequest:#Exchange",
-    Mailbox: { __type: "EmailAddress:#Exchange", Address: "user1@example.com" },
-    UserOofSettings: {
-      __type: "UserOofSettings:#Exchange",
-      OofState: "Scheduled",
-      ExternalAudience: "All",
-      Duration: {
-        __type: "Duration:#Exchange",
-        StartTime: "2026-10-05T07:00:00.000Z",
-        EndTime: "2026-10-19T16:00:00.000Z",
-      },
-      InternalReply: { __type: "ReplyBody:#Exchange", Message: "<p>Back on the <b>19th</b></p>" },
-      ExternalReply: { __type: "ReplyBody:#Exchange", Message: "" },
+  expect(calls[0].action).toBe("SetMailboxAutoReplyConfiguration");
+  // Not wrapped in a `Body`
+  expect(calls[0].body).toEqual({
+    __type: "SetMailboxAutoReplyConfigurationRequest:#Exchange",
+    Header: {
+      __type: "JsonRequestHeaders:#Exchange",
+      RequestServerVersion: "Exchange2013",
+    },
+    Options: {
+      __type: "MailboxAutoReplyConfigurationOptions:#Exchange",
+      AutoReplyState: 2,
+      StartTime: "2026-10-05T07:00:00.000Z",
+      EndTime: "2026-10-19T16:00:00.000Z",
+      ExternalAudience: 2,
+      InternalMessage: "<p>Back on the <b>19th</b></p>",
+      ExternalMessage: "",
     },
   });
 });
 
-test("Without time range, there is no duration", async () => {
+test("Without time range, there are no times", async () => {
   let account = newAccount();
   response = kSetResponse;
   let autoResponder = account.autoResponder;
@@ -157,14 +200,17 @@ test("Without time range, there is no duration", async () => {
   autoResponder.externalAudience = AutoResponderAudience.Contacts;
   await autoResponder.save();
 
-  let settings = calls[0].body.Body.UserOofSettings;
-  expect(settings.OofState).toBe("Enabled");
-  expect(settings.ExternalAudience).toBe("Known");
-  expect("Duration" in settings).toBe(false);
+  let options = calls[0].body.Options;
+  expect(options.AutoReplyState).toBe(1);
+  expect(options.ExternalAudience).toBe(1);
+  expect("StartTime" in options).toBe(false);
+  expect("EndTime" in options).toBe(false);
 
   autoResponder.enabled = false;
+  autoResponder.externalAudience = AutoResponderAudience.None;
   await autoResponder.save();
-  expect(calls[1].body.Body.UserOofSettings.OofState).toBe("Disabled");
+  expect(calls[1].body.Options.AutoReplyState).toBe(0);
+  expect(calls[1].body.Options.ExternalAudience).toBe(0);
 });
 
 test("An end before the start is refused", async () => {
@@ -181,16 +227,15 @@ test("An end before the start is refused", async () => {
 
 test("A server error is shown", async () => {
   let account = newAccount();
-  response = body({
-    __type: "SetUserOofSettingsResponse:#Exchange",
-    ResponseMessage: {
-      ResponseClass: "Error",
-      ResponseCode: "ErrorInvalidScheduledOofDuration",
-      MessageText: "The specified time interval is invalid.",
-    },
-  });
+  // `OptionsActionError.CmdletError`, with the message of `Set-MailboxAutoReplyConfiguration`
+  response = {
+    ...kSetResponse,
+    WasSuccessful: false,
+    ErrorCode: 2,
+    ErrorMessage: "The end time must be later than the start time.",
+  };
 
-  await expect(account.autoResponder.save()).rejects.toThrow("The specified time interval is invalid.");
+  await expect(account.autoResponder.save()).rejects.toThrow("The end time must be later than the start time.");
 });
 
 test("Only for our own Exchange mailbox", () => {
@@ -202,16 +247,30 @@ test("Only for our own Exchange mailbox", () => {
   expect(shared.autoResponder.supported).toBe(false);
 });
 
-test("OWA and EWS send the same settings", () => {
+test("OWA sends the numbers of the names that EWS sends", () => {
   let owa = newAccount().autoResponder as any;
   let ews = new EWSAccount().autoResponder as any;
-  for (let autoResponder of [owa, ews]) {
-    autoResponder.enabled = true;
-    autoResponder.scheduled = true;
-    autoResponder.externalAudience = AutoResponderAudience.Contacts;
-    autoResponder.internalHTML = "<p>Away</p>";
+  let states = [
+    { enabled: false, scheduled: false, ews: "Disabled", owa: 0 },
+    { enabled: true, scheduled: false, ews: "Enabled", owa: 1 },
+    { enabled: true, scheduled: true, ews: "Scheduled", owa: 2 },
+  ];
+  let audiences = [
+    { audience: AutoResponderAudience.None, ews: "None", owa: 0 },
+    { audience: AutoResponderAudience.Contacts, ews: "Known", owa: 1 },
+    { audience: AutoResponderAudience.All, ews: "All", owa: 2 },
+  ];
+  for (let state of states) {
+    for (let audience of audiences) {
+      for (let autoResponder of [owa, ews]) {
+        autoResponder.enabled = state.enabled;
+        autoResponder.scheduled = state.scheduled;
+        autoResponder.externalAudience = audience.audience;
+      }
+      expect(owa.toOWA().AutoReplyState).toBe(state.owa);
+      expect(ews.toEWS().t$OofState).toBe(state.ews);
+      expect(owa.toOWA().ExternalAudience).toBe(audience.owa);
+      expect(ews.toEWS().t$ExternalAudience).toBe(audience.ews);
+    }
   }
-  let withoutPrefix = (json: any) => JSON.parse(JSON.stringify(json).replaceAll('"t$', '"'));
-  let withoutType = (json: any) => JSON.parse(JSON.stringify(json, (key, value) => key == "__type" ? undefined : value));
-  expect(withoutType(owa.toOWA())).toEqual(withoutPrefix(ews.toEWS()));
 });
