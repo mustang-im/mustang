@@ -13,6 +13,7 @@
   disabled={!$folder.countUnread && !isVirtual && $t`There are no unread messages`}
   onClick={() => FolderTreeActions.markAllRead(folder)} />
 <MenuItem label={$t`Update Folder`} icon={UpdateIcon}
+  disabled={MessageActions.disableGetNewMail(folder)}
   onClick={() => MessageActions.getNewMail(folder)} />
 <MenuItem label={$t`Download All Messages`} icon={DownloadAllIcon}
   tooltip={$t`Download all messages of this folder, for offline use and search`}

@@ -1,6 +1,7 @@
 import type { EMail } from "../../logic/Mail/EMail";
 import { type Folder, SpecialFolder } from "../../logic/Mail/Folder";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
+import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
 import { DeleteStrategy } from "../../logic/Mail/MailAccount";
 import type { Tag } from "../../logic/Abstract/Tag";
 import { Person } from "../../logic/Abstract/Person";
@@ -282,10 +283,22 @@ export class MessageActions {
       MessageActions.getNewMail(account.inbox)));
   }
 
+  static disableGetNewMail(folder: Folder | null): string | false {
+    if (!folder) {
+      return gt`Select a folder first`;
+    }
+    if (folder instanceof SavedSearchFolder) {
+      return gt`A search folder shows messages of other folders. Update those folders instead.`;
+    }
+    return false;
+  }
+
   static async getNewMail(folder: Folder | null) {
     if (!folder) {
       return;
     }
+    let disabled = MessageActions.disableGetNewMail(folder);
+    assert(!disabled, disabled as string);
     MessageActions.updatingFolders.update(folders => [...folders, folder]);
     try {
       // <copied from="../../frontend/Mail/LeftPane/FolderMenu.svelte">

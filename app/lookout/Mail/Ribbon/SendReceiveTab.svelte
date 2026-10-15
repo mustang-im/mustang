@@ -7,7 +7,7 @@
     <RibbonButton label={$t`Update Folder`} icon={UpdateFolderIcon}
       tooltip={$t`Get new mail for the current folder`}
       onClick={() => MessageActions.getNewMail(folder)}
-      disabled={!folder && $t`Select a folder first`}
+      disabled={MessageActions.disableGetNewMail(folder)}
       shortCutInfo="Shift+F9" />
   </RibbonGroup>
   <RibbonGroup label={$t`Server`}>
