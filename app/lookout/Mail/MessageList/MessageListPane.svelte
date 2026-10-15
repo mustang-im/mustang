@@ -69,6 +69,8 @@
   <MenuItem label={sortOrderLabels[1]} icon={$reverseSort.value ? CheckIcon : BlankIcon}
     onClick={() => $reverseSort.value = true} />
   <MenuDivider />
+  <MenuItem label={$t`Show as Conversations`} icon={$showAsConversations.value ? CheckIcon : BlankIcon}
+    onClick={() => $showAsConversations.value = !$showAsConversations.value} />
   <MenuItem label={$t`Show in Groups`} icon={$showInGroups.value ? CheckIcon : BlankIcon}
     onClick={() => $showInGroups.value = !$showInGroups.value} />
 </Menu>
@@ -104,6 +106,7 @@
   const arrangeBy = MailView.arrangeBy;
   const reverseSort = MailView.reverseSort;
   const showInGroups = MailView.showInGroups;
+  const showAsConversations = MailView.showAsConversations;
   const previewLines = MailView.previewLines;
 
   let messageList: MessageList;
@@ -122,7 +125,7 @@
   $: sortOrderLabels = MessageGrouping.sortOrderLabels($arrangeBy.value);
 
   $: grouping = new MessageGrouping<EMail>($arrangeBy.value, !!$reverseSort.value, !!$showInGroups.value,
-    message => ListName.of(message));
+    message => ListName.of(message), new Date(), !!$showAsConversations.value);
   $: groups = grouping.arrange($listMessages.contents, listMessages instanceof EMailCollection);
 
   $: hasFilter = $quickSearch && quickSearch.hasSearch();

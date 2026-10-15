@@ -21,6 +21,7 @@ export class MailView {
   static readonly arrangeBy = getLocalStorage<ArrangeBy>("lookout.mail.arrangeBy", ArrangeBy.Date);
   static readonly reverseSort = getLocalStorage<boolean>("lookout.mail.reverseSort", false);
   static readonly showInGroups = getLocalStorage<boolean>("lookout.mail.showInGroups", true);
+  static readonly showAsConversations = getLocalStorage<boolean>("lookout.mail.showAsConversations", false);
   static readonly collapsedSections = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
   static readonly expandedFolders = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
   static readonly contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
@@ -31,6 +32,7 @@ export class MailView {
     MailView.arrangeBy.value = ArrangeBy.Date;
     MailView.reverseSort.value = false;
     MailView.showInGroups.value = true;
+    MailView.showAsConversations.value = false;
     MailView.readingPane.value = ReadingPanePosition.Right;
     MailView.folderPane.value = FolderPaneMode.Normal;
   }
