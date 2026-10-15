@@ -128,6 +128,9 @@
     padding: 8px 20px 16px 20px;
     overflow: auto;
   }
+  .content :global(input:not([type="radio"]):not([type="checkbox"])) {
+    box-sizing: border-box;
+  }
   .buttons {
     align-items: center;
     gap: 8px;

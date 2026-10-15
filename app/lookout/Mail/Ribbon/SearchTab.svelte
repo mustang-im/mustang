@@ -51,6 +51,10 @@
       tooltip={$t`Save this search as a Search Folder`}
       onClick={onSaveSearch}
       disabled={!search && $t`Type a search term first`} />
+    <RibbonButton label={$t`Create Rule`} icon={CreateRuleIcon}
+      tooltip={$t`Handle new messages that match this search automatically`}
+      onClick={onCreateRule}
+      disabled={(!search && $t`Type a search term first`) || (!ruleAccount && $t`Select a folder of an account first`)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon}
@@ -84,6 +88,7 @@
   import PersonIcon from "lucide-svelte/icons/user-search";
   import RemoveIcon from "lucide-svelte/icons/user-x";
   import SaveSearchIcon from "lucide-svelte/icons/folder-search";
+  import CreateRuleIcon from "lucide-svelte/icons/list-plus";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
 
@@ -98,5 +103,11 @@
 
   function onSaveSearch() {
     MailDialogs.open({ kind: "save-search", search });
+  }
+
+  $: ruleAccount = search?.account ??
+    (MailSearch.isRealFolder(folder) ? folder.account : MailSearch.isRealAccount(account) ? account : null);
+  function onCreateRule() {
+    MailDialogs.open({ kind: "rule-from-search", search, account: ruleAccount });
   }
 </script>
