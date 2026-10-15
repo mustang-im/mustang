@@ -674,7 +674,7 @@ export class OWAAccount extends ExchangeMailAccount {
     return calendar;
   }
 
-  async listSharedMailboxesAddedInOutlook(): Promise<PersonUID[]> {
+  async listSharedMailboxesFromOutlook(): Promise<PersonUID[]> {
     let response = await this.callOWA(new OWAGetOtherMailboxConfigurationRequest());
     return ensureArray(response?.OtherMailboxEntries)
       .map(entry => this.newSharedMailboxPerson(entry?.PrincipalSMTPAddress, entry?.DisplayName))
