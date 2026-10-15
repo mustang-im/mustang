@@ -1,11 +1,11 @@
-<Dialog title={$t`Choose Person`}
+<Dialog title={$t`Choose Person`} bind:this={dialog}
   okLabel={$t`OK`}
   okDisabled={!selected && $t`Select a person first`}
   onOK={onChoose}
   on:close>
   <vbox class="dialog-content">
     <span class="caption">{$t`Show only messages from or to:`}</span>
-    <PersonPicker label={$t`Persons`} bind:selected on:choose={onChooseAndClose} />
+    <PersonPicker label={$t`Persons`} bind:selected on:choose={() => dialog.submit()} />
   </vbox>
 </Dialog>
 
@@ -14,19 +14,13 @@
   import { MailSearch } from "../Search/MailSearch";
   import PersonPicker from "./PersonPicker.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  const dispatch = createEventDispatcher<{ close: void }>();
+  let dialog: Dialog;
   let selected: Person | null = MailSearch.current().person;
 
   function onChoose() {
     MailSearch.update({ person: selected });
-  }
-
-  function onChooseAndClose() {
-    onChoose();
-    dispatch("close");
   }
 </script>
 

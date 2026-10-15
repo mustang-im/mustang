@@ -1,21 +1,20 @@
-<Dialog title={$t`Rules and Alerts`} on:close={onCancel} width="400px">
+<Dialog title={$t`Rules and Alerts`} bind:this={dialog}
+  okLabel={$t`OK`}
+  okDisabled={!folder && $t`Select a folder first`}
+  onOK={onOK}
+  on:close={onCancel} width="400px">
   <vbox class="content">
     <span class="caption">{$t`Choose a folder:`}</span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={folder}
       disableFolder={candidate => candidate.account != account && $t`Rules can only use folders of the account ${account.name}`}
-      on:choose={onOK} />
+      on:choose={() => dialog.submit()} />
   </vbox>
-  <svelte:fragment slot="footer">
-    <DialogButton label={$t`OK`} primary onClick={onOK} disabled={!folder && $t`Select a folder first`} />
-    <DialogButton label={$t`Cancel`} onClick={onCancel} />
-  </svelte:fragment>
 </Dialog>
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FolderPicker from "../Dialogs/FolderPicker.svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -23,6 +22,8 @@
   export let folder: Folder | null = null;
   export let onChosen: (folder: Folder) => void | Promise<void>;
   export let onCancel: () => void;
+
+  let dialog: Dialog;
 
   async function onOK() {
     if (!folder) {
