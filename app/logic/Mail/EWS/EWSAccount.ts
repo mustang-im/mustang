@@ -954,6 +954,35 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return folder;
   }
 
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Element | null> {
+    let request = {
+      m$GetUserConfiguration: {
+        m$UserConfigurationName: {
+          Name: name,
+          t$DistinguishedFolderId: {
+            Id: distinguishedFolderID,
+          },
+        },
+        m$UserConfigurationProperties: "XmlData",
+      },
+    };
+    let response: any;
+    try {
+      response = await this.callEWS(request);
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") {
+        return null;
+      }
+      throw ex;
+    }
+    let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
+    if (!xmlData) {
+      return null;
+    }
+    let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
+    return this.parseXML(xml)?.documentElement ?? null;
+  }
+
   get mayHaveSubAccounts(): boolean {
     return true;
   }
@@ -1081,7 +1110,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return calendar;
   }
 
-  async listSharedMailboxesFromOutlook(): Promise<PersonUID[]> {
+  async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
     const kConfigName = "OWA.OtherMailbox";
     let config = await this.getUserConfigurationXML(kConfigName, "root");
     if (config?.localName != "OtherMailbox") {
@@ -1089,37 +1118,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     let json = XML2JSON(config) as any;
     return ensureArray(json?.entry)
-      .map(entry => this.newSharedMailboxPerson(entry?.principalSMTPAddress, entry?.displayName))
+      .map(entry => this.newSharedAccountPerson(entry?.principalSMTPAddress, entry?.displayName))
       .filter(Boolean);
-  }
-
-  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Element | null> {
-    let request = {
-      m$GetUserConfiguration: {
-        m$UserConfigurationName: {
-          Name: name,
-          t$DistinguishedFolderId: {
-            Id: distinguishedFolderID,
-          },
-        },
-        m$UserConfigurationProperties: "XmlData",
-      },
-    };
-    let response: any;
-    try {
-      response = await this.callEWS(request);
-    } catch (ex) {
-      if (ex.type == "ErrorItemNotFound") {
-        return null;
-      }
-      throw ex;
-    }
-    let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
-    if (!xmlData) {
-      return null;
-    }
-    let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
-    return this.parseXML(xml)?.documentElement ?? null;
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {

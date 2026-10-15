@@ -3,7 +3,7 @@ import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
 import { expect, test } from "vitest";
 
-/** Outlook on the web reads the mailboxes that the user added with
+/** Outlook on the web reads the accounts that the user added with
  * `GetOtherMailboxConfiguration`. The request is an empty JSON object. */
 class TestOWAAccount extends OWAAccount {
   readonly requests: any[] = [];
@@ -24,7 +24,7 @@ function newTestAccount(response: any): TestOWAAccount {
   return account;
 }
 
-test("OWA: Offer the mailboxes that the user added in Outlook on the web", async () => {
+test("OWA: Offer the accounts that the user added in Outlook on the web", async () => {
   let account = newTestAccount({
     OtherMailboxEntries: [{
       DisplayName: "Shared Mailbox",
@@ -42,7 +42,7 @@ test("OWA: Offer the mailboxes that the user added in Outlook on the web", async
   expect(account.requests).toEqual([{ action: "GetOtherMailboxConfiguration", body: "{}" }]);
 });
 
-test("OWA: Skip our own mailbox and broken entries", async () => {
+test("OWA: Skip our own account and broken entries", async () => {
   let account = newTestAccount({
     OtherMailboxEntries: [{
       DisplayName: "Alice",
@@ -63,7 +63,7 @@ test("OWA: Skip our own mailbox and broken entries", async () => {
   expect(persons.first.name).toBeUndefined();
 });
 
-test("OWA: The user never added a mailbox in Outlook on the web", async () => {
+test("OWA: The user never added an account in Outlook on the web", async () => {
   for (let response of [{ OtherMailboxEntries: [] }, {}]) {
     let account = newTestAccount(response);
 

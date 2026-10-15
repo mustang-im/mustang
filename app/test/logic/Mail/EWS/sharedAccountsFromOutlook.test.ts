@@ -40,7 +40,7 @@ function userConfigurationResponse(xmlData: string): string {
     </Envelope>`;
 }
 
-/** Outlook on the web creates the user configuration only when the user adds the first mailbox */
+/** Outlook on the web creates the user configuration only when the user adds the first account */
 const kNotFoundResponse = `<?xml version="1.0" encoding="utf-8"?>
   <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
     <Body>
@@ -72,7 +72,7 @@ function newTestAccount(responseText: string): { account: EWSAccount, requests: 
   return { account, requests };
 }
 
-test("EWS: Offer the mailboxes that the user added in Outlook on the web", async () => {
+test("EWS: Offer the accounts that the user added in Outlook on the web", async () => {
   let { account, requests } = newTestAccount(userConfigurationResponse(base64(kOtherMailboxXML)));
 
   let persons = await account.availableSharedAccounts();
@@ -88,7 +88,7 @@ test("EWS: Offer the mailboxes that the user added in Outlook on the web", async
   expect(request.getElementsByTagName("m:UserConfigurationProperties")[0].textContent).toBe("XmlData");
 });
 
-test("EWS: Don't offer a mailbox that we already added", async () => {
+test("EWS: Don't offer an account that we already added", async () => {
   let { account } = newTestAccount(userConfigurationResponse(base64(kOtherMailboxXML)));
   let bob = new EWSAccount();
   bob.initFromMainAccount(account);
@@ -105,7 +105,7 @@ test("EWS: Don't offer a mailbox that we already added", async () => {
   }
 });
 
-test("EWS: The user never added a mailbox in Outlook on the web", async () => {
+test("EWS: The user never added an account in Outlook on the web", async () => {
   let { account } = newTestAccount(kNotFoundResponse);
 
   let persons = await account.availableSharedAccounts();
@@ -128,7 +128,7 @@ test("EWS: Skip broken and duplicate entries", async () => {
   expect(persons.first.name).toBeUndefined();
 });
 
-test("EWS: A single mailbox", async () => {
+test("EWS: A single account", async () => {
   let { account } = newTestAccount(userConfigurationResponse(base64(
     `<OtherMailbox><entry displayName="Bob Builder" rootFolderId="" principalSMTPAddress="bob@example.com"/></OtherMailbox>`)));
 
@@ -147,7 +147,7 @@ test("EWS: Empty or unexpected configuration", async () => {
   }
 });
 
-test("EWS: A mailbox shared with us does not offer further mailboxes", async () => {
+test("EWS: An account shared with us does not offer further accounts", async () => {
   let { account, requests } = newTestAccount(userConfigurationResponse(base64(kOtherMailboxXML)));
   let bob = new EWSAccount();
   bob.initFromMainAccount(account);

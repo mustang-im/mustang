@@ -674,10 +674,10 @@ export class OWAAccount extends ExchangeMailAccount {
     return calendar;
   }
 
-  async listSharedMailboxesFromOutlook(): Promise<PersonUID[]> {
+  async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
     let response = await this.callOWA(new OWAGetOtherMailboxConfigurationRequest());
     return ensureArray(response?.OtherMailboxEntries)
-      .map(entry => this.newSharedMailboxPerson(entry?.PrincipalSMTPAddress, entry?.DisplayName))
+      .map(entry => this.newSharedAccountPerson(entry?.PrincipalSMTPAddress, entry?.DisplayName))
       .filter(Boolean);
   }
 
