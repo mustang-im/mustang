@@ -164,7 +164,6 @@
   $: tags = message.tags;
 
   let isEncryptionExpanded = false;
-  $: $message, isEncryptionExpanded = false;
 
   let moreEl: HTMLButtonElement;
   let isMoreOpen = false;
