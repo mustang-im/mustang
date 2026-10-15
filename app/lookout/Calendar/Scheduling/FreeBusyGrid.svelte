@@ -1,0 +1,482 @@
+<vbox flex class="free-busy-grid" style="--hour-width: {kHourWidth}px; --row-height: {kRowHeight}px">
+  <hbox class="day-bar">
+    <button class="nav" title={$t`Previous day`} aria-label={$t`Previous day`} on:click={() => stepDay(-1)}>
+      <PreviousIcon size={16} />
+    </button>
+    <button class="nav" title={$t`Next day`} aria-label={$t`Next day`} on:click={() => stepDay(1)}>
+      <NextIcon size={16} />
+    </button>
+    <span class="day-label">{dayLabel}</span>
+    <hbox flex />
+    {#if loading}
+      <span class="status lo-secondary">{$t`Checking availability…`}</span>
+    {:else if errorText}
+      <span class="status error">{errorText}</span>
+    {:else if freeBusy && !freeBusy.isSupported}
+      <span class="status lo-secondary">{$t`This calendar doesn't provide the availability of other people.`}</span>
+    {/if}
+  </hbox>
+  <hbox flex class="grid-scroll">
+    <vbox class="names">
+      <hbox class="hours-spacer" />
+      <hbox class="row all-attendees">{$t`All Attendees`}</hbox>
+      {#each $participants.each as participant (participant)}
+        <hbox class="row person">
+          <hbox class="response-icon">
+            <ParticipantConfirmIcon {participant} />
+          </hbox>
+          <vbox flex class="person-text">
+            <span class="name" title={participant.emailAddress}>{participant.name || participant.emailAddress}</span>
+            {#if freeBusy && !loading}
+              <span class="availability status-{statusOf(freeBusy, participant, $event)}">{statusLabel(statusOf(freeBusy, participant, $event))}</span>
+            {/if}
+          </vbox>
+          {#if !readOnly && participant.response != InvitationResponse.Organizer}
+            <button class="remove" title={$t`Remove`} aria-label={$t`Remove`}
+              on:click={() => event.participants.remove(participant)}>
+              <RemoveIcon size={14} />
+            </button>
+          {/if}
+        </hbox>
+      {/each}
+      {#if !readOnly}
+        <hbox class="row add" bind:this={addRowEl}>
+          <PersonAutocomplete placeholder={$t`Add attendee`} skipPersons={participants}
+            onAddPerson={person => EventEditFlow.addParticipant(event, person)} />
+        </hbox>
+      {/if}
+    </vbox>
+    <div class="timeline-scroll" bind:this={scrollEl}>
+      <div class="timeline" style:width="{timeline.width}px">
+        <div class="hours">
+          {#each hours as hour}
+            <span class="hour" style:left="{timeline.x(hour)}px">{hourLabel(hour)}</span>
+          {/each}
+        </div>
+        <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+        <div class="rows" bind:this={rowsEl} on:click={onClickRows}>
+          <div class="row all-attendees" class:no-info={freeBusy && !freeBusy.hasInformation}>
+            {#each allBusy as busy}
+              <div class="busy" style:left="{busy.left}px" style:width="{busy.width}px" />
+            {/each}
+          </div>
+          {#each $participants.each as participant (participant)}
+            <div class="row" class:no-info={freeBusy && !busyOf(freeBusy, participant)}>
+              {#each spans(busyOf(freeBusy, participant), timeline) as busy}
+                <div class="busy" style:left="{busy.left}px" style:width="{busy.width}px" />
+              {/each}
+            </div>
+          {/each}
+          {#if !readOnly}
+            <div class="row add" />
+          {/if}
+          {#if meeting}
+            <div class="meeting" style:left="{meeting.left}px" style:width="{meeting.width}px">
+              {#if !readOnly && !$event.allDay}
+                <div class="edge start" title={$t`Drag to change the start time`}
+                  on:pointerdown={pointerEvent => onEdgeDown(pointerEvent, "start")} />
+                <div class="edge end" title={$t`Drag to change the end time`}
+                  on:pointerdown={pointerEvent => onEdgeDown(pointerEvent, "end")} />
+              {/if}
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </hbox>
+  <hbox class="legend">
+    <span class="legend-item"><span class="swatch swatch-busy" /> {$t`Busy`}</span>
+    <span class="legend-item"><span class="swatch swatch-no-info" /> {$t`No information`}</span>
+  </hbox>
+</vbox>
+
+<script lang="ts">
+  import type { Event } from "../../../logic/Calendar/Event";
+  import type { Participant } from "../../../logic/Calendar/Participant";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "./FreeBusy";
+  import { Timeline } from "./Timeline";
+  import { EventEditFlow } from "../EditEvent/EventEditFlow";
+  import type { EventTimeEditor } from "../EditEvent/EventTimeEditor";
+  import ParticipantConfirmIcon from "../../../frontend/Calendar/EditEvent/ParticipantConfirmIcon.svelte";
+  import PersonAutocomplete from "../../../frontend/Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
+  import PreviousIcon from "lucide-svelte/icons/chevron-left";
+  import NextIcon from "lucide-svelte/icons/chevron-right";
+  import RemoveIcon from "lucide-svelte/icons/x";
+  import { onMount, tick } from "svelte";
+  import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
+
+  export let event: Event;
+  export let timeEditor: EventTimeEditor;
+  export let readOnly = false;
+
+  const kHourWidth = 88;
+  const kRowHeight = 44;
+
+  let day = startOfDay(event.startTime);
+  let freeBusy: FreeBusy | null = null;
+  let loading = false;
+  let errorText: string | null = null;
+  let scrollEl: HTMLElement;
+  let rowsEl: HTMLElement;
+  let addRowEl: HTMLElement;
+  let loadCount = 0;
+  let lastStartTime = event.startTime.getTime();
+
+  $: participants = event.participants;
+  $: timeline = new Timeline(day, kHourWidth);
+  $: hours = timeline.hours();
+  $: dayLabel = day.toLocaleDateString(getDateTimeLocale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  $: meeting = $event && timeline.span(event.startTime, event.endTime);
+  $: allBusy = freeBusy ? spans(freeBusy.allAttendeesBusy, timeline) : [];
+  $: day, $participants, load();
+  $: followEvent($event.startTime);
+
+  onMount(() => {
+    scrollToMeeting();
+  });
+
+  function startOfDay(time: Date): Date {
+    let start = new Date(time);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }
+
+  function followEvent(startTime: Date) {
+    if (startTime.getTime() == lastStartTime) {
+      return;
+    }
+    lastStartTime = startTime.getTime();
+    if (startOfDay(startTime).getTime() != day.getTime()) {
+      day = startOfDay(startTime);
+      scrollToMeeting();
+    }
+  }
+
+  async function load() {
+    let count = ++loadCount;
+    loading = true;
+    errorText = null;
+    try {
+      let shownDay = new Timeline(day);
+      let result = await FreeBusy.load(event.calendar, event.participants.contents, shownDay.day, shownDay.dayEnd);
+      if (count == loadCount) {
+        freeBusy = result;
+      }
+    } catch (ex) {
+      if (count == loadCount) {
+        freeBusy = null;
+        errorText = ex?.message ?? String(ex);
+      }
+    } finally {
+      if (count == loadCount) {
+        loading = false;
+      }
+    }
+  }
+
+  export function refresh() {
+    load();
+  }
+
+  export function focusAddAttendee() {
+    addRowEl?.querySelector("input")?.focus();
+  }
+
+  function stepDay(days: number) {
+    let newDay = new Date(day);
+    newDay.setDate(newDay.getDate() + days);
+    day = newDay;
+  }
+
+  async function scrollToMeeting() {
+    await tick();
+    if (!scrollEl) {
+      return;
+    }
+    let target = meeting && !event.allDay ? meeting.left - kHourWidth : timeline.x(new Date(day.getFullYear(), day.getMonth(), day.getDate(), 7));
+    scrollEl.scrollLeft = Math.max(0, target);
+  }
+
+  function busyOf(freeBusy: FreeBusy | null, participant: Participant): BusyInterval[] | null {
+    return freeBusy?.rowFor(participant)?.busy ?? null;
+  }
+
+  function spans(intervals: BusyInterval[] | null, timeline: Timeline): { left: number, width: number }[] {
+    return (intervals ?? [])
+      .map(interval => timeline.span(interval.from, interval.to))
+      .filter(span => span && span.width > 0);
+  }
+
+  function statusOf(freeBusy: FreeBusy, participant: Participant, event: Event): AvailabilityStatus {
+    return freeBusy.status(participant, event.startTime, event.endTime);
+  }
+
+  function statusLabel(status: AvailabilityStatus): string {
+    switch (status) {
+    case "free":
+      return gt`Available`;
+    case "busy":
+      return gt`Busy`;
+    default:
+      return gt`No information`;
+    }
+  }
+
+  function hourLabel(hour: Date): string {
+    return hour.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric" });
+  }
+
+  function xOf(clientX: number): number {
+    return clientX - rowsEl.getBoundingClientRect().left;
+  }
+
+  function onClickRows(mouseEvent: MouseEvent) {
+    if (readOnly || (mouseEvent.target as HTMLElement).classList.contains("edge")) {
+      return;
+    }
+    timeEditor.moveTo(timeline.slotAt(xOf(mouseEvent.clientX)));
+  }
+
+  function onEdgeDown(pointerEvent: PointerEvent, edge: "start" | "end") {
+    pointerEvent.preventDefault();
+    pointerEvent.stopPropagation();
+    let edgeEl = pointerEvent.currentTarget as HTMLElement;
+    edgeEl.setPointerCapture(pointerEvent.pointerId);
+    let onMove = (moveEvent: PointerEvent) => {
+      const kSnapMinutes = 15;
+      let time = timeline.timeAt(xOf(moveEvent.clientX), kSnapMinutes);
+      if (edge == "start") {
+        timeEditor.setStartKeepingEnd(time);
+      } else if (time > event.startTime) {
+        timeEditor.setEnd(time);
+      }
+    };
+    let onUp = () => {
+      edgeEl.removeEventListener("pointermove", onMove);
+      edgeEl.removeEventListener("pointerup", onUp);
+      edgeEl.removeEventListener("pointercancel", onUp);
+    };
+    edgeEl.addEventListener("pointermove", onMove);
+    edgeEl.addEventListener("pointerup", onUp);
+    edgeEl.addEventListener("pointercancel", onUp);
+  }
+</script>
+
+<style>
+  .free-busy-grid {
+    min-height: 0;
+    --busy-color: color-mix(in srgb, var(--lo-accent) 72%, black);
+    --no-info-pattern: repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--lo-fg-secondary) 35%, transparent) 0 1px,
+      transparent 1px 6px);
+  }
+  .day-bar {
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 24px 8px 24px;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg);
+    cursor: pointer;
+  }
+  .nav:hover {
+    background-color: var(--lo-hover-bg);
+  }
+  .day-label {
+    margin-inline-start: 8px;
+    font-weight: 600;
+  }
+  .status {
+    font-size: var(--lo-font-size-small);
+  }
+  .status.error {
+    color: var(--lo-danger);
+  }
+  .grid-scroll {
+    min-height: 0;
+    align-items: start;
+    margin: 0 24px;
+    overflow-y: auto;
+    border: 1px solid var(--lo-border);
+    border-radius: var(--lo-radius-small);
+  }
+  .names {
+    flex: none;
+    width: 260px;
+    border-inline-end: 1px solid var(--lo-border);
+  }
+  .hours-spacer {
+    height: 28px;
+    border-block-end: 1px solid var(--lo-border);
+    background-color: var(--lo-pane-alt-bg);
+  }
+  .row {
+    height: var(--row-height);
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  .names .row {
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px 0 12px;
+  }
+  .names .all-attendees {
+    font-weight: 600;
+    background-color: var(--lo-pane-alt-bg);
+  }
+  .response-icon {
+    flex: none;
+    width: 16px;
+    color: var(--lo-fg-secondary);
+  }
+  .person-text {
+    min-width: 0;
+  }
+  .name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .availability {
+    font-size: var(--lo-font-size-small);
+    color: var(--lo-fg-secondary);
+  }
+  .availability.status-free {
+    color: var(--lo-success);
+  }
+  .availability.status-busy {
+    color: var(--lo-danger);
+  }
+  .remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg-secondary);
+    cursor: pointer;
+    opacity: 0;
+  }
+  .person:hover .remove,
+  .remove:focus-visible {
+    opacity: 1;
+  }
+  .remove:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  .names .add :global(input) {
+    width: 100%;
+    border: none;
+    background: none;
+    color: var(--lo-fg);
+    font: inherit;
+  }
+  .timeline-scroll {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .timeline {
+    position: relative;
+  }
+  .hours {
+    position: relative;
+    height: 28px;
+    border-block-end: 1px solid var(--lo-border);
+    background-color: var(--lo-pane-alt-bg);
+  }
+  .hour {
+    position: absolute;
+    top: 6px;
+    padding-inline-start: 6px;
+    font-size: var(--lo-font-size-small);
+    color: var(--lo-fg-secondary);
+    white-space: nowrap;
+  }
+  .rows {
+    position: relative;
+    cursor: pointer;
+    background-image:
+      repeating-linear-gradient(90deg, var(--lo-border) 0 1px, transparent 1px var(--hour-width)),
+      repeating-linear-gradient(90deg, transparent 0 calc(var(--hour-width) / 2), var(--lo-divider) calc(var(--hour-width) / 2) calc(var(--hour-width) / 2 + 1px), transparent calc(var(--hour-width) / 2 + 1px) var(--hour-width));
+  }
+  .rows .row {
+    position: relative;
+  }
+  .rows .all-attendees {
+    background-color: color-mix(in srgb, var(--lo-pane-alt-bg) 60%, transparent);
+  }
+  .rows .no-info {
+    background-image: var(--no-info-pattern);
+  }
+  .busy {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    border-radius: 2px;
+    background-color: var(--busy-color);
+  }
+  .meeting {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    border-inline: 3px solid var(--lo-accent);
+    background-color: color-mix(in srgb, var(--lo-accent) 12%, transparent);
+    pointer-events: none;
+  }
+  .edge {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 11px;
+    cursor: ew-resize;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  .edge.start {
+    left: -7px;
+  }
+  .edge.end {
+    right: -7px;
+  }
+  .legend {
+    flex-shrink: 0;
+    gap: 20px;
+    padding: 8px 24px 12px 24px;
+    font-size: var(--lo-font-size-small);
+    color: var(--lo-fg-secondary);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch {
+    width: 14px;
+    height: 12px;
+    border: 1px solid var(--lo-border);
+  }
+  .swatch-busy {
+    background-color: var(--busy-color);
+  }
+  .swatch-no-info {
+    background-image: var(--no-info-pattern);
+  }
+</style>
