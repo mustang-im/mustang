@@ -11,6 +11,7 @@
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let checked = false;
+  export let isRadio = false;
   export let onChange: (checked: boolean) => void | Promise<void> = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
@@ -20,7 +21,16 @@
   export let buttonEl: HTMLButtonElement = null;
 
   async function onToggle() {
-    checked = !checked;
-    await onChange?.(checked);
+    if (isRadio && checked) {
+      return;
+    }
+    let wanted = !checked;
+    checked = wanted;
+    try {
+      await onChange?.(wanted);
+    } catch (ex) {
+      checked = !wanted;
+      throw ex;
+    }
   }
 </script>

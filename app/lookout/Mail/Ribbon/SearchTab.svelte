@@ -1,15 +1,15 @@
 <RibbonTab label={$t`Search`}>
   <RibbonGroup label={$t`Scope`}>
     <RibbonToggleButton label={$t`All Accounts`} icon={AllAccountsIcon}
-      checked={scope == SearchScope.AllAccounts}
+      checked={scope == SearchScope.AllAccounts} isRadio
       onChange={() => MailSearch.update({ scope: SearchScope.AllAccounts })}
       shortCutInfo="Ctrl+Alt+A" />
     <RibbonToggleButton label={$t`Current Account`} icon={AccountIcon}
-      checked={scope == SearchScope.CurrentAccount}
+      checked={scope == SearchScope.CurrentAccount} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
       onChange={() => MailSearch.update({ scope: SearchScope.CurrentAccount })} />
     <RibbonToggleButton label={$t`Current Folder`} icon={FolderIcon}
-      checked={scope == SearchScope.CurrentFolder}
+      checked={scope == SearchScope.CurrentFolder} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
       onChange={() => MailSearch.update({ scope: SearchScope.CurrentFolder })}
       shortCutInfo="Ctrl+Alt+K" />
