@@ -91,7 +91,7 @@ export class JSCalendarEvent {
         let participant = jmap.participants[id];
         let emailAddress = toEmailAddress(participant.calendarAddress);
         let response =
-          emailAddress == organizer && emailAddress ? InvitationResponse.Organizer :
+          organizer && organizer == emailAddress ? InvitationResponse.Organizer :
             !participant.participationStatus || participant.participationStatus == "needs-action" ? InvitationResponse.NoResponseReceived :
               participant.participationStatus == "accepted" ? InvitationResponse.Accept :
                 participant.participationStatus == "declined" ? InvitationResponse.Decline :
