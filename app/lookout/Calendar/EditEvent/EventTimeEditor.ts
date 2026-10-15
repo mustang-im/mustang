@@ -74,10 +74,11 @@ export class EventTimeEditor {
     this.setEnd(end);
   }
 
-  // <copied from="../../../frontend/Calendar/EditEvent/TimeBox.svelte" checkEndTime()>
+  // <copied from="../../../frontend/Calendar/EditEvent/TimeBox.svelte" checkEndTime()>, but allows appointments of 0 minutes, which the end time list offers
   checkEndTime() {
     let event = this.event;
-    if (event.endTime.getTime() <= event.startTime.getTime()) {
+    if (event.endTime.getTime() < event.startTime.getTime() ||
+        event.allDay && event.endTime.getTime() == event.startTime.getTime()) {
       event.endTime.setTime(event.startTime.getTime());
       if (event.allDay) {
         event.durationDays += 1;
