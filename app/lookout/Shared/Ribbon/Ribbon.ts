@@ -36,6 +36,13 @@ export class RibbonModel {
     this.selectedTab.set(tab);
   }
 
+  selectTabByLabel(label: string) {
+    let tab = get(this.tabs).find(candidate => candidate.label == label);
+    if (tab) {
+      this.selectTab(tab);
+    }
+  }
+
   setLayout(layout: RibbonLayout) {
     this.layout.value = layout;
   }
