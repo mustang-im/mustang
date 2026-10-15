@@ -2,13 +2,12 @@ import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
 import { Participant } from "../../../logic/Calendar/Participant";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
-import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
 import { openExternalURL } from "../../../logic/util/os-integration";
 import { RecurrencePattern } from "./RecurrencePattern";
+import { CalendarActions } from "../CalendarActions";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
 import { selectedEvent } from "../../../frontend/Calendar/selected";
 import { goBack } from "../../../frontend/AppsBar/selectedApp";
-import { openComposer } from "../../../frontend/Mail/open";
 import { showError } from "../../../frontend/Util/error";
 import { gt } from "../../../l10n/l10n";
 
@@ -257,34 +256,6 @@ export class EventEditFlow {
     this.close();
   }
 
-  async deleteIt() {
-    let event = this.event;
-    if (event.seriesStatus == "only") {
-      await event.parentEvent.deleteIt();
-    } else {
-      event.parentEvent?.cancelEditing();
-      await event.deleteIt();
-    }
-    this.close(true);
-  }
-
-  async deleteAll() {
-    if (!confirm(gt`Are you sure you want to remove this unfortunate series of events?`)) {
-      return;
-    }
-    let master = this.event.parentEvent;
-    await master.deleteIt();
-    this.close(true);
-  }
-
-  async deleteRemainder() {
-    let event = this.event;
-    event.cancelEditing();
-    event.parentEvent.cancelEditing();
-    await event.truncateRecurrence();
-    this.close(true);
-  }
-
   close(deselect = false) {
     let event = this.event;
     event.finishEditing();
@@ -295,6 +266,24 @@ export class EventEditFlow {
     this.onClosed();
   }
   // </copied>
+
+  async deleteIt() {
+    await CalendarActions.deleteOccurrence(this.event);
+    this.close(true);
+  }
+
+  async deleteAll() {
+    if (!confirm(gt`Delete all occurrences of "${this.event.title ?? ""}"?`)) {
+      return;
+    }
+    await this.master.deleteIt();
+    this.close(true);
+  }
+
+  async deleteRemainder() {
+    await CalendarActions.deleteRemainder(this.event);
+    this.close(true);
+  }
 
   async cancelMeeting() {
     if (!confirm(gt`Cancel the meeting "${this.event.title ?? ""}" and send a cancellation to all attendees?`)) {
@@ -312,18 +301,13 @@ export class EventEditFlow {
   }
 
   async respond(response: InvitationResponseInMessage) {
-    // <copied from="../../../frontend/Calendar/Invitation/InvitationButtons.svelte" respond()>
-    await this.event.respondToInvitation(response);
-    // </copied>
+    await CalendarActions.respond(this.event, response);
     this.close();
   }
 
-  // <copied from="../../../frontend/Calendar/Invitation/InvitationButtons.svelte" onForward()>
   async forward() {
-    let mail = await OutgoingInvitation.forwardEventByMail(this.event);
-    openComposer(mail);
+    await CalendarActions.forward(this.event);
   }
-  // </copied>
 
   // <copied from="../../../frontend/Calendar/EditEvent/ParticipantsBox.svelte" onAddPerson()>
   static addParticipant(event: Event, person: PersonUID) {
