@@ -1,17 +1,17 @@
 <vbox flex class="reading-pane lo-card">
-  {#if message}
-    {#key message}
+  {#if shownMessage}
+    {#key shownMessage}
       <vbox flex class="message">
-        <ReadingPaneHeader {message} />
-        <InfoBars {message} />
+        <ReadingPaneHeader message={shownMessage} />
+        <InfoBars message={shownMessage} />
         <hbox class="attachments">
-          <AttachmentsUI attachments={message.attachments} />
+          <AttachmentsUI attachments={shownMessage.attachments} />
         </hbox>
         <vbox class="sml">
-          <SMLDisplayKinds {message} sml={message.sml} />
+          <SMLDisplayKinds message={shownMessage} sml={shownMessage.sml} />
         </vbox>
         <vbox flex class="body">
-          <MessageBody {message} />
+          <MessageBody message={shownMessage} />
         </vbox>
       </vbox>
     {/key}
@@ -49,7 +49,12 @@
 
   const readDelaySetting = MailView.readAfter;
   $: readDelay = $readDelaySetting.value;
-  $: catchErrors(() => markMessageAsRead(message, readDelay), backgroundError);
+  let shownMessage: EMail | null = null;
+  $: if (message != shownMessage) {
+    shownMessage = message;
+    catchErrors(onMessageChanged);
+  }
+  $: catchErrors(() => markMessageAsRead(shownMessage, readDelay), backgroundError);
   // <copied from="../../../frontend/Mail/Message/MessageHeader.svelte">
   let readTimeout: NodeJS.Timeout;
   function markMessageAsRead(message: EMail, readDelay: number) {
@@ -73,10 +78,9 @@
   });
   // </copied>
 
-  $: message && catchErrors(onMessageChanged);
   // <copied from="../../../frontend/Mail/Message/DisplayModeSwitcher.svelte">
   function onMessageChanged() {
-    if (MailView.contentRendering.value == DisplayMode.HTMLWithExternal) {
+    if (shownMessage && MailView.contentRendering.value == DisplayMode.HTMLWithExternal) {
       MailView.contentRendering.value = DisplayMode.HTML;
     }
   }

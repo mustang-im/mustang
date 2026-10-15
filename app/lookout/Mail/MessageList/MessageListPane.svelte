@@ -48,28 +48,28 @@
 <Menu bind:isMenuOpen={isArrangeMenuOpen} anchor={arrangeEl} placement="bottom-end">
   {#if !isSearchResult}
     <MenuLabel label={$t`Filter`} />
-    <MenuItem label={$t`All`} icon={!hasFilter ? CheckIcon : null} onClick={() => MailFilters.clear()} />
-    <MenuItem label={$t`Unread`} icon={$quickSearch.isRead === false ? CheckIcon : null}
+    <MenuItem label={$t`All`} icon={!hasFilter ? CheckIcon : BlankIcon} onClick={() => MailFilters.clear()} />
+    <MenuItem label={$t`Unread`} icon={$quickSearch.isRead === false ? CheckIcon : BlankIcon}
       onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
-    <MenuItem label={$t`Flagged`} icon={$quickSearch.isStarred ? CheckIcon : null}
+    <MenuItem label={$t`Flagged`} icon={$quickSearch.isStarred ? CheckIcon : BlankIcon}
       onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
-    <MenuItem label={$t`Has Attachments`} icon={$quickSearch.hasAttachment ? CheckIcon : null}
+    <MenuItem label={$t`Has Attachments`} icon={$quickSearch.hasAttachment ? CheckIcon : BlankIcon}
       onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
     <MenuDivider />
   {/if}
   <MenuLabel label={$t`Arrange By`} />
   {#each arrangements as arrangement}
-    <MenuItem label={arrangement.label} icon={$arrangeBy.value == arrangement.id ? CheckIcon : null}
+    <MenuItem label={arrangement.label} icon={$arrangeBy.value == arrangement.id ? CheckIcon : BlankIcon}
       onClick={() => $arrangeBy.value = arrangement.id} />
   {/each}
   <MenuDivider />
   <MenuLabel label={$t`Sort Order`} />
-  <MenuItem label={sortOrderLabels[0]} icon={!$reverseSort.value ? CheckIcon : null}
+  <MenuItem label={sortOrderLabels[0]} icon={!$reverseSort.value ? CheckIcon : BlankIcon}
     onClick={() => $reverseSort.value = false} />
-  <MenuItem label={sortOrderLabels[1]} icon={$reverseSort.value ? CheckIcon : null}
+  <MenuItem label={sortOrderLabels[1]} icon={$reverseSort.value ? CheckIcon : BlankIcon}
     onClick={() => $reverseSort.value = true} />
   <MenuDivider />
-  <MenuItem label={$t`Show in Groups`} icon={$showInGroups.value ? CheckIcon : null}
+  <MenuItem label={$t`Show in Groups`} icon={$showInGroups.value ? CheckIcon : BlankIcon}
     onClick={() => $showInGroups.value = !$showInGroups.value} />
 </Menu>
 
@@ -90,6 +90,7 @@
   import SortUpIcon from "lucide-svelte/icons/arrow-up";
   import SortDownIcon from "lucide-svelte/icons/arrow-down";
   import CheckIcon from "lucide-svelte/icons/check";
+  import BlankIcon from "../Menu/BlankIcon.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 
