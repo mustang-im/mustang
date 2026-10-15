@@ -150,7 +150,7 @@ export class EventFormInfo {
     return result;
   }
 
-  static messages(event: Event, events: Iterable<Event>, now = new Date()): InfoMessage[] {
+  static messages(event: Event, events: Iterable<Event>, now = new Date(), pattern = RecurrencePattern.fromEvent(event)): InfoMessage[] {
     let messages: InfoMessage[] = [];
     let isMeeting = EventFormInfo.isMeeting(event);
     if (event.isIncomingMeeting) {
@@ -165,7 +165,7 @@ export class EventFormInfo {
         : { kind: "info", text: gt`You haven't sent this meeting invitation yet.` });
     }
     if (event.parentEvent?.recurrenceRule) {
-      messages.push({ kind: "recurrence", text: RecurrencePattern.fromEvent(event).summary(event) });
+      messages.push({ kind: "recurrence", text: pattern.summary(event) });
     }
     let conflict = EventFormInfo.conflict(event, events);
     if (conflict == "conflict") {

@@ -7,6 +7,7 @@ import { InvitationResponse } from "../../../../logic/Calendar/Invitation/Invita
 import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { EventFormInfo } from "../../../Calendar/EditEvent/EventFormInfo";
+import { RecurrencePattern } from "../../../Calendar/EditEvent/RecurrencePattern";
 import { expect, test } from "vitest";
 
 const calendar = new Calendar();
@@ -98,6 +99,13 @@ test("Info bar: in the past, and the series of an occurrence", () => {
   let messages = EventFormInfo.messages(occurrence, [], new Date(2026, 9, 1));
   expect(messages[0].kind).toBe("recurrence");
   expect(messages[0].text).toContain("Every week, on Thursday");
+
+  // The series end from the recurrence dialog, before it is saved
+  let pattern = RecurrencePattern.fromEvent(occurrence);
+  pattern.end = "count";
+  pattern.count = 5;
+  messages = EventFormInfo.messages(occurrence, [], new Date(2026, 9, 1), pattern);
+  expect(messages[0].text).toContain("5 times");
 });
 
 test("When and tracking texts", () => {

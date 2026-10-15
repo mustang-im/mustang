@@ -18,7 +18,7 @@
             <AttendeesField {event} bind:this={attendeesField} autofocus={!!event.title && !flow.attendees.length} />
           </hbox>
         {/if}
-        <TimeRows {event} editor={timeEditor} pattern={flow.pattern} {onRecurrence} />
+        <TimeRows {event} editor={timeEditor} {flow} {onRecurrence} />
         <label class="field-button" for="event-form-location">{$t`Location`}</label>
         <input id="event-form-location" class="field location" type="text" bind:value={event.location} />
         {#if $event.isOnline}
