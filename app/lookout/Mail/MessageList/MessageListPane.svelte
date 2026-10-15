@@ -94,7 +94,7 @@
   import SortUpIcon from "lucide-svelte/icons/arrow-up";
   import SortDownIcon from "lucide-svelte/icons/arrow-down";
   import CheckIcon from "lucide-svelte/icons/check";
-  import BlankIcon from "../Menu/BlankIcon.svelte";
+  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 

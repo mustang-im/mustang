@@ -33,7 +33,7 @@
             folderName={showFolder && row.message.folder ? FolderTreeActions.displayName(row.message.folder) : null}
             on:toggleThread={() => toggleThread(row.message)}
             on:click={event => onClickMessage(row.message, event)}
-            on:dblclick={() => MessageActions.openDraft(row.message)}
+            on:dblclick={() => catchErrors(() => MessageActions.openDraft(row.message))}
             on:contextmenu={event => onContextMenu(row.message, event)} />
         {/if}
       </div>

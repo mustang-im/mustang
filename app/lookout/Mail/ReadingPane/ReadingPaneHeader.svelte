@@ -37,11 +37,11 @@
     <vbox class="top-right">
       <hbox class="respond-group">
         <hbox class="button-group">
-          <button class="respond" on:click={() => MessageActions.reply(message)}
+          <button class="respond" on:click={() => catchErrors(() => MessageActions.reply(message))}
             title={$t`Reply`} aria-label={$t`Reply`}>
             <ReplyIcon size={18} />
           </button>
-          <button class="respond" on:click={() => MessageActions.replyAll(message)}
+          <button class="respond" on:click={() => catchErrors(() => MessageActions.replyAll(message))}
             disabled={!MessageActions.canReplyAll(message)}
             title={$t`Reply All`} aria-label={$t`Reply All`}>
             <ReplyAllIcon size={18} />

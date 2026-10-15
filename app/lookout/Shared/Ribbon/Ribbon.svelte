@@ -58,8 +58,8 @@
   import MenuLabel from "../../../frontend/Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
   import OptionsIcon from "lucide-svelte/icons/chevron-down";
-  import CheckIcon from "lucide-svelte/icons/circle-dot";
-  import BlankIcon from "lucide-svelte/icons/circle";
+  import CheckIcon from "lucide-svelte/icons/check";
+  import BlankIcon from "../Menu/BlankIcon.svelte";
   import { setContext } from "svelte";
   import { t } from "../../../l10n/l10n";
 

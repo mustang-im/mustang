@@ -108,7 +108,7 @@ export class FolderTreeActions {
   static async deleteFolder(folder: Folder): Promise<Folder | null> {
     // <copied from="../../../frontend/Mail/FolderProperties.svelte">
     if (!(folder instanceof SavedSearchFolder)) {
-      let confirmed = confirm(gt`Are you sure that you want to the delete folder ${folder.name} and all messages in it? This will also delete it on the server.`);
+      let confirmed = confirm(gt`Are you sure that you want to delete the folder ${folder.name} and all messages in it? This will also delete it on the server.`);
       if (!confirmed) {
         return null;
       }
