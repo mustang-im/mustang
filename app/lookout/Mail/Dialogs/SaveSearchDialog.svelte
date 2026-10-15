@@ -14,7 +14,7 @@
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let search: SearchEMail;

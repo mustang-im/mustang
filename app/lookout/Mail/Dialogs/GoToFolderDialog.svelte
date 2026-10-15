@@ -12,7 +12,7 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderPicker from "./FolderPicker.svelte";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";

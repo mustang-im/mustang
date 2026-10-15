@@ -18,7 +18,7 @@
 
 <script lang="ts">
   import { MailView } from "../MailView";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { t } from "../../../l10n/l10n";
 
   let current = MailView.readAfter.value;

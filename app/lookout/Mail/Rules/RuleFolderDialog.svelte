@@ -1,4 +1,4 @@
-<Dialog title={$t`Rules and Alerts`} onClose={onCancel} width="400px">
+<Dialog title={$t`Rules and Alerts`} on:close={onCancel} width="400px">
   <vbox class="content">
     <span class="caption">{$t`Choose a folder:`}</span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={folder}
@@ -14,8 +14,8 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import Dialog from "../Composer/Dialog.svelte";
-  import DialogButton from "../Composer/DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FolderPicker from "../Dialogs/FolderPicker.svelte";
   import { t } from "../../../l10n/l10n";
 

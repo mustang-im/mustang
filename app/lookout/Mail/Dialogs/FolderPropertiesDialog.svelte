@@ -14,7 +14,7 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderGeneral from "../../../frontend/Settings/Mail/Account/FolderGeneral.svelte";
   import { t } from "../../../l10n/l10n";
 

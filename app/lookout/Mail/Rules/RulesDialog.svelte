@@ -1,4 +1,4 @@
-<Dialog title={$t`Rules and Alerts`} onClose={onCloseRequest} width="720px" height="600px">
+<Dialog title={$t`Rules and Alerts`} on:close={onCloseRequest} width="720px" height="600px">
   {#if edit}
     <RuleEditor {edit} onDone={onEditDone} />
   {:else}
@@ -55,7 +55,7 @@
     </vbox>
     <hbox class="hint lo-secondary">
       <InfoIcon size={14} />
-      {$t`Rules run in Lookout when it downloads new messages.`}
+      {$t`Rules run in ${appName} when it downloads new messages.`}
     </hbox>
     <span class="description-label">{$t`Rule description (click an underlined value to edit):`}</span>
     <RuleDescriptionBox rule={selected} onEdit={onEdit} />
@@ -78,11 +78,12 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { appGlobal } from "../../../logic/app";
+  import { appName } from "../../../logic/build";
   import { catchErrors } from "../../../frontend/Util/error";
   import { RuleEdit } from "./RuleEdit";
   import { RuleListActions } from "./RuleListActions";
-  import Dialog from "../Composer/Dialog.svelte";
-  import DialogButton from "../Composer/DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RuleEditor from "./RuleEditor.svelte";
   import RuleRow from "./RuleRow.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
@@ -222,6 +223,7 @@
     border-radius: var(--lo-radius-small);
     overflow: hidden;
   }
+  /* <copied from="../Composer/SelectNamesDialog.svelte"> */
   .list :global(.fast-list .header > *) {
     padding: 4px 8px;
     border-block-end: 1px solid var(--lo-divider);
@@ -231,6 +233,7 @@
     position: sticky;
     top: 0;
   }
+  /* </copied> */
   .empty {
     position: absolute;
     inset: 48px 16px auto 16px;

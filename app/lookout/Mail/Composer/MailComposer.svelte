@@ -184,7 +184,7 @@
   import SelectNamesDialog from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import LinkDialog from "./LinkDialog.svelte";
-  import DialogButton from "./DialogButton.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import MailAutocomplete from "../../../frontend/Mail/Composer/MailAutocomplete.svelte";
   import IdentitySelector from "../../../frontend/Mail/Composer/IdentitySelector.svelte";
   import EncryptionDetails from "../../../frontend/Mail/Composer/EncryptionDetails.svelte";

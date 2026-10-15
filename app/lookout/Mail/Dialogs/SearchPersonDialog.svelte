@@ -13,7 +13,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import { MailSearch } from "../Search/MailSearch";
   import PersonPicker from "./PersonPicker.svelte";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 

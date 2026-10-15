@@ -70,7 +70,7 @@
   import { TagState } from "../SelectionState";
   import CategorySquare from "../Menu/CategorySquare.svelte";
   import FolderPicker from "./FolderPicker.svelte";
-  import Dialog from "./Dialog.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let search: SearchEMail;

@@ -1,7 +1,7 @@
 {#if advancedRule}
   <RulesDialog account={quickRule.account} editRule={advancedRule} {onClose} />
 {:else}
-  <Dialog title={$t`Create Rule`} onClose={onClose} width="520px">
+  <Dialog title={$t`Create Rule`} on:close={onClose} width="520px">
     <fieldset>
       <legend>{$t`When I get email with all of the selected conditions`}</legend>
       <label class="check" class:disabled={!quickRule.sender}
@@ -59,8 +59,8 @@
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { UserError } from "../../../logic/util/util";
   import { QuickRule } from "./QuickRule";
-  import Dialog from "../Composer/Dialog.svelte";
-  import DialogButton from "../Composer/DialogButton.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RulesDialog from "./RulesDialog.svelte";
   import RuleFolderDialog from "./RuleFolderDialog.svelte";
   import { t } from "../../../l10n/l10n";

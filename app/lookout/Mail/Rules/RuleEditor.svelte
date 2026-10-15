@@ -58,7 +58,7 @@
   import { UserError } from "../../../logic/util/util";
   import { RuleDescription } from "./RuleDescription";
   import { RuleEdit } from "./RuleEdit";
-  import DialogButton from "../Composer/DialogButton.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import SearchCriteria from "../../../frontend/Mail/Search/SearchCriteria.svelte";
   import RuleActions from "../../../frontend/Mail/Search/RuleActions.svelte";
   import CheckIcon from "lucide-svelte/icons/check";
