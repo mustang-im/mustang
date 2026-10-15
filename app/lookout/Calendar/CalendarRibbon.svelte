@@ -96,6 +96,14 @@
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`View`}>
+    <RibbonGroup label={$t`Current View`}>
+      <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
+        <ChangeViewGallery {currentView} onChange={onCurrentView} />
+      </RibbonMenuButton>
+      <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
+        tooltip={$t`Reset the view and the table columns to the default settings`}
+        onClick={onResetView} />
+    </RibbonGroup>
     <RibbonGroup label={$t`Arrangement`}>
       <RibbonToggleButton label={$t`Day`} icon={DayIcon} shortCutInfo="Ctrl+Alt+1"
         bind:checked={isDay} onChange={() => selectView("day")} />
@@ -129,11 +137,12 @@
         bind:checked={showDeclined} onChange={onShowDeclined} />
     </RibbonGroup>
   </RibbonTab>
+  <slot />
 </Ribbon>
 
 <script lang="ts">
   import { CalendarActions } from "./CalendarActions";
-  import { CalendarSettings, type CalendarViewType } from "./CalendarSettings";
+  import { CalendarCurrentView, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
   import { CalendarGroups } from "./FolderPane/CalendarGroups";
   import { selectedCalendar } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
@@ -145,6 +154,9 @@
   import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";
   import MenuItem from "../../frontend/Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../frontend/Shared/Menu/MenuLabel.svelte";
+  import ChangeViewGallery from "./View/ChangeViewGallery.svelte";
+  import ChangeViewIcon from "lucide-svelte/icons/layout-template";
+  import ResetViewIcon from "lucide-svelte/icons/rotate-ccw";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
   import NewItemsIcon from "lucide-svelte/icons/calendar-plus-2";
@@ -175,6 +187,9 @@
   import { t } from "../../l10n/l10n";
 
   export let view: CalendarViewType;
+  export let currentView: CalendarCurrentView;
+  export let onCurrentView: (view: CalendarCurrentView) => void;
+  export let onResetView: () => void;
   export let splitView: boolean;
   export let timeScale: number;
   export let showFolderPane: boolean;
@@ -193,12 +208,13 @@
   let isWorkWeek = false;
   let isWeek = false;
   let isMonth = false;
-  $: setViewToggles(view);
-  function setViewToggles(view: CalendarViewType) {
-    isDay = view == "day";
-    isWorkWeek = view == "workweek";
-    isWeek = view == "week";
-    isMonth = view == "month";
+  $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
+  $: setViewToggles(view, isTable);
+  function setViewToggles(view: CalendarViewType, isTable: boolean) {
+    isDay = !isTable && view == "day";
+    isWorkWeek = !isTable && view == "workweek";
+    isWeek = !isTable && view == "week";
+    isMonth = !isTable && view == "month";
   }
 
   let emailAccounts = appGlobal.emailAccounts;
@@ -207,7 +223,7 @@
 
   function selectView(newView: CalendarViewType) {
     onView(newView);
-    setViewToggles(newView);
+    setViewToggles(newView, false);
   }
 
   function timeScaleLabel(minutes: number): string {
