@@ -1,0 +1,57 @@
+<MenuLabel label={account.emailAddress ?? account.name} />
+<MenuItem label={$t`Update Folder`} icon={UpdateIcon}
+  tooltip={$t`Get new mail for this account`}
+  onClick={onGetNewMail} />
+<MenuItem label={$t`New Folder…`} icon={NewFolderIcon}
+  onClick={() => MailDialogs.open({ kind: "new-folder", account, parent: null })} />
+<MenuItem label={$t`Manage Rules & Alerts…`} icon={RulesIcon}
+  onClick={() => MessageActions.openRules(account)} />
+<MenuDivider />
+<MenuItem label={$t`Account Settings…`} icon={SettingsIcon}
+  onClick={onOpenSettings} />
+{#if $account.isLoggedIn}
+  <MenuItem label={$t`Disconnect`} icon={DisconnectIcon}
+    tooltip={$t`Log out of this account`}
+    onClick={() => account.logout()} />
+{:else}
+  <MenuItem label={$t`Connect`} icon={ConnectIcon}
+    onClick={() => account.loginAndStartup(true)} />
+{/if}
+
+<script lang="ts">
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
+  import { openSettingsCategoryForAccount } from "../../../frontend/Settings/Window/CategoriesUtils";
+  import { MessageActions } from "../MessageActions";
+  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import MenuLabel from "../../../frontend/Shared/Menu/MenuLabel.svelte";
+  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import UpdateIcon from "lucide-svelte/icons/refresh-cw";
+  import NewFolderIcon from "lucide-svelte/icons/folder-plus";
+  import RulesIcon from "lucide-svelte/icons/list-filter";
+  import SettingsIcon from "lucide-svelte/icons/settings";
+  import DisconnectIcon from "lucide-svelte/icons/unplug";
+  import ConnectIcon from "lucide-svelte/icons/plug";
+  import { t } from "../../../l10n/l10n";
+
+  export let account: MailAccount;
+
+  async function onGetNewMail() {
+    // <copied from="../../../frontend/Mail/LeftPane/AccountMenu.svelte">
+    if (!account.isLoggedIn) {
+      await account.loginAndStartup(true);
+    }
+    await account.inbox.getNewMessages();
+
+    $selectedAccount = account;
+    if ($selectedFolder?.account != account) {
+      $selectedFolder = account.inbox;
+    }
+    // </copied>
+  }
+
+  function onOpenSettings() {
+    openSettingsCategoryForAccount(account);
+  }
+</script>

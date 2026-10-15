@@ -1,0 +1,34 @@
+{#each recent as folder (folder)}
+  <MenuItem label={FolderTreeActions.displayName(folder)}
+    tooltip={$t`Move to ${folder.account?.name} / ${folder.fullPath}`}
+    disabled={MessageActions.isInFolder(messages, folder) && $t`The messages are already in this folder`}
+    onClick={() => MessageActions.moveTo(messages, folder)}>
+    <FolderIcon slot="icon" {folder} size="16px" />
+  </MenuItem>
+{/each}
+{#if recent.length}
+  <MenuDivider />
+{/if}
+<MenuItem label={$t`Other Folder…`} icon={MoveIcon} shortCutInfo="Ctrl+Shift+V"
+  onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: false })} />
+<MenuItem label={$t`Copy to Folder…`} icon={CopyIcon} shortCutInfo="Ctrl+Shift+Y"
+  onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: true })} />
+
+<script lang="ts">
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import { appGlobal } from "../../../logic/app";
+  import { recentFolders } from "../RecentFolders";
+  import { MessageActions } from "../MessageActions";
+  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
+  import MoveIcon from "lucide-svelte/icons/folder-input";
+  import CopyIcon from "lucide-svelte/icons/copy";
+  import { t } from "../../../l10n/l10n";
+
+  export let messages: EMail[];
+
+  let recent = recentFolders.folders(appGlobal.emailAccounts.contents);
+</script>
