@@ -98,10 +98,33 @@
   }
   .attachments {
     flex-shrink: 0;
-    padding: 0 16px;
+    padding: 0 12px;
   }
   .attachments :global(.attachments) {
     min-height: 0;
+  }
+  .attachments :global(.attachments-list .attachment) {
+    border: 1px solid var(--lo-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-pane-bg);
+  }
+  .attachments :global(.attachments-list .attachment:hover) {
+    background-color: var(--lo-hover-bg);
+  }
+  .attachments :global(.attachments-list .attachment .icon),
+  .attachments :global(.attachments-list .attachment:hover .icon) {
+    padding-inline-start: 6px;
+    background-color: transparent;
+    color: var(--lo-fg-secondary);
+  }
+  .attachments :global(.attachments-list .attachment .info) {
+    width: 200px;
+    background-color: transparent;
+    color: var(--lo-fg);
+    box-shadow: none;
+  }
+  .attachments :global(.attachments-list .attachment .size) {
+    color: var(--lo-fg-secondary);
   }
   .sml {
     flex-shrink: 0;
