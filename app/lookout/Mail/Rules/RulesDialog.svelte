@@ -1,94 +1,110 @@
-<Dialog title={$t`Rules and Alerts`} on:close={onCloseRequest} width="720px" height="600px">
-  {#if edit}
-    <RuleEditor {edit} onDone={onEditDone} />
-  {:else}
-    <hbox class="account-row">
-      <label for="rules-account">{$t`Apply changes to this account:`}</label>
-      <select id="rules-account" class="lo-text-field" bind:value={account}>
-        {#each $accounts.each as mailAccount}
-          <option value={mailAccount}>{mailAccount.name}</option>
-        {/each}
-      </select>
-    </hbox>
-    <hbox class="toolbar">
-      <DialogButton label={$t`New Rule…`} icon={NewIcon} classes="plain" onClick={onNew} />
-      <DialogButton label={$t`Change Rule`} icon={EditIcon} classes="plain" hasMenu
-        disabled={!selected && noSelection}
-        onClick={() => { isChangeMenuOpen = !isChangeMenuOpen; }}
-        bind:buttonEl={changeButton} />
-      <Menu bind:isMenuOpen={isChangeMenuOpen} anchor={changeButton} placement="bottom-start">
-        <MenuItem label={$t`Edit Rule Settings…`} icon={EditIcon} onClick={onEdit} />
-        <MenuItem label={$t`Rename Rule`} icon={RenameIcon} onClick={() => renaming = selected} />
-        <MenuDivider />
-        <MenuItem label={$t`Move to Folder…`} icon={MoveIcon} onClick={() => folderAction = "move"} />
-        <MenuItem label={$t`Copy to Folder…`} icon={CopyToFolderIcon} onClick={() => folderAction = "copy"} />
-        <MenuItem label={$t`Delete Message`} icon={DeleteMessageIcon} onClick={() => catchErrors(onDeleteMessage)} />
-      </Menu>
-      <DialogButton label={$t`Copy`} icon={CopyIcon} classes="plain"
-        tooltip={$t`Make a copy of this rule`}
-        disabled={!selected && noSelection} onClick={onCopy} />
-      <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain"
-        disabled={!selected && noSelection} onClick={onDelete} />
-      <hbox class="separator" />
-      <DialogButton label="" icon={MoveUpIcon} classes="plain"
-        tooltip={$t`Move Up`}
-        disabled={!canMoveUp && $t`This rule runs first`}
-        onClick={() => onMove(-1)} />
-      <DialogButton label="" icon={MoveDownIcon} classes="plain"
-        tooltip={$t`Move Down`}
-        disabled={!canMoveDown && $t`This rule runs last`}
-        onClick={() => onMove(1)} />
-    </hbox>
-    <vbox flex class="list">
-      <FastList items={rules} bind:selectedItem={selected} columns="minmax(0, 1fr) 140px">
-        <svelte:fragment slot="header">
-          <hbox class="column-header">{$t`Rule (applied in the order shown)`}</hbox>
-          <hbox class="column-header">{$t`Actions`}</hbox>
-        </svelte:fragment>
-        <svelte:fragment slot="row" let:item={rule}>
-          <RuleRow {rule} onEdit={onEdit} />
-        </svelte:fragment>
-      </FastList>
-      {#if $rules.isEmpty}
-        <hbox class="empty lo-secondary">{$t`There are no rules. Click New Rule to create one.`}</hbox>
-      {/if}
-    </vbox>
-    <hbox class="hint lo-secondary">
-      <InfoIcon size={14} />
-      {$t`Rules run in ${appName} when it downloads new messages.`}
-    </hbox>
-    <span class="description-label">{$t`Rule description (click an underlined value to edit):`}</span>
-    <RuleDescriptionBox rule={selected} onEdit={onEdit} />
-  {/if}
+<Dialog title={$t`Rules and Alerts`} on:close={onClose} width="720px" height="640px">
+  <hbox class="folder-row">
+    <label for="rules-folder">{$t`Apply changes to this folder:`}</label>
+    <select id="rules-folder" class="lo-text-field" bind:value={account}>
+      {#each $accounts.each as mailAccount}
+        <option value={mailAccount}>{RuleDescription.inboxLabel(mailAccount)}</option>
+      {/each}
+    </select>
+  </hbox>
+  <hbox class="toolbar">
+    <DialogButton label={$t`New Rule…`} icon={NewIcon} classes="plain" onClick={onNew} />
+    <DialogButton label={$t`Change Rule`} icon={EditIcon} classes="plain" hasMenu
+      disabled={!selected && noSelection}
+      onClick={() => { isChangeMenuOpen = !isChangeMenuOpen; }}
+      bind:buttonEl={changeButton} />
+    <Menu bind:isMenuOpen={isChangeMenuOpen} anchor={changeButton} placement="bottom-start">
+      <MenuItem label={$t`Edit Rule Settings…`} icon={EditIcon} onClick={onEdit} />
+      <MenuItem label={$t`Rename Rule`} icon={RenameIcon} onClick={() => renaming = selected} />
+      <MenuDivider />
+      <MenuItem label={$t`Move to Folder…`} icon={MoveIcon} onClick={() => folderAction = "move"} />
+      <MenuItem label={$t`Copy to Folder…`} icon={CopyToFolderIcon} onClick={() => folderAction = "copy"} />
+      <MenuItem label={$t`Delete Message`} icon={DeleteMessageIcon} onClick={onDeleteMessage} />
+    </Menu>
+    <DialogButton label={$t`Copy…`} icon={CopyIcon} classes="plain"
+      disabled={!selected && noSelection} onClick={() => { isCopying = true; }} />
+    <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain"
+      disabled={!selected && noSelection} onClick={onDelete} />
+    <hbox class="separator" />
+    <DialogButton label="" icon={MoveUpIcon} classes="plain"
+      tooltip={$t`Move Up`}
+      disabled={!canMoveUp && $t`This rule runs first`}
+      onClick={() => onMove(-1)} />
+    <DialogButton label="" icon={MoveDownIcon} classes="plain"
+      tooltip={$t`Move Down`}
+      disabled={!canMoveDown && $t`This rule runs last`}
+      onClick={() => onMove(1)} />
+  </hbox>
+  <vbox flex class="list">
+    <FastList items={rules} bind:selectedItem={selected} columns="minmax(0, 1fr) 120px">
+      <svelte:fragment slot="header">
+        <hbox class="column-header">{$t`Rule (applied in the order shown)`}</hbox>
+        <hbox class="column-header">{$t`Actions`}</hbox>
+      </svelte:fragment>
+      <svelte:fragment slot="row" let:item={rule}>
+        <RuleRow {rule} onEdit={onEdit} />
+      </svelte:fragment>
+    </FastList>
+    {#if $rules.isEmpty}
+      <hbox class="empty lo-secondary">{$t`There are no rules. Click New Rule… to create one.`}</hbox>
+    {/if}
+  </vbox>
+  <span class="description-label">{$t`Rule description (click an underlined value to edit):`}</span>
+  <RuleDescriptionBox lines={descriptionLines} onValueClick={onValueClick} />
+  <hbox class="hint lo-secondary">
+    <InfoIcon size={14} />
+    {$t`Rules run in ${appName} when it downloads new messages.`}
+  </hbox>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`Close`} onClick={onCloseRequest} />
+    <DialogButton label={$t`OK`} primary onClick={onOK} />
+    <DialogButton label={$t`Cancel`} onClick={onClose} />
+    <DialogButton label={$t`Apply`} onClick={onApply} disabled={!isChanged && $t`There are no changes to apply`} />
   </svelte:fragment>
 </Dialog>
+{#if wizard}
+  <RulesWizard model={wizard} onFinish={onWizardFinish} onCancel={() => wizard = null} />
+{/if}
 {#if renaming}
-  <RenameRuleDialog rule={renaming} onDone={() => renaming = null} />
+  <RenameRuleDialog rule={renaming} onDone={() => { renaming = null; changed(); }} />
 {/if}
 {#if folderAction && selected}
   <RuleFolderDialog account={selected.account} folder={selected.toFolder}
     onChosen={onFolderChosen}
     onCancel={() => folderAction = null} />
 {/if}
+{#if pickerItem && selected}
+  <RuleValuePicker rule={selected} item={pickerItem} onDone={onPickerDone} />
+{/if}
+{#if isCopying && selected}
+  <CopyRulesDialog rule={selected} onCopy={onCopyTo} onClose={() => isCopying = false} />
+{/if}
+{#if deleting}
+  <RuleMessageBox title={$t`Rules and Alerts`} isQuestion
+    message={$t`Do you want to delete the rule "${deleting.name}"?`}
+    onAnswer={onDeleteAnswer} />
+{/if}
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
+  import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { appGlobal } from "../../../logic/app";
   import { appName } from "../../../logic/build";
-  import { catchErrors } from "../../../frontend/Util/error";
-  import { RuleEdit } from "./RuleEdit";
   import { RuleListActions } from "./RuleListActions";
+  import { RuleDescription } from "./RuleDescription";
+  import { RulesWorkingList } from "./RulesWorkingList";
+  import { RuleWizardModel } from "./RuleWizardModel";
+  import type { RuleItem } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import RuleEditor from "./RuleEditor.svelte";
   import RuleRow from "./RuleRow.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
+  import RulesWizard from "./RulesWizard.svelte";
   import RenameRuleDialog from "./RenameRuleDialog.svelte";
   import RuleFolderDialog from "./RuleFolderDialog.svelte";
+  import RuleMessageBox from "./RuleMessageBox.svelte";
+  import CopyRulesDialog from "./CopyRulesDialog.svelte";
+  import RuleValuePicker from "./Pickers/RuleValuePicker.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
   import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
@@ -107,97 +123,146 @@
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
-  export let editRule: FilterRuleAction | null = null;
   export let onClose: () => void;
 
   const accounts = appGlobal.emailAccounts;
   if (!accounts.contains(account)) {
     account = accounts.first;
   }
+  const workingLists = new Map<MailAccount, RulesWorkingList>();
   let selected: FilterRuleAction | null = null;
-  let edit: RuleEdit | null = editRule ? new RuleEdit(editRule) : null;
   let isChangeMenuOpen = false;
   let changeButton: HTMLButtonElement;
   let renaming: FilterRuleAction | null = null;
   let folderAction: "move" | "copy" | null = null;
+  let wizard: RuleWizardModel | null = null;
+  let pickerItem: RuleItem | null = null;
+  let isCopying = false;
+  let deleting: FilterRuleAction | null = null;
+  let isChanged = false;
+  let version = 0;
 
-  $: rules = account.filterRuleActions;
+  $: list = workingList(account);
+  $: rules = list.rules;
   let shownAccount: MailAccount | null = null;
   $: if (account != shownAccount) {
     shownAccount = account;
-    selected = account.filterRuleActions.first ?? null;
+    selected = rules.first ?? null;
   }
   $: noSelection = $t`Select a rule first`;
   $: canMoveUp = !!selected && $rules && RuleListActions.canMoveUp(rules, selected);
   $: canMoveDown = !!selected && $rules && RuleListActions.canMoveDown(rules, selected);
+  $: descriptionLines = selected && version >= 0 ? RuleDescription.lines(selected) : [];
+
+  function workingList(mailAccount: MailAccount): RulesWorkingList {
+    let existing = workingLists.get(mailAccount);
+    if (existing) {
+      return existing;
+    }
+    let created = new RulesWorkingList(mailAccount);
+    workingLists.set(mailAccount, created);
+    return created;
+  }
+
+  function changed() {
+    version++;
+    isChanged = [...workingLists.values()].some(working => working.isChanged);
+  }
 
   function onNew() {
-    let rule = new FilterRuleAction(account);
-    edit = new RuleEdit(rule);
+    wizard = RuleWizardModel.forNewRule(account);
   }
 
   function onEdit() {
     if (!selected) {
       return;
     }
-    edit = new RuleEdit(selected);
+    wizard = RuleWizardModel.forRule(selected);
   }
 
-  function onEditDone(saved: FilterRuleAction | null) {
-    edit = null;
-    if (saved) {
-      selected = saved;
+  function onWizardFinish(rule: FilterRuleAction) {
+    let target = wizard.isNew ? null : selected;
+    wizard = null;
+    if (target) {
+      RuleWizardModel.copyInto(rule, target);
+    } else {
+      rules.add(rule);
+      selected = rule;
+    }
+    changed();
+  }
+
+  function onValueClick(item: RuleItem) {
+    pickerItem = item;
+  }
+
+  function onPickerDone(isValueChanged: boolean) {
+    pickerItem = null;
+    if (isValueChanged) {
+      changed();
     }
   }
 
-  async function onCopy() {
-    selected = RuleListActions.copy(rules, selected);
-    await account.save();
-  }
-
-  async function onDelete() {
-    // <copied from="../../../frontend/Settings/Mail/Rules.svelte" onDelete()>
-    if (selected.name && !confirm($t`Do you want to delete the rule '${selected.name}'?`)) {
-      return;
+  function onCopyTo(target: MailAccount) {
+    let copy = RuleListActions.copyToAccount(selected, target, workingList(target).rules);
+    if (target == account) {
+      selected = copy;
     }
-    account.filterRuleActions.remove(selected);
-    await account.save();
-    selected = null;
-    // </copied>
+    changed();
   }
 
-  async function onMove(offset: number) {
+  function onDelete() {
+    deleting = selected;
+  }
+
+  function onDeleteAnswer(yes: boolean) {
+    if (yes && deleting) {
+      rules.remove(deleting);
+      selected = rules.first ?? null;
+      changed();
+    }
+    deleting = null;
+  }
+
+  function onMove(offset: number) {
     RuleListActions.move(rules, selected, offset);
-    await account.save();
+    changed();
   }
 
-  async function onFolderChosen(folder: Folder) {
+  function onFolderChosen(folder: Folder) {
     RuleListActions.moveToFolder(selected, folder, folderAction == "copy");
     folderAction = null;
-    await selected.account.save();
+    changed();
   }
 
-  async function onDeleteMessage() {
+  function onDeleteMessage() {
     RuleListActions.deleteMessage(selected);
-    await selected.account.save();
+    changed();
   }
 
-  function onCloseRequest() {
-    edit?.discard();
-    edit = null;
+  async function onApply() {
+    for (let working of workingLists.values()) {
+      await working.apply();
+    }
+    changed();
+  }
+
+  async function onOK() {
+    await onApply();
     onClose();
   }
 </script>
 
 <style>
-  .account-row {
+  .folder-row {
     flex-shrink: 0;
     align-items: center;
     gap: 12px;
     margin-block-end: 8px;
   }
-  .account-row select {
-    min-width: 260px;
+  .folder-row select {
+    flex: 1 1 0;
+    min-width: 0;
   }
   .toolbar {
     flex-shrink: 0;
@@ -226,9 +291,12 @@
   .list :global(.fast-list .header > *) {
     padding: 4px 8px;
     border-block-end: 1px solid var(--lo-divider);
+    border-inline-end: 1px solid var(--lo-divider);
     background-color: var(--lo-pane-alt-bg);
     font-size: var(--lo-font-size-small);
     color: var(--lo-fg-secondary);
+    white-space: nowrap;
+    overflow: hidden;
     position: sticky;
     top: 0;
   }
@@ -239,15 +307,15 @@
     justify-content: center;
     text-align: center;
   }
+  .description-label {
+    flex-shrink: 0;
+    margin-block: 10px 4px;
+  }
   .hint {
     flex-shrink: 0;
     align-items: center;
     gap: 6px;
-    margin-block: 6px 12px;
+    margin-block-start: 10px;
     font-size: var(--lo-font-size-small);
-  }
-  .description-label {
-    flex-shrink: 0;
-    margin-block-end: 4px;
   }
 </style>

@@ -18,15 +18,8 @@
 
   let name = rule.name;
 
-  async function onOK() {
-    let oldName = rule.name;
+  function onOK() {
     rule.name = name.trim();
-    try {
-      await rule.account.save();
-    } catch (ex) {
-      rule.name = oldName;
-      throw ex;
-    }
   }
 </script>
 
@@ -34,8 +27,5 @@
   .content {
     gap: 6px;
     padding-block: 4px;
-  }
-  label {
-    color: var(--lo-fg-secondary);
   }
 </style>

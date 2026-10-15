@@ -5,10 +5,11 @@ import { FilterMoment } from "../../../../logic/Mail/FilterRules/FilterMoments";
 import { Person, ContactEntry } from "../../../../logic/Abstract/Person";
 import { getTagByName } from "../../../../logic/Abstract/Tag";
 import { RuleDescription } from "../../../Mail/Rules/RuleDescription";
+import { RuleItems } from "../../../Mail/Rules/RuleItems";
 import { expect, test } from "vitest";
 
 function texts(rule: FilterRuleAction): string[] {
-  return RuleDescription.lines(rule).map(line => line.text);
+  return RuleDescription.texts(rule);
 }
 
 test("When line by moment", () => {
@@ -30,14 +31,14 @@ test("Move from a person", () => {
   rule.toFolder = RulesTestAccount.folder(account, "Music");
   expect(texts(rule)).toEqual([
     "Apply this rule after the message arrives",
-    "from or to Music Discussion",
+    "from Music Discussion",
     "move it to the Music folder",
   ]);
   expect(RuleDescription.hasAction(rule)).toBe(true);
   expect(RuleDescription.isBroken(rule)).toBe(false);
 });
 
-test("Conditions and actions in Outlook order", () => {
+test("Conditions and actions in Outlook order, Mustang extras last", () => {
   let account = RulesTestAccount.create("a", ["Inbox", "Archive"]);
   let rule = new FilterRuleAction(account);
   rule.criteria.bodyText = "invoice";
@@ -52,25 +53,27 @@ test("Conditions and actions in Outlook order", () => {
   rule.copy = true;
   expect(texts(rule)).toEqual([
     "Apply this rule after the message arrives",
-    "with invoice in the subject or body",
-    "which has an attachment",
+    "which is flagged for follow up",
+    `with "invoice" in the subject or body`,
     "assigned to Work category",
+    "which has an attachment",
     "which is unread",
-    "which is flagged",
-    "mark it as read",
-    "flag it",
     "assign it to the Finance category",
     "move a copy to the Archive folder",
+    "flag message for follow up",
+    "mark it as read",
   ]);
 });
 
-test("Size in KB", () => {
+test("Size in KB, dates", () => {
   let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
   rule.criteria.sizeMin = 100 * 1024;
   rule.criteria.sizeMax = 2048 * 1024;
   expect(texts(rule)).toContain("with a size between 100 and 2048 KB");
   rule.criteria.sizeMax = null;
   expect(texts(rule)).toContain("with a size of at least 100 KB");
+  rule.criteria.sentDateMax = new Date(2026, 0, 31);
+  expect(texts(rule).find(text => text.startsWith("received before "))).toBeTruthy();
 });
 
 test("Delete wins over move, permanent delete wins over delete", () => {
@@ -78,9 +81,9 @@ test("Delete wins over move, permanent delete wins over delete", () => {
   let rule = new FilterRuleAction(account);
   rule.toFolder = RulesTestAccount.folder(account, "Archive");
   rule.deleteTrash = true;
-  expect(RuleDescription.actionLines(rule).map(line => line.text)).toEqual(["delete it"]);
+  expect(texts(rule).slice(1)).toEqual(["delete it"]);
   rule.deleteImmediately = true;
-  expect(RuleDescription.actionLines(rule).map(line => line.text)).toEqual(["permanently delete it"]);
+  expect(texts(rule).slice(1)).toEqual(["permanently delete it"]);
 });
 
 test("No action", () => {
@@ -96,17 +99,31 @@ test("Missing target folder is broken", () => {
   expect(texts(rule)).toContain("move it to the missing folder");
 });
 
-test("Parts mark the values", () => {
-  let parts = RuleDescription.parts({ text: "with a size between 10 and 20 KB", values: ["10", "20"] });
-  expect(parts).toEqual([
-    { text: "with a size between ", isValue: false },
-    { text: "10", isValue: true },
-    { text: " and ", isValue: false },
-    { text: "20", isValue: true },
-    { text: " KB", isValue: false },
+test("Parts mark the value, or the placeholder while there is none", () => {
+  let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
+  let words = RuleItems.conditions().find(item => item.id == "words");
+  expect(words.descriptionParts(rule)).toEqual([
+    { text: "with ", isValue: false },
+    { text: "specific words", isValue: true, isPlaceholder: true },
+    { text: " in the subject or body", isValue: false },
+  ]);
+  rule.criteria.bodyText = "invoice";
+  expect(words.descriptionParts(rule)[1]).toEqual({ text: `"invoice"`, isValue: true, isPlaceholder: false });
+  expect(words.listParts()[1].text).toBe("specific words");
+});
+
+test("Lines for checked items include those without a value yet", () => {
+  let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
+  expect(RuleDescription.texts(rule, new Set(["from", "move"]))).toEqual([
+    "Apply this rule after the message arrives",
+    "from people or public group",
+    "move it to the specified folder",
   ]);
 });
 
-test("Parts without values", () => {
-  expect(RuleDescription.parts({ text: "flag it", values: [] })).toEqual([{ text: "flag it", isValue: false }]);
+test("Several categories are listed", () => {
+  let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
+  rule.addTags.add(getTagByName("Red"));
+  rule.addTags.add(getTagByName("Blue"));
+  expect(texts(rule)).toContain("assign it to the Red and Blue category");
 });
