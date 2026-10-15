@@ -1,9 +1,13 @@
-<vbox class="sender-picture" style:width="{size}px" style:height="{size}px" title={name}>
+<vbox class="person-circle" style:width="{size}px" style:height="{size}px" {title}>
   {#if picture && !isBroken}
     <img src={picture} width={size} height={size} alt="" on:error={() => isBroken = true} />
   {:else}
-    <hbox class="initials" style:background-color={color} style:font-size="{Math.round(size * 0.4)}px">
-      {#if initials}
+    <hbox class="initials"
+      style:background-color={color}
+      style:font-size="{Math.round(size * 0.4)}px">
+      {#if isGroup}
+        <GroupIcon size={Math.round(size * 0.5)} />
+      {:else if initials}
         {initials}
       {:else}
         <PersonIcon size={Math.round(size * 0.5)} />
@@ -13,26 +17,26 @@
 </vbox>
 
 <script lang="ts">
-  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { consistentColor } from "../../../logic/Abstract/personColor";
-  import { personDisplayName } from "../../../logic/Abstract/PersonUID";
-  import { Initials } from "../../Contacts/Initials";
+  import { Initials } from "./Initials";
+  import GroupIcon from "lucide-svelte/icons/users-round";
   import PersonIcon from "lucide-svelte/icons/user-round";
 
-  export let person: PersonUID;
+  export let name: string;
+  export let picture: string = null;
+  export let colorKey: string = null;
+  export let isGroup = false;
   export let size = 40;
+  export let title: string = null;
 
   let isBroken = false;
-  $: contact = person?.findPerson();
-  $: picture = contact?.picture;
   $: picture, isBroken = false;
-  $: name = personDisplayName(person);
   $: initials = Initials.of(name);
-  $: color = consistentColor(person?.emailAddress || name || "");
+  $: color = colorKey || name ? consistentColor(colorKey || name) : null;
 </script>
 
 <style>
-  .sender-picture {
+  .person-circle {
     flex-shrink: 0;
     border-radius: 50%;
     overflow: hidden;
