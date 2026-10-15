@@ -6,8 +6,10 @@
     <SenderPicture person={$message.from} size={40} />
     <vbox flex class="sender-info">
       <hbox class="from">
-        <span class="sender-name">{senderName}</span>
-        {#if $message.from?.emailAddress && $message.from.emailAddress != senderName}
+        <hbox class="sender-name">
+          <Recipient recipient={$message.from} />
+        </hbox>
+        {#if $message.from?.emailAddress && $message.from.findPerson()}
           <span class="sender-address">&lt;{$message.from.emailAddress}&gt;</span>
         {/if}
         <EncryptionButtons {message} bind:isExpanded={isEncryptionExpanded} />
@@ -116,13 +118,14 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
+  import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "../MessageList/MessageDates";
   import { MailView } from "../MailView";
   import SenderPicture from "./SenderPicture.svelte";
   import SubMenuItem from "../Menu/SubMenuItem.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
+  import Recipient from "../../../frontend/Mail/Message/Recipient.svelte";
   import RecipientsList from "../../../frontend/Mail/Message/RecipientsList.svelte";
   import EncryptionButtons from "../../../frontend/Mail/Message/EncryptionButtons.svelte";
   import EncryptionDetails from "../../../frontend/Mail/Message/EncryptionDetails.svelte";
@@ -158,7 +161,6 @@
   $: cc = message.cc;
   $: bcc = message.bcc;
   $: tags = message.tags;
-  $: senderName = personDisplayName($message.from) || $message.from?.emailAddress || "";
 
   let isEncryptionExpanded = false;
   $: $message, isEncryptionExpanded = false;
@@ -199,6 +201,10 @@
   }
   .sender-name {
     font-weight: 600;
+  }
+  .sender-name :global(.domain) {
+    color: var(--lo-fg-secondary);
+    font-style: normal;
   }
   .sender-address {
     color: var(--lo-fg-secondary);
