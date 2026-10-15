@@ -1,4 +1,7 @@
-<Dialog title={$t`Insert Link`} on:close={onCancel} width="480px">
+<Dialog title={$t`Insert Link`} on:close={onClose} width="480px"
+  okLabel={$t`OK`}
+  okDisabled={!linkTargetURL && $t`Please enter an address`}
+  onOK={onOK}>
   <grid class="fields">
     {#if !hasSelection}
       <label for="link-text">{$t`Text to display`}</label>
@@ -6,16 +9,12 @@
     {/if}
     <label for="link-address">{$t`Address`}</label>
     <input id="link-address" type="url" bind:value={linkTargetURL} autofocus
-      placeholder="https://"
-      on:keydown={event => event.key == "Enter" && onOK()} />
+      placeholder="https://" />
   </grid>
-  <svelte:fragment slot="footer">
+  <svelte:fragment slot="buttons-start">
     {#if isLink}
       <DialogButton label={$t`Remove Link`} onClick={onRemove} />
-      <hbox flex />
     {/if}
-    <DialogButton label={$t`OK`} primary onClick={onOK} disabled={!linkTargetURL && $t`Please enter an address`} />
-    <DialogButton label={$t`Cancel`} onClick={onCancel} />
   </svelte:fragment>
 </Dialog>
 
@@ -34,9 +33,6 @@
   let linkText = "";
 
   function onOK() {
-    if (!linkTargetURL) {
-      return;
-    }
     if (hasSelection || isLink) {
       editor.chain().focus().extendMarkRange("link").setLink({ href: linkTargetURL }).run();
     } else {
@@ -46,7 +42,6 @@
         marks: [{ type: "link", attrs: { href: linkTargetURL } }],
       }).run();
     }
-    onDone();
   }
 
   function onRemove() {
@@ -54,7 +49,7 @@
     onDone();
   }
 
-  function onCancel() {
+  function onClose() {
     editor.commands.focus();
     onDone();
   }
