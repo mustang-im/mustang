@@ -1,6 +1,6 @@
 <Clickable onClick={changeToDay}>
   <hbox class="more-events"
-    style="grid-column: {column}; grid-row: {row}"
+    style="grid-column: {column}; grid-row: {startRow + 1} / {endRow + 1}"
     title={events.map(event => event.title).join("\n")}>
     +{events.length}
   </hbox>
@@ -15,7 +15,8 @@
   export let day: Date;
   export let events: Event[];
   export let column: number;
-  export let row: number;
+  export let startRow: number;
+  export let endRow: number;
 
   function changeToDay() {
     $selectedDate = day;
