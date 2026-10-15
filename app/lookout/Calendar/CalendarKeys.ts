@@ -32,7 +32,7 @@ export class CalendarKeys {
     let key = press.key.length == 1 ? press.key.toLowerCase() : press.key;
     let digit = /^Digit(\d)$/.exec(press.code)?.[1] ?? /^Numpad(\d)$/.exec(press.code)?.[1];
     if (ctrl && alt && !shift && digit) {
-      const kViews: Record<string, CalendarViewType> = { "1": "day", "2": "workweek", "3": "week", "4": "month" };
+      const kViews: Record<string, CalendarViewType> = { "1": "day", "2": "workweek", "3": "week", "4": "month", "5": "schedule" };
       return kViews[digit] ? { command: "view", view: kViews[digit] } : null;
     }
     if (ctrl && alt && !shift && (key == "ArrowRight" || key == "ArrowLeft")) {

@@ -26,10 +26,14 @@
           <vbox flex class="grid-area">
             {#if view == "month"}
               <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
+            {:else if view == "schedule"}
+              <ScheduleView {range} rows={scheduleRows} {timeScale} />
             {:else}
               <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
             {/if}
-            <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+            {#if view != "schedule"}
+              <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+            {/if}
           </vbox>
         {/if}
       </vbox>
@@ -69,6 +73,7 @@
   import CalendarHeader from "./View/CalendarHeader.svelte";
   import TimeGrid, { type CalendarColumnGroup } from "./TimeGrid/TimeGrid.svelte";
   import MonthGrid from "./Month/MonthGrid.svelte";
+  import ScheduleView from "./ScheduleView/ScheduleView.svelte";
   import EventContextMenu from "./Event/EventContextMenu.svelte";
   import EventPeek from "./Event/EventPeek.svelte";
   import SlotContextMenu from "./View/SlotContextMenu.svelte";
@@ -113,7 +118,7 @@
     $selectedCalendar = appGlobal.calendars.first;
   }
 
-  $: range = new CalendarRange(view, $startDate, view == "day" ? dayCount : 1);
+  $: range = new CalendarRange(view, $startDate, view == "day" || view == "schedule" ? dayCount : 1);
 
   function visible(events: Collection<Event>, showDeclined: boolean): Collection<Event> {
     return showDeclined
@@ -122,7 +127,8 @@
   }
 
   $: visibleEvents = visible(shownCalendarEvents, showDeclined);
-  $: isSplit = splitView && view != "month" && $shownCalendars.length > 1;
+  $: isSplit = splitView && view != "month" && view != "schedule" && $shownCalendars.length > 1;
+  $: scheduleRows = $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) })) as CalendarColumnGroup[];
   $: groups = (isSplit
     ? $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) }))
     : [{ calendar: null, events: visibleEvents }]) as CalendarColumnGroup[];
@@ -150,7 +156,7 @@
   $: status.right = $updatingCount ? [ { label: $t`Updating calendars…`, busy: true } ] : [];
 
   function setView(newView: CalendarViewType) {
-    if (newView == "day") {
+    if (newView == "day" || newView == "schedule") {
       setDayCount(1);
     }
     view = newView;

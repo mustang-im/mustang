@@ -37,6 +37,7 @@
   import WorkWeekIcon from "lucide-svelte/icons/columns-4";
   import WeekIcon from "lucide-svelte/icons/calendar-range";
   import MonthIcon from "lucide-svelte/icons/calendar-days";
+  import ScheduleIcon from "lucide-svelte/icons/chart-gantt";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let range: CalendarRange;
@@ -45,15 +46,16 @@
   export let onStep: (direction: number) => void;
   export let onView: (view: CalendarViewType) => void;
 
-  const viewTypes: CalendarViewType[] = ["day", "workweek", "week", "month"];
-  const viewIcons = { day: DayIcon, workweek: WorkWeekIcon, week: WeekIcon, month: MonthIcon };
+  const viewTypes: CalendarViewType[] = ["day", "workweek", "week", "month", "schedule"];
+  const viewIcons = { day: DayIcon, workweek: WorkWeekIcon, week: WeekIcon, month: MonthIcon, schedule: ScheduleIcon };
 
   let viewButtonEl: HTMLButtonElement;
   let isViewMenuOpen = false;
 
-  $: viewLabels = { day: $t`Day`, workweek: $t`Work Week`, week: $t`Week`, month: $t`Month` };
-  $: previousLabel = view == "month" ? $t`Previous month` : view == "day" && range.days.length == 1 ? $t`Previous day` : $t`Previous`;
-  $: nextLabel = view == "month" ? $t`Next month` : view == "day" && range.days.length == 1 ? $t`Next day` : $t`Next`;
+  $: viewLabels = { day: $t`Day`, workweek: $t`Work Week`, week: $t`Week`, month: $t`Month`, schedule: $t`Schedule View` };
+  $: isOneDay = (view == "day" || view == "schedule") && range.days.length == 1;
+  $: previousLabel = view == "month" ? $t`Previous month` : isOneDay ? $t`Previous day` : $t`Previous`;
+  $: nextLabel = view == "month" ? $t`Next month` : isOneDay ? $t`Next day` : $t`Next`;
 </script>
 
 <style>
