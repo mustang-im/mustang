@@ -88,13 +88,13 @@ function createWindow(): void {
     // Load the remote URL for development or the local html file for production.
     // The `try` above cannot catch these, because they fail asynchronously
     if (is.dev && true) {
-      mainWindow.loadURL('http://localhost:5454/#jpcSecret=' + jpcSecret)
+      mainWindow.loadURL('http://localhost:5454/lookout/index.html#jpcSecret=' + jpcSecret)
         .catch(console.error);
     } else if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#jpcSecret=' + jpcSecret)
+      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/lookout/index.html#jpcSecret=' + jpcSecret)
         .catch(console.error);
     } else {
-      mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'jpcSecret=' + jpcSecret })
+      mainWindow.loadFile(join(__dirname, '../renderer/lookout/index.html'), { hash: 'jpcSecret=' + jpcSecret })
         .catch(console.error);
     }
   } catch (ex) {

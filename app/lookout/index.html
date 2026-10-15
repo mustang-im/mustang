@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Mustang</title>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/icon/logo.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+    `self` -> `file:`, because the packaged desktop build loads us via `loadFile()`. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none';
+    script-src 'self' file: 'wasm-unsafe-eval';
+    style-src 'self' file: 'unsafe-inline';
+    img-src 'self' file: blob: data: https:;
+    font-src 'self' file:;
+    media-src 'self' file: blob: https://www.mustang.im;
+    frame-src 'self' file: data: blob: https:;
+    connect-src * data:;
+    base-uri 'none';">
+</head>
+
+<body>
+  <vbox id="app"></vbox>
+  <script type="module" src="/lookout/main.ts"></script>
+</body>
+
+</html>
