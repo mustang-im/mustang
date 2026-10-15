@@ -25,6 +25,8 @@
             selection={$selectedMessages}
             bind:selectedMessage={$selectedMessage}
             isSearchResult={!!searchResults}
+            showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
+            highlight={searchResults ? searchTerm : null}
             isLoading={isLoading || isSearching} />
           <ReadingPane slot="reading"
             message={$selectedArray.length > 1 ? null : $selectedMessage}
@@ -43,6 +45,7 @@
   import type { Folder } from "../../logic/Mail/Folder";
   import type { SearchEMail } from "../../logic/Mail/Store/SearchEMail";
   import { appGlobal } from "../../logic/app";
+  import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages, quickSearch } from "../../frontend/Mail/Selected";
   import { getParams, globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../frontend/Util/error";

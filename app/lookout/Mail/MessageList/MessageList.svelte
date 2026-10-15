@@ -29,6 +29,8 @@
             threadSize={row.thread?.length ?? 0}
             isThreadExpanded={row.isThreadExpanded}
             isThreadChild={row.isThreadChild}
+            {highlight}
+            folderName={showFolder && row.message.folder ? FolderTreeActions.displayName(row.message.folder) : null}
             on:toggleThread={() => toggleThread(row.message)}
             on:click={event => onClickMessage(row.message, event)}
             on:dblclick={() => MessageActions.openDraft(row.message)}
@@ -48,6 +50,7 @@
   import { MessageRows, type MessageRow } from "./MessageRows";
   import { MessageMetadata } from "./MessageMetadata";
   import { MessageActions } from "../MessageActions";
+  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import MessageListItem from "./MessageListItem.svelte";
   import MessageContextMenu from "./MessageContextMenu.svelte";
   import ContextMenu from "../../../frontend/Shared/Menu/ContextMenu.svelte";
@@ -60,6 +63,8 @@
   export let groups: MessageGroup<EMail>[];
   export let showGroupHeaders = true;
   export let previewLines = 1;
+  export let showFolder = false;
+  export let highlight: string | null = null;
   export let selection: ArrayColl<EMail>;
   export let selectedMessage: EMail | null;
   export let listEl: HTMLDivElement = null;

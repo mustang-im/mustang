@@ -33,6 +33,8 @@
     <MessageList bind:this={messageList} bind:listEl
       {groups} showGroupHeaders={$showInGroups.value}
       previewLines={$previewLines.value}
+      {showFolder}
+      {highlight}
       {selection}
       bind:selectedMessage />
   {:else}
@@ -100,6 +102,8 @@
   export let selection: ArrayColl<EMail>;
   export let selectedMessage: EMail | null;
   export let isSearchResult = false;
+  export let showFolder = false;
+  export let highlight: string | null = null;
   export let isLoading = false;
   export let listEl: HTMLDivElement = null;
 
