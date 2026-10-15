@@ -91,7 +91,7 @@ export class JSCalendarEvent {
         let participant = jmap.participants[id];
         let emailAddress = toEmailAddress(participant.calendarAddress);
         let response =
-          emailAddress && emailAddress == organizer ? InvitationResponse.Organizer :
+          emailAddress == organizer && emailAddress ? InvitationResponse.Organizer :
             !participant.participationStatus || participant.participationStatus == "needs-action" ? InvitationResponse.NoResponseReceived :
               participant.participationStatus == "accepted" ? InvitationResponse.Accept :
                 participant.participationStatus == "declined" ? InvitationResponse.Decline :
@@ -101,8 +101,8 @@ export class JSCalendarEvent {
         participants.add(p);
       }
       event.participants.replaceAll(participants);
-      let identities = event.calendar?.identitiesAvailable.contents ?? [];
-      let me = participants.find(p => identities.some(identity => identity.isEMailAddress(p.emailAddress)));
+      let myIdentities = event.calendar?.identitiesAvailable.contents ?? [];
+      let me = participants.find(p => myIdentities.some(identity => identity.isEMailAddress(p.emailAddress)));
       if (me) {
         event.myParticipation = me.response;
       }
