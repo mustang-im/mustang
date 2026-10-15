@@ -217,7 +217,7 @@
     font-weight: 600;
   }
   .hint {
-    flex-shrink: 1;
+    flex-shrink: 100;
     min-width: 0;
     margin-inline-start: 6px;
     overflow: hidden;
