@@ -72,9 +72,10 @@
     color: unset;
   }
   .event.cancelled {
+    --cancelled-stripe-color: rgb(from var(--stripe-color) r g b / calc(alpha / 6));
     background-image:
-      repeating-linear-gradient(45deg, transparent 0 8px, var(--stripe-color) 8px 12px),
-      repeating-linear-gradient(-45deg, transparent 0 8px, var(--stripe-color) 8px 12px);
+      repeating-linear-gradient(45deg, transparent 0 6px, var(--cancelled-stripe-color) 6px 10px),
+      repeating-linear-gradient(-45deg, transparent 0 6px, var(--cancelled-stripe-color) 6px 10px);
     background-blend-mode: normal;
     background-color: transparent;
     color: unset;
