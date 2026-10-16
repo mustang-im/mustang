@@ -151,7 +151,9 @@ export class RibbonTabModel {
     let widths = this.groups.map(group => group.widthAt(0));
     let totalWidth = widths.reduce((sum, width) => sum + width, 0);
     let maxStage = Math.max(0, ...this.groups.map(group => group.lastStage));
+    let reducedInLastPass: { index: number, previousStage: number, previousWidth: number }[] = [];
     for (let stage = 1; stage <= maxStage && totalWidth > availableWidth; stage++) {
+      reducedInLastPass = [];
       for (let i = this.groups.length - 1; i >= 0 && totalWidth > availableWidth; i--) {
         let group = this.groups[i];
         if (stage > group.lastStage) {
@@ -161,9 +163,19 @@ export class RibbonTabModel {
         if (width >= widths[i]) {
           continue;
         }
+        reducedInLastPass.push({ index: i, previousStage: stages[i], previousWidth: widths[i] });
         totalWidth -= widths[i] - width;
         widths[i] = width;
         stages[i] = stage;
+      }
+    }
+    for (let reduced of reducedInLastPass.reverse()) {
+      let i = reduced.index;
+      let restoredTotal = totalWidth - widths[i] + reduced.previousWidth;
+      if (restoredTotal <= availableWidth) {
+        totalWidth = restoredTotal;
+        widths[i] = reduced.previousWidth;
+        stages[i] = reduced.previousStage;
       }
     }
     return stages;
