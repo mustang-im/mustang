@@ -88,6 +88,7 @@ export class RibbonModel {
 export class RibbonTabModel {
   static readonly contextKey = "lookout-ribbon-tab";
   label: string;
+  isContextual = false;
   readonly groups: RibbonGroupModel[] = [];
   readonly overflowGroups: Writable<RibbonGroupModel[]> = writable([]);
   readonly isMoreMenuOpen: Writable<boolean> = writable(false);

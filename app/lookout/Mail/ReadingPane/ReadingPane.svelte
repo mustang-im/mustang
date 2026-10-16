@@ -3,20 +3,26 @@
     {#key shownMessage}
       <vbox flex class="message">
         <ReadingPaneHeader message={shownMessage} />
-        <InfoBars message={shownMessage} />
-        <hbox class="attachments">
-          <AttachmentList attachments={shownMessage.attachments} />
-        </hbox>
-        {#if MailInvitation.isInvitationMail(shownMessage)}
-          <InvitationBar message={shownMessage} />
+        {#if reply}
+          {#key reply}
+            <MailComposer mail={reply.draft} isInline autofocus={focusReply} />
+          {/key}
         {:else}
-          <vbox class="sml">
-            <SMLDisplayKinds message={shownMessage} sml={shownMessage.sml} />
+          <InfoBars message={shownMessage} />
+          <hbox class="attachments">
+            <AttachmentList attachments={shownMessage.attachments} />
+          </hbox>
+          {#if MailInvitation.isInvitationMail(shownMessage)}
+            <InvitationBar message={shownMessage} />
+          {:else}
+            <vbox class="sml">
+              <SMLDisplayKinds message={shownMessage} sml={shownMessage.sml} />
+            </vbox>
+          {/if}
+          <vbox flex class="body">
+            <MessageBody message={shownMessage} />
           </vbox>
         {/if}
-        <vbox flex class="body">
-          <MessageBody message={shownMessage} />
-        </vbox>
       </vbox>
     {/key}
   {:else}
@@ -37,6 +43,8 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MailView } from "../MailView";
+  import { InlineReplies, type InlineReply } from "../Composer/InlineReplies";
+  import MailComposer from "../Composer/MailComposer.svelte";
   import ReadingPaneHeader from "./ReadingPaneHeader.svelte";
   import InfoBars from "./InfoBars.svelte";
   import AttachmentList from "../Attachments/AttachmentList.svelte";
@@ -61,6 +69,22 @@
     catchErrors(onMessageChanged);
   }
   $: catchErrors(() => markMessageAsRead(shownMessage, readDelay), backgroundError);
+
+  const inlineReplies = InlineReplies.replies;
+  let reply: InlineReply | null = null;
+  let focusReply = false;
+  $: $inlineReplies, shownMessage, updateReply();
+  function updateReply() {
+    let current = InlineReplies.replyFor(shownMessage);
+    if (current == reply) {
+      return;
+    }
+    reply = current;
+    focusReply = !!reply?.isNew;
+    if (reply) {
+      reply.isNew = false;
+    }
+  }
   // <copied from="../../../frontend/Mail/Message/MessageHeader.svelte">
   let readTimeout: NodeJS.Timeout;
   function markMessageAsRead(message: EMail, readDelay: number) {

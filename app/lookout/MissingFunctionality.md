@@ -72,7 +72,7 @@ New message, reply and forward, with the Message, Insert, Options and Format Tex
 
 | Outlook feature | Where in Outlook | What the logic would need |
 |---|---|---|
-| Automatic saving of drafts, "Draft saved at *time*" | File > Options > Mail > Save messages | A save timer around `ComposeActions.saveAsDraft()` |
+| Automatic saving of drafts, "Draft saved at *time*" | File > Options > Mail > Save messages | A save timer around `ComposeActions.saveAsDraft()`. Lookout keeps an inline reply in memory while another message is selected, and Ctrl+S saves it to Drafts. |
 | Saving drafts of encrypted messages | Save; "Save changes?" on close | Encryption before `saveAsDraft()`, which asserts `!shouldEncrypt` today. Lookout disables Save and says why. |
 | High / Low Importance for outgoing mail | Message tab > Tags | Writing `Importance` / `X-Priority` (MIME) and the EWS / Graph importance when sending. `isImportant` is only read. |
 | Follow Up flag for me or for recipients | Message tab > Tags | Flag dates (see Mail) and the flag in the sent message |
@@ -90,7 +90,6 @@ New message, reply and forward, with the Message, Insert, Options and Format Tex
 | From: "Other E-mail Address…" | From menu | Sending with any From address. Today only identities and catch-all identities can send. |
 | Outlook-style reply header (From / Sent / To / Subject block) | Reply body | A quote format option in `ComposeActions`. The logic writes "*name* wrote on *date*:" and a blockquote. |
 | MailTips (recipient is out of office, large audience, external recipients) | InfoBars in the composer | EWS `GetMailTips`, Graph mail tips |
-| Inline reply in the reading pane | Reading pane | *UI only*. Lookout opens replies in the composer. |
 | Format Painter, Zoom, Thesaurus, Translate, Language, Accessibility checker | Message tab; Format Text tab; Review tab | Editor features (copying marks, a zoom factor), a thesaurus, a translation service, an accessibility checker |
 
 ## Rules

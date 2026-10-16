@@ -65,7 +65,7 @@
     </hbox>
   </hbox>
   <hbox class="line second-line">
-    {#if isDraft}
+    {#if isDraft || hasInlineReply}
       <span class="draft">{$t`[Draft]`}</span>
     {/if}
     <span class="subject" title={$message.subject}>
@@ -122,6 +122,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { MessageActions } from "../MessageActions";
+  import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "./MessageDates";
   import { ListName } from "./ListName";
   import { TextHighlight } from "./TextHighlight";
@@ -156,6 +157,7 @@
   export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
+  const inlineReplies = InlineReplies.replies;
 
   $: tags = message.tags;
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
@@ -165,6 +167,7 @@
     : $message.from?.emailAddress ?? "";
   $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;
   $: isDraft = $message && MessageActions.isDraft(message);
+  $: hasInlineReply = $inlineReplies && InlineReplies.hasReply(message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
 </script>
 

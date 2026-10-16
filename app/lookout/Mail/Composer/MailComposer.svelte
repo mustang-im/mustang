@@ -1,53 +1,48 @@
-<vbox flex class="composer-page" on:keydown|capture={onKeyDown}>
-  <ComposerRibbon {mail} {editor} identity={fromIdentity}
-    canEncrypt={!!privateKey}
-    canShowFrom={hasSeveralIdentities}
-    bccLocked={hasBCC}
-    bind:showFrom={$showFromSetting.value}
-    bind:showBcc={$showBccSetting.value}
-    bind:showEmojis
-    bind:spellcheck={$spellcheckEnabled.value}
-    onAddressBook={() => openSelectNames(RecipientField.To)}
-    onAttachFile={onAddAttachment}
-    onInsertPicture={onInsertPicture}
-    onInsertLink={() => showLinkDialog = true}
-    onSignatures={() => showSignatures = true}
-    onCheckNames={onCheckNames}
-    onDateTime={() => openTool(ComposerTool.DateTime)}
-    onMoreSymbols={() => openTool(ComposerTool.Symbol)}
-    onWordCount={() => openTool(ComposerTool.WordCount)}
-    onFind={replace => openTool(replace ? ComposerTool.Replace : ComposerTool.Find)}
-    />
-  <vbox flex class="composer lo-card">
+<vbox flex class="composer-page" class:inline={isInline} on:keydown|capture={onKeyDown}>
+  {#if !isInline}
+    <ComposerRibbon {commands} bind:showEmojis />
+  {/if}
+  <vbox flex class="composer" class:lo-card={!isInline}>
     <FileDropTarget
       on:add-files={(event) => catchErrors(() => onFilesDrop(event))}
       on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))}
       allowInline={true}>
-      <hbox class="title-row">
-        <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$sendFormat.value == "html" ? $t`Message (HTML)` : $t`Message (Plain Text)`}</span></h1>
-        <hbox flex />
-        <hbox class="title-buttons">
-          <button class="quick-access" title={$t`Undo (Ctrl+Z)`} aria-label={$t`Undo`}
-            disabled={!editor?.can().undo()}
-            on:click={() => editor.chain().focus().undo().run()}>
-            <UndoIcon size={16} />
-          </button>
-          <button class="quick-access" title={$t`Redo (Ctrl+Y)`} aria-label={$t`Redo`}
-            disabled={!editor?.can().redo()}
-            on:click={() => editor.chain().focus().redo().run()}>
-            <RedoIcon size={16} />
-          </button>
-          <DialogButton label={$t`Save`} icon={SaveIcon} classes="plain"
-            tooltip={$t`Save as draft (Ctrl+S)`}
-            disabled={saveDisabledReason ?? false}
-            onClick={onSave} />
+      {#if isInline}
+        <hbox class="inline-buttons">
           <DialogButton label={$t`Discard`} icon={DiscardIcon} classes="plain"
+            tooltip={$t`Discard this response`}
             onClick={onDiscard} />
-          <button class="close" title={$t`Close`} aria-label={$t`Close`} on:click={onCloseRequest}>
-            <CloseIcon size={18} />
-          </button>
+          <DialogButton label={$t`Pop Out`} icon={PopOutIcon} classes="plain"
+            tooltip={$t`Open this response in its own message page`}
+            onClick={onPopOut} />
         </hbox>
-      </hbox>
+      {:else}
+        <hbox class="title-row">
+          <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$sendFormat.value == "html" ? $t`Message (HTML)` : $t`Message (Plain Text)`}</span></h1>
+          <hbox flex />
+          <hbox class="title-buttons">
+            <button class="quick-access" title={$t`Undo (Ctrl+Z)`} aria-label={$t`Undo`}
+              disabled={!editor?.can().undo()}
+              on:click={() => editor.chain().focus().undo().run()}>
+              <UndoIcon size={16} />
+            </button>
+            <button class="quick-access" title={$t`Redo (Ctrl+Y)`} aria-label={$t`Redo`}
+              disabled={!editor?.can().redo()}
+              on:click={() => editor.chain().focus().redo().run()}>
+              <RedoIcon size={16} />
+            </button>
+            <DialogButton label={$t`Save`} icon={SaveIcon} classes="plain"
+              tooltip={$t`Save as draft (Ctrl+S)`}
+              disabled={saveDisabledReason ?? false}
+              onClick={onSave} />
+            <DialogButton label={$t`Discard`} icon={DiscardIcon} classes="plain"
+              onClick={onDiscard} />
+            <button class="close" title={$t`Close`} aria-label={$t`Close`} on:click={onCloseRequest}>
+              <CloseIcon size={18} />
+            </button>
+          </hbox>
+        </hbox>
+      {/if}
       <hbox class="header">
         <button class="send" on:click={() => catchErrors(onSendRequest)}
           class:disabled={!!sendDisabledTooltip}
@@ -68,7 +63,7 @@
           </button>
           <hbox class="field">
             <AddressField recipients={mail.to} label={$t`To`} chips={isChips} tabindex={1}
-              autofocus={mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
+              autofocus={autofocus && mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
           </hbox>
           <button class="field-button" on:click={() => openSelectNames(RecipientField.Cc)} tabindex={-1}
             title={$t`Select recipients from the address book`}>
@@ -117,7 +112,7 @@
             <hbox class="loading"><Spinner size="32px" /></hbox>
           {/if}
           <SMLComposer {mail} />
-          <vbox flex class="editor" spellcheck={$spellcheckEnabled.value}>
+          <vbox flex class="editor" spellcheck={$spellcheck.value}>
             <!-- The html in the mail passed in MUST already be sanitized HTML.
             Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
             <HTMLEditor bind:html={mail.rawHTMLDangerous} bind:editor tabindex={1} />
@@ -179,6 +174,10 @@
   import { WriteMailMustangApp, mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
+  import type { ComposerCommands } from "./ComposerCommands";
+  import { ComposerSettings } from "./ComposerSettings";
+  import { InlineReplies } from "./InlineReplies";
+  import { MessageActions } from "../MessageActions";
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
   import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
@@ -211,23 +210,26 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import UndoIcon from "lucide-svelte/icons/undo-2";
   import RedoIcon from "lucide-svelte/icons/redo-2";
+  import PopOutIcon from "lucide-svelte/icons/square-arrow-out-up-right";
   import LockIcon from "lucide-svelte/icons/lock";
   import SignIcon from "lucide-svelte/icons/signature";
   import { t, gt } from "../../../l10n/l10n";
-  import { tick } from "svelte";
+  import { onDestroy, tick } from "svelte";
   import type { Editor } from "@tiptap/core";
 
   export let mail: EMail;
+  export let isInline = false;
+  export let autofocus = true;
 
   let editor: Editor;
   $: to = mail.to;
   let fromIdentity: MailIdentity;
   let identities = findAllIdentities();
   $: hasSeveralIdentities = $identities.length > 1 || !!fromIdentity?.isCatchAll;
-  let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
-  let showFromSetting = getLocalStorage("lookout.mail.compose.showFrom", true);
-  let sendFormat = getLocalStorage("mail.send.format", "html");
-  let showBccSetting = getLocalStorage("lookout.mail.compose.showBcc", false);
+  const spellcheck = ComposerSettings.spellcheck;
+  const showFromSetting = ComposerSettings.showFrom;
+  const sendFormat = ComposerSettings.sendFormat;
+  const showBccSetting = ComposerSettings.showBcc;
   let encryptionError: string | null = null;
   let showEmojis = false;
   let selectNames: SelectNames | null = null;
@@ -294,7 +296,7 @@
   }
 
   function setCursorDefault() {
-    if (mail.to.isEmpty) {
+    if (mail.to.isEmpty || !autofocus) {
       return;
     }
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
@@ -388,6 +390,10 @@
       func();
     }
     doOnClose = [];
+    if (isInline) {
+      InlineReplies.remove(mail);
+      return;
+    }
 
     let me = mailMustangApp.subApps.find(app => app instanceof WriteMailMustangApp && app.windowParams.mail == mail);
     mailMustangApp.subApps.remove(me);
@@ -404,6 +410,34 @@
 
   $: privateKey = ComposerEncryption.privateKey(fromIdentity);
   $: privateKey, fromIdentity && catchErrors(() => ComposerEncryption.applyIdentityDefaults(mail, privateKey));
+
+  let commands: ComposerCommands;
+  $: commands = {
+    mail,
+    editor,
+    identity: fromIdentity,
+    canShowFrom: hasSeveralIdentities,
+    bccLocked: hasBCC,
+    onAddressBook: () => openSelectNames(RecipientField.To),
+    onAttachFile: onAddAttachment,
+    onInsertPicture,
+    onInsertLink: () => { showLinkDialog = true; },
+    onSignatures: () => { showSignatures = true; },
+    onCheckNames,
+    onDateTime: () => openTool(ComposerTool.DateTime),
+    onMoreSymbols: () => openTool(ComposerTool.Symbol),
+    onWordCount: () => openTool(ComposerTool.WordCount),
+    onFind: (replace: boolean) => openTool(replace ? ComposerTool.Replace : ComposerTool.Find),
+  };
+  $: if (isInline && !closing) {
+    InlineReplies.showRibbon(mail, commands);
+  }
+  onDestroy(() => InlineReplies.hideRibbon(mail));
+
+  function onPopOut() {
+    closing = true;
+    MessageActions.popOut(mail);
+  }
 
   $: saveDisabledReason = $mail.shouldEncrypt ? $t`Encrypted drafts are not supported yet` : null;
 
@@ -513,9 +547,28 @@
     margin: 0 8px 8px 8px;
     overflow: hidden;
   }
+  .composer-page.inline {
+    border-block-start: 1px solid var(--lo-divider);
+  }
+  .inline .composer {
+    margin: 0;
+  }
+  .inline-buttons {
+    flex-shrink: 0;
+    justify-content: end;
+    gap: 4px;
+    padding: 4px 12px 0 20px;
+  }
+  .inline .header {
+    padding-inline: 20px;
+  }
+  .inline .editor-scroll {
+    padding-inline: 20px;
+  }
   .composer :global(.container),
   .composer :global(.container > .content) {
     min-height: 0;
+    min-width: 0;
   }
   .title-row {
     flex-shrink: 0;
@@ -524,6 +577,7 @@
     padding: 10px 12px 6px 24px;
   }
   h1 {
+    min-width: 0;
     margin: 0;
     font-size: var(--lo-font-size-large);
     font-weight: 600;
