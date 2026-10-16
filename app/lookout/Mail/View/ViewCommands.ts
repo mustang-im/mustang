@@ -37,15 +37,15 @@ export class ViewCommands {
 
   static async setShowAsConversations(folder: Folder | null, show: boolean) {
     let scope = await ViewDialogs.askScope(show
-      ? gt`Do you want to show messages arranged by conversations in all folders or just this folder?`
-      : gt`Do you want to stop showing messages arranged by conversations in all folders or just this folder?`);
+      ? gt`Do you want to show messages arranged by conversations in all mailboxes or just this folder?`
+      : gt`Do you want to stop showing messages arranged by conversations in all mailboxes or just this folder?`);
     if (scope) {
       MailViewSettings.change(folder, { showAsConversations: show }, scope);
     }
   }
 
   static async setPreviewLines(folder: Folder | null, lines: number) {
-    let scope = await ViewDialogs.askScope(gt`Do you want to change the message preview in all folders or just this folder?`);
+    let scope = await ViewDialogs.askScope(gt`Do you want to change the message preview in all mailboxes or just this folder?`);
     if (scope) {
       MailViewSettings.change(folder, { previewLines: lines }, scope);
     }
