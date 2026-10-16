@@ -38,9 +38,62 @@ export class AddAccountFlow {
   draft: AccountDraft | null = null;
   embed: OAuth2Embed | null = null;
   notice: string | null = null;
+  isPrepared = false;
+  readonly added: MailAccount[] = [];
+  readonly preparedCount: number;
+  protected readonly prepared: MailAccount[];
   protected abort = new AbortController();
   protected manualOutgoing: MailAccount["outgoing"] = null;
   protected manualOutgoingDraft: ServerDraft | null = null;
+
+  constructor(prepared: MailAccount[] = []) {
+    this.prepared = [...prepared];
+    this.preparedCount = prepared.length;
+    if (this.prepared.length) {
+      this.startPrepared();
+    }
+  }
+
+  get remainingPrepared(): number {
+    return this.prepared.length;
+  }
+
+  get preparedNumber(): number {
+    return this.preparedCount - this.prepared.length;
+  }
+
+  protected startPrepared() {
+    let config = this.prepared.shift();
+    this.config = config;
+    this.draft = null;
+    this.isPrepared = true;
+    this.isManual = false;
+    this.emailAddress = config.emailAddress;
+    this.password = config.password ?? "";
+    this.notice = null;
+    this.step = config.authMethod == AuthMethod.OAuth2 && config.oAuth2 ? AddAccountStep.Login : AddAccountStep.Password;
+  }
+
+  skip() {
+    this.embed?.abort();
+    this.embed = null;
+    this.config?.oAuth2?.abort();
+    this.continueAfterAccount();
+  }
+
+  protected continueAfterAccount() {
+    if (this.prepared.length) {
+      this.startPrepared();
+    } else if (this.added.length) {
+      this.step = AddAccountStep.Done;
+    } else {
+      this.isPrepared = false;
+      this.config = null;
+      this.emailAddress = "";
+      this.password = "";
+      this.step = AddAccountStep.EMailAddress;
+    }
+  }
 
   get isEMailAddressValid(): boolean {
     return !!sanitize.emailAddress(this.emailAddress.trim(), null);
@@ -197,13 +250,16 @@ export class AddAccountFlow {
   async loginWithOAuth2() {
     let oAuth2 = this.config.oAuth2 as OAuth2;
     oAuth2.abort();
-    this.embed = new OAuth2Embed(oAuth2);
+    let embed = new OAuth2Embed(oAuth2);
+    this.embed = embed;
     try {
-      let authCode = await this.embed.login();
+      let authCode = await embed.login();
       await oAuth2.getAccessTokenFromAuthCode(authCode);
       oAuth2.uiMethod = OAuth2UIMethod.Tab;
     } finally {
-      this.embed = null;
+      if (this.embed == embed) {
+        this.embed = null;
+      }
     }
     await this.finish();
   }
@@ -238,7 +294,8 @@ export class AddAccountFlow {
       throw ex;
     }
     await saveAndInitConfig(this.config, this.emailAddress, this.password);
-    this.step = AddAccountStep.Done;
+    this.added.push(this.config);
+    this.continueAfterAccount();
   }
 
   cancel() {
