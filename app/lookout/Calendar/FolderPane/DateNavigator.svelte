@@ -82,7 +82,6 @@
   export let onSelectDays: (first: Date, last: Date) => void;
 
   const now = CurrentTime.minute;
-  const kMaxDays = 14;
 
   let month = new DateNavigatorMonth(date);
   $: followDate(date);
@@ -123,6 +122,7 @@
   }
 
   function onDragOver(day: Date) {
+    const kMaxDays = 14;
     if (dragStart) {
       dragEnd = DateNavigatorMonth.limitRange(dragStart, day, kMaxDays);
     }

@@ -40,7 +40,7 @@
   </vbox>
 </Dialog>
 
-<FileSelector bind:this={fileSelector} acceptFileTypes={DigitalIDs.certificateFileTypes} />
+<FileSelector bind:this={fileSelector} {acceptFileTypes} />
 
 <script lang="ts">
   import type { IdentitySecurity } from "./EmailSecurityDraft";
@@ -60,6 +60,9 @@
 
   let key: DigitalID = setting.key;
   let fileSelector: FileSelector;
+  // <copied from="../../../../frontend/Settings/Mail/Account/EncryptionKey.svelte">
+  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
+  // </copied>
   let statusAsync = keyStatus(key);
 
   $: keyOptions = setting.keys.map(listed => ({ value: listed, label: DigitalIDs.label(listed) }));

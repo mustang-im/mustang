@@ -47,7 +47,7 @@
   </vbox>
 </Dialog>
 
-<FileSelector bind:this={fileSelector} acceptFileTypes={DigitalIDs.importFileTypes} />
+<FileSelector bind:this={fileSelector} {acceptFileTypes} />
 
 <script lang="ts">
   import type { MailIdentity } from "../../../../logic/Mail/MailIdentity";
@@ -70,6 +70,9 @@
 
   let mode: "import" | "export" = "import";
   let fileSelector: FileSelector;
+  // <copied from="../../../../frontend/Settings/Mail/Account/EncryptionImport.svelte">
+  const acceptFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", ".key", "application/x-pkcs12", ".p12", ".pfx", "text/plain" ];
+  // </copied>
   let file: File | null = null;
   let passphrase = "";
   let name = "";
