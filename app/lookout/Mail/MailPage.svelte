@@ -65,6 +65,7 @@
   import NormalViewIcon from "lucide-svelte/icons/layout-panel-left";
   import ReadingViewIcon from "lucide-svelte/icons/book-open";
   import { MailKeyAction, MailKeys } from "./MailKeys";
+  import { TitleBarSearch } from "../MainWindow/TitleBarSearch";
   import { MessageActions } from "./MessageActions";
   import { MailDialogs } from "./Dialogs/MailDialogs";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
@@ -270,16 +271,12 @@
   function closeSearch() {
     MailSearch.close();
     isSearchFocused = false;
-    titleSearchInput()?.blur();
-  }
-
-  function titleSearchInput(): HTMLInputElement | null {
-    return document.querySelector(".title-bar .search-box input");
+    TitleBarSearch.input?.blur();
   }
 
   function onFocusChange() {
     setTimeout(() => {
-      let input = titleSearchInput();
+      let input = TitleBarSearch.input;
       isSearchFocused = !!input && document.activeElement == input;
     }, 0);
   }
@@ -374,7 +371,7 @@
       return;
     }
     let target = event.target as HTMLElement;
-    let isInSearchBox = target == titleSearchInput();
+    let isInSearchBox = target == TitleBarSearch.input;
     if (!pageEl?.contains(target) && target != document.body && !isInSearchBox) {
       return;
     }
@@ -407,13 +404,13 @@
       case MailKeyAction.UpdateFolder:
         return await MessageActions.getNewMail(folder);
       case MailKeyAction.Search:
-        return titleSearchInput()?.focus();
+        return TitleBarSearch.input?.focus();
       case MailKeyAction.ScopeCurrentFolder:
         MailSearch.update({ scope: SearchScope.CurrentFolder });
-        return titleSearchInput()?.focus();
+        return TitleBarSearch.input?.focus();
       case MailKeyAction.ScopeAllAccounts:
         MailSearch.update({ scope: SearchScope.AllAccounts });
-        return titleSearchInput()?.focus();
+        return TitleBarSearch.input?.focus();
       case MailKeyAction.AdvancedFind:
         MailSearch.isAdvancedSearchOpen.set(true);
         return;
