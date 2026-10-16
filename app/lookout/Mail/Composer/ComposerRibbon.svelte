@@ -6,6 +6,9 @@
         <SignatureMenuItems identity={commands.identity} editor={commands.editor} onSignatures={commands.onSignatures} />
       </RibbonMenuButton>
     </svelte:fragment>
+    <svelte:fragment slot="groups">
+      <PollsGroup {commands} />
+    </svelte:fragment>
   </InsertTab>
   <RibbonTab label={$t`Options`}>
     <ShowFieldsGroup canShowFrom={commands.canShowFrom} bccLocked={commands.bccLocked} />
@@ -27,6 +30,7 @@
   import ShowFieldsGroup from "./ShowFieldsGroup.svelte";
   import EncryptGroup from "./EncryptGroup.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
+  import PollsGroup from "./PollsGroup.svelte";
   import SignatureIcon from "lucide-svelte/icons/pen-line";
   import { t } from "../../../l10n/l10n";
 
