@@ -41,7 +41,8 @@
         disabled={!canShare && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
-      <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo="Ctrl+Shift+B"
+      <SearchPeopleBox onChoose={contact => ContactActions.show(contact)} />
+      <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo="Ctrl+Shift+B" size="small"
         onClick={() => CalendarActions.openAddressBook()} />
     </RibbonGroup>
   </RibbonTab>
@@ -88,7 +89,7 @@
   <RibbonTab label={$t`View`}>
     <RibbonGroup label={$t`Current View`}>
       <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
-        <ChangeViewGallery {currentView} onChange={onCurrentView} />
+        <ChangeViewGallery views={calendarViews} {currentView} onChange={onCurrentView} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
         onClick={() => CalendarActions.openViewSettings()} />
@@ -163,10 +164,16 @@
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import ColorPalette from "../Shared/ColorPalette.svelte";
   import ArrangeButtons from "./View/ArrangeButtons.svelte";
+  import SearchPeopleBox from "../Contacts/SearchPeopleBox.svelte";
+  import { ContactActions } from "../Contacts/ContactActions";
   import ChangeViewGallery from "./View/ChangeViewGallery.svelte";
   import NewItemsMenuItems from "./FolderPane/NewItemsMenuItems.svelte";
   import OpenCalendarMenuItems from "./FolderPane/OpenCalendarMenuItems.svelte";
   import ChangeViewIcon from "lucide-svelte/icons/layout-template";
+  import CalendarViewIcon from "lucide-svelte/icons/calendar-days";
+  import PreviewViewIcon from "lucide-svelte/icons/scan-text";
+  import ListViewIcon from "lucide-svelte/icons/list";
+  import ActiveViewIcon from "lucide-svelte/icons/list-todo";
   import ResetViewIcon from "lucide-svelte/icons/rotate-ccw";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
@@ -204,6 +211,12 @@
   export let onNext7Days: () => void;
   export let onGoToDate: () => void;
 
+  $: calendarViews = [
+    { id: CalendarCurrentView.Calendar, label: $t`Calendar`, icon: CalendarViewIcon, tooltip: $t`Day, week and month calendar` },
+    { id: CalendarCurrentView.Preview, label: $t`Preview`, icon: PreviewViewIcon, tooltip: $t`Calendar with location and notes in the appointments` },
+    { id: CalendarCurrentView.List, label: $t`List`, icon: ListViewIcon, tooltip: $t`All appointments and meetings in a table` },
+    { id: CalendarCurrentView.Active, label: $t`Active`, icon: ActiveViewIcon, tooltip: $t`Appointments and meetings that are still to come` },
+  ];
   const folderPane = CalendarSettings.folderPane;
   const readingPane = CalendarSettings.readingPane;
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");

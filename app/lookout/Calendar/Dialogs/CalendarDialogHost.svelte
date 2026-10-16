@@ -5,7 +5,7 @@
 {:else if $dialog?.kind == "open-calendar"}
   <OpenCalendarDialog account={$dialog.account} fromAddressBook={$dialog.fromAddressBook} on:close={onClose} />
 {:else if $dialog?.kind == "rename"}
-  <RenameCalendarDialog calendar={$dialog.calendar} on:close={onClose} />
+  <RenameDialog account={$dialog.calendar} title={$t`Rename Calendar`} on:close={onClose} />
 {:else if $dialog?.kind == "view-settings"}
   <ViewSettingsDialog isTable={$dialog.isTable} on:close={onClose} />
 {/if}
@@ -14,7 +14,8 @@
   import { CalendarDialogs } from "./CalendarDialogs";
   import CalendarPropertiesDialog from "./CalendarPropertiesDialog.svelte";
   import OpenCalendarDialog from "./OpenCalendarDialog.svelte";
-  import RenameCalendarDialog from "./RenameCalendarDialog.svelte";
+  import RenameDialog from "../../Settings/Accounts/RenameDialog.svelte";
+  import { t } from "../../../l10n/l10n";
   import ViewSettingsDialog from "../ViewSettings/ViewSettingsDialog.svelte";
 
   const dialog = CalendarDialogs.current;

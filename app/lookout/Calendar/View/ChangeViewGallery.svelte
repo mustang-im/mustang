@@ -1,4 +1,4 @@
-<div class="gallery" role="listbox" aria-label={$t`Change View`}>
+<div class="gallery" role="listbox" aria-label={$t`Change View`} style:grid-template-columns="repeat({views.length}, 80px)">
   {#each views as view (view.id)}
     <button class="tile" class:selected={view.id == currentView}
       role="option" aria-selected={view.id == currentView}
@@ -11,27 +11,18 @@
 </div>
 
 <script lang="ts">
-  import { CalendarCurrentView } from "../CalendarSettings";
-  import CalendarIcon from "lucide-svelte/icons/calendar-days";
-  import PreviewIcon from "lucide-svelte/icons/scan-text";
-  import ListIcon from "lucide-svelte/icons/list";
-  import ActiveIcon from "lucide-svelte/icons/list-todo";
   import { getContext } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let currentView: CalendarCurrentView;
-  export let onChange: (view: CalendarCurrentView) => void;
+  type T = $$Generic;
+
+  export let views: { id: T, label: string, icon: ConstructorOfATypedSvelteComponent, tooltip: string }[];
+  export let currentView: T;
+  export let onChange: (view: T) => void;
 
   const closeMenu = getContext<() => void>("onMenuClose");
 
-  $: views = [
-    { id: CalendarCurrentView.Calendar, label: $t`Calendar`, icon: CalendarIcon, tooltip: $t`Day, week and month calendar` },
-    { id: CalendarCurrentView.Preview, label: $t`Preview`, icon: PreviewIcon, tooltip: $t`Calendar with location and notes in the appointments` },
-    { id: CalendarCurrentView.List, label: $t`List`, icon: ListIcon, tooltip: $t`All appointments and meetings in a table` },
-    { id: CalendarCurrentView.Active, label: $t`Active`, icon: ActiveIcon, tooltip: $t`Appointments and meetings that are still to come` },
-  ];
-
-  function choose(view: CalendarCurrentView) {
+  function choose(view: T) {
     closeMenu?.();
     onChange(view);
   }
@@ -40,7 +31,6 @@
 <style>
   .gallery {
     display: grid;
-    grid-template-columns: repeat(4, 80px);
     gap: 4px;
     padding: 4px 8px;
   }

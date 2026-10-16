@@ -8,6 +8,7 @@
   <ImportExportWizard preselected={$dialog.preselected} on:close={onClose} />
 {/if}
 <CalendarDialogHost />
+<ContactDialogHost />
 
 <script lang="ts">
   import { SettingsDialogs } from "./SettingsDialogs";
@@ -16,6 +17,7 @@
   import ChangeAccountDialog from "./Accounts/ChangeAccountDialog.svelte";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";
+  import ContactDialogHost from "../Contacts/Dialogs/ContactDialogHost.svelte";
 
   const dialog = SettingsDialogs.current;
 
