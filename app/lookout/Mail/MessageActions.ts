@@ -8,6 +8,7 @@ import { Person } from "../../logic/Abstract/Person";
 import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
 import { SelectionState } from "./SelectionState";
+import { MessageBox } from "../Shared/Dialog/MessageBox";
 import { MailView } from "./MailView";
 import { recentFolders } from "./RecentFolders";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
@@ -150,9 +151,9 @@ export class MessageActions {
       return;
     }
     let question = messages.length == 1
-      ? gt`The selected message will be permanently deleted. Continue?`
-      : gt`The ${messages.length} selected messages will be permanently deleted. Continue?`;
-    if (!confirm(question)) {
+      ? gt`Do you want to permanently delete the selected message?`
+      : gt`Do you want to permanently delete the ${messages.length} selected messages?`;
+    if (!await MessageBox.confirm(gt`Delete`, question)) {
       return;
     }
     await Promise.all(messages.map(message => message.deleteMessage(DeleteStrategy.DeleteImmediately)));

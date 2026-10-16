@@ -32,6 +32,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { SettingsDialogs } from "../../Settings/SettingsDialogs";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { MessageActions } from "../MessageActions";
   import { MailDialogs } from "../Dialogs/MailDialogs";
   import { FolderTreeActions } from "./FolderTreeActions";
@@ -51,13 +52,10 @@
   export let account: MailAccount;
 
   async function onClose() {
-    // <copied from="../../../frontend/Settings/Mail/SharingIncoming.svelte" onDelete()>
-    let confirmed = confirm($t`Are you sure that you want to delete the account ${account.name} and all related data from ${appName}?`);
-    if (!confirmed) {
+    if (!await MessageBox.ask($t`Close "${account.name}"`, $t`Are you sure that you want to delete the account ${account.name} and all related data from ${appName}?`)) {
       return;
     }
     await account.deleteIt();
-    // </copied>
   }
 
   async function onGetNewMail() {
