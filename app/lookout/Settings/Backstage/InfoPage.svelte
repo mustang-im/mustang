@@ -65,11 +65,9 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
   import { SettingsDialogs } from "../SettingsDialogs";
-  import { backstageState } from "../BackstageState";
   import { AccountLabels } from "../Accounts/AccountLabels";
   import { MessageActions } from "../../Mail/MessageActions";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
-  import { goTo } from "../../../frontend/AppsBar/selectedApp";
   import { catchErrors } from "../../../frontend/Util/error";
   import BackstageTile from "./BackstageTile.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
@@ -96,8 +94,7 @@
       : $emailAccounts.first;
 
   function onAddAccount() {
-    backstageState.close();
-    goTo("/setup/mail", {});
+    SettingsDialogs.open({ kind: "add-account" });
   }
 </script>
 

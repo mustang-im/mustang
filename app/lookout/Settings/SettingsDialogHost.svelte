@@ -6,6 +6,8 @@
   <ChangeAccountDialog account={$dialog.account} page={$dialog.page} on:close={onClose} />
 {:else if $dialog?.kind == "import-export"}
   <ImportExportWizard preselected={$dialog.preselected} on:close={onClose} />
+{:else if $dialog?.kind == "add-account"}
+  <AddAccountDialog on:close={onClose} />
 {/if}
 <CalendarDialogHost />
 <ContactDialogHost />
@@ -16,6 +18,7 @@
   import AccountSettingsDialog from "./Accounts/AccountSettingsDialog.svelte";
   import ChangeAccountDialog from "./Accounts/ChangeAccountDialog.svelte";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
+  import AddAccountDialog from "./Accounts/AddAccountDialog.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";
   import ContactDialogHost from "../Contacts/Dialogs/ContactDialogHost.svelte";
 
