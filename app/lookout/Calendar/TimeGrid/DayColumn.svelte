@@ -205,7 +205,8 @@
   .hidden-badge-anchor {
     position: sticky;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
+    padding-inline-end: 4px;
     height: 0;
     z-index: 5;
     pointer-events: none;
@@ -244,42 +245,7 @@
     pointer-events: none;
   }
   @media (prefers-color-scheme: dark) {
-    .hidden-badge-anchor {
-    position: sticky;
-    display: flex;
-    justify-content: center;
-    height: 0;
-    z-index: 5;
-    pointer-events: none;
-  }
-  .hidden-badge-anchor.top {
-    top: calc(var(--head-height) + 4px);
-  }
-  .hidden-badge-anchor.bottom {
-    bottom: 22px;
-  }
-  .hidden-badge {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    height: 18px;
-    padding: 0 6px;
-    border: 1px solid var(--lo-border-strong);
-    border-radius: 9px;
-    background-color: var(--lo-pane-bg);
-    box-shadow: var(--lo-shadow-card);
-    color: var(--lo-fg-secondary);
-    font: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    pointer-events: auto;
-  }
-  .hidden-badge:hover {
-    background-color: var(--lo-hover-bg);
-    color: var(--lo-fg);
-  }
-  .off-hours {
+    .off-hours {
       background-color: color-mix(in srgb, black 16%, var(--lo-pane-bg));
     }
   }

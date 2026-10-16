@@ -90,7 +90,7 @@
             tooltip={$t`Remove the online meeting`}
             onClick={onOffline} />
         {:else}
-          <RibbonMenuButton label={$t`Online Meeting`} icon={OnlineMeetingIcon}
+          <RibbonMenuButton label={isSimplified ? $t`Online *=> Online meeting` : $t`Online Meeting`} icon={OnlineMeetingIcon}
             tooltip={$t`Add a link to an online meeting`}>
             {#each $meetAccounts.each as account}
               <MenuItem label={account.name} icon={OnlineMeetingIcon}
@@ -119,7 +119,7 @@
         {/if}
       </RibbonGroup>
       <RibbonGroup label={$t`Options`}>
-        <RibbonMenuButton label={$t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} icon={ReminderIcon}
+        <RibbonMenuButton label={isSimplified ? reminderMinutes == null ? $t`Reminder` : reminderLabel : $t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} icon={ReminderIcon}
           tooltip={$t`Reminder: ${reminderLabel}`}>
           {#each reminderChoices as minutes}
             <MenuItem label={Reminder.label(minutes)} checked={minutes == reminderMinutes}
@@ -262,6 +262,8 @@
   import UndoIcon from "lucide-svelte/icons/undo-2";
   import RedoIcon from "lucide-svelte/icons/redo-2";
   import type { ChainedCommands, Editor } from "@tiptap/core";
+  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -284,6 +286,8 @@
   $: reminderLabel = Reminder.label(reminderMinutes);
   $: reminderChoices = Reminder.choices(reminderMinutes);
   const meetAccounts = EventEditFlow.meetAccounts();
+  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  $: isSimplified = $ribbonLayout.value == "simplified";
 
   function onOnline(account: MeetAccount | null) {
     flow.setOnlineWith(account);
