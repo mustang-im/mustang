@@ -1,6 +1,6 @@
 <vbox flex class="calendar-page" bind:this={pageEl}>
   <CalendarRibbon {view} {currentView}
-    bind:splitView bind:timeScale bind:showFolderPane bind:showWeekNumbers bind:showDeclined
+    bind:splitView {timeScale} bind:showFolderPane
     onView={setView} onCurrentView={setCurrentView} onResetView={resetView}
     onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
     {#if isSearch}
@@ -93,11 +93,14 @@
   let view = CalendarSettings.view.value;
   let currentView = CalendarSettings.currentView.value;
   let dayCount = CalendarSettings.dayCount.value;
-  let timeScale = CalendarSettings.timeScale.value;
+  const timeScaleSetting = CalendarSettings.timeScale;
+  const weekNumbersSetting = CalendarSettings.weekNumbers;
+  const showDeclinedSetting = CalendarSettings.showDeclined;
+  $: timeScale = $timeScaleSetting.value;
+  $: showWeekNumbers = $weekNumbersSetting.value;
+  $: showDeclined = $showDeclinedSetting.value;
   let splitView = CalendarSettings.splitView.value;
   let showFolderPane = CalendarSettings.folderPane.value;
-  let showWeekNumbers = CalendarSettings.weekNumbers.value;
-  let showDeclined = CalendarSettings.showDeclined.value;
 
   let folderPaneHeight = 0;
   let eventMenu: EventContextMenu;
@@ -186,8 +189,7 @@
     setCurrentView(CalendarCurrentView.Calendar);
     setView("workweek");
     setSplitView(false);
-    timeScale = 30;
-    CalendarSettings.timeScale.value = 30;
+    CalendarSettings.timeScale.value = CalendarSettings.timeScale.defaultValue;
     CalendarSettings.listSortColumn.value = CalendarSettings.listSortColumn.defaultValue;
     CalendarSettings.listSortAscending.value = CalendarSettings.listSortAscending.defaultValue;
     CalendarSettings.listGrouping.value = CalendarSettings.listGrouping.defaultValue;
