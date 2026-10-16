@@ -1,6 +1,6 @@
 <RibbonTab label={$t`View`}>
   <RibbonGroup label={$t`Current View`}>
-    <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
+    <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
       {#each viewTypes as viewType}
         <MenuItem label={viewType.label} tooltip={viewType.tooltip} icon={viewType.icon}
           checked={$settings.type == viewType.id}
@@ -21,7 +21,7 @@
     <RibbonCheckBox label={$t`Show as Conversations`}
       bind:checked={conversationsChecked}
       onChange={onShowAsConversations} />
-    <RibbonMenuButton label={$t`Conversation Settings`} icon={ConversationSettingsIcon} size="small"
+    <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings`} icon={ConversationSettingsIcon} size="small"
       disabled={!$settings.showAsConversations && $t`Turn on Show as Conversations first`}>
       <MenuItem label={$t`Show Senders Above the Subject`} checked={$settings.showSendersAboveSubject} checkable
         onClick={() => ViewCommands.setConversationOption(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject })} />
@@ -38,7 +38,7 @@
           onClick={() => ViewCommands.setPreviewLines(folder, option.lines)} />
       {/each}
     </RibbonMenuButton>
-    <RibbonMenuButton label={$t`Arrange By`} icon={ArrangeIcon}>
+    <RibbonMenuButton label={$t`Arrange By`} shortLabel={$t`Arrange`} icon={ArrangeIcon}>
       <ArrangeByMenuItems {folder} />
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Reverse Sort`} icon={ReverseIcon} size="small"
@@ -60,7 +60,7 @@
     <RibbonToggleButton label={$t`Use Tighter Spacing`} icon={SpacingIcon}
       checked={!!$settings.tighterSpacing}
       onChange={checked => MailViewSettings.change(folder, { tighterSpacing: checked }, ApplyScope.AllFolders)} />
-    <RibbonMenuButton label={$t`Folder Pane`} icon={FolderPaneIcon}>
+    <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
       <MenuItem label={$t`Normal`} checked={$folderPane.value == FolderPaneMode.Normal}
         onClick={() => { $folderPane.value = FolderPaneMode.Normal; }} />
       <MenuItem label={$t`Minimized`} checked={$folderPane.value == FolderPaneMode.Minimized}
@@ -71,7 +71,7 @@
       <MenuItem label={$t`Favorites`} checked={$showFavorites.value} checkable
         onClick={() => { $showFavorites.value = !$showFavorites.value; }} />
     </RibbonMenuButton>
-    <RibbonMenuButton label={$t`Reading Pane`} icon={ReadingPaneIcon}>
+    <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}>
       <MenuItem label={$t`Right`} icon={RightIcon} checked={$readingPane.value == ReadingPanePosition.Right}
         onClick={() => { $readingPane.value = ReadingPanePosition.Right; }} />
       <MenuItem label={$t`Bottom`} icon={BottomIcon} checked={$readingPane.value == ReadingPanePosition.Bottom}

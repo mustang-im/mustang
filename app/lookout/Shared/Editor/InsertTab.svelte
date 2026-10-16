@@ -22,7 +22,7 @@
     <RibbonMenuButton label={$t`Symbol`} icon={SymbolIcon} disabled={!editor}>
       <SymbolGallery {editor} onMoreSymbols={() => commands.openTool(EditorTool.Symbol)} />
     </RibbonMenuButton>
-    <RibbonButton label={$t`Horizontal Line`} icon={HorizontalLineIcon} size="small"
+    <RibbonButton label={$t`Horizontal Line`} shortLabel={$t`Line`} icon={HorizontalLineIcon} size="small"
       disabled={!editor}
       onClick={() => EditorChain.run(editor, chain => chain.setHorizontalRule())} />
   </RibbonGroup>

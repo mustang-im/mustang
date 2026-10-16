@@ -90,7 +90,7 @@
             tooltip={$t`Remove the online meeting`}
             onClick={onOffline} />
         {:else}
-          <RibbonMenuButton label={isSimplified ? $t`Online *=> Online meeting` : $t`Online Meeting`} icon={OnlineMeetingIcon}
+          <RibbonMenuButton label={$t`Online Meeting`} shortLabel={$t`Online *=> Online meeting`} icon={OnlineMeetingIcon}
             tooltip={$t`Add a link to an online meeting`}>
             {#each $meetAccounts.each as account}
               <MenuItem label={account.name} icon={OnlineMeetingIcon}
@@ -119,7 +119,7 @@
         {/if}
       </RibbonGroup>
       <RibbonGroup label={$t`Options`}>
-        <RibbonMenuButton label={isSimplified ? reminderMinutes == null ? $t`Reminder` : reminderLabel : $t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} icon={ReminderIcon}
+        <RibbonMenuButton label={$t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} shortLabel={reminderMinutes == null ? $t`Reminder` : reminderLabel} icon={ReminderIcon}
           tooltip={$t`Reminder: ${reminderLabel}`}>
           {#each reminderChoices as minutes}
             <MenuItem label={Reminder.label(minutes)} checked={minutes == reminderMinutes}
@@ -224,8 +224,6 @@
   import RefreshIcon from "lucide-svelte/icons/refresh-cw";
   import SignatureIcon from "lucide-svelte/icons/pen-line";
   import CopyIcon from "lucide-svelte/icons/clipboard-copy";
-  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
-  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -249,8 +247,6 @@
   $: reminderLabel = Reminder.label(reminderMinutes);
   $: reminderChoices = Reminder.choices(reminderMinutes);
   const meetAccounts = EventEditFlow.meetAccounts();
-  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  $: isSimplified = $ribbonLayout.value == "simplified";
 
   function onOnline(account: MeetAccount | null) {
     flow.setOnlineWith(account);

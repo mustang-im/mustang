@@ -1,4 +1,4 @@
-<RibbonButtonBase {label} {icon} {tooltip} {shortCutInfo} {disabled} {size} {classes}
+<RibbonButtonBase {label} {shortLabel} {icon} {tooltip} {shortCutInfo} {disabled} {size} {classes}
   toggle pressed={checked}
   onClick={onToggle} {errorCallback}
   bind:buttonEl
@@ -10,6 +10,7 @@
   import { showError } from "../../../frontend/Util/error";
 
   export let label: string;
+  export let shortLabel: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let checked = false;
   export let isRadio = false;

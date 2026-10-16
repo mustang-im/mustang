@@ -21,7 +21,7 @@
     {/if}
   </span>
   <span class="label">
-    <span class="text">{labelStart}{#if hasMenu}<span class="last-word">{labelEnd}{#if isOneWord}<br class="large-line-break" />{/if}<span class="chevron large-chevron"><ChevronDownIcon size="12" /></span></span>{/if}</span>
+    <span class="text">{firstLine}{#if secondLine || hasMenu}<br class="large-line-break" />{/if}{secondStart}{#if hasMenu}<span class="last-word">{lastWord}<span class="chevron large-chevron"><ChevronDownIcon size="12" /></span></span>{:else}{lastWord}{/if}</span>
   </span>
   {#if hasMenu}
     <span class="chevron line-chevron"><ChevronDownIcon size="12" /></span>
@@ -29,7 +29,7 @@
 </button>
 
 <script lang="ts">
-  import { RibbonGroupModel, type RibbonItemLook, type RibbonItemSize } from "./Ribbon";
+  import { RibbonGroupModel, RibbonLabel, type RibbonItemLook, type RibbonItemSize } from "./Ribbon";
   import { showError } from "../../../frontend/Util/error";
   import LoadingIcon from "lucide-svelte/icons/loader-circle";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
@@ -37,6 +37,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let label: string;
+  export let shortLabel: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let tooltip: string = null;
   export let shortCutInfo: string = null;
@@ -68,13 +69,14 @@
     ? RibbonGroupModel.buttonRowLook($layout, $collapsed)
     : RibbonGroupModel.itemLook($layout, $stage, $collapsed, size));
 
+  $: shownLabel = shortLabel && (look == "simplified" || look == "simplified-icon") ? shortLabel : label;
   // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.
   // Chrome also never breaks after a slash, so "Send/Receive" gets a zero-width space there.
-  $: wrappingLabel = label?.replace(/\/(?=\S)/g, "/​") ?? "";
-  $: lastBreak = hasMenu ? Math.max(wrappingLabel.lastIndexOf(" "), wrappingLabel.lastIndexOf("​")) : -1;
-  $: isOneWord = hasMenu && lastBreak < 0;
-  $: labelStart = hasMenu ? wrappingLabel.slice(0, lastBreak + 1) : wrappingLabel;
-  $: labelEnd = hasMenu ? wrappingLabel.slice(lastBreak + 1) : "";
+  $: wrappingLabel = shownLabel?.replace(/\/(?=\S)/g, "/​") ?? "";
+  $: [firstLine, secondLine] = RibbonLabel.largeLines(wrappingLabel, hasMenu);
+  $: lastBreak = secondLine.lastIndexOf(" ");
+  $: secondStart = (secondLine ? " " : "") + secondLine.slice(0, lastBreak + 1);
+  $: lastWord = secondLine.slice(lastBreak + 1);
 
   /* <copied from="../../../frontend/Shared/Button.svelte"> */
   $: tooltipCalc = typeof(disabled) == "string"

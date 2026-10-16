@@ -4,7 +4,7 @@
       <RibbonButton label={$t`New Contact`} icon={NewContactIcon}
         onClick={() => ContactActions.newContact($selectedAddressbook)}
         shortCutInfo="Ctrl+N" />
-      <RibbonButton label={isSimplified ? $t`New Group` : $t`New Contact Group`} icon={NewGroupIcon}
+      <RibbonButton label={$t`New Contact Group`} shortLabel={$t`New Group`} icon={NewGroupIcon}
         onClick={() => ContactActions.newGroup($selectedAddressbook)}
         shortCutInfo="Ctrl+Shift+L" />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
@@ -43,7 +43,7 @@
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Current View`}>
-      <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
+      <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
         <ChangeViewGallery views={contactViews} currentView={$view.value} onChange={setView} />
       </RibbonMenuButton>
     </RibbonGroup>
@@ -79,7 +79,7 @@
   </RibbonTab>
   <RibbonTab label={$t`Send / Receive`}>
     <RibbonGroup label={$t`Send & Receive`}>
-      <RibbonButton label={$t`Update Folder`} icon={SyncIcon}
+      <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update`} icon={SyncIcon}
         onClick={() => ContactActions.sync($selectedAddressbook)}
         disabled={!$selectedAddressbook?.canSync && $t`Select an address book on a server first`} />
       <RibbonButton label={$t`Update All`} icon={SyncAllIcon}
@@ -94,17 +94,17 @@
         onClick={() => ContactActions.newFolder()} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
-      <RibbonButton label={isSimplified ? $t`Rename` : $t`Rename Folder`} icon={RenameIcon}
+      <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename Folder`}
         onClick={() => ContactActions.rename($selectedAddressbook)}
         disabled={!isWritableAddressbook && $t`Select an address book first`} />
-      <RibbonButton label={isSimplified ? $t`Delete` : $t`Delete Folder`} icon={DeleteIcon}
+      <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Delete Folder`}
         onClick={() => ContactActions.deleteFolder($selectedAddressbook)}
         disabled={!ContactActions.canDeleteFolder($selectedAddressbook) && $t`Only address books that you added yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
-      <RibbonButton label={isSimplified ? $t`Properties` : $t`Folder Properties`} icon={PropertiesIcon}
+      <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
         tooltip={$t`Folder Properties`}
         onClick={() => ContactActions.openProperties($selectedAddressbook)}
         disabled={!$selectedAddressbook && $t`Select an address book first`} />
@@ -112,7 +112,7 @@
   </RibbonTab>
   <RibbonTab label={$t`View`}>
     <RibbonGroup label={$t`Current View`}>
-      <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
+      <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
         <ChangeViewGallery views={contactViews} currentView={$view.value} onChange={setView} />
       </RibbonMenuButton>
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
@@ -120,7 +120,7 @@
         onClick={resetView} />
     </RibbonGroup>
     <RibbonGroup label={$t`Arrangement`}>
-      <RibbonMenuButton label={$t`Arrange By`} icon={ArrangeIcon}
+      <RibbonMenuButton label={$t`Arrange By`} shortLabel={$t`Arrange`} icon={ArrangeIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}>
         {#each arrangeColumns as column}
           <MenuItem label={ContactColumns.label(column)} checked={$sort.value.column == column}
@@ -132,11 +132,11 @@
         onClick={reverseSort} />
     </RibbonGroup>
     <RibbonGroup label={$t`Layout`}>
-      <RibbonMenuButton label={$t`Folder Pane`} icon={FolderPaneIcon}>
+      <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
         <MenuItem label={$t`Normal`} checked={$folderPane.value != false} onClick={() => { $folderPane.value = true; }} />
         <MenuItem label={$t`Off`} checked={$folderPane.value == false} onClick={() => { $folderPane.value = false; }} />
       </RibbonMenuButton>
-      <RibbonMenuButton label={$t`Reading Pane`} icon={ReadingPaneIcon}
+      <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}
         disabled={$view.value != ContactView.People && $view.value && $t`Available in the People view`}>
         <MenuItem label={$t`Right`} checked={$readingPane.value != false} onClick={() => { $readingPane.value = true; }} />
         <MenuItem label={$t`Off`} checked={$readingPane.value == false} onClick={() => { $readingPane.value = false; }} />
@@ -195,8 +195,6 @@
   import NewFolderIcon from "lucide-svelte/icons/folder-plus";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import type { ArrayColl } from "svelte-collections";
-  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-  import type { RibbonLayout } from "../Shared/Ribbon/Ribbon";
   import { t } from "../../l10n/l10n";
 
   export let selectedContacts: ArrayColl<Contact>;
@@ -208,8 +206,6 @@
   export let resetView: () => void;
 
   const addressbooks = appGlobal.addressbooks;
-  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  $: isSimplified = $ribbonLayout.value == "simplified";
   const view = ContactColumns.view;
   const sort = ContactColumns.sort;
   const folderPane = ContactColumns.folderPane;

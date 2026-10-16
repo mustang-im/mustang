@@ -316,3 +316,31 @@ export class RibbonGroupModel {
     return stage >= ClassicStage.IconsOnly ? "small-icon" : "small";
   }
 }
+
+export class RibbonLabel {
+  static largeLines(label: string, hasMenu: boolean): [string, string] {
+    const kChevronChars = 2;
+    let words: string[] = [];
+    for (let word of label.split(" ").filter(word => word)) {
+      if (words.length && !/[\p{L}\p{N}]/u.test(word)) {
+        words[words.length - 1] += " " + word;
+      } else {
+        words.push(word);
+      }
+    }
+    if (words.length < 2) {
+      return [label, ""];
+    }
+    let split = 1;
+    let splitLength = Infinity;
+    for (let i = 1; i < words.length; i++) {
+      let first = words.slice(0, i).join(" ").length;
+      let second = words.slice(i).join(" ").length + (hasMenu ? kChevronChars : 0);
+      if (Math.max(first, second) <= splitLength) {
+        split = i;
+        splitLength = Math.max(first, second);
+      }
+    }
+    return [words.slice(0, split).join(" "), words.slice(split).join(" ")];
+  }
+}

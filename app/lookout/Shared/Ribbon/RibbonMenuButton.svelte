@@ -1,5 +1,5 @@
 <div class="ribbon-menu-button">
-  <RibbonButtonBase {label} {icon} {tooltip} {shortCutInfo} {disabled} {size}
+  <RibbonButtonBase {label} {shortLabel} {icon} {tooltip} {shortCutInfo} {disabled} {size}
     classes="menu-trigger {classes}"
     hasMenu pressed={isMenuOpen}
     onClick={onToggleMenu}
@@ -16,6 +16,7 @@
   import type { RibbonItemSize } from "./Ribbon";
 
   export let label: string;
+  export let shortLabel: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let isMenuOpen = false;
   export let disabled: boolean | string = false;

@@ -1,7 +1,7 @@
 <Ribbon>
   <RibbonTab label={$t`Home`}>
     <RibbonGroup label={$t`New`}>
-      <RibbonButton label={isSimplified ? $t`New Event` : $t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo="Ctrl+N"
+      <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo="Ctrl+N"
         onClick={() => CalendarActions.newEventAtSelection(null)}
         disabled={noCalendar} />
       <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo="Ctrl+Shift+Q"
@@ -12,7 +12,7 @@
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Online Meeting`}>
-      <RibbonButton label={isSimplified ? $t`Online *=> New online meeting` : $t`New Online Meeting`} icon={OnlineMeetingIcon}
+      <RibbonButton label={$t`New Online Meeting`} shortLabel={$t`Online *=> New online meeting`} icon={OnlineMeetingIcon}
         tooltip={$t`New meeting with a link to an online meeting`}
         onClick={() => CalendarActions.newEventAtSelection(null, "online-meeting")}
         disabled={noCalendar} />
@@ -48,7 +48,7 @@
   </RibbonTab>
   <RibbonTab label={$t`Send / Receive`}>
     <RibbonGroup label={$t`Send & Receive`}>
-      <RibbonButton label={$t`Update Folder`} icon={SyncIcon}
+      <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update`} icon={SyncIcon}
         tooltip={$t`Get the latest events of the selected calendar`}
         onClick={() => CalendarActions.update([ $selectedCalendar ])}
         disabled={noSelection} />
@@ -60,36 +60,36 @@
   </RibbonTab>
   <RibbonTab label={$t`Folder`}>
     <RibbonGroup label={$t`New`}>
-      <RibbonButton label={$t`New Calendar`} icon={NewCalendarIcon}
+      <RibbonButton label={$t`New Calendar`} shortLabel={$t`New`} icon={NewCalendarIcon}
         tooltip={$t`Create a new calendar on this computer`}
         onClick={() => CalendarActions.createBlankCalendar()} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
-      <RibbonButton label={isSimplified ? $t`Rename` : $t`Rename Calendar`} icon={RenameIcon}
+      <RibbonButton label={$t`Rename Calendar`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename the calendar in this app`}
         onClick={() => CalendarActions.rename($selectedCalendar)}
         disabled={noSelection} />
-      <RibbonButton label={isSimplified ? $t`Delete` : $t`Delete Calendar`} icon={DeleteIcon}
+      <RibbonButton label={$t`Delete Calendar`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Remove the calendar from this app`}
         onClick={() => onDeleteCalendar()}
         disabled={!canDelete && $t`Only calendars that you added or opened yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Open & Share`}>
-      <RibbonMenuButton label={isSimplified ? $t`Open *=> Open calendar` : $t`Open Calendar`} icon={OpenCalendarIcon}
+      <RibbonMenuButton label={$t`Open Calendar`} shortLabel={$t`Open *=> Open calendar`} icon={OpenCalendarIcon}
         tooltip={$t`Open Calendar`}>
         <OpenCalendarMenuItems />
       </RibbonMenuButton>
-      <RibbonButton label={isSimplified ? $t`Share` : $t`Share Calendar`} icon={ShareIcon}
+      <RibbonButton label={$t`Share Calendar`} shortLabel={$t`Share`} icon={ShareIcon}
         tooltip={$t`Share Calendar`}
         onClick={() => CalendarActions.openSharing($selectedCalendar)}
         disabled={!canShare && $t`This calendar cannot be shared`} />
-      <RibbonButton label={isSimplified ? $t`Permissions` : $t`Calendar Permissions`} icon={PermissionsIcon}
+      <RibbonButton label={$t`Calendar Permissions`} shortLabel={$t`Permissions`} icon={PermissionsIcon}
         tooltip={$t`Calendar Permissions`}
         onClick={() => CalendarActions.openSharing($selectedCalendar)}
         disabled={!canShare && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
-      <RibbonButton label={isSimplified ? $t`Properties` : $t`Calendar Properties`} icon={PropertiesIcon}
+      <RibbonButton label={$t`Calendar Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
         tooltip={$t`Calendar Properties`}
         onClick={() => CalendarActions.openProperties($selectedCalendar)}
         disabled={noSelection} />
@@ -97,7 +97,7 @@
   </RibbonTab>
   <RibbonTab label={$t`View`}>
     <RibbonGroup label={$t`Current View`}>
-      <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
+      <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
         <ChangeViewGallery views={calendarViews} {currentView} onChange={onCurrentView} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
@@ -131,7 +131,7 @@
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Layout`}>
-      <RibbonMenuButton label={$t`Folder Pane`} icon={FolderPaneIcon}>
+      <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
         <MenuItem label={$t`Normal`} checked={$folderPane.value == CalendarFolderPane.Normal}
           onClick={() => onFolderPane(CalendarFolderPane.Normal)} />
         <MenuItem label={$t`Minimized`} checked={$folderPane.value == CalendarFolderPane.Minimized}
@@ -139,7 +139,7 @@
         <MenuItem label={$t`Off`} checked={$folderPane.value == CalendarFolderPane.Off}
           onClick={() => onFolderPane(CalendarFolderPane.Off)} />
       </RibbonMenuButton>
-      <RibbonMenuButton label={$t`Reading Pane`} icon={ReadingPaneIcon}>
+      <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}>
         <MenuItem label={$t`Right`} checked={$readingPane.value == ReadingPanePosition.Right}
           onClick={() => { $readingPane.value = ReadingPanePosition.Right; }} />
         <MenuItem label={$t`Bottom`} checked={$readingPane.value == ReadingPanePosition.Bottom}

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { RibbonGroupModel, RibbonModel, RibbonTabModel } from "../../Shared/Ribbon/Ribbon";
+import { RibbonGroupModel, RibbonLabel, RibbonModel, RibbonTabModel } from "../../Shared/Ribbon/Ribbon";
 import { expect, test } from "vitest";
 import { get } from "svelte/store";
 
@@ -308,4 +308,18 @@ test("Classic: the fit uses the rendered width, so the last group stays inside t
   tab.fitGroups();
   expect(get(share.stage)).toBe(2);
   expect(get(find.stage)).toBe(0);
+});
+
+test("Classic: large labels with several words always take 2 lines, split where both lines are about equally long", () => {
+  expect(RibbonLabel.largeLines("Delete", false)).toEqual(["Delete", ""]);
+  expect(RibbonLabel.largeLines("New Calendar", false)).toEqual(["New", "Calendar"]);
+  expect(RibbonLabel.largeLines("Rename Calendar", false)).toEqual(["Rename", "Calendar"]);
+  expect(RibbonLabel.largeLines("New Contact Group", false)).toEqual(["New Contact", "Group"]);
+  expect(RibbonLabel.largeLines("Mark All as Read", false)).toEqual(["Mark All", "as Read"]);
+  expect(RibbonLabel.largeLines("Send/Receive All Folders", false)).toEqual(["Send/Receive", "All Folders"]);
+  // The menu arrow counts on the second line
+  expect(RibbonLabel.largeLines("New Items", true)).toEqual(["New", "Items"]);
+  // "&" stays with the word before it
+  expect(RibbonLabel.largeLines("Spelling & Grammar", false)).toEqual(["Spelling &", "Grammar"]);
+  expect(RibbonLabel.largeLines("Date & Time", false)).toEqual(["Date &", "Time"]);
 });
