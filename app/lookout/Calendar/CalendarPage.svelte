@@ -10,7 +10,8 @@
   </CalendarRibbon>
   <hbox flex class="panes">
     {#if $folderPaneSetting.value == CalendarFolderPane.Minimized}
-      <FolderPaneMinimized />
+      <FolderPaneMinimized name={$selectedCalendar?.name ?? $t`Calendar`}
+        onExpand={() => { folderPaneSetting.value = CalendarFolderPane.Normal; }} />
     {/if}
     <Splitter name="lookout.calendar.folderPane" hasLeft={showFolderPane}
       initialRightRatio={5} leftMinWidth={230} rightMinWidth={480}>
@@ -91,7 +92,7 @@
   import CalendarRibbon from "./CalendarRibbon.svelte";
   import DateNavigator from "./FolderPane/DateNavigator.svelte";
   import CalendarList from "./FolderPane/CalendarList.svelte";
-  import FolderPaneMinimized from "./FolderPane/FolderPaneMinimized.svelte";
+  import FolderPaneMinimized from "../Shared/FolderPaneMinimized.svelte";
   import CalendarHeader from "./View/CalendarHeader.svelte";
   import TimeGrid, { type CalendarColumnGroup } from "./TimeGrid/TimeGrid.svelte";
   import MonthGrid from "./Month/MonthGrid.svelte";
