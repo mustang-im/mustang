@@ -172,7 +172,8 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 | Default reminders (15 minutes, 18 hours for all-day events) | File > Options > Calendar | A calendar setting |
 | Save an appointment without a title ("(No subject)") | Save & Close | `hasMinimalProps()` requires a title |
 | Forward as iCalendar | Forward menu | Only `forwardEventByMail()` exists, which is what Forward does |
-| Pictures and tables in the event description | Insert tab | Editor features. Lookout offers Attach File and the text formatting of the editor. |
+| Tables in the event description | Insert tab | Editor features (as in the composer). |
+| The composer's Insert and Format Text commands in the event form: Pictures, Link, Symbol, Horizontal Line, Emoji; Clipboard, Underline, Indent, Styles, Find and Replace | Event form > Insert, Format Text | *UI only*: the event form uses the composer's editor. It waits for the composer's Insert and Format Text tabs as shared components, so that both stay the same. Today the event form has Attach File, Bold, Italic, Strikethrough, Clear Formatting, Bullets, Numbering, Quote, Undo and Redo. |
 
 ## People
 
