@@ -65,28 +65,32 @@
         onClick={() => CalendarActions.createBlankCalendar()} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
-      <RibbonButton label={$t`Rename Calendar`} icon={RenameIcon}
+      <RibbonButton label={isSimplified ? $t`Rename` : $t`Rename Calendar`} icon={RenameIcon}
         tooltip={$t`Rename the calendar in this app`}
         onClick={() => CalendarActions.rename($selectedCalendar)}
         disabled={noSelection} />
-      <RibbonButton label={$t`Delete Calendar`} icon={DeleteIcon}
+      <RibbonButton label={isSimplified ? $t`Delete` : $t`Delete Calendar`} icon={DeleteIcon}
         tooltip={$t`Remove the calendar from this app`}
         onClick={() => onDeleteCalendar()}
         disabled={!canDelete && $t`Only calendars that you added or opened yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Open & Share`}>
-      <RibbonMenuButton label={$t`Open Calendar`} icon={OpenCalendarIcon}>
+      <RibbonMenuButton label={isSimplified ? $t`Open *=> Open calendar` : $t`Open Calendar`} icon={OpenCalendarIcon}
+        tooltip={$t`Open Calendar`}>
         <OpenCalendarMenuItems />
       </RibbonMenuButton>
-      <RibbonButton label={$t`Share Calendar`} icon={ShareIcon}
+      <RibbonButton label={isSimplified ? $t`Share` : $t`Share Calendar`} icon={ShareIcon}
+        tooltip={$t`Share Calendar`}
         onClick={() => CalendarActions.openSharing($selectedCalendar)}
         disabled={!canShare && $t`This calendar cannot be shared`} />
-      <RibbonButton label={$t`Calendar Permissions`} icon={PermissionsIcon}
+      <RibbonButton label={isSimplified ? $t`Permissions` : $t`Calendar Permissions`} icon={PermissionsIcon}
+        tooltip={$t`Calendar Permissions`}
         onClick={() => CalendarActions.openSharing($selectedCalendar)}
         disabled={!canShare && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
-      <RibbonButton label={$t`Calendar Properties`} icon={PropertiesIcon}
+      <RibbonButton label={isSimplified ? $t`Properties` : $t`Calendar Properties`} icon={PropertiesIcon}
+        tooltip={$t`Calendar Properties`}
         onClick={() => CalendarActions.openProperties($selectedCalendar)}
         disabled={noSelection} />
     </RibbonGroup>

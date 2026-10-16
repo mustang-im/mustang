@@ -94,15 +94,18 @@
         onClick={() => ContactActions.newFolder()} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
-      <RibbonButton label={$t`Rename Folder`} icon={RenameIcon}
+      <RibbonButton label={isSimplified ? $t`Rename` : $t`Rename Folder`} icon={RenameIcon}
+        tooltip={$t`Rename Folder`}
         onClick={() => ContactActions.rename($selectedAddressbook)}
         disabled={!isWritableAddressbook && $t`Select an address book first`} />
-      <RibbonButton label={$t`Delete Folder`} icon={DeleteIcon}
+      <RibbonButton label={isSimplified ? $t`Delete` : $t`Delete Folder`} icon={DeleteIcon}
+        tooltip={$t`Delete Folder`}
         onClick={() => ContactActions.deleteFolder($selectedAddressbook)}
         disabled={!ContactActions.canDeleteFolder($selectedAddressbook) && $t`Only address books that you added yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
-      <RibbonButton label={$t`Folder Properties`} icon={PropertiesIcon}
+      <RibbonButton label={isSimplified ? $t`Properties` : $t`Folder Properties`} icon={PropertiesIcon}
+        tooltip={$t`Folder Properties`}
         onClick={() => ContactActions.openProperties($selectedAddressbook)}
         disabled={!$selectedAddressbook && $t`Select an address book first`} />
     </RibbonGroup>
