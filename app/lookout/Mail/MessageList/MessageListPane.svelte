@@ -1,6 +1,23 @@
 <vbox flex class="message-list-pane lo-card" style:--message-columns={gridTemplate}>
   <hbox class="list-header">
-    {#if isSearchResult}
+    {#if isSimplified}
+      <span class="list-title" title={listTitle}>{listTitle}</span>
+      <hbox flex />
+      {#if !isSearchResult}
+        <button class="header-button" class:active={hasFilter} bind:this={filterEl}
+          on:click|stopPropagation={() => isFilterMenuOpen = !isFilterMenuOpen}
+          title={$t`Filter`} aria-haspopup="menu">
+          <FilterIcon size={16} />
+          <span class="button-label">{$t`Filter`}</span>
+        </button>
+      {/if}
+      <button class="header-button" bind:this={sortEl}
+        on:click|stopPropagation={() => isSortMenuOpen = !isSortMenuOpen}
+        title={$t`Sort`} aria-haspopup="menu">
+        <SortIcon size={16} />
+        <span class="button-label">{arrangeLabel}</span>
+      </button>
+    {:else if isSearchResult}
       <span class="results-title">{$t`Results`}</span>
     {:else}
       <hbox class="pivots" role="tablist">
@@ -14,6 +31,7 @@
         </button>
       </hbox>
     {/if}
+    {#if !isSimplified}
     <hbox flex />
     <button class="arrange" bind:this={arrangeEl} on:click|stopPropagation={() => isArrangeMenuOpen = !isArrangeMenuOpen}
       title={$t`Arrange By`} aria-haspopup="menu">
@@ -28,6 +46,7 @@
         <SortUpIcon size={16} />
       {/if}
     </button>
+    {/if}
   </hbox>
   {#if columns}
     <ColumnHeader {folder} settings={$settings} {columns} showsRecipients={showsRecipients}
@@ -78,6 +97,18 @@
   {/if}
   <ArrangeByMenuItems {folder} withLabel />
 </Menu>
+<Menu bind:isMenuOpen={isFilterMenuOpen} anchor={filterEl} placement="bottom-end">
+  <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={() => MailFilters.clear()} />
+  <MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={$quickSearch.isRead === false}
+    onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
+  <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={$quickSearch.isStarred}
+    onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
+  <MenuItem label={$t`Has files`} icon={AttachmentIcon} checkable checked={$quickSearch.hasAttachment}
+    onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
+</Menu>
+<Menu bind:isMenuOpen={isSortMenuOpen} anchor={sortEl} placement="bottom-end">
+  <SortMenuItems {folder} />
+</Menu>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -94,6 +125,7 @@
   import MessageList from "./MessageList.svelte";
   import ColumnHeader from "./ColumnHeader.svelte";
   import ArrangeByMenuItems from "../View/ArrangeByMenuItems.svelte";
+  import SortMenuItems from "../View/SortMenuItems.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
@@ -101,6 +133,14 @@
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import SortUpIcon from "lucide-svelte/icons/arrow-up";
   import SortDownIcon from "lucide-svelte/icons/arrow-down";
+  import FilterIcon from "lucide-svelte/icons/list-filter";
+  import SortIcon from "lucide-svelte/icons/arrow-down-wide-narrow";
+  import AllIcon from "lucide-svelte/icons/mails";
+  import UnreadIcon from "lucide-svelte/icons/mail";
+  import FlagIcon from "lucide-svelte/icons/flag";
+  import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
@@ -121,6 +161,14 @@
   let messageList: MessageList;
   let arrangeEl: HTMLButtonElement;
   let isArrangeMenuOpen = false;
+  let filterEl: HTMLButtonElement;
+  let isFilterMenuOpen = false;
+  let sortEl: HTMLButtonElement;
+  let isSortMenuOpen = false;
+  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+
+  $: isSimplified = $ribbonLayout.value == "simplified";
+  $: listTitle = isSearchResult ? $t`Results` : $folder?.name ?? "";
 
   $: settings = MailViewSettings.store(folder);
   $: arrangeLabel = ArrangeFields.all().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
@@ -255,6 +303,35 @@
     height: 2px;
     border-radius: 1px;
     background-color: var(--lo-accent);
+  }
+  .list-title {
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .header-button {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 8px;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .header-button:hover {
+    background-color: var(--lo-hover-bg);
+  }
+  .header-button.active {
+    background-color: var(--lo-selected-bg);
+    color: var(--lo-accent-text);
   }
   .results-title {
     font-size: 15px;

@@ -191,3 +191,19 @@ test("Reply depth counts the ancestors that are in the conversation", () => {
   expect(MessageGrouping.replyDepth(replyToReply, thread)).toBe(2);
   expect(MessageGrouping.replyDepth(replyToMissing, thread)).toBe(1);
 });
+
+test("Sort orders list the ascending order first, like Outlook's Sort order menu", () => {
+  // Date is newest first by default, so "Oldest on top" is the reversed order and comes first
+  expect(MessageGrouping.sortOrders(ArrangeBy.Date)).toEqual([
+    { label: "Oldest on top", reversed: true },
+    { label: "Newest on top", reversed: false },
+  ]);
+  expect(MessageGrouping.sortOrders(ArrangeBy.From)).toEqual([
+    { label: "A on top", reversed: false },
+    { label: "Z on top", reversed: true },
+  ]);
+  expect(MessageGrouping.sortOrders(ArrangeBy.Size)).toEqual([
+    { label: "Smallest on top", reversed: true },
+    { label: "Largest on top", reversed: false },
+  ]);
+});
