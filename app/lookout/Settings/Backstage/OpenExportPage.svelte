@@ -1,6 +1,15 @@
 <vbox class="open-export-page">
   <h1>{$t`Open`}</h1>
   <vbox class="commands">
+    <button class="command" disabled={!sharingAccounts.length}
+      title={sharingAccounts.length ? null : $t`None of your accounts can open the calendars of colleagues`}
+      on:click={() => CalendarActions.openSharedCalendar(null)}>
+      <hbox class="command-icon"><OpenCalendarIcon size={32} strokeWidth={1.25} /></hbox>
+      <vbox class="command-text">
+        <span class="command-title">{$t`Open Calendar`}</span>
+        <span class="command-description">{$t`Open a calendar that a colleague shared with you.`}</span>
+      </vbox>
+    </button>
     <button class="command" on:click={() => SettingsDialogs.open({ kind: "import-export" })}>
       <hbox class="command-icon"><ImportExportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
@@ -27,13 +36,18 @@
   import { appGlobal } from "../../../logic/app";
   import { SettingsDialogs } from "../SettingsDialogs";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
+  import { CalendarActions } from "../../Calendar/CalendarActions";
+  import { SharedCalendars } from "../../Calendar/Dialogs/SharedCalendars";
   import SharedFolderDialog from "../../Mail/Dialogs/SharedFolderDialog.svelte";
+  import OpenCalendarIcon from "lucide-svelte/icons/calendar-search";
   import ImportExportIcon from "lucide-svelte/icons/arrow-left-right";
   import SharedFolderIcon from "lucide-svelte/icons/folder-symlink";
   import { t } from "../../../l10n/l10n";
 
   const emailAccounts = appGlobal.emailAccounts;
   let isSharedFolderOpen = false;
+  let sharingAccounts = SharedCalendars.accounts();
+  $: $emailAccounts, sharingAccounts = SharedCalendars.accounts();
   $: mailAccount = $selectedAccount && $emailAccounts.contains($selectedAccount)
     ? $selectedAccount
     : $emailAccounts.first;

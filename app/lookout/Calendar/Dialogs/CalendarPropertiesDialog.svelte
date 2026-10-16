@@ -1,0 +1,152 @@
+<Dialog title={$t`${calendar.name} Properties`}
+  okLabel={$t`OK`}
+  okDisabled={!name.trim() && $t`Enter a name for the calendar`}
+  onOK={onOK}
+  width="560px"
+  height="560px"
+  on:close>
+  <vbox class="properties">
+    <DialogTabs {tabs} bind:selected={tab} />
+    {#if tab == "permissions"}
+      <CalendarPermissionsTab {calendar} />
+    {:else}
+      <vbox class="general">
+        <hbox class="name-row">
+          <span class="calendar-icon" style:--calendar-color={color}>
+            <CalendarIcon size="24" />
+          </span>
+          <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name`} />
+        </hbox>
+        <hbox class="divider" />
+        <div class="facts">
+          <span class="label">{$t`Type:`}</span>
+          <span>{$t`Folder containing Calendar Items`}</span>
+          <span class="label">{$t`Location:`}</span>
+          <span>{location}</span>
+          {#if owner}
+            <span class="label">{$t`Owner:`}</span>
+            <span>{owner}</span>
+          {/if}
+        </div>
+        <hbox class="divider" />
+        <vbox class="color-group">
+          <span class="label">{$t`Color:`}</span>
+          <ColorPalette colors={CalendarColors.palette} bind:selected={color} label={$t`Color`} columns={15}
+            onChoose={chosen => color = chosen} />
+        </vbox>
+        {#if isShared}
+          <hbox class="divider" />
+          <hbox class="delete-row">
+            <span class="lo-secondary">{$t`This is the calendar of another person. You can remove it from this app.`}</span>
+            <DialogButton label={$t`Delete Calendar`} icon={DeleteIcon} onClick={onDelete} />
+          </hbox>
+        {/if}
+      </vbox>
+    {/if}
+  </vbox>
+</Dialog>
+
+<script lang="ts">
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import type { CalendarPropertiesTab } from "./CalendarDialogs";
+  import { CalendarSharing } from "./CalendarSharing";
+  import { CalendarColors } from "../FolderPane/CalendarColors";
+  import { CalendarGroups } from "../FolderPane/CalendarGroups";
+  import { CalendarActions } from "../CalendarActions";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
+  import ColorPalette from "../../Shared/ColorPalette.svelte";
+  import CalendarPermissionsTab from "./CalendarPermissionsTab.svelte";
+  import CalendarIcon from "lucide-svelte/icons/calendar";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import { createEventDispatcher } from "svelte";
+  import { t } from "../../../l10n/l10n";
+
+  export let calendar: Calendar;
+  export let tab: CalendarPropertiesTab = "general";
+
+  const dispatch = createEventDispatcher<{ close: void }>();
+
+  let name = calendar.name;
+  let color = calendar.color;
+
+  $: tabs = [
+    { id: "general", label: $t`General` },
+    ...(CalendarSharing.canShare(calendar) ? [ { id: "permissions", label: $t`Permissions` } ] : []),
+  ];
+  $: if (!tabs.some(listed => listed.id == tab)) {
+    tab = "general";
+  }
+  $: isShared = CalendarGroups.isShared(calendar);
+  $: location = calendar.mainAccount?.name ?? calendar.name;
+  $: owner = isShared ? calendar.username : null;
+
+  async function onOK() {
+    let trimmed = name.trim();
+    if (trimmed == calendar.name && color == calendar.color) {
+      return;
+    }
+    calendar.name = trimmed;
+    calendar.color = color;
+    await calendar.save();
+  }
+
+  async function onDelete() {
+    if (await CalendarActions.deleteSharedCalendar(calendar)) {
+      dispatch("close");
+    }
+  }
+</script>
+
+<style>
+  .properties {
+    gap: 16px;
+    min-height: 0;
+  }
+  .general {
+    gap: 16px;
+  }
+  .name-row {
+    align-items: center;
+    gap: 12px;
+  }
+  .calendar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--lo-radius-small);
+    background-color: color-mix(in srgb, var(--calendar-color) 22%, var(--lo-pane-bg));
+    color: var(--calendar-color);
+  }
+  .name {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .divider {
+    height: 1px;
+    background-color: var(--lo-divider);
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 16px;
+  }
+  .label {
+    color: var(--lo-fg-secondary);
+  }
+  .color-group {
+    gap: 4px;
+  }
+  .color-group :global(.color-palette) {
+    padding: 4px 0;
+  }
+  .delete-row {
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+</style>
