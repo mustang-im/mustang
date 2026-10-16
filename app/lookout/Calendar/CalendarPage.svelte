@@ -13,7 +13,7 @@
       initialRightRatio={5} leftMinWidth={230} rightMinWidth={480}>
       <vbox flex class="folder-pane" slot="left" bind:clientHeight={folderPaneHeight}>
         <DateNavigator {range} date={$startDate} {showWeekNumbers} monthCount={folderPaneHeight >= 760 ? 2 : 1}
-          onSelectDay={selectDay} />
+          onSelectDay={selectDay} onSelectWeek={selectWeek} onSelectDays={selectDays} />
         <hbox class="divider" />
         <CalendarList />
       </vbox>
@@ -228,6 +228,18 @@
     $startDate = day;
     $selectedDate = day;
     showCalendar();
+  }
+
+  function selectWeek(firstDay: Date) {
+    selectDay(firstDay);
+    setView("week");
+  }
+
+  function selectDays(first: Date, last: Date) {
+    selectDay(first);
+    view = "day";
+    CalendarSettings.view.value = "day";
+    setDayCount(Math.round((last.getTime() - first.getTime()) / (24 * 60 * 60 * 1000)) + 1);
   }
 
   function openDay(day: Date) {

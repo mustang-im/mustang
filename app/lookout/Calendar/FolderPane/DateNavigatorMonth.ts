@@ -60,6 +60,12 @@ export class DateNavigatorMonth {
     return keys;
   }
 
+  static limitRange(start: Date, end: Date, maxDays: number): Date {
+    let direction = end < start ? -1 : 1;
+    let limit = new Date(start.getFullYear(), start.getMonth(), start.getDate() + direction * (maxDays - 1));
+    return direction * (end.getTime() - limit.getTime()) > 0 ? limit : end;
+  }
+
   static dayKey(day: Date): string {
     return `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
   }
