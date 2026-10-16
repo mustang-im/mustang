@@ -8,29 +8,27 @@
     <vbox flex class="sender-info">
       <hbox class="from">
         <hbox class="sender-name">
-          <Recipient recipient={$message.from} />
+          {#if $message.from}
+            <RecipientNames recipients={[$message.from]} withAddress />
+          {/if}
         </hbox>
-        {#if $message.from?.emailAddress && $message.from.findPerson()}
-          <span class="sender-address">&lt;{$message.from.emailAddress}&gt;</span>
-        {/if}
-        <EncryptionButtons {message} bind:isExpanded={isEncryptionExpanded} />
       </hbox>
       {#if $to.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`To:`}</span>
-          <RecipientsList recipients={$to} />
+          <RecipientNames recipients={$to.contents} />
         </hbox>
       {/if}
       {#if $cc.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`Cc:`}</span>
-          <RecipientsList recipients={$cc} />
+          <RecipientNames recipients={$cc.contents} />
         </hbox>
       {/if}
       {#if $bcc.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`Bcc:`}</span>
-          <RecipientsList recipients={$bcc} />
+          <RecipientNames recipients={$bcc.contents} />
         </hbox>
       {/if}
     </vbox>
@@ -74,16 +72,17 @@
       {/each}
     </hbox>
   {/if}
-  {#if isEncryptionExpanded}
-    <EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
-  {/if}
   {#if message.to.isEmpty || message.from.emailAddress == kDummyPerson.emailAddress}
     <!-- <copied from="../../../frontend/Mail/Message/MessageHeader.svelte"> -->
     {#await message.loadForDisplay() catch ex}
-      <ErrorMessageInline {ex} />
+      <hbox class="error-bar" role="alert">
+        <ErrorIcon size={16} />
+        <span>{ex?.message ?? ex}</span>
+      </hbox>
     {/await}
     <!-- </copied> -->
   {/if}
+  <SecurityInfoBar {message} />
 </vbox>
 <Menu bind:isMenuOpen={isMoreOpen} anchor={moreEl} placement="bottom-end">
   <MenuItem label={$t`Reply`} icon={ReplyIcon} onClick={() => MessageActions.reply(message)} />
@@ -133,11 +132,8 @@
   import JunkMenuItems from "../Menu/JunkMenuItems.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import DisplayMenuItems from "./DisplayMenuItems.svelte";
-  import Recipient from "../../../frontend/Mail/Message/Recipient.svelte";
-  import RecipientsList from "../../../frontend/Mail/Message/RecipientsList.svelte";
-  import EncryptionButtons from "../../../frontend/Mail/Message/EncryptionButtons.svelte";
-  import EncryptionDetails from "../../../frontend/Mail/Message/EncryptionDetails.svelte";
-  import ErrorMessageInline from "../../../frontend/Shared/ErrorMessageInline.svelte";
+  import RecipientNames from "./RecipientNames.svelte";
+  import SecurityInfoBar from "./SecurityInfoBar.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
@@ -159,6 +155,7 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import RemoveIcon from "lucide-svelte/icons/x";
+  import ErrorIcon from "lucide-svelte/icons/circle-x";
   import { catchErrors } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
 
@@ -169,7 +166,6 @@
   $: bcc = message.bcc;
   $: tags = message.tags;
 
-  let isEncryptionExpanded = false;
 
   let moreEl: HTMLButtonElement;
   let isMoreOpen = false;
@@ -208,22 +204,14 @@
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .sender-address {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .sender-name :global(.domain) {
-    color: var(--lo-fg-secondary);
-    font-style: normal;
+  .sender-name :global(.name) {
+    font-weight: 600;
   }
-  .sender-address {
-    color: var(--lo-fg-secondary);
+  .sender-name :global(.address) {
+    font-weight: normal;
   }
   .recipients {
     align-items: baseline;
@@ -231,31 +219,26 @@
     min-width: 0;
     color: var(--lo-fg-secondary);
     font-size: 13px;
+    line-height: 20px;
   }
   .recipients-label {
     flex-shrink: 0;
   }
-  /* Line breaks only after the commas, never between a name and its comma */
-  .recipients :global(.persons) {
-    display: block;
-    min-width: 0;
-    font-size: 0;
-    white-space: nowrap;
-  }
-  .sender-info .recipients :global(.persons > *) {
-    display: inline-flex;
-    max-width: 100%;
-    overflow: hidden;
-    vertical-align: baseline;
+  .error-bar {
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 6px 12px;
+    border-radius: var(--lo-radius-small);
+    background-color: color-mix(in srgb, var(--lo-danger) 12%, var(--lo-pane-bg));
+    border: 1px solid color-mix(in srgb, var(--lo-danger) 40%, transparent);
+    color: var(--lo-fg);
     font-size: 13px;
-    line-height: 20px;
   }
-  .sender-info .recipients :global(.persons > .separator) {
-    display: inline;
-    white-space: normal;
-  }
-  .sender-info .recipients :global(.persons > .separator::after) {
-    content: " ";
+  .error-bar :global(svg) {
+    flex-shrink: 0;
+    color: var(--lo-danger);
   }
   .top-right {
     flex-shrink: 0;
