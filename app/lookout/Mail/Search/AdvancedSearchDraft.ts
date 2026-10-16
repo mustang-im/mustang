@@ -20,13 +20,13 @@ export class AdvancedSearchDraft {
   replied: boolean;
   tags: Tag[];
   size: SizeRange;
-  startDate: string;
-  endDate: string;
+  startDate: Date | null;
+  endDate: Date | null;
   protected received: ReceivedRange;
   protected receivedStart: Date | null;
   protected receivedEnd: Date | null;
-  protected shownStartDate: string;
-  protected shownEndDate: string;
+  protected shownStartDate: Date | null;
+  protected shownEndDate: Date | null;
   protected threadID: string | null;
 
   constructor(options: SearchOptions, keywords: string | null, now = new Date()) {
@@ -45,8 +45,8 @@ export class AdvancedSearchDraft {
     this.receivedEnd = options.receivedEnd;
     this.threadID = options.threadID;
     let dates = ReceivedRanges.dates(options.received, now, options.receivedStart, options.receivedEnd);
-    this.startDate = this.shownStartDate = ReceivedRanges.inputValue(dates.start);
-    this.endDate = this.shownEndDate = ReceivedRanges.inputValue(dates.end);
+    this.startDate = this.shownStartDate = dates.start;
+    this.endDate = this.shownEndDate = dates.end ? ReceivedRanges.startOfDay(dates.end) : null;
   }
 
   get from(): Person | null {
@@ -93,8 +93,8 @@ export class AdvancedSearchDraft {
     this.replied = false;
     this.tags = [];
     this.size = SizeRange.Any;
-    this.startDate = "";
-    this.endDate = "";
+    this.startDate = null;
+    this.endDate = null;
     this.threadID = null;
   }
 
@@ -114,14 +114,17 @@ export class AdvancedSearchDraft {
       size: this.size,
       threadID: this.threadID,
     };
-    if (this.startDate != this.shownStartDate || this.endDate != this.shownEndDate) {
-      let start = ReceivedRanges.parseInputValue(this.startDate);
-      let end = ReceivedRanges.parseInputValue(this.endDate);
-      options.received = start || end ? ReceivedRange.Custom : ReceivedRange.Any;
-      options.receivedStart = start;
-      options.receivedEnd = end;
+    if (!AdvancedSearchDraft.isSameDay(this.startDate, this.shownStartDate) ||
+        !AdvancedSearchDraft.isSameDay(this.endDate, this.shownEndDate)) {
+      options.received = this.startDate || this.endDate ? ReceivedRange.Custom : ReceivedRange.Any;
+      options.receivedStart = this.startDate;
+      options.receivedEnd = this.endDate;
     }
     return options;
+  }
+
+  static isSameDay(first: Date | null, second: Date | null): boolean {
+    return ReceivedRanges.inputValue(first) == ReceivedRanges.inputValue(second);
   }
 
   get searchTerm(): string | null {

@@ -90,11 +90,6 @@ export class ReceivedRanges {
     return `${date.getFullYear()}-${month}-${day}`;
   }
 
-  static parseInputValue(value: string): Date | null {
-    let match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? "");
-    return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
-  }
-
   static span(start: Date, nextStart: Date): DateSpan {
     return { start, end: new Date(nextStart.getTime() - 1) };
   }

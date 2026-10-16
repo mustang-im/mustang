@@ -21,8 +21,8 @@ test("The draft shows the current search and gives it back unchanged", () => {
   let draft = new AdvancedSearchDraft(options, "report", now);
   expect(draft.keywords).toBe("report");
   expect(draft.readStatus).toBe(ReadStatus.Unread);
-  expect(draft.startDate).toBe("2026-10-12");
-  expect(draft.endDate).toBe("2026-10-18");
+  expect(draft.startDate.getDate()).toBe(12);
+  expect(draft.endDate.getDate()).toBe(18);
   let result = draft.toOptions();
   expect(result.received).toBe(ReceivedRange.ThisWeek);
   expect(result.isRead).toBe(false);
@@ -32,14 +32,14 @@ test("The draft shows the current search and gives it back unchanged", () => {
 test("Changed dates become a custom range, empty dates no range", () => {
   let options = { ...MailSearch.defaultOptions(), received: ReceivedRange.ThisWeek };
   let draft = new AdvancedSearchDraft(options, null, now);
-  draft.startDate = "2026-09-21";
-  draft.endDate = "";
+  draft.startDate = new Date(2026, 8, 21);
+  draft.endDate = null;
   let result = draft.toOptions();
   expect(result.received).toBe(ReceivedRange.Custom);
   expect(result.receivedStart.getDate()).toBe(21);
   expect(result.receivedEnd).toBeNull();
 
-  draft.startDate = "";
+  draft.startDate = null;
   expect(draft.toOptions().received).toBe(ReceivedRange.Any);
 });
 

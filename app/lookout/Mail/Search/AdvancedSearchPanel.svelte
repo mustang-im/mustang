@@ -1,17 +1,13 @@
 <vbox class="advanced-search">
   <grid class="fields">
     {#if showScope}
-      <label for="advanced-search-scope">{$t`Search In`}</label>
-      <select id="advanced-search-scope" class="lo-text-field" bind:value={draft.scope}>
-        {#each scopes as scope}
-          <option value={scope} disabled={!MailSearch.isScopeAvailable(scope, account, folder)}>{MailSearch.scopeLabel(scope)}</option>
-        {/each}
-      </select>
+      <span class="label">{$t`Search In`}</span>
+      <ComboBox label={$t`Search In`} options={scopeOptions} bind:value={draft.scope} width="100%" />
     {/if}
     {#if showKeywords}
-      <label for="advanced-search-keywords">{$t`Keywords`}</label>
-      <input id="advanced-search-keywords" class="underlined" type="text" bind:value={draft.keywords}
-        title={$t`Words in the subject or the message text`}
+      <span class="label">{$t`Keywords`}</span>
+      <TextField label={$t`Keywords`} bind:value={draft.keywords} classes="underlined"
+        tooltip={$t`Words in the subject or the message text`}
         on:keydown={onEnter} />
     {/if}
     <span class="label">{$t`From`}</span>
@@ -52,11 +48,9 @@
     </hbox>
     <span class="label">{$t`Received`}</span>
     <hbox class="dates">
-      <input class="underlined" type="date" bind:value={draft.startDate}
-        aria-label={$t`Start Date`} title={$t`Start Date`} />
+      <DateField label={$t`Start Date`} tooltip={$t`Start Date`} bind:value={draft.startDate} classes="underlined" />
       <span class="lo-secondary">{$t`to`}</span>
-      <input class="underlined" type="date" bind:value={draft.endDate}
-        aria-label={$t`End Date`} title={$t`End Date`} />
+      <DateField label={$t`End Date`} tooltip={$t`End Date`} bind:value={draft.endDate} classes="underlined" />
     </hbox>
     <span class="label">{$t`Categories`}</span>
     <hbox class="categories-field">
@@ -76,24 +70,16 @@
         <CategoryMenuItems selected={draft.tags} keepOpen onToggle={tag => { draft.toggleTag(tag); draft = draft; }} />
       </Menu>
     </hbox>
-    <label for="advanced-search-read">{$t`Read status`}</label>
-    <select id="advanced-search-read" class="lo-text-field" bind:value={draft.readStatus}>
-      <option value={ReadStatus.All}>{$t`All`}</option>
-      <option value={ReadStatus.Read}>{$t`Read`}</option>
-      <option value={ReadStatus.Unread}>{$t`Unread`}</option>
-    </select>
-    <label for="advanced-search-size">{$t`Size`}</label>
-    <select id="advanced-search-size" class="lo-text-field" bind:value={draft.size}>
-      {#each [SizeRange.Any, ...SizeRanges.named] as size}
-        <option value={size}>{SizeRanges.label(size)}</option>
-      {/each}
-    </select>
-    <label for="advanced-search-attachments">{$t`Attachments`}</label>
-    <hbox><input id="advanced-search-attachments" type="checkbox" bind:checked={draft.hasAttachment} /></hbox>
-    <label for="advanced-search-flagged">{$t`Flagged`}</label>
-    <hbox><input id="advanced-search-flagged" type="checkbox" bind:checked={draft.flagged} /></hbox>
-    <label for="advanced-search-replied">{$t`Replied`}</label>
-    <hbox><input id="advanced-search-replied" type="checkbox" bind:checked={draft.replied} /></hbox>
+    <span class="label">{$t`Read status`}</span>
+    <ComboBox label={$t`Read status`} options={readOptions} bind:value={draft.readStatus} width="100%" />
+    <span class="label">{$t`Size`}</span>
+    <ComboBox label={$t`Size`} options={sizeOptions} bind:value={draft.size} width="100%" />
+    <span class="label">{$t`Attachments`}</span>
+    <CheckBox label={$t`Has Attachments`} bind:checked={draft.hasAttachment} />
+    <span class="label">{$t`Flagged`}</span>
+    <CheckBox label={$t`Flagged for follow up`} bind:checked={draft.flagged} />
+    <span class="label">{$t`Replied`}</span>
+    <CheckBox label={$t`I replied to it`} bind:checked={draft.replied} />
   </grid>
   <hbox class="buttons">
     <hbox flex />
@@ -123,10 +109,15 @@
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import TextField from "../../Shared/Form/TextField.svelte";
+  import DateField from "../../Shared/Form/DateField.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
   import RemoveIcon from "lucide-svelte/icons/x";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let draft: AdvancedSearchDraft;
   export let account: MailAccount | null = null;
@@ -141,7 +132,19 @@
     To = "to",
   }
 
-  const scopes = [SearchScope.AllAccounts, SearchScope.CurrentAccount, SearchScope.CurrentFolder];
+  $: scopeOptions = [SearchScope.AllAccounts, SearchScope.CurrentAccount, SearchScope.CurrentFolder]
+    .map(scope => ({
+      value: scope,
+      label: MailSearch.scopeLabel(scope),
+      disabled: !MailSearch.isScopeAvailable(scope, account, folder),
+    })) as ComboOption<SearchScope>[];
+  const readOptions: ComboOption<ReadStatus>[] = [
+    { value: ReadStatus.All, label: gt`All` },
+    { value: ReadStatus.Read, label: gt`Read` },
+    { value: ReadStatus.Unread, label: gt`Unread` },
+  ];
+  const sizeOptions: ComboOption<SizeRange>[] = [SizeRange.Any, ...SizeRanges.named]
+    .map(size => ({ value: size, label: SizeRanges.label(size) }));
   const tags = availableTags;
   let categoriesButton: HTMLButtonElement;
   let isCategoriesOpen = false;
@@ -174,39 +177,33 @@
     align-items: center;
     gap: 4px 16px;
   }
-  .label, label {
+  .label {
     color: var(--lo-fg);
   }
-  .underlined {
+  .underlined,
+  .advanced-search :global(.lo-field.underlined),
+  .advanced-search :global(.lo-datefield.underlined) {
     box-sizing: border-box;
     height: 32px;
     padding: 0 4px;
     border: none;
     border-bottom: 1px solid var(--lo-input-border);
+    border-radius: 0;
     background-color: transparent;
     color: var(--lo-fg);
     font: inherit;
   }
-  input.underlined:focus,
+  .advanced-search :global(.lo-field.underlined:focus),
+  .advanced-search :global(.lo-datefield.underlined:focus),
   .person-field:focus-within {
     outline: none;
+    box-shadow: none;
     border-bottom: 2px solid var(--lo-accent);
-  }
-  input[type="date"].underlined::-webkit-calendar-picker-indicator {
-    opacity: 0.7;
-  }
-  select.lo-text-field {
-    width: 100%;
   }
   .person-field {
     align-items: center;
     gap: 4px;
     min-width: 0;
-  }
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    margin: 0;
   }
   .person-chip {
     align-items: center;
@@ -241,7 +238,7 @@
     align-items: center;
     gap: 12px;
   }
-  .dates input {
+  .dates :global(.lo-datefield) {
     flex: 1 1 0;
     min-width: 0;
   }
@@ -249,7 +246,9 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    box-sizing: border-box;
     width: 100%;
+    height: 32px;
     text-align: start;
   }
   .combo:disabled {
