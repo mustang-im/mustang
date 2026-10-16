@@ -49,9 +49,9 @@
     {#if showDates}
       <span class="label">{$t`Received`}</span>
       <hbox class="dates">
-        <DateField label={$t`Start Date`} tooltip={$t`Start Date`} bind:value={draft.startDate} classes="underlined" />
+        <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:value={draft.startDate} classes="underlined" />
         <span class="lo-secondary">{$t`to`}</span>
-        <DateField label={$t`End Date`} tooltip={$t`End Date`} bind:value={draft.endDate} classes="underlined" />
+        <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:value={draft.endDate} classes="underlined" />
       </hbox>
     {/if}
     <span class="label">{$t`Categories`}</span>
@@ -200,7 +200,7 @@
     font: inherit;
   }
   .advanced-search :global(.lo-field.underlined:focus),
-  .advanced-search :global(.lo-datefield.underlined:focus),
+  .advanced-search :global(.lo-datefield.underlined:focus-within),
   .person-field:focus-within {
     outline: none;
     box-shadow: none;
