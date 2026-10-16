@@ -57,9 +57,7 @@ export class MessageActions {
   }
 
   static openContact(recipient: PersonUID) {
-    // <copied from="Composer/AddressField.svelte" onOpenContact()>
     openPersonFromOtherApp(recipient.createPerson(appGlobal.personalAddressbook));
-    // </copied>
   }
 
   static newAppointment() {
