@@ -23,12 +23,12 @@
   let addressField: AddressField;
 
   $: attendees = event.participants.filterObservable(participant => participant.response != InvitationResponse.Organizer);
-  let recipients = new ArrayColl<PersonUID>(flow.attendees);
+  let recipients = new ArrayColl<PersonUID>([...new Set(flow.attendees)]);
 
   $: takeAttendees($attendees.contents);
   function takeAttendees(current: PersonUID[]) {
     if (!EventEditFlow.sameAddresses(current, recipients.contents)) {
-      recipients.replaceAll(current);
+      recipients.replaceAll([...new Set(current)]);
     }
   }
 
