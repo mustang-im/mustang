@@ -1,13 +1,14 @@
 <vbox class="ribbon {layout}"
   class:collapsed={isCollapsed}
   class:temp-open={isCollapsed && isTempOpen}
+  on:contextmenu={onContextMenu}
   bind:this={ribbonEl}>
   <hbox class="tab-row">
     <button class="tab file-tab" on:click={onFile} title={$t`File`}>
       {$t`File`}
     </button>
     <hbox class="tabs" role="tablist" tabindex="-1" on:keydown={onTabRowKeyDown}>
-      {#each $tabs as tab}
+      {#each shownTabs as tab}
         <button class="tab" role="tab"
           class:selected={tab == $selectedTab}
           class:contextual={tab.isContextual}
@@ -46,13 +47,28 @@
       <MenuDivider />
       <MenuItem label={$t`Show Quick Access Toolbar`} checkable checked={!$qatHidden.value}
         onClick={() => QuickAccessToolbar.setHidden(!$qatHidden.value)} />
+      <MenuItem label={$t`Customize the Ribbon…`} onClick={() => { isCustomizing = true; }} />
     </Menu>
+    <ContextMenu bind:this={contextMenu}>
+      {#if !$qatHidden.value}
+        <MenuItem label={$qatPosition.value == "below" ? $t`Show Quick Access Toolbar Above the Ribbon` : $t`Show Quick Access Toolbar Below the Ribbon`}
+          onClick={() => QuickAccessToolbar.setPosition($qatPosition.value == "below" ? "above" : "below")} />
+      {:else}
+        <MenuItem label={$t`Show Quick Access Toolbar`} onClick={() => QuickAccessToolbar.setHidden(false)} />
+      {/if}
+      <MenuDivider />
+      <MenuItem label={$t`Customize the Ribbon…`} onClick={() => { isCustomizing = true; }} />
+      <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} onClick={onToggleCollapsed} />
+    </ContextMenu>
   </hbox>
   <hbox class="ribbon-content" on:click|capture={onClickContent}>
     <slot />
   </hbox>
   <QuickAccessToolbarView placement="below" />
   <KeyTipsLayer {ribbonEl} />
+  {#if isCustomizing}
+    <CustomizeRibbonDialog {ribbon} onClose={() => isCustomizing = false} />
+  {/if}
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">
       <div data-metric="largeWidth" style="width: var(--lo-ribbon-large-width)"></div>
@@ -79,17 +95,34 @@
   import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";
   import KeyTipsLayer from "./KeyTipsLayer.svelte";
   import TellMe from "./TellMe.svelte";
+  import CustomizeRibbonDialog from "./CustomizeRibbonDialog.svelte";
+  import ContextMenu from "../Menu/ContextMenu.svelte";
+  import { RibbonCustomization } from "./RibbonCustomization";
+  import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
+  import { get } from "svelte/store";
   import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
   import OptionsIcon from "lucide-svelte/icons/chevron-down";
   import { setContext, onMount, onDestroy, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
+  export let id: string = null;
+
   const ribbon = new RibbonModel();
+  ribbon.id = id ?? get(selectedApp)?.id ?? ribbon.id;
   setContext(RibbonModel.contextKey, ribbon);
   const tabs = ribbon.tabs;
   const selectedTab = ribbon.selectedTab;
   const layoutSetting = ribbon.layout;
   const qatHidden = QuickAccessToolbar.isHidden;
+  const qatPosition = QuickAccessToolbar.position;
+  const customization = RibbonCustomization.setting;
+  let isCustomizing = false;
+  let contextMenu: ContextMenu;
+
+  $: shownTabs = $tabs.filter(tab => tab.isContextual || !RibbonCustomization.isTabHidden(ribbon.id, tab.label, $customization.value));
+  $: if ($selectedTab && shownTabs.length && !shownTabs.includes($selectedTab)) {
+    ribbon.selectTab(shownTabs[0]);
+  }
   const collapsedSetting = ribbon.collapsed;
 
   let layout: RibbonLayout;
@@ -171,6 +204,15 @@
     if (isTempOpen && event.key == "Escape") {
       isTempOpen = false;
     }
+  }
+
+  function onContextMenu(event: MouseEvent) {
+    let target = event.target as HTMLElement;
+    if (target.closest("input, textarea, .lo-menu")) {
+      return;
+    }
+    event.preventDefault();
+    contextMenu.onContextMenu(event);
   }
 
   function onTabRowKeyDown(event: KeyboardEvent) {

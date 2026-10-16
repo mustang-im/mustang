@@ -25,6 +25,7 @@ export interface RibbonItemInfo {
 
 export class RibbonModel {
   static readonly contextKey = "lookout-ribbon";
+  id = "main";
   readonly tabs: Writable<RibbonTabModel[]> = writable([]);
   readonly selectedTab: Writable<RibbonTabModel> = writable(null);
   readonly layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");

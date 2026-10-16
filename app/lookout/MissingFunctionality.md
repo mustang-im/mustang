@@ -21,7 +21,7 @@ Features that belong to Microsoft services and don't apply to Mustang are not li
 | Unread count on the taskbar or tray icon | Taskbar | Wiring the desktop backend's `setBadgeCount()` / `setTrayIcon()` to the unread counts |
 | Zoom slider | Status bar | A zoom / text scale setting that the frontend applies |
 | Notification center (bell) with a history of reminders and notifications | Title bar | *UI only*. Notifications exist, Lookout shows them as a bar. |
-| Customize Ribbon | File > Options; ribbon context menu | *UI only* |
+| Customize Ribbon beyond showing and hiding: new tabs and groups, adding, moving and renaming commands, reordering, Import/Export of customizations; the Customize Ribbon and Quick Access Toolbar pages of the Options dialog | File > Options > Customize Ribbon | *UI only*, but it needs a command model: Lookout's ribbon commands are components with their own state and can't be placed elsewhere. Lookout's Customize the Ribbon (right-click the ribbon, or the ribbon display options) shows and hides tabs and groups. |
 
 ## Mail
 
