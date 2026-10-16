@@ -25,7 +25,7 @@
             {:else if view == ContactView.Card}
               <CardView contacts={sortedContacts} bind:selectedContact={currentContact} {selectedContacts} {emptyText} />
             {:else}
-              <ContactTable contacts={sortedContacts} columns={ContactColumns.columnsOf(view)}
+              <ContactTable contacts={sortedContacts} columns={ContactColumns.shownColumns($columnsSetting.value)} {view}
                 bind:selectedContact={currentContact} bind:selectedContacts {emptyText} />
             {/if}
           </vbox>
@@ -99,6 +99,7 @@
 
   $: view = Object.values(ContactView).includes($viewSetting.value) ? $viewSetting.value : ContactView.People;
   $: showCardPane = $readingPane.value != false && view == ContactView.People;
+  $: columnsSetting = ContactColumns.columnsSetting(view);
 
   let searchBox: ContactSearchBox;
   let lastGlobalSearchTerm = $globalSearchTerm;
@@ -192,6 +193,8 @@
   function resetView() {
     ContactColumns.view.value = ContactView.People;
     ContactColumns.sort.value = ContactColumns.sort.defaultValue;
+    ContactColumns.listColumns.value = ContactColumns.listColumns.defaultValue;
+    ContactColumns.phoneColumns.value = ContactColumns.phoneColumns.defaultValue;
     ContactColumns.folderPane.value = true;
     ContactColumns.readingPane.value = true;
   }

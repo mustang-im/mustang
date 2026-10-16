@@ -1,9 +1,18 @@
 <vbox flex class="contact-table" on:keydown={onKeyDown} bind:this={tableEl}>
   <div class="column-headers" style:grid-template-columns={gridColumns} style:padding-inline-end="{scrollbarWidth}px">
-    {#each columns as column}
+    {#each columns as column (column)}
       <button class="column-header" class:sorted={$sort.value.column == column}
+        class:name={column == ContactColumn.FullName}
+        class:drop-before={dropTarget?.column == column && dropTarget.before}
+        class:drop-after={dropTarget?.column == column && !dropTarget.before}
         title={$t`Sort by ${ContactColumns.label(column)}`}
         aria-sort={$sort.value.column == column ? ($sort.value.ascending ? "ascending" : "descending") : "none"}
+        draggable="true"
+        on:dragstart={event => onDragStart(event, column)}
+        on:dragover={event => onDragOver(event, column)}
+        on:dragleave={() => { dropTarget = null; }}
+        on:drop={event => onDrop(event, column)}
+        on:dragend={() => { draggedColumn = null; dropTarget = null; }}
         on:click={() => sortBy(column)}
         on:contextmenu={event => onHeaderContextMenu(event, column)}>
         <span class="label">{ContactColumns.label(column)}</span>
@@ -52,6 +61,15 @@
   </SubMenu>
   <MenuItem label={$t`Reverse Sort`} icon={ReverseIcon}
     onClick={() => { $sort.value = { column: $sort.value.column, ascending: !$sort.value.ascending }; }} />
+  <MenuDivider />
+  {#if headerColumn}
+    <MenuItem label={$t`Remove This Column`} icon={RemoveIcon}
+      disabled={headerColumn == ContactColumn.FullName && $t`The list needs the Full Name column`}
+      onClick={() => ContactColumns.removeColumn(view, headerColumn)} />
+  {/if}
+  <MenuItem label={$t`Add Columns…`} icon={AddColumnsIcon} onClick={() => ContactDialogs.open({ kind: "show-columns", view })} />
+  <MenuDivider />
+  <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => ContactDialogs.open({ kind: "view-settings", view })} />
 </ContextMenu>
 
 <script lang="ts">
@@ -70,7 +88,11 @@
   import ArrangeIcon from "lucide-svelte/icons/arrow-down-wide-narrow";
   import ReverseIcon from "lucide-svelte/icons/arrow-up-down";
   import FastList from "../../frontend/Shared/FastList.svelte";
-  import { ContactColumns, type ContactColumn } from "./Views/ContactColumns";
+  import { ContactColumn, ContactColumns, type ContactView } from "./Views/ContactColumns";
+  import { ContactDialogs } from "./Dialogs/ContactDialogs";
+  import RemoveIcon from "lucide-svelte/icons/x";
+  import AddColumnsIcon from "lucide-svelte/icons/columns-3";
+  import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import AscendingIcon from "lucide-svelte/icons/chevron-up";
   import DescendingIcon from "lucide-svelte/icons/chevron-down";
   import type { ArrayColl, Collection } from "svelte-collections";
@@ -81,12 +103,44 @@
   export let selectedContacts: ArrayColl<Contact>;
   export let emptyText: string;
   export let columns: ContactColumn[];
+  export let view: ContactView;
 
   const sort = ContactColumns.sort;
   $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
 
   function sortBy(column: ContactColumn) {
     ContactColumns.sort.value = ContactColumns.toggledSort(ContactColumns.sort.value, column);
+  }
+
+  let draggedColumn: ContactColumn = null;
+  let dropTarget: { column: ContactColumn, before: boolean } | null = null;
+
+  function onDragStart(event: DragEvent, column: ContactColumn) {
+    draggedColumn = column;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", ContactColumns.label(column));
+  }
+
+  function onDragOver(event: DragEvent, column: ContactColumn) {
+    if (!draggedColumn) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    let box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    let before = event.clientX < box.left + box.width / 2;
+    dropTarget = column == draggedColumn ? null : { column, before };
+  }
+
+  function onDrop(event: DragEvent, column: ContactColumn) {
+    event.preventDefault();
+    if (draggedColumn && dropTarget) {
+      let pos = columns.indexOf(column);
+      let before = dropTarget.before ? column : columns[pos + 1] ?? null;
+      ContactColumns.moveColumn(view, draggedColumn, before);
+    }
+    draggedColumn = null;
+    dropTarget = null;
   }
 
   let contextMenu: ContactContextMenu;
@@ -164,8 +218,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .column-header:first-child {
+  .column-header.name {
     padding-inline-start: 44px;
+  }
+  .column-header.drop-before {
+    box-shadow: inset 2px 0 0 var(--lo-accent);
+  }
+  .column-header.drop-after {
+    box-shadow: inset -2px 0 0 var(--lo-accent);
   }
   .contact-table :global(.fast-list .header) {
     display: none;

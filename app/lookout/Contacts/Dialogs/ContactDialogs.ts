@@ -1,9 +1,12 @@
 import type { Addressbook } from "../../../logic/Contacts/Addressbook";
+import type { ContactView } from "../Views/ContactColumns";
 import { writable } from "svelte/store";
 
 export type ContactDialog =
   { kind: "addressbook-properties", addressbook: Addressbook } |
-  { kind: "rename-addressbook", addressbook: Addressbook };
+  { kind: "rename-addressbook", addressbook: Addressbook } |
+  { kind: "show-columns", view: ContactView } |
+  { kind: "view-settings", view: ContactView };
 
 export class ContactDialogs {
   static readonly current = writable<ContactDialog | null>(null);

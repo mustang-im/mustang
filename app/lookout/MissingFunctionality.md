@@ -192,7 +192,7 @@ Address books, contact list, contact card, contact and contact group forms.
 | Linked contacts, duplicate merging | Profile card > Manage sources (new Outlook) | A duplicate finder (same email address or name). `Person.merge()` exists. |
 | Organization: manager, direct reports | Profile card (new Outlook) | Directory lookups (EWS, Graph) |
 | Mail merge, printing contacts | Home tab > Actions; File > Print | Printing in the desktop app; a mail merge generator |
-| Column chooser and grouping in the List and Phone views; Map It | View tab > Add Columns, Arrangement; contact form | *UI only*. Lookout has the People, Business Card, Card, Phone and List views and sorts by the column headers. |
+| Grouping in the List and Phone views; Map It | View tab > Arrangement, View Settings > Group By; contact form | *UI only*. Lookout has the People, Business Card, Card, Phone and List views, sorts by the column headers, and chooses, removes and reorders columns (Add Columns, View Settings > Columns, dragging a column header). |
 | "Display as" name of an email address, "This is the mailing address" | Contact form > General | A display name per email entry and a mailing address flag on `ContactEntry` |
 | Field types and formats for user-defined fields, the field chooser lists of Outlook (Frequently-used, Miscellaneous fields) | Contact form > All Fields > New… | Typed custom fields on `ContactEntry`. Lookout's All Fields page edits the existing entries and adds text fields. |
 | Contact history (recent mail and meetings) | Profile card | *UI only*: `frontend/` has `ContactHistory`. |
