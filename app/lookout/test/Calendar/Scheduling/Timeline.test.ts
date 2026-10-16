@@ -45,3 +45,22 @@ test("Slot under a position", () => {
   expect(timeline.slotAt(2399)).toEqual(new Date(2026, 9, 15, 23, 30));
   expect(timeline.slotAt(2400)).toEqual(new Date(2026, 9, 15, 23, 30));
 });
+
+test("A timeline over several days continues into the next days", () => {
+  let timeline = new Timeline(kDay, 100, 3);
+  expect(timeline.width).toBe(7200);
+  expect(timeline.days()).toEqual([new Date(2026, 9, 15), new Date(2026, 9, 16), new Date(2026, 9, 17)]);
+  expect(timeline.hours().length).toBe(72);
+  expect(timeline.hours()[25]).toEqual(new Date(2026, 9, 16, 1));
+  expect(timeline.dayEnd).toEqual(new Date(2026, 9, 18));
+  expect(timeline.x(new Date(2026, 9, 16, 9, 30))).toBe(3350);
+  expect(timeline.span(new Date(2026, 9, 15, 23), new Date(2026, 9, 16, 2))).toEqual({ left: 2300, width: 300 });
+  expect(timeline.timeAt(3350)).toEqual(new Date(2026, 9, 16, 9, 30));
+  expect(timeline.slotAt(7199)).toEqual(new Date(2026, 9, 17, 23, 30));
+});
+
+test("Days with a daylight saving time change keep 24 hours each on the timeline", () => {
+  let timeline = new Timeline(new Date(2026, 9, 24), 100, 3);
+  expect(timeline.x(new Date(2026, 9, 26, 9))).toBe((48 + 9) * 100);
+  expect(timeline.timeAt((48 + 9) * 100)).toEqual(new Date(2026, 9, 26, 9));
+});
