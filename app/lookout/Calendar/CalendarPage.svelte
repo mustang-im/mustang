@@ -1,6 +1,6 @@
 <vbox flex class="calendar-page" bind:this={pageEl}>
   <CalendarRibbon {view} {currentView}
-    {splitView} {timeScale} bind:showFolderPane
+    {splitView} {timeScale}
     onView={setView} onCurrentView={setCurrentView} onResetView={resetView}
     onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
     {#if isSearch}
@@ -9,6 +9,9 @@
     {/if}
   </CalendarRibbon>
   <hbox flex class="panes">
+    {#if $folderPaneSetting.value == CalendarFolderPane.Minimized}
+      <FolderPaneMinimized />
+    {/if}
     <Splitter name="lookout.calendar.folderPane" hasLeft={showFolderPane}
       initialRightRatio={5} leftMinWidth={230} rightMinWidth={480}>
       <vbox flex class="folder-pane" slot="left" bind:clientHeight={folderPaneHeight}>
@@ -57,7 +60,7 @@
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import { InvitationResponse } from "../../logic/Calendar/Invitation/InvitationStatus";
-  import { CalendarCurrentView, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
+  import { CalendarCurrentView, CalendarFolderPane, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
@@ -70,6 +73,7 @@
   import CalendarRibbon from "./CalendarRibbon.svelte";
   import DateNavigator from "./FolderPane/DateNavigator.svelte";
   import CalendarList from "./FolderPane/CalendarList.svelte";
+  import FolderPaneMinimized from "./FolderPane/FolderPaneMinimized.svelte";
   import CalendarHeader from "./View/CalendarHeader.svelte";
   import TimeGrid, { type CalendarColumnGroup } from "./TimeGrid/TimeGrid.svelte";
   import MonthGrid from "./Month/MonthGrid.svelte";
@@ -101,7 +105,8 @@
   $: showDeclined = $showDeclinedSetting.value;
   const splitViewSetting = CalendarSettings.splitView;
   $: splitView = $splitViewSetting.value;
-  let showFolderPane = CalendarSettings.folderPane.value;
+  const folderPaneSetting = CalendarSettings.folderPane;
+  $: showFolderPane = ($folderPaneSetting.value ?? CalendarFolderPane.Normal) == CalendarFolderPane.Normal;
 
   let folderPaneHeight = 0;
   let eventMenu: EventContextMenu;
@@ -187,6 +192,7 @@
   }
 
   function resetView() {
+    CalendarSettings.folderPane.value = CalendarFolderPane.Normal;
     setCurrentView(CalendarCurrentView.Calendar);
     setView("workweek");
     setSplitView(false);
