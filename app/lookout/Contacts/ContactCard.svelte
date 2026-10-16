@@ -32,12 +32,12 @@
         <grid class="fields">
           {#each $emailAddresses.each as entry}
             <CardField icon={MailIcon} label={entryLabel(entry, $t`Email`)} copyValue={entry.value}>
-              <EmailAddressDisplay value={entry.value} />
+              <a class="link" href="mailto:{entry.value}">{entry.value}</a>
             </CardField>
           {/each}
           {#each $phoneNumbers.each as entry}
             <CardField icon={PhoneIcon} label={entryLabel(entry, $t`Phone`)} copyValue={entry.value}>
-              <PhoneNumberDisplay value={entry.value} />
+              <a class="link" href="tel:{entry.value}">{entry.value}</a>
             </CardField>
           {/each}
           {#each $chatAccounts.each as entry}
@@ -47,13 +47,13 @@
           {/each}
           {#each $urls.each as entry}
             <CardField icon={WebsiteIcon} label={entryLabel(entry, $t`Website`)} copyValue={entry.value}>
-              <URLDisplay value={entry.value} />
+              <a class="link" href={entry.value} target="_blank">{entry.value}</a>
             </CardField>
           {/each}
           {#each $streetAddresses.each as entry}
             <CardField icon={AddressIcon} label={entryLabel(entry, $t`Address`)}
-              copyValue={new StreetAddress(entry.value).toPlaintext()}>
-              <StreetAddressDisplay value={entry.value} />
+              copyValue={ContactColumns.addressText(entry.value)}>
+              <span class="address">{ContactColumns.addressText(entry.value)}</span>
             </CardField>
           {/each}
         </grid>
@@ -108,16 +108,12 @@
 
 <script lang="ts">
   import type { Person, ContactEntry } from "../../logic/Abstract/Person";
-  import { StreetAddress } from "../../logic/Contacts/StreetAddress";
+  import { ContactColumns } from "./Views/ContactColumns";
   import { ContactActions } from "./ContactActions";
   import { PreferredEntry } from "./PreferredEntry";
   import ContactPicture from "./ContactPicture.svelte";
   import CardField from "./CardField.svelte";
   import CardButton from "./CardButton.svelte";
-  import EmailAddressDisplay from "../../frontend/Contacts/PersonPage/EmailAddressDisplay.svelte";
-  import PhoneNumberDisplay from "../../frontend/Contacts/PersonPage/PhoneNumberDisplay.svelte";
-  import StreetAddressDisplay from "../../frontend/Contacts/PersonPage/StreetAddressDisplay.svelte";
-  import URLDisplay from "../../frontend/Contacts/PersonPage/URLDisplay.svelte";
   import MailIcon from "lucide-svelte/icons/mail";
   import MeetingIcon from "lucide-svelte/icons/calendar-plus";
   import CallIcon from "lucide-svelte/icons/phone-outgoing";
@@ -153,6 +149,9 @@
 </script>
 
 <style>
+  .address {
+    white-space: pre-line;
+  }
   .contact-card {
     min-height: 0;
   }
