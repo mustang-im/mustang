@@ -1,5 +1,5 @@
 import type { Folder } from "../../logic/Mail/Folder";
-import { ArrangeBy } from "./MessageList/MessageGrouping";
+import { MailViewSettings } from "./View/ViewSettings";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 
 export enum ReadingPanePosition {
@@ -17,22 +17,14 @@ export enum FolderPaneMode {
 export class MailView {
   static readonly readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", ReadingPanePosition.Right);
   static readonly folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
-  static readonly previewLines = getLocalStorage<number>("lookout.mail.previewLines", 1);
-  static readonly arrangeBy = getLocalStorage<ArrangeBy>("lookout.mail.arrangeBy", ArrangeBy.Date);
-  static readonly reverseSort = getLocalStorage<boolean>("lookout.mail.reverseSort", false);
-  static readonly showInGroups = getLocalStorage<boolean>("lookout.mail.showInGroups", true);
-  static readonly showAsConversations = getLocalStorage<boolean>("lookout.mail.showAsConversations", false);
+  static readonly showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
   static readonly collapsedSections = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
   static readonly expandedFolders = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
   static readonly contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
   static readonly readAfter = getLocalStorage<number>("mail.read.after", 0);
 
-  static resetView() {
-    MailView.previewLines.value = 1;
-    MailView.arrangeBy.value = ArrangeBy.Date;
-    MailView.reverseSort.value = false;
-    MailView.showInGroups.value = true;
-    MailView.showAsConversations.value = false;
+  static resetView(folder: Folder | null) {
+    MailViewSettings.reset(folder);
     MailView.readingPane.value = ReadingPanePosition.Right;
     MailView.folderPane.value = FolderPaneMode.Normal;
   }

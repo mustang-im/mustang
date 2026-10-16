@@ -7,11 +7,13 @@
     </button>
   </hbox>
   <vbox flex class="scroll" role="tree" aria-label={$t`Folders`}>
-    <SectionHeader id="favorites" label={$t`Favorites`} />
-    {#if !isCollapsed("favorites", $collapsedIDs)}
-      {#each $favorites.each as folder (folder)}
-        <FolderNode {folder} depth={0} isFavorite />
-      {/each}
+    {#if $showFavorites.value}
+      <SectionHeader id="favorites" label={$t`Favorites`} />
+      {#if !isCollapsed("favorites", $collapsedIDs)}
+        {#each $favorites.each as folder (folder)}
+          <FolderNode {folder} depth={0} isFavorite />
+        {/each}
+      {/if}
     {/if}
     {#each accountTrees as account (account.id)}
       <SectionHeader id={account.id} label={account.name} tooltip={account.emailAddress} {account} />
@@ -42,6 +44,7 @@
   import MinimizeIcon from "lucide-svelte/icons/chevron-left";
   import { t } from "../../../l10n/l10n";
 
+  const showFavorites = MailView.showFavorites;
   const favorites = allAccountsAccount.specialFolders;
   const savedSearches = savedSearchFolders;
   const accounts = appGlobal.emailAccounts;

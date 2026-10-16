@@ -37,7 +37,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | More Search Folder templates: unread or flagged, important, sent directly to me, from (only) specific people, old mail, words in the subject | Folder tab > New Search Folder | OR-combined, importance, "to me only", sender-only, subject-only and date criteria in `SearchEMail`. Lookout offers "Mail from and to specific people". |
 | IMAP folder subscriptions, Purge, Download Headers, Process Marked Headers | Folder tab > IMAP; Send / Receive tab | Subscription management and a header-only mode in the IMAP logic |
 | Focused Inbox (Focused / Other) | Message list | Message classification per account |
-| Conversations that include messages from other folders (e.g. own replies in Sent Items), conversation settings, actions on a whole conversation | View tab > Messages | A thread index across folders. Lookout groups by `threadID` within the folder, and actions apply to the selected messages. |
+| Conversations that include messages from other folders (e.g. own replies in Sent Items, "Show Messages from Other Folders"), actions on a whole conversation | View tab > Messages | A thread index across folders. Lookout groups by `threadID` within the folder, and actions apply to the selected messages. |
 | Arrange by To, Categories, Attachments, Account, Type, flag dates | View tab > Arrange By | These fields as main properties of all messages (`SQLEMail.readAllMainProperties()`) |
 | Low importance | Message list; reading pane; composer | A three-state importance in `EMail` (today the boolean `isImportant`) |
 | Follow-up flags with dates (Today, Tomorrow, This Week, Next Week, Custom), reminders, Mark Complete, the "Follow up" InfoBar | Home tab > Follow Up; flag on hover | Flag start, due and completed dates and reminders in `EMail`. Lookout offers Flag / Clear Flag (`markStarred`). |
@@ -63,7 +63,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Search query syntax (`from:`, `subject:`, `received:`), suggestions, recent searches, Advanced Find | Search box; Search tab | A query parser for `SearchEMail`; a search history |
 | Search scopes "Subfolders" and "All Outlook Items" | Search tab > Scope | `SearchEMail` over a folder subtree; search across apps |
 | Search refiners and filters: From / Sent To as free text, Subject only, Important, Mentioned, This Week, To me / Cc me, Categorized | Search tab > Refine; Home tab > Filter Email | These criteria in `SearchEMail`, `QuickSearchEMail` and `SQLSearchEMail` |
-| Single-line column view, Add Columns, View Settings, conditional formatting, Manage Views | View tab > Current View | *UI only*; conditional formatting also needs a rule engine |
+| Conditional Formatting, Format Columns, Manage Views, Save Current View as a New View | View tab > Current View; View Settings | Conditional formatting needs a rule engine; the others are *UI only* |
 
 ## Composer
 

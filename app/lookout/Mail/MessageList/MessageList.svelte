@@ -22,13 +22,31 @@
               <span class="group-count">{row.group.messages.length}</span>
             {/if}
           </button>
+        {:else if columns}
+          <MessageTableRow message={row.message} {columns}
+            isSelected={$selection.contains(row.message)}
+            previewLines={viewType == ViewType.Preview ? Math.max(previewLines, 1) : 0}
+            {previewIndent}
+            threadSize={row.thread?.length ?? 0}
+            isThreadExpanded={row.isThreadExpanded}
+            isThreadChild={row.isThreadChild}
+            indent={threadIndent(row)}
+            {highlight}
+            folderName={row.message.folder ? FolderTreeActions.displayName(row.message.folder) : null}
+            on:toggleThread={() => toggleThread(row.message)}
+            on:click={event => onClickMessage(row.message, event)}
+            on:dblclick={() => catchErrors(() => MessageActions.openDraft(row.message))}
+            on:contextmenu={event => onContextMenu(row.message, event)} />
         {:else}
           <MessageListItem message={row.message}
             isSelected={$selection.contains(row.message)}
             {previewLines}
+            {tighterSpacing}
+            {sendersAboveSubject}
             threadSize={row.thread?.length ?? 0}
             isThreadExpanded={row.isThreadExpanded}
             isThreadChild={row.isThreadChild}
+            indent={threadIndent(row)}
             {highlight}
             folderName={showFolder && row.message.folder ? FolderTreeActions.displayName(row.message.folder) : null}
             on:toggleThread={() => toggleThread(row.message)}
@@ -51,7 +69,10 @@
   import { MessageMetadata } from "./MessageMetadata";
   import { MessageActions } from "../MessageActions";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { ViewType, type Column } from "../View/ViewSettings";
+  import { MessageGrouping } from "./MessageGrouping";
   import MessageListItem from "./MessageListItem.svelte";
+  import MessageTableRow from "./MessageTableRow.svelte";
   import MessageContextMenu from "./MessageContextMenu.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
@@ -68,6 +89,13 @@
   export let selection: ArrayColl<EMail>;
   export let selectedMessage: EMail | null;
   export let listEl: HTMLDivElement = null;
+  export let viewType: ViewType = ViewType.Compact;
+  export let columns: Column[] | null = null;
+  export let previewIndent = 0;
+  export let tighterSpacing = false;
+  export let sendersAboveSubject = true;
+  export let alwaysExpandSelected = false;
+  export let classicIndented = false;
 
   const kHeaderHeight = 30;
   let collapsedGroups = new Set<string>();
@@ -75,7 +103,27 @@
   let viewHeight = 400;
   let scrollTop = 0;
 
-  $: messageHeight = 53 + 18 * previewLines;
+  $: messageHeight = rowHeight(viewType, previewLines, tighterSpacing);
+  function rowHeight(type: ViewType, lines: number, tighter: boolean): number {
+    let lineHeight = tighter ? 24 : 28;
+    if (type == ViewType.Single) {
+      return lineHeight;
+    } else if (type == ViewType.Preview) {
+      return lineHeight + 17 * Math.max(lines, 1) + 4;
+    }
+    return (tighter ? 45 : 53) + 18 * lines;
+  }
+
+  function threadIndent(row: MessageRow<EMail>): number {
+    if (row.kind != "message" || !row.isThreadChild) {
+      return 0;
+    }
+    if (!classicIndented) {
+      return 1;
+    }
+    let thread = [...row.group.threads?.values() ?? []].find(candidate => candidate.includes(row.message));
+    return 1 + (thread ? MessageGrouping.replyDepth(row.message, thread) : 0);
+  }
   $: rows = new MessageRows(groups, collapsedGroups, showGroupHeaders, kHeaderHeight, messageHeight, expandedThreads);
   $: visibleIndexes = visibleRange(rows, scrollTop, viewHeight);
   $: MessageMetadata.load(visibleMessages(visibleIndexes));
@@ -356,6 +404,18 @@
     await tick();
     if (selectedMessage) {
       scrollIntoView(selectedMessage);
+    }
+  }
+
+  let autoExpandedFor: EMail | null = null;
+  $: if (alwaysExpandSelected && selectedMessage != autoExpandedFor) {
+    autoExpandedFor = selectedMessage;
+    expandSelectedThread();
+  }
+  function expandSelectedThread() {
+    let row = rows.rows[rows.indexOfMessage(selectedMessage)];
+    if (row?.kind == "message" && row.thread && !row.isThreadExpanded) {
+      toggleThread(selectedMessage);
     }
   }
 

@@ -158,3 +158,36 @@ test("Without conversations, messages of a thread are listed separately", () => 
   expect(groups[0].messages).toEqual([newest, older]);
   expect(groups[0].threads).toBeUndefined();
 });
+
+test("Group By a different field than the sort: groups ordered by the group field, sorted inside", () => {
+  let bigOld = msg(at(2026, 9, 1), { size: 2 * 1024 * 1024, name: "Zoe" });
+  let bigNew = msg(at(2026, 10, 14, 10), { size: 3 * 1024 * 1024, name: "Anna" });
+  let tiny = msg(at(2026, 10, 13), { size: 100, name: "Mia" });
+  // Sorted by From (A on top), grouped by Size (largest group first)
+  let grouping = new MessageGrouping<TestMessage>(ArrangeBy.From, false, true, m => m.name, now, false, ArrangeBy.Size, false);
+  let groups = grouping.arrange([bigOld, bigNew, tiny]);
+  expect(groups.map(group => group.id)).toEqual(["size-huge", "size-tiny"]);
+  expect(groups[0].messages).toEqual([bigNew, bigOld]);
+  // Reversed group order: smallest group first
+  let reversed = new MessageGrouping<TestMessage>(ArrangeBy.From, false, true, m => m.name, now, false, ArrangeBy.Size, true);
+  expect(reversed.arrange([bigOld, bigNew, tiny]).map(group => group.id)).toEqual(["size-tiny", "size-huge"]);
+});
+
+test("Ascending / descending default per field", () => {
+  expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Date)).toBe(true);
+  expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Size)).toBe(true);
+  expect(MessageGrouping.isDescendingByDefault(ArrangeBy.From)).toBe(false);
+  expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Subject)).toBe(false);
+});
+
+test("Reply depth counts the ancestors that are in the conversation", () => {
+  let root = { messageID: "a", references: [] };
+  let reply = { messageID: "b", references: ["a"] };
+  let replyToReply = { messageID: "c", references: ["a", "b"] };
+  let replyToMissing = { messageID: "d", references: ["x", "a"] };
+  let thread = [root, reply, replyToReply, replyToMissing];
+  expect(MessageGrouping.replyDepth(root, thread)).toBe(0);
+  expect(MessageGrouping.replyDepth(reply, thread)).toBe(1);
+  expect(MessageGrouping.replyDepth(replyToReply, thread)).toBe(2);
+  expect(MessageGrouping.replyDepth(replyToMissing, thread)).toBe(1);
+});
