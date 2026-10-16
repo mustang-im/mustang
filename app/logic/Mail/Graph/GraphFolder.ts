@@ -339,6 +339,7 @@ export class GraphFolder extends Folder {
     await this.account.graphPost(`${folder.path}/move`, {
       destinationId: this.id,
     });
+    await folder.save();
     await this.account.listFolders();
   }
 

@@ -503,14 +503,16 @@ export class JMAPFolder extends Folder {
 
   async moveFolderHere(folder: JMAPFolder) {
     await super.moveFolderHere(folder);
-    await this.account.makeSingleCall("Mailbox/set", {
+    let response = await this.account.makeSingleCall("Mailbox/set", {
       accountId: this.account.accountID,
       update: {
         [folder.id]: {
           parentId: this.id,
         },
       },
-    });
+    }) as TJMAPChangeResponse<TJMAPFolder>;
+    checkChangeError(response);
+    await folder.save();
     await this.account.listFolders();
   }
 

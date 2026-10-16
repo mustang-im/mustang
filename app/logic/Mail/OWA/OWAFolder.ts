@@ -275,6 +275,7 @@ export class OWAFolder extends ExchangeFolder {
   async moveFolderHere(folder: OWAFolder) {
     await super.moveFolderHere(folder);
     await this.account.callOWA(owaMoveEntireFolderRequest(folder.id, this.id));
+    await folder.save();
   }
 
   async createSubFolder(name: string): Promise<OWAFolder> {
