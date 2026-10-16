@@ -103,12 +103,10 @@ Rules and Alerts and Create Rule. All Mustang rules are client rules that run wh
 | Exceptions ("except if …") | Rules Wizard | Negated criteria in `FilterRuleAction` |
 | Stop processing more rules | Rules Wizard | A flag in `FilterRuleAction` that ends the rule loop in `processMessage()` |
 | More actions: forward, forward as attachment, redirect, reply with a template, flag with a date, clear categories, set importance, play a sound, display an alert, run a script | Rules Wizard; Change Rule menu | New action types in `FilterRuleAction.doAction()`. Lookout offers move, copy, delete, mark read / unread, flag, categories and junk / not junk. |
-| More conditions: subject only, sender or recipient address (free text), header contains, sent only to me, my name in To / Cc, importance, sensitivity, meeting invitation, through a specific account | Rules Wizard; Create Rule | New criteria in `SearchEMail`. Without a free-text address, rules from senders who are not in an address book and "Always Move Messages From / To" can't be created, because `includesPerson` needs a `Person`. |
-| Permanently delete; size range, date range, "which I replied to" | Rules Wizard | *UI only*: the logic has `deleteImmediately`, `sizeMin` / `sizeMax`, `sentDateMin` / `sentDateMax` and `isReplied`, but the reused `frontend/` rule editor doesn't offer them. Lookout shows them in the rule description. |
+| More conditions: subject only, sender or recipient address (free text), header contains, sent only to me, my name in To / Cc, importance, sensitivity, meeting invitation, through a specific account | Rules Wizard; Create Rule | New criteria in `SearchEMail`. Without a free-text address, rules from senders who are not in an address book, "Always Move Messages From" for such senders and "Always Move Messages To" can't be created, because `includesPerson` needs a `Person`. |
 | Server-side rules (Exchange inbox rules, Sieve, JMAP), "client-only" marker | Rules and Alerts | Reading and writing server rules per protocol |
 | Copy a rule to another account, "Create this rule on all accounts" | Rules and Alerts > Copy | Cloning a rule into another account with a folder mapping. Lookout copies within the same account. |
 | Import / Export rules | Rules and Alerts > Options | A rules file format |
-| Rules Wizard templates; OK / Cancel / Apply for all changes at once | Rules and Alerts | *UI only*. Lookout saves each change immediately, like the new Outlook. |
 
 ## Automatic Replies (Out of Office)
 

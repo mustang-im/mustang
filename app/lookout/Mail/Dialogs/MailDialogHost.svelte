@@ -14,6 +14,8 @@
   <SaveSearchDialog search={$dialog.search} on:close={onClose} />
 {:else if $dialog?.kind == "rule-from-search"}
   <RuleFromSearchDialog search={$dialog.search} account={$dialog.account} on:close={onClose} />
+{:else if $dialog?.kind == "always-move-from"}
+  <AlwaysMoveDialog message={$dialog.message} on:close={onClose} />
 {:else if $dialog?.kind == "search-person"}
   <SearchPersonDialog fieldLabel={$dialog.fieldLabel} person={$dialog.person} onPick={$dialog.onPick} on:close={onClose} />
 {:else if $dialog?.kind == "shared-folder"}
@@ -36,6 +38,7 @@
   import SaveSearchDialog from "./SaveSearchDialog.svelte";
   import SearchPersonDialog from "./SearchPersonDialog.svelte";
   import RuleFromSearchDialog from "./RuleFromSearchDialog.svelte";
+  import AlwaysMoveDialog from "../Rules/AlwaysMoveDialog.svelte";
   import SharedFolderDialog from "./SharedFolderDialog.svelte";
   import FolderPermissionsDialog from "./FolderPermissionsDialog.svelte";
   import { onDestroy } from "svelte";

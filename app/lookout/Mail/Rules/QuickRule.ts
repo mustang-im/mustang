@@ -71,6 +71,15 @@ export class QuickRule {
     return rule;
   }
 
+  static async alwaysMoveFrom(message: EMail, folder: Folder): Promise<FilterRuleAction> {
+    let quickRule = new QuickRule(message);
+    assert(quickRule.sender, gt`The sender is not in your address book`);
+    quickRule.fromSender = true;
+    quickRule.moveToFolder = true;
+    quickRule.folder = folder;
+    return await quickRule.save();
+  }
+
   async save(): Promise<FilterRuleAction> {
     let rule = this.createRule();
     this.account.filterRuleActions.add(rule);

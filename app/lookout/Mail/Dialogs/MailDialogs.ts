@@ -15,6 +15,7 @@ export type MailDialog =
   { kind: "new-search-folder", account: MailAccount | null } |
   { kind: "save-search", search: SearchEMail } |
   { kind: "rule-from-search", search: SearchEMail, account: MailAccount } |
+  { kind: "always-move-from", message: EMail } |
   { kind: "search-person", fieldLabel: string, person: Person | null, onPick: (person: Person | null) => void } |
   { kind: "shared-folder", account: MailAccount } |
   { kind: "folder-permissions", account: MailAccount };
