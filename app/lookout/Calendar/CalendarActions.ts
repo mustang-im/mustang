@@ -7,6 +7,7 @@ import { selectedCalendar, selectedEvent, shownCalendars, startDate } from "../.
 import { inlineTitle, selectedSlots, type SlotSelection } from "./Selected";
 import { CalendarCurrentView, CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
+import { CalendarGroups } from "./FolderPane/CalendarGroups";
 import { WorkingHours } from "./View/WorkingHours";
 import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
@@ -216,6 +217,11 @@ export class CalendarActions {
     let currentView = CalendarSettings.currentView.value;
     let isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
     CalendarDialogs.open({ kind: "view-settings", isTable });
+  }
+
+  static move(calendar: Calendar, offset: number) {
+    let groups = new CalendarGroups(appGlobal.calendars.contents, CalendarGroups.order.value);
+    CalendarGroups.order.value = groups.orderAfterMove(calendar, offset);
   }
 
   static rename(calendar: Calendar) {

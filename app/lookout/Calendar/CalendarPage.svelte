@@ -1,6 +1,6 @@
 <vbox flex class="calendar-page" bind:this={pageEl}>
   <CalendarRibbon {view} {currentView}
-    bind:splitView {timeScale} bind:showFolderPane
+    {splitView} {timeScale} bind:showFolderPane
     onView={setView} onCurrentView={setCurrentView} onResetView={resetView}
     onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
     {#if isSearch}
@@ -99,7 +99,8 @@
   $: timeScale = $timeScaleSetting.value;
   $: showWeekNumbers = $weekNumbersSetting.value;
   $: showDeclined = $showDeclinedSetting.value;
-  let splitView = CalendarSettings.splitView.value;
+  const splitViewSetting = CalendarSettings.splitView;
+  $: splitView = $splitViewSetting.value;
   let showFolderPane = CalendarSettings.folderPane.value;
 
   let folderPaneHeight = 0;
@@ -202,7 +203,6 @@
   }
 
   function setSplitView(split: boolean) {
-    splitView = split;
     CalendarSettings.splitView.value = split;
   }
 

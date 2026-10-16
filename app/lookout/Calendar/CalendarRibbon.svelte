@@ -210,8 +210,7 @@
   }
 
   function onOverlay(overlay: boolean) {
-    splitView = !overlay;
-    CalendarSettings.splitView.value = splitView;
+    CalendarSettings.splitView.value = !overlay;
   }
 
   function onTimeScale(minutes: number) {
