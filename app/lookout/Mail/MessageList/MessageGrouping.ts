@@ -98,16 +98,25 @@ export class MessageGrouping<T extends ArrangeableMessage> {
   readonly reversed: boolean;
   readonly showInGroups: boolean;
   readonly asConversations: boolean;
+  readonly groupBy: ArrangeBy | null;
+  readonly groupReversed: boolean;
   protected readonly nameOf: (message: T) => string;
   protected readonly dateGroups: DateGroups;
 
-  constructor(arrangeBy: ArrangeBy, reversed: boolean, showInGroups: boolean, nameOf: (message: T) => string, now = new Date(), asConversations = false) {
+  constructor(arrangeBy: ArrangeBy, reversed: boolean, showInGroups: boolean, nameOf: (message: T) => string, now = new Date(), asConversations = false,
+      groupBy: ArrangeBy | null = null, groupReversed = false) {
     this.arrangeBy = arrangeBy;
     this.reversed = reversed;
     this.showInGroups = showInGroups;
     this.asConversations = asConversations;
+    this.groupBy = groupBy;
+    this.groupReversed = groupReversed;
     this.nameOf = nameOf;
     this.dateGroups = new DateGroups(now);
+  }
+
+  get groupField(): ArrangeBy {
+    return this.groupBy ?? this.arrangeBy;
   }
 
   arrange(messages: T[], isSortedNewestFirst = false): MessageGroup<T>[] {
@@ -132,6 +141,11 @@ export class MessageGrouping<T extends ArrangeableMessage> {
       if (thread) {
         group.threads.set(message, thread);
       }
+    }
+    if (this.groupBy && this.groupBy != this.arrangeBy) {
+      let compare = this.compareFor(this.groupBy);
+      let direction = this.groupReversed ? -1 : 1;
+      groups.sort((a, b) => direction * compare(a.messages[0], b.messages[0]));
     }
     return groups;
   }
@@ -167,14 +181,14 @@ export class MessageGrouping<T extends ArrangeableMessage> {
     if (this.arrangeBy == ArrangeBy.Date && isSortedNewestFirst) {
       return this.reversed ? messages.slice().reverse() : messages;
     }
-    let primary = this.primaryCompare();
+    let primary = this.compareFor(this.arrangeBy);
     let direction = this.reversed ? -1 : 1;
     return messages.slice().sort((a, b) =>
       direction * primary(a, b) || MessageGrouping.compareDateNewestFirst(a, b));
   }
 
-  groupOf(message: T): GroupKey {
-    switch (this.arrangeBy) {
+  groupOf(message: T, field = this.groupField): GroupKey {
+    switch (field) {
       case ArrangeBy.From: {
         let name = this.nameOf(message)?.trim();
         return name
@@ -202,8 +216,8 @@ export class MessageGrouping<T extends ArrangeableMessage> {
     }
   }
 
-  protected primaryCompare(): (a: T, b: T) => number {
-    switch (this.arrangeBy) {
+  compareFor(field: ArrangeBy): (a: T, b: T) => number {
+    switch (field) {
       case ArrangeBy.From:
         return (a, b) => MessageGrouping.compareText(this.nameOf(a), this.nameOf(b));
       case ArrangeBy.Subject:
@@ -233,6 +247,15 @@ export class MessageGrouping<T extends ArrangeableMessage> {
       default:
         return [gt`Newest on top`, gt`Oldest on top`];
     }
+  }
+
+  static replyDepth<M extends { messageID?: string, references?: string[] | null }>(message: M, thread: M[]): number {
+    let ids = new Set(thread.filter(candidate => candidate != message).map(candidate => candidate.messageID));
+    return (message.references ?? []).filter(id => ids.has(id)).length;
+  }
+
+  static isDescendingByDefault(field: ArrangeBy): boolean {
+    return field != ArrangeBy.From && field != ArrangeBy.Subject;
   }
 
   static compareDateNewestFirst(a: ArrangeableMessage, b: ArrangeableMessage): number {

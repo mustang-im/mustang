@@ -5,6 +5,9 @@
   class:flagged={$message.isStarred}
   class:deleted={$message.isDeleted}
   class:thread-child={isThreadChild}
+  class:tighter={tighterSpacing}
+  class:subject-first={!sendersAboveSubject}
+  style:padding-inline-start={indent ? 16 + 24 * indent + "px" : null}
   role="option"
   tabindex="-1"
   aria-selected={isSelected}
@@ -140,6 +143,9 @@
   export let threadSize = 0;
   export let isThreadExpanded = false;
   export let isThreadChild = false;
+  export let indent = 0;
+  export let tighterSpacing = false;
+  export let sendersAboveSubject = true;
   export let folderName: string | null = null;
   export let highlight: string | null = null;
 
@@ -194,8 +200,19 @@
   .message-item.deleted {
     opacity: 0.5;
   }
-  .message-item.thread-child {
-    padding-inline-start: 40px;
+  .message-item.tighter {
+    padding-block: 3px;
+  }
+  .message-item.subject-first .second-line {
+    order: -1;
+    height: 20px;
+    font-size: 15px;
+  }
+  .message-item.subject-first .first-line {
+    height: 18px;
+  }
+  .message-item.subject-first .sender {
+    font-size: 13px;
   }
   .thread-expander {
     display: flex;

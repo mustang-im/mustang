@@ -3,7 +3,7 @@
     <HomeTab messages={$selectedArray} folder={$selectedFolder} account={$selectedAccount} />
     <SendReceiveTab folder={$selectedFolder} />
     <FolderTab folder={$selectedFolder} account={$selectedAccount} />
-    <ViewTab
+    <ViewTab folder={$selectedFolder}
       onCollapseGroup={collapsed => listPane?.setGroupOfSelectionCollapsed(collapsed)}
       onCollapseAll={collapsed => listPane?.setAllGroupsCollapsed(collapsed)} />
     {#if isSearchActive}
@@ -21,6 +21,7 @@
       <hbox flex class="main" slot="right">
         <ReadingPaneLayout position={$readingPane.value}>
           <MessageListPane slot="list" bind:this={listPane}
+            folder={$selectedFolder}
             listMessages={listMessages}
             selection={$selectedMessages}
             bind:selectedMessage={$selectedMessage}
@@ -37,6 +38,7 @@
   </hbox>
 </vbox>
 <MailDialogHost />
+<ViewDialogHost />
 <MessagePrintHost />
 <svelte:window on:keydown={onKeyDown} on:focusin={onFocusChange} on:focusout={onFocusChange} />
 
@@ -70,6 +72,8 @@
   import ReadingPane from "./ReadingPane/ReadingPane.svelte";
   import MessagePrintHost from "./ReadingPane/MessagePrintHost.svelte";
   import MailDialogHost from "./Dialogs/MailDialogHost.svelte";
+  import ViewDialogHost from "./View/ViewDialogHost.svelte";
+  import { ViewDialogs } from "./View/ViewDialogs";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import ConnectedIcon from "lucide-svelte/icons/plug-zap";
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
@@ -88,6 +92,7 @@
   const updatingFolders = MessageActions.updatingFolders;
   const accounts = appGlobal.emailAccounts;
   const dialog = MailDialogs.current;
+  const viewDialog = ViewDialogs.current;
 
   let pageEl: HTMLElement;
   let listPane: MessageListPane;
@@ -323,7 +328,7 @@
   }
 
   function onKeyDown(event: KeyboardEvent) {
-    if (event.defaultPrevented || $dialog) {
+    if (event.defaultPrevented || $dialog || $viewDialog) {
       return;
     }
     let target = event.target as HTMLElement;
