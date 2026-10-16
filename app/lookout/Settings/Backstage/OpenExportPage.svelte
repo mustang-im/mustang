@@ -97,7 +97,8 @@
     justify-content: center;
     color: var(--lo-accent-text);
   }
-  .command:disabled .command-icon {
+  .command:disabled .command-icon,
+  .command:disabled .command-description {
     color: var(--lo-fg-disabled);
   }
   .command-text {
