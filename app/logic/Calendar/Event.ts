@@ -267,7 +267,8 @@ export class Event extends Observable {
   get duration(): number {
     let seconds = Math.round((this.endTime?.getTime() - this.startTime?.getTime()) / 1000);
     if (this.allDay) {
-      return Math.round(Math.ceil(seconds / k1DayS) * k1DayS); // return entire days, not 1 second less
+      let clockChangeSeconds = (this.startTime?.getTimezoneOffset() - this.endTime?.getTimezoneOffset()) * k1MinuteS;
+      return Math.round(Math.ceil((seconds + clockChangeSeconds) / k1DayS) * k1DayS); // return entire days, not 1 second less
     }
     return seconds;
   }
@@ -906,7 +907,7 @@ export class Event extends Observable {
       instance.recurrenceCase = RecurrenceCase.Instance;
       instance.recurrenceStartTime = occurrence;
       instance.startTime = new Date(occurrence); // Clone in case of exception
-      instance.endTime = new Date(this.endTime.getTime() + instance.startTime.getTime() - this.startTime.getTime());
+      instance.duration = this.duration;
       if (this.alarm) {
         instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }

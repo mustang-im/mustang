@@ -4,7 +4,7 @@ import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
-import { beforeAll, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 
 beforeAll(() => {
   appGlobal.remoteApp ??= {
@@ -177,4 +177,66 @@ test("A removed reminder is sent to the server", async () => {
   await event.save();
 
   expect(sent[0].update.eventID.alerts).toEqual({});
+});
+
+/* JSCalendar gives the end of an event as duration, and an all-day event
+ * lasts "P1D". On the days when the clocks change, a day has 23 or 25 hours.
+ * The dates are created within the tests, after the time zone has been set. */
+describe("All-day events on the days when the clocks change", () => {
+  beforeAll(() => {
+    vi.stubEnv("TZ", "Europe/Berlin");
+  });
+  afterAll(() => {
+    vi.unstubAllEnvs();
+  });
+
+  function allDayServerEvent(start: string): TJMAPCalendarEvent {
+    let json = serverEvent();
+    json.start = start;
+    json.duration = "P1D";
+    json.showWithoutTime = true;
+    delete json.recurrenceRule;
+    delete json.alerts;
+    return json;
+  }
+
+  test("An all-day event on the day the clocks go back ends at midnight", async () => {
+    let { event } = await listEvents([allDayServerEvent("2026-10-25T00:00:00")]);
+
+    expect(event.startTime.getTime()).toBe(new Date(2026, 9, 25).getTime());
+    expect(event.endTime.getTime()).toBe(new Date(2026, 9, 26).getTime());
+    expect(event.durationDays).toBe(1);
+  });
+
+  test("An all-day event on the day the clocks go forward ends at midnight", async () => {
+    let { event } = await listEvents([allDayServerEvent("2026-03-29T00:00:00")]);
+
+    expect(event.startTime.getTime()).toBe(new Date(2026, 2, 29).getTime());
+    expect(event.endTime.getTime()).toBe(new Date(2026, 2, 30).getTime());
+    expect(event.durationDays).toBe(1);
+  });
+
+  test("An all-day event on the day the clocks go forward is sent back as 1 day", async () => {
+    let { event, sent } = await listEvents([allDayServerEvent("2026-03-29T00:00:00")]);
+
+    event.title = "Changed";
+    await event.save();
+
+    expect(sent[0].update.eventID.duration).toBe("P1D");
+  });
+
+  test("A new all-day event on the day the clocks go back is sent as 1 day", async () => {
+    let { calendar, sent } = setup([]);
+    let event = calendar.newEvent();
+    event.title = "New all-day event";
+    event.allDay = true;
+    event.startTime = new Date(2026, 9, 25);
+    event.endTime = new Date(2026, 9, 26);
+    calendar.events.add(event);
+
+    await event.save();
+
+    expect(sent[0].create[event.id].start).toBe("2026-10-25T00:00:00");
+    expect(sent[0].create[event.id].duration).toBe("P1D");
+  });
 });

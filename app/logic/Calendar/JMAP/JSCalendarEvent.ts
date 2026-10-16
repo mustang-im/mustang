@@ -29,10 +29,9 @@ export class JSCalendarEvent {
 
     // Time
     event.startTime = this.toDate(jmap.start, jmap);
-    event.endTime = new Date(event.startTime.getTime() +
-      toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S")) * 1000);
     event.timezone = jmap.timeZone ?? null;
     event.allDay = sanitize.boolean(jmap.showWithoutTime, false);
+    event.duration = toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S"));
 
     // Reminder. We support only one alarm per event, so take the first.
     event.alarm = this.toAlarm(Object.values(jmap.alerts ?? {})[0], event);
