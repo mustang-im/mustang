@@ -30,7 +30,7 @@
         </hbox>
       {/each}
       {#each days as day, i}
-        <DayColumn {day} column={i + 2} {startHour} {endHour} events={visibleEvents} {overlayEvents} on:celldblclick>
+        <DayColumn {day} column={i + 2} {startHour} {endHour} events={visibleEvents} {overlayEvents} {workHours} on:celldblclick>
           <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} />
           <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} />
         </DayColumn>
@@ -41,6 +41,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import type { WorkHours } from "../../../logic/Calendar/WorkHours";
   import { selectedCalendar, type DateInterval } from "../selected";
   import { kRowsPerHour } from "./DayColumn";
   import { appGlobal } from "../../../logic/app";
@@ -63,6 +64,8 @@
   export let showHours = 10;
   export let defaultFocusHour: number | null = null;
   export let enlargeSelectedDay = false;
+  /** Shades the time when none of them works */
+  export let workHours: WorkHours[] = [];
 
   let startHour = 0;
   let endHour = 24;
