@@ -21,7 +21,7 @@ Features that belong to Microsoft services and don't apply to Mustang are not li
 | Unread count on the taskbar or tray icon | Taskbar | Wiring the desktop backend's `setBadgeCount()` / `setTrayIcon()` to the unread counts |
 | Zoom slider | Status bar | A zoom / text scale setting that the frontend applies |
 | Notification center (bell) with a history of reminders and notifications | Title bar | *UI only*. Notifications exist, Lookout shows them as a bar. |
-| KeyTips (Alt + letter), command search ("Tell me"), Customize Ribbon and Quick Access Toolbar | Ribbon; title bar search; File > Options | *UI only* |
+| KeyTips (Alt + letter), command search ("Tell me"), Customize Ribbon | Ribbon; title bar search; File > Options | *UI only* |
 
 ## Mail
 
