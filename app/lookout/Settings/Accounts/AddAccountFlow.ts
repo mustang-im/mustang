@@ -1,5 +1,7 @@
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import { AuthMethod } from "../../../logic/Abstract/Account";
+import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
+import { getStandardURL } from "../../../logic/Mail/AutoConfig/configInfo";
 import { findConfig } from "../../../logic/Mail/AutoConfig/findConfig";
 import { checkConfig } from "../../../logic/Mail/AutoConfig/checkConfig";
 import { saveAndInitConfig, fillConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
@@ -37,6 +39,8 @@ export class AddAccountFlow {
   embed: OAuth2Embed | null = null;
   notice: string | null = null;
   protected abort = new AbortController();
+  protected manualOutgoing: MailAccount["outgoing"] = null;
+  protected manualOutgoingDraft: ServerDraft | null = null;
 
   get isEMailAddressValid(): boolean {
     return !!sanitize.emailAddress(this.emailAddress.trim(), null);
@@ -97,10 +101,15 @@ export class AddAccountFlow {
 
   startManual(notice: string | null) {
     this.config = makeManualConfig(this.emailAddress, this.password);
+    this.manualOutgoing = this.config.outgoing;
     this.draft = new AccountDraft(this.config);
     this.draft.realname ||= this.emailAddress.split("@")[0];
     this.notice = notice;
     this.step = AddAccountStep.Manual;
+  }
+
+  get usesURL(): boolean {
+    return !!this.draft && !this.draft.incoming.usesHostname;
   }
 
   setAccountType(protocol: string) {
@@ -108,31 +117,81 @@ export class AddAccountFlow {
       return;
     }
     let previous = this.draft;
+    if (previous.outgoing) {
+      this.manualOutgoingDraft = previous.outgoing;
+    }
     let config = newAccountForProtocol(protocol);
     config.source = "manual";
     config.emailAddress = this.config.emailAddress;
-    config.authMethod = this.config.authMethod;
-    config.tls = this.config.tls;
-    config.outgoing = this.config.outgoing;
+    config.authMethod = previous.incoming.authMethod;
+    config.tls = TLSSocketType.TLS;
+    let isHostnameProtocol = protocol == "imap" || protocol == "pop3";
+    config.outgoing = isHostnameProtocol ? this.manualOutgoing : null;
+    if (!isHostnameProtocol) {
+      config.url = getStandardURL(protocol, this.domain);
+    }
     this.config = config;
     let draft = new AccountDraft(config);
     draft.realname = previous.realname;
     draft.emailAddress = previous.emailAddress;
     AddAccountFlow.copyServer(previous.incoming, draft.incoming);
     draft.incoming.port = StandardPorts.portFor(protocol, draft.incoming.tls) ?? draft.incoming.port;
-    if (previous.outgoing && draft.outgoing) {
-      AddAccountFlow.copyServer(previous.outgoing, draft.outgoing);
-      draft.outgoing.port = previous.outgoing.port;
+    if (draft.outgoing && this.manualOutgoingDraft) {
+      AddAccountFlow.copyServer(this.manualOutgoingDraft, draft.outgoing);
+      draft.outgoing.port = this.manualOutgoingDraft.port;
+    }
+    if (!draft.incoming.usesHostname && draft.incoming.authMethod == AuthMethod.NTLM && protocol != "ews") {
+      draft.incoming.authMethod = AuthMethod.Password;
     }
     this.draft = draft;
   }
 
   protected static copyServer(from: ServerDraft, to: ServerDraft) {
-    to.hostname = from.hostname;
+    if (from.usesHostname && to.usesHostname) {
+      to.hostname = from.hostname;
+      to.tls = from.tls;
+    }
     to.username = from.username;
     to.password = from.password;
-    to.tls = from.tls;
     to.authMethod = from.authMethod;
+  }
+
+  protected prepareURLAccount() {
+    let config = this.config;
+    // <copied from="../../../frontend/Settings/Mail/Manual/ManualConfigURL.svelte" onContinue()>
+    assert(config.url, gt`Please enter the correct URL`);
+    assert(config.url.startsWith("https://"), gt`URL must be https`);
+    let hostname = new URL(config.url).hostname;
+    // Office365 needs special handling
+    if (hostname.endsWith(".office.com") || hostname.endsWith(".office365.com")) {
+      config.authMethod = AuthMethod.OAuth2;
+      if (config.protocol == "ews") {
+        config.url = "https://outlook.office365.com/EWS/Exchange.asmx";
+      } else if (config.protocol == "owa") {
+        config.url = "https://outlook.office.com/owa/";
+      } else if (config.protocol == "activesync") {
+        config.url = "https://outlook.office365.com/Microsoft-Server-ActiveSync";
+      }
+    }
+    let url = new URL(config.url);
+    let path = url.pathname;
+    if (config.protocol == "owa") {
+      assert(path.toLowerCase().startsWith("/owa/"), gt`URL needs to contain /owa/`);
+    }
+    if (config.protocol == "ews") {
+      if (path.toLowerCase().startsWith("/owa/")) {
+        url.pathname = "/EWS/Exchange.asmx";
+        config.url = url.href;
+      }
+    }
+    config.tls = TLSSocketType.TLS;
+    config.port = 443;
+    config.hostname = new URL(config.url).hostname;
+    if (config.authMethod == AuthMethod.OAuth2) {
+      config.oAuth2 ??= getOAuth2BuiltIn(config) as OAuth2;
+    }
+    config.outgoing = null;
+    // </copied>
   }
 
   async loginWithOAuth2() {
@@ -162,6 +221,14 @@ export class AddAccountFlow {
       draft.incoming.apply();
       draft.outgoing?.apply();
       this.password = draft.incoming.password;
+      if (this.usesURL) {
+        this.prepareURLAccount();
+        if (this.config.authMethod == AuthMethod.OAuth2) {
+          assert(this.config.oAuth2, gt`Could not find OAuth2 config for ${this.config.hostname}`);
+          this.step = AddAccountStep.Login;
+          return;
+        }
+      }
     }
     this.step = AddAccountStep.Checking;
     try {
