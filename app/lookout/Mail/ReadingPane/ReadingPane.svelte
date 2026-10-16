@@ -5,7 +5,7 @@
         <ReadingPaneHeader message={shownMessage} />
         <InfoBars message={shownMessage} />
         <hbox class="attachments">
-          <AttachmentsUI attachments={shownMessage.attachments} />
+          <AttachmentList attachments={shownMessage.attachments} />
         </hbox>
         {#if MailInvitation.isInvitationMail(shownMessage)}
           <InvitationBar message={shownMessage} />
@@ -39,7 +39,7 @@
   import { MailView } from "../MailView";
   import ReadingPaneHeader from "./ReadingPaneHeader.svelte";
   import InfoBars from "./InfoBars.svelte";
-  import AttachmentsUI from "../../../frontend/Mail/Message/AttachmentsUI.svelte";
+  import AttachmentList from "../Attachments/AttachmentList.svelte";
   import SMLDisplayKinds from "../../../frontend/Mail/SML/SMLDisplayKinds.svelte";
   import InvitationBar from "../../Calendar/EditEvent/InvitationBar.svelte";
   import { MailInvitation } from "../../Calendar/EditEvent/MailInvitation";
@@ -104,33 +104,7 @@
   }
   .attachments {
     flex-shrink: 0;
-    padding: 0 12px;
-  }
-  .attachments :global(.attachments) {
-    min-height: 0;
-  }
-  .attachments :global(.attachments-list .attachment) {
-    border: 1px solid var(--lo-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-pane-bg);
-  }
-  .attachments :global(.attachments-list .attachment:hover) {
-    background-color: var(--lo-hover-bg);
-  }
-  .attachments :global(.attachments-list .attachment .icon),
-  .attachments :global(.attachments-list .attachment:hover .icon) {
-    padding-inline-start: 6px;
-    background-color: transparent;
-    color: var(--lo-fg-secondary);
-  }
-  .attachments :global(.attachments-list .attachment .info) {
-    width: 200px;
-    background-color: transparent;
-    color: var(--lo-fg);
-    box-shadow: none;
-  }
-  .attachments :global(.attachments-list .attachment .size) {
-    color: var(--lo-fg-secondary);
+    padding: 0 20px 8px 20px;
   }
   .sml {
     flex-shrink: 0;

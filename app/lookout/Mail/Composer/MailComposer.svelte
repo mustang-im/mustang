@@ -112,11 +112,7 @@
       {/if}
       {#if hasAttachments}
         <hbox class="attachments">
-          {#each $attachmentsList.each as attachment (attachment)}
-            <vbox class="attachment-card">
-              <AttachmentEntry {attachment} attachments={attachmentsList} />
-            </vbox>
-          {/each}
+          <AttachmentList attachments={mail.attachments} isComposing />
         </hbox>
       {/if}
       <hbox flex class="body">
@@ -206,7 +202,7 @@
   import FromField from "./FromField.svelte";
   import EncryptionDetails from "../../../frontend/Mail/Composer/EncryptionDetails.svelte";
   import SMLComposer from "../../../frontend/Mail/Composer/SMLComposer.svelte";
-  import AttachmentEntry from "../../../frontend/Mail/Composer/Attachments/AttachmentEntry.svelte";
+  import AttachmentList from "../Attachments/AttachmentList.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
@@ -686,38 +682,8 @@
   }
   .attachments {
     flex-shrink: 0;
-    flex-wrap: wrap;
-    gap: 8px;
-    max-height: 132px;
-    overflow-y: auto;
     padding: 10px 24px;
     border-block-end: 1px solid var(--lo-divider);
-  }
-  .attachment-card {
-    width: 260px;
-  }
-  .attachment-card :global(.attachment) {
-    margin: 0;
-    padding: 6px 8px;
-    border: 1px solid var(--lo-border);
-    border-radius: var(--lo-radius-small);
-    box-shadow: none;
-    background-color: var(--lo-pane-bg);
-  }
-  .attachment-card :global(.attachment:hover) {
-    background-color: var(--lo-hover-bg);
-  }
-  .attachment-card :global(.attachment .size),
-  .attachment-card :global(.attachment .icon),
-  .attachment-card :global(.attachment .buttons svg) {
-    color: var(--lo-fg-secondary);
-  }
-  .attachment-card :global(.attachment .name) {
-    flex-wrap: nowrap;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    display: block;
   }
   .body {
     min-height: 0;
