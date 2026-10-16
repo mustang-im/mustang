@@ -1,4 +1,5 @@
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+import { ReadingPanePosition } from "../Mail/MailView";
 import { gt } from "../../l10n/l10n";
 
 export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule";
@@ -39,6 +40,7 @@ export class CalendarSettings {
   static readonly showDeclined = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
   static readonly weekNumbers = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
   static readonly folderPane = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
+  static readonly readingPane = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", ReadingPanePosition.Off);
   static readonly listSortColumn = getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start);
   static readonly listSortAscending = getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true);
   static readonly listGrouping = getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence);

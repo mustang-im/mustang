@@ -1,11 +1,11 @@
 <hbox flex class="reading-pane-layout">
   {#if position == ReadingPanePosition.Right}
-    <Splitter name="lookout.mail.readingPane.right" initialRightRatio={1.6} leftMinWidth={300} rightMinWidth={320}>
+    <Splitter name="{name}.right" initialRightRatio={readingRatio} leftMinWidth={300} rightMinWidth={320}>
       <hbox flex class="part list" slot="left"><slot name="list" /></hbox>
       <hbox flex class="part reading right" slot="right"><slot name="reading" /></hbox>
     </Splitter>
   {:else if position == ReadingPanePosition.Bottom}
-    <SplitterHorizontal name="lookout.mail.readingPane.bottom" initialBottomRatio={1.4} topMinWidth={160} bottomMinWidth={200}>
+    <SplitterHorizontal name="{name}.bottom" initialBottomRatio={1.4} topMinWidth={160} bottomMinWidth={200}>
       <hbox flex class="part list top" slot="top"><slot name="list" /></hbox>
       <hbox flex class="part reading bottom" slot="bottom"><slot name="reading" /></hbox>
     </SplitterHorizontal>
@@ -20,6 +20,8 @@
   import SplitterHorizontal from "../../frontend/Shared/SplitterHorizontal.svelte";
 
   export let position: ReadingPanePosition;
+  export let name = "lookout.mail.readingPane";
+  export let readingRatio = 1.6;
 </script>
 
 <style>

@@ -129,6 +129,14 @@
         <MenuItem label={$t`Off`} checked={$folderPane.value == CalendarFolderPane.Off}
           onClick={() => onFolderPane(CalendarFolderPane.Off)} />
       </RibbonMenuButton>
+      <RibbonMenuButton label={$t`Reading Pane`} icon={ReadingPaneIcon}>
+        <MenuItem label={$t`Right`} checked={$readingPane.value == ReadingPanePosition.Right}
+          onClick={() => { $readingPane.value = ReadingPanePosition.Right; }} />
+        <MenuItem label={$t`Bottom`} checked={$readingPane.value == ReadingPanePosition.Bottom}
+          onClick={() => { $readingPane.value = ReadingPanePosition.Bottom; }} />
+        <MenuItem label={$t`Off`} checked={$readingPane.value == ReadingPanePosition.Off}
+          onClick={() => { $readingPane.value = ReadingPanePosition.Off; }} />
+      </RibbonMenuButton>
     </RibbonGroup>
   </RibbonTab>
   <slot />
@@ -180,6 +188,8 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import TimeScaleIcon from "lucide-svelte/icons/ruler";
   import FolderPaneIcon from "lucide-svelte/icons/panel-left";
+  import ReadingPaneIcon from "lucide-svelte/icons/panel-right";
+  import { ReadingPanePosition } from "../Mail/MailView";
   import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import { t } from "../../l10n/l10n";
 
@@ -195,6 +205,7 @@
   export let onGoToDate: () => void;
 
   const folderPane = CalendarSettings.folderPane;
+  const readingPane = CalendarSettings.readingPane;
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
 
   let calendars = appGlobal.calendars;
