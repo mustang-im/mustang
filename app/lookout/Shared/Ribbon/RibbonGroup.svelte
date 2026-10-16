@@ -104,7 +104,9 @@
     }));
     let currentLayout: RibbonLayout = $layout;
     if (labelTextEl) {
-      labelWidth = Math.ceil(labelTextEl.scrollWidth);
+      let text = document.createRange();
+      text.selectNodeContents(labelTextEl);
+      labelWidth = Math.ceil(text.getBoundingClientRect().width);
     }
     let minWidth = currentLayout == "classic" ? labelWidth : 0;
     group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified");
