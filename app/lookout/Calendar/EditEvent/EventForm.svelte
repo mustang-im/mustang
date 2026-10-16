@@ -29,11 +29,7 @@
     </hbox>
     {#if $attachments.hasItems}
       <hbox class="attachments">
-        {#each $attachments.each as attachment (attachment)}
-          <vbox class="attachment-card">
-            <AttachmentEntry {attachment} {attachments} />
-          </vbox>
-        {/each}
+        <AttachmentList {attachments} isComposing />
       </hbox>
     {/if}
     <vbox flex class="body">
@@ -55,7 +51,7 @@
   import AttendeesField from "./AttendeesField.svelte";
   import OnlineMeetingRow from "./OnlineMeetingRow.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
-  import AttachmentEntry from "../../../frontend/Mail/Composer/Attachments/AttachmentEntry.svelte";
+  import AttachmentList from "../../Mail/Attachments/AttachmentList.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
   import type { Editor } from "@tiptap/core";
@@ -168,12 +164,6 @@
     gap: 8px;
     padding: 8px 24px;
     border-block-end: 1px solid var(--lo-divider);
-  }
-  .attachment-card {
-    width: 220px;
-    border: 1px solid var(--lo-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-pane-bg);
   }
   .body {
     flex: 1 0 auto;
