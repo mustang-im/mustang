@@ -64,10 +64,10 @@
 
 <script lang="ts">
   import { SymbolTable, type SymbolSubset } from "./SymbolTable";
-  import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
-  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import Dialog from "../Dialog/Dialog.svelte";
+  import DialogButton from "../Dialog/DialogButton.svelte";
+  import DialogTabs from "../Dialog/DialogTabs.svelte";
+  import ComboBox from "../Form/ComboBox.svelte";
   import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 

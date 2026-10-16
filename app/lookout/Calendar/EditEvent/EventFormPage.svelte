@@ -1,8 +1,8 @@
 <vbox flex class="event-form-page" on:keydown={onKeyDown}>
   {#key ribbonKey}
-    <EventFormRibbon {event} {flow} {editor} {actions} {saveDisabled} {canSchedule}
+    <EventFormRibbon {event} {flow} {editorCommands} {actions} {saveDisabled} {canSchedule}
       {schedulingLabel} {trackingLabel}
-      bind:selectedLabel />
+      bind:showEmojis bind:selectedLabel />
   {/key}
   <vbox flex class="form-card lo-card">
     <hbox class="title-row">
@@ -15,6 +15,9 @@
         {event.calendar?.name ?? ""}
       </hbox>
       <hbox flex />
+      {#if showsEditor}
+        <UndoRedoButtons {editor} />
+      {/if}
       <button class="close" title={$t`Close`} aria-label={$t`Close`} on:click={onCloseRequest}>
         <CloseIcon size={18} />
       </button>
@@ -27,7 +30,7 @@
     {:else if showTracking}
       <TrackingView {event} />
     {:else}
-      <EventForm {event} {flow} {timeEditor} {messages} bind:editor bind:this={form}
+      <EventForm {event} {flow} {timeEditor} {messages} bind:editor bind:showEmojis bind:this={form}
         {sendLabel} {sendDisabled} onSend={onSave} onRecurrence={openRecurrence}
         onAddressBook={openAddressBook} />
     {/if}
@@ -54,6 +57,10 @@
   <SelectNamesDialog title={$t`Select Attendees and Resources`} fields={[attendeesField]}
     onOK={onAttendeesPicked} onCancel={() => attendeesField = null} />
 {/if}
+{#if showSignatures}
+  <SignaturesDialog identity={event.calendar?.inviteAs} onDone={() => showSignatures = false} />
+{/if}
+<EditorToolDialogs {editor} bind:openedTool />
 <FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
@@ -72,8 +79,13 @@
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import SchedulingAssistant from "../Scheduling/SchedulingAssistant.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
+  import SignaturesDialog from "../../Mail/Composer/SignaturesDialog.svelte";
   import { SelectNamesField } from "../../Mail/Composer/SelectNames";
   import { FreeBusy } from "../Scheduling/FreeBusy";
+  import { EditorTool, type EditorCommands } from "../../Shared/Editor/EditorCommands";
+  import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
+  import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
+  import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -94,6 +106,9 @@
   let scheduling: SchedulingAssistant;
   let fileSelector: FileSelector;
   let editor: Editor = null;
+  let openedTool: EditorTool | null = null;
+  let showEmojis = false;
+  let showSignatures = false;
   let selectedLabel: string = null;
   let showRecurrenceDialog = false;
   let showSaveChanges = false;
@@ -115,6 +130,7 @@
   $: kindLabel = $event && $participants && EventFormInfo.tabLabel(event);
   $: showScheduling = canSchedule && isMeeting && !isIncoming && selectedLabel == schedulingLabel;
   $: showTracking = isSent && selectedLabel == trackingLabel;
+  $: showsEditor = !isIncoming && !showScheduling && !showTracking;
   $: $event, $participants, $parentEvent, $shownCalendarEvents, updateState(editor);
   $: sendLabel = isSaved ? $t`Send Update` : $t`Send`;
   $: sendDisabled = saveDisabled || (isSaved && !hasChanges ? $t`There are no changes to send` : false);
@@ -154,7 +170,15 @@
     onCheckNames: async () => { await form?.checkNames(); },
     onRecurrence: openRecurrence,
     onRefreshAvailability: () => scheduling?.refresh(),
+    onSignatures: () => { showSignatures = true; },
+  };
+
+  let editorCommands: EditorCommands;
+  $: editorCommands = {
+    editor,
     onAttachFile,
+    onInsertPicture: null,
+    openTool: (tool: EditorTool) => { openedTool = tool; },
   };
 
   function changesText(isMeeting: boolean, isSaved: boolean) {
@@ -257,12 +281,15 @@
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
-    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice || attendeesField) {
+    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice || attendeesField || openedTool || showSignatures) {
       return;
     }
     let key = keyEvent.key.toLowerCase();
     let command: () => Promise<void> | void = null;
-    if (keyEvent.key == "Escape") {
+    let tool = showsEditor && editor ? EditorShortcuts.toolFor(keyEvent) : null;
+    if (tool) {
+      command = () => { openedTool = tool; };
+    } else if (keyEvent.key == "Escape") {
       command = onCloseRequest;
     } else if (keyEvent.altKey && !keyEvent.ctrlKey && key == "s" && !isIncoming) {
       command = onSave;

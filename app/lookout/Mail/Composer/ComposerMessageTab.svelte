@@ -52,7 +52,7 @@
   <RibbonGroup label={$t`Include`} icon={AttachIcon}>
     <RibbonButton label={$t`Attach File`} icon={AttachIcon} size="small" onClick={commands.onAttachFile} />
     <RibbonButton label={$t`Link`} icon={LinkIcon} size="small" shortCutInfo="Ctrl+K"
-      disabled={!editor} onClick={commands.onInsertLink} />
+      disabled={!editor} onClick={() => commands.openTool(EditorTool.Link)} />
     <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon} size="small">
       <SignatureMenuItems identity={commands.identity} {editor} onSignatures={commands.onSignatures} />
     </RibbonMenuButton>
@@ -69,9 +69,10 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorChain, type ComposerCommands } from "./ComposerCommands";
-  import { ComposerSettings } from "./ComposerSettings";
-  import { EditorClipboard } from "./EditorClipboard";
+  import type { ComposerCommands } from "./ComposerCommands";
+  import { EditorChain, EditorTool } from "../../Shared/Editor/EditorCommands";
+  import { EditorSettings } from "../../Shared/Editor/EditorSettings";
+  import { EditorClipboard } from "../../Shared/Editor/EditorClipboard";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -108,7 +109,7 @@
   export let commands: ComposerCommands;
   export let isInline = false;
 
-  const spellcheck = ComposerSettings.spellcheck;
+  const spellcheck = EditorSettings.spellcheck;
   $: editor = commands.editor;
 
   function run(command: (chain: ChainedCommands) => ChainedCommands) {

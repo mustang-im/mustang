@@ -74,7 +74,7 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import LinkDialog from "./LinkDialog.svelte";
+  import LinkDialog from "../../Shared/Editor/LinkDialog.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import BoldIcon from "lucide-svelte/icons/bold";
   import ItalicIcon from "lucide-svelte/icons/italic";

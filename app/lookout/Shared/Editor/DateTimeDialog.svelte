@@ -11,8 +11,8 @@
 
 <script lang="ts">
   import { DateTimeFormats } from "./DateTimeFormats";
-  import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import ListView from "../../Shared/Form/ListView.svelte";
+  import Dialog from "../Dialog/Dialog.svelte";
+  import ListView from "../Form/ListView.svelte";
   import type { Editor } from "@tiptap/core";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 

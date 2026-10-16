@@ -32,10 +32,15 @@
         <AttachmentList {attachments} isComposing />
       </hbox>
     {/if}
-    <vbox flex class="body">
-      <!-- Binding `descriptionHTML` would re-set the editor content on every change, see frontend DescriptionBox -->
-      <HTMLEditor bind:html={event.rawHTMLDangerous} bind:editor />
-    </vbox>
+    <hbox flex class="body-row">
+      <vbox flex class="body" spellcheck={$spellcheck.value}>
+        <!-- Binding `descriptionHTML` would re-set the editor content on every change, see frontend DescriptionBox -->
+        <HTMLEditor bind:html={event.rawHTMLDangerous} bind:editor />
+      </vbox>
+      {#if showEmojis && editor}
+        <EmojiPane {editor} bind:isOpen={showEmojis} />
+      {/if}
+    </hbox>
   </vbox>
 </FileDropTarget>
 
@@ -51,6 +56,8 @@
   import AttendeesField from "./AttendeesField.svelte";
   import OnlineMeetingRow from "./OnlineMeetingRow.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
+  import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
+  import { EditorSettings } from "../../Shared/Editor/EditorSettings";
   import AttachmentList from "../../Mail/Attachments/AttachmentList.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -62,6 +69,7 @@
   export let timeEditor: EventTimeEditor;
   export let messages: InfoMessage[];
   export let editor: Editor = null;
+  export let showEmojis = false;
   export let sendLabel: string;
   export let sendDisabled: string | false = false;
   export let onSend: () => Promise<void>;
@@ -69,6 +77,7 @@
   export let onAddressBook: () => void;
 
   let attendeesField: AttendeesField;
+  const spellcheck = EditorSettings.spellcheck;
 
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;
@@ -165,9 +174,12 @@
     padding: 8px 24px;
     border-block-end: 1px solid var(--lo-divider);
   }
-  .body {
+  .body-row {
     flex: 1 0 auto;
     min-height: 160px;
+  }
+  .body {
+    min-width: 0;
     padding: 12px 24px;
   }
   .body > :global(*) {

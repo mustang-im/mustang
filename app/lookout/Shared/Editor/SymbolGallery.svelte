@@ -12,8 +12,8 @@
 
 <script lang="ts">
   import { SymbolTable } from "./SymbolTable";
-  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../Menu/MenuItem.svelte";
+  import MenuDivider from "../Menu/MenuDivider.svelte";
   import type { Editor } from "@tiptap/core";
   import { getContext } from "svelte";
   import { t } from "../../../l10n/l10n";

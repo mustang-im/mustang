@@ -172,7 +172,7 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 | Save an appointment without a title ("(No subject)") | Save & Close | `hasMinimalProps()` requires a title |
 | Forward as iCalendar | Forward menu | Only `forwardEventByMail()` exists, which is what Forward does |
 | Tables in the event description | Insert tab | Editor features (as in the composer). |
-| The composer's Insert and Format Text commands in the event form: Pictures, Link, Symbol, Horizontal Line, Emoji; Clipboard, Underline, Indent, Styles, Find and Replace | Event form > Insert, Format Text | *UI only*: the event form uses the composer's editor. It waits for the composer's Insert and Format Text tabs as shared components, so that both stay the same. Today the event form has Attach File, Bold, Italic, Strikethrough, Clear Formatting, Bullets, Numbering, Quote, Undo and Redo. |
+| Pictures in the event description | Event form > Insert > Pictures | Inline images (`cid:`) for events: `Event` drops inline attachments, and nothing turns the editor's `data:` images into attachments on save, as `EMail` does. The event form shares the composer's Insert, Format Text and Review tabs without Pictures. |
 
 ## People
 

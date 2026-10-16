@@ -19,7 +19,7 @@
 
 <script lang="ts">
   import { TextStatistics } from "./TextStatistics";
-  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import Dialog from "../Dialog/Dialog.svelte";
   import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 

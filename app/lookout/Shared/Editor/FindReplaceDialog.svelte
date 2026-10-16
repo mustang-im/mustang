@@ -31,11 +31,11 @@
 
 <script lang="ts">
   import { EditorFind } from "./EditorFind";
-  import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
-  import TextField from "../../Shared/Form/TextField.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Dialog from "../Dialog/Dialog.svelte";
+  import DialogButton from "../Dialog/DialogButton.svelte";
+  import DialogTabs from "../Dialog/DialogTabs.svelte";
+  import TextField from "../Form/TextField.svelte";
+  import CheckBox from "../Form/CheckBox.svelte";
   import type { Editor } from "@tiptap/core";
   import { onDestroy } from "svelte";
   import { t } from "../../../l10n/l10n";

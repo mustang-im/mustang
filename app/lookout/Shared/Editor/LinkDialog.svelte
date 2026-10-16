@@ -44,10 +44,10 @@
 
 <script lang="ts">
   import { LinkTarget, LinkAddress } from "./LinkAddress";
-  import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import FormGrid from "../../Shared/Form/FormGrid.svelte";
-  import TextField from "../../Shared/Form/TextField.svelte";
+  import Dialog from "../Dialog/Dialog.svelte";
+  import DialogButton from "../Dialog/DialogButton.svelte";
+  import FormGrid from "../Form/FormGrid.svelte";
+  import TextField from "../Form/TextField.svelte";
   import WebIcon from "lucide-svelte/icons/globe";
   import EmailIcon from "lucide-svelte/icons/mail";
   import type { Editor } from "@tiptap/core";
