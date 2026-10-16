@@ -9,7 +9,9 @@ import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
 import { SelectionState } from "./SelectionState";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
-import { MailView } from "./MailView";
+import { MailView, ReadingPanePosition } from "./MailView";
+import { InlineReplies } from "./Composer/InlineReplies";
+import { ComposerSettings } from "./Composer/ComposerSettings";
 import { recentFolders } from "./RecentFolders";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
@@ -19,7 +21,7 @@ import { CalendarActions } from "../Calendar/CalendarActions";
 import { newPerson } from "../../frontend/Contacts/Person/Selected";
 import { selectedFolder, selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
 import { openPersonFromOtherApp } from "../../frontend/Contacts/open";
-import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
+import { goTo, openApp, selectedApp } from "../../frontend/AppsBar/selectedApp";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { saveBlobAsFile, URLPart } from "../../frontend/Util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -86,12 +88,33 @@ export class MessageActions {
     openApp(contactsMustangApp, {});
   }
 
-  static reply(message: EMail) {
-    mailMustangApp.writeMail(message.compose.replyToAuthor());
+  static async reply(message: EMail) {
+    await MessageActions.respond(message, message.compose.replyToAuthor());
   }
 
-  static replyAll(message: EMail) {
-    mailMustangApp.writeMail(message.compose.replyAll());
+  static async replyAll(message: EMail) {
+    await MessageActions.respond(message, message.compose.replyAll());
+  }
+
+  static async respond(original: EMail, draft: EMail) {
+    if (MessageActions.respondsInline(original)) {
+      await InlineReplies.start(original, draft);
+    } else {
+      mailMustangApp.writeMail(draft);
+    }
+  }
+
+  static respondsInline(original: EMail): boolean {
+    return !ComposerSettings.repliesInNewWindow.value &&
+      MailView.readingPane.value != ReadingPanePosition.Off &&
+      get(selectedApp) == mailMustangApp &&
+      get(selectedMessage) == original &&
+      (get(selectedMessages)?.length ?? 0) <= 1;
+  }
+
+  static popOut(draft: EMail) {
+    InlineReplies.remove(draft);
+    mailMustangApp.writeMail(draft);
   }
 
   static canReplyAll(message: EMail): boolean {
@@ -108,8 +131,8 @@ export class MessageActions {
     } else {
       forward = await message.compose.forwardInline();
     }
-    mailMustangApp.writeMail(forward);
     // </copied>
+    await MessageActions.respond(message, forward);
   }
 
   static async forwardAsAttachment(message: EMail) {

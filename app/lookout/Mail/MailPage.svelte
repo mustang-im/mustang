@@ -10,6 +10,10 @@
       <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} onClose={closeSearch} />
       <RibbonTabSelector label={$t`Search`} />
     {/if}
+    {#if $inlineRibbon}
+      <ComposerMessageTab commands={$inlineRibbon.commands} isInline />
+      <RibbonTabSelector label={$t`Message`} />
+    {/if}
   </Ribbon>
   <hbox flex class="panes">
     {#if $folderPane.value == FolderPaneMode.Minimized}
@@ -71,6 +75,8 @@
   import ViewTab from "./Ribbon/ViewTab.svelte";
   import SearchTab from "./Ribbon/SearchTab.svelte";
   import RibbonTabSelector from "./Ribbon/RibbonTabSelector.svelte";
+  import ComposerMessageTab from "./Composer/ComposerMessageTab.svelte";
+  import { InlineReplies } from "./Composer/InlineReplies";
   import FolderPane from "./FolderPane/FolderPane.svelte";
   import FolderPaneMinimized from "./FolderPane/FolderPaneMinimized.svelte";
   import ReadingPaneLayout from "./ReadingPaneLayout.svelte";
@@ -101,6 +107,7 @@
   const accounts = appGlobal.emailAccounts;
   const dialog = MailDialogs.current;
   const viewDialog = ViewDialogs.current;
+  const inlineRibbon = InlineReplies.ribbon;
 
   let pageEl: HTMLElement;
   let listPane: MessageListPane;

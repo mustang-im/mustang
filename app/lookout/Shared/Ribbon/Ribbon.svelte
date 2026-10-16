@@ -10,6 +10,7 @@
       {#each $tabs as tab}
         <button class="tab" role="tab"
           class:selected={tab == $selectedTab}
+          class:contextual={tab.isContextual}
           aria-selected={tab == $selectedTab}
           tabindex={tab == $selectedTab ? 0 : -1}
           on:click={() => onSelectTab(tab)}
@@ -244,6 +245,9 @@
   }
   .tab.selected {
     font-weight: 600;
+  }
+  .tab.contextual {
+    color: var(--lo-accent-text);
   }
   .tab.selected::after {
     content: "";

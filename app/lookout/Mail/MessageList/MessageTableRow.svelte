@@ -46,7 +46,7 @@
         {:else if column == Column.To}
           <span class="text" title={recipients}>{recipients}</span>
         {:else if column == Column.Subject}
-          {#if isDraft}
+          {#if isDraft || hasInlineReply}
             <span class="draft">{$t`[Draft]`}</span>
           {/if}
           <span class="text subject" title={$message.subject}>
@@ -97,6 +97,7 @@
   import { fileSize } from "../../../frontend/Files/file";
   import { Column, ColumnInfo } from "../View/ViewSettings";
   import { MessageActions } from "../MessageActions";
+  import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "./MessageDates";
   import { ListName } from "./ListName";
   import { TextHighlight } from "./TextHighlight";
@@ -127,6 +128,7 @@
   export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
+  const inlineReplies = InlineReplies.replies;
 
   $: tags = message.tags;
   $: to = message.to;
@@ -136,6 +138,7 @@
     : $message.from?.emailAddress ?? "";
   $: recipients = $to.contents.map(person => personDisplayName(person) || person.emailAddress).join("; ");
   $: isDraft = $message && MessageActions.isDraft(message);
+  $: hasInlineReply = $inlineReplies && InlineReplies.hasReply(message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
   $: stateIcon = isDraft ? DraftIcon
     : $message.invitationMessage ? MeetingIcon

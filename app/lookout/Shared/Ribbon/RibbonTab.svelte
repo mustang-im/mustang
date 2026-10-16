@@ -32,9 +32,11 @@
   import { t } from "../../../l10n/l10n";
 
   export let label: string;
+  export let contextual = false;
 
   const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
   const tab = new RibbonTabModel(label);
+  tab.isContextual = contextual;
   setContext(RibbonTabModel.contextKey, tab);
   ribbon.addTab(tab);
   onDestroy(() => ribbon.removeTab(tab));
