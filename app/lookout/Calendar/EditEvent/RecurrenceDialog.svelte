@@ -94,12 +94,12 @@
       <hbox class="range">
         <hbox class="range-start">
           <span class="label">{$t`Start:`}</span>
-          <DateField date={rangeStart} label={$t`Start of the series`} onChange={day => setRangeStart(day)} />
+          <DateField required value={rangeStart} label={$t`Start of the series`} onChange={day => setRangeStart(day)} />
         </hbox>
         <vbox class="range-end">
           <hbox class="line">
             <Radio label={$t`End by:`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
-            <DateField date={pattern.endDate} label={$t`End of the series`}
+            <DateField required value={pattern.endDate} label={$t`End of the series`}
               onChange={day => { pattern.endDate = day; pattern.end = "date"; }} />
           </hbox>
           <hbox class="line">
@@ -131,7 +131,7 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import TimeCombo from "./TimeCombo.svelte";
-  import DateField from "./DateField.svelte";
+  import DateField from "../../Shared/Form/DateField.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
