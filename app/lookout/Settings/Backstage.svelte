@@ -14,6 +14,11 @@
       <hbox class="label">{$t`Open & Export`}</hbox>
     </button>
     <vbox flex class="spacer" />
+    <button class="nav-item" class:selected={$backstageState.page == "account"}
+      on:click={() => backstageState.open("account")}>
+      <AccountIcon size="18" />
+      <hbox class="label">{$t`${appName} Account`}</hbox>
+    </button>
     <button class="nav-item" on:click={() => SettingsDialogs.openOptions()}>
       <OptionsIcon size="18" />
       <hbox class="label">{$t`Options`}</hbox>
@@ -28,6 +33,8 @@
       <InfoPage />
     {:else if $backstageState.page == "open-export"}
       <OpenExportPage />
+    {:else if $backstageState.page == "account"}
+      <ProductAccountPage />
     {/if}
   </vbox>
 </hbox>
@@ -38,6 +45,9 @@
   import { SettingsDialogs } from "./SettingsDialogs";
   import InfoPage from "./Backstage/InfoPage.svelte";
   import OpenExportPage from "./Backstage/OpenExportPage.svelte";
+  import ProductAccountPage from "./Backstage/ProductAccountPage.svelte";
+  import AccountIcon from "lucide-svelte/icons/circle-user-round";
+  import { appName } from "../../logic/build";
   import BackIcon from "lucide-svelte/icons/arrow-left";
   import InfoIcon from "lucide-svelte/icons/info";
   import OpenExportIcon from "lucide-svelte/icons/folder-open";
