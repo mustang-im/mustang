@@ -1,3 +1,5 @@
+<svelte:window on:keydown={(event) => catchErrors(() => CalendarKeyboard.onKey(event))} />
+
 <vbox flex class="calendar-app">
   <hbox flex>
     {#if $isCalendarListOpen}
@@ -15,7 +17,7 @@
               <TitleBarLeft />
             {/if}
           </hbox>
-          <TitleBarRight bind:dateInterval={dateIntervalSetting.value} slot="top-right" />
+          <TitleBarRight bind:dateInterval={$dateIntervalSetting.value} slot="top-right" />
         </MainView>
       </vbox>
       <vbox flex class="sidebar" slot="right">
@@ -42,7 +44,9 @@
   import TitleBarRight from "./TitleBarRight.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import Splitter from "../Shared/Splitter.svelte";
+  import { CalendarKeyboard } from "./CalendarKeyboard";
   import { getLocalStorage } from "../Util/LocalStorage";
+  import { catchErrors } from "../Util/error";
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 
