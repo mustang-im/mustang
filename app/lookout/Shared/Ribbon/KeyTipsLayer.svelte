@@ -91,11 +91,20 @@
       disabled: false,
       activate: () => selectTab(tabEl),
     }));
-    let tabTips = KeyTips.assign(tabTargets.map(target => target.label), fileTab ? ["F"] : [], true);
+    let tellMe = ribbonEl.querySelector<HTMLInputElement>(".tell-me-input");
+    let tellMeTargets: Target[] = tellMe && isVisible(tellMe) ? [{
+      el: tellMe, label: labelOf(tellMe), centered: false, disabled: false,
+      activate: () => {
+        exit();
+        tellMe.focus();
+      },
+    }] : [];
+    let tabTips = KeyTips.assign(tabTargets.map(target => target.label), ["F", "Q"], true);
     badges = [
       ...badgesFor(quickAccess.map(el => clickTarget(el, labelOf(el))), quickAccess.map((_el, i) => KeyTips.quickAccessTip(i))),
       ...(fileTab ? badgesFor([clickTarget(fileTab, labelOf(fileTab))], ["F"]) : []),
       ...badgesFor(tabTargets, tabTips),
+      ...badgesFor(tellMeTargets, tellMeTargets.map(() => "Q")),
     ];
     typed = "";
     level = "tabs";
