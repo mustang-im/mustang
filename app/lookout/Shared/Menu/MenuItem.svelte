@@ -43,7 +43,7 @@
 
   export let label: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
-  export let onClick: (event: Event) => void | Promise<void> = null;
+  export let onClick: (event: Event) => void = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
   export let shortCutInfo: string = null;

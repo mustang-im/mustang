@@ -42,6 +42,12 @@
     items()[0]?.focus();
   }
 
+  export async function focusCheckedItem() {
+    await tick();
+    let all = items();
+    (all.find(item => item.classList.contains("checked")) ?? all[0])?.focus();
+  }
+
   function items(): HTMLElement[] {
     return Array.from(menuEl.querySelectorAll<HTMLElement>("button.lo-menuitem:not(:disabled), button.menuitem:not(.disabled)"));
   }
