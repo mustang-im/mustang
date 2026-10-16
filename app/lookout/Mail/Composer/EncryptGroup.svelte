@@ -13,10 +13,10 @@
   {:else}
     <RibbonButton label={$t`Encrypt`} icon={EncryptIcon}
       tooltip={$t`You need a digital ID to encrypt messages. Set it up in the Trust Center.`}
-      onClick={() => ComposerEncryption.openTrustCenter()} />
+      onClick={() => ComposerEncryption.openTrustCenter(identity)} />
     <RibbonButton label={$t`Sign`} icon={SignIcon}
       tooltip={$t`You need a digital ID to sign messages. Set it up in the Trust Center.`}
-      onClick={() => ComposerEncryption.openTrustCenter()} />
+      onClick={() => ComposerEncryption.openTrustCenter(identity)} />
   {/if}
 </RibbonGroup>
 
