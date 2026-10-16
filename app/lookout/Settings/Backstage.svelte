@@ -13,6 +13,34 @@
       <OpenExportIcon size="18" />
       <hbox class="label">{$t`Open & Export`}</hbox>
     </button>
+    {#if area}
+      <hbox class="separator" />
+    {/if}
+    {#if area == "mail"}
+      <button class="nav-item" disabled={!$selectedMessage} on:click={() => run(() => MessageActions.saveAs($selectedMessage))}>
+        <SaveAsIcon size="18" />
+        <hbox class="label">{$t`Save As`}</hbox>
+      </button>
+      <button class="nav-item" disabled={!attachments.length} on:click={() => isSavingAttachments = true}>
+        <SaveAttachmentsIcon size="18" />
+        <hbox class="label">{$t`Save Attachments`}</hbox>
+      </button>
+      <button class="nav-item" class:selected={$backstageState.page == "print"}
+        on:click={() => backstageState.open("print")}>
+        <PrintIcon size="18" />
+        <hbox class="label">{$t`Print`}</hbox>
+      </button>
+    {:else if area == "calendar"}
+      <button class="nav-item" disabled={!$selectedCalendar} on:click={() => run(() => BackstageItem.saveCalendar($selectedCalendar))}>
+        <SaveAsIcon size="18" />
+        <hbox class="label">{$t`Save Calendar`}</hbox>
+      </button>
+    {:else if area == "people"}
+      <button class="nav-item" disabled={!($selectedContact instanceof Person)} on:click={() => run(() => BackstageItem.saveContact($selectedContact))}>
+        <SaveAsIcon size="18" />
+        <hbox class="label">{$t`Save As`}</hbox>
+      </button>
+    {/if}
     <vbox flex class="spacer" />
     <button class="nav-item" class:selected={$backstageState.page == "account"}
       on:click={() => backstageState.open("account")}>
@@ -33,11 +61,16 @@
       <InfoPage />
     {:else if $backstageState.page == "open-export"}
       <OpenExportPage />
+    {:else if $backstageState.page == "print" && area == "mail"}
+      <PrintPage />
     {:else if $backstageState.page == "account"}
       <ProductAccountPage />
     {/if}
   </vbox>
 </hbox>
+{#if isSavingAttachments}
+  <SaveAllAttachmentsDialog {attachments} on:close={() => isSavingAttachments = false} />
+{/if}
 <svelte:window on:keydown={onKeyDown} />
 
 <script lang="ts">
@@ -46,6 +79,19 @@
   import InfoPage from "./Backstage/InfoPage.svelte";
   import OpenExportPage from "./Backstage/OpenExportPage.svelte";
   import ProductAccountPage from "./Backstage/ProductAccountPage.svelte";
+  import PrintPage from "./Backstage/PrintPage.svelte";
+  import { BackstageItem } from "./Backstage/BackstageItem";
+  import SaveAllAttachmentsDialog from "../Mail/Attachments/SaveAllAttachmentsDialog.svelte";
+  import { MessageActions } from "../Mail/MessageActions";
+  import { selectedContact } from "../Contacts/Selected";
+  import { Person } from "../../logic/Abstract/Person";
+  import { selectedMessage } from "../../frontend/Mail/Selected";
+  import { selectedCalendar } from "../../frontend/Calendar/selected";
+  import { selectedApp } from "../../frontend/AppsBar/selectedApp";
+  import { showError } from "../../frontend/Util/error";
+  import SaveAsIcon from "lucide-svelte/icons/save";
+  import SaveAttachmentsIcon from "lucide-svelte/icons/paperclip";
+  import PrintIcon from "lucide-svelte/icons/printer";
   import AccountIcon from "lucide-svelte/icons/circle-user-round";
   import { appName } from "../../logic/build";
   import BackIcon from "lucide-svelte/icons/arrow-left";
@@ -54,6 +100,15 @@
   import OptionsIcon from "lucide-svelte/icons/sliders-horizontal";
   import ExitIcon from "lucide-svelte/icons/log-out";
   import { t } from "../../l10n/l10n";
+
+  let isSavingAttachments = false;
+
+  $: area = BackstageItem.areaOf($selectedApp);
+  $: attachments = area == "mail" ? BackstageItem.attachmentsOf($selectedMessage) : [];
+
+  function run(action: () => Promise<void>) {
+    action().catch(showError);
+  }
 
   function onBack() {
     backstageState.close();
@@ -107,7 +162,17 @@
     border: 1px solid var(--lo-border-strong);
     border-radius: 50%;
   }
-  .nav-item:hover {
+  .nav-item:disabled {
+    opacity: 0.5;
+  }
+  .nav-item .label {
+    white-space: nowrap;
+  }
+  .separator {
+    margin: 8px 20px;
+    border-block-start: 1px solid var(--lo-divider);
+  }
+  .nav-item:hover:not(:disabled) {
     background-color: var(--lo-backstage-nav-hover-bg);
   }
   .nav-item.selected {
