@@ -90,4 +90,7 @@ test("Scopes have Outlook's names", () => {
   expect(MailSearch.scopeLabel(SearchScope.AllAccounts)).toBe("All Mailboxes");
   expect(MailSearch.scopeLabel(SearchScope.CurrentAccount)).toBe("Current Mailbox");
   expect(MailSearch.scopeLabel(SearchScope.CurrentFolder)).toBe("Current Folder");
+  expect(MailSearch.scopeShortLabel(SearchScope.AllAccounts)).toBe("All");
+  expect(MailSearch.scopeShortLabel(SearchScope.CurrentAccount)).toBe("Mailbox");
+  expect(MailSearch.scopeShortLabel(SearchScope.CurrentFolder)).toBe("Folder");
 });
