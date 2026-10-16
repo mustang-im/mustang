@@ -12,16 +12,17 @@ import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
 import { openComposer } from "../../frontend/Mail/open";
-import { openSettingsCategoryForAccount } from "../../frontend/Settings/Window/CategoriesUtils";
-import { goTo } from "../../frontend/AppsBar/selectedApp";
-import { MailAccount } from "../../logic/Mail/MailAccount";
+import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
+import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
+import type { MailAccount } from "../../logic/Mail/MailAccount";
+import { CalendarDialogs, type CalendarPropertiesTab } from "./Dialogs/CalendarDialogs";
 import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
 import { catchErrors } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
 import { get, writable } from "svelte/store";
 
-export type NewEventKind = "appointment" | "meeting" | "all-day" | "recurring";
+export type NewEventKind = "appointment" | "meeting" | "all-day" | "recurring" | "recurring-meeting" | "online-meeting";
 
 export class CalendarActions {
   static readonly updatingCount = writable(0);
@@ -40,9 +41,14 @@ export class CalendarActions {
       setNewEventTime(event, true, start, end ?? undefined);
     }
     openEvent(event, true);
-    if (kind == "recurring") {
+    if (kind == "recurring" || kind == "recurring-meeting") {
       event.newRecurrenceRule(Frequency.Weekly);
-    } else if (kind == "meeting") {
+    }
+    if (kind == "online-meeting") {
+      event.createOnlineMeetingWithAccount ??= calendar.meetAccount;
+      event.isOnline = true;
+    }
+    if (kind == "meeting" || kind == "recurring-meeting" || kind == "online-meeting") {
       event.createMeeting();
     }
   }
@@ -158,7 +164,7 @@ export class CalendarActions {
     if (!confirm(gt`Delete all occurrences of "${event.title ?? ""}"?`)) {
       return;
     }
-    let master = event.parentEvent;
+    let master = event.parentEvent ?? event;
     await master.deleteIt();
     CalendarActions.deselect(event);
   }
@@ -194,41 +200,35 @@ export class CalendarActions {
     selectedCalendar.set(calendar);
   }
 
-  static openProperties(calendar: Calendar) {
-    openSettingsCategoryForAccount(calendar);
-  }
-
-  static openImportExport(calendar: Calendar) {
-    openSettingsCategoryForAccount(calendar, "calendar-import");
-  }
-
-  static canShare(calendar: Calendar | null): boolean {
-    let account = calendar?.mainAccount;
-    return !!calendar?.sharePermissionLevels.length &&
-      account instanceof MailAccount && !account.isDependentAccount && account.canShareWithPersons();
+  static openProperties(calendar: Calendar, tab: CalendarPropertiesTab = "general") {
+    CalendarDialogs.open({ kind: "properties", calendar, tab });
   }
 
   static openSharing(calendar: Calendar) {
-    openSettingsCategoryForAccount(calendar.mainAccount, "mail-sharing");
+    CalendarActions.openProperties(calendar, "permissions");
   }
 
-  static accountsWithSharedCalendars(): MailAccount[] {
-    return appGlobal.emailAccounts.contents.filter(account =>
-      !account.isDependentAccount && account.canShareWithPersons());
+  static openSharedCalendar(account: MailAccount | null, fromAddressBook = false) {
+    CalendarDialogs.open({ kind: "open-calendar", account, fromAddressBook });
   }
 
-  static openSharedCalendar(account: MailAccount) {
-    openSettingsCategoryForAccount(account, "mail-sharing");
+  static rename(calendar: Calendar) {
+    CalendarDialogs.open({ kind: "rename", calendar });
+  }
+
+  static openAddressBook() {
+    openApp(contactsMustangApp, {});
   }
 
   static addCalendarAccount() {
     goTo("/setup/calendar", {});
   }
 
-  static async deleteSharedCalendar(calendar: Calendar) {
+  static async deleteSharedCalendar(calendar: Calendar): Promise<boolean> {
     if (!confirm(gt`Remove the calendar ${calendar.name} from this app? This does not change the calendar on the server.`)) {
-      return;
+      return false;
     }
     await calendar.deleteIt();
+    return true;
   }
 }

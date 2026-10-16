@@ -134,8 +134,9 @@ Date navigator, calendar list, Day / Work Week / Week / Month and split view.
 | Work hours, work days, first day of the week | File > Options > Calendar | Settings, or the server's `WorkingHours`. Lookout shades outside 8:00 to 17:00, Monday to Friday, and weeks start on Monday, like `frontend/`. |
 | Second and third time zone in the time ruler | File > Options > Calendar | *UI only* (a setting) |
 | Calendar groups | Home tab > Calendar Groups | Stored groups of calendars (EWS "Common Views") |
-| Create, rename, copy, move or delete a calendar on the server | Home tab > Add Calendar; calendar context menu | Calendar folder management per protocol. Lookout opens the account settings for Properties and removes only shared calendars. |
-| Add Calendar from a room list or from the Internet (ICS subscription), Publish Online, E-mail Calendar | Home tab > Add Calendar; Share | A room list API; read-only ICS subscription accounts; publishing |
+| Create, rename, copy, move or delete a calendar on the server; Create New Blank Calendar | Folder tab > New Calendar, Copy Calendar, Move Calendar; calendar context menu | Calendar folder management per protocol. Lookout's Rename Calendar renames it only in this app, and Delete Calendar removes only shared calendars. |
+| Open Calendar from a room list or from the Internet (ICS subscription), Publish Online, E-mail Calendar | Home tab > Open Calendar; Share | A room list API; read-only ICS subscription accounts; publishing |
+| Calendar description, Home Page and AutoArchive tabs of Calendar Properties | Calendar context menu > Properties | A description on `Calendar`; archiving |
 | Delegates, meetings "on behalf of" | Share Calendar > Delegate | Delegate APIs (EWS `AddDelegate`) and organizer handling for delegated calendars |
 | Read-only shared calendars and their permission level | Folder pane; Calendar Permissions | `myRights` / read-only state on `Calendar` (EWS `EffectiveRights`, JMAP `myRights`, CalDAV privileges). Lookout allows edits, and the server refuses them. |
 | Move an event to another calendar; copy an event (Ctrl+drag, Copy to My Calendar) | Dragging between calendars; context menu; Appointment tab | `Event.moveToCalendar()` exists, but `frontend/` disabled it because of bugs (#1277), so Lookout drags only within a calendar. Copy semantics for events (new UID, organizer). |
