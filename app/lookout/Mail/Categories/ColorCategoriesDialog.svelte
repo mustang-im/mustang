@@ -43,6 +43,7 @@
   import type { Tag, TaggableObject } from "../../../logic/Abstract/Tag";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { TagState } from "../SelectionState";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { CategoryChoice } from "./CategoryChoice";
   import { CategoryColors } from "./CategoryColors";
   import AddCategoryDialog from "./AddCategoryDialog.svelte";
@@ -96,7 +97,7 @@
   }
 
   async function onDelete() {
-    if (!confirm(gt`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
+    if (!await MessageBox.ask(gt`Color Categories`, gt`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
     await CategoryChoice.deleteCategory(selected);
