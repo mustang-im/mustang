@@ -5,7 +5,7 @@
     <TextField label={$t`Name:`} bind:value={name} />
     <span class="lo-form-label">{$t`Color:`}</span>
     <hbox>
-      <ComboBox label={$t`Color:`} options={colorOptions} bind:value={color} width="180px" />
+      <ComboBox label={$t`Color:`} options={colorOptions} bind:value={color} width="180px" swatchColumns={5} />
     </hbox>
   </FormGrid>
 </Dialog>
