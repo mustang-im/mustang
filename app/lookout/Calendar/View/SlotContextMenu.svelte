@@ -3,10 +3,12 @@
     onClick={() => CalendarActions.newEventAtSelection(null)} />
   <MenuItem label={$t`New All Day Event`} icon={AllDayIcon}
     onClick={() => CalendarActions.newEventAtSelection(null, "all-day")} />
-  <MenuItem label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo="Ctrl+Shift+Q"
+  <MenuItem label={$t`New Meeting Request`} icon={NewMeetingIcon} shortCutInfo="Ctrl+Shift+Q"
     onClick={() => CalendarActions.newEventAtSelection(null, "meeting")} />
   <MenuItem label={$t`New Recurring Appointment`} icon={RecurringIcon}
     onClick={() => CalendarActions.newEventAtSelection(null, "recurring")} />
+  <MenuItem label={$t`New Recurring Meeting`} icon={RecurringMeetingIcon}
+    onClick={() => CalendarActions.newEventAtSelection(null, "recurring-meeting")} />
   <MenuDivider />
   <MenuItem label={$t`Today`} icon={TodayIcon} onClick={onToday} />
   <MenuItem label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={onNext7Days} />
@@ -22,12 +24,13 @@
   import type { CalendarViewType } from "../CalendarSettings";
   import { CalendarActions } from "../CalendarActions";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
   import AllDayIcon from "lucide-svelte/icons/sun";
   import RecurringIcon from "lucide-svelte/icons/repeat";
+  import RecurringMeetingIcon from "lucide-svelte/icons/calendar-sync";
   import TodayIcon from "lucide-svelte/icons/calendar-check";
   import NextDaysIcon from "lucide-svelte/icons/calendar-clock";
   import DayIcon from "lucide-svelte/icons/calendar-1";

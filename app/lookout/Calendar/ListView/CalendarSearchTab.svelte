@@ -13,12 +13,12 @@
   <RibbonGroup label={$t`Refine`}>
     <RibbonMenuButton label={organizerLabel} icon={OrganizerIcon}
       disabled={!organizers.length && !$options.organizerEMail && $t`None of the found items has an organizer`}>
-      <MenuItem label={$t`Any Organizer`} icon={AnyOrganizerIcon} selected={!$options.organizerEMail}
+      <MenuItem label={$t`Any Organizer`} icon={AnyOrganizerIcon} checked={!$options.organizerEMail}
         onClick={() => CalendarSearch.update({ organizerEMail: null })} />
       <MenuDivider />
       {#each organizers as organizer (organizer.emailAddress)}
         <MenuItem label={organizer.name || organizer.emailAddress} tooltip={organizer.emailAddress}
-          icon={OrganizerIcon} selected={$options.organizerEMail == organizer.emailAddress}
+          icon={OrganizerIcon} checked={$options.organizerEMail == organizer.emailAddress}
           onClick={() => CalendarSearch.update({ organizerEMail: organizer.emailAddress })} />
       {/each}
     </RibbonMenuButton>
@@ -43,8 +43,8 @@
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import CurrentFolderIcon from "lucide-svelte/icons/calendar";
   import AllCalendarsIcon from "lucide-svelte/icons/calendars";
   import OrganizerIcon from "lucide-svelte/icons/user-round";
