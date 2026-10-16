@@ -80,3 +80,20 @@ test("Rule from subject text is named after the text", () => {
   expect(rule.criteria.includesPerson).toBeFalsy();
   expect(rule.markAsRead).toBe(true);
 });
+
+test("Always Move Messages From creates and saves a move rule", async () => {
+  let saved = 0;
+  account.save = async () => { saved++; };
+  let rule = await QuickRule.alwaysMoveFrom(newMessage(true), RulesTestAccount.folder(account, "News"));
+  expect(account.filterRuleActions.contents).toEqual([rule]);
+  expect(rule.criteria.includesPerson).toBe(sender);
+  expect(rule.toFolder?.name).toBe("News");
+  expect(rule.copy).toBeFalsy();
+  expect(saved).toBe(1);
+});
+
+test("Always Move Messages From needs a known sender", async () => {
+  await expect(QuickRule.alwaysMoveFrom(newMessage(false), RulesTestAccount.folder(account, "News")))
+    .rejects.toThrow("The sender is not in your address book");
+  expect(account.filterRuleActions.isEmpty).toBe(true);
+});

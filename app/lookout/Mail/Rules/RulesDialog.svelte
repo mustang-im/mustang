@@ -106,9 +106,9 @@
   import CopyRulesDialog from "./CopyRulesDialog.svelte";
   import RuleValuePicker from "./Pickers/RuleValuePicker.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import NewIcon from "lucide-svelte/icons/list-plus";
   import EditIcon from "lucide-svelte/icons/pencil";
   import RenameIcon from "lucide-svelte/icons/text-cursor-input";
