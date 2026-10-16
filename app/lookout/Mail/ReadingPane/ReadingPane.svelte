@@ -15,9 +15,11 @@
           {#if MailInvitation.isInvitationMail(shownMessage)}
             <InvitationBar message={shownMessage} />
           {:else}
-            <vbox class="sml">
-              <SMLDisplayKinds message={shownMessage} sml={shownMessage.sml} />
-            </vbox>
+            {#if shownMessage.sml}
+              <vbox class="sml">
+                <SMLCard message={shownMessage} sml={shownMessage.sml} />
+              </vbox>
+            {/if}
           {/if}
           <vbox flex class="body">
             <MessageBody message={shownMessage} />
@@ -48,7 +50,7 @@
   import ReadingPaneHeader from "./ReadingPaneHeader.svelte";
   import InfoBars from "./InfoBars.svelte";
   import AttachmentList from "../Attachments/AttachmentList.svelte";
-  import SMLDisplayKinds from "../../../frontend/Mail/SML/SMLDisplayKinds.svelte";
+  import SMLCard from "../SML/SMLCard.svelte";
   import InvitationBar from "../../Calendar/EditEvent/InvitationBar.svelte";
   import { MailInvitation } from "../../Calendar/EditEvent/MailInvitation";
   import MessageBody from "../../../frontend/Mail/Message/MessageBody.svelte";
@@ -132,7 +134,7 @@
   }
   .sml {
     flex-shrink: 0;
-    padding: 0 20px;
+    padding: 0 20px 8px 20px;
   }
   .body {
     min-height: 120px;

@@ -102,7 +102,7 @@
           {#if loading}
             <hbox class="loading"><Spinner size="32px" /></hbox>
           {/if}
-          <SMLComposer {mail} />
+          <SMLEditor {mail} {sml} onRemove={() => setSML(null)} />
           <vbox flex class="editor" spellcheck={$spellcheck.value}>
             <!-- The html in the mail passed in MUST already be sanitized HTML.
             Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
@@ -171,7 +171,8 @@
   import AddressField from "./AddressField.svelte";
   import FromField from "./FromField.svelte";
   import EncryptionInfoBar from "./EncryptionInfoBar.svelte";
-  import SMLComposer from "../../../frontend/Mail/Composer/SMLComposer.svelte";
+  import SMLEditor from "../SML/SMLEditor.svelte";
+  import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import AttachmentList from "../Attachments/AttachmentList.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
@@ -362,6 +363,11 @@
   $: privateKey = ComposerEncryption.privateKey(fromIdentity);
   $: privateKey, fromIdentity && catchErrors(() => ComposerEncryption.applyIdentityDefaults(mail, privateKey));
 
+  $: sml = mail.sml;
+  function setSML(newSML: SMLData | null) {
+    mail.sml = newSML;
+  }
+
   let commands: ComposerCommands;
   $: commands = {
     mail,
@@ -375,6 +381,8 @@
     openTool: (tool: EditorTool) => { openedTool = tool; },
     onSignatures: () => { showSignatures = true; },
     onCheckNames,
+    sml,
+    onInsertSML: setSML,
   };
   $: if (isInline && !closing) {
     InlineReplies.showRibbon(mail, commands);

@@ -31,6 +31,7 @@
       disabled={!editor}
       bind:checked={showEmojis} />
   </RibbonGroup>
+  <slot name="groups" />
 </RibbonTab>
 
 <script lang="ts">
