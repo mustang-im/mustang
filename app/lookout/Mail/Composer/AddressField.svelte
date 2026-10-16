@@ -28,6 +28,7 @@
       aria-expanded={isListOpen} aria-controls={listID}
       aria-activedescendant={isListOpen ? `${listID}-${highlighted}` : null}
       autocomplete="off" spellcheck="false"
+      placeholder={$recipients.isEmpty ? placeholder : null}
       {tabindex} {autofocus}
       on:input={onInput}
       on:keydown={onKeyDown}
@@ -74,6 +75,7 @@
   export let autofocus = false;
   export let tabindex: number = null;
   export let onAdd: (recipient: PersonUID) => void = null;
+  export let placeholder: string = null;
 
   const listID = "address-suggestions-" + Math.random().toString(36).slice(2);
   let fieldEl: HTMLElement;

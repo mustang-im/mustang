@@ -39,7 +39,8 @@
       {/each}
       {#if !readOnly}
         <hbox class="row add" bind:this={addRowEl}>
-          <AddressField recipients={newAttendees} label={$t`Click here to add a name`} onAdd={onAddAttendee} />
+          <AddressField recipients={newAttendees} label={$t`Add required attendee`}
+            placeholder={$t`Add required attendee`} onAdd={onAddAttendee} />
         </hbox>
       {/if}
     </vbox>
