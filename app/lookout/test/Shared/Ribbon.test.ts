@@ -99,6 +99,18 @@ test("Simplified: groups first show only icons, from the end", () => {
   expect(stages(tab)).toEqual([0, 1, 1]);
 });
 
+test("Simplified: when a wide group on the left must show only icons, the groups on its right get their labels back", () => {
+  let tab = new RibbonTabModel("Search");
+  tab.addGroup(makeSimplifiedGroup("Refine", 920, 330));
+  tab.addGroup(makeSimplifiedGroup("Scope", 340, 130));
+  tab.addGroup(makeSimplifiedGroup("Options", 340, 130));
+  tab.addGroup(makeSimplifiedGroup("Close", 115, 45));
+  // total 1715. Icons only from the end: Close, Options, Scope -> 1225, still too wide, Refine -> 635.
+  // Then Scope (845) and Options (1055) fit with labels again, Close (1125) doesn't.
+  tab.setAvailableWidth(1100);
+  expect(stages(tab)).toEqual([1, 0, 0, 1]);
+});
+
 test("Simplified: groups move into the More menu only when all of them show only icons", () => {
   let tab = new RibbonTabModel("Home");
   tab.setOverflowWidth(50);
