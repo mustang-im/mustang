@@ -5,42 +5,41 @@
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
       shortCutInfo="Ctrl+N" />
     <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
-      <MenuItem label={$t`Email Message`} icon={NewMailIcon} onClick={() => MessageActions.newMail(folder)} />
-      <MenuItem label={$t`Appointment`} icon={AppointmentIcon} onClick={() => MessageActions.newAppointment()} />
-      <MenuItem label={$t`Meeting`} icon={MeetingIcon} onClick={() => MessageActions.newMeeting()} />
-      <MenuItem label={$t`Contact`} icon={ContactIcon} onClick={() => MessageActions.newContact()} />
+      <MenuItem label={$t`Email Message`} icon={NewMailIcon} shortCutInfo="Ctrl+Shift+M"
+        onClick={() => MessageActions.newMail(folder)} />
+      <MenuItem label={$t`Appointment`} icon={AppointmentIcon} shortCutInfo="Ctrl+Shift+A"
+        onClick={() => MessageActions.newAppointment()} />
+      <MenuItem label={$t`Meeting`} icon={MeetingIcon} shortCutInfo="Ctrl+Shift+Q"
+        onClick={() => MessageActions.newMeeting()} />
+      <MenuItem label={$t`Contact`} icon={ContactIcon} shortCutInfo="Ctrl+Shift+C"
+        onClick={() => MessageActions.newContact()} />
+      <MenuItem label={$t`Contact Group`} icon={ContactGroupIcon} shortCutInfo="Ctrl+Shift+L"
+        onClick={() => ContactActions.newGroup(null)} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Delete`}>
+    <RibbonMenuButton label={$t`Junk`} icon={JunkIcon} size="small" disabled={noSelection}>
+      <JunkMenuItems {messages} />
+    </RibbonMenuButton>
     <RibbonButton label={$t`Delete`} icon={DeleteIcon}
       onClick={() => MessageActions.delete(messages)}
       disabled={noSelection} shortCutInfo="Del" />
     <RibbonButton label={$t`Archive`} icon={ArchiveIcon}
       onClick={() => MessageActions.archive(messages)}
       disabled={noSelection} shortCutInfo="Backspace" />
-    <RibbonMenuButton label={$t`Junk`} icon={JunkIcon} disabled={noSelection}>
-      <MenuItem label={$t`Junk`} icon={JunkIcon}
-        tooltip={$t`Move to the Junk folder, and train the junk filter`}
-        disabled={isJunk && $t`The selected messages are already junk`}
-        onClick={() => MessageActions.junk(messages, true)} />
-      <MenuItem label={$t`Not Junk`} icon={NotJunkIcon}
-        tooltip={$t`Move back to the Inbox, and train the junk filter`}
-        disabled={!isJunk && $t`The selected messages are not junk`}
-        onClick={() => MessageActions.junk(messages, false)} />
-    </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Respond`}>
-    <RibbonButton label={$t`Reply`} icon={ReplyIcon}
+    <RibbonButton label={$t`Reply`} icon={ReplyIcon} size="small"
       onClick={() => MessageActions.reply(single)}
       disabled={noSingle} shortCutInfo="Ctrl+R" />
-    <RibbonButton label={$t`Reply All`} icon={ReplyAllIcon}
+    <RibbonButton label={$t`Reply All`} icon={ReplyAllIcon} size="small"
       onClick={() => MessageActions.replyAll(single)}
       disabled={noSingle || (!MessageActions.canReplyAll(single) && $t`There are no other recipients`)}
       shortCutInfo="Ctrl+Shift+R" />
-    <RibbonButton label={$t`Forward`} icon={ForwardIcon}
+    <RibbonButton label={$t`Forward`} icon={ForwardIcon} size="small"
       onClick={event => MessageActions.forward(single, event as MouseEvent)}
       disabled={noSingle} shortCutInfo="Ctrl+F" />
-    <RibbonMenuButton label={$t`More`} icon={MoreRespondIcon} disabled={noSingle}>
+    <RibbonMenuButton label={$t`More`} icon={MoreRespondIcon} size="small" disabled={noSingle}>
       <MenuItem label={$t`Forward as Attachment`} icon={ForwardAttachmentIcon}
         shortCutInfo="Ctrl+Alt+F"
         onClick={() => MessageActions.forwardAsAttachment(single)} />
@@ -59,33 +58,47 @@
     <RibbonMenuButton label={$t`Move`} icon={MoveIcon} disabled={noSelection}>
       <MoveMenuItems {messages} />
     </RibbonMenuButton>
-    <RibbonMenuButton label={$t`Rules`} icon={RulesIcon}>
+    <RibbonMenuButton label={$t`Rules`} icon={RulesIcon} size="small">
       <RulesMenuItems message={single} account={realAccount} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Tags`}>
-    <RibbonButton label={$t`Unread/ Read`} icon={shouldMarkRead ? ReadIcon : UnreadIcon}
+    <RibbonButton label={$t`Unread/ Read`} icon={shouldMarkRead ? ReadIcon : UnreadIcon} size="small"
       tooltip={shouldMarkRead ? $t`Mark as Read` : $t`Mark as Unread`}
       onClick={() => MessageActions.toggleRead(messages)}
       disabled={noSelection} shortCutInfo={shouldMarkRead ? "Ctrl+Q" : "Ctrl+U"} />
-    <RibbonMenuButton label={$t`Categorize`} icon={CategorizeIcon} disabled={noSelection}>
+    <RibbonMenuButton label={$t`Categorize`} icon={CategorizeIcon} size="small" disabled={noSelection}>
       <CategorizeMenuItems {messages} />
     </RibbonMenuButton>
-    <RibbonToggleButton label={$t`Flag`} icon={FlagIcon}
-      checked={isFlagged}
-      tooltip={isFlagged ? $t`Clear Flag` : $t`Flag Message`}
-      onChange={checked => MessageActions.flag(messages, checked)}
-      disabled={noSelection} shortCutInfo="Insert" />
+    <RibbonMenuButton label={$t`Follow Up`} icon={FlagIcon} size="small" disabled={noSelection}>
+      <FollowUpMenuItems {messages} />
+    </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Find`}>
-    <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
+    <RibbonTextBox label={$t`Search People`} placeholder={$t`Search People`} icon={SearchPeopleIcon}
+      width="150px"
+      bind:value={peopleSearch}
+      bind:isListOpen={isPeopleListOpen}
+      onInput={() => { isPeopleListOpen = !!peopleMatches.length; }}
+      onEnter={openFirstPerson}>
+      <svelte:fragment slot="list">
+        {#each peopleMatches as person (person)}
+          <MenuItem label={person.name || person.emailAddresses.first?.value} icon={ContactIcon}
+            tooltip={person.emailAddresses.first?.value}
+            onClick={() => openPerson(person)} />
+        {:else}
+          <MenuItem label={$t`No matches`} disabled />
+        {/each}
+      </svelte:fragment>
+    </RibbonTextBox>
+    <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} size="small"
       onClick={() => MessageActions.openAddressBook()} shortCutInfo="Ctrl+Shift+B" />
-    <RibbonMenuButton label={$t`Filter Email`} icon={FilterIcon}>
+    <RibbonMenuButton label={$t`Filter Email`} icon={FilterIcon} size="small">
       <FilterMenuItems />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Send/Receive`}>
-    <RibbonButton label={$t`Send/Receive`} icon={SendReceiveIcon}
+    <RibbonButton label={isSimplified ? $t`Send/Receive` : $t`Send/Receive All Folders`} icon={SendReceiveIcon}
       tooltip={$t`Send/Receive All Folders`}
       onClick={() => MessageActions.sendReceiveAll()}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
@@ -103,9 +116,16 @@
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
-  import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
+  import RibbonTextBox from "../../Shared/Ribbon/RibbonTextBox.svelte";
+  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
+  import { ContactActions } from "../../Contacts/ContactActions";
+  import { SelectNames } from "../Composer/SelectNames";
+  import type { Person } from "../../../logic/Abstract/Person";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import MoveMenuItems from "../Menu/MoveMenuItems.svelte";
+  import JunkMenuItems from "../Menu/JunkMenuItems.svelte";
+  import FollowUpMenuItems from "../Menu/FollowUpMenuItems.svelte";
   import RulesMenuItems from "../Menu/RulesMenuItems.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import FilterMenuItems from "../Menu/FilterMenuItems.svelte";
@@ -115,10 +135,11 @@
   import AppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import MeetingIcon from "lucide-svelte/icons/users-round";
   import ContactIcon from "lucide-svelte/icons/user-round-plus";
+  import ContactGroupIcon from "lucide-svelte/icons/users";
+  import SearchPeopleIcon from "lucide-svelte/icons/user-search";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ArchiveIcon from "lucide-svelte/icons/archive";
   import JunkIcon from "lucide-svelte/icons/shield-x";
-  import NotJunkIcon from "lucide-svelte/icons/shield-check";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import ForwardIcon from "lucide-svelte/icons/forward";
@@ -148,7 +169,26 @@
   $: noSelection = !messages.length && $t`Select a message first`;
   $: noSingle = !single && (messages.length ? $t`Select only one message` : $t`Select a message first`);
   $: isJunk = MessageActions.isJunk(messages);
-  $: isFlagged = SelectionState.allFlagged(messages);
+  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  $: isSimplified = $ribbonLayout.value == "simplified";
+
+  let peopleSearch = "";
+  let isPeopleListOpen = false;
+  $: peopleMatches = peopleSearch.trim().length >= 2
+    ? SelectNames.persons(appGlobal.addressbooks, peopleSearch.trim()).contents.slice(0, 8)
+    : [];
+
+  function openPerson(person: Person) {
+    isPeopleListOpen = false;
+    peopleSearch = "";
+    ContactActions.edit(person);
+  }
+
+  function openFirstPerson() {
+    if (peopleMatches.length) {
+      openPerson(peopleMatches[0]);
+    }
+  }
   $: shouldMarkRead = !messages.length || SelectionState.shouldMarkRead(messages);
   $: realAccount = account && appGlobal.emailAccounts.contains(account) ? account : null;
 </script>

@@ -1,4 +1,7 @@
 {#if single}
+  <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo="Ctrl+P"
+    onClick={() => MessageActions.print(single)} />
+  <MenuDivider />
   <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo="Ctrl+R"
     onClick={() => MessageActions.reply(single)} />
   <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo="Ctrl+Shift+R"
@@ -15,46 +18,34 @@
   <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo="Ctrl+Q"
     onClick={() => MessageActions.markRead(messages, true)} />
 {/if}
-<SubMenuItem label={$t`Categorize`} icon={CategorizeIcon}>
+<SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
   <CategorizeMenuItems {messages} />
-</SubMenuItem>
-{#if allFlagged}
-  <MenuItem label={$t`Clear Flag`} icon={ClearFlagIcon}
-    onClick={() => MessageActions.flag(messages, false)} />
-{:else}
-  <MenuItem label={$t`Flag Message`} icon={FlagIcon} shortCutInfo="Insert"
-    onClick={() => MessageActions.flag(messages, true)} />
-{/if}
+</SubMenu>
+<SubMenu label={$t`Follow Up`} icon={FlagIcon}>
+  <FollowUpMenuItems {messages} />
+</SubMenu>
 <MenuDivider />
 {#if single}
-  <SubMenuItem label={$t`Find Related`} icon={FindRelatedIcon}>
+  <SubMenu label={$t`Find Related`} icon={FindRelatedIcon}>
     <FindRelatedMenuItems message={single} />
-  </SubMenuItem>
-  <MenuDivider />
-  <SubMenuItem label={$t`Rules`} icon={RulesIcon}>
+  </SubMenu>
+  <SubMenu label={$t`Rules`} icon={RulesIcon}>
     <RulesMenuItems message={single} account={single.folder?.account} />
-  </SubMenuItem>
+  </SubMenu>
 {/if}
-<SubMenuItem label={$t`Move`} icon={MoveIcon}>
+<SubMenu label={$t`Move`} icon={MoveIcon}>
   <MoveMenuItems {messages} />
-</SubMenuItem>
+</SubMenu>
 <MenuDivider />
+<SubMenu label={$t`Junk`} icon={JunkIcon}>
+  <JunkMenuItems {messages} />
+</SubMenu>
 <MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Del"
   onClick={() => MessageActions.delete(messages)} />
 <MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo="Backspace"
   onClick={() => MessageActions.archive(messages)} />
-{#if allJunk}
-  <MenuItem label={$t`Not Junk`} icon={NotJunkIcon} shortCutInfo="Ctrl+Alt+J"
-    onClick={() => MessageActions.junk(messages, false)} />
-{:else}
-  <MenuItem label={$t`Junk`} icon={JunkIcon}
-    tooltip={$t`Move to the Junk folder, and train the junk filter`}
-    onClick={() => MessageActions.junk(messages, true)} />
-{/if}
 {#if single}
   <MenuDivider />
-  <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo="Ctrl+P"
-    onClick={() => MessageActions.print(single)} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon}
     onClick={() => MessageActions.saveAs(single)} />
   <MenuItem label={MessageActions.isViewingSource() ? $t`View Message` : $t`View Source`} icon={SourceIcon}
@@ -65,7 +56,9 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MessageActions } from "../MessageActions";
   import { SelectionState } from "../SelectionState";
-  import SubMenuItem from "../Menu/SubMenuItem.svelte";
+  import SubMenu from "../../Shared/Menu/SubMenu.svelte";
+  import FollowUpMenuItems from "../Menu/FollowUpMenuItems.svelte";
+  import JunkMenuItems from "../Menu/JunkMenuItems.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import MoveMenuItems from "../Menu/MoveMenuItems.svelte";
   import RulesMenuItems from "../Menu/RulesMenuItems.svelte";
@@ -79,14 +72,12 @@
   import UnreadIcon from "lucide-svelte/icons/mail";
   import CategorizeIcon from "lucide-svelte/icons/tag";
   import FlagIcon from "lucide-svelte/icons/flag";
-  import ClearFlagIcon from "lucide-svelte/icons/flag-off";
   import FindRelatedIcon from "lucide-svelte/icons/text-search";
   import RulesIcon from "lucide-svelte/icons/list-filter";
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ArchiveIcon from "lucide-svelte/icons/archive";
   import JunkIcon from "lucide-svelte/icons/shield-x";
-  import NotJunkIcon from "lucide-svelte/icons/shield-check";
   import PrintIcon from "lucide-svelte/icons/printer";
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
@@ -96,6 +87,4 @@
 
   $: single = messages.length == 1 ? messages[0] : null;
   $: allRead = SelectionState.allRead(messages);
-  $: allFlagged = SelectionState.allFlagged(messages);
-  $: allJunk = MessageActions.isJunk(messages);
 </script>

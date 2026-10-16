@@ -4,14 +4,14 @@
       onClick={() => MessageActions.sendReceiveAll()}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
       shortCutInfo="F9" />
-    <RibbonButton label={$t`Update Folder`} icon={UpdateFolderIcon}
+    <RibbonButton label={$t`Update Folder`} icon={UpdateFolderIcon} size="small"
       tooltip={$t`Get new mail for the current folder`}
       onClick={() => MessageActions.getNewMail(folder)}
       disabled={MessageActions.disableGetNewMail(folder)}
       shortCutInfo="Shift+F9" />
   </RibbonGroup>
   <RibbonGroup label={$t`Server`}>
-    <RibbonButton label={$t`Download All Messages`} icon={DownloadAllIcon}
+    <RibbonButton label={$t`Download All Messages`} icon={DownloadAllIcon} size="small"
       tooltip={$t`Download all messages of the current folder, for offline use and search`}
       onClick={() => MessageActions.downloadAll(folder)}
       disabled={!folder && $t`Select a folder first`} />

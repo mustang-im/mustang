@@ -105,17 +105,21 @@
   <MenuItem label={$t`Delete`} icon={DeleteIcon} onClick={() => MessageActions.delete([message])} />
   <MenuItem label={$message.isRead ? $t`Mark as Unread` : $t`Mark as Read`} icon={$message.isRead ? UnreadIcon : ReadIcon}
     onClick={() => MessageActions.markRead([message], !message.isRead)} />
-  <MenuItem label={$message.isStarred ? $t`Clear Flag` : $t`Flag Message`} icon={$message.isStarred ? ClearFlagIcon : FlagIcon}
-    onClick={() => MessageActions.flag([message], !message.isStarred)} />
-  <SubMenuItem label={$t`Categorize`} icon={CategorizeIcon}>
+  <SubMenu label={$t`Follow Up`} icon={FlagIcon}>
+    <FollowUpMenuItems messages={[message]} />
+  </SubMenu>
+  <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
     <CategorizeMenuItems messages={[message]} />
-  </SubMenuItem>
+  </SubMenu>
+  <SubMenu label={$t`Junk`} icon={JunkIcon}>
+    <JunkMenuItems messages={[message]} />
+  </SubMenu>
   <MenuDivider />
   <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => MessageActions.print(message)} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon} onClick={() => MessageActions.saveAs(message)} />
-  <SubMenuItem label={$t`View`} icon={SourceIcon}>
+  <SubMenu label={$t`View`} icon={SourceIcon}>
     <DisplayMenuItems />
-  </SubMenuItem>
+  </SubMenu>
 </Menu>
 
 <script lang="ts">
@@ -124,7 +128,9 @@
   import { MessageActions } from "../MessageActions";
   import { MessageDates } from "../MessageList/MessageDates";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
-  import SubMenuItem from "../Menu/SubMenuItem.svelte";
+  import SubMenu from "../../Shared/Menu/SubMenu.svelte";
+  import FollowUpMenuItems from "../Menu/FollowUpMenuItems.svelte";
+  import JunkMenuItems from "../Menu/JunkMenuItems.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import DisplayMenuItems from "./DisplayMenuItems.svelte";
   import Recipient from "../../../frontend/Mail/Message/Recipient.svelte";
@@ -147,7 +153,7 @@
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
-  import ClearFlagIcon from "lucide-svelte/icons/flag-off";
+  import JunkIcon from "lucide-svelte/icons/shield-x";
   import CategorizeIcon from "lucide-svelte/icons/tag";
   import PrintIcon from "lucide-svelte/icons/printer";
   import SaveIcon from "lucide-svelte/icons/save";
