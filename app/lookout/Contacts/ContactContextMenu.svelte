@@ -3,7 +3,7 @@
     <MenuItem
       label={$t`Open`}
       icon={OpenIcon}
-      shortCutInfo="Ctrl+O"
+      shortCutInfo="Enter"
       onClick={() => ContactActions.edit(contacts[0])} />
     <MenuDivider />
   {/if}
@@ -12,7 +12,6 @@
       label={$t`Copy`}
       tooltip={$t`Copy the contact information to the clipboard`}
       icon={CopyIcon}
-      shortCutInfo="Ctrl+C"
       onClick={() => ContactActions.copyToClipboard(person)} />
   {/if}
   <MenuItem

@@ -89,6 +89,7 @@
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { Keyboard } from "../../Shared/Keyboard";
   import CloseIcon from "lucide-svelte/icons/x";
   import type { Editor } from "@tiptap/core";
   import { onMount, tick } from "svelte";
@@ -291,7 +292,7 @@
       command = () => { openedTool = tool; };
     } else if (keyEvent.key == "Escape") {
       command = onCloseRequest;
-    } else if (keyEvent.altKey && !keyEvent.ctrlKey && key == "s" && !isIncoming) {
+    } else if (keyEvent.altKey && !keyEvent.ctrlKey && keyEvent.code == "KeyS" && !Keyboard.isMac && !isIncoming) {
       command = onSave;
     } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "g" && !isIncoming) {
       command = openRecurrence;

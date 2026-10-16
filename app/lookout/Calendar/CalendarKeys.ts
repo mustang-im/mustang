@@ -1,4 +1,5 @@
 import type { CalendarViewType } from "./CalendarSettings";
+import { Keyboard } from "../Shared/Keyboard";
 
 export type CalendarCommand =
   { command: "new-appointment" } |
@@ -10,6 +11,7 @@ export type CalendarCommand =
   { command: "step-days", days: number } |
   { command: "step-months", months: number } |
   { command: "step-period", direction: number } |
+  { command: "week-edge", isEnd: boolean } |
   { command: "open" } |
   { command: "delete" } |
   { command: "forward" } |
@@ -25,7 +27,7 @@ export interface KeyPress {
 }
 
 export class CalendarKeys {
-  static commandFor(press: KeyPress): CalendarCommand | null {
+  static commandFor(press: KeyPress, isMac = Keyboard.isMac): CalendarCommand | null {
     let ctrl = press.ctrlKey || press.metaKey;
     let alt = press.altKey;
     let shift = press.shiftKey;
@@ -60,10 +62,22 @@ export class CalendarKeys {
       return null;
     }
     if (alt && !ctrl) {
-      if (shift && key == "y") {
+      if (shift && press.code == "KeyY" && !isMac) {
         return { command: "today" };
       }
       if (shift) {
+        return null;
+      }
+      if (key == "ArrowDown" || key == "ArrowUp") {
+        return { command: "step-days", days: key == "ArrowDown" ? 7 : -7 };
+      }
+      if (key == "PageDown" || key == "PageUp") {
+        return { command: "step-months", months: key == "PageDown" ? 1 : -1 };
+      }
+      if (key == "Home" || key == "End") {
+        return { command: "week-edge", isEnd: key == "End" };
+      }
+      if (isMac) {
         return null;
       }
       if (digit) {
@@ -74,12 +88,6 @@ export class CalendarKeys {
       }
       if (key == "=") {
         return { command: "view", view: "month" };
-      }
-      if (key == "ArrowDown" || key == "ArrowUp") {
-        return { command: "step-days", days: key == "ArrowDown" ? 7 : -7 };
-      }
-      if (key == "PageDown" || key == "PageUp") {
-        return { command: "step-months", months: key == "PageDown" ? 1 : -1 };
       }
       return null;
     }

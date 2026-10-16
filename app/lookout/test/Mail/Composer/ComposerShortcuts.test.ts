@@ -27,3 +27,9 @@ test("Plain keys and other combinations do nothing", () => {
   expect(ComposerShortcuts.commandFor(key("s", "KeyS", { ctrlKey: true, altKey: true }))).toBeNull();
   expect(ComposerShortcuts.commandFor(key("Enter", "Enter", { altKey: true }))).toBeNull();
 });
+
+test("macOS: Option+S types ß, so it doesn't send", () => {
+  expect(ComposerShortcuts.commandFor(key("ß", "KeyS", { altKey: true }), true)).toBeNull();
+  expect(ComposerShortcuts.commandFor(key("Enter", "Enter", { metaKey: true }), true)).toBe(ComposerCommand.Send);
+  expect(ComposerShortcuts.commandFor(key("s", "KeyS", { metaKey: true }), true)).toBe(ComposerCommand.Save);
+});

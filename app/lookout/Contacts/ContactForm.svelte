@@ -160,6 +160,7 @@
   import { ContactColumns } from "./Views/ContactColumns";
   import { newPerson } from "../../frontend/Contacts/Person/Selected";
   import { catchErrors } from "../../frontend/Util/error";
+  import { Keyboard } from "../Shared/Keyboard";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Shared/Ribbon/RibbonGroup.svelte";
@@ -300,7 +301,7 @@
     if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() == "s") {
       event.preventDefault();
       catchErrors(save);
-    } else if (event.altKey && !event.ctrlKey && !event.shiftKey && event.key.toLowerCase() == "s") {
+    } else if (event.altKey && !event.ctrlKey && !event.shiftKey && event.code == "KeyS" && !Keyboard.isMac) {
       event.preventDefault();
       catchErrors(saveAndClose);
     }

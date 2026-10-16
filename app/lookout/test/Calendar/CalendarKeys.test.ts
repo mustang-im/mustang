@@ -59,3 +59,22 @@ test("Plain letters and other keys do nothing", () => {
   expect(CalendarKeys.commandFor(press("x", { ctrlKey: true }))).toBe(null);
   expect(CalendarKeys.commandFor(press("ArrowDown"))).toBe(null);
 });
+
+test("Alt+Home and Alt+End go to the start and end of the week", () => {
+  expect(CalendarKeys.commandFor(press("Home", { altKey: true }))).toEqual({ command: "week-edge", isEnd: false });
+  expect(CalendarKeys.commandFor(press("End", { altKey: true }))).toEqual({ command: "week-edge", isEnd: true });
+  expect(CalendarKeys.commandFor(press("Home"))).toBe(null);
+});
+
+test("macOS: no Option+character keys, because they type characters there", () => {
+  const kMac = true;
+  expect(CalendarKeys.commandFor(press("1", { altKey: true }), kMac)).toBe(null);
+  expect(CalendarKeys.commandFor(press("-", { altKey: true }), kMac)).toBe(null);
+  expect(CalendarKeys.commandFor(press("=", { altKey: true }), kMac)).toBe(null);
+  expect(CalendarKeys.commandFor(press("Y", { altKey: true, shiftKey: true }), kMac)).toBe(null);
+  // Option+arrows and Ctrl+Option+digits type nothing
+  expect(CalendarKeys.commandFor(press("ArrowDown", { altKey: true }), kMac)).toEqual({ command: "step-days", days: 7 });
+  expect(CalendarKeys.commandFor(press("End", { altKey: true }), kMac)).toEqual({ command: "week-edge", isEnd: true });
+  expect(CalendarKeys.commandFor(press("1", { ctrlKey: true, altKey: true }), kMac)).toEqual({ command: "view", view: "day" });
+  expect(CalendarKeys.commandFor(press("1", { altKey: true }), false)).toEqual({ command: "day-count", days: 1 });
+});

@@ -346,6 +346,9 @@
     case "step-period":
       step(command.direction);
       break;
+    case "week-edge":
+      selectDay(CalendarRange.weekEdge($selectedDate, command.isEnd));
+      break;
     case "open":
       if (event) {
         $eventPeek = null;
