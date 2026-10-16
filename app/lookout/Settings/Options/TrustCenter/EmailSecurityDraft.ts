@@ -28,6 +28,10 @@ export class IdentitySecurity {
     return DigitalIDs.usable(this.identity);
   }
 
+  get choosableKeys(): DigitalID[] {
+    return [ ...this.keys, ...DigitalIDs.awaitingCertificate(this.identity).filter(key => !this.keys.includes(key)) ];
+  }
+
   get isChanged(): boolean {
     return this.key != this.original.key || this.encrypt != this.original.encrypt || this.sign != this.original.sign;
   }

@@ -23,16 +23,19 @@
           <span class="value code">{key.fingerprintDisplay}</span>
           {#if key instanceof SMIMEPrivateKey}
             <span>{$t`Certificate:`}</span>
-            <hbox class="status">
+            <vbox class="status">
               {#await statusAsync then status}
-                <hbox flex class="value">{DigitalIDs.statusText(status)}</hbox>
+                <span class="value">{DigitalIDs.statusText(status)}</span>
                 {#if DigitalIDs.needsCertificate(status)}
-                  <DialogButton label={$t`Add Certificate…`} onClick={onAddCertificate} />
+                  <hbox class="status-buttons">
+                    <DialogButton label={$t`Request Certificate…`} onClick={() => { isRequestOpen = true; }} />
+                    <DialogButton label={$t`Add Certificate…`} onClick={onAddCertificate} />
+                  </hbox>
                 {/if}
               {:catch ex}
                 <span class="value error">{ex?.message ?? ex}</span>
               {/await}
-            </hbox>
+            </vbox>
           {/if}
         {/if}
       </FormGrid>
@@ -41,6 +44,9 @@
 </Dialog>
 
 <FileSelector bind:this={fileSelector} {acceptFileTypes} />
+{#if isRequestOpen && key instanceof SMIMEPrivateKey}
+  <CertificateRequestDialog identity={setting.identity} {key} on:close={() => { isRequestOpen = false; }} />
+{/if}
 
 <script lang="ts">
   import type { IdentitySecurity } from "./EmailSecurityDraft";
@@ -53,19 +59,24 @@
   import GroupBox from "../../../Shared/Form/GroupBox.svelte";
   import TextField from "../../../Shared/Form/TextField.svelte";
   import ComboBox from "../../../Shared/Form/ComboBox.svelte";
+  import CertificateRequestDialog from "./CertificateRequestDialog.svelte";
   import FileSelector from "../../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { t } from "../../../../l10n/l10n";
 
   export let setting: IdentitySecurity;
 
-  let key: DigitalID = setting.key;
+  let key: DigitalID = setting.key ?? setting.choosableKeys[0] ?? null;
   let fileSelector: FileSelector;
+  let isRequestOpen = false;
   // <copied from="../../../../frontend/Settings/Mail/Account/EncryptionKey.svelte">
   const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
   // </copied>
   let statusAsync = keyStatus(key);
 
-  $: keyOptions = setting.keys.map(listed => ({ value: listed, label: DigitalIDs.label(listed) }));
+  $: keyOptions = setting.choosableKeys.map(listed => ({
+    value: listed,
+    label: setting.keys.includes(listed) ? DigitalIDs.label(listed) : $t`${DigitalIDs.label(listed)} - waiting for the certificate`,
+  }));
   $: statusAsync = keyStatus(key);
 
   function keyStatus(listed: DigitalID) {
@@ -79,10 +90,12 @@
     }
     await DigitalIDs.addCertificateFile(setting.identity, key, file);
     statusAsync = keyStatus(key);
+    setting.keysChanged();
+    setting = setting;
   }
 
   function onOK() {
-    if (key) {
+    if (key && setting.keys.includes(key)) {
       setting.setKey(key);
     }
   }
@@ -102,7 +115,9 @@
     letter-spacing: 0.04em;
   }
   .status {
-    align-items: center;
+    gap: 8px;
+  }
+  .status-buttons {
     gap: 8px;
   }
   .error {
