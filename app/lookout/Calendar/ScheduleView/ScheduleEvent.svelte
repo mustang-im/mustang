@@ -49,6 +49,8 @@
     position: absolute;
     z-index: 2;
     align-items: stretch;
+    /* "hidden" would make the event the scroll container of the sticky title */
+    overflow: clip;
   }
   .schedule-event.selected,
   .schedule-event:focus-visible {
@@ -63,9 +65,11 @@
     border-bottom-right-radius: 0;
   }
   .content {
+    position: sticky;
+    left: var(--name-width);
     display: flex;
     align-items: center;
-    flex: 1 1 0;
+    flex: 0 1 auto;
     gap: 6px;
     min-width: 0;
     padding: 0 4px 0 5px;

@@ -179,6 +179,7 @@
   }
   .track {
     position: relative;
+    z-index: 0;
     flex: none;
     width: var(--track-width);
     background-image:
