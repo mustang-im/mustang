@@ -1,7 +1,7 @@
 <vbox flex class="message-list-pane lo-card" style:--message-columns={gridTemplate}>
   <hbox class="list-header">
     {#if isSearchResult}
-      <span class="results-title">{$t`Search results`}</span>
+      <span class="results-title">{$t`Results`}</span>
     {:else}
       <hbox class="pivots" role="tablist">
         <button class="pivot" role="tab" class:active={!isUnreadOnly} aria-selected={!isUnreadOnly}
@@ -48,6 +48,12 @@
       {highlight}
       {selection}
       bind:selectedMessage />
+    {#if onMoreResults}
+      <hbox class="more-results">
+        <span>{$t`Showing recent results…`}</span>
+        <button type="button" class="more-link" on:click={() => catchErrors(onMoreResults)}>{$t`More`}</button>
+      </hbox>
+    {/if}
   {:else}
     <vbox flex class="empty">
       {#if isLoading}
@@ -83,6 +89,7 @@
   import { ArrangeFields, Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../View/ViewSettings";
   import { ViewCommands } from "../View/ViewCommands";
   import { MailFilters, QuickFilter } from "../MailFilters";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { CurrentTime } from "../../Calendar/View/CurrentTime";
   import MessageList from "./MessageList.svelte";
   import ColumnHeader from "./ColumnHeader.svelte";
@@ -106,6 +113,7 @@
   export let showFolder = false;
   export let highlight: string | null = null;
   export let isLoading = false;
+  export let onMoreResults: () => Promise<void> = null;
   export let listEl: HTMLDivElement = null;
 
   const currentMinute = CurrentTime.minute;
@@ -185,6 +193,25 @@
 </script>
 
 <style>
+  .more-results {
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--lo-divider);
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
+  }
+  .more-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--lo-accent-text);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
   .message-list-pane {
     min-width: 0;
     min-height: 0;

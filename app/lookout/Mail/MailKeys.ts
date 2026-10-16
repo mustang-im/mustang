@@ -18,6 +18,7 @@ export enum MailKeyAction {
   Search = "search",
   ScopeCurrentFolder = "scope-current-folder",
   ScopeAllAccounts = "scope-all-accounts",
+  AdvancedFind = "advanced-find",
   NewFolder = "new-folder",
   NewSearchFolder = "new-search-folder",
   GoToFolder = "go-to-folder",
@@ -64,6 +65,7 @@ export class MailKeys {
         case "p": return MailKeyAction.NewSearchFolder;
         case "i": return MailKeyAction.GoToInbox;
         case "b": return MailKeyAction.AddressBook;
+        case "f": return MailKeyAction.AdvancedFind;
       }
       return null;
     }

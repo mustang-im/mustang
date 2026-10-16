@@ -22,6 +22,11 @@
   <SharedFolderDialog account={$dialog.account} on:close={onClose} />
 {:else if $dialog?.kind == "new-search-folder"}
   <NewSearchFolderDialog defaultAccount={$dialog.account} on:close={onClose} />
+{:else if $dialog?.kind == "customize-search-folder"}
+  <CustomizeSearchFolderDialog title={$t`Customize Search Folder`}
+    name={$dialog.folder.name} search={$dialog.folder.search.clone()}
+    onOK={(name, search) => SearchFolderCustomizing.save(customizedFolder, name, search)}
+    onClose={onClose} />
 {/if}
 
 <script lang="ts">
@@ -33,14 +38,18 @@
   import ReadingPaneOptionsDialog from "./ReadingPaneOptionsDialog.svelte";
   import ColorCategoriesDialog from "../Categories/ColorCategoriesDialog.svelte";
   import NewSearchFolderDialog from "./NewSearchFolderDialog.svelte";
+  import CustomizeSearchFolderDialog from "./CustomizeSearchFolderDialog.svelte";
+  import { SearchFolderCustomizing } from "../Search/SearchFolderCriteria";
   import SaveSearchDialog from "./SaveSearchDialog.svelte";
   import SearchPersonDialog from "./SearchPersonDialog.svelte";
   import RuleFromSearchDialog from "./RuleFromSearchDialog.svelte";
   import AlwaysMoveDialog from "../Rules/AlwaysMoveDialog.svelte";
   import SharedFolderDialog from "./SharedFolderDialog.svelte";
   import { onDestroy } from "svelte";
+  import { t } from "../../../l10n/l10n";
 
   const dialog = MailDialogs.current;
+  $: customizedFolder = $dialog?.kind == "customize-search-folder" ? $dialog.folder : null;
 
   function onClose() {
     MailDialogs.close();

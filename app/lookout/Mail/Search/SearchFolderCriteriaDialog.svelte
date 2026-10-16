@@ -1,0 +1,32 @@
+<Dialog title={$t`Search Folder Criteria`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="560px" bind:this={dialog}>
+  <AdvancedSearchPanel bind:draft={criteria.draft} showScope={false} showDates={false} showButtons={false} onSearch={() => dialog.submit()} />
+  <svelte:fragment slot="buttons-start">
+    <DialogButton label={$t`Clear All`} onClick={onClear} />
+  </svelte:fragment>
+</Dialog>
+
+<script lang="ts">
+  import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+  import { SearchFolderCriteria } from "./SearchFolderCriteria";
+  import AdvancedSearchPanel from "./AdvancedSearchPanel.svelte";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import { t } from "../../../l10n/l10n";
+
+  export let search: SearchEMail;
+  export let onOK: () => void;
+  export let onClose: () => void;
+
+  let dialog: Dialog;
+  let criteria = new SearchFolderCriteria(search);
+
+  function onClear() {
+    criteria.draft.clear();
+    criteria = criteria;
+  }
+
+  function onSubmit() {
+    criteria.writeTo(search);
+    onOK();
+  }
+</script>

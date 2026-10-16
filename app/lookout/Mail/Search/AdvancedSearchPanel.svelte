@@ -46,12 +46,14 @@
         <AddressBookIcon size={16} />
       </button>
     </hbox>
-    <span class="label">{$t`Received`}</span>
-    <hbox class="dates">
-      <DateField label={$t`Start Date`} tooltip={$t`Start Date`} bind:value={draft.startDate} classes="underlined" />
-      <span class="lo-secondary">{$t`to`}</span>
-      <DateField label={$t`End Date`} tooltip={$t`End Date`} bind:value={draft.endDate} classes="underlined" />
-    </hbox>
+    {#if showDates}
+      <span class="label">{$t`Received`}</span>
+      <hbox class="dates">
+        <DateField label={$t`Start Date`} tooltip={$t`Start Date`} bind:value={draft.startDate} classes="underlined" />
+        <span class="lo-secondary">{$t`to`}</span>
+        <DateField label={$t`End Date`} tooltip={$t`End Date`} bind:value={draft.endDate} classes="underlined" />
+      </hbox>
+    {/if}
     <span class="label">{$t`Categories`}</span>
     <hbox class="categories-field">
       <button type="button" class="lo-text-field combo" bind:this={categoriesButton}
@@ -81,11 +83,13 @@
     <span class="label">{$t`Replied`}</span>
     <CheckBox label={$t`I replied to it`} bind:checked={draft.replied} />
   </grid>
-  <hbox class="buttons">
-    <hbox flex />
-    <DialogButton label={searchLabel ?? $t`Search`} primary onClick={onSearch} />
-    <DialogButton label={$t`Clear filters`} onClick={() => { draft.clear(); draft = draft; }} />
-  </hbox>
+  {#if showButtons}
+    <hbox class="buttons">
+      <hbox flex />
+      <DialogButton label={searchLabel ?? $t`Search`} primary onClick={onSearch} />
+      <DialogButton label={$t`Clear filters`} onClick={() => { draft.clear(); draft = draft; }} />
+    </hbox>
+  {/if}
 </vbox>
 {#if picking}
   <SearchPersonDialog
@@ -124,6 +128,8 @@
   export let folder: Folder | null = null;
   export let showScope = true;
   export let showKeywords = true;
+  export let showButtons = true;
+  export let showDates = true;
   export let searchLabel: string = null;
   export let onSearch: () => void;
 

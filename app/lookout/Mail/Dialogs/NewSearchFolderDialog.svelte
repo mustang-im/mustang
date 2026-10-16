@@ -1,121 +1,121 @@
 <Dialog title={$t`New Search Folder`}
   okLabel={$t`OK`}
-  okDisabled={disabledReason}
+  okDisabled={selected.missingValue(values)}
   onOK={onCreate}
-  width="520px"
+  width="480px"
   on:close>
-  <vbox class="dialog-content">
-    <span class="caption">{$t`Select a Search Folder:`}</span>
-    <vbox class="templates" role="radiogroup">
-      {#each templates as template}
+  <vbox class="new-search-folder">
+    <span>{$t`Select a Search Folder:`}</span>
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <vbox class="templates" role="listbox" tabindex="0" aria-label={$t`Select a Search Folder:`}
+      on:keydown={onKeyDown}>
+      {#each templates as template (template.id)}
         {#if template.section}
-          <hbox class="section">{template.section}</hbox>
+          <hbox class="section" role="presentation">{template.section}</hbox>
         {/if}
-        <label class="template" class:selected={selected == template}>
-          <input type="radio" name="template" value={template} bind:group={selected} />
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <hbox class="template" class:selected={selected == template}
+          role="option" aria-selected={selected == template}
+          on:click={() => select(template)}
+          on:dblclick={() => template.canChoose && choose()}>
           {template.label}
-        </label>
+        </hbox>
       {/each}
     </vbox>
-    {#if selected?.id == "person"}
-      <PersonPicker label={$t`Show mail from and to`} bind:selected={person} height="160px" />
-    {:else if selected?.id == "categorized"}
-      <label class="field">
-        {$t`Category:`}
-        <select class="lo-text-field" bind:value={tag}>
-          {#each $tags.each as availableTag}
-            <option value={availableTag}>{availableTag.name}</option>
-          {/each}
-        </select>
-      </label>
-    {:else if selected?.id == "large"}
-      <label class="field">
-        {$t`Show mail greater than:`}
-        <input class="lo-text-field" type="number" min="1" bind:value={sizeKB} />
-        {$t`KB`}
-      </label>
-    {/if}
-    <label class="field">
-      {$t`Search mail in:`}
-      <select class="lo-text-field" bind:value={account}>
-        <option value={null}>{$t`All accounts`}</option>
-        {#each $accounts.each as mailAccount}
-          <option value={mailAccount}>{mailAccount.name}</option>
-        {/each}
-      </select>
-    </label>
-    <label class="field">
-      {$t`Name:`}
-      <input type="text" class="name lo-text-field" bind:value={name} />
-    </label>
+    <GroupBox label={$t`Customize Search Folder:`}>
+      <hbox class="customize">
+        <span class="description" title={selected.description(values)}>{selected.description(values)}</span>
+        <DialogButton label={$t`Choose…`} disabled={!selected.canChoose && $t`This Search Folder needs no choice`}
+          onClick={choose} />
+      </hbox>
+    </GroupBox>
+    <hbox class="search-in">
+      <span>{$t`Search mail in:`}</span>
+      <ComboBox label={$t`Search mail in:`} options={accountOptions} bind:value={account} width="100%" />
+    </hbox>
   </vbox>
 </Dialog>
+{#if choosing == SearchFolderTemplateID.Person}
+  <SearchPersonDialog fieldLabel={$t`From`} person={values.person}
+    onPick={person => { values.person = person; }} on:close={closeChooser} />
+{:else if choosing == SearchFolderTemplateID.Categorized}
+  <ColorCategoriesDialog isChooseMode chosen={values.tags}
+    onChosen={tags => { values.tags = tags; }} onClose={closeChooser} />
+{:else if choosing == SearchFolderTemplateID.Large}
+  <MessageSizeDialog sizeMin={values.sizeMin} sizeMax={values.sizeMax}
+    onOK={(sizeMin, sizeMax) => { values.sizeMin = sizeMin; values.sizeMax = sizeMax; }} onClose={closeChooser} />
+{:else if choosing == SearchFolderTemplateID.Words}
+  <SearchTextDialog text={values.words}
+    onOK={words => { values.words = words; }} onClose={closeChooser} />
+{:else if choosing == SearchFolderTemplateID.Custom}
+  <CustomizeSearchFolderDialog title={$t`Custom Search Folder`}
+    name={values.customName ?? ""} search={values.customSearch ?? newSearchEMail()}
+    onOK={(name, search) => { values.customName = name; values.customSearch = search; account = search.account; }}
+    onClose={closeChooser} />
+{/if}
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { availableTags, type Tag } from "../../../logic/Abstract/Tag";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
-  import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-  import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import PersonPicker from "./PersonPicker.svelte";
+  import { SearchFolderTemplate, SearchFolderTemplateID } from "../Search/SearchFolderTemplates";
+  import SearchPersonDialog from "./SearchPersonDialog.svelte";
+  import CustomizeSearchFolderDialog from "./CustomizeSearchFolderDialog.svelte";
+  import ColorCategoriesDialog from "../Categories/ColorCategoriesDialog.svelte";
+  import MessageSizeDialog from "../Rules/Pickers/MessageSizeDialog.svelte";
+  import SearchTextDialog from "../Rules/Pickers/SearchTextDialog.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import GroupBox from "../../Shared/Form/GroupBox.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { gt, t } from "../../../l10n/l10n";
 
   export let defaultAccount: MailAccount | null = null;
 
-  interface SearchTemplate {
-    id: string;
-    label: string;
-    section?: string;
-    apply: (search: SearchEMail) => void;
-  }
-
-  const templates: SearchTemplate[] = [
-    { id: "unread", label: gt`Unread mail`, section: gt`Reading Mail`, apply: search => search.isRead = false },
-    { id: "flagged", label: gt`Mail flagged for follow up`, apply: search => search.isStarred = true },
-    { id: "person", label: gt`Mail from and to specific people`, section: gt`Mail from People and Lists`, apply: search => search.includesPerson = person },
-    { id: "categorized", label: gt`Categorized mail`, section: gt`Organizing Mail`, apply: search => search.tags.add(tag) },
-    { id: "large", label: gt`Large mail`, apply: search => search.sizeMin = sizeKB * 1024 },
-    { id: "attachments", label: gt`Mail with attachments`, apply: search => search.hasAttachment = true },
+  const templates = SearchFolderTemplate.all();
+  const accountOptions: ComboOption<MailAccount | null>[] = [
+    { value: null, label: gt`All accounts` },
+    ...appGlobal.emailAccounts.contents.map(mailAccount => ({ value: mailAccount, label: mailAccount.name })),
   ];
-
-  const tags = availableTags;
-  const accounts = appGlobal.emailAccounts;
   let selected = templates[0];
-  let person: Person | null = null;
-  let tag: Tag = availableTags.first;
-  let sizeKB = 100;
+  let values = SearchFolderTemplate.emptyValues();
   let account: MailAccount | null = defaultAccount && appGlobal.emailAccounts.contains(defaultAccount) ? defaultAccount : null;
-  let name = templates[0].label;
-  $: defaultName = selected.id == "person" && person ? $t`Mail from and to ${person.name}` : selected.label;
-  let lastDefaultName = name;
-  $: if (defaultName != lastDefaultName) {
-    if (name == lastDefaultName || !name) {
-      name = defaultName;
-    }
-    lastDefaultName = defaultName;
+  let choosing: SearchFolderTemplateID | null = null;
+
+  function select(template: SearchFolderTemplate) {
+    selected = template;
   }
 
-  $: disabledReason = !name?.trim()
-    ? $t`Enter a name`
-    : selected?.id == "person" && !person
-      ? $t`Select a person`
-      : selected?.id == "categorized" && !tag
-        ? $t`Create a category first`
-        : selected?.id == "large" && !(sizeKB > 0)
-          ? $t`Enter a size`
-          : false;
+  function choose() {
+    if (selected.canChoose) {
+      choosing = selected.id;
+    }
+  }
+
+  function closeChooser() {
+    choosing = null;
+    values = values;
+  }
+
+  function onKeyDown(event: KeyboardEvent) {
+    if (event.key != "ArrowDown" && event.key != "ArrowUp") {
+      return;
+    }
+    event.preventDefault();
+    let pos = templates.indexOf(selected) + (event.key == "ArrowDown" ? 1 : -1);
+    selected = templates[Math.max(0, Math.min(templates.length - 1, pos))];
+  }
 
   async function onCreate() {
     let search = newSearchEMail();
+    selected.apply(search, values);
     search.account = account;
-    selected.apply(search);
     let folder = new SavedSearchFolder(search);
-    folder.name = name.trim();
+    folder.name = selected.name(values);
     await folder.save();
     $selectedAccount = allAccountsAccount;
     $selectedFolder = folder;
@@ -123,46 +123,56 @@
 </script>
 
 <style>
-  .dialog-content {
-    gap: 10px;
+  .new-search-folder {
+    gap: 8px;
   }
   .templates {
-    max-height: 260px;
-    padding: 4px;
+    height: 240px;
+    padding: 2px 0;
     overflow-y: auto;
     border: 1px solid var(--lo-input-border);
     border-radius: var(--lo-radius-small);
     background-color: var(--lo-input-bg);
+    outline: none;
+  }
+  .templates:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--lo-focus-ring);
   }
   .section {
-    padding: 8px 8px 2px 8px;
-    color: var(--lo-fg-secondary);
-    font-size: 12px;
+    flex-shrink: 0;
+    padding: 6px 8px 2px 8px;
     font-weight: 600;
   }
   .template {
-    display: flex;
+    flex-shrink: 0;
     align-items: center;
-    gap: 8px;
-    padding: 4px 8px 4px 16px;
-    border-radius: var(--lo-radius-small);
-    cursor: pointer;
+    min-height: 26px;
+    padding: 0 8px 0 24px;
+    cursor: default;
   }
   .template:hover {
     background-color: var(--lo-hover-bg);
   }
   .template.selected {
     background-color: var(--lo-selected-bg);
+    color: var(--lo-selected-fg);
   }
-  .field {
-    display: flex;
+  .customize {
     align-items: center;
     gap: 8px;
+    min-height: 32px;
   }
-  .field input[type="number"] {
-    width: 80px;
+  .description {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
-  .field .name {
-    flex: 1;
+  .search-in {
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    white-space: nowrap;
   }
 </style>

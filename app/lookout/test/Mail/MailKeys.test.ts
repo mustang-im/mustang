@@ -38,6 +38,7 @@ test("Folders, sync, search, navigation", () => {
   expect(MailKeys.actionFor({ key: "F3" })).toBe(MailKeyAction.Search);
   expect(MailKeys.actionFor({ key: "k", ctrlKey: true, altKey: true })).toBe(MailKeyAction.ScopeCurrentFolder);
   expect(MailKeys.actionFor({ key: "a", ctrlKey: true, altKey: true })).toBe(MailKeyAction.ScopeAllAccounts);
+  expect(MailKeys.actionFor({ key: "F", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.AdvancedFind);
   expect(MailKeys.actionFor({ key: ".", ctrlKey: true })).toBe(MailKeyAction.NextMessage);
   expect(MailKeys.actionFor({ key: ",", ctrlKey: true })).toBe(MailKeyAction.PreviousMessage);
   expect(MailKeys.actionFor({ key: "p", ctrlKey: true })).toBe(MailKeyAction.Print);

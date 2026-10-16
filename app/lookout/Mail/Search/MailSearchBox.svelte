@@ -11,7 +11,10 @@
     <SearchIcon size={16} />
     <input type="search" bind:value={typed} bind:this={inputEl}
       placeholder={$t`Search`} spellcheck={false}
-      on:input={onInput} on:keydown={onKeyDown} />
+      role="combobox" aria-expanded={suggestions.length > 0} aria-autocomplete="list"
+      on:input={onInput} on:keydown={onKeyDown}
+      on:focus={() => { isInputFocused = true; }}
+      on:blur={() => { isInputFocused = false; }} />
     {#if typed}
       <button type="button" class="icon-button" title={$t`Clear`} aria-label={$t`Clear`}
         on:click={onClear}>
@@ -33,6 +36,23 @@
         onClick={() => MailSearch.update({ scope: option })} />
     {/each}
   </Menu>
+  {#if suggestions.length && !$isAdvancedOpen}
+    <vbox class="suggestions" role="listbox" aria-label={$t`Suggestions`}>
+      <hbox class="suggestions-header">{$t`People`}</hbox>
+      {#each suggestions as person, index (person)}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <hbox class="suggestion" class:active={index == activeSuggestion}
+          role="option" aria-selected={index == activeSuggestion}
+          on:mousedown|preventDefault={() => pickPerson(person)}>
+          <PersonCircle name={person.name} picture={person.picture} size={24} />
+          <vbox class="suggestion-text">
+            <span class="suggestion-name">{person.name}</span>
+            <span class="suggestion-address">{SelectNames.preferredEMail(person)?.value ?? ""}</span>
+          </vbox>
+        </hbox>
+      {/each}
+    </vbox>
+  {/if}
   {#if $isAdvancedOpen && draft}
     <vbox class="advanced-popup">
       <AdvancedSearchPanel bind:draft account={$selectedAccount} folder={$selectedFolder} onSearch={onAdvancedSearch} />
@@ -47,6 +67,10 @@
   import { MailSearch, SearchScope } from "./MailSearch";
   import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
   import AdvancedSearchPanel from "./AdvancedSearchPanel.svelte";
+  import { SelectNames } from "../Composer/SelectNames";
+  import type { Person } from "../../../logic/Abstract/Person";
+  import { appGlobal } from "../../../logic/app";
+  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
@@ -79,6 +103,20 @@
     $globalSearchTerm = typed.toLowerCase() || null;
   }
 
+  let isInputFocused = false;
+  let activeSuggestion = -1;
+  $: suggestions = isInputFocused && typed.trim().length >= 2
+    ? SelectNames.persons(appGlobal.addressbooks, typed.trim(), true).contents.slice(0, 5)
+    : [];
+  $: typed, activeSuggestion = -1;
+
+  function pickPerson(person: Person) {
+    typed = "";
+    $globalSearchTerm = null;
+    isInputFocused = false;
+    MailSearch.update({ person, isOutgoing: null });
+  }
+
   function onClear() {
     typed = "";
     $globalSearchTerm = null;
@@ -86,6 +124,23 @@
   }
 
   function onKeyDown(event: KeyboardEvent) {
+    if (suggestions.length && (event.key == "ArrowDown" || event.key == "ArrowUp")) {
+      event.preventDefault();
+      let next = activeSuggestion + (event.key == "ArrowDown" ? 1 : -1);
+      activeSuggestion = Math.max(-1, Math.min(suggestions.length - 1, next));
+      return;
+    }
+    if (event.key == "Enter" && activeSuggestion >= 0 && suggestions[activeSuggestion]) {
+      event.preventDefault();
+      pickPerson(suggestions[activeSuggestion]);
+      return;
+    }
+    if (event.key == "Escape" && suggestions.length) {
+      event.preventDefault();
+      event.stopPropagation();
+      isInputFocused = false;
+      return;
+    }
     if (event.key == "Escape" && $isAdvancedOpen) {
       event.preventDefault();
       event.stopPropagation();
@@ -207,6 +262,48 @@
   .icon-button.open {
     background-color: var(--lo-hover-bg);
     color: var(--lo-fg);
+  }
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    inset-inline: 0;
+    z-index: 20;
+    padding: 4px 0;
+    border: 1px solid var(--lo-border);
+    border-radius: var(--lo-radius);
+    background-color: var(--lo-pane-bg);
+    box-shadow: var(--lo-shadow-popup);
+    color: var(--lo-fg);
+    app-region: no-drag;
+  }
+  .suggestions-header {
+    padding: 4px 12px;
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
+    font-weight: 600;
+  }
+  .suggestion {
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px;
+    cursor: default;
+  }
+  .suggestion:hover,
+  .suggestion.active {
+    background-color: var(--lo-hover-bg);
+  }
+  .suggestion-text {
+    min-width: 0;
+  }
+  .suggestion-name,
+  .suggestion-address {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .suggestion-address {
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
   }
   .advanced-popup {
     position: absolute;
