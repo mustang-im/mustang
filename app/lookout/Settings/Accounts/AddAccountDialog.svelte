@@ -1,4 +1,4 @@
-<Dialog title={$t`Add Account`} width="600px" on:close={onClose}>
+<Dialog title={firstRun ? $t`Welcome to ${appName}` : $t`Add Account`} width="600px" on:close={onClose}>
   <vbox class="add-account">
     {#if flow.step == AddAccountStep.EMailAddress}
       <vbox class="brand">
@@ -17,12 +17,16 @@
       {#if showAdvanced}
         <CheckBox label={$t`Let me set up my account manually`} bind:checked={flow.isManual} />
       {/if}
+      <hbox flex />
+      <button class="link import" on:click={openImport}>
+        {hasThunderbird ? $t`Import your accounts and contacts from Thunderbird…` : $t`Import from another program…`}
+      </button>
     {:else if flow.step == AddAccountStep.Searching || flow.step == AddAccountStep.Checking}
       <vbox class="progress-page">
         <span class="progress-title">
           {flow.step == AddAccountStep.Searching ? $t`Looking for the settings of ${flow.domain}…` : $t`Adding ${flow.emailAddress}…`}
         </span>
-        <div class="progress-bar"><div class="progress-value" /></div>
+        <ProgressBar />
       </vbox>
     {:else if flow.step == AddAccountStep.Password}
       <vbox class="account-head">
@@ -31,7 +35,11 @@
         {/if}
         <hbox class="who">
           <span>{flow.emailAddress}</span>
-          <button class="link" on:click={startOver}>{$t`(Not you?)`}</button>
+          {#if !flow.isPrepared}
+            <button class="link" on:click={startOver}>{$t`(Not you?)`}</button>
+          {:else if flow.preparedCount > 1}
+            <span class="lo-secondary">{$t`(Account ${flow.preparedNumber} of ${flow.preparedCount})`}</span>
+          {/if}
         </hbox>
       </vbox>
       {#if flow.notice}
@@ -113,14 +121,16 @@
     {:else if flow.step == AddAccountStep.Done}
       <vbox class="done">
         <span class="done-icon"><DoneIcon size="40" /></span>
-        <span class="done-title">{$t`Account successfully added`}</span>
-        <hbox class="done-account">
-          <MailIcon size="20" />
-          <vbox>
-            <span>{flow.emailAddress}</span>
-            <span class="lo-secondary">{AccountLabels.typeLabel(flow.config)}</span>
-          </vbox>
-        </hbox>
+        <span class="done-title">{flow.added.length > 1 ? $t`Accounts successfully added` : $t`Account successfully added`}</span>
+        {#each flow.added as account}
+          <hbox class="done-account">
+            <MailIcon size="20" />
+            <vbox>
+              <span>{account.emailAddress}</span>
+              <span class="lo-secondary">{AccountLabels.typeLabel(account)}</span>
+            </vbox>
+          </hbox>
+        {/each}
         <button class="link" on:click={startOver}>{$t`Add another email address`}</button>
       </vbox>
     {/if}
@@ -138,6 +148,9 @@
         disabled={!flow.password && $t`Enter your password`} />
     {:else if flow.step == AddAccountStep.Manual}
       <DialogButton label={$t`Next`} primary onClick={finish} />
+    {/if}
+    {#if flow.isPrepared && (flow.step == AddAccountStep.Password || flow.step == AddAccountStep.Login)}
+      <DialogButton label={$t`Skip`} onClick={skip} />
     {/if}
     {#if flow.step == AddAccountStep.Done}
       <DialogButton label={$t`Done`} primary onClick={onClose} />
@@ -157,13 +170,14 @@
   import { appName } from "../../../logic/build";
   import { AuthMethod } from "../../../logic/Abstract/Account";
   import { listMailProtocols, labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
-  import { showError } from "../../../frontend/Util/error";
+  import { backgroundError, showError } from "../../../frontend/Util/error";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import InternetEmailSettingsDialog from "./InternetEmailSettingsDialog.svelte";
+  import ProgressBar from "../ProgressBar.svelte";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import OAuth2EmbeddedBrowser from "../../../frontend/Shared/Auth/OAuth2EmbeddedBrowser.svelte";
   import logo from "../../../frontend/asset/icon/general/logo.svg?raw";
@@ -171,13 +185,21 @@
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
   import DoneIcon from "lucide-svelte/icons/circle-check";
   import MailIcon from "lucide-svelte/icons/mail";
-  import { createEventDispatcher, onDestroy } from "svelte";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { SettingsDialogs } from "../SettingsDialogs";
+  import { ThunderbirdImport } from "../ImportExport/ThunderbirdImport";
+  import { openApp } from "../../../frontend/AppsBar/selectedApp";
+  import { mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
+  import { createEventDispatcher, onDestroy, onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   const dispatch = createEventDispatcher<{ close: void }>();
   const accountTypes = listMailProtocols().map(protocol => ({ value: protocol, label: labelForMailProtocol(protocol) }));
 
-  let flow = new AddAccountFlow();
+  export let prepared: MailAccount[] = [];
+  export let firstRun = false;
+
+  let flow = new AddAccountFlow(prepared ?? []);
 
   $: logonMethods = [
     { value: AuthMethod.Password, label: $t`Password` },
@@ -187,6 +209,19 @@
   let showAdvanced = false;
   let isMoreSettingsOpen = false;
 
+  let hasThunderbird = false;
+  onMount(() => {
+    if (flow.step == AddAccountStep.Login) {
+      run(login);
+    }
+    if (firstRun) {
+      findThunderbird().catch(backgroundError);
+    }
+  });
+
+  async function findThunderbird() {
+    hasThunderbird = await ThunderbirdImport.isThunderbirdInstalled();
+  }
   onDestroy(() => flow.cancel());
 
   function run(action: () => Promise<void>) {
@@ -213,13 +248,22 @@
   }
 
   async function login() {
+    let config = flow.config;
     let pending = flow.loginWithOAuth2();
     await Promise.resolve();
     flow = flow;
     try {
       await pending;
+    } catch (ex) {
+      if (flow.config == config) {
+        throw ex;
+      }
+      return;
     } finally {
       flow = flow;
+    }
+    if (flow.step == AddAccountStep.Login && flow.config != config) {
+      run(login);
     }
   }
 
@@ -249,6 +293,19 @@
     }
   }
 
+  function skip() {
+    flow.skip();
+    flow = flow;
+    if (flow.step == AddAccountStep.Login) {
+      run(login);
+    }
+  }
+
+  function openImport() {
+    flow.cancel();
+    SettingsDialogs.openImportFromProgram(firstRun);
+  }
+
   function startOver() {
     flow.cancel();
     let emailAddress = flow.step == AddAccountStep.Done ? "" : flow.emailAddress;
@@ -259,6 +316,11 @@
   function onClose() {
     flow.cancel();
     dispatch("close");
+    if (firstRun && flow.added.length) {
+      // <copied from="../../../frontend/Setup/Mail/SetupPredefinedMail.svelte" onClose()>
+      openApp(mailMustangApp, { account: flow.added[0] });
+      // </copied>
+    }
   }
 </script>
 
@@ -294,6 +356,10 @@
   .field {
     gap: 4px;
   }
+  .import {
+    align-self: center;
+    margin-block-start: 24px;
+  }
   .advanced {
     align-self: center;
     display: flex;
@@ -314,24 +380,6 @@
   }
   .progress-title {
     font-size: 16px;
-  }
-  .progress-bar {
-    position: relative;
-    height: 4px;
-    overflow: hidden;
-    border-radius: 2px;
-    background-color: var(--lo-divider);
-  }
-  .progress-value {
-    position: absolute;
-    width: 30%;
-    height: 100%;
-    background-color: var(--lo-accent);
-    animation: progress 1.4s ease-in-out infinite;
-  }
-  @keyframes progress {
-    from { left: -30%; }
-    to { left: 100%; }
   }
   .account-head {
     gap: 2px;

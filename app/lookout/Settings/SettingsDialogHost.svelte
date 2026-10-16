@@ -7,9 +7,13 @@
 {:else if $dialog?.kind == "change-account"}
   <ChangeAccountDialog account={$dialog.account} page={$dialog.page} on:close={onClose} />
 {:else if $dialog?.kind == "import-export"}
-  <ImportExportWizard preselected={$dialog.preselected} on:close={onClose} />
+  {#key $dialog}
+    <ImportExportWizard preselected={$dialog.preselected} action={$dialog.action} firstRun={$dialog.firstRun} on:close={onClose} />
+  {/key}
 {:else if $dialog?.kind == "add-account"}
-  <AddAccountDialog on:close={onClose} />
+  {#key $dialog}
+    <AddAccountDialog prepared={$dialog.prepared} firstRun={$dialog.firstRun} on:close={onClose} />
+  {/key}
 {:else if $dialog?.kind == "new-folder-account"}
   <NewFolderAccountDialog kind={$dialog.folderKind} localOnly={$dialog.localOnly} on:close={onClose} />
 {/if}

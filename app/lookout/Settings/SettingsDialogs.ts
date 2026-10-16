@@ -2,6 +2,8 @@ import type { Account } from "../../logic/Abstract/Account";
 import type { Addressbook } from "../../logic/Contacts/Addressbook";
 import type { Calendar } from "../../logic/Calendar/Calendar";
 import type { MailIdentity } from "../../logic/Mail/MailIdentity";
+import type { MailAccount } from "../../logic/Mail/MailAccount";
+import type { ImportExportAction } from "./ImportExport/ImportExportFlow";
 import type { FolderAccountKind } from "./Accounts/NewFolderAccountFlow";
 import { writable } from "svelte/store";
 
@@ -15,8 +17,8 @@ export type SettingsDialog =
   { kind: "trust-center", page: TrustCenterPage, identity?: MailIdentity } |
   { kind: "account-settings", tab: AccountSettingsTab } |
   { kind: "change-account", account: Account, page: ChangeAccountPage } |
-  { kind: "import-export", preselected?: Calendar | Addressbook } |
-  { kind: "add-account" } |
+  { kind: "import-export", preselected?: Calendar | Addressbook, action?: ImportExportAction, firstRun?: boolean } |
+  { kind: "add-account", prepared?: MailAccount[], firstRun?: boolean } |
   { kind: "new-folder-account", folderKind: FolderAccountKind, localOnly?: boolean };
 
 export class SettingsDialogs {
@@ -32,6 +34,14 @@ export class SettingsDialogs {
 
   static openTrustCenter(page: TrustCenterPage = "email-security", identity: MailIdentity = null) {
     SettingsDialogs.open({ kind: "trust-center", page, identity });
+  }
+
+  static openFirstRun(predefined: MailAccount | null = null) {
+    SettingsDialogs.open({ kind: "add-account", firstRun: true, prepared: predefined ? [predefined] : [] });
+  }
+
+  static openImportFromProgram(firstRun = false) {
+    SettingsDialogs.open({ kind: "import-export", action: "import-program", firstRun });
   }
 
   static close() {

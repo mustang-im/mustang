@@ -4,12 +4,15 @@ import { convertVCardsToPersons, personsToVCardFile } from "../../../logic/Conta
 import { convertICalToEvents } from "../../../logic/Calendar/ICal/ICalToEvent";
 import { eventsToICalFile } from "../../../logic/Calendar/ICal/ICalGenerator";
 import { saveBlobAsFile } from "../../../frontend/Util/util";
+import { ThunderbirdImport } from "./ThunderbirdImport";
+import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import { assert } from "../../../logic/util/util";
 import { gt } from "../../../l10n/l10n";
 
-export type ImportExportAction = "export" | "import-vcard" | "import-ical";
+export type ImportExportAction = "export" | "import-vcard" | "import-ical" | "import-program";
 export type ExportFileType = "ical" | "vcard";
-export type ImportExportStep = "action" | "file-type" | "file" | "folder";
+export type ImportProgram = "thunderbird";
+export type ImportExportStep = "action" | "file-type" | "file" | "folder" | "program" | "items";
 
 export class ImportExportFlow {
   action: ImportExportAction = "export";
@@ -17,20 +20,29 @@ export class ImportExportFlow {
   step: ImportExportStep = "action";
   file: File | null = null;
   folder: Calendar | Addressbook | null = null;
+  program: ImportProgram = "thunderbird";
+  programImport: ThunderbirdImport | null = null;
 
-  constructor(preselected: Calendar | Addressbook | null = null) {
+  constructor(preselected: Calendar | Addressbook | null = null, action: ImportExportAction | null = null) {
     if (preselected instanceof Calendar) {
       this.fileType = "ical";
     } else if (preselected instanceof Addressbook) {
       this.fileType = "vcard";
     }
     this.folder = preselected;
+    if (action) {
+      this.action = action;
+      this.step = this.steps[1];
+    }
   }
 
   get steps(): ImportExportStep[] {
-    return this.action == "export"
-      ? ["action", "file-type", "folder"]
-      : ["action", "file", "folder"];
+    if (this.action == "export") {
+      return ["action", "file-type", "folder"];
+    } else if (this.action == "import-program") {
+      return ["action", "program", "items"];
+    }
+    return ["action", "file", "folder"];
   }
 
   get isFirstStep(): boolean {
@@ -52,6 +64,9 @@ export class ImportExportFlow {
     if (this.step == "folder") {
       return !!this.folder && this.folderFitsAction(this.folder);
     }
+    if (this.step == "items") {
+      return !!this.programImport?.isSearched && !this.programImport.isSearching && this.programImport.hasSelection;
+    }
     return true;
   }
 
@@ -65,6 +80,9 @@ export class ImportExportFlow {
     if (this.step == "folder" && this.folder && !this.folderFitsAction(this.folder)) {
       this.folder = null;
     }
+    if (this.step == "items") {
+      this.programImport ??= new ThunderbirdImport();
+    }
   }
 
   back() {
@@ -73,14 +91,20 @@ export class ImportExportFlow {
   }
 
   async finish() {
-    assert(this.isLastStep && this.canGoNext, gt`Please choose a folder first`);
-    if (this.action == "export") {
+    assert(this.isLastStep && this.canGoNext, this.action == "import-program" ? gt`Please choose what to import first` : gt`Please choose a folder first`);
+    if (this.action == "import-program") {
+      await this.programImport.importAddressbooks();
+    } else if (this.action == "export") {
       await ImportExportFlow.exportFolder(this.folder);
     } else if (this.action == "import-vcard") {
       await this.importVCard(this.folder as Addressbook, this.file);
     } else {
       await this.importICal(this.folder as Calendar, this.file);
     }
+  }
+
+  get accountsToAdd(): MailAccount[] {
+    return this.action == "import-program" ? this.programImport?.selectedAccounts ?? [] : [];
   }
 
   static async exportFolder(folder: Calendar | Addressbook) {
