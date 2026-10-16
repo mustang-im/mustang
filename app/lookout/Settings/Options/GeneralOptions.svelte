@@ -7,6 +7,13 @@
           bind:value={options.theme.value} label={$t`Theme`} width="200px" />
       </hbox>
     </OptionsRow>
+    <OptionsRow icon={UserInterfaceIcon}>
+      <hbox class="field-row">
+        <label for="options-frontend" class="field-label">{$t`User interface:`}</label>
+        <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Outlook-like (Lookout)` } ]}
+          bind:value={options.frontend.value} label={$t`User interface`} width="200px" />
+      </hbox>
+    </OptionsRow>
   </OptionsSection>
 
   <OptionsSection title={$t`Start up options`}>
@@ -29,6 +36,7 @@
   import { appName } from "../../../logic/build";
   import GeneralIcon from "lucide-svelte/icons/settings";
   import ThemeIcon from "lucide-svelte/icons/sun-moon";
+  import UserInterfaceIcon from "lucide-svelte/icons/panels-top-left";
   import DefaultAppIcon from "lucide-svelte/icons/mail-check";
   import { t } from "../../../l10n/l10n";
 

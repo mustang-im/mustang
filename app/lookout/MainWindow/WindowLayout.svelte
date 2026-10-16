@@ -29,6 +29,7 @@
 </vbox>
 
 <script lang="ts">
+  import "../app.css";
   import { selectedApp, sidebarApp, history } from "../../frontend/AppsBar/selectedApp";
   import { notifications } from "../../frontend/MainWindow/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
