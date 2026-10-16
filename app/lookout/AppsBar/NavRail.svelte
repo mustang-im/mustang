@@ -3,7 +3,8 @@
     <NavRailButton {app} selected={isSelected(app, $selectedApp)} />
   {/each}
   <vbox flex class="spacer" />
-  <NavRailButton app={settingsMustangApp} selected={isSelected(settingsMustangApp, $selectedApp)} />
+  <NavRailButton app={settingsMustangApp} selected={isSelected(settingsMustangApp, $selectedApp)}
+    onClick={() => SettingsDialogs.openOptions()} />
 </vbox>
 
 <script lang="ts">
@@ -13,6 +14,7 @@
   import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
   import { settingsMustangApp } from "../../frontend/Settings/Window/SettingsMustangApp";
+  import { SettingsDialogs } from "../Settings/SettingsDialogs";
   import NavRailButton from "./NavRailButton.svelte";
   import { t } from "../../l10n/l10n";
 
