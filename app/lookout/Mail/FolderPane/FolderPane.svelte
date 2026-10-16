@@ -21,10 +21,10 @@
         <AccountFolders {account} />
       {/if}
     {/each}
-    {#if $savedSearches.hasItems}
+    {#if allAccountSearches.length}
       <SectionHeader id="search-folders" label={$t`Search Folders`} />
       {#if !isCollapsed("search-folders", $collapsedIDs)}
-        {#each $savedSearches.each as folder (folder)}
+        {#each allAccountSearches as folder (folder)}
           <FolderNode {folder} depth={0} />
         {/each}
       {/if}
@@ -47,6 +47,7 @@
   const showFavorites = MailView.showFavorites;
   const favorites = allAccountsAccount.specialFolders;
   const savedSearches = savedSearchFolders;
+  $: allAccountSearches = $savedSearches.contents.filter(folder => !folder.search.account || !$accounts.contains(folder.search.account));
   const accounts = appGlobal.emailAccounts;
   const collapsedIDs = MailView.collapsedSections;
 

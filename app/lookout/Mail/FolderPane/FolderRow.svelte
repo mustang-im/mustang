@@ -31,9 +31,6 @@
       use:focusAndSelect />
   {:else}
     <span class="name">{name}</span>
-    {#if isFavorite && accountsCount > 1}
-      <span class="hint">{$t`All accounts`}</span>
-    {/if}
   {/if}
   <hbox flex />
   {#if count > 0}
@@ -76,7 +73,9 @@
   $: accountsCount = $accounts.length;
   $: countStore = FolderTreeActions.countStore(folder, showsTotal);
   $: count = $countStore;
-  $: tooltip = $folder && $t`${name}\n${folder.countUnread} unread, ${folder.countTotal} total`;
+  $: tooltip = $folder && (isFavorite && accountsCount > 1
+    ? $t`${name} (all accounts)\n${folder.countUnread} unread, ${folder.countTotal} total`
+    : $t`${name}\n${folder.countUnread} unread, ${folder.countTotal} total`);
 
   function onSelect() {
     if (isRenaming) {
@@ -173,6 +172,7 @@
     outline-offset: -2px;
     background-color: var(--lo-accent-tint);
   }
+  /* <copied to="SearchFoldersNode.svelte"> */
   .expander {
     display: flex;
     align-items: center;
@@ -191,9 +191,6 @@
   .expander:hover {
     background-color: var(--lo-pressed-bg);
   }
-  .expander.hidden {
-    visibility: hidden;
-  }
   .expander :global(.chevron) {
     transition: transform 0.1s;
   }
@@ -204,6 +201,10 @@
     flex-shrink: 0;
     margin-inline: 2px 8px;
     color: var(--lo-fg-secondary);
+  }
+  /* </copied> */
+  .expander.hidden {
+    visibility: hidden;
   }
   .selected .icon {
     color: var(--lo-accent-text);
@@ -216,17 +217,6 @@
   }
   .unread .name {
     font-weight: 600;
-  }
-  .hint {
-    flex-shrink: 100;
-    min-width: 0;
-    margin-inline-start: 6px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: var(--lo-fg-secondary);
-    font-size: 12px;
-    font-weight: normal;
   }
   .count {
     flex-shrink: 0;
