@@ -34,6 +34,9 @@
             message={$selectedArray.length > 1 ? null : $selectedMessage}
             selectedCount={$selectedArray.length} />
         </ReadingPaneLayout>
+        {#if $toDoBar.value?.length}
+          <ToDoBar parts={$toDoBar.value} />
+        {/if}
       </hbox>
     </Splitter>
   </hbox>
@@ -76,6 +79,7 @@
   import MessagePrintHost from "./ReadingPane/MessagePrintHost.svelte";
   import MailDialogHost from "./Dialogs/MailDialogHost.svelte";
   import ViewDialogHost from "./View/ViewDialogHost.svelte";
+  import ToDoBar from "./ToDoBar/ToDoBar.svelte";
   import { ViewDialogs } from "./View/ViewDialogs";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import ConnectedIcon from "lucide-svelte/icons/plug-zap";
@@ -90,6 +94,7 @@
   import { t } from "../../l10n/l10n";
 
   const folderPane = MailView.folderPane;
+  const toDoBar = MailView.toDoBar;
   const readingPane = MailView.readingPane;
   const searchOptions = MailSearch.options;
   const updatingFolders = MessageActions.updatingFolders;

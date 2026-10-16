@@ -14,11 +14,26 @@ export enum FolderPaneMode {
   Off = "off",
 }
 
+export enum ToDoBarPart {
+  Calendar = "calendar",
+  People = "people",
+}
+
 export class MailView {
   static readonly readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", ReadingPanePosition.Right);
   static readonly folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   static readonly showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
   static readonly ribbonCollapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
+  static readonly toDoBar = getLocalStorage<ToDoBarPart[]>("lookout.mail.toDoBar", []);
+
+  static setToDoBarPart(part: ToDoBarPart, show: boolean) {
+    let parts = (MailView.toDoBar.value ?? []).filter(existing => existing != part);
+    if (show) {
+      parts.push(part);
+      parts.sort((a, b) => Object.values(ToDoBarPart).indexOf(a) - Object.values(ToDoBarPart).indexOf(b));
+    }
+    MailView.toDoBar.value = parts;
+  }
   static readonly collapsedSections = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
   static readonly expandedFolders = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
   static readonly contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
