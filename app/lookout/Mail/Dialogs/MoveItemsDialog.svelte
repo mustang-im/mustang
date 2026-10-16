@@ -10,20 +10,18 @@
     <FolderPicker label={$t`Folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
       disableFolder={folder => !copy && MessageActions.isInFolder(messages, folder) && $t`The items are already in this folder`}
       on:choose={() => dialog.submit()} />
-    {#if isCreating}
-      <hbox class="new-folder">
-        <input class="lo-text-field" type="text" bind:value={newFolderName} placeholder={$t`Name of the new folder`}
-          on:keydown={onNewFolderKey} use:focus />
-        <DialogButton label={$t`Create`} onClick={onCreateFolder} disabled={!newFolderName?.trim()} />
-      </hbox>
-    {/if}
   </vbox>
   <svelte:fragment slot="buttons-start">
     <DialogButton label={$t`New…`} onClick={() => { isCreating = true; }}
-      disabled={!targetAccount || isCreating}
+      disabled={!targetAccount && $t`Select an account or a folder first`}
       tooltip={target ? $t`Create a subfolder of ${target.name}` : $t`Create a new folder`} />
   </svelte:fragment>
 </Dialog>
+{#if isCreating}
+  <NewFolderDialog account={targetAccount} parent={target}
+    onCreated={folder => { target = folder; targetAccount = folder.account; }}
+    on:close={() => { isCreating = false; }} />
+{/if}
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -33,7 +31,7 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FolderPicker from "./FolderPicker.svelte";
-  import { catchErrors } from "../../../frontend/Util/error";
+  import NewFolderDialog from "./NewFolderDialog.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let messages: EMail[];
@@ -52,32 +50,6 @@
   }
 
   let isCreating = false;
-  let newFolderName = "";
-  async function onCreateFolder() {
-    let name = newFolderName?.trim();
-    if (!name) {
-      return;
-    }
-    let folder = target
-      ? await target.createSubFolder(name)
-      : await targetAccount.createToplevelFolder(name);
-    target = folder;
-    isCreating = false;
-    newFolderName = "";
-  }
-  function onNewFolderKey(event: KeyboardEvent) {
-    if (event.key == "Enter") {
-      event.preventDefault();
-      catchErrors(onCreateFolder);
-    } else if (event.key == "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      isCreating = false;
-    }
-  }
-  function focus(input: HTMLInputElement) {
-    input.focus();
-  }
 </script>
 
 <style>
@@ -86,12 +58,5 @@
   }
   .caption {
     color: var(--lo-fg);
-  }
-  .new-folder {
-    gap: 8px;
-    align-items: center;
-  }
-  .new-folder input {
-    flex: 1;
   }
 </style>

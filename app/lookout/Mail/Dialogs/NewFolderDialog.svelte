@@ -4,8 +4,8 @@
   onOK={onCreate}
   on:close>
   <vbox class="dialog-content">
-    <label for="new-folder-name">{$t`Name:`}</label>
-    <input id="new-folder-name" class="lo-text-field" type="text" bind:value={name} />
+    <span>{$t`Name:`}</span>
+    <TextField label={$t`Name:`} bind:value={name} />
     <span class="caption">{$t`Select where to place the folder:`}</span>
     <FolderPicker label={$t`Folders`} allowAccount
       bind:selectedFolder={parent} bind:selectedAccount={account}
@@ -20,11 +20,13 @@
   import { MailView } from "../MailView";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderPicker from "./FolderPicker.svelte";
+  import TextField from "../../Shared/Form/TextField.svelte";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
   export let parent: Folder | null = null;
+  export let onCreated: (folder: Folder) => void = null;
 
   let name = "";
 
@@ -35,6 +37,10 @@
       : await account.createToplevelFolder(name.trim());
     if (parent) {
       MailView.setFolderExpanded(parent, true);
+    }
+    if (onCreated) {
+      onCreated(folder);
+      return;
     }
     $selectedAccount = folder.account;
     $selectedFolder = folder;
