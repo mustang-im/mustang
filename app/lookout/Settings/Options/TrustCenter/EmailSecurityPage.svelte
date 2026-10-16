@@ -7,7 +7,7 @@
           <ComboBox options={identityOptions} value={setting.identity} label={$t`Default Setting`} width="340px"
             onChange={onIdentity} />
           <DialogButton label={$t`Settings…`} onClick={() => { isSettingsOpen = true; }}
-            disabled={!setting.keys.length && noKeyReason} />
+            disabled={!setting.choosableKeys.length && noKeyReason} />
         </hbox>
         <CheckBox label={$t`Encrypt contents and attachments for outgoing messages`}
           checked={setting.encrypt} disabled={!setting.key && noKeyReason}
@@ -82,7 +82,9 @@
 
   $: identities = draft.settings.map(listed => listed.identity);
   $: identityOptions = identities.map(listed => ({ value: listed, label: DigitalIDs.identityLabel(listed) }));
-  $: noKeyReason = setting && $t`You don't have a Digital ID for ${setting.identity.emailAddress} yet. Import one or get a new one below.`;
+  $: noKeyReason = !setting ? null
+    : setting.choosableKeys.length ? $t`Your Digital ID for ${setting.identity.emailAddress} is waiting for its certificate. Request or add it with Settings….`
+    : $t`You don't have a Digital ID for ${setting.identity.emailAddress} yet. Import one or get a new one below.`;
 
   function onIdentity(chosen: MailIdentity) {
     setting = draft.settingFor(chosen);

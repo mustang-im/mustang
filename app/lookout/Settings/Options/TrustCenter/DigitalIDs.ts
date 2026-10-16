@@ -21,6 +21,11 @@ export class DigitalIDs {
     return identity.encryptionPrivateKeys.contents;
   }
 
+  static awaitingCertificate(identity: MailIdentity): SMIMEPrivateKey[] {
+    return identity.encryptionPrivateKeys.contents
+      .filter(key => key instanceof SMIMEPrivateKey && !key.certificate) as SMIMEPrivateKey[];
+  }
+
   static nameOf(key: PublicKey): string {
     return ContactCertificates.nameOf(key);
   }
@@ -81,6 +86,16 @@ export class DigitalIDs {
       realname: identity.realname,
       emailAddress: identity.emailAddress,
     });
+    identity.encryptionPrivateKeys.add(key);
+    await identity.account.save();
+    // </copied>
+    return key;
+  }
+
+  static async createSMIME(identity: MailIdentity): Promise<SMIMEPrivateKey> {
+    // <copied from="../../../../frontend/Settings/Mail/Account/EncryptionImport.svelte" onCreateNewSMIME()>
+    assert(!identity.isCatchAll, gt`Cannot create keys for catch-all email addresses. Please create an identity with a specific email address.`);
+    let key = await SMIMEPrivateKey.createNewPrivateKey(identity.emailAddress);
     identity.encryptionPrivateKeys.add(key);
     await identity.account.save();
     // </copied>
