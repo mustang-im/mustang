@@ -211,6 +211,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .sender-name :global(.recipient-names) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .sender-name :global(.name) {
     font-weight: 600;
   }
