@@ -3,7 +3,7 @@ import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
 import type { PrivateKey } from "../../../logic/Mail/Encryption/PrivateKey";
 import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
 import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
-import { openSettingsCategoryForAccount } from "../../../frontend/Settings/Window/CategoriesUtils";
+import { SettingsDialogs } from "../../Settings/SettingsDialogs";
 import { showError } from "../../../frontend/Util/error";
 import { assert, UserError } from "../../../logic/util/util";
 import { gt } from "../../../l10n/l10n";
@@ -90,11 +90,15 @@ export class ComposerEncryption {
   static sign(mail: EMail, identity: MailIdentity) {
     // <copied from="../../../frontend/Mail/Composer/EncryptionButtons.svelte" doSign()>
     if (ComposerEncryption.signDisabledReason(ComposerEncryption.privateKey(identity))) {
-      openSettingsCategoryForAccount(identity.account, "mail-identity");
+      ComposerEncryption.openTrustCenter();
       return;
     }
     mail.signedByKeyID = getMyPrivateKey(identity)?.id;
     assert(mail.signedByKeyID, "No signing key found");
     // </copied>
+  }
+
+  static openTrustCenter() {
+    SettingsDialogs.openOptions("trust-center");
   }
 }
