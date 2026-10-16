@@ -24,7 +24,7 @@
 </hbox>
 
 <script lang="ts">
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { showError } from "../../../frontend/Util/error";
 

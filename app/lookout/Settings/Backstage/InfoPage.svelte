@@ -22,7 +22,7 @@
     {#each $emailAccounts.each as mailAccount (mailAccount.id)}
       <MenuItem label={mailAccount.emailAddress || mailAccount.name}
         tooltip={AccountLabels.typeLabel(mailAccount)}
-        icon={mailAccount == account ? CheckIcon : AccountIcon}
+        icon={AccountIcon} checked={mailAccount == account}
         onClick={() => chosenAccount = mailAccount} />
     {/each}
     <MenuDivider />
@@ -72,11 +72,10 @@
   import { goTo } from "../../../frontend/AppsBar/selectedApp";
   import { catchErrors } from "../../../frontend/Util/error";
   import BackstageTile from "./BackstageTile.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import AccountIcon from "lucide-svelte/icons/mail";
-  import CheckIcon from "lucide-svelte/icons/check";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import AddIcon from "lucide-svelte/icons/plus";
   import AccountSettingsIcon from "lucide-svelte/icons/user-cog";
