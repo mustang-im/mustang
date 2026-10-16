@@ -119,12 +119,15 @@
   <SubMenu label={$t`View`} icon={SourceIcon}>
     <DisplayMenuItems />
   </SubMenu>
+  <MenuItem label={$t`Message Properties…`} icon={PropertiesIcon}
+    onClick={() => MailDialogs.open({ kind: "message-properties", message })} />
 </Menu>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
+  import { MailDialogs } from "../Dialogs/MailDialogs";
   import { MessageDates } from "../MessageList/MessageDates";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
@@ -154,6 +157,7 @@
   import PrintIcon from "lucide-svelte/icons/printer";
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
+  import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import RemoveIcon from "lucide-svelte/icons/x";
   import ErrorIcon from "lucide-svelte/icons/circle-x";
   import { catchErrors } from "../../../frontend/Util/error";

@@ -13,6 +13,7 @@ export type MailDialog =
   { kind: "go-to-folder" } |
   { kind: "folder-properties", folder: Folder, tab?: FolderPropertiesTab } |
   { kind: "reading-pane-options" } |
+  { kind: "message-properties", message: EMail } |
   { kind: "color-categories", messages: EMail[] } |
   { kind: "new-search-folder", account: MailAccount | null } |
   { kind: "customize-search-folder", folder: SavedSearchFolder } |
