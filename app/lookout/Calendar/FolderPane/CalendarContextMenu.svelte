@@ -20,8 +20,17 @@
       <ColorPalette colors={CalendarColors.palette} selected={calendar.color} label={$t`Calendar color`}
         columns={5} onChoose={color => catchErrors(() => CalendarColors.setColor(calendar, color))} />
     </SubMenu>
+    <MenuItem label={$t`Overlay`} icon={OverlayIcon} checked={!$splitView.value} checkable
+      onClick={toggleOverlay} />
     <MenuItem label={$t`Show Only This Calendar`} icon={ShowOnlyIcon}
       onClick={() => CalendarActions.showOnly(calendar)} />
+    <MenuDivider />
+    <MenuItem label={$t`Move Up`} icon={MoveUpIcon}
+      disabled={!groups.canMove(calendar, -1)}
+      onClick={() => CalendarActions.move(calendar, -1)} />
+    <MenuItem label={$t`Move Down`} icon={MoveDownIcon}
+      disabled={!groups.canMove(calendar, 1)}
+      onClick={() => CalendarActions.move(calendar, 1)} />
     <MenuDivider />
     <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
       onClick={() => CalendarActions.openProperties(calendar)} />
@@ -47,14 +56,26 @@
   import ColorIcon from "lucide-svelte/icons/palette";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import MoveUpIcon from "lucide-svelte/icons/arrow-up";
+  import OverlayIcon from "lucide-svelte/icons/layers";
+  import { CalendarSettings } from "../CalendarSettings";
+  import MoveDownIcon from "lucide-svelte/icons/arrow-down";
+  import { appGlobal } from "../../../logic/app";
   import { t } from "../../../l10n/l10n";
 
   let contextMenu: ContextMenu;
   let calendar: Calendar | null = null;
+  let groups: CalendarGroups;
+  const splitView = CalendarSettings.splitView;
+
+  function toggleOverlay() {
+    CalendarSettings.splitView.value = !CalendarSettings.splitView.value;
+  }
 
   export function openFor(event: MouseEvent, forCalendar: Calendar) {
     event.preventDefault();
     calendar = forCalendar;
+    groups = new CalendarGroups(appGlobal.calendars.contents, CalendarGroups.order.value);
     contextMenu.onContextMenu(event);
   }
 </script>

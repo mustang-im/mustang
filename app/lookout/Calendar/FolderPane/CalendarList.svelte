@@ -42,7 +42,8 @@
   let calendars = appGlobal.calendars;
   let contextMenu: CalendarContextMenu;
 
-  $: groups = new CalendarGroups($calendars.contents).groups;
+  const order = CalendarGroups.order;
+  $: groups = new CalendarGroups($calendars.contents, $order.value).groups;
 
   let collapsed = new Set<string>();
   function toggleGroup(id: string) {

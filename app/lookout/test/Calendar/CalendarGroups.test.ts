@@ -45,3 +45,19 @@ test("Groups: My Calendars first, Shared Calendars only when there are some", ()
   expect(new CalendarGroups([own]).groups.map(group => group.id)).toEqual(["mine"]);
   expect(new CalendarGroups([]).groups.map(group => group.id)).toEqual(["mine"]);
 });
+
+test("Move Up and Move Down change the order within a group", () => {
+  let mine = account("me@example.com");
+  let work = { ...calendar("Work", "me@example.com", mine), id: "work" } as Calendar;
+  let home = { ...calendar("Home", "me@example.com", mine), id: "home" } as Calendar;
+  let alex = { ...calendar("Alex", "alex@example.com", mine), id: "alex" } as Calendar;
+  let groups = new CalendarGroups([work, home, alex]);
+  expect(groups.groups[0].calendars).toEqual([work, home]);
+  expect(groups.canMove(work, -1)).toBe(false);
+  expect(groups.canMove(home, 1)).toBe(false);
+  expect(groups.canMove(alex, -1)).toBe(false);
+  let order = groups.orderAfterMove(home, -1);
+  expect(order).toEqual(["home", "work", "alex"]);
+  expect(new CalendarGroups([work, home, alex], order).groups[0].calendars).toEqual([home, work]);
+  expect(new CalendarGroups([alex, work, home], ["home"]).groups[0].calendars).toEqual([home, work]);
+});
