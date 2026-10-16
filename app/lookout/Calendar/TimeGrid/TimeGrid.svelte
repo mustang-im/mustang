@@ -31,7 +31,7 @@
     </div>
   </div>
   <div class="body" style="grid-template-columns: {columns}; height: {TimeColumnLayout.kMinutesPerDay * pxPerMinute}px; --slot-height: {kSlotHeight}px">
-    <hbox class="rulers">
+    <hbox class="rulers" bind:this={rulersEl}>
       {#each rulers as ruler, r}
         <TimeRuler {pxPerMinute} labels={rulerLabels[r]} isPrimary={ruler.isPrimary} width={rulerWidths[r]} />
       {/each}
@@ -76,6 +76,7 @@
   import AllDayStrip from "./AllDayStrip.svelte";
   import DayColumn from "./DayColumn.svelte";
   import TimeRuler from "./TimeRuler.svelte";
+  import { TextWidth } from "../../Shared/TextWidth";
   import CalendarTab from "./CalendarTab.svelte";
   import { onMount, tick } from "svelte";
 
@@ -87,11 +88,11 @@
 
   const kSlotHeight = 24;
   const kRulerWidth = 56;
-  const kWideRulerWidth = 76;
   const now = CurrentTime.minute;
   const rulerSettings = TimeZoneRuler.rulers;
 
   let scrollEl: HTMLDivElement;
+  let rulersEl: HTMLElement;
   let viewHeight = 0;
   let headHeight = 0;
 
@@ -101,7 +102,8 @@
   $: rulers = $rulerSettings;
   $: showsZoneLabels = rulers.length > 1 || !!rulers[0]?.label;
   $: rulerLabels = rulers.map(ruler => ruler.hourLabels(range.days[0]));
-  $: rulerWidths = rulerLabels.map(labels => labels.some(label => label.length > 5) ? kWideRulerWidth : kRulerWidth);
+  $: textWidth = rulersEl ? new TextWidth(rulersEl) : null;
+  $: rulerWidths = rulers.map((ruler, r) => rulerWidth(textWidth, rulerLabels[r], showsZoneLabels ? ruler.shownLabel(range.days[0]) : ""));
   $: columns = `${rulerWidths.reduce((sum, width) => sum + width, 0)}px ` +
     groups.map(() => `repeat(${range.days.length}, minmax(0, 1fr))`).join(" 8px ");
   $: slotStarts = Array.from({ length: TimeColumnLayout.kMinutesPerDay / timeScale }, (_, i) => i * timeScale);
@@ -115,6 +117,15 @@
       timed: inRange.filterObservable(event => !new EventLook(event).isInAllDayArea),
     };
   });
+
+  function rulerWidth(textWidth: TextWidth | null, hourLabels: string[], zoneLabel: string): number {
+    const kRulerPadding = 14;
+    if (!textWidth) {
+      return kRulerWidth;
+    }
+    let widest = Math.max(textWidth.ofLongestWord(zoneLabel), ...hourLabels.map(label => textWidth.of(label)));
+    return Math.max(kRulerWidth, widest + kRulerPadding);
+  }
 
   function firstColumnOf(group: number): number {
     return 2 + group * (range.days.length + 1);
@@ -197,6 +208,7 @@
     grid-column: 1;
     grid-row: 1;
     min-width: 0;
+    font-size: var(--lo-font-size-small);
   }
   .body {
     display: grid;
