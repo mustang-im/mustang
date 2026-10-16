@@ -44,7 +44,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Pin, Snooze | Hover actions (new Outlook) | A pinned state and a snooze time per message |
 | Block Sender, Never Block Sender / Domain, Safe Senders, always download pictures from a sender, Report Phishing | Home tab > Junk; Report; Pictures InfoBar | Blocked and safe sender lists, ideally synced with the server; a reporting service. Lookout's Junk menu offers Mark as Junk / Not Junk, and "Download pictures" for the shown message. |
 | Quick Steps, Sweep | Home tab | Stored action macros; bulk actions by sender |
-| Rename categories, category shortcut keys, Quick Click | Categorize > All Categories | Renaming tags, which the servers store by name. Color editing exists (`frontend/` settings). |
+| Rename categories, category shortcut keys, Quick Click | Categorize > All Categories | Renaming tags, which the servers store by name; a shortcut key per tag. Lookout's Color Categories dialog adds, deletes and recolors categories. |
 | "You replied to this message on *date*" with the date | Reading pane InfoBar | Reply and forward timestamps. Today there are only the booleans `isReplied` and `isForwarded`. |
 | "External" sender tag, "*X* on behalf of *Y*" | Reading pane header | The organization's domains per account; separate `sender` and `from` in `EMail` |
 | Profile card of the sender (organization, files, meetings) | Click on the sender | Directory lookups (GAL, Graph) |

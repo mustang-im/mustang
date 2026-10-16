@@ -11,7 +11,7 @@ export type MailDialog =
   { kind: "go-to-folder" } |
   { kind: "folder-properties", folder: Folder } |
   { kind: "reading-pane-options" } |
-  { kind: "color-categories" } |
+  { kind: "color-categories", messages: EMail[] } |
   { kind: "new-search-folder", account: MailAccount | null } |
   { kind: "save-search", search: SearchEMail } |
   { kind: "rule-from-search", search: SearchEMail, account: MailAccount } |
