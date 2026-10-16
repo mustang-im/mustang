@@ -125,6 +125,7 @@
         </vbox>
         {#if showEmojis}
           <vbox class="emojis">
+            <hbox class="pane-title">{$t`Emoji`}</hbox>
             <GraphicSelector
               on:select={onEmoji}
               on:backspace={() => catchErrors(onEmojiBackspace)}
@@ -705,5 +706,11 @@
     width: 360px;
     min-height: 0;
     border-inline-start: 1px solid var(--lo-divider);
+  }
+  .pane-title {
+    flex-shrink: 0;
+    padding: 10px 12px 4px 12px;
+    font-size: var(--lo-font-size-large);
+    font-weight: 600;
   }
 </style>
