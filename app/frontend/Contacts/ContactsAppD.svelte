@@ -1,3 +1,5 @@
+<svelte:window on:keydown={(event) => catchErrors(() => ContactsKeyboard.onKey(event, selectedAddressbook))} />
+
 <Splitter name="persons-list" initialRightRatio={4}>
   <vbox flex class="left-pane" slot="left">
     <PersonsToolbar {persons} bind:selectedAddressbook />
@@ -21,6 +23,8 @@
   import { selectedWorkspace } from "../MainWindow/Selected";
   import { globalSearchTerm } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
+  import { ContactsKeyboard } from "./ContactsKeyboard";
+  import { catchErrors } from "../Util/error";
   import PersonsList from "./Person/PersonsList.svelte";
   import PersonDetails from "./PersonPage/PersonDetails.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
