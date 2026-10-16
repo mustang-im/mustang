@@ -62,6 +62,7 @@
     firstField?.focus();
     if (firstField instanceof HTMLInputElement) {
       firstField.select();
+      firstField.scrollLeft = 0;
     }
     return () => dialogEl?.close();
   });
