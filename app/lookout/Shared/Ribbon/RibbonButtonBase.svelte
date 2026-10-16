@@ -47,7 +47,7 @@
   export let size: RibbonItemSize = "large";
   export let fixedLook: RibbonItemLook = null;
   export let part: "whole" | "main" | "arrow" = "whole";
-  export let isItem = true;
+  export let isItem = !getContext<boolean>(RibbonGroupModel.buttonRowKey);
   export let ariaLabel: string = null;
   export let classes = "";
   export let onClick: (event: Event) => void | Promise<void> = null;
@@ -56,6 +56,7 @@
   export let loadDelayMS = 500;
 
   const group = getContext<RibbonGroupModel>(RibbonGroupModel.contextKey) ?? new RibbonGroupModel("");
+  const isInButtonRow = !!getContext<boolean>(RibbonGroupModel.buttonRowKey);
   if (part != "arrow") {
     group.offerIcon(icon);
   }
@@ -63,7 +64,9 @@
   const stage = group.stage;
   const collapsed = group.collapsed;
   let look: RibbonItemLook;
-  $: look = fixedLook ?? RibbonGroupModel.itemLook($layout, $stage, $collapsed, size);
+  $: look = fixedLook ?? (isInButtonRow
+    ? RibbonGroupModel.buttonRowLook($layout, $collapsed)
+    : RibbonGroupModel.itemLook($layout, $stage, $collapsed, size));
 
   // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.
   // Chrome also never breaks after a slash, so "Send/Receive" gets a zero-width space there.

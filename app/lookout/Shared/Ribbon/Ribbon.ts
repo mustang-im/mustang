@@ -172,6 +172,7 @@ export class RibbonTabModel {
 
 export class RibbonGroupModel {
   static readonly contextKey = "lookout-ribbon-group";
+  static readonly buttonRowKey = "lookout-ribbon-button-row";
   label: string;
   firstIcon: ConstructorOfATypedSvelteComponent = null;
   stageWidths: number[] = [0];
@@ -267,6 +268,13 @@ export class RibbonGroupModel {
       row += cell.rows;
     }
     return columns.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, columns.length - 1);
+  }
+
+  static buttonRowLook(layout: RibbonLayout, collapsed: boolean): RibbonItemLook {
+    if (layout == "simplified") {
+      return collapsed ? "list" : "simplified-icon";
+    }
+    return "small-icon";
   }
 
   static itemLook(layout: RibbonLayout, stage: number, collapsed: boolean, size: RibbonItemSize): RibbonItemLook {

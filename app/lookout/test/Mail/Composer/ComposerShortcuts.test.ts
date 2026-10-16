@@ -26,3 +26,9 @@ test("Plain keys and other combinations do nothing", () => {
   expect(ComposerShortcuts.commandFor(key("s", "KeyS", { ctrlKey: true, altKey: true }))).toBeNull();
   expect(ComposerShortcuts.commandFor(key("Enter", "Enter", { altKey: true }))).toBeNull();
 });
+
+test("F4 finds, Ctrl+H replaces", () => {
+  expect(ComposerShortcuts.commandFor(key("F4", "F4"))).toBe(ComposerCommand.Find);
+  expect(ComposerShortcuts.commandFor(key("h", "KeyH", { ctrlKey: true }))).toBe(ComposerCommand.Replace);
+  expect(ComposerShortcuts.commandFor(key("h", "KeyH"))).toBeNull();
+});
