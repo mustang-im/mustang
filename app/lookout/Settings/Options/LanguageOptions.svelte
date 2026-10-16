@@ -3,12 +3,8 @@
     <OptionsRow icon={DisplayLanguageIcon}>
       <hbox class="field-row">
         <label for="options-display-language" class="field-label">{$t`Display language:`}</label>
-        <select id="options-display-language" class="lo-text-field" bind:value={options.displayLanguage.value}>
-          <option value="">{$t`Use system setting`}</option>
-          {#each languages as code}
-            <option value={code}>{localeNames[code]}</option>
-          {/each}
-        </select>
+        <ComboBox options={[ { value: "", label: $t`Use system setting` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
+          bind:value={options.displayLanguage.value} label={$t`Display language`} width="240px" />
       </hbox>
       {#if options.displayLanguage.isChanged}
         <hbox class="hint restart">{$t`${appName} restarts when you click OK, so that the new display language can take effect.`}</hbox>
@@ -20,12 +16,8 @@
     <OptionsRow icon={DateFormatIcon}>
       <hbox class="field-row">
         <label for="options-date-format" class="field-label">{$t`Format:`}</label>
-        <select id="options-date-format" class="lo-text-field" bind:value={options.dateTimeFormat.value}>
-          <option value="">{$t`Same as the display language`}</option>
-          {#each languages as code}
-            <option value={code}>{localeNames[code]}</option>
-          {/each}
-        </select>
+        <ComboBox options={[ { value: "", label: $t`Same as the display language` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
+          bind:value={options.dateTimeFormat.value} label={$t`Format`} width="240px" />
       </hbox>
       <grid class="samples">
         <span class="lo-secondary">{$t`Short date:`}</span>
@@ -40,6 +32,7 @@
 </OptionsPage>
 
 <script lang="ts">
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { OptionsModel } from "./OptionsModel";
   import OptionsPage from "./OptionsPage.svelte";
   import OptionsSection from "./OptionsSection.svelte";

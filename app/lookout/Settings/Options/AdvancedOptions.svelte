@@ -8,14 +8,8 @@
 
   <OptionsSection title={$t`Reminders`}>
     <OptionsRow icon={RemindersIcon}>
-      <label>
-        <input type="checkbox" bind:checked={options.showReminders.value} />
-        {$t`Show reminders`}
-      </label>
-      <label>
-        <input type="checkbox" bind:checked={options.reminderSound.value} />
-        {$t`Play reminder sound`}
-      </label>
+      <CheckBox label={$t`Show reminders`} bind:checked={options.showReminders.value} />
+      <CheckBox label={$t`Play reminder sound`} bind:checked={options.reminderSound.value} />
     </OptionsRow>
   </OptionsSection>
 
@@ -35,6 +29,7 @@
 {/if}
 
 <script lang="ts">
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import type { OptionsModel } from "./OptionsModel";
   import OptionsPage from "./OptionsPage.svelte";
   import OptionsSection from "./OptionsSection.svelte";
