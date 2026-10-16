@@ -142,7 +142,7 @@ Date navigator, calendar list, Day / Work Week / Week / Month and split view.
 | Print (Daily, Weekly, Monthly, Tri-fold) | File > Print | Print layouts and printing in the desktop app. File > Save Calendar (as `.ics`) is built. |
 | Holidays | File > Options > Calendar > Add Holidays | Holiday calendars per country |
 | Weather and work location in the day headers | Day headers (new Outlook) | A weather service; the Exchange work location API |
-| Conditional Formatting, Filter and Format Columns in View Settings; drag an event onto the date navigator | View tab > View Settings; date navigator | Conditional formatting and filters need a rule engine for events; dragging onto the navigator is *UI only* |
+| Conditional Formatting, Filter and Format Columns in View Settings | View tab > View Settings | A rule engine for events (conditions on fields) for conditional formatting and filters; Format Columns is *UI only* |
 
 ## Event form and scheduling
 

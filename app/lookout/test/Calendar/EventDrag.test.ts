@@ -70,3 +70,25 @@ test("Moving the pointer snaps to the time steps", () => {
   expect(eventDrag.deltaMinutes).toBe(30);
   expect(eventDrag.changesTime).toBe(true);
 });
+
+test("Dropping on a day of the date navigator moves the event to that day, at the same time", () => {
+  let event = newEvent(new Date(2026, 9, 15, 9), new Date(2026, 9, 15, 10, 30));
+  let navigatorDay = document.createElement("button");
+  navigatorDay.dataset.navDay = String(new Date(2026, 9, 20).getTime());
+  document.elementsFromPoint = () => [ navigatorDay ];
+  try {
+    let eventDrag = new EventDrag(event, "move", { clientX: 100, clientY: 100 } as PointerEvent, 0.8, 15);
+    eventDrag.move({ clientX: 300, clientY: 40 } as PointerEvent);
+    expect(eventDrag.deltaMinutes).toBe(0);
+    expect(eventDrag.deltaDays).toBe(5);
+    expect(eventDrag.newTimes()).toEqual({ start: new Date(2026, 9, 20, 9), end: new Date(2026, 9, 20, 10, 30) });
+    let block = document.createElement("div");
+    eventDrag.preview(block);
+    expect(navigatorDay.classList.contains("drop-target")).toBe(true);
+    eventDrag.endPreview(block);
+    expect(navigatorDay.classList.contains("drop-target")).toBe(false);
+  } finally {
+    document.elementsFromPoint = () => [];
+  }
+  expect(EventDrag.daysBetween(new Date(2026, 9, 24, 23), new Date(2026, 9, 26, 1))).toBe(2);
+});
