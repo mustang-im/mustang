@@ -22,20 +22,14 @@
     <HeaderGroupBox>
       <hbox slot="header">{$t`Automatic replies`}</hbox>
       <vbox class="options">
-        <label class="radio">
-          <input type="radio" value={false} bind:group={autoResponder.enabled} />
-          {$t`Don't send automatic replies`}
-        </label>
-        <label class="radio">
-          <input type="radio" value={true} bind:group={autoResponder.enabled} />
-          {$t`Send automatic replies`}
-        </label>
+        <Checkbox toggle
+          bind:checked={autoResponder.enabled}
+          label={$t`Send automatic replies`} />
 
         {#if $autoResponder.enabled}
           <vbox class="details">
             <Checkbox
               bind:checked={autoResponder.scheduled}
-              allowIndetermined={false}
               label={$t`Only send during this time range`} />
             {#if $autoResponder.scheduled}
               <grid class="time-range">
@@ -188,7 +182,7 @@
   }
   .details {
     margin-block-start: 8px;
-    margin-inline-start: 24px;
+    margin-inline-start: 32px;
     gap: 16px;
   }
   .time-range {

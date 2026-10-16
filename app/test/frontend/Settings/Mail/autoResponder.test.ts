@@ -91,6 +91,14 @@ function radio(label: string): HTMLInputElement {
   return found[0].querySelector("input");
 }
 
+/** The `<Checkbox toggle>` */
+function toggle(label: string): HTMLElement {
+  let found = [...target.querySelectorAll(".checkbox.toggle")]
+    .filter(el => el.textContent.trim() == label);
+  expect(found.length, `toggle ${label}`).toBe(1);
+  return found[0] as HTMLElement;
+}
+
 function click(el: HTMLElement) {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   flushSync();
@@ -99,7 +107,7 @@ function click(el: HTMLElement) {
 test("Shows the settings from the server", async () => {
   await showPage();
 
-  expect(radio("Send automatic replies").checked).toBe(true);
+  expect(toggle("Send automatic replies").classList.contains("on")).toBe(true);
   expect(target.querySelectorAll("input[type=date]").length).toBe(2);
   expect(target.textContent).toContain("Back on Monday");
   expect(radio("Don't reply").checked).toBe(true);
@@ -111,8 +119,9 @@ test("Shows the settings from the server", async () => {
 test("Turning it off hides the messages, and saves", async () => {
   let autoResponder = await showPage();
 
-  click(radio("Don't send automatic replies"));
+  click(toggle("Send automatic replies"));
   expect(autoResponder.enabled).toBe(false);
+  expect(toggle("Send automatic replies").classList.contains("off")).toBe(true);
   expect(target.textContent).not.toContain("Back on Monday");
   expect(target.textContent).not.toContain("Outside my organization");
 
@@ -138,7 +147,7 @@ test("A login without the permission offers to allow it", async () => {
 
   await vi.waitFor(() => {
     flushSync();
-    expect(radio("Send automatic replies").checked).toBe(true);
+    expect(toggle("Send automatic replies").classList.contains("on")).toBe(true);
   });
   expect(autoResponder.needsPermission).toBe(false);
 });
