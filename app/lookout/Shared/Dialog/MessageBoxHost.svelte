@@ -19,5 +19,6 @@
   .message {
     padding-block: 4px 8px;
     line-height: 1.45;
+    white-space: pre-line;
   }
 </style>
