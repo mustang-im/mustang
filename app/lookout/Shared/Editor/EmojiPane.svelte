@@ -154,10 +154,14 @@
   }
 
   function onSearchKey(event: KeyboardEvent) {
-    if (event.key == "Escape" && searchTerm) {
+    if (event.key == "Escape") {
       event.preventDefault();
       event.stopPropagation();
-      searchTerm = "";
+      if (searchTerm) {
+        searchTerm = "";
+      } else {
+        isOpen = false;
+      }
     } else if (event.key == "ArrowDown" || event.key == "Enter") {
       let first = scrollEl?.querySelector<HTMLButtonElement>("button.emoji");
       if (!first) {
