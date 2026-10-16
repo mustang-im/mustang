@@ -105,11 +105,7 @@
           {/if}
         </hbox>
       {/if}
-      {#if $mail.shouldEncrypt}
-        <vbox class="encryption-details">
-          <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
-        </vbox>
-      {/if}
+      <EncryptionInfoBar {mail} identity={fromIdentity} bind:encryptionError />
       {#if hasAttachments}
         <hbox class="attachments">
           <AttachmentList attachments={mail.attachments} isComposing />
@@ -200,7 +196,7 @@
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import AddressField from "./AddressField.svelte";
   import FromField from "./FromField.svelte";
-  import EncryptionDetails from "../../../frontend/Mail/Composer/EncryptionDetails.svelte";
+  import EncryptionInfoBar from "./EncryptionInfoBar.svelte";
   import SMLComposer from "../../../frontend/Mail/Composer/SMLComposer.svelte";
   import AttachmentList from "../Attachments/AttachmentList.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
@@ -675,10 +671,6 @@
   }
   .info-bar :global(svg) {
     color: var(--lo-accent-text);
-  }
-  .encryption-details {
-    flex-shrink: 0;
-    margin: 4px 24px 0 24px;
   }
   .attachments {
     flex-shrink: 0;
