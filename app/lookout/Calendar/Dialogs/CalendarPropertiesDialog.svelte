@@ -151,4 +151,7 @@
     justify-content: space-between;
     gap: 16px;
   }
+  .delete-row :global(button) {
+    flex-shrink: 0;
+  }
 </style>
