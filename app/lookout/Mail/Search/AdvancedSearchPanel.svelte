@@ -49,9 +49,9 @@
     {#if showDates}
       <span class="label">{$t`Received`}</span>
       <hbox class="dates">
-        <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:value={draft.startDate} classes="underlined" />
+        <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:value={draft.startDate} />
         <span class="lo-secondary">{$t`to`}</span>
-        <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:value={draft.endDate} classes="underlined" />
+        <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:value={draft.endDate} />
       </hbox>
     {/if}
     <span class="label">{$t`Categories`}</span>
@@ -187,8 +187,7 @@
     color: var(--lo-fg);
   }
   .underlined,
-  .advanced-search :global(.lo-field.underlined),
-  .advanced-search :global(.lo-datefield.underlined) {
+  .advanced-search :global(.lo-field.underlined) {
     box-sizing: border-box;
     height: 32px;
     padding: 0 4px;
@@ -200,7 +199,6 @@
     font: inherit;
   }
   .advanced-search :global(.lo-field.underlined:focus),
-  .advanced-search :global(.lo-datefield.underlined:focus-within),
   .person-field:focus-within {
     outline: none;
     box-shadow: none;

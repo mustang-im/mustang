@@ -11,7 +11,7 @@
 {:else}
   <span class="row-label">{$t`Start time`}</span>
   <hbox class="time-row">
-    <DateField date={$event.startTime} label={$t`Start date`} disabled={readOnly}
+    <DateField required value={$event.startTime} label={$t`Start date`} disabled={readOnly}
       onChange={day => editor.setStartDate(day)} />
     {#if !$event.allDay}
       <TimeCombo time={$event.startTime} options={startOptions} label={$t`Start time`} disabled={readOnly}
@@ -28,7 +28,7 @@
   </hbox>
   <span class="row-label">{$t`End time`}</span>
   <hbox class="time-row">
-    <DateField date={lastDay} label={$t`End date`} disabled={readOnly}
+    <DateField required value={lastDay} label={$t`End date`} disabled={readOnly}
       onChange={day => editor.setEndDate(day)} />
     {#if !$event.allDay}
       <TimeCombo time={$event.endTime} options={endOptions} label={$t`End time`} disabled={readOnly}
@@ -50,7 +50,7 @@
   import { EventTimeEditor } from "./EventTimeEditor";
   import { TimeOptions } from "./TimeOptions";
   import TimeCombo from "./TimeCombo.svelte";
-  import DateField from "./DateField.svelte";
+  import DateField from "../../Shared/Form/DateField.svelte";
   import { isSameTimezone } from "../../../frontend/Util/date";
   import RecurrenceIcon from "lucide-svelte/icons/repeat-2";
   import TimezoneIcon from "lucide-svelte/icons/globe";

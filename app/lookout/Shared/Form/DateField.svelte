@@ -1,5 +1,5 @@
 <hbox class="lo-datefield {classes}" class:disabled={!!disabled} class:invalid style:width
-  title={typeof disabled == "string" ? disabled : tooltip}
+  title={typeof disabled == "string" ? disabled : tooltip ?? label}
   bind:this={fieldEl}>
   <input type="text" bind:value={text}
     aria-label={label}
@@ -37,7 +37,8 @@
   export let placeholder: string = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
-  export let width: string = null;
+  export let width = "156px";
+  export let required = false;
   export let onChange: (value: Date) => void | Promise<void> = null;
   export let classes = "";
   export let inputEl: HTMLInputElement = null;
@@ -53,17 +54,23 @@
     if (date?.getTime() == value?.getTime()) {
       return;
     }
+    let previous = value;
     value = date;
     try {
       await onChange?.(value);
     } catch (ex) {
+      value = previous;
       showError(ex);
     }
   }
 
   function onTextChanged(): boolean {
-    if (!text.trim()) {
+    if (!text.trim() && !required) {
       void setValue(null);
+      return true;
+    }
+    if (!text.trim()) {
+      text = DateText.format(value);
       return true;
     }
     try {
@@ -87,7 +94,6 @@
     void setValue(date);
   }
 
-  /* <copied from="../../Calendar/EditEvent/DateField.svelte"> */
   function onKeyDown(event: KeyboardEvent) {
     if (event.altKey && event.key == "ArrowDown") {
       event.preventDefault();
@@ -102,11 +108,9 @@
       isOpen = false;
     }
   }
-  /* </copied> */
 </script>
 
 <style>
-  /* <copied from="../../Calendar/EditEvent/DateField.svelte"> with the class name lo-datefield and min-width for the dialogs' grids */
   .lo-datefield {
     box-sizing: border-box;
     align-items: center;
@@ -157,7 +161,6 @@
     background-color: var(--lo-hover-bg);
     color: var(--lo-fg);
   }
-  /* </copied> */
   input::placeholder {
     color: var(--lo-fg-secondary);
   }
