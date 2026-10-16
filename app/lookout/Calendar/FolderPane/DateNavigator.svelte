@@ -6,7 +6,10 @@
           <PreviousIcon size="16" />
         </button>
       {/if}
-      <hbox flex class="title">{shownMonth.title(getDateTimeLocale())}</hbox>
+      <hbox flex class="title-box">
+        <button class="title" title={$t`Choose a month`}
+          on:click={event => openMonthList(event, shownMonth)}>{shownMonth.title(getDateTimeLocale())}</button>
+      </hbox>
       {#if i == 0}
         <button class="arrow" title={$t`Next month`} on:click={() => month = month.next(1)}>
           <NextIcon size="16" />
@@ -22,7 +25,8 @@
       {/each}
       {#each shownMonth.shownWeeks(i == 0, i == months.length - 1) as week}
         {#if showWeekNumbers}
-          <span class="week-number">{WeekNumber.of(firstDay(week))}</span>
+          <button class="week-number" title={$t`Show this week`}
+            on:click={() => onSelectWeek(firstDay(week))}>{WeekNumber.of(firstDay(week))}</button>
         {/if}
         {#each week as day}
           {#if day}
@@ -34,7 +38,10 @@
               class:range-start={inRange && !range.contains(dayBefore(day))}
               class:range-end={inRange && !range.contains(dayAfter(day))}
               class:has-events={daysWithEvents.has(DateNavigatorMonth.dayKey(day))}
+              class:dragged={isDragged(day, dragStart, dragEnd)}
               title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
+              on:mousedown={event => onDragStart(event, day)}
+              on:mouseenter={() => onDragOver(day)}
               on:click={() => onSelectDay(day)}>
               <span class="number">{day.getDate()}</span>
             </button>
@@ -46,6 +53,13 @@
     </div>
   {/each}
 </vbox>
+<Menu bind:isMenuOpen={isMonthListOpen} anchor={monthListAnchor} placement="bottom">
+  {#each monthChoices as choice (choice.month.getTime())}
+    <MenuItem label={choice.title(getDateTimeLocale())} checked={choice.month.getTime() == monthListCenter?.month.getTime()}
+      onClick={() => chooseMonth(choice)} />
+  {/each}
+</Menu>
+<svelte:window on:mouseup={onDragEnd} />
 
 <script lang="ts">
   import type { CalendarRange } from "../View/CalendarRange";
@@ -53,6 +67,8 @@
   import { CurrentTime } from "../View/CurrentTime";
   import { WeekNumber } from "../View/WeekNumber";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
@@ -62,8 +78,11 @@
   export let showWeekNumbers = false;
   export let monthCount = 1;
   export let onSelectDay: (day: Date) => void;
+  export let onSelectWeek: (firstDay: Date) => void;
+  export let onSelectDays: (first: Date, last: Date) => void;
 
   const now = CurrentTime.minute;
+  const kMaxDays = 14;
 
   let month = new DateNavigatorMonth(date);
   $: followDate(date);
@@ -75,6 +94,58 @@
 
   $: months = Array.from({ length: Math.max(monthCount, 1) }, (_, i) => month.next(i));
   $: daysWithEvents = new Set(months.flatMap(shownMonth => [...shownMonth.daysWithEvents($shownCalendarEvents.contents)]));
+
+  let isMonthListOpen = false;
+  let monthListAnchor: HTMLElement = null;
+  let monthListCenter: DateNavigatorMonth = null;
+  $: monthChoices = monthListCenter ? [-3, -2, -1, 0, 1, 2, 3].map(offset => monthListCenter.next(offset)) : [];
+
+  function openMonthList(event: MouseEvent, shownMonth: DateNavigatorMonth) {
+    monthListAnchor = event.currentTarget as HTMLElement;
+    monthListCenter = shownMonth;
+    isMonthListOpen = true;
+  }
+
+  function chooseMonth(choice: DateNavigatorMonth) {
+    let index = months.findIndex(shownMonth => shownMonth.month.getTime() == monthListCenter.month.getTime());
+    month = choice.next(-Math.max(index, 0));
+  }
+
+  let dragStart: Date = null;
+  let dragEnd: Date = null;
+
+  function onDragStart(event: MouseEvent, day: Date) {
+    if (event.button != 0) {
+      return;
+    }
+    dragStart = day;
+    dragEnd = day;
+  }
+
+  function onDragOver(day: Date) {
+    if (dragStart) {
+      dragEnd = DateNavigatorMonth.limitRange(dragStart, day, kMaxDays);
+    }
+  }
+
+  function onDragEnd() {
+    if (dragStart && dragEnd && dragStart.getTime() != dragEnd.getTime()) {
+      let first = dragStart < dragEnd ? dragStart : dragEnd;
+      let last = dragStart < dragEnd ? dragEnd : dragStart;
+      onSelectDays(first, last);
+    }
+    dragStart = null;
+    dragEnd = null;
+  }
+
+  function isDragged(day: Date, start: Date, end: Date): boolean {
+    if (!start || !end || start.getTime() == end.getTime()) {
+      return false;
+    }
+    let first = start < end ? start : end;
+    let last = start < end ? end : start;
+    return day >= first && day <= last;
+  }
 
   function firstDay(week: (Date | null)[]): Date {
     return week.find(day => !!day);
@@ -101,9 +172,21 @@
   .grid + .title-row {
     margin-block-start: 8px;
   }
-  .title {
+  .title-box {
     justify-content: center;
+  }
+  .title {
+    padding: 2px 8px;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg);
+    font: inherit;
     font-weight: 600;
+    cursor: pointer;
+  }
+  .title:hover {
+    background-color: var(--lo-hover-bg);
   }
   .arrow {
     display: flex;
@@ -139,12 +222,25 @@
   }
   .week-number {
     min-width: 20px;
-    padding-inline-end: 4px;
+    padding: 0 4px 0 0;
+    border: none;
+    border-inline-end: 1px solid var(--lo-divider);
+    background: none;
+    font: inherit;
     font-size: 11px;
     line-height: 28px;
     text-align: center;
     color: var(--lo-fg-secondary);
-    border-inline-end: 1px solid var(--lo-divider);
+  }
+  button.week-number {
+    cursor: pointer;
+  }
+  button.week-number:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  .day.dragged {
+    background-color: var(--lo-selected-hover-bg);
   }
   .day {
     display: flex;

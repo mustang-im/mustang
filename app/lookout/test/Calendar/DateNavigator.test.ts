@@ -90,3 +90,11 @@ test("Hour labels: 12-hour locales without minutes, 24-hour locales with", () =>
   expect(german.label(0)).toBe("00:00");
   expect(german.label(17)).toBe("17:00");
 });
+
+test("Dragging across days selects at most 14 days, in both directions", () => {
+  let start = new Date(2026, 9, 10);
+  expect(DateNavigatorMonth.limitRange(start, new Date(2026, 9, 12), 14)).toEqual(new Date(2026, 9, 12));
+  expect(DateNavigatorMonth.limitRange(start, new Date(2026, 9, 30), 14)).toEqual(new Date(2026, 9, 23));
+  expect(DateNavigatorMonth.limitRange(start, new Date(2026, 8, 1), 14)).toEqual(new Date(2026, 8, 27));
+  expect(DateNavigatorMonth.limitRange(start, new Date(2026, 9, 1), 14)).toEqual(new Date(2026, 9, 1));
+});
