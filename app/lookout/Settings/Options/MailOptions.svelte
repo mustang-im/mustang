@@ -32,6 +32,7 @@
 
   <OptionsSection title={$t`Replies and forwards`}>
     <OptionsRow icon={ReplyIcon}>
+      <CheckBox label={$t`Open replies and forwards in a new window`} bind:checked={options.repliesInNewWindow.value} />
       <grid class="replies">
         <label for="options-reply">{$t`When replying to a message:`}</label>
         <ComboBox options={[

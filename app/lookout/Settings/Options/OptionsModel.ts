@@ -1,5 +1,6 @@
 import { OptionValue } from "./OptionValue";
 import { CalendarSettings } from "../../Calendar/CalendarSettings";
+import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
 import { appGlobal } from "../../../logic/app";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { getDateTimeLocalePref, getUILocale, getUILocalePref, saveDateTimeLocale, saveUILocale, setUILocale } from "../../../l10n/l10n";
@@ -16,6 +17,7 @@ export class OptionsModel {
   readonly newMailOnlyFromContacts = this.add(OptionValue.plain(getLocalStorage<boolean>("notifications.mail.only.addressbook", true)));
   readonly replyQuote = this.add(OptionValue.plain(getLocalStorage<string>("mail.send.quote", "below")));
   readonly forwardMode = this.add(OptionValue.plain(getLocalStorage<string>("mail.send.forward", "inline")));
+  readonly repliesInNewWindow = this.add(OptionValue.plain(ComposerSettings.repliesInNewWindow));
 
   readonly defaultEventDuration = this.add(OptionValue.plain(getLocalStorage<number>("calendar.defaultEventLengthInMinutes", 60)));
   readonly weekNumbers = this.add(OptionValue.plain(CalendarSettings.weekNumbers));
