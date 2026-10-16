@@ -33,7 +33,6 @@
   import { notifications } from "../../frontend/MainWindow/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { backstageState } from "../Settings/BackstageState";
-  import { settingsMustangApp } from "../../frontend/Settings/Window/SettingsMustangApp";
   import TitleBar from "./TitleBar.svelte";
   import StatusBar from "./StatusBar.svelte";
   import NavRail from "../AppsBar/NavRail.svelte";
@@ -47,7 +46,6 @@
   import { rtlLocales } from "../../l10n/list";
   import { Router } from "svelte-navigator";
   import type { RouterProps } from "svelte-navigator/types/Router";
-  import type NavigatorLocation from "svelte-navigator/types/NavigatorLocation";
   import { onDestroy, type Component, type Snippet } from "svelte";
 
   /* <copied from="../../frontend/MainWindow/MainWindow.svelte"> */
@@ -61,11 +59,8 @@
 
   const unlistenHistory = history.listen(onNavigate);
   onDestroy(unlistenHistory);
-  function onNavigate({ location }: { location: NavigatorLocation }) {
-    // The settings shown in Backstage > Options navigate to /settings themselves
-    if (!location.pathname.startsWith(settingsMustangApp.appURL)) {
-      backstageState.close();
-    }
+  function onNavigate() {
+    backstageState.close();
   }
 </script>
 
