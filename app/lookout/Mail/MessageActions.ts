@@ -5,6 +5,7 @@ import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
 import { DeleteStrategy } from "../../logic/Mail/MailAccount";
 import type { Tag } from "../../logic/Abstract/Tag";
 import { Person } from "../../logic/Abstract/Person";
+import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
 import { SelectionState } from "./SelectionState";
 import { MailView } from "./MailView";
@@ -15,7 +16,8 @@ import { selectedCalendar } from "../../frontend/Calendar/selected";
 import { createNewEvent } from "../../frontend/Calendar/event";
 import { CalendarActions } from "../Calendar/CalendarActions";
 import { newPerson } from "../../frontend/Contacts/Person/Selected";
-import { selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
+import { selectedFolder, selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
+import { openPersonFromOtherApp } from "../../frontend/Contacts/open";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { saveBlobAsFile, URLPart } from "../../frontend/Util/util";
@@ -43,6 +45,18 @@ export class MessageActions {
 
   static newMail(folder: Folder | null) {
     mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom());
+  }
+
+  static writeMailTo(recipient: PersonUID) {
+    let mail = MessageActions.accountForNewMail(get(selectedFolder)).newEMailFrom();
+    mail.to.add(recipient);
+    mailMustangApp.writeMail(mail);
+  }
+
+  static openContact(recipient: PersonUID) {
+    // <copied from="Composer/AddressField.svelte" onOpenContact()>
+    openPersonFromOtherApp(recipient.createPerson(appGlobal.personalAddressbook));
+    // </copied>
   }
 
   static newAppointment() {
