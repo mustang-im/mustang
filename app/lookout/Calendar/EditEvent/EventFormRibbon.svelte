@@ -290,8 +290,8 @@
     event.notifyObservers();
   }
 
-  function onOffline() {
-    flow.setOffline();
+  async function onOffline() {
+    await flow.setOffline();
     event.notifyObservers();
   }
 

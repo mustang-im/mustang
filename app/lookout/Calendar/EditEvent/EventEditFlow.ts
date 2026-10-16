@@ -9,6 +9,7 @@ import { openExternalURL } from "../../../logic/util/os-integration";
 import { RecurrencePattern } from "./RecurrencePattern";
 import { Reminder } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
+import { CalendarQuestions } from "../CalendarQuestions";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
 import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
 import { goBack } from "../../../frontend/AppsBar/selectedApp";
@@ -134,16 +135,16 @@ export class EventEditFlow {
   }
 
   // <copied from="../../../frontend/Calendar/EditEvent/DialogHeader.svelte">
-  confirmAndChangeRecurrenceRule(): boolean {
+  async confirmAndChangeRecurrenceRule(): Promise<boolean> {
     let event = this.event;
     let master = event.parentEvent || event;
     if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
-      if (!confirm(gt`Are you sure you want to remove this unfortunate series of events?`)) {
+      if (!await CalendarQuestions.removeRecurrence()) {
         return false;
       }
     } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
         !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
-      if (!confirm(gt`This change will remove all exceptions and exclusions for this series.`)) {
+      if (!await CalendarQuestions.changeRecurrence()) {
         return false;
       }
     }
@@ -163,7 +164,7 @@ export class EventEditFlow {
     // Lookout: Also moves the recurrence with the series, confirms changes of the series rule here, and sets the series end, which `hasChanged()` does not see
     if (!event.parentEvent) {
       this.moveRecurrenceWithSeries();
-      if (!this.confirmAndChangeRecurrenceRule()) {
+      if (!await this.confirmAndChangeRecurrenceRule()) {
         return;
       }
     }
@@ -187,7 +188,7 @@ export class EventEditFlow {
     before.copyFrom(master);
     master.startEditing();
     this.applyOccurrenceToSeries();
-    if (!this.confirmAndChangeRecurrenceRule()) {
+    if (!await this.confirmAndChangeRecurrenceRule()) {
       master.copyFrom(before);
       return;
     }
@@ -320,7 +321,7 @@ export class EventEditFlow {
   }
 
   async deleteAll() {
-    if (!confirm(gt`Delete all occurrences of "${this.event.title ?? ""}"?`)) {
+    if (!await CalendarQuestions.deleteSeries(this.event)) {
       return;
     }
     await this.master.deleteIt();
@@ -333,14 +334,14 @@ export class EventEditFlow {
   }
 
   async cancelMeeting() {
-    if (!confirm(gt`Cancel the meeting "${this.event.title ?? ""}" and send a cancellation to all attendees?`)) {
+    if (!await CalendarQuestions.cancelMeeting(this.event)) {
       return;
     }
     await this.deleteIt();
   }
 
   async cancelMeetingSeries() {
-    if (!confirm(gt`Cancel all occurrences of the meeting "${this.event.title ?? ""}" and send a cancellation to all attendees?`)) {
+    if (!await CalendarQuestions.cancelSeries(this.event)) {
       return;
     }
     await this.master.deleteIt();
@@ -424,9 +425,9 @@ export class EventEditFlow {
   }
 
   // <copied from="../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte">
-  setOffline() {
+  async setOffline() {
     let event = this.event;
-    if (event.participants.hasItems && !event.isNew && !confirm(gt`Changing the meeting URL might cause some participants to miss the meeting. Are you sure?`)) {
+    if (event.participants.hasItems && !event.isNew && !await CalendarQuestions.removeOnlineMeeting()) {
       return;
     }
     event.isOnline = false;

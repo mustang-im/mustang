@@ -15,6 +15,8 @@ import { newPerson, selectedPerson } from "../../frontend/Contacts/Person/Select
 import { selectedAddressbook, selectedContact } from "./Selected";
 import { ContactDialogs } from "./Dialogs/ContactDialogs";
 import { SettingsDialogs } from "../Settings/SettingsDialogs";
+import { MessageBox } from "../Shared/Dialog/MessageBox";
+import { appName } from "../../logic/build";
 import { openExternalURL } from "../../logic/util/os-integration";
 import { PreferredEntry } from "./PreferredEntry";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
@@ -103,9 +105,9 @@ export class ContactActions {
   static async deleteContacts(contacts: Contact[]): Promise<boolean> {
     assert(contacts.length, gt`Please select a contact first`);
     let saved = contacts.filter(contact => !ContactActions.isUnsaved(contact));
-    if (saved.length && !confirm(saved.length == 1
-        ? gt`Do you want to delete the contact ${saved[0].name}?`
-        : gt`WARNING:\nAre you sure that you want to delete ${saved.length} contacts?`)) {
+    if (saved.length && !await MessageBox.confirm(gt`Delete`, saved.length == 1
+        ? gt`Do you want to permanently delete the contact ${saved[0].name}?`
+        : gt`Do you want to permanently delete the ${saved.length} selected contacts?`)) {
       return false;
     }
     if (contacts.includes(get(newPerson))) {
@@ -208,10 +210,9 @@ export class ContactActions {
   }
 
   static async deleteFolder(addressbook: Addressbook) {
-    let question = addressbook.protocol == "addressbook-local"
-      ? gt`Delete the address book ${addressbook.name} with all its contacts?`
-      : gt`Remove the address book ${addressbook.name} from this app? This does not change the address book on the server.`;
-    if (!confirm(question)) {
+    if (!await MessageBox.ask(gt`Delete Folder`, addressbook.protocol == "addressbook-local"
+        ? gt`Are you sure that you want to delete the address book "${addressbook.name}" and all contacts in it?`
+        : gt`Do you want to remove the address book "${addressbook.name}" from ${appName}? This does not change the address book on the server.`)) {
       return;
     }
     if (get(selectedAddressbook) == addressbook) {

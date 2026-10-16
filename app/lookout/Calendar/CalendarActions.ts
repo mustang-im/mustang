@@ -18,6 +18,7 @@ import { openApp } from "../../frontend/AppsBar/selectedApp";
 import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
 import { CalendarDialogs, type CalendarPropertiesTab } from "./Dialogs/CalendarDialogs";
+import { CalendarQuestions } from "./CalendarQuestions";
 import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
 import { catchErrors } from "../../frontend/Util/error";
@@ -111,7 +112,7 @@ export class CalendarActions {
   static async changeTime(event: Event, start: Date, end: Date) {
     assert(event.isEditable, gt`You cannot change the time of a meeting that someone else organized`);
     if (event.isOutgoingMeeting && event.participants.length > 1 &&
-        !confirm(gt`Move the meeting "${event.title ?? ""}" and send an update to the attendees?`)) {
+        !await CalendarQuestions.moveMeeting(event)) {
       return;
     }
     event.startEditing();
@@ -137,7 +138,7 @@ export class CalendarActions {
   }
 
   static async cancelMeeting(event: Event) {
-    if (!confirm(gt`Cancel the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`)) {
+    if (!await CalendarQuestions.cancelMeeting(event)) {
       return;
     }
     await CalendarActions.deleteOccurrence(event);
@@ -163,7 +164,7 @@ export class CalendarActions {
   }
 
   static async deleteSeries(event: Event) {
-    if (!confirm(gt`Delete all occurrences of "${event.title ?? ""}"?`)) {
+    if (!await (event.isOutgoingMeeting ? CalendarQuestions.cancelSeries(event) : CalendarQuestions.deleteSeries(event))) {
       return;
     }
     let master = event.parentEvent ?? event;
@@ -246,10 +247,7 @@ export class CalendarActions {
   }
 
   static async deleteCalendar(calendar: Calendar): Promise<boolean> {
-    let question = calendar.protocol == "calendar-local"
-      ? gt`Delete the calendar ${calendar.name} with all its appointments and meetings?`
-      : gt`Remove the calendar ${calendar.name} from this app? This does not change the calendar on the server.`;
-    if (!confirm(question)) {
+    if (!await CalendarQuestions.deleteCalendar(calendar)) {
       return false;
     }
     await calendar.deleteIt();

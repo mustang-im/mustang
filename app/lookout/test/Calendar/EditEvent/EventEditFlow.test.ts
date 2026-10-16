@@ -9,12 +9,18 @@ import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { EventEditFlow } from "../../../Calendar/EditEvent/EventEditFlow";
 import { EventTimeEditor } from "../../../Calendar/EditEvent/EventTimeEditor";
-import { afterAll, expect, test, vi } from "vitest";
+import { MessageBox } from "../../../Shared/Dialog/MessageBox";
+import { afterAll, beforeEach, expect, test, vi } from "vitest";
 
 // A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
 vi.stubEnv("TZ", "Europe/Berlin");
 afterAll(() => vi.unstubAllEnvs());
-vi.stubGlobal("confirm", () => true);
+// Answers the message boxes: Yes / OK, unless a test says otherwise
+const messageBox = vi.spyOn(MessageBox, "confirm");
+beforeEach(() => {
+  messageBox.mockReset();
+  messageBox.mockResolvedValue(true);
+});
 
 function newCalendar(): Calendar {
   let calendar = new Calendar();
@@ -130,11 +136,8 @@ test("A changed title for the entire series, from an occurrence, keeps the serie
   let occurrence = master.instances.get(3);
   occurrence.startEditing();
   occurrence.title = "Weekly planning";
-  let confirm = vi.fn(() => true);
-  vi.stubGlobal("confirm", confirm);
   await new EventEditFlow(occurrence, () => {}).saveWith("series");
-  vi.stubGlobal("confirm", () => true);
-  expect(confirm).not.toHaveBeenCalled();
+  expect(messageBox).not.toHaveBeenCalled();
   expect(master.title).toBe("Weekly planning");
   expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
   expect(master.recurrenceRule.getOccurrenceByIndex(0)).toEqual(new Date(2026, 9, 15, 10, 0));
@@ -315,11 +318,8 @@ test("A series with only a new title keeps its recurrence and exceptions", async
   let rule = master.recurrenceRule;
   master.startEditing();
   master.title = "Weekly planning";
-  let confirm = vi.fn(() => true);
-  vi.stubGlobal("confirm", confirm);
   await new EventEditFlow(master, () => {}).saveWith(null);
-  vi.stubGlobal("confirm", () => true);
-  expect(confirm).not.toHaveBeenCalled();
+  expect(messageBox).not.toHaveBeenCalled();
   expect(master.recurrenceRule).toBe(rule);
   expect(master.exceptions.contents).toContain(exception);
 });
@@ -364,9 +364,9 @@ test("Deleting the entire series asks first", async () => {
   let occurrence = master.instances.get(3);
   occurrence.startEditing();
   let onClosed = vi.fn();
-  vi.stubGlobal("confirm", () => false);
+  messageBox.mockResolvedValueOnce(false);
   await new EventEditFlow(occurrence, onClosed).deleteAll();
-  vi.stubGlobal("confirm", () => true);
+  expect(messageBox.mock.calls[0].slice(0, 2)).toEqual(["Delete Series", 'Do you want to delete all occurrences of the recurring appointment "Planning"?']);
   expect(master.calendar.events.contains(master)).toBe(true);
   expect(onClosed).not.toHaveBeenCalled();
   await new EventEditFlow(occurrence, onClosed).deleteAll();
@@ -403,4 +403,84 @@ test("Select Names sets the attendees and keeps the organizer", () => {
   expect(event.participants.find(participant => participant.emailAddress == "bert@example.com").response)
     .toBe(InvitationResponse.Tentative);
   expect(flow.attendees.map(participant => participant.name)).toEqual(["Bert", "Cleo"]);
+});
+
+test("Removing the recurrence of a saved series asks first, and No keeps the form open", async () => {
+  let master = await savedSeries(new Date(2026, 9, 15, 10, 0), Frequency.Weekly);
+  master.startEditing();
+  let onClosed = vi.fn();
+  let flow = new EventEditFlow(master, onClosed);
+  flow.removeRecurrence();
+  messageBox.mockResolvedValueOnce(false);
+  await flow.saveWith(null);
+  expect(messageBox).toHaveBeenCalledOnce();
+  expect(messageBox.mock.calls[0][0]).toBe("Remove Recurrence");
+  expect(onClosed).not.toHaveBeenCalled();
+  expect(master.unedited?.recurrenceRule).toBeTruthy();
+
+  await flow.saveWith(null);
+  expect(master.recurrenceRule).toBe(null);
+  expect(onClosed).toHaveBeenCalledOnce();
+});
+
+test("A new pattern for the entire series warns that the exceptions are lost; Cancel keeps them and the form", async () => {
+  let master = await savedWeeklySeries(); // Monday and Thursday at 10:00
+  let exception = master.instances.get(2);
+  exception.startEditing();
+  exception.location = "Room 2";
+  await new EventEditFlow(exception, () => {}).saveWith("occurrence");
+  let occurrence = master.instances.get(4);
+  occurrence.startEditing();
+  let onClosed = vi.fn();
+  let flow = new EventEditFlow(occurrence, onClosed);
+  let pattern = flow.pattern.clone();
+  pattern.weekdays = [2];
+  flow.applyPattern(pattern);
+  messageBox.mockResolvedValueOnce(false);
+  await flow.saveWith("series");
+  expect(messageBox.mock.calls[0][1]).toBe("Any exceptions associated with this recurring appointment will be lost. Is this OK?");
+  expect(onClosed).not.toHaveBeenCalled();
+  expect(master.exceptions.contents).toContain(exception);
+});
+
+test("Cancel Meeting and Cancel Series ask before they send the cancellations", async () => {
+  let master = await savedWeeklySeries();
+  let occurrence = master.instances.get(3);
+  occurrence.startEditing();
+  let onClosed = vi.fn();
+  messageBox.mockResolvedValue(false);
+  await new EventEditFlow(occurrence, onClosed).cancelMeeting();
+  await new EventEditFlow(occurrence, onClosed).cancelMeetingSeries();
+  expect(messageBox.mock.calls.map(call => call[0])).toEqual(["Cancel Meeting", "Cancel Series"]);
+  expect(messageBox.mock.calls[0][1]).toBe('Do you want to cancel this occurrence of the meeting "Planning" and send a cancellation to all attendees?');
+  expect(messageBox.mock.calls.map(call => call.slice(2))).toEqual([["Yes", "No"], ["Yes", "No"]]);
+  expect(master.calendar.events.contains(master)).toBe(true);
+  expect(onClosed).not.toHaveBeenCalled();
+
+  messageBox.mockResolvedValue(true);
+  await new EventEditFlow(occurrence, onClosed).cancelMeetingSeries();
+  expect(master.calendar.events.contains(master)).toBe(false);
+  expect(onClosed).toHaveBeenCalledOnce();
+});
+
+test("Don't Host Online asks only for a saved meeting with attendees", async () => {
+  let event = newEvent();
+  event.isOnline = true;
+  event.onlineMeetingURL = "https://meet.example.com/planning";
+  let flow = new EventEditFlow(event, () => {});
+  await flow.setOffline();
+  expect(messageBox).not.toHaveBeenCalled();
+  expect(event.isOnline).toBe(false);
+
+  let meeting = newEvent();
+  meeting.dbID = 7; // saved
+  meeting.participants.add(new Participant("anna@example.com", "Anna", InvitationResponse.Accept));
+  meeting.isOnline = true;
+  meeting.onlineMeetingURL = "https://meet.example.com/planning";
+  meeting.startEditing();
+  messageBox.mockResolvedValueOnce(false);
+  await new EventEditFlow(meeting, () => {}).setOffline();
+  expect(messageBox).toHaveBeenCalledOnce();
+  expect(meeting.isOnline).toBe(true);
+  expect(meeting.onlineMeetingURL).toBe("https://meet.example.com/planning");
 });

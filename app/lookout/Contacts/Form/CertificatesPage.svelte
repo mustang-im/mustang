@@ -39,6 +39,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { ContactCertificates } from "./ContactCertificates";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { appName } from "../../../logic/build";
   import { getDateString } from "../../../frontend/Util/date";
   import ListView from "../../Shared/Form/ListView.svelte";
@@ -75,8 +76,8 @@
     await ContactCertificates.importFile(person, file);
   }
 
-  function onRemove() {
-    if (!confirm($t`Do you want to remove the certificate ${ContactCertificates.nameOf(selected)}? You will not be able to check mails signed with it.`)) {
+  async function onRemove() {
+    if (!await MessageBox.ask($t`Certificates`, $t`Do you want to remove the certificate ${ContactCertificates.nameOf(selected)}? You will no longer be able to check messages signed with it.`)) {
       return;
     }
     ContactCertificates.remove(person, selected);
