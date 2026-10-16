@@ -30,6 +30,7 @@
 
   export let app: MustangApp;
   export let selected = false;
+  export let onClick: () => void = null;
 
   $: railIcon = getRailIcon(app);
 
@@ -49,6 +50,10 @@
   }
 
   function onSelect() {
+    if (onClick) {
+      onClick();
+      return;
+    }
     openApp(app, app.windowParams);
   }
 </script>
