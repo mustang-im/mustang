@@ -7,8 +7,8 @@
     onOK={text => apply(() => rule.criteria.bodyText = text)}
     onClose={onClose} />
 {:else if item.picker == RulePicker.Category}
-  <CategoryChooserDialog selected={item.isAction ? rule.addTags : rule.criteria.tags}
-    onOK={tags => apply(() => (item.isAction ? rule.addTags : rule.criteria.tags).replaceAll(tags))}
+  <ColorCategoriesDialog isChooseMode chosen={item.isAction ? rule.addTags : rule.criteria.tags}
+    onChosen={tags => apply(() => (item.isAction ? rule.addTags : rule.criteria.tags).replaceAll(tags))}
     onClose={onClose} />
 {:else if item.picker == RulePicker.Size}
   <MessageSizeDialog sizeMin={rule.criteria.sizeMin} sizeMax={rule.criteria.sizeMax}
@@ -37,7 +37,7 @@
   import { RulePicker, type RuleItem } from "../RuleItems";
   import RuleAddressDialog from "./RuleAddressDialog.svelte";
   import SearchTextDialog from "./SearchTextDialog.svelte";
-  import CategoryChooserDialog from "./CategoryChooserDialog.svelte";
+  import ColorCategoriesDialog from "../../Categories/ColorCategoriesDialog.svelte";
   import MessageSizeDialog from "./MessageSizeDialog.svelte";
   import ReceivedDateDialog from "./ReceivedDateDialog.svelte";
   import RuleFolderDialog from "../RuleFolderDialog.svelte";

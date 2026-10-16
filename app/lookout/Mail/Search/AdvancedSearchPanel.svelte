@@ -104,7 +104,7 @@
   import { AdvancedSearchDraft, ReadStatus } from "./AdvancedSearchDraft";
   import { SizeRange, SizeRanges } from "./SearchRanges";
   import CategoryMenuItems from "./CategoryMenuItems.svelte";
-  import CategorySquare from "../Menu/CategorySquare.svelte";
+  import CategorySquare from "../Categories/CategorySquare.svelte";
   import SearchPersonDialog from "../Dialogs/SearchPersonDialog.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";

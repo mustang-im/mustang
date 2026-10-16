@@ -9,7 +9,7 @@
 {:else if $dialog?.kind == "reading-pane-options"}
   <ReadingPaneOptionsDialog on:close={onClose} />
 {:else if $dialog?.kind == "color-categories"}
-  <ColorCategoriesDialog on:close={onClose} />
+  <ColorCategoriesDialog items={$dialog.messages} onClose={onClose} />
 {:else if $dialog?.kind == "save-search"}
   <SaveSearchDialog search={$dialog.search} on:close={onClose} />
 {:else if $dialog?.kind == "rule-from-search"}
@@ -33,7 +33,7 @@
   import GoToFolderDialog from "./GoToFolderDialog.svelte";
   import FolderPropertiesDialog from "./FolderPropertiesDialog.svelte";
   import ReadingPaneOptionsDialog from "./ReadingPaneOptionsDialog.svelte";
-  import ColorCategoriesDialog from "./ColorCategoriesDialog.svelte";
+  import ColorCategoriesDialog from "../Categories/ColorCategoriesDialog.svelte";
   import NewSearchFolderDialog from "./NewSearchFolderDialog.svelte";
   import SaveSearchDialog from "./SaveSearchDialog.svelte";
   import SearchPersonDialog from "./SearchPersonDialog.svelte";

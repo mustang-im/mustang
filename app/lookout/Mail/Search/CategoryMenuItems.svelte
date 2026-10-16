@@ -11,7 +11,7 @@
   import { TagState } from "../SelectionState";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
-  import CategorySquare from "../Menu/CategorySquare.svelte";
+  import CategorySquare from "../Categories/CategorySquare.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let selected: Tag[];
