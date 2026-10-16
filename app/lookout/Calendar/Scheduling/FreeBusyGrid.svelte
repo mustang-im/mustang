@@ -46,6 +46,13 @@
     </vbox>
     <div class="timeline-scroll" bind:this={scrollEl}>
       <div class="timeline" style:width="{timeline.width}px">
+        <div class="days">
+          {#each timeline.days() as shownDay (shownDay.getTime())}
+            <span class="day-name" style:left="{timeline.x(shownDay)}px" style:width="{24 * hourWidth}px">
+              <span class="day-text">{dayName(shownDay)}</span>
+            </span>
+          {/each}
+        </div>
         <div class="hours">
           {#each hours as hour}
             <span class="hour" style:left="{timeline.x(hour)}px">{hourLabel(hour)}</span>
@@ -129,6 +136,7 @@
   const kHourWidth = 88;
   const kRowHeight = 44;
   const kZoomLevels = [0.5, 1, 2];
+  const kDayCount = 7;
 
   let zoom = 1;
   let zoomButton: HTMLButtonElement;
@@ -154,9 +162,10 @@
       EventEditFlow.addParticipant(event, person);
     }
   }
-  $: timeline = new Timeline(day, hourWidth);
+  $: timeline = new Timeline(day, hourWidth, kDayCount);
   $: hours = timeline.hours();
-  $: dayLabel = day.toLocaleDateString(getDateTimeLocale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  $: dayLabel = new Intl.DateTimeFormat(getDateTimeLocale(), { year: "numeric", month: "long", day: "numeric" })
+    .formatRange(timeline.day, timeline.days()[kDayCount - 1]);
   $: meeting = $event && timeline.span(event.startTime, event.endTime);
   $: allBusy = freeBusy ? spans(freeBusy.allAttendeesBusy, timeline) : [];
   $: day, $participants, load();
@@ -177,10 +186,10 @@
       return;
     }
     lastStartTime = startTime.getTime();
-    if (startOfDay(startTime).getTime() != day.getTime()) {
+    if (startTime < day || startTime >= new Timeline(day, kHourWidth, kDayCount).dayEnd) {
       day = startOfDay(startTime);
-      scrollToMeeting();
     }
+    scrollToMeeting();
   }
 
   async function load() {
@@ -188,8 +197,8 @@
     loading = true;
     errorText = null;
     try {
-      let shownDay = new Timeline(day);
-      let result = await FreeBusy.load(event.calendar, event.participants.contents, shownDay.day, shownDay.dayEnd);
+      let shownDays = new Timeline(day, kHourWidth, kDayCount);
+      let result = await FreeBusy.load(event.calendar, event.participants.contents, shownDays.day, shownDays.dayEnd);
       if (count == loadCount) {
         freeBusy = result;
       }
@@ -260,6 +269,10 @@
   function setZoom(level: number) {
     zoom = level;
     scrollToMeeting();
+  }
+
+  function dayName(shownDay: Date): string {
+    return shownDay.toLocaleDateString(getDateTimeLocale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
   }
 
   function hourLabel(hour: Date): string {
@@ -356,7 +369,7 @@
     border-inline-end: 1px solid var(--lo-border);
   }
   .hours-spacer {
-    height: 28px;
+    height: 52px;
     border-block-end: 1px solid var(--lo-border);
     background-color: var(--lo-pane-alt-bg);
   }
@@ -429,6 +442,27 @@
   .timeline {
     position: relative;
   }
+  .days {
+    position: relative;
+    height: 24px;
+    background-color: var(--lo-pane-alt-bg);
+  }
+  .day-name {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    border-inline-start: 2px solid var(--lo-border-strong);
+  }
+  .day-text {
+    position: sticky;
+    left: 0;
+    display: inline-block;
+    padding: 4px 6px 0 6px;
+    font-size: var(--lo-font-size-small);
+    font-weight: 600;
+    white-space: nowrap;
+  }
   .hours {
     position: relative;
     height: 28px;
@@ -447,6 +481,7 @@
     position: relative;
     cursor: pointer;
     background-image:
+      repeating-linear-gradient(90deg, var(--lo-border-strong) 0 2px, transparent 2px calc(var(--hour-width) * 24)),
       repeating-linear-gradient(90deg, var(--lo-border) 0 1px, transparent 1px var(--hour-width)),
       repeating-linear-gradient(90deg, transparent 0 calc(var(--hour-width) / 2), var(--lo-divider) calc(var(--hour-width) / 2) calc(var(--hour-width) / 2 + 1px), transparent calc(var(--hour-width) / 2 + 1px) var(--hour-width));
   }
