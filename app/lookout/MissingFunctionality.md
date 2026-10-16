@@ -30,6 +30,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Outlook feature | Where in Outlook | What the logic would need |
 |---|---|---|
 | Editable Favorites (add and remove folders, drag a folder to Favorites); unified Deleted Items | Folder pane; Folder tab > Favorites | A stored list of favorite folders across accounts; a unified Trash in `AllAccounts.specialFolders`. Lookout shows the fixed unified Inbox, Sent and Drafts. |
+| Custom folder order (dragging folders up and down), and with it "Show All Folders A to Z" / "Sort Subfolders A to Z" | Folder tab > Clean Up; folder context menu | A stored folder order per account. Mustang always lists the default folders first and the others A to Z. |
 | Move Folder, Copy Folder | Folder tab; folder context menu; dragging a folder | A working `Folder.moveFolderHere()` (see [Logic bugs](#logic-bugs-found-while-building-lookout)), `MailAccount.moveFolderHere()` for the top level, and a recursive `Folder.copyFolderHere()` |
 | Empty Folder for any folder | Folder context menu | `Folder.empty()` on the server (IMAP expunge, EWS EmptyFolder). Lookout offers "Delete All" in Trash and Junk only, like `frontend/`. |
 | Clean Up Folder / Conversation, Ignore Conversation | Home tab > Delete | Detection of redundant quoted messages in a thread; a per-thread ignore list applied to new mail |

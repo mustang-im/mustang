@@ -75,22 +75,24 @@
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Find`}>
-    <RibbonTextBox label={$t`Search People`} placeholder={$t`Search People`} icon={SearchPeopleIcon}
-      width="150px"
-      bind:value={peopleSearch}
-      bind:isListOpen={isPeopleListOpen}
-      onInput={() => { isPeopleListOpen = !!peopleMatches.length; }}
-      onEnter={openFirstPerson}>
-      <svelte:fragment slot="list">
-        {#each peopleMatches as person (person)}
-          <MenuItem label={person.name || person.emailAddresses.first?.value} icon={ContactIcon}
-            tooltip={person.emailAddresses.first?.value}
-            onClick={() => openPerson(person)} />
-        {:else}
-          <MenuItem label={$t`No matches`} disabled />
-        {/each}
-      </svelte:fragment>
-    </RibbonTextBox>
+    {#if !isSimplified}
+      <RibbonTextBox label={$t`Search People`} placeholder={$t`Search People`} icon={SearchPeopleIcon}
+        width="150px"
+        bind:value={peopleSearch}
+        bind:isListOpen={isPeopleListOpen}
+        onInput={() => { isPeopleListOpen = !!peopleMatches.length; }}
+        onEnter={openFirstPerson}>
+        <svelte:fragment slot="list">
+          {#each peopleMatches as person (person)}
+            <MenuItem label={person.name || person.emailAddresses.first?.value} icon={ContactIcon}
+              tooltip={person.emailAddresses.first?.value}
+              onClick={() => openPerson(person)} />
+          {:else}
+            <MenuItem label={$t`No matches`} disabled />
+          {/each}
+        </svelte:fragment>
+      </RibbonTextBox>
+    {/if}
     <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} size="small"
       onClick={() => MessageActions.openAddressBook()} shortCutInfo="Ctrl+Shift+B" />
     <RibbonMenuButton label={$t`Filter Email`} icon={FilterIcon} size="small">
