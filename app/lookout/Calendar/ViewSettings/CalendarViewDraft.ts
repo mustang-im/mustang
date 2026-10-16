@@ -66,33 +66,4 @@ export class CalendarViewDraft {
       EventTableColumn.Recurrence, EventTableColumn.Calendar,
     ];
   }
-
-  availableColumns(): EventTableColumn[] {
-    return CalendarViewDraft.allColumns.filter(column => !this.columns.includes(column));
-  }
-
-  addColumn(column: EventTableColumn) {
-    if (!this.columns.includes(column)) {
-      this.columns = [...this.columns, column];
-    }
-  }
-
-  removeColumn(column: EventTableColumn) {
-    if (column == EventTableColumn.Subject) {
-      return;
-    }
-    this.columns = this.columns.filter(shown => shown != column);
-  }
-
-  moveColumn(column: EventTableColumn, offset: number) {
-    let index = this.columns.indexOf(column);
-    let target = index + offset;
-    if (index < 0 || target < 0 || target >= this.columns.length) {
-      return;
-    }
-    let columns = [...this.columns];
-    columns.splice(index, 1);
-    columns.splice(target, 0, column);
-    this.columns = columns;
-  }
 }

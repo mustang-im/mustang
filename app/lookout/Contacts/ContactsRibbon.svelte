@@ -115,6 +115,9 @@
       <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
         <ChangeViewGallery views={contactViews} currentView={$view.value} onChange={setView} />
       </RibbonMenuButton>
+      <RibbonButton label={$t`View Settings`} shortLabel={$t`Settings`} icon={ViewSettingsIcon}
+        disabled={!isTableView && $t`Available in the Phone and List views`}
+        onClick={() => ContactDialogs.open({ kind: "view-settings", view: $view.value })} />
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
         tooltip={$t`Reset the view, the sort order and the panes to the default settings`}
         onClick={resetView} />
@@ -130,6 +133,9 @@
       <RibbonButton label={$t`Reverse Sort`} icon={ReverseIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}
         onClick={reverseSort} />
+      <RibbonButton label={$t`Add Columns`} shortLabel={$t`Columns`} icon={AddColumnsIcon}
+        disabled={!isTableView && $t`Available in the Phone and List views`}
+        onClick={() => ContactDialogs.open({ kind: "show-columns", view: $view.value })} />
     </RibbonGroup>
     <RibbonGroup label={$t`Layout`}>
       <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
@@ -152,6 +158,7 @@
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedAddressbook } from "./Selected";
   import { ContactActions } from "./ContactActions";
+  import { ContactDialogs } from "./Dialogs/ContactDialogs";
   import { ContactColumn, ContactColumns, ContactView } from "./Views/ContactColumns";
   import type { AddressbookSection } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
@@ -181,6 +188,8 @@
   import PhoneViewIcon from "lucide-svelte/icons/phone";
   import ListViewIcon from "lucide-svelte/icons/table-properties";
   import ResetViewIcon from "lucide-svelte/icons/rotate-ccw";
+  import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
+  import AddColumnsIcon from "lucide-svelte/icons/columns-3";
   import ArrangeIcon from "lucide-svelte/icons/arrow-down-wide-narrow";
   import ReverseIcon from "lucide-svelte/icons/arrow-up-down";
   import FolderPaneIcon from "lucide-svelte/icons/panel-left";

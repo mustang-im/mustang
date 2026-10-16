@@ -20,17 +20,23 @@
   </svelte:fragment>
 </Dialog>
 {#if open == "columns"}
-  <ShowColumnsDialog {draft} onOK={changed => draft = changed} on:close={closeSub} />
+  <ShowColumnsDialog columns={draft.columns} allColumns={CalendarViewDraft.allColumns} labelOf={EventTable.columnLabel}
+    requiredColumn={EventTableColumn.Subject} requiredReason={$t`The list needs the Subject column`}
+    onOK={columns => { draft.columns = columns; draft = draft; }} on:close={closeSub} />
 {:else if open == "group-by"}
   <GroupByDialog {draft} onOK={changed => draft = changed} on:close={closeSub} />
 {:else if open == "sort"}
-  <SortDialog {draft} onOK={changed => draft = changed} on:close={closeSub} />
+  <SortDialog columnOptions={CalendarViewDraft.allColumns.map(column => ({ value: column, label: EventTable.columnLabel(column) }))}
+    column={draft.sortColumn} ascending={draft.sortAscending}
+    onOK={(column, ascending) => { draft.sortColumn = column; draft.sortAscending = ascending; draft = draft; }} on:close={closeSub} />
 {:else if open == "other"}
   <OtherSettingsDialog {draft} onOK={changed => draft = changed} on:close={closeSub} />
 {/if}
 
 <script lang="ts">
   import { CalendarViewDraft } from "./CalendarViewDraft";
+  import { EventTableColumn } from "../CalendarSettings";
+  import { EventTable } from "../ListView/EventTable";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
