@@ -109,7 +109,7 @@
   import RulesMenuItems from "../Menu/RulesMenuItems.svelte";
   import CategorizeMenuItems from "../Menu/CategorizeMenuItems.svelte";
   import FilterMenuItems from "../Menu/FilterMenuItems.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import NewMailIcon from "lucide-svelte/icons/mail-plus";
   import NewItemsIcon from "lucide-svelte/icons/square-plus";
   import AppointmentIcon from "lucide-svelte/icons/calendar-plus";

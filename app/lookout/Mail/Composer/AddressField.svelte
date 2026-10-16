@@ -58,8 +58,8 @@
   import AutocompleteList from "./AutocompleteList.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
   import CopyIcon from "lucide-svelte/icons/copy";
   import CutIcon from "lucide-svelte/icons/scissors";

@@ -21,8 +21,8 @@
   import { MessageActions } from "../MessageActions";
   import { MailDialogs } from "../Dialogs/MailDialogs";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import CopyIcon from "lucide-svelte/icons/copy";

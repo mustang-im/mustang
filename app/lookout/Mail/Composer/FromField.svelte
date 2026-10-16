@@ -25,8 +25,8 @@
 
 <script lang="ts">
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";

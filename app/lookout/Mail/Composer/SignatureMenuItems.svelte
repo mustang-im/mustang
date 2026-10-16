@@ -16,8 +16,8 @@
 <script lang="ts">
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { SignatureEdits } from "./SignatureEdits";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 
