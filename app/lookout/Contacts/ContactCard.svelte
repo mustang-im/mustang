@@ -25,6 +25,22 @@
     </vbox>
   </hbox>
 
+  <hbox class="pivots" role="tablist">
+    {#each pivots as pivot (pivot.id)}
+      <button class="pivot" class:active={pivot.id == shownPivot} role="tab" aria-selected={pivot.id == shownPivot}
+        on:click={() => shownPivot = pivot.id}>
+        {pivot.label}
+      </button>
+    {/each}
+  </hbox>
+
+  {#if shownPivot != "overview"}
+    <vbox flex class="sections">
+      <ActivityList {activities} kind={shownPivot}
+        emptyText={pivots.find(pivot => pivot.id == shownPivot)?.emptyText}
+        onShowMore={() => activities = activities.more()} />
+    </vbox>
+  {:else}
   <vbox flex class="sections">
     {#if hasContactInfo}
       <section>
@@ -99,11 +115,28 @@
       <hbox class="no-info">{$t`No contact information yet.`}</hbox>
     {/if}
 
+    {#if $recentMessages.hasItems}
+      <section>
+        <h2>{$t`Recent messages`}</h2>
+        <ActivityList {activities} kind={ActivityKind.Messages} maxCount={3} emptyText=""
+          onShowAll={() => shownPivot = ActivityKind.Messages} />
+      </section>
+    {/if}
+
+    {#if $recentFiles.hasItems}
+      <section>
+        <h2>{$t`Recent files`}</h2>
+        <ActivityList {activities} kind={ActivityKind.Files} maxCount={3} emptyText=""
+          onShowAll={() => shownPivot = ActivityKind.Files} />
+      </section>
+    {/if}
+
     <hbox class="saved-in">
       <AddressbookIcon size={14} />
       {$t`Saved in ${$person.addressbook?.name ?? ""}`}
     </hbox>
   </vbox>
+  {/if}
 </vbox>
 
 <script lang="ts">
@@ -111,6 +144,8 @@
   import { ContactColumns } from "./Views/ContactColumns";
   import { ContactActions } from "./ContactActions";
   import { PreferredEntry } from "./PreferredEntry";
+  import { ActivityKind, ContactActivities } from "./History/ContactActivities";
+  import ActivityList from "./History/ActivityList.svelte";
   import ContactPicture from "./ContactPicture.svelte";
   import CardField from "./CardField.svelte";
   import CardButton from "./CardButton.svelte";
@@ -138,6 +173,17 @@
   $: urls = person.urls;
   $: groups = person.groups;
 
+  let shownPivot: "overview" | ActivityKind = "overview";
+  $: pivots = [
+    { id: "overview", label: $t`Overview`, emptyText: "" },
+    { id: ActivityKind.Messages, label: $t`Messages`, emptyText: $t`No messages with this person` },
+    { id: ActivityKind.Files, label: $t`Files`, emptyText: $t`No files shared with this person` },
+    { id: ActivityKind.Meetings, label: $t`Meetings`, emptyText: $t`No meetings with this person` },
+  ] as { id: "overview" | ActivityKind, label: string, emptyText: string }[];
+  $: activities = new ContactActivities(person);
+  $: recentMessages = activities.of(ActivityKind.Messages);
+  $: recentFiles = activities.of(ActivityKind.Files);
+
   $: jobLine = [$person.position, $person.department].filter(part => part).join(", ");
   $: preferredPhone = PreferredEntry.valueOf($phoneNumbers);
   $: hasContactInfo = $emailAddresses.hasItems || $phoneNumbers.hasItems || $chatAccounts.hasItems ||
@@ -158,8 +204,7 @@
   .header {
     align-items: start;
     gap: 20px;
-    padding: 24px 24px 20px 24px;
-    border-block-end: 1px solid var(--lo-divider);
+    padding: 24px 24px 12px 24px;
   }
   .title {
     min-width: 0;
@@ -182,6 +227,37 @@
     flex-wrap: wrap;
     gap: 8px;
     margin-block-start: 14px;
+  }
+  .pivots {
+    flex-shrink: 0;
+    gap: 4px;
+    padding: 0 16px;
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  .pivot {
+    position: relative;
+    height: 40px;
+    padding: 0 8px;
+    border: none;
+    background: none;
+    color: var(--lo-fg);
+    font: inherit;
+    cursor: pointer;
+  }
+  .pivot:hover {
+    color: var(--lo-accent-text);
+  }
+  .pivot.active {
+    font-weight: 600;
+  }
+  .pivot.active::after {
+    content: "";
+    position: absolute;
+    inset-inline: 8px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 1px;
+    background-color: var(--lo-accent);
   }
   .sections {
     min-height: 0;
