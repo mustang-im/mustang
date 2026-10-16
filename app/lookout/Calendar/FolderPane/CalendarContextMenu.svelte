@@ -2,9 +2,9 @@
   {#if calendar}
     <MenuItem label={$t`Rename Calendar`} icon={RenameIcon}
       onClick={() => CalendarActions.rename(calendar)} />
-    {#if CalendarGroups.isShared(calendar)}
+    {#if CalendarActions.canDeleteCalendar(calendar)}
       <MenuItem label={$t`Delete Calendar`} icon={DeleteIcon}
-        onClick={() => CalendarActions.deleteSharedCalendar(calendar)} />
+        onClick={() => CalendarActions.deleteCalendar(calendar)} />
     {/if}
     {#if CalendarSharing.canShare(calendar)}
       <MenuDivider />

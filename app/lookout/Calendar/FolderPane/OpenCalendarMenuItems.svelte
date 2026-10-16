@@ -4,6 +4,8 @@
 <MenuItem label={$t`Open Shared Calendar…`} icon={SharedCalendarIcon}
   disabled={!sharingAccounts.length && $t`None of your accounts can open the calendars of colleagues`}
   onClick={() => CalendarActions.openSharedCalendar(null)} />
+<MenuItem label={$t`Create New Blank Calendar…`} icon={NewCalendarIcon}
+  onClick={() => CalendarActions.createBlankCalendar()} />
 <MenuDivider />
 <MenuItem label={$t`New Calendar Account…`} icon={NewAccountIcon}
   onClick={() => CalendarActions.addCalendarAccount()} />
@@ -17,6 +19,7 @@
   import AddressBookIcon from "lucide-svelte/icons/book-user";
   import SharedCalendarIcon from "lucide-svelte/icons/users-round";
   import NewAccountIcon from "lucide-svelte/icons/calendar-cog";
+  import NewCalendarIcon from "lucide-svelte/icons/calendar-plus-2";
   import { t } from "../../../l10n/l10n";
 
   const emailAccounts = appGlobal.emailAccounts;

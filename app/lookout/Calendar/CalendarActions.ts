@@ -14,7 +14,8 @@ import { openEvent } from "../../frontend/Calendar/open";
 import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
 import { openComposer } from "../../frontend/Mail/open";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
-import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
+import { openApp } from "../../frontend/AppsBar/selectedApp";
+import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
 import { CalendarDialogs, type CalendarPropertiesTab } from "./Dialogs/CalendarDialogs";
 import { appGlobal } from "../../logic/app";
@@ -233,11 +234,22 @@ export class CalendarActions {
   }
 
   static addCalendarAccount() {
-    goTo("/setup/calendar", {});
+    SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar" });
   }
 
-  static async deleteSharedCalendar(calendar: Calendar): Promise<boolean> {
-    if (!confirm(gt`Remove the calendar ${calendar.name} from this app? This does not change the calendar on the server.`)) {
+  static createBlankCalendar() {
+    SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar", localOnly: true });
+  }
+
+  static canDeleteCalendar(calendar: Calendar | null): boolean {
+    return !!calendar && (CalendarGroups.isShared(calendar) || !calendar.mainAccount);
+  }
+
+  static async deleteCalendar(calendar: Calendar): Promise<boolean> {
+    let question = calendar.protocol == "calendar-local"
+      ? gt`Delete the calendar ${calendar.name} with all its appointments and meetings?`
+      : gt`Remove the calendar ${calendar.name} from this app? This does not change the calendar on the server.`;
+    if (!confirm(question)) {
       return false;
     }
     await calendar.deleteIt();

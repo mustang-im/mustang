@@ -14,6 +14,7 @@ import { openEvent } from "../../frontend/Calendar/open";
 import { newPerson, selectedPerson } from "../../frontend/Contacts/Person/Selected";
 import { selectedAddressbook, selectedContact } from "./Selected";
 import { ContactDialogs } from "./Dialogs/ContactDialogs";
+import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import { openExternalURL } from "../../logic/util/os-integration";
 import { PreferredEntry } from "./PreferredEntry";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
@@ -196,6 +197,27 @@ export class ContactActions {
 
   static rename(addressbook: Addressbook) {
     ContactDialogs.open({ kind: "rename-addressbook", addressbook });
+  }
+
+  static newFolder() {
+    SettingsDialogs.open({ kind: "new-folder-account", folderKind: "addressbook", localOnly: true });
+  }
+
+  static canDeleteFolder(addressbook: Addressbook | null): boolean {
+    return !!addressbook && appGlobal.addressbooks.contains(addressbook) && !addressbook.mainAccount;
+  }
+
+  static async deleteFolder(addressbook: Addressbook) {
+    let question = addressbook.protocol == "addressbook-local"
+      ? gt`Delete the address book ${addressbook.name} with all its contacts?`
+      : gt`Remove the address book ${addressbook.name} from this app? This does not change the address book on the server.`;
+    if (!confirm(question)) {
+      return;
+    }
+    if (get(selectedAddressbook) == addressbook) {
+      selectedAddressbook.set(null);
+    }
+    await addressbook.deleteIt();
   }
 
   static async sync(addressbook: Addressbook) {
