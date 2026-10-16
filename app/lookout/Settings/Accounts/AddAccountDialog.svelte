@@ -164,6 +164,7 @@
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import InternetEmailSettingsDialog from "./InternetEmailSettingsDialog.svelte";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import OAuth2EmbeddedBrowser from "../../../frontend/Shared/Auth/OAuth2EmbeddedBrowser.svelte";
   import logo from "../../../frontend/asset/icon/general/logo.svg?raw";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
@@ -193,7 +194,9 @@
   }
 
   async function confirmRedirect(emailAddress: string, redirectDomain: string): Promise<boolean> {
-    return confirm($t`A configuration for your account ${emailAddress} may be available at:\n\n${redirectDomain}\n\nDo you want to submit your password there?`);
+    return await MessageBox.confirm($t`Add Account`,
+      $t`Allow ${redirectDomain} to configure the server settings of ${emailAddress}? Your account was redirected to this website for its settings, and your password will be sent there. You should only allow settings from sources you know and trust.`,
+      $t`Allow`, $t`Cancel`);
   }
 
   async function connect() {

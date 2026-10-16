@@ -57,6 +57,7 @@
   import { appName } from "../../../logic/build";
   import { AccountLabels } from "./AccountLabels";
   import { SettingsDialogs } from "../SettingsDialogs";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../../frontend/Mail/Selected";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -99,7 +100,7 @@
 
   async function onRemove() {
     let account = selected;
-    if (!confirm($t`Are you sure that you want to remove the account ${account.name} from ${appName}, together with all its data on this computer?`)) {
+    if (!await MessageBox.ask($t`Account Settings`, $t`Are you sure that you want to remove the account ${account.name} from ${appName}? All its content on this computer will be deleted. Content stored on the server will not be affected.`)) {
       return;
     }
     await account.deleteIt();

@@ -41,6 +41,7 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { CalendarSharing } from "./CalendarSharing";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { catchErrors } from "../../../frontend/Util/error";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
@@ -76,7 +77,7 @@
   }
 
   async function onRemove(person: PersonUID) {
-    if (!confirm($t`Remove the access of ${person.name || person.emailAddress} to the calendar ${calendar.name}?`)) {
+    if (!await MessageBox.ask($t`Permissions`, $t`Do you want to stop sharing the calendar "${calendar.name}" with ${person.name || person.emailAddress}?`)) {
       return;
     }
     await CalendarSharing.remove(calendar, person);
