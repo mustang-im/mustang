@@ -5,45 +5,28 @@
     onAnswer={onClose} />
 {:else}
   <Dialog title={$t`Create Rule`} on:close={onClose} width="540px">
-    <fieldset>
-      <legend>{$t`When I get email with all of the selected conditions`}</legend>
+    <GroupBox label={$t`When I get email with all of the selected conditions`} classes="rule-box">
       <grid class="fields">
-        <label class="check from" class:disabled={!quickRule.sender}
-          title={quickRule.sender ? null : $t`The sender is not in your address book`}>
-          <input type="checkbox" bind:checked={quickRule.fromSender} disabled={!quickRule.sender} />
-          {$t`From ${quickRule.senderName}`}
-        </label>
-        <label class="check">
-          <input type="checkbox" bind:checked={quickRule.hasText} />
-          {$t`Subject or body contains`}
-        </label>
+        <CheckBox label={$t`From ${quickRule.senderName}`} bind:checked={quickRule.fromSender}
+          disabled={!quickRule.sender && $t`The sender is not in your address book`} classes="check from" />
+        <CheckBox label={$t`Subject or body contains`} bind:checked={quickRule.hasText} classes="check" />
         <input type="text" class="value lo-text-field" bind:value={quickRule.text}
           aria-label={$t`Subject or body contains`}
           on:input={() => quickRule.hasText = !!quickRule.text} />
       </grid>
-    </fieldset>
-    <fieldset>
-      <legend>{$t`Do the following`}</legend>
+    </GroupBox>
+    <GroupBox label={$t`Do the following`} classes="rule-box">
       <grid class="fields">
-        <label class="check">
-          <input type="checkbox" bind:checked={quickRule.moveToFolder} />
-          {$t`Move the item to folder:`}
-        </label>
+        <CheckBox label={$t`Move the item to folder:`} bind:checked={quickRule.moveToFolder} classes="check" />
         <hbox class="folder-row">
           <input type="text" class="value folder lo-text-field" readonly value={quickRule.folder?.name ?? ""}
             aria-label={$t`Folder`} />
           <DialogButton label={$t`Select Folder…`} onClick={() => { isChoosingFolder = true; }} />
         </hbox>
-        <label class="check wide">
-          <input type="checkbox" bind:checked={quickRule.markAsRead} />
-          {$t`Mark it as read`}
-        </label>
-        <label class="check wide">
-          <input type="checkbox" bind:checked={quickRule.flag} />
-          {$t`Flag message for follow up`}
-        </label>
+        <CheckBox label={$t`Mark it as read`} bind:checked={quickRule.markAsRead} classes="check wide" />
+        <CheckBox label={$t`Flag message for follow up`} bind:checked={quickRule.flag} classes="check wide" />
       </grid>
-    </fieldset>
+    </GroupBox>
     <svelte:fragment slot="footer">
       <DialogButton label={$t`OK`} primary onClick={onOK} disabled={quickRule.disabledReason ?? false} />
       <DialogButton label={$t`Cancel`} onClick={onClose} />
@@ -66,6 +49,8 @@
   import { QuickRule } from "./QuickRule";
   import { RuleWizardModel } from "./RuleWizardModel";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RulesWizard from "./RulesWizard.svelte";
   import RuleFolderDialog from "./RuleFolderDialog.svelte";
@@ -107,33 +92,20 @@
 </script>
 
 <style>
-  fieldset {
-    margin: 0 0 12px 0;
-    padding: 6px 12px 12px 12px;
-    border: 1px solid var(--lo-border);
-    border-radius: var(--lo-radius-small);
-  }
-  legend {
-    padding: 0 4px;
-    color: var(--lo-fg-secondary);
+  :global(.rule-box) {
+    margin-bottom: 12px;
   }
   .fields {
     grid-template-columns: max-content 1fr;
     align-items: center;
     gap: 8px 12px;
   }
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .fields :global(.check) {
     white-space: nowrap;
   }
-  .check.from,
-  .check.wide {
+  .fields :global(.check.from),
+  .fields :global(.check.wide) {
     grid-column: 1 / -1;
-  }
-  .check.disabled {
-    color: var(--lo-fg-disabled);
   }
   .value {
     min-width: 0;

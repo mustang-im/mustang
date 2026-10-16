@@ -5,12 +5,9 @@
   </hbox>
   <vbox flex class="tab-page">
     <hbox class="account-row">
-      <label for="signatures-account">{$t`E-mail account:`}</label>
-      <select id="signatures-account" class="lo-text-field" bind:value={account}>
-        {#each $accounts.each as mailAccount}
-          <option value={mailAccount}>{mailAccount.name}</option>
-        {/each}
-      </select>
+      <span>{$t`E-mail account:`}</span>
+      <ComboBox label={$t`E-mail account:`} options={$accounts.contents.map(mailAccount => ({ value: mailAccount, label: mailAccount.name }))}
+        bind:value={account} width="280px" />
     </hbox>
     <vbox class="section">
       <hbox class="caption">{$t`Select signature to edit`}</hbox>
@@ -75,6 +72,7 @@
   import { appGlobal } from "../../../logic/app";
   import { SignatureEdits } from "./SignatureEdits";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import LinkDialog from "./LinkDialog.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";

@@ -4,21 +4,20 @@
   onOK={onSave}
   on:close>
   <vbox class="dialog-content">
-    <label class="checkbox">
-      <input type="checkbox" bind:checked={isMarkingRead} />
-      {$t`Mark items as read when viewed in the Reading Pane`}
-    </label>
-    <label class="delay" class:disabled={!isMarkingRead}>
-      {$t`Wait`}
-      <input class="lo-text-field" type="number" min="0" max="20" step="1" bind:value={delay} disabled={!isMarkingRead} />
-      {$t`seconds before marking item as read`}
-    </label>
+    <CheckBox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead} />
+    <hbox class="delay" class:disabled={!isMarkingRead}>
+      <span>{$t`Wait`}</span>
+      <SpinBox label={$t`Seconds`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead} />
+      <span>{$t`seconds before marking item as read`}</span>
+    </hbox>
   </vbox>
 </Dialog>
 
 <script lang="ts">
   import { MailView } from "../MailView";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import { t } from "../../../l10n/l10n";
 
   let current = MailView.readAfter.value;
@@ -35,23 +34,12 @@
   .dialog-content {
     gap: 12px;
   }
-  .checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
   .delay {
-    display: flex;
     align-items: center;
     gap: 8px;
-    padding-inline-start: 26px;
+    padding-inline-start: 24px;
   }
   .delay.disabled {
     color: var(--lo-fg-disabled);
-  }
-  .delay input {
-    width: 56px;
-    height: 28px;
-    padding: 0 6px;
   }
 </style>
