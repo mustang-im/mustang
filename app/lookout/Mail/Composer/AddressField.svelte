@@ -45,17 +45,16 @@
   <MenuItem label={$t`Remove`} icon={RemoveIcon} disabled={disabled} onClick={() => remove(menuRecipient)} />
   <MenuDivider />
   <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}
-    icon={ContactIcon} onClick={() => onOpenContact(menuRecipient)} />
+    icon={ContactIcon} onClick={() => MessageActions.openContact(menuRecipient)} />
 </ContextMenu>
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { searchContacts } from "../../../logic/Contacts/Search";
-  import { appGlobal } from "../../../logic/app";
   import { UserError } from "../../../logic/util/util";
-  import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
   import { showError, backgroundError } from "../../../frontend/Util/error";
   import { RecipientText } from "./RecipientText";
+  import { MessageActions } from "../MessageActions";
   import AutocompleteList from "./AutocompleteList.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
@@ -263,10 +262,6 @@
   async function onCut(recipient: PersonUID) {
     await onCopy(recipient);
     remove(recipient);
-  }
-
-  function onOpenContact(recipient: PersonUID) {
-    openPersonFromOtherApp(recipient.createPerson(appGlobal.personalAddressbook));
   }
 </script>
 
