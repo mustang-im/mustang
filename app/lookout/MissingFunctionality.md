@@ -153,7 +153,6 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 |---|---|---|
 | Show As, Private, Categorize, High / Low Importance | Appointment tab > Options and Tags | `Event.showAs`, `Event.isPrivate`, `Event.categories` (see Calendar views) and `Event.importance` (EWS `Importance`, iCalendar `PRIORITY`) |
 | Optional attendees and resources (rooms) | Optional field; Scheduling Assistant | `Participant.role` mapped to EWS `OptionalAttendees` / `Resources`, iCalendar `ROLE` / `CUTYPE`, JSCalendar `roles` / `kind`. Lookout has one Required field. |
-| Check Names for attendees | Meeting tab > Attendees | Resolving typed names against the address books and the directory. Address Book and the Required button open Select Names. |
 | Room Finder, Add Rooms, location suggestions | Location; Scheduling Assistant | A room list API (EWS `GetRoomLists` / `GetRooms`) |
 | AutoPick, suggested times | Scheduling Assistant | Availability suggestions (EWS `GetUserAvailability` with suggestions) |
 | Tentative, Out of Office and Working Elsewhere in the free/busy rows, attendees' working hours, calendar details | Scheduling Assistant | `Calendar.arePersonsFree()` returns only free or busy. It would need the busy type, working hours and the detailed view (EWS `DetailedMerged`). |

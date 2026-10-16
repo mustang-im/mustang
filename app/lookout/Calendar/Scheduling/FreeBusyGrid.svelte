@@ -39,8 +39,7 @@
       {/each}
       {#if !readOnly}
         <hbox class="row add" bind:this={addRowEl}>
-          <PersonAutocomplete placeholder={$t`Add attendee`} skipPersons={participants}
-            onAddPerson={person => EventEditFlow.addParticipant(event, person)} />
+          <AddressField recipients={newAttendees} label={$t`Click here to add a name`} onAdd={onAddAttendee} />
         </hbox>
       {/if}
     </vbox>
@@ -111,7 +110,9 @@
   import ResponseIcon from "../EditEvent/ResponseIcon.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import PersonAutocomplete from "../../../frontend/Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
+  import AddressField from "../../Mail/Composer/AddressField.svelte";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { ArrayColl } from "svelte-collections";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import RemoveIcon from "lucide-svelte/icons/x";
@@ -144,6 +145,14 @@
   let lastStartTime = event.startTime.getTime();
 
   $: participants = event.participants;
+  let newAttendees = new ArrayColl<PersonUID>();
+
+  function onAddAttendee(person: PersonUID) {
+    newAttendees.remove(person);
+    if (!event.participants.some(participant => participant.emailAddress?.toLowerCase() == person.emailAddress?.toLowerCase())) {
+      EventEditFlow.addParticipant(event, person);
+    }
+  }
   $: timeline = new Timeline(day, hourWidth);
   $: hours = timeline.hours();
   $: dayLabel = day.toLocaleDateString(getDateTimeLocale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" });

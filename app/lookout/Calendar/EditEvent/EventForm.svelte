@@ -15,7 +15,7 @@
             {$t`Required`}
           </button>
           <hbox class="field attendees">
-            <AttendeesField {event} bind:this={attendeesField} autofocus={!!event.title && !flow.attendees.length} />
+            <AttendeesField {event} {flow} bind:this={attendeesField} autofocus={!!event.title && !flow.attendees.length} />
           </hbox>
         {/if}
         <TimeRows {event} editor={timeEditor} {flow} {onRecurrence} />
@@ -77,6 +77,10 @@
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;
   $: attachments = event.attachments;
+
+  export async function checkNames(): Promise<boolean> {
+    return await attendeesField?.checkNames();
+  }
 
   export function focusAttendees() {
     attendeesField?.focus();

@@ -109,6 +109,9 @@
           <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
             tooltip={$t`Select attendees from the address book`}
             onClick={actions.onAddressBook} />
+          <RibbonButton label={$t`Check Names`} icon={CheckNamesIcon}
+            tooltip={$t`Check the names you typed against your address books`}
+            onClick={actions.onCheckNames} />
         {:else}
           <RibbonButton label={$t`Invite Attendees`} icon={InviteIcon}
             tooltip={$t`Turn this appointment into a meeting`}
@@ -203,6 +206,7 @@
     onDeleteSeries: () => Promise<void>;
     onInviteAttendees: () => void;
     onAddressBook: () => void;
+    onCheckNames: () => Promise<void>;
     onRecurrence: () => void;
     onRefreshAvailability: () => void;
     onAttachFile: () => Promise<void>;
@@ -239,6 +243,7 @@
   import LinkIcon from "lucide-svelte/icons/link";
   import SendIcon from "lucide-svelte/icons/send";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";
+  import CheckNamesIcon from "lucide-svelte/icons/user-check";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
   import InviteIcon from "lucide-svelte/icons/users-round";
   import AddAttendeesIcon from "lucide-svelte/icons/user-round-plus";
