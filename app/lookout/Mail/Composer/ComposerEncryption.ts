@@ -90,7 +90,7 @@ export class ComposerEncryption {
   static sign(mail: EMail, identity: MailIdentity) {
     // <copied from="../../../frontend/Mail/Composer/EncryptionButtons.svelte" doSign()>
     if (ComposerEncryption.signDisabledReason(ComposerEncryption.privateKey(identity))) {
-      ComposerEncryption.openTrustCenter();
+      ComposerEncryption.openTrustCenter(identity);
       return;
     }
     mail.signedByKeyID = getMyPrivateKey(identity)?.id;
@@ -98,7 +98,7 @@ export class ComposerEncryption {
     // </copied>
   }
 
-  static openTrustCenter() {
-    SettingsDialogs.openOptions("trust-center");
+  static openTrustCenter(identity: MailIdentity) {
+    SettingsDialogs.openTrustCenter("email-security", identity);
   }
 }
