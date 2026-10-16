@@ -22,6 +22,9 @@
           <DialogButton label={okLabel} primary disabled={okDisabled || isRunning} onClick={submit} />
         {/if}
         <DialogButton label={cancelLabel ?? $t`Cancel`} onClick={onCancel} />
+        {#if onApply}
+          <DialogButton label={applyLabel ?? $t`Apply`} disabled={applyDisabled || isRunning} onClick={apply} />
+        {/if}
       {/if}
     </hbox>
   </vbox>
@@ -41,6 +44,9 @@
   export let width = "440px";
   export let height: string = null;
   export let onOK: () => Promise<void> | void = null;
+  export let onApply: () => Promise<void> | void = null;
+  export let applyLabel: string = null;
+  export let applyDisabled: boolean | string = false;
 
   const dispatch = createEventDispatcher<{ close: void }>();
   let dialogEl: HTMLDialogElement;
@@ -67,6 +73,20 @@
     try {
       await onOK?.();
       dispatch("close");
+    } catch (ex) {
+      showError(ex);
+    } finally {
+      isRunning = false;
+    }
+  }
+
+  async function apply() {
+    if (applyDisabled || isRunning) {
+      return;
+    }
+    isRunning = true;
+    try {
+      await onApply?.();
     } catch (ex) {
       showError(ex);
     } finally {
