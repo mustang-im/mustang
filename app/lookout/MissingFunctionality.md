@@ -133,7 +133,7 @@ Date navigator, calendar list, Day / Work Week / Week / Month and split view.
 | Work hours, work days, first day of the week | File > Options > Calendar | Settings, or the server's `WorkingHours`. Lookout shades outside 8:00 to 17:00, Monday to Friday, and weeks start on Monday, like `frontend/`. |
 | Second and third time zone in the time ruler | File > Options > Calendar | *UI only* (a setting) |
 | Calendar groups | Home tab > Calendar Groups | Stored groups of calendars (EWS "Common Views") |
-| Create, rename, copy, move or delete a calendar on the server; Create New Blank Calendar | Folder tab > New Calendar, Copy Calendar, Move Calendar; calendar context menu | Calendar folder management per protocol. Lookout's Rename Calendar renames it only in this app, and Delete Calendar removes only shared calendars. |
+| Create, rename, copy, move or delete a calendar on the server | Folder tab > New Calendar, Copy Calendar, Move Calendar; calendar context menu | Calendar folder management per protocol. Lookout's New Calendar and Create New Blank Calendar make a calendar on this computer; Rename Calendar renames only in this app; Delete Calendar removes shared calendars and the calendars that the user added. |
 | Open Calendar from a room list or from the Internet (ICS subscription), Publish Online, E-mail Calendar | Home tab > Open Calendar; Share | A room list API; read-only ICS subscription accounts; publishing |
 | Calendar description, Home Page and AutoArchive tabs of Calendar Properties | Calendar context menu > Properties | A description on `Calendar`; archiving |
 | Delegates, meetings "on behalf of" | Share Calendar > Delegate | Delegate APIs (EWS `AddDelegate`) and organizer handling for delegated calendars |
@@ -141,7 +141,7 @@ Date navigator, calendar list, Day / Work Week / Week / Month and split view.
 | Move an event to another calendar; copy an event (Ctrl+drag, Copy to My Calendar) | Dragging between calendars; context menu; Appointment tab | `Event.moveToCalendar()` exists, but `frontend/` disabled it because of bugs (#1277), so Lookout drags only within a calendar. Copy semantics for events (new UID, organizer). |
 | "Send update?" choices after changing a meeting: send, don't send, send only to added or removed attendees | Dialog after moving or editing a meeting | A send parameter on `Event.save()` / `sendInvitations()`. The logic always sends, so Lookout only asks whether to move the meeting and send the update. |
 | Reminders window with Snooze, Dismiss, Dismiss All | Reminders window | Reminder state per occurrence (dismissed, snoozed until), synced (EWS `ReminderNextTime`) |
-| Print (Daily, Weekly, Monthly, Tri-fold) | File > Print | Print layouts and printing in the desktop app |
+| Print (Daily, Weekly, Monthly, Tri-fold) | File > Print | Print layouts and printing in the desktop app. File > Save Calendar (as `.ics`) is built. |
 | Holidays | File > Options > Calendar > Add Holidays | Holiday calendars per country |
 | Weather and work location in the day headers | Day headers (new Outlook) | A weather service; the Exchange work location API |
 | Conditional Formatting, Filter and Format Columns in View Settings; drag an event onto the date navigator | View tab > View Settings; date navigator | Conditional formatting and filters need a rule engine for events; dragging onto the navigator is *UI only* |
@@ -186,7 +186,7 @@ Address books, contact list, contact card, contact and contact group forms.
 | Categories, Follow Up and Private flags on contacts | Home tab > Tags | `Person.tags` like `EMail.tags`, and flag fields, with server mapping (EWS `Categories`, vCard `CATEGORIES`) |
 | Favorites | People (new Outlook) | A favorite flag on `Person`, synced where the server supports it |
 | Deleted contacts, restore | Deleted folder (new Outlook); Deleted Items | A trash for contacts, or server-side soft delete. `deleteIt()` deletes permanently. |
-| Create, rename and delete address books | Folder tab | Address book management on the server (CardDAV MKCOL, EWS CreateFolder, JMAP `AddressBook/set`). Today address books come only from account setup. |
+| Create, rename and delete address books on the server | Folder tab | Address book management on the server (CardDAV MKCOL, EWS CreateFolder, JMAP `AddressBook/set`). Lookout's New Folder makes an address book on this computer, Rename Folder renames only in this app, and Delete Folder removes the address books that the user added. |
 | Forward Contact as vCard, Forward Group | Home tab > Share; contact group form | An `Attachment` from generated data for a new `EMail`. The logic can already write vCards. |
 | Add a one-off email address to a contact group; Update Now | Contact group form > Members | One-off members in `Group` (today only `Person` objects); a directory lookup per member. Lookout's New E-mail Contact… creates a contact in the address book and adds it. |
 | Address Book dialog to browse the company directory | Home tab > Find > Address Book | Listing and paging in `SearchOnlyAddressbook`, which can only search. Lookout searches the directories from the left pane. |
@@ -196,9 +196,21 @@ Address books, contact list, contact card, contact and contact group forms.
 | Mail merge, printing contacts | Home tab > Actions; File > Print | Printing in the desktop app; a mail merge generator |
 | Column chooser and grouping in the List and Phone views; Map It | View tab > Add Columns, Arrangement; contact form | *UI only*. Lookout has the People, Business Card, Card, Phone and List views and sorts by the column headers. |
 | "Display as" name of an email address, "This is the mailing address" | Contact form > General | A display name per email entry and a mailing address flag on `ContactEntry` |
-| All Fields and Certificates pages; editing the second web page or IM address | Contact form > Show | *UI only*. The General page edits the first web page and IM address; further entries stay as they are. |
-| Contact history (recent mail and meetings), encryption keys in the contact form | Profile card; contact form > Certificates | *UI only*: `frontend/` has `ContactHistory` and `PersonPage/Encryption`. |
+| Field types and formats for user-defined fields, the field chooser lists of Outlook (Frequently-used, Miscellaneous fields) | Contact form > All Fields > New… | Typed custom fields on `ContactEntry`. Lookout's All Fields page edits the existing entries and adds text fields. |
+| Contact history (recent mail and meetings) | Profile card | *UI only*: `frontend/` has `ContactHistory`. |
 | Recent Searches, search in subfolders, Categorized and other refiners | Search tab | Search history and categories on contacts; Lookout refines by phone number, address and email address |
+
+## File backstage and Options
+
+Info, Open & Export, Save As, Print, Account Settings, Add Account and the Options dialog.
+
+| Outlook feature | Where in Outlook | What the logic would need |
+|---|---|---|
+| Printer choice and status, Print Options (copies, page range, print attached files), Table Style, printing several selected messages | File > Print | A printer list and print options from the desktop backend (the webview's `print()` options); a table layout. Lookout prints the selected message in Memo Style through the system print dialog. |
+| Account Settings: Repair, Set as Default, Change Folder; Change Profile, Manage Profiles; the Data Files, RSS Feeds, SharePoint Lists and Published Calendars tabs | File > Info > Account Settings | Re-running the autoconfig for an existing account; a default account setting; profiles; RSS and SharePoint accounts; calendar publishing |
+| Internet calendar subscriptions (ICS / webcal URLs) | File > Account Settings > Internet Calendars > New… | Read-only ICS subscription calendars. Lookout's Calendars tab adds calendars on this computer and CalDAV calendars. |
+| "Remember password" off, Require logon using Secure Password Authentication (SPA), Mail to keep offline | Add Account > POP and IMAP Account Settings | Accounts without a stored password (asking at login); a sync window for offline mail |
+| Options pages People, Search, Accessibility and Add-ins, and Outlook options that Mustang has no setting for (e.g. Send / Receive groups, AutoArchive, Empty Deleted Items on exit, the reminder sound file) | File > Options | Settings and their implementation in the logic |
 
 ## Logic bugs found while building Lookout
 
