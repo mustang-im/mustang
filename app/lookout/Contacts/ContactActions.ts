@@ -40,6 +40,17 @@ export class ContactActions {
     return person;
   }
 
+  static createColleague(colleague: Person): Person {
+    let person = ContactActions.createPerson(colleague.addressbook);
+    person.company = colleague.company;
+    for (let entries of ["phoneNumbers", "streetAddresses", "urls"] as const) {
+      person[entries].addAll(colleague[entries].contents
+        .filter(entry => entry.purpose == "work")
+        .map(entry => entry.clone()));
+    }
+    return person;
+  }
+
   static createGroup(addressbook: Addressbook): Group {
     let group = addressbook.newGroup();
     group.name = "";

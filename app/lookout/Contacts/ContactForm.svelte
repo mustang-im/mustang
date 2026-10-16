@@ -4,104 +4,108 @@
       <RibbonGroup label={$t`Actions`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
           onClick={saveAndClose} shortCutInfo="Alt+S" />
-        <RibbonButton label={$t`Save & New`} icon={SaveNewIcon}
-          onClick={saveAndNew} />
         <RibbonButton label={$t`Delete`} icon={DeleteIcon}
           onClick={deleteIt} />
+        <RibbonSplitButton label={$t`Save & New`} icon={SaveNewIcon} size="small"
+          onClick={saveAndNew}>
+          <MenuItem label={$t`Save & New`} icon={SaveNewIcon} onClick={saveAndNew} />
+          <MenuItem label={$t`Contact from the Same Company`} icon={SameCompanyIcon}
+            onClick={saveAndNewFromSameCompany} />
+        </RibbonSplitButton>
+      </RibbonGroup>
+      <RibbonGroup label={$t`Show`}>
+        <RibbonToggleButton label={$t`General`} icon={GeneralIcon} isRadio
+          checked={page == "general"} onChange={() => { page = "general"; }} />
+        <RibbonToggleButton label={$t`Details`} icon={DetailsIcon} isRadio
+          checked={page == "details"} onChange={() => { page = "details"; }} />
       </RibbonGroup>
       <RibbonGroup label={$t`Communicate`}>
-        <RibbonButton label={$t`Email`} icon={MailIcon}
+        <RibbonButton label={$t`Email`} icon={MailIcon} size="small"
           onClick={() => ContactActions.writeMail([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
-        <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
+        <RibbonButton label={$t`Meeting`} icon={MeetingIcon} size="small"
           onClick={() => ContactActions.newMeeting([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
+        <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small">
+          <SubMenu label={$t`Call`} icon={CallIcon} disabled={!$phoneNumbers.hasItems && $t`Enter a phone number first`}>
+            {#each $phoneNumbers.each as entry}
+              <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone`})`} icon={CallIcon}
+                onClick={() => ContactActions.call(entry.value)} />
+            {/each}
+          </SubMenu>
+        </RibbonMenuButton>
       </RibbonGroup>
       <RibbonGroup label={$t`Options`}>
         <RibbonMenuButton label={$t`Picture`} icon={PictureIcon}>
-          <MenuItem label={$t`Change Picture…`} icon={ChangePictureIcon}
+          <MenuItem label={$person.picture ? $t`Change Picture…` : $t`Add Picture…`} icon={ChangePictureIcon}
             onClick={onSelectPicture} />
           <MenuItem label={$t`Remove Picture`} icon={RemovePictureIcon}
             disabled={!$person.picture}
-            onClick={() => person.picture = null} />
+            onClick={() => { person.picture = null; }} />
         </RibbonMenuButton>
       </RibbonGroup>
     </RibbonTab>
   </Ribbon>
 
   <FormCard title={$person.name || $t`Untitled`} kind={$t`Contact`}>
-    <hbox slot="title-end" title={$t`Address book`}>
-      <AddressbookChanger bind:person withLabel={true} />
-    </hbox>
-
     <hbox flex class="form-body">
-      <vbox class="column main">
-        <hbox class="name-block">
-          <grid class="fields">
-            <label for="contact-name">{$t`Full name`}</label>
-            <input id="contact-name" type="text" bind:value={person.name} bind:this={nameInput}
-              placeholder={$t`First name Last name`} />
-            <label for="contact-first-name">{$t`First name`}</label>
-            <input id="contact-first-name" type="text" bind:value={person.firstName} />
-            <label for="contact-last-name">{$t`Last name`}</label>
-            <input id="contact-last-name" type="text" bind:value={person.lastName} />
-            <label for="contact-company">{$t`Company`}</label>
-            <input id="contact-company" type="text" bind:value={person.company} />
-            <label for="contact-position">{$t`Job title`}</label>
-            <input id="contact-position" type="text" bind:value={person.position} />
+      {#if page == "details"}
+        <vbox class="column main">
+          <div class="fields">
             <label for="contact-department">{$t`Department`}</label>
-            <input id="contact-department" type="text" bind:value={person.department} />
-          </grid>
-          <vbox class="picture-box">
-            <button class="picture" on:click={() => catchErrors(onSelectPicture)}
-              title={$t`Change Picture…`}>
-              <ContactPicture contact={person} size={104} />
-              <hbox class="camera"><CameraIcon size={16} /></hbox>
+            <input id="contact-department" type="text" class="lo-text-field" bind:value={person.department} />
+          </div>
+        </vbox>
+      {:else}
+        <vbox class="column main">
+          <div class="fields">
+            <DialogButton label={$t`Full Name…`} classes="field-button" onClick={() => { isFullNameOpen = true; }} />
+            <hbox class="name-and-picture">
+              <vbox class="name-fields">
+                <input type="text" class="lo-text-field" bind:value={person.name} bind:this={nameInput}
+                  aria-label={$t`Full Name`} />
+              </vbox>
+            </hbox>
+            <label for="contact-company">{$t`Company`}</label>
+            <input id="contact-company" type="text" class="lo-text-field" bind:value={person.company} />
+            <label for="contact-position">{$t`Job title`}</label>
+            <input id="contact-position" type="text" class="lo-text-field" bind:value={person.position} />
+
+            <span class="section">{$t`Internet`}</span>
+            <SlotButton slots={ContactSlots.emailSlots} bind:slot={emailSlot} entries={emailAddresses} />
+            <SlotField slots={ContactSlots.emailSlots} bind:slot={emailSlot} entries={emailAddresses} type="email" />
+            <label for="contact-web">{$t`Web page address`}</label>
+            <input id="contact-web" type="url" class="lo-text-field"
+              value={$urls && firstValue(urls)} on:input={event => setFirstValue(urls, event.currentTarget.value, null)} />
+            <label for="contact-im">{$t`IM address`}</label>
+            <input id="contact-im" type="text" class="lo-text-field"
+              value={$chatAccounts && firstValue(chatAccounts)} on:input={event => setFirstValue(chatAccounts, event.currentTarget.value, "xmpp")} />
+
+            <span class="section">{$t`Phone numbers`}</span>
+            {#each phoneRows as row, i}
+              <SlotButton slots={ContactSlots.phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} />
+              <SlotField slots={ContactSlots.phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} type="tel" />
+            {/each}
+
+            <span class="section">{$t`Addresses`}</span>
+            <div class="top-aligned">
+              <SlotButton slots={ContactSlots.addressSlots} bind:slot={addressSlot} entries={streetAddresses}
+                onClick={() => { isAddressOpen = true; }} />
+            </div>
+            <button class="address-box" title={$t`Edit the address`} on:click={() => { isAddressOpen = true; }}>
+              {$streetAddresses && ContactColumns.addressText(addressSlot.valueIn(streetAddresses))}
             </button>
-            <FileSelector {acceptFileTypes} bind:this={fileSelector} />
-          </vbox>
-        </hbox>
-
-        <FormSection title={$t`Email`} addLabel={$t`Add email address`} onAdd={() => add(person.emailAddresses)}>
-          {#each $emailAddresses.each as entry (entry)}
-            <ContactEntryRow {entry} coll={emailAddresses}>
-              <EmailAddressEdit bind:value={entry.value} />
-            </ContactEntryRow>
-          {/each}
-        </FormSection>
-
-        <FormSection title={$t`Phone numbers`} addLabel={$t`Add phone number`} onAdd={() => add(person.phoneNumbers)}>
-          {#each $phoneNumbers.each as entry (entry)}
-            <ContactEntryRow {entry} coll={phoneNumbers}>
-              <PhoneNumberEdit bind:value={entry.value} />
-            </ContactEntryRow>
-          {/each}
-        </FormSection>
-
-        <FormSection title={$t`Chat`} addLabel={$t`Add chat contact`} onAdd={() => add(person.chatAccounts)}>
-          {#each $chatAccounts.each as entry (entry)}
-            <ContactEntryRow {entry} coll={chatAccounts} protocolLabels={chatProtocols}>
-              <EmailAddressEdit bind:value={entry.value} />
-            </ContactEntryRow>
-          {/each}
-        </FormSection>
-
-        <FormSection title={$t`Web pages`} addLabel={$t`Add website link`} onAdd={() => add(person.urls)}>
-          {#each $urls.each as entry (entry)}
-            <ContactEntryRow {entry} coll={urls}>
-              <URLEdit bind:value={entry.value} />
-            </ContactEntryRow>
-          {/each}
-        </FormSection>
-
-        <FormSection title={$t`Addresses`} addLabel={$t`Add street address`} onAdd={addStreetAddress}>
-          {#each $streetAddresses.each as entry (entry)}
-            <ContactEntryRow {entry} coll={streetAddresses}>
-              <StreetAddressEdit bind:value={entry.value} />
-            </ContactEntryRow>
-          {/each}
-        </FormSection>
-      </vbox>
+          </div>
+        </vbox>
+        <vbox class="picture-box">
+          <button class="picture" on:click={() => catchErrors(onSelectPicture)}
+            title={$person.picture ? $t`Change Picture…` : $t`Add Picture…`}>
+            <ContactPicture contact={person} size={104} />
+            <hbox class="camera"><CameraIcon size={16} /></hbox>
+          </button>
+          <FileSelector {acceptFileTypes} bind:this={fileSelector} />
+        </vbox>
+      {/if}
 
       <vbox class="column side">
         <vbox class="business-card">
@@ -117,43 +121,59 @@
           {#if preferredEmail}<span class="card-detail link">{preferredEmail}</span>{/if}
         </vbox>
         <label for="contact-notes" class="notes-label">{$t`Notes`}</label>
-        <textarea id="contact-notes" bind:value={person.notes} placeholder={$t`Personal notes`} />
+        <textarea id="contact-notes" class="lo-text-field" bind:value={person.notes} />
       </vbox>
     </hbox>
   </FormCard>
 </vbox>
 
+{#if isFullNameOpen}
+  <FullNameDialog {person} on:close={() => { isFullNameOpen = false; }} />
+{/if}
+{#if isAddressOpen}
+  <CheckAddressDialog value={addressSlot.valueIn(streetAddresses)}
+    onSave={value => { addressSlot = addressSlot.setValueIn(streetAddresses, value, ContactSlots.addressSlots); }}
+    on:close={() => { isAddressOpen = false; }} />
+{/if}
+
 <svelte:window on:keydown={onKeyDown} />
 
 <script lang="ts">
-  import { ContactEntry, type Person } from "../../logic/Abstract/Person";
-  import { StreetAddress } from "../../logic/Contacts/StreetAddress";
+  import { ContactEntry, Person } from "../../logic/Abstract/Person";
   import { ContactActions } from "./ContactActions";
   import { PreferredEntry } from "./PreferredEntry";
+  import { ContactSlots } from "./Form/ContactSlots";
+  import { ContactColumns } from "./Views/ContactColumns";
   import { newPerson } from "../../frontend/Contacts/Person/Selected";
   import { catchErrors } from "../../frontend/Util/error";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../Shared/Ribbon/RibbonButton.svelte";
+  import RibbonToggleButton from "../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";
-  import MenuItem from "../../frontend/Shared/Menu/MenuItem.svelte";
+  import RibbonSplitButton from "../Shared/Ribbon/RibbonSplitButton.svelte";
+  import MenuItem from "../Shared/Menu/MenuItem.svelte";
+  import SubMenu from "../Shared/Menu/SubMenu.svelte";
+  import DialogButton from "../Shared/Dialog/DialogButton.svelte";
   import ContactPicture from "./ContactPicture.svelte";
-  import ContactEntryRow from "./ContactEntryRow.svelte";
-  import FormSection from "./FormSection.svelte";
   import FormCard from "./FormCard.svelte";
-  import AddressbookChanger from "../../frontend/Contacts/AddressbookChanger.svelte";
+  import SlotButton from "./Form/SlotButton.svelte";
+  import SlotField from "./Form/SlotField.svelte";
+  import FullNameDialog from "./Form/FullNameDialog.svelte";
+  import CheckAddressDialog from "./Form/CheckAddressDialog.svelte";
   import FileSelector from "../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { scaleImageToDataURL } from "../../frontend/Shared/image";
-  import EmailAddressEdit from "../../frontend/Contacts/PersonPage/EmailAddressEdit.svelte";
-  import PhoneNumberEdit from "../../frontend/Contacts/PersonPage/PhoneNumberEdit.svelte";
-  import URLEdit from "../../frontend/Contacts/PersonPage/URLEdit.svelte";
-  import StreetAddressEdit from "../../frontend/Contacts/PersonPage/StreetAddressEdit.svelte";
   import SaveCloseIcon from "lucide-svelte/icons/save";
-  import SaveNewIcon from "lucide-svelte/icons/file-plus-2";
+  import SaveNewIcon from "lucide-svelte/icons/file-plus-corner";
+  import SameCompanyIcon from "lucide-svelte/icons/building-2";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import GeneralIcon from "lucide-svelte/icons/contact-round";
+  import DetailsIcon from "lucide-svelte/icons/list";
   import MailIcon from "lucide-svelte/icons/mail";
   import MeetingIcon from "lucide-svelte/icons/calendar-plus";
+  import MoreIcon from "lucide-svelte/icons/ellipsis";
+  import CallIcon from "lucide-svelte/icons/phone";
   import PictureIcon from "lucide-svelte/icons/circle-user-round";
   import ChangePictureIcon from "lucide-svelte/icons/image-up";
   import RemovePictureIcon from "lucide-svelte/icons/image-off";
@@ -166,6 +186,9 @@
   export let person: Person;
 
   let nameInput: HTMLInputElement;
+  let page: "general" | "details" = "general";
+  let isFullNameOpen = false;
+  let isAddressOpen = false;
 
   $: emailAddresses = person.emailAddresses;
   $: phoneNumbers = person.phoneNumbers;
@@ -176,27 +199,30 @@
   $: preferredEmail = PreferredEntry.valueOf($emailAddresses);
   $: preferredPhone = PreferredEntry.valueOf($phoneNumbers);
 
+  let emailSlot = ContactSlots.emailSlots[0];
+  let phoneRows = ["business", "home", "business-fax", "mobile"].map(id => ContactSlots.phoneSlot(id));
+  let addressSlot = ContactSlots.addressSlots.find(slot => slot.entryIn(person.streetAddresses)) ?? ContactSlots.addressSlots[0];
+
   onMount(async () => {
-    if (ContactActions.isUnsaved(person)) {
-      if (person.emailAddresses.isEmpty) {
-        add(person.emailAddresses);
-      }
-      if (person.phoneNumbers.isEmpty) {
-        add(person.phoneNumbers);
-      }
-    }
     await tick();
     if (!person.name) {
       nameInput?.focus();
     }
   });
 
-  function add(coll: ArrayColl<ContactEntry>) {
-    coll.push(new ContactEntry("", "work"));
+  function firstValue(entries: ArrayColl<ContactEntry>): string {
+    return entries.first?.value ?? "";
   }
 
-  function addStreetAddress() {
-    person.streetAddresses.push(new ContactEntry(new StreetAddress().toString(), "work"));
+  function setFirstValue(entries: ArrayColl<ContactEntry>, value: string, protocol: string | null) {
+    let entry = entries.first;
+    if (entry && value.trim()) {
+      entry.value = value.trim();
+    } else if (entry) {
+      entries.remove(entry);
+    } else if (value.trim()) {
+      entries.add(new ContactEntry(value.trim(), "work", protocol));
+    }
   }
 
   async function save() {
@@ -212,6 +238,11 @@
   async function saveAndNew() {
     await save();
     ContactActions.edit(ContactActions.createPerson(person.addressbook));
+  }
+
+  async function saveAndNewFromSameCompany() {
+    await save();
+    ContactActions.edit(ContactActions.createColleague(person));
   }
 
   async function deleteIt() {
@@ -256,29 +287,6 @@
       catchErrors(saveAndClose);
     }
   }
-
-  // <copied from="../../frontend/Contacts/PersonPage/ContactBoxes.svelte">
-  /** Contains the Purpose values that we want to show to the user for him to select from.
-   *
-   * Do *not* translate `$t` brand names.
-   * The names *must* be short (<= 8 chars), otherwise the dropdown is long and
-   * the address field has no space left. */
-  const chatProtocols = {
-    "xmpp": `XMPP`,
-    "matrix": `Matrix`,
-    "irc": `IRC`,
-    "teams": `Teams`,
-    "slack": `Slack`,
-    "signal": `Signal`,
-    "whatsapp": `WhatsApp`,
-    "threema": `Threema`,
-    "telegram": `Telegram`,
-    "facebook": `Facebook`,
-    "wechat": `WeChat`,
-    "qq": `QQ`,
-    "discord": `Discord`,
-  }
-  // </copied>
 </script>
 
 <style>
@@ -288,14 +296,14 @@
   .form-body {
     min-height: 0;
     overflow-y: auto;
-    gap: 32px;
+    gap: 24px;
     padding: 16px 24px 24px 24px;
     align-items: start;
   }
   .column.main {
     flex: 3 1 0;
     min-width: 360px;
-    max-width: 720px;
+    max-width: 560px;
   }
   .column.side {
     flex: 2 1 0;
@@ -303,19 +311,50 @@
     max-width: 420px;
     align-self: stretch;
   }
-  .name-block {
-    gap: 24px;
-    align-items: start;
-  }
-  grid.fields {
-    flex: 1;
+  .fields {
     display: grid;
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: 140px minmax(0, 1fr);
     align-items: center;
     gap: 6px 12px;
   }
+  .fields :global(.field-button) {
+    width: 100%;
+    height: 28px;
+    justify-content: start;
+  }
+  .name-and-picture {
+    min-width: 0;
+  }
+  .name-fields {
+    flex: 1;
+    min-width: 0;
+  }
+  .section {
+    grid-column: 1 / -1;
+    margin-block-start: 10px;
+    font-weight: 600;
+    color: var(--lo-fg);
+  }
   label {
     color: var(--lo-fg-secondary);
+  }
+  .top-aligned {
+    align-self: start;
+  }
+  .address-box {
+    min-height: 72px;
+    padding: 6px 8px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-input-bg);
+    color: var(--lo-fg);
+    font: inherit;
+    text-align: start;
+    white-space: pre-line;
+    cursor: text;
+  }
+  .address-box:hover {
+    border-color: var(--lo-border-strong);
   }
   .picture-box {
     position: relative;
@@ -344,9 +383,6 @@
     border-radius: 50%;
     background-color: var(--lo-pane-bg);
     color: var(--lo-accent-text);
-  }
-  .form-body :global(select) {
-    width: 100%;
   }
   .business-card {
     gap: 4px;

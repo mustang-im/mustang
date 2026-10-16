@@ -48,7 +48,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | "You replied to this message on *date*" with the date | Reading pane InfoBar | Reply and forward timestamps. Today there are only the booleans `isReplied` and `isForwarded`. |
 | "External" sender tag, "*X* on behalf of *Y*" | Reading pane header | The organization's domains per account; separate `sender` and `from` in `EMail` |
 | Profile card of the sender (organization, files, meetings) | Click on the sender | Directory lookups (GAL, Graph) |
-| Previews of Office and PDF attachments; Save All Attachments | Attachment card | File previewers. Save All is *UI only*. |
+| Previews of Office and PDF attachments; Save All Attachments into one chosen folder | Attachment card | File previewers; saving several files into a folder that the user picks once. Lookout's Save All Attachments… asks for each file. |
 | Translate, Read Aloud | Home tab; message menu | A translation service (`MessageMenu.translate()` throws `NotImplemented`); text to speech |
 | Reactions on mail | Reading pane (new Outlook) | `setMyReactionOnServer()` for mail protocols (it exists only for chat) |
 | "Mark item as read when selection changes", single-key reading with the space bar | View > Reading Pane > Options | A "mark when leaving" mode for `mail.read.after`. Space bar paging is *UI only*. |
@@ -194,6 +194,8 @@ Address books, contact list, contact card, contact and contact group forms.
 | Organization: manager, direct reports | Profile card (new Outlook) | Directory lookups (EWS, Graph) |
 | Mail merge, printing contacts | Home tab > Actions; File > Print | Printing in the desktop app; a mail merge generator |
 | Column chooser and grouping in the List and Phone views; Map It | View tab > Add Columns, Arrangement; contact form | *UI only*. Lookout has the People, Business Card, Card, Phone and List views and sorts by the column headers. |
+| "Display as" name of an email address, "This is the mailing address" | Contact form > General | A display name per email entry and a mailing address flag on `ContactEntry` |
+| All Fields and Certificates pages; editing the second web page or IM address | Contact form > Show | *UI only*. The General page edits the first web page and IM address; further entries stay as they are. |
 | Contact history (recent mail and meetings), encryption keys in the contact form | Profile card; contact form > Certificates | *UI only*: `frontend/` has `ContactHistory` and `PersonPage/Encryption`. |
 | Recent Searches, search in subfolders, Categorized and other refiners | Search tab | Search history and categories on contacts; Lookout refines by phone number, address and email address |
 
