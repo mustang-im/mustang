@@ -1,0 +1,57 @@
+// app first, to resolve the import cycle around Abstract/Account.ts
+import "../../../logic/app";
+import { Person, ContactEntry } from "../../../logic/Abstract/Person";
+import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
+import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
+import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
+import { AllFields } from "../../Contacts/Form/AllFields";
+import { ContactCertificates } from "../../Contacts/Form/ContactCertificates";
+import { expect, test } from "vitest";
+
+function key(id: string, userID: string, KeyClass: typeof PGPPublicKey | typeof SMIMEPublicKey = PGPPublicKey): PGPPublicKey | SMIMEPublicKey {
+  let result = new KeyClass();
+  result.id = id;
+  result.userIDs.add(userID);
+  return result;
+}
+
+test("Set as Default makes one certificate the one for encryption", () => {
+  let person = new Person();
+  let pgp = key("ab12cd", "fred@example.org");
+  let smime = key("ef34gh", "fred@example.org", SMIMEPublicKey);
+  // A new S/MIME key is obsolete until its certificate is there
+  smime.obsolete = false;
+  pgp.encryptByDefault = true;
+  person.encryptionPublicKeys.addAll([pgp, smime]);
+  ContactCertificates.setAsDefault(person, smime);
+  expect(smime.encryptByDefault).toBe(true);
+  expect(pgp.encryptByDefault).toBe(false);
+  expect(ContactCertificates.statusOf(smime)).toBe("Default");
+  expect(ContactCertificates.sorted(person.encryptionPublicKeys)[0]).toBe(smime);
+});
+
+test("Bad certificates can't be the default and show their status", () => {
+  let bad = key("ab12cd", "fred@example.org");
+  bad.trustLevel = TrustLevel.Distrusted;
+  expect(ContactCertificates.canBeDefault(bad)).toBe(false);
+  expect(ContactCertificates.statusOf(bad)).toBe("Not trusted");
+  expect(ContactCertificates.nameOf(bad)).toBe("fred@example.org");
+  bad.name = "Work";
+  expect(ContactCertificates.nameOf(bad)).toBe("Work");
+});
+
+test("All Fields lists the entries of the chosen kind, user-defined fields by name", () => {
+  let person = new Person();
+  person.emailAddresses.add(new ContactEntry("fred@example.org", "work"));
+  person.emailAddresses.add(new ContactEntry("fred@home.example", "home"));
+  person.phoneNumbers.add(new ContactEntry("+49 30 1234", "mobile"));
+  person.urls.add(new ContactEntry("https://fred.example"));
+  person.custom.add(new ContactEntry("Ginger", "cat"));
+  expect(AllFields.rows(person, "user-defined").map(row => row.name)).toEqual(["cat"]);
+  expect(AllFields.rows(person, "email").map(row => row.entry.value)).toEqual(["fred@example.org", "fred@home.example"]);
+  expect(AllFields.rows(person, "internet").map(row => row.name)).toEqual(["Web page"]);
+  expect(AllFields.rows(person, "all")).toHaveLength(5);
+  let field = AllFields.addUserField(person, " Shoe size ");
+  expect(field.purpose).toBe("Shoe size");
+  expect(person.custom.contains(field)).toBe(true);
+});

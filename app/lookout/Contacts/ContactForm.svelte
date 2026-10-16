@@ -18,6 +18,10 @@
           checked={page == "general"} onChange={() => { page = "general"; }} />
         <RibbonToggleButton label={$t`Details`} icon={DetailsIcon} isRadio
           checked={page == "details"} onChange={() => { page = "details"; }} />
+        <RibbonToggleButton label={$t`Certificates`} icon={CertificatesIcon} isRadio
+          checked={page == "certificates"} onChange={() => { page = "certificates"; }} />
+        <RibbonToggleButton label={$t`All Fields`} icon={AllFieldsIcon} isRadio
+          checked={page == "all-fields"} onChange={() => { page = "all-fields"; }} />
       </RibbonGroup>
       <RibbonGroup label={$t`Communicate`}>
         <RibbonButton label={$t`Email`} icon={MailIcon} size="small"
@@ -49,7 +53,15 @@
 
   <FormCard title={$person.name || $t`Untitled`} kind={$t`Contact`}>
     <hbox flex class="form-body">
-      {#if page == "details"}
+      {#if page == "certificates"}
+        <vbox class="column main">
+          <CertificatesPage {person} />
+        </vbox>
+      {:else if page == "all-fields"}
+        <vbox class="column main">
+          <AllFieldsPage {person} />
+        </vbox>
+      {:else if page == "details"}
         <vbox class="column main">
           <div class="fields">
             <label for="contact-department">{$t`Department`}</label>
@@ -103,28 +115,30 @@
             <ContactPicture contact={person} size={104} />
             <hbox class="camera"><CameraIcon size={16} /></hbox>
           </button>
-          <FileSelector {acceptFileTypes} bind:this={fileSelector} />
         </vbox>
       {/if}
 
-      <vbox class="column side">
-        <vbox class="business-card">
-          <hbox class="card-top">
-            <ContactPicture contact={person} size={56} />
-            <vbox class="card-text">
-              <span class="card-name">{$person.name || $t`Untitled`}</span>
-              {#if $person.company}<span>{$person.company}</span>{/if}
-              {#if $person.position}<span>{$person.position}</span>{/if}
-            </vbox>
-          </hbox>
-          {#if preferredPhone}<span class="card-detail">{preferredPhone}</span>{/if}
-          {#if preferredEmail}<span class="card-detail link">{preferredEmail}</span>{/if}
+      {#if page == "general"}
+        <vbox class="column side">
+          <vbox class="business-card">
+            <hbox class="card-top">
+              <ContactPicture contact={person} size={56} />
+              <vbox class="card-text">
+                <span class="card-name">{$person.name || $t`Untitled`}</span>
+                {#if $person.company}<span>{$person.company}</span>{/if}
+                {#if $person.position}<span>{$person.position}</span>{/if}
+              </vbox>
+            </hbox>
+            {#if preferredPhone}<span class="card-detail">{preferredPhone}</span>{/if}
+            {#if preferredEmail}<span class="card-detail link">{preferredEmail}</span>{/if}
+          </vbox>
+          <label for="contact-notes" class="notes-label">{$t`Notes`}</label>
+          <textarea id="contact-notes" class="lo-text-field" bind:value={person.notes} />
         </vbox>
-        <label for="contact-notes" class="notes-label">{$t`Notes`}</label>
-        <textarea id="contact-notes" class="lo-text-field" bind:value={person.notes} />
-      </vbox>
+      {/if}
     </hbox>
   </FormCard>
+  <FileSelector {acceptFileTypes} bind:this={fileSelector} />
 </vbox>
 
 {#if isFullNameOpen}
@@ -162,6 +176,8 @@
   import SlotField from "./Form/SlotField.svelte";
   import FullNameDialog from "./Form/FullNameDialog.svelte";
   import CheckAddressDialog from "./Form/CheckAddressDialog.svelte";
+  import CertificatesPage from "./Form/CertificatesPage.svelte";
+  import AllFieldsPage from "./Form/AllFieldsPage.svelte";
   import FileSelector from "../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { scaleImageToDataURL } from "../../frontend/Shared/image";
   import SaveCloseIcon from "lucide-svelte/icons/save";
@@ -170,6 +186,8 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import GeneralIcon from "lucide-svelte/icons/contact-round";
   import DetailsIcon from "lucide-svelte/icons/list";
+  import CertificatesIcon from "lucide-svelte/icons/file-badge";
+  import AllFieldsIcon from "lucide-svelte/icons/table-properties";
   import MailIcon from "lucide-svelte/icons/mail";
   import MeetingIcon from "lucide-svelte/icons/calendar-plus";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
@@ -186,7 +204,7 @@
   export let person: Person;
 
   let nameInput: HTMLInputElement;
-  let page: "general" | "details" = "general";
+  let page: "general" | "details" | "certificates" | "all-fields" = "general";
   let isFullNameOpen = false;
   let isAddressOpen = false;
 
