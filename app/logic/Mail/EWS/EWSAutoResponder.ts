@@ -1,7 +1,7 @@
 import { ExchangeAutoResponder, OOFAudience, OOFState } from "./ExchangeAutoResponder";
-import { AutoResponderAudience } from "../AutoResponder";
 import type { EWSAccount } from "./EWSAccount";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { sanitizeHTML } from "../../util/convertHTML";
 
 export class EWSAutoResponder extends ExchangeAutoResponder {
   declare readonly account: EWSAccount;
@@ -34,12 +34,12 @@ export class EWSAutoResponder extends ExchangeAutoResponder {
   /** @param json as returned by `GetUserOofSettings` in `load()` */
   fromEWS(json: any) {
     let settings = json.OofSettings;
-    this.oofState = OOFState[settings.OofState as string];
+    this.oofState = sanitize.integerRange(OOFState[settings.OofState as string], 0, 2, OOFState.Disabled);
     this.setTimes(this.parseUTC(settings.Duration?.StartTime), this.parseUTC(settings.Duration?.EndTime));
-    this.externalAudience = this.toAudience(OOFAudience[settings.ExternalAudience as string], AutoResponderAudience.None);
-    this.maxAudience = this.toAudience(OOFAudience[json.AllowExternalOof as string], AutoResponderAudience.All);
-    this.internalHTML = this.toHTML(settings.InternalReply?.Message);
-    this.externalHTML = this.toHTML(settings.ExternalReply?.Message);
+    this.externalAudience = this.toAudience(sanitize.integerRange(OOFAudience[settings.ExternalAudience as string], 0, 2, OOFAudience.None));
+    this.maxAudience = this.toAudience(sanitize.integerRange(OOFAudience[json.AllowExternalOof as string], 0, 2, OOFAudience.All));
+    this.internalHTML = sanitizeHTML(settings.InternalReply?.Message);
+    this.externalHTML = sanitizeHTML(settings.ExternalReply?.Message);
   }
 
   /** Elements must be in schema order */
@@ -52,10 +52,10 @@ export class EWSAutoResponder extends ExchangeAutoResponder {
         t$EndTime: this.endTime.toISOString(),
       } : null,
       t$InternalReply: {
-        t$Message: this.fromHTML(this.internalHTML),
+        t$Message: this.stripEmptyParagraph(this.internalHTML),
       },
       t$ExternalReply: {
-        t$Message: this.fromHTML(this.externalHTML),
+        t$Message: this.stripEmptyParagraph(this.externalHTML),
       },
     };
   }

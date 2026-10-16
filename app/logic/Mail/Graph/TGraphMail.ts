@@ -123,7 +123,7 @@ export interface TGraphAutoReplies {
   externalAudience: string,
   scheduledStartDateTime?: TGraphDateTimeZone,
   scheduledEndDateTime?: TGraphDateTimeZone,
-  /** HTML or plaintext */
+  /** HTML */
   internalReplyMessage: string,
   externalReplyMessage: string,
 }

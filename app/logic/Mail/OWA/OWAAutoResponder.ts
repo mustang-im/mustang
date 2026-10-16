@@ -1,8 +1,8 @@
-import { ExchangeAutoResponder } from "../EWS/ExchangeAutoResponder";
-import { AutoResponderAudience } from "../AutoResponder";
+import { ExchangeAutoResponder, OOFAudience, OOFState } from "../EWS/ExchangeAutoResponder";
 import type { OWAAccount } from "./OWAAccount";
 import { OWAGetMailboxAutoReplyConfigurationRequest, OWASetMailboxAutoReplyConfigurationRequest } from "./Request/OWAMailboxAutoReplyConfigurationRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { sanitizeHTML } from "../../util/convertHTML";
 
 export class OWAAutoResponder extends ExchangeAutoResponder {
   declare readonly account: OWAAccount;
@@ -19,11 +19,11 @@ export class OWAAutoResponder extends ExchangeAutoResponder {
 
   /** @param options as returned by `GetMailboxAutoReplyConfiguration` in `load()` */
   fromOWA(options: any) {
-    this.oofState = options.AutoReplyState;
+    this.oofState = sanitize.integerRange(options.AutoReplyState, 0, 2, OOFState.Disabled);
     this.setTimes(sanitize.date(options.StartTime, null), sanitize.date(options.EndTime, null));
-    this.externalAudience = this.toAudience(options.ExternalAudience, AutoResponderAudience.None);
-    this.internalHTML = this.toHTML(options.InternalMessage);
-    this.externalHTML = this.toHTML(options.ExternalMessage);
+    this.externalAudience = this.toAudience(sanitize.integerRange(options.ExternalAudience, 0, 2, OOFAudience.None));
+    this.internalHTML = sanitizeHTML(options.InternalMessage);
+    this.externalHTML = sanitizeHTML(options.ExternalMessage);
   }
 
   toOWA() {
@@ -33,8 +33,8 @@ export class OWAAutoResponder extends ExchangeAutoResponder {
       StartTime: this.scheduled ? this.startTime.toISOString() : undefined,
       EndTime: this.scheduled ? this.endTime.toISOString() : undefined,
       ExternalAudience: this.oofAudience,
-      InternalMessage: this.fromHTML(this.internalHTML),
-      ExternalMessage: this.fromHTML(this.externalHTML),
+      InternalMessage: this.stripEmptyParagraph(this.internalHTML),
+      ExternalMessage: this.stripEmptyParagraph(this.externalHTML),
     };
   }
 }

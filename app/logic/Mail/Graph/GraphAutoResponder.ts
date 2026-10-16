@@ -2,6 +2,7 @@ import { AutoResponder, AutoResponderAudience } from "../AutoResponder";
 import type { GraphAccount } from "./GraphAccount";
 import type { TGraphAutoReplies, TGraphDateTimeZone } from "./TGraphMail";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { sanitizeHTML } from "../../util/convertHTML";
 import { UserError } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 
@@ -38,9 +39,7 @@ export class GraphAutoResponder extends AutoResponder {
 
   protected async call<T>(func: () => Promise<T>): Promise<T> {
     try {
-      let result = await func();
-      this.needsPermission = false;
-      return result;
+      return await func();
     } catch (ex) {
       // Logins from before we asked for `MailboxSettings.ReadWrite`
       if ((ex?.httpCode ?? ex?.status) == 403) {
@@ -58,23 +57,18 @@ export class GraphAutoResponder extends AutoResponder {
     this.scheduled = status == "scheduled";
     this.setTimes(this.parseTime(json.scheduledStartDateTime), this.parseTime(json.scheduledEndDateTime));
     let audience = sanitize.string(json.externalAudience, "").toLowerCase();
-    this.externalAudience =
-      audience == "all" ? AutoResponderAudience.All :
-      audience == "contactsonly" ? AutoResponderAudience.Contacts :
-      AutoResponderAudience.None;
-    this.internalHTML = this.toHTML(json.internalReplyMessage);
-    this.externalHTML = this.toHTML(json.externalReplyMessage);
+    this.externalAudience = Object.values(AutoResponderAudience)
+      .find(value => value.toLowerCase() == audience) ?? AutoResponderAudience.None;
+    this.internalHTML = sanitizeHTML(json.internalReplyMessage);
+    this.externalHTML = sanitizeHTML(json.externalReplyMessage);
   }
 
   toGraph(): TGraphAutoReplies {
     let settings: TGraphAutoReplies = {
       status: !this.enabled ? "disabled" : this.scheduled ? "scheduled" : "alwaysEnabled",
-      externalAudience:
-        this.externalAudience == AutoResponderAudience.All ? "all" :
-        this.externalAudience == AutoResponderAudience.Contacts ? "contactsOnly" :
-        "none",
-      internalReplyMessage: this.fromHTML(this.internalHTML),
-      externalReplyMessage: this.fromHTML(this.externalHTML),
+      externalAudience: this.externalAudience,
+      internalReplyMessage: this.stripEmptyParagraph(this.internalHTML),
+      externalReplyMessage: this.stripEmptyParagraph(this.externalHTML),
     };
     // Omit, not null, which the backend would send
     if (this.scheduled) {

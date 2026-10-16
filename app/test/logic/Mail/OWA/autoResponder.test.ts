@@ -8,8 +8,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 // DOMPurify needs a real browser DOM
 vi.mock("../../../../logic/util/convertHTML", async importOriginal => ({
   ...await importOriginal() as object,
-  sanitizeHTML: (html: string) => "sanitized:" + html,
-  convertTextToHTML: (text: string) => "converted:" + text,
+  sanitizeHTML: (html: string) => html ? "sanitized:" + html : "",
 }));
 
 /** The HTTP calls that the account made */
@@ -66,7 +65,7 @@ const kGetResponse = {
     EndTime: "2026-10-19T16:00:00Z",
     EventsToDeleteIDs: null,
     ExternalAudience: 1,
-    ExternalMessage: "I am out of office.",
+    ExternalMessage: "<p>I am out of office.</p>",
     ExternalMessageText: "I am out of office.\r\n",
     InternalMessage: "<html><body><p>Back on the <b>19th</b>.</p></body></html>",
     InternalMessageText: "Back on the 19th.\r\n",
@@ -103,7 +102,7 @@ test("Reads the settings from the server", async () => {
   expect(autoResponder.maxAudience).toBe(AutoResponderAudience.All);
   // The HTML, not the plaintext that Exchange derives from it
   expect(autoResponder.internalHTML).toBe("sanitized:<html><body><p>Back on the <b>19th</b>.</p></body></html>");
-  expect(autoResponder.externalHTML).toBe("converted:I am out of office.");
+  expect(autoResponder.externalHTML).toBe("sanitized:<p>I am out of office.</p>");
 });
 
 test("Times with a time zone offset", async () => {
@@ -238,7 +237,7 @@ test("A server error is shown", async () => {
   await expect(account.autoResponder.save()).rejects.toThrow("The end time must be later than the start time.");
 });
 
-test("Only for our own Exchange mailbox", () => {
+test("Only for our own account, not for shared accounts", () => {
   let account = newAccount();
   expect(account.autoResponder.supported).toBe(true);
 
