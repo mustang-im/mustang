@@ -51,6 +51,7 @@
     <slot />
   </hbox>
   <QuickAccessToolbarView placement="below" />
+  <KeyTipsLayer {ribbonEl} />
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">
       <div data-metric="largeWidth" style="width: var(--lo-ribbon-large-width)"></div>
@@ -75,6 +76,7 @@
   import MenuLabel from "../Menu/MenuLabel.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
   import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";
+  import KeyTipsLayer from "./KeyTipsLayer.svelte";
   import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
   import OptionsIcon from "lucide-svelte/icons/chevron-down";
   import { setContext, onMount, onDestroy, tick } from "svelte";

@@ -46,6 +46,10 @@
   --lo-infobar-error-bg: #FCE9E7;
   --lo-infobar-error-border: #EDB9B4;
 
+  --lo-keytip-bg: #3A3C41;
+  --lo-keytip-fg: #FFFFFF;
+  --lo-keytip-border: #2A2B2F;
+
   --lo-radius: 8px;
   --lo-radius-small: 4px;
   --lo-shadow-card: 0 0 2px rgba(0, 0, 0, 0.10), 0 1px 2px rgba(0, 0, 0, 0.08);
@@ -100,6 +104,10 @@
     --lo-infobar-border: #65582F;
     --lo-infobar-error-bg: #3D2526;
     --lo-infobar-error-border: #6E3B3A;
+
+    --lo-keytip-bg: #E4E6EA;
+    --lo-keytip-fg: #1B1C1F;
+    --lo-keytip-border: #C3C8CF;
 
     --lo-shadow-card: 0 0 2px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
     --lo-shadow-popup: 0 0 2px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.45);
