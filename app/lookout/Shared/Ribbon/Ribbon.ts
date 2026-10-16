@@ -30,6 +30,8 @@ export class RibbonModel {
   readonly layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   readonly collapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   readonly metrics: Writable<RibbonMetrics> = writable(null);
+  readonly isSurveying: Writable<boolean> = writable(false);
+  protected surveys = 0;
 
   addTab(tab: RibbonTabModel) {
     this.tabs.update(tabs => [...tabs, tab]);
@@ -61,6 +63,18 @@ export class RibbonModel {
     let tab = get(this.tabs).find(candidate => candidate.label == label);
     if (tab) {
       this.selectTab(tab);
+    }
+  }
+
+  startSurvey() {
+    this.surveys++;
+    this.isSurveying.set(true);
+  }
+
+  endSurvey() {
+    this.surveys = Math.max(0, this.surveys - 1);
+    if (!this.surveys) {
+      this.isSurveying.set(false);
     }
   }
 

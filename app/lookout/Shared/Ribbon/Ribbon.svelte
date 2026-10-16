@@ -21,6 +21,7 @@
     </hbox>
     <hbox flex class="spacer" />
     <slot name="tab-row-end" />
+    <TellMe {ribbonEl} />
     <hbox class="options" bind:this={optionsEl}>
       <button class="options-button"
         class:open={isOptionsOpen}
@@ -77,6 +78,7 @@
   import MenuDivider from "../Menu/MenuDivider.svelte";
   import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";
   import KeyTipsLayer from "./KeyTipsLayer.svelte";
+  import TellMe from "./TellMe.svelte";
   import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
   import OptionsIcon from "lucide-svelte/icons/chevron-down";
   import { setContext, onMount, onDestroy, tick } from "svelte";

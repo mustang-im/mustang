@@ -1,5 +1,7 @@
-{#if $selectedTab == tab}
-  <hbox class="ribbon-tab-content" role="tabpanel" aria-label={label} bind:this={contentEl}>
+{#if $selectedTab == tab || $isSurveying}
+  <hbox class="ribbon-tab-content" class:surveyed={$selectedTab != tab}
+    role="tabpanel" aria-label={label} inert={$selectedTab != tab}
+    bind:this={contentEl}>
     <hbox class="groups">
       <slot />
     </hbox>
@@ -42,6 +44,7 @@
   onDestroy(() => ribbon.removeTab(tab));
   $: ribbon.setTabLabel(tab, label);
   const selectedTab = ribbon.selectedTab;
+  const isSurveying = ribbon.isSurveying;
   const overflowGroups = tab.overflowGroups;
   const isMoreMenuOpen = tab.isMoreMenuOpen;
   const metrics = ribbon.metrics;
@@ -112,6 +115,9 @@
     min-width: 0;
     align-items: stretch;
     overflow: hidden;
+  }
+  .ribbon-tab-content.surveyed {
+    display: none;
   }
   .groups {
     flex: 1 1 auto;
