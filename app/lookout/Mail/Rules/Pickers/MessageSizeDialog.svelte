@@ -4,10 +4,10 @@
   <vbox class="size">
     <span>{$t`Specify the size (in kilobytes) to check for:`}</span>
     <grid class="fields">
-      <label for="message-size-min">{$t`At least:`}</label>
-      <input id="message-size-min" class="lo-text-field" type="number" min="0" step="1" bind:value={atLeast} />
-      <label for="message-size-max">{$t`At most:`}</label>
-      <input id="message-size-max" class="lo-text-field" type="number" min="0" step="1" bind:value={atMost} />
+      <span>{$t`At least:`}</span>
+      <SpinBox label={$t`At least:`} bind:value={atLeast} min={0} stepSize={10} suffix={$t`KB`} width="120px" />
+      <span>{$t`At most:`}</span>
+      <SpinBox label={$t`At most:`} bind:value={atMost} min={0} stepSize={10} suffix={$t`KB`} width="120px" />
     </grid>
   </vbox>
 </Dialog>
@@ -15,6 +15,7 @@
 <script lang="ts">
   import { RuleItems } from "../RuleItems";
   import Dialog from "../../../Shared/Dialog/Dialog.svelte";
+  import SpinBox from "../../../Shared/Form/SpinBox.svelte";
   import { t } from "../../../../l10n/l10n";
 
   export let sizeMin: number | null;
@@ -35,7 +36,7 @@
     gap: 10px;
   }
   .fields {
-    grid-template-columns: max-content 120px;
+    grid-template-columns: max-content max-content;
     align-items: center;
     gap: 8px 12px;
     margin-inline-start: 16px;

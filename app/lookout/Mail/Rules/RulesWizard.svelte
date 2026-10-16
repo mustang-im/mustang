@@ -31,15 +31,15 @@
       <vbox class="list" role="group"
         aria-label={page == RuleWizardPage.Conditions ? $t`Conditions` : $t`Actions`}>
         {#each items as item (item.id)}
-          <label class="row" class:selected={selectedItem == item}>
-            <input type="checkbox" checked={model.isChecked(item)}
-              on:change={event => onCheck(item, event.currentTarget.checked)} />
-            <span class="phrase">
-              {#each item.listParts() as part}
-                {#if part.isValue}<span class="link">{part.text}</span>{:else}{part.text}{/if}
-              {/each}
-            </span>
-          </label>
+          <hbox class="row" class:selected={selectedItem == item}>
+            <CheckBox checked={model.isChecked(item)} onChange={checked => onCheck(item, checked)}>
+              <span class="phrase">
+                {#each item.listParts() as part}
+                  {#if part.isValue}<span class="link">{part.text}</span>{:else}{part.text}{/if}
+                {/each}
+              </span>
+            </CheckBox>
+          </hbox>
         {/each}
       </vbox>
       <span class="step">{$t`Step 2: Edit the rule description (click an underlined value)`}</span>
@@ -77,6 +77,7 @@
   import type { RuleTemplate } from "./RuleTemplates";
   import type { RuleItem } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
   import RuleValuePicker from "./Pickers/RuleValuePicker.svelte";

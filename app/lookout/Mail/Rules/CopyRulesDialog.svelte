@@ -1,15 +1,8 @@
 <Dialog title={$t`Copy rules to`} okLabel={$t`OK`} onOK={onOK} on:close={onClose} width="460px"
   okDisabled={RuleListActions.cannotCopyTo(rule, target)}>
   <hbox class="copy-row">
-    <label for="copy-rules-folder">{$t`Folder:`}</label>
-    <select id="copy-rules-folder" class="lo-text-field" bind:value={target}>
-      {#each $accounts.each as account}
-        <option value={account} disabled={!!RuleListActions.cannotCopyTo(rule, account)}
-          title={RuleListActions.cannotCopyTo(rule, account) || null}>
-          {RuleDescription.inboxLabel(account)}
-        </option>
-      {/each}
-    </select>
+    <span>{$t`Folder:`}</span>
+    <ComboBox label={$t`Folder:`} options={accountOptions($accounts.contents)} bind:value={target} width="100%" />
   </hbox>
 </Dialog>
 
@@ -20,6 +13,8 @@
   import { RuleListActions } from "./RuleListActions";
   import { RuleDescription } from "./RuleDescription";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
@@ -28,6 +23,14 @@
 
   const accounts = appGlobal.emailAccounts;
   let target: MailAccount = rule.account;
+
+  function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
+    return mailAccounts.map(account => ({
+      value: account,
+      label: RuleDescription.inboxLabel(account),
+      disabled: !!RuleListActions.cannotCopyTo(rule, account),
+    }));
+  }
 
   function onOK() {
     onCopy(target);

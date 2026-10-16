@@ -2,16 +2,10 @@
   <grid class="search-grid">
     <hbox class="search-label">
       <label for="select-names-search" class="label">{$t`Search:`}</label>
-      <label class="radio">
-        <input type="radio" bind:group={nameOnly} value={false} />
-        {$t`All columns`}
-      </label>
-      <label class="radio">
-        <input type="radio" bind:group={nameOnly} value={true} />
-        {$t`Name only`}
-      </label>
+      <Radio label={$t`All columns`} bind:group={nameOnly} value={false} />
+      <Radio label={$t`Name only`} bind:group={nameOnly} value={true} />
     </hbox>
-    <label for="select-names-addressbook" class="label">{$t`Address Book:`}</label>
+    <span class="label">{$t`Address Book:`}</span>
     <hbox class="search">
       <input id="select-names-search" class="lo-text-field" type="text" bind:value={typedTerm} autofocus
         on:input={onTyped} on:keydown={onSearchKey} />
@@ -23,15 +17,8 @@
         <ClearIcon size={14} />
       </button>
     </hbox>
-    <select id="select-names-addressbook" class="lo-text-field" bind:value={addressbook}>
-      <option value={null}>{$t`All address books`}</option>
-      {#each $addressbooks.each as book}
-        <option value={book}>{book.name}</option>
-      {/each}
-      {#each $searchOnlyAddressbooks.each as book}
-        <option value={book}>{book.name}</option>
-      {/each}
-    </select>
+    <ComboBox label={$t`Address Book`} options={addressbookOptions($addressbooks.contents, $searchOnlyAddressbooks.contents)}
+      bind:value={addressbook} width="220px" />
   </grid>
   <vbox flex class="list">
     <FastList items={persons} bind:selectedItems columns="minmax(150px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(170px, 1.5fr)">
@@ -87,6 +74,9 @@
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import Radio from "../../Shared/Form/Radio.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { appGlobal } from "../../../logic/app";
   import { SelectNames, SelectNamesField } from "./SelectNames";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
@@ -97,7 +87,7 @@
   import GoIcon from "lucide-svelte/icons/arrow-right";
   import ClearIcon from "lucide-svelte/icons/x";
   import { ArrayColl } from "svelte-collections";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let fields: SelectNamesField[];
   export let defaultField: SelectNamesField = fields[0];
@@ -108,6 +98,13 @@
   let addressbooks = appGlobal.addressbooks;
   let searchOnlyAddressbooks = appGlobal.searchOnlyAddressbooks;
   let addressbook: Addressbook = null;
+
+  function addressbookOptions(books: Addressbook[], searchOnlyBooks: Addressbook[]): ComboOption<Addressbook | null>[] {
+    return [
+      { value: null, label: gt`All address books` },
+      ...[...books, ...searchOnlyBooks].map(book => ({ value: book, label: book.name })),
+    ];
+  }
   let nameOnly = false;
   let typedTerm = "";
   let searchTerm = "";
@@ -160,11 +157,6 @@
   }
   .label {
     font-weight: 600;
-  }
-  .radio {
-    display: flex;
-    align-items: center;
-    gap: 4px;
   }
   .search {
     align-items: center;
