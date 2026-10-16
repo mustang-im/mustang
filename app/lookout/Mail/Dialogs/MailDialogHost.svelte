@@ -5,7 +5,7 @@
 {:else if $dialog?.kind == "go-to-folder"}
   <GoToFolderDialog on:close={onClose} />
 {:else if $dialog?.kind == "folder-properties"}
-  <FolderPropertiesDialog folder={$dialog.folder} on:close={onClose} />
+  <FolderPropertiesDialog folder={$dialog.folder} tab={$dialog.tab} on:close={onClose} />
 {:else if $dialog?.kind == "reading-pane-options"}
   <ReadingPaneOptionsDialog on:close={onClose} />
 {:else if $dialog?.kind == "color-categories"}
@@ -20,8 +20,6 @@
   <SearchPersonDialog fieldLabel={$dialog.fieldLabel} person={$dialog.person} onPick={$dialog.onPick} on:close={onClose} />
 {:else if $dialog?.kind == "shared-folder"}
   <SharedFolderDialog account={$dialog.account} on:close={onClose} />
-{:else if $dialog?.kind == "folder-permissions"}
-  <FolderPermissionsDialog account={$dialog.account} on:close={onClose} />
 {:else if $dialog?.kind == "new-search-folder"}
   <NewSearchFolderDialog defaultAccount={$dialog.account} on:close={onClose} />
 {/if}
@@ -40,7 +38,6 @@
   import RuleFromSearchDialog from "./RuleFromSearchDialog.svelte";
   import AlwaysMoveDialog from "../Rules/AlwaysMoveDialog.svelte";
   import SharedFolderDialog from "./SharedFolderDialog.svelte";
-  import FolderPermissionsDialog from "./FolderPermissionsDialog.svelte";
   import { onDestroy } from "svelte";
 
   const dialog = MailDialogs.current;

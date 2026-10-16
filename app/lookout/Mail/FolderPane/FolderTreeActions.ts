@@ -4,8 +4,14 @@ import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { assert } from "../../../logic/util/util";
 import { selectedFolder } from "../../../frontend/Mail/Selected";
+import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { derived, get, writable, type Readable } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
+
+export enum FolderCountMode {
+  Unread = "unread",
+  Total = "total",
+}
 
 export class FolderTreeActions {
   static readonly renaming = writable<Folder | null>(null);
@@ -25,8 +31,22 @@ export class FolderTreeActions {
     return folder instanceof AllFolders || folder instanceof SavedSearchFolder;
   }
 
-  static showsTotalCount(folder: Folder): boolean {
+  static readonly countModes = getLocalStorage<Record<string, FolderCountMode>>("lookout.mail.folderCountModes", {});
+
+  static showsTotalCount(folder: Folder, countModes = FolderTreeActions.countModes.value): boolean {
+    let mode = countModes?.[FolderTreeActions.keyOf(folder)];
+    if (mode) {
+      return mode == FolderCountMode.Total;
+    }
     return folder.specialFolder == SpecialFolder.Drafts || folder.specialFolder == SpecialFolder.Outbox;
+  }
+
+  static setCountMode(folder: Folder, mode: FolderCountMode) {
+    FolderTreeActions.countModes.value = { ...FolderTreeActions.countModes.value, [FolderTreeActions.keyOf(folder)]: mode };
+  }
+
+  static keyOf(folder: Folder): string {
+    return folder.account?.id + "/" + folder.id;
   }
 
   static countedFolders(folder: Folder): Folder[] {
