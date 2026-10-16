@@ -2,6 +2,7 @@ import type { EMail } from "../../../logic/Mail/EMail";
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import type { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import type { Person } from "../../../logic/Abstract/Person";
 import type { FolderPropertiesTab } from "./FolderProperties/FolderPropertiesTab";
 import { writable } from "svelte/store";
@@ -14,6 +15,7 @@ export type MailDialog =
   { kind: "reading-pane-options" } |
   { kind: "color-categories", messages: EMail[] } |
   { kind: "new-search-folder", account: MailAccount | null } |
+  { kind: "customize-search-folder", folder: SavedSearchFolder } |
   { kind: "save-search", search: SearchEMail } |
   { kind: "rule-from-search", search: SearchEMail, account: MailAccount } |
   { kind: "always-move-from", message: EMail } |

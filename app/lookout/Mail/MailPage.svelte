@@ -26,6 +26,7 @@
             selection={$selectedMessages}
             bind:selectedMessage={$selectedMessage}
             isSearchResult={!!searchResults}
+            onMoreResults={!isSearching && MailSearch.isLimitReached(searchResults) && !isShowingAllResults ? showAllResults : null}
             showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
             highlight={searchResults ? searchTerm : null}
             isLoading={isLoading || isSearching} />
@@ -233,6 +234,24 @@
   }
   onDestroy(() => startSearchDebounced.cancel());
 
+  let isShowingAllResults = false;
+  $: currentSearch, isShowingAllResults = false;
+  async function showAllResults() {
+    let search = currentSearch;
+    isShowingAllResults = true;
+    isSearching = true;
+    try {
+      let result = await MailSearch.startSearch(search, false);
+      if (currentSearch == search) {
+        searchResults = result;
+      }
+    } finally {
+      if (currentSearch == search) {
+        isSearching = false;
+      }
+    }
+  }
+
   function closeSearch() {
     MailSearch.close();
     isSearchFocused = false;
@@ -274,14 +293,14 @@
   const status = statusBar.addSection();
   onDestroy(() => status.remove());
   $: unreadStore = FolderTreeActions.countStore($selectedFolder, false);
-  $: status.left = statusLeft($listMessages, $unreadStore, hasFilter, searchResults, isSearching, $selectedArray);
+  $: status.left = statusLeft($listMessages, $unreadStore, hasFilter, searchResults, isSearching, $selectedArray, isShowingAllResults);
   function statusLeft(messages: Collection<EMail>, unread: number, isFiltered: boolean, results: Collection<EMail> | null,
-      searching: boolean, selected: EMail[]) {
+      searching: boolean, selected: EMail[], _showingAll: boolean) {
     let items = [];
     if (results) {
       items.push({ label: searching
         ? $t`Searching…`
-        : results.length > MailSearch.kLimit
+        : MailSearch.isLimitReached(results) && !isShowingAllResults
           ? $t`More than ${MailSearch.kLimit} results`
           : $t`Results: ${results.length}`, busy: searching });
     } else if (isFiltered) {
@@ -372,6 +391,9 @@
       case MailKeyAction.ScopeAllAccounts:
         MailSearch.update({ scope: SearchScope.AllAccounts });
         return titleSearchInput()?.focus();
+      case MailKeyAction.AdvancedFind:
+        MailSearch.isAdvancedSearchOpen.set(true);
+        return;
       case MailKeyAction.NewFolder:
         if (MailSearch.isRealFolder(folder)) {
           MailDialogs.open({ kind: "new-folder", account: folder.account, parent: folder });

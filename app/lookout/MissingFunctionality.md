@@ -12,7 +12,7 @@ Features that belong to Microsoft services and don't apply to Mustang are not li
 |---|---|---|
 | Undo / Redo of delete, move, mark read, flag, and of event and contact changes | Quick Access Toolbar; Ctrl+Z | An undo stack for mail, calendar and contact actions |
 | Tasks (To Do) and the "My Day" pane | Navigation rail; title bar | Task objects and task accounts (CalDAV VTODO, EWS / Graph tasks). The agenda part of My Day is *UI only*. |
-| Search scope (current folder, current account, all accounts) and suggestions in the title bar search | Title bar search box | A search scope model and a search history. Today the global search is a single term. |
+| Recent searches and "Top results" suggestions in the title bar search | Title bar search box | A search history. Lookout suggests people from the address books. |
 | Pop-out windows: a message, the composer or a form in its own window | Double-click a message; Pop Out | Multi-window support in the desktop app and in the frontend router |
 | Sync summary ("All folders are up to date", "Synchronizing *folder*", "Connected to Microsoft Exchange") | Status bar | An aggregated sync state per account: in progress, last sync time, errors. Lookout shows the syncs that it started itself, and the connection state. |
 | Storage quota bar ("*x* GB free"), Mailbox Cleanup | File > Info; status bar | Quota queries (IMAP QUOTA, EWS, Graph) on `MailAccount` |
@@ -34,7 +34,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Empty Folder for any folder | Folder context menu | `Folder.empty()` on the server (IMAP expunge, EWS EmptyFolder). Lookout offers "Delete All" in Trash and Junk only, like `frontend/`. |
 | Clean Up Folder / Conversation, Ignore Conversation | Home tab > Delete | Detection of redundant quoted messages in a thread; a per-thread ignore list applied to new mail |
 | Recover Deleted Items, AutoArchive, retention policies | Folder tab | Exchange recoverable items; an archive policy engine |
-| More Search Folder templates: unread or flagged, important, sent directly to me, from (only) specific people, old mail, words in the subject | Folder tab > New Search Folder | OR-combined, importance, "to me only", sender-only, subject-only and date criteria in `SearchEMail`. Lookout offers "Mail from and to specific people". |
+| More Search Folder templates: unread or flagged, important, sent directly to me, from (only) specific people, old mail, words in the subject; date criteria in custom Search Folders | Folder tab > New Search Folder | OR-combined, importance, "to me only", sender-only and subject-only criteria in `SearchEMail`; dates in saved searches (the stored search ignores `sentDateMin` / `sentDateMax`). Lookout offers unread, flagged, from and to specific people, categorized, large, with attachments, with specific words and custom Search Folders. |
 | IMAP folder subscriptions, Purge, Download Headers, Process Marked Headers | Folder tab > IMAP; Send / Receive tab | Subscription management and a header-only mode in the IMAP logic |
 | Focused Inbox (Focused / Other) | Message list | Message classification per account |
 | Conversations that include messages from other folders (e.g. own replies in Sent Items, "Show Messages from Other Folders"), actions on a whole conversation | View tab > Messages | A thread index across folders. Lookout groups by `threadID` within the folder, and actions apply to the selected messages. |

@@ -218,14 +218,18 @@ export class MailSearch {
     return search;
   }
 
+  static isLimitReached(results: Collection<EMail> | null): boolean {
+    return !!results && results.length > MailSearch.kLimit;
+  }
+
   static hasDates(search: SearchEMail): boolean {
     return !!search.sentDateMin || !!search.sentDateMax;
   }
 
   /** The database and the servers ignore the dates, so we search without limit and keep only the dates that match */
-  static async startSearch(search: SearchEMail): Promise<Collection<EMail>> {
+  static async startSearch(search: SearchEMail, isLimited = true): Promise<Collection<EMail>> {
     if (!MailSearch.hasDates(search)) {
-      return await search.startSearch(MailSearch.kLimit + 1);
+      return await search.startSearch(isLimited ? MailSearch.kLimit + 1 : undefined);
     }
     let dateFilter = new SearchEMail();
     dateFilter.sentDateMin = search.sentDateMin;
