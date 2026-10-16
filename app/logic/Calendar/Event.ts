@@ -486,8 +486,15 @@ export class Event extends Observable {
         aThis.filename == other.attachments.get(i).filename)) &&
       !this.recurrenceRule == !other.recurrenceRule &&
       (!this.recurrenceRule || this.recurrenceRule.matches(other.recurrenceRule)) &&
+      this.exclusionsMatch(other) &&
       this.alarm?.getTime() == other.alarm?.getTime()
     );
+  }
+
+  exclusionsMatch(event: Event): boolean {
+    return this.exclusions.length == event.exclusions.length &&
+      (this.exclusions.isEmpty || this.exclusions.contents.every((exclusion, i) =>
+        exclusion.getTime() == event.exclusions.get(i).getTime()));
   }
 
   /**
@@ -970,6 +977,7 @@ export class Event extends Observable {
   async truncateRecurrence() {
     let master = this.parentEvent;
     assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must a Recurrence.Master");
+    master.startEditing();
     let lastException = this.recurrenceStartTime;
     for (let exception of master.exceptions) {
       if (exception.recurrenceStartTime > lastException) {
@@ -992,6 +1000,7 @@ export class Event extends Observable {
       await this.calendar.storage.deleteEvent(this);
     }
     await master.save();
+    master.finishEditing();
   }
 }
 
