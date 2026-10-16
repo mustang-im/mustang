@@ -83,6 +83,7 @@
   }
   .window-body {
     min-height: 0;
+    isolation: isolate;
   }
   .app-area {
     min-width: 0;
