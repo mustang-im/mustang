@@ -77,6 +77,17 @@ export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
+export function uint8ArrayToBase64(bytes: Uint8Array): string {
+  if ((bytes as any).toBase64) {
+    return (bytes as any).toBase64();
+  }
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 export function uint8ArrayToHex(bytes: Uint8Array): string {
   return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
 }
