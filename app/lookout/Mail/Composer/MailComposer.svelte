@@ -2,7 +2,7 @@
   {#if !isInline}
     <ComposerRibbon {commands} bind:showEmojis />
   {/if}
-  <vbox flex class="composer" class:lo-card={!isInline}>
+  <vbox flex class="composer" class:lo-card={!isInline} on:keydown={onEscape}>
     <FileDropTarget
       on:add-files={(event) => catchErrors(() => onFilesDrop(event))}
       on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))}
@@ -154,6 +154,7 @@
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
   import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
+  import { Keyboard } from "../../Shared/Keyboard";
   import { ComposerEncryption } from "./ComposerEncryption";
   import { DraftContent } from "./DraftContent";
   import { RecipientField, SelectNames } from "./SelectNames";
@@ -462,6 +463,18 @@
     if (errors.length) {
       throw errors[0];
     }
+  }
+
+  function onEscape(event: KeyboardEvent) {
+    // ProseMirror prevents the default of every Escape in the message body
+    if (event.key != "Escape" || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey ||
+        !Keyboard.isTextField(event.target) || event.defaultPrevented && !Keyboard.isEditor(event.target) ||
+        selectNames || showSaveChanges || showSignatures || openedTool) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    onCloseRequest();
   }
 
   function onKeyDown(event: KeyboardEvent) {
