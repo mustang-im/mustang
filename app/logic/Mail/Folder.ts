@@ -262,12 +262,12 @@ export class Folder extends Observable implements TreeItem<Folder> {
   async moveFolderHere(folder: Folder) {
     assert(folder.account == this.account, gt`Cannot move folders between accounts yet. You can create a new folder and move the messages`);
     assert(folder != folder.account.getSpecialFolder(SpecialFolder.Inbox), "Cannot move the inbox");
-    assert(!folder.specialFolder, "Should not move special folders");
+    assert(!folder.specialFolder || folder.specialFolder == SpecialFolder.Normal, "Should not move special folders");
     assert(folder != this, "Cannot move a folder into itself. Neither physics nor logic allow that. We would run into a circle and run and run and run...");
-    assert(this.subFolders.contains(folder), "This folder is *already* a subfolder of the target folder");
+    assert(!folder.getInclusiveDescendants().contains(this), gt`You cannot move a folder into its own subfolder`);
+    assert(!this.subFolders.contains(folder), "This folder is *already* a subfolder of the target folder");
     let disableSubfolders = this.disableSubfolders();
     assert(!disableSubfolders, disableSubfolders || "This folder cannot have subfolders");
-    // TODO Check sub sub folders
     if (folder.parent) {
       folder.parent.subFolders.remove(folder);
     } else {

@@ -488,6 +488,7 @@ export class EWSFolder extends ExchangeFolder {
       },
     };
     await this.account.callEWS(request);
+    await folder.save();
   }
 
   async createSubFolder(name: string): Promise<EWSFolder> {

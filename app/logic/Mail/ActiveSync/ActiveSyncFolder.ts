@@ -331,6 +331,7 @@ export class ActiveSyncFolder extends ExchangeFolder implements ActiveSyncPingab
       DisplayName: folder.name,
     };
     await this.account.queuedRequest("FolderUpdate", request);
+    await folder.save();
     // We're required to sync which should be a no-op at this point.
     await this.account.listFolders();
   }
