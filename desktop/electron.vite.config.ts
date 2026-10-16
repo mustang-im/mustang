@@ -29,10 +29,7 @@ export default defineConfig({
     build: {
       sourcemap: production,
       rollupOptions: {
-        input: {
-          index: resolve(import.meta.dirname, '../app/index.html'),
-          lookout: resolve(import.meta.dirname, '../app/lookout/index.html'),
-        },
+        input: resolve(import.meta.dirname, '../app/index.html'),
       },
     },
     plugins: [

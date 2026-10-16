@@ -1,4 +1,28 @@
 <vbox class="appearance">
+  {#if !appGlobal.isMobile}
+    <HeaderGroupBox>
+      <hbox slot="header">{$t`User interface`}</hbox>
+      <hbox class="frontend">
+        <label>
+          <input type="radio" value="classic" bind:group={frontend} />
+          {appName}
+        </label>
+        <label>
+          <input type="radio" value="lookout" bind:group={frontend} />
+          {$t`Outlook-like (Lookout)`}
+        </label>
+        {#if frontend != $frontendSetting.value}
+          <Button
+            label={$t`Save and restart`}
+            icon={RestartIcon}
+            onClick={onSaveFrontend}
+            classes="restart"
+            />
+        {/if}
+      </hbox>
+    </HeaderGroupBox>
+  {/if}
+
   <HeaderGroupBox>
     <hbox slot="header">{$t`Dark mode`}</hbox>
     <ThemeSwitcher />
@@ -48,6 +72,8 @@
 <script lang="ts">
   import { getUILocale, getUILocalePref, getDateTimeLocale, getDateTimeLocalePref, saveDateTimeLocale, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
+  import { appName } from "../../../logic/build";
+  import { getLocalStorage } from "../../Util/LocalStorage";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import AppThemeColors from "./AppThemeColors.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
@@ -55,6 +81,14 @@
   import Button from "../../Shared/Button.svelte";
   import RestartIcon from "lucide-svelte/icons/rotate-ccw";
   import { catchErrors } from "../../Util/error";
+
+  let frontendSetting = getLocalStorage("appearance.frontend", "classic");
+  let frontend = frontendSetting.value;
+
+  async function onSaveFrontend() {
+    frontendSetting.value = frontend;
+    await appGlobal.remoteApp.restartApp();
+  }
 
   let language = getUILocalePref();
   let dateTimeFormat = getDateTimeLocalePref();
@@ -97,6 +131,13 @@
   }
   .language .dropdown {
     margin-block-end: 24px;
+  }
+  .frontend {
+    align-items: center;
+    min-height: 40px;
+  }
+  .frontend label {
+    margin-inline-end: 24px;
   }
   .appearance :global(.theme svg) {
     width: 32px;

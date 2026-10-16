@@ -1,14 +1,17 @@
 import { OptionValue } from "./OptionValue";
 import { CalendarSettings } from "../../Calendar/CalendarSettings";
 import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
+import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { appGlobal } from "../../../logic/app";
+import { appName } from "../../../logic/build";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-import { getDateTimeLocalePref, getUILocale, getUILocalePref, saveDateTimeLocale, saveUILocale, setUILocale } from "../../../l10n/l10n";
+import { getDateTimeLocalePref, getUILocale, getUILocalePref, gt, saveDateTimeLocale, saveUILocale, setUILocale } from "../../../l10n/l10n";
 
 export class OptionsModel {
   protected readonly options: OptionValue<any, any>[] = [];
 
   readonly theme = this.add(OptionValue.plain(getLocalStorage<string>("appearance.theme", "system")));
+  readonly frontend = this.add(OptionValue.plain(getLocalStorage<string>("appearance.frontend", "classic")));
 
   readonly composeFormat = this.add(OptionValue.plain(getLocalStorage<string>("mail.send.format", "html")));
   readonly spellcheck = this.add(OptionValue.plain(getLocalStorage<boolean>("mail.send.spellcheck.enabled", false)));
@@ -69,6 +72,9 @@ export class OptionsModel {
     }
     if (this.needsRestart) {
       setUILocale(getUILocale());
+      await appGlobal.remoteApp.restartApp();
+    } else if (this.frontend.isChanged &&
+        await MessageBox.ask(appName, gt`You need to restart ${appName} to switch the user interface. Restart now?`)) {
       await appGlobal.remoteApp.restartApp();
     }
   }
