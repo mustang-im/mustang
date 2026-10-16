@@ -18,10 +18,20 @@ export class MailView {
   static readonly readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", ReadingPanePosition.Right);
   static readonly folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   static readonly showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
+  static readonly ribbonCollapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   static readonly collapsedSections = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
   static readonly expandedFolders = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
   static readonly contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
   static readonly readAfter = getLocalStorage<number>("mail.read.after", 0);
+
+  static isReadingView(folderPane: FolderPaneMode, isRibbonCollapsed: boolean): boolean {
+    return folderPane == FolderPaneMode.Minimized && isRibbonCollapsed;
+  }
+
+  static setReadingView(reading: boolean) {
+    MailView.folderPane.value = reading ? FolderPaneMode.Minimized : FolderPaneMode.Normal;
+    MailView.ribbonCollapsed.value = reading;
+  }
 
   static resetView(folder: Folder | null) {
     MailViewSettings.reset(folder);

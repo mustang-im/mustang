@@ -52,8 +52,10 @@
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages, quickSearch } from "../../frontend/Mail/Selected";
   import { getParams, globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../frontend/Util/error";
-  import { statusBar } from "../MainWindow/StatusBar";
+  import { statusBar, type StatusBarView } from "../MainWindow/StatusBar";
   import { FolderPaneMode, MailView } from "./MailView";
+  import NormalViewIcon from "lucide-svelte/icons/layout-panel-left";
+  import ReadingViewIcon from "lucide-svelte/icons/book-open";
   import { MailKeyAction, MailKeys } from "./MailKeys";
   import { MessageActions } from "./MessageActions";
   import { MailDialogs } from "./Dialogs/MailDialogs";
@@ -321,6 +323,14 @@
   $: statusAccounts = MailSearch.isRealFolder($selectedFolder) ? [$selectedFolder.account] : $accounts.contents;
   $: accountStates = derived(statusAccounts, () => statusAccounts);
   $: status.right = statusRight($accountStates, $updatingFolders);
+  const ribbonCollapsed = MailView.ribbonCollapsed;
+  $: status.views = viewButtons(MailView.isReadingView($folderPane.value, !!$ribbonCollapsed.value));
+  function viewButtons(isReading: boolean): StatusBarView[] {
+    return [
+      { label: $t`Normal`, icon: NormalViewIcon, isActive: !isReading, onClick: () => MailView.setReadingView(false) },
+      { label: $t`Reading`, icon: ReadingViewIcon, isActive: isReading, onClick: () => MailView.setReadingView(true) },
+    ];
+  }
   function statusRight(states: typeof statusAccounts, updating: Folder[]) {
     let items = [];
     if (updating.length) {
