@@ -1,25 +1,87 @@
-<Dialog title={$t`Open Shared Folder`}
-  cancelLabel={$t`Close`}
-  width="600px"
+<Dialog title={$t`Open Other User's Folder`} okLabel={$t`OK`} onOK={onOK} width="460px" bind:this={dialog}
+  okDisabled={!$recipients.hasItems && $t`Enter the name of your colleague first`}
   on:close>
-  <vbox class="dialog-content">
-    <span class="caption">{$t`Open the folders that your colleagues shared with ${account.name}. They then appear as their own account in the folder pane.`}</span>
-    <SharingIncoming {account} />
-  </vbox>
+  <FormGrid columns="max-content minmax(0, 1fr)">
+    <DialogButton label={$t`Name…`} onClick={() => { isPicking = true; }} />
+    <hbox class="name-field">
+      <AddressField {recipients} label={$t`Name`} />
+    </hbox>
+    <span class="lo-form-label">{$t`Folder type:`}</span>
+    <ComboBox label={$t`Folder type:`} options={typeOptions} bind:value={type} width="100%" />
+  </FormGrid>
+  {#if $availableAccounts.hasItems}
+    <vbox class="available">
+      <span>{$t`Shared with you:`}</span>
+      <ListView items={$availableAccounts.contents} onSelect={person => recipients.replaceAll([person])}
+        onOpen={person => { recipients.replaceAll([person]); dialog.submit(); }}
+        label={$t`Shared with you:`} height="120px" let:item>
+        <span title={item.emailAddress}>{item.nameOrEMail}</span>
+      </ListView>
+    </vbox>
+  {/if}
 </Dialog>
+{#if isPicking}
+  <SelectNamesDialog title={$t`Select Name`} fields={[nameField]}
+    onOK={onPicked} onCancel={() => { isPicking = false; }} />
+{/if}
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import SharingIncoming from "../../../frontend/Settings/Mail/SharingIncoming.svelte";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { SharedFolders, SharedFolderType } from "./SharedFolders";
+  import { SelectNamesField } from "../Composer/SelectNames";
+  import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
+  import AddressField from "../Composer/AddressField.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import { t } from "../../../l10n/l10n";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import FormGrid from "../../Shared/Form/FormGrid.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import ListView from "../../Shared/Form/ListView.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
+  import { catchErrors } from "../../../frontend/Util/error";
+  import { assert } from "../../../logic/util/util";
+  import { ArrayColl } from "svelte-collections";
+  import { onMount } from "svelte";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
+
+  const typeOptions: ComboOption<SharedFolderType>[] = [SharedFolderType.Inbox, SharedFolderType.Calendar, SharedFolderType.Contacts]
+    .map(folderType => ({ value: folderType, label: SharedFolders.typeLabel(folderType) }));
+  let dialog: Dialog;
+  let recipients = new ArrayColl<PersonUID>();
+  let type = SharedFolderType.Inbox;
+  let isPicking = false;
+  let nameField = new SelectNamesField(gt`Name`, [], true);
+  let availableAccounts = new ArrayColl<PersonUID>();
+
+  onMount(() => catchErrors(async () => {
+    availableAccounts = await account.availableSharedAccounts();
+  }));
+
+  function onPicked() {
+    isPicking = false;
+    recipients.replaceAll(nameField.picks.contents.slice(0, 1));
+    nameField = new SelectNamesField(gt`Name`, [], true);
+  }
+
+  async function onOK() {
+    let person = recipients.first;
+    assert(person, gt`Enter the name of your colleague first`);
+    await SharedFolders.open(account, person, type);
+  }
 </script>
 
 <style>
-  .dialog-content {
-    gap: 12px;
-    min-height: 240px;
+  .name-field {
+    min-height: 32px;
+    padding: 0 6px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-input-bg);
+  }
+  .available {
+    gap: 4px;
+    margin-top: 12px;
   }
 </style>

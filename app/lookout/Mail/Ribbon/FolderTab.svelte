@@ -27,8 +27,8 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Properties`}>
     <RibbonButton label={$t`Folder Permissions`} icon={PermissionsIcon}
-      onClick={() => MailDialogs.open({ kind: "folder-permissions", account: realAccount })}
-      disabled={!realAccount
+      onClick={() => MailDialogs.open({ kind: "folder-properties", folder: realFolder, tab: FolderPropertiesTab.Permissions })}
+      disabled={!realFolder
         ? $t`Select a folder of an account first`
         : !FolderTreeActions.canShare(realAccount) && $t`This account cannot share folders with colleagues`} />
     <RibbonButton label={$t`Folder Properties`} icon={PropertiesIcon}
@@ -44,6 +44,7 @@
   import { appGlobal } from "../../../logic/app";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { FolderPropertiesTab } from "../Dialogs/FolderProperties/FolderPropertiesTab";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -62,6 +63,7 @@
 
   $: folderStore = folder;
   $: isVirtual = folder && FolderTreeActions.isVirtual(folder);
+  $: realFolder = folder && !isVirtual ? folder : realAccount?.inbox ?? null;
   $: realAccount = folder && !isVirtual
     ? folder.account
     : account && appGlobal.emailAccounts.contains(account) ? account : null;

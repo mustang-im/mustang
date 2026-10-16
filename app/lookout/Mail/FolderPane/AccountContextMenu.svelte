@@ -14,6 +14,11 @@
 <MenuDivider />
 <MenuItem label={$t`Account Properties…`} icon={SettingsIcon}
   onClick={() => SettingsDialogs.open({ kind: "change-account", account, page: "general" })} />
+{#if account.mainAccount}
+  <MenuItem label={$t`Close "${account.name}"`} icon={CloseIcon}
+    tooltip={$t`Remove your colleague's shared folders from the folder pane`}
+    onClick={onClose} />
+{/if}
 {#if $account.isLoggedIn}
   <MenuItem label={$t`Disconnect`} icon={DisconnectIcon}
     tooltip={$t`Log out of this account`}
@@ -39,9 +44,21 @@
   import SettingsIcon from "lucide-svelte/icons/settings";
   import DisconnectIcon from "lucide-svelte/icons/unplug";
   import ConnectIcon from "lucide-svelte/icons/plug";
+  import CloseIcon from "lucide-svelte/icons/folder-x";
+  import { appName } from "../../../logic/build";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
+
+  async function onClose() {
+    // <copied from="../../../frontend/Settings/Mail/SharingIncoming.svelte" onDelete()>
+    let confirmed = confirm($t`Are you sure that you want to delete the account ${account.name} and all related data from ${appName}?`);
+    if (!confirmed) {
+      return;
+    }
+    await account.deleteIt();
+    // </copied>
+  }
 
   async function onGetNewMail() {
     // <copied from="../../../frontend/Mail/LeftPane/AccountMenu.svelte">

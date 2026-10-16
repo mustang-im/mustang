@@ -71,7 +71,8 @@
 
   $: name = $folder && FolderTreeActions.displayName(folder);
   $: isVirtual = FolderTreeActions.isVirtual(folder);
-  $: showsTotal = FolderTreeActions.showsTotalCount(folder);
+  const countModes = FolderTreeActions.countModes;
+  $: showsTotal = FolderTreeActions.showsTotalCount(folder, $countModes.value);
   $: accountsCount = $accounts.length;
   $: countStore = FolderTreeActions.countStore(folder, showsTotal);
   $: count = $countStore;
