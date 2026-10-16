@@ -38,6 +38,7 @@
   import { backstageState } from "../Settings/BackstageState";
   import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
   import { TitleBarSearch } from "./TitleBarSearch";
+  import { RibbonModel } from "../Shared/Ribbon/Ribbon";
   import { Keyboard } from "../Shared/Keyboard";
   import { MessageActions } from "../Mail/MessageActions";
   import { ContactActions } from "../Contacts/ContactActions";
@@ -120,6 +121,9 @@
         return TitleBarSearch.input?.focus();
       case GlobalKeyAction.TellMe:
         return (visibleTellMeInput() ?? TitleBarSearch.input)?.focus();
+      case GlobalKeyAction.CollapseRibbon:
+        RibbonModel.collapsedSetting.value = !RibbonModel.collapsedSetting.value;
+        return;
     }
   }
 

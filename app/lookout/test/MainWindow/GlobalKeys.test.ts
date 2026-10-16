@@ -45,3 +45,8 @@ test("Plain keys and other combinations are left to the pages", () => {
   expect(GlobalKeys.actionFor({ key: "Delete" })).toBeNull();
   expect(GlobalKeys.actionFor({ key: "Escape" })).toBeNull();
 });
+
+test("Ctrl+F1 collapses and expands the ribbon", () => {
+  expect(GlobalKeys.actionFor({ key: "F1", ctrlKey: true })).toBe(GlobalKeyAction.CollapseRibbon);
+  expect(GlobalKeys.actionFor({ key: "F1" })).toBeNull();
+});
