@@ -70,6 +70,14 @@ export class MailView {
     MailView.expandedFolders.value = MailView.withID(MailView.expandedFolders.value, MailView.folderNodeID(folder), expanded);
   }
 
+  static isNodeExpanded(nodeID: string, expandedIDs = MailView.expandedFolders.value): boolean {
+    return (expandedIDs ?? []).includes(nodeID);
+  }
+
+  static setNodeExpanded(nodeID: string, expanded: boolean) {
+    MailView.expandedFolders.value = MailView.withID(MailView.expandedFolders.value, nodeID, expanded);
+  }
+
   static folderNodeID(folder: Folder): string {
     return folder.account?.id + "/" + folder.id;
   }

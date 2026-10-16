@@ -5,13 +5,19 @@
     <hbox class="empty">{$t`Not connected`}</hbox>
   {/if}
 {/each}
+<SearchFoldersNode folders={$savedSearches.contents.filter(folder => folder.search.account == account)}
+  nodeID={account.id + "/search-folders"} />
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import FolderNode from "./FolderNode.svelte";
+  import SearchFoldersNode from "./SearchFoldersNode.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
+
+  const savedSearches = savedSearchFolders;
 
   $: sortedFolders = account.rootFolders.sortBy(folder => folder.orderPos);
 </script>
