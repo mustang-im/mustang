@@ -56,7 +56,7 @@
     dialogEl.showModal();
     let firstField =
       dialogEl.querySelector<HTMLElement>(".content [autofocus]") ??
-      dialogEl.querySelector<HTMLElement>(".content :is(input:not([type=radio]):not([type=checkbox]), select, textarea)") ??
+      dialogEl.querySelector<HTMLElement>(".content :is(input:not([type=radio]):not([type=checkbox]), select, textarea):not([readonly]):not(:disabled)") ??
       dialogEl.querySelector<HTMLElement>(".content :is([tabindex='0'], button:not(:disabled)):not([role='tab'])");
     firstField?.focus();
     if (firstField instanceof HTMLInputElement) {

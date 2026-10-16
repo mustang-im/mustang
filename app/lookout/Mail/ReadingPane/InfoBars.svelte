@@ -39,11 +39,14 @@
   </hbox>
 {/if}
 {#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && ExternalContent.hasExternalContent($message.rawHTMLDangerous)}
-  <hbox class="info-bar">
+  <button type="button" class="info-bar clickable" bind:this={picturesBar}
+    aria-haspopup="menu" on:click={() => { isPicturesMenuOpen = !isPicturesMenuOpen; }}>
     <PicturesIcon size={16} />
-    <span>{$t`To help protect your privacy, pictures and other content from the Internet are not downloaded automatically.`}</span>
-    <button class="link" on:click={onDownloadPictures}>{$t`Download pictures`}</button>
-  </hbox>
+    <span>{$t`Click here to download pictures. To help protect your privacy, ${appName} prevented automatic download of some pictures in this message.`}</span>
+  </button>
+  <Menu bind:isMenuOpen={isPicturesMenuOpen} anchor={picturesBar} placement="bottom-start">
+    <MenuItem label={$t`Download Pictures`} icon={DownloadIcon} onClick={onDownloadPictures} />
+  </Menu>
 {/if}
 
 <script lang="ts">
@@ -52,6 +55,10 @@
   import { MessageActions } from "../MessageActions";
   import { MailView } from "../MailView";
   import { ExternalContent } from "./ExternalContent";
+  import { appName } from "../../../logic/build";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import DownloadIcon from "lucide-svelte/icons/image-down";
   import DraftIcon from "lucide-svelte/icons/square-pen";
   import JunkIcon from "lucide-svelte/icons/shield-alert";
   import ImportantIcon from "lucide-svelte/icons/circle-alert";
@@ -65,6 +72,8 @@
   export let message: EMail;
 
   const contentRendering = MailView.contentRendering;
+  let picturesBar: HTMLButtonElement;
+  let isPicturesMenuOpen = false;
   $: isDraft = $message && MessageActions.isDraft(message);
   $: isJunk = $message && MessageActions.isJunk([message]);
 
@@ -85,6 +94,16 @@
     border: 1px solid var(--lo-divider);
     color: var(--lo-fg);
     font-size: 13px;
+  }
+  .info-bar.clickable {
+    display: flex;
+    flex-direction: row;
+    font-family: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .info-bar.clickable:hover {
+    background-color: var(--lo-hover-bg);
   }
   .info-bar :global(svg) {
     flex-shrink: 0;

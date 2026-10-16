@@ -8,6 +8,8 @@
   <FolderPropertiesDialog folder={$dialog.folder} tab={$dialog.tab} on:close={onClose} />
 {:else if $dialog?.kind == "reading-pane-options"}
   <ReadingPaneOptionsDialog on:close={onClose} />
+{:else if $dialog?.kind == "message-properties"}
+  <MessagePropertiesDialog message={$dialog.message} on:close={onClose} />
 {:else if $dialog?.kind == "color-categories"}
   <ColorCategoriesDialog items={$dialog.messages} onClose={onClose} />
 {:else if $dialog?.kind == "save-search"}
@@ -36,6 +38,7 @@
   import GoToFolderDialog from "./GoToFolderDialog.svelte";
   import FolderPropertiesDialog from "./FolderPropertiesDialog.svelte";
   import ReadingPaneOptionsDialog from "./ReadingPaneOptionsDialog.svelte";
+  import MessagePropertiesDialog from "./MessagePropertiesDialog.svelte";
   import ColorCategoriesDialog from "../Categories/ColorCategoriesDialog.svelte";
   import NewSearchFolderDialog from "./NewSearchFolderDialog.svelte";
   import CustomizeSearchFolderDialog from "./CustomizeSearchFolderDialog.svelte";
