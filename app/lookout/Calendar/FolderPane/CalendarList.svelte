@@ -9,12 +9,12 @@
         on:click={() => toggleGroup(group.id)}>
         <ChevronIcon size={14} class="chevron {collapsed.has(group.id) ? 'collapsed' : ''}" />
       </button>
-      <input type="checkbox" class="group-checkbox"
+      <CheckBox classes="group-checkbox"
         checked={allShown && group.calendars.length > 0}
         indeterminate={someShown && !allShown}
         disabled={!group.calendars.length}
-        title={$t`Show all calendars of this group`}
-        on:change={event => showGroup(group, event.currentTarget.checked)} />
+        tooltip={$t`Show all calendars of this group`}
+        onChange={checked => showGroup(group, checked)} />
       <button class="group-label" on:click={() => toggleGroup(group.id)}>{group.label}</button>
     </hbox>
     {#if !collapsed.has(group.id)}
@@ -35,6 +35,7 @@
   import { selectedCalendar, shownCalendars } from "../../../frontend/Calendar/selected";
   import { appGlobal } from "../../../logic/app";
   import CalendarListItem from "./CalendarListItem.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import CalendarContextMenu from "./CalendarContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../l10n/l10n";
@@ -94,11 +95,8 @@
   .expander :global(.chevron.collapsed) {
     transform: rotate(-90deg);
   }
-  .group-checkbox {
-    width: 14px;
-    height: 14px;
-    margin: 0 6px 0 2px;
-    accent-color: var(--lo-fg-secondary);
+  .group-header :global(.group-checkbox) {
+    margin: 0 4px 0 2px;
   }
   .group-label {
     flex: 1 1 0;
