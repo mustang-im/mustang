@@ -24,7 +24,7 @@
       on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))}
       allowInline={true}>
       <hbox class="title-row">
-        <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$t`Message`}</span></h1>
+        <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$sendFormat.value == "html" ? $t`Message (HTML)` : $t`Message (Plain Text)`}</span></h1>
         <hbox flex />
         <hbox class="title-buttons">
           <button class="quick-access" title={$t`Undo (Ctrl+Z)`} aria-label={$t`Undo`}
@@ -225,6 +225,7 @@
   $: hasSeveralIdentities = $identities.length > 1 || !!fromIdentity?.isCatchAll;
   let spellcheckEnabled = getLocalStorage("mail.send.spellcheck.enabled", false);
   let showFromSetting = getLocalStorage("lookout.mail.compose.showFrom", true);
+  let sendFormat = getLocalStorage("mail.send.format", "html");
   let showBccSetting = getLocalStorage("lookout.mail.compose.showBcc", false);
   let encryptionError: string | null = null;
   let showEmojis = false;
