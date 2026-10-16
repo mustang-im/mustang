@@ -553,6 +553,7 @@
     padding: 8px 24px 12px 24px;
     border-block-end: 1px solid var(--lo-divider);
   }
+  /* <copied to="../../Calendar/EditEvent/SendButton.svelte"> */
   .send {
     display: flex;
     flex-direction: column;
@@ -578,6 +579,7 @@
   .send.disabled {
     opacity: 0.55;
   }
+  /* </copied> */
   .fields {
     flex: 1 1 0;
     min-width: 0;

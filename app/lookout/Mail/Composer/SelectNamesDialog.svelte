@@ -191,6 +191,7 @@
     border-radius: var(--lo-radius-small);
     overflow-x: auto;
   }
+  /* <copied to="../Rules/RulesDialog.svelte"> */
   .list :global(.fast-list .header > *) {
     padding: 4px 8px;
     border-block-end: 1px solid var(--lo-divider);
@@ -203,6 +204,7 @@
     position: sticky;
     top: 0;
   }
+  /* </copied> */
   .cell {
     align-items: center;
     gap: 6px;
