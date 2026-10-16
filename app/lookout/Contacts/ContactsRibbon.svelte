@@ -4,7 +4,7 @@
       <RibbonButton label={$t`New Contact`} icon={NewContactIcon}
         onClick={() => ContactActions.newContact($selectedAddressbook)}
         shortCutInfo="Ctrl+N" />
-      <RibbonButton label={$t`New Contact Group`} icon={NewGroupIcon}
+      <RibbonButton label={isSimplified ? $t`New Group` : $t`New Contact Group`} icon={NewGroupIcon}
         onClick={() => ContactActions.newGroup($selectedAddressbook)}
         shortCutInfo="Ctrl+Shift+L" />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
@@ -192,6 +192,8 @@
   import NewFolderIcon from "lucide-svelte/icons/folder-plus";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import type { ArrayColl } from "svelte-collections";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+  import type { RibbonLayout } from "../Shared/Ribbon/Ribbon";
   import { t } from "../../l10n/l10n";
 
   export let selectedContacts: ArrayColl<Contact>;
@@ -203,6 +205,8 @@
   export let resetView: () => void;
 
   const addressbooks = appGlobal.addressbooks;
+  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  $: isSimplified = $ribbonLayout.value == "simplified";
   const view = ContactColumns.view;
   const sort = ContactColumns.sort;
   const folderPane = ContactColumns.folderPane;
