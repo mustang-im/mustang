@@ -13,9 +13,6 @@ import { gt } from "../../../../l10n/l10n";
 export type DigitalID = PublicKey & PrivateKey;
 
 export class DigitalIDs {
-  static readonly importFileTypes = [ "application/pgp-secret-keys", ".asc", "application/pkcs8", "application/x-pem-file", ".key", "application/x-pkcs12", ".p12", ".pfx", "text/plain" ];
-  static readonly certificateFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
-
   static usable(identity: MailIdentity): DigitalID[] {
     return identity.encryptionPrivateKeys.contents.filter(key => !key.obsolete);
   }
