@@ -78,7 +78,7 @@
 
 <style>
   .title-bar {
-    grid-template-columns: minmax(0, 1fr) minmax(200px, 680px) minmax(0, 1fr);
+    grid-template-columns: minmax(min-content, 1fr) minmax(200px, 680px) minmax(min-content, 1fr);
     align-items: stretch;
     height: var(--lo-titlebar-height);
     background-color: var(--lo-titlebar-bg);
