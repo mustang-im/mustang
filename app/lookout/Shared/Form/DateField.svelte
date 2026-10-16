@@ -1,21 +1,40 @@
-<input type="date" class="lo-datefield {classes}"
-  value={dateString}
-  min={toDateString(min)}
-  max={toDateString(max)}
-  disabled={!!disabled}
-  aria-label={label}
+<hbox class="lo-datefield {classes}" class:disabled={!!disabled} class:invalid style:width
   title={typeof disabled == "string" ? disabled : tooltip}
-  style:width
-  bind:this={inputEl}
-  on:change={onChanged} />
+  bind:this={fieldEl}>
+  <input type="text" bind:value={text}
+    aria-label={label}
+    placeholder={placeholder ?? ""}
+    disabled={!!disabled}
+    bind:this={inputEl}
+    on:change={onTextChanged}
+    on:keydown={onKeyDown}
+    on:focus={() => invalid = false} />
+  <button type="button" class="open" tabindex="-1" disabled={!!disabled}
+    title={$t`Choose a date`}
+    aria-label={$t`Choose a date`}
+    aria-expanded={isOpen}
+    on:click|stopPropagation={() => isOpen = !isOpen}>
+    <CalendarIcon size={16} />
+  </button>
+</hbox>
+<Popup bind:popupOpen={isOpen} popupAnchor={fieldEl} placement="bottom-start" boundaryElSel="body">
+  {#if isOpen}
+    <DatePicker date={value} {min} label={label ?? placeholder} onPick={onPick} />
+  {/if}
+</Popup>
 
 <script lang="ts">
+  import { DateText } from "../../Calendar/EditEvent/DateText";
+  import DatePicker from "../../Calendar/EditEvent/DatePicker.svelte";
+  import Popup from "../../../frontend/Shared/Popup.svelte";
   import { showError } from "../../../frontend/Util/error";
+  import CalendarIcon from "lucide-svelte/icons/calendar-days";
+  import { t } from "../../../l10n/l10n";
 
   export let value: Date = null;
   export let min: Date = null;
-  export let max: Date = null;
   export let label: string = null;
+  export let placeholder: string = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
   export let width: string = null;
@@ -23,26 +42,16 @@
   export let classes = "";
   export let inputEl: HTMLInputElement = null;
 
-  $: dateString = toDateString(value);
+  let text = "";
+  let isOpen = false;
+  let invalid = false;
+  let fieldEl: HTMLElement;
 
-  function toDateString(date: Date): string {
-    if (!date || isNaN(date.getTime())) {
-      return "";
-    }
-    let month = String(date.getMonth() + 1).padStart(2, "0");
-    let day = String(date.getDate()).padStart(2, "0");
-    return `${date.getFullYear()}-${month}-${day}`;
-  }
+  $: text = DateText.format(value);
 
-  async function onChanged() {
-    let [year, month, day] = inputEl.value.split("-").map(Number);
-    if (!year) {
+  async function setValue(date: Date | null) {
+    if (date?.getTime() == value?.getTime()) {
       return;
-    }
-    let date = value ? new Date(value) : new Date();
-    date.setFullYear(year, month - 1, day);
-    if (!value) {
-      date.setHours(0, 0, 0, 0);
     }
     value = date;
     try {
@@ -51,38 +60,105 @@
       showError(ex);
     }
   }
+
+  function onTextChanged(): boolean {
+    if (!text.trim()) {
+      void setValue(null);
+      return true;
+    }
+    try {
+      let reference = value ? new Date(value) : new Date(new Date().setHours(0, 0, 0, 0));
+      let date = DateText.parse(text, reference);
+      text = DateText.format(value);
+      void setValue(date);
+      return true;
+    } catch (ex) {
+      invalid = true;
+      text = DateText.format(value);
+      showError(ex);
+      return false;
+    }
+  }
+
+  function onPick(day: Date) {
+    isOpen = false;
+    let date = value ? new Date(value) : new Date(new Date(day).setHours(0, 0, 0, 0));
+    date.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
+    void setValue(date);
+  }
+
+  /* <copied from="../../Calendar/EditEvent/DateField.svelte"> */
+  function onKeyDown(event: KeyboardEvent) {
+    if (event.altKey && event.key == "ArrowDown") {
+      event.preventDefault();
+      isOpen = !isOpen;
+    } else if (event.key == "Enter") {
+      // A dialog submits on Enter, and that cancels the native change event
+      if (!onTextChanged()) {
+        event.preventDefault();
+      }
+    } else if (event.key == "Escape" && isOpen) {
+      event.stopPropagation();
+      isOpen = false;
+    }
+  }
+  /* </copied> */
 </script>
 
 <style>
+  /* <copied from="../../Calendar/EditEvent/DateField.svelte"> with the class name lo-datefield and min-width for the dialogs' grids */
   .lo-datefield {
     box-sizing: border-box;
+    align-items: center;
     min-width: 0;
     height: 32px;
-    margin: 0;
-    padding: 0 6px 0 8px;
     border: 1px solid var(--lo-input-border);
     border-radius: var(--lo-radius-small);
     background-color: var(--lo-input-bg);
-    background-image: none;
-    color: var(--lo-fg);
-    font: inherit;
   }
-  .lo-datefield:hover:not(:disabled) {
+  .lo-datefield:hover:not(.disabled) {
     border-color: var(--lo-border-strong);
   }
-  .lo-datefield:focus {
-    outline: none;
+  .lo-datefield:focus-within {
     border-color: var(--lo-accent);
-    box-shadow: inset 0 -1px 0 var(--lo-accent);
+    box-shadow: inset 0 -1px 0 0 var(--lo-accent);
   }
-  .lo-datefield:disabled {
-    background-color: var(--lo-pane-alt-bg);
-    color: var(--lo-fg-disabled);
+  .lo-datefield.invalid {
+    border-color: var(--lo-danger);
   }
-  .lo-datefield::-webkit-calendar-picker-indicator {
-    opacity: 0.7;
+  .lo-datefield.disabled {
+    opacity: 0.5;
   }
-  .lo-datefield::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
+  input {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    padding: 0 0 0 8px;
+    border: none !important;
+    background: none;
+    color: var(--lo-fg);
+    font: inherit;
+    box-shadow: none !important;
+    outline: none;
+  }
+  .open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--lo-fg-secondary);
+    cursor: pointer;
+  }
+  .open:hover:not(:disabled) {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  /* </copied> */
+  input::placeholder {
+    color: var(--lo-fg-secondary);
   }
 </style>
