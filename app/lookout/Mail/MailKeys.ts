@@ -22,7 +22,6 @@ export enum MailKeyAction {
   NewFolder = "new-folder",
   NewSearchFolder = "new-search-folder",
   GoToFolder = "go-to-folder",
-  GoToInbox = "go-to-inbox",
   NextMessage = "next-message",
   PreviousMessage = "previous-message",
   Print = "print",
@@ -63,7 +62,6 @@ export class MailKeys {
         case "y": return MailKeyAction.CopyToFolder;
         case "e": return MailKeyAction.NewFolder;
         case "p": return MailKeyAction.NewSearchFolder;
-        case "i": return MailKeyAction.GoToInbox;
         case "b": return MailKeyAction.AddressBook;
         case "f": return MailKeyAction.AdvancedFind;
       }
@@ -75,9 +73,9 @@ export class MailKeys {
         case "r": return MailKeyAction.Reply;
         case "f": return MailKeyAction.Forward;
         case "d": return MailKeyAction.Delete;
-        case "q": return MailKeyAction.MarkRead;
+        case "q": return event.ctrlKey ? MailKeyAction.MarkRead : null;
         case "u": return MailKeyAction.MarkUnread;
-        case "m": return MailKeyAction.SendReceiveAll;
+        case "m": return event.ctrlKey ? MailKeyAction.SendReceiveAll : null;
         case "e": return MailKeyAction.Search;
         case "y": return MailKeyAction.GoToFolder;
         case ".": return MailKeyAction.NextMessage;
@@ -112,10 +110,5 @@ export class MailKeys {
       MailKeyAction.ScopeCurrentFolder,
       MailKeyAction.ScopeAllAccounts,
     ].includes(action);
-  }
-
-  static isTextField(target: EventTarget | null): boolean {
-    let element = target as HTMLElement;
-    return !!element?.closest?.("input, textarea, select, [contenteditable]:not([contenteditable=false])");
   }
 }

@@ -28,11 +28,15 @@ test("Folders, sync, search, navigation", () => {
   expect(MailKeys.actionFor({ key: "Y", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.CopyToFolder);
   expect(MailKeys.actionFor({ key: "E", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.NewFolder);
   expect(MailKeys.actionFor({ key: "P", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.NewSearchFolder);
-  expect(MailKeys.actionFor({ key: "I", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.GoToInbox);
+  // Ctrl+Shift+I is the DevTools key of Electron and the browser, so Lookout doesn't take it for Go to Inbox
+  expect(MailKeys.actionFor({ key: "I", ctrlKey: true, shiftKey: true })).toBeNull();
   expect(MailKeys.actionFor({ key: "y", ctrlKey: true })).toBe(MailKeyAction.GoToFolder);
   expect(MailKeys.actionFor({ key: "B", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.AddressBook);
   expect(MailKeys.actionFor({ key: "F9" })).toBe(MailKeyAction.SendReceiveAll);
   expect(MailKeys.actionFor({ key: "m", ctrlKey: true })).toBe(MailKeyAction.SendReceiveAll);
+  // Cmd+M and Cmd+Q stay Minimize and Quit on macOS
+  expect(MailKeys.actionFor({ key: "m", metaKey: true })).toBeNull();
+  expect(MailKeys.actionFor({ key: "q", metaKey: true })).toBeNull();
   expect(MailKeys.actionFor({ key: "F9", shiftKey: true })).toBe(MailKeyAction.UpdateFolder);
   expect(MailKeys.actionFor({ key: "e", ctrlKey: true })).toBe(MailKeyAction.Search);
   expect(MailKeys.actionFor({ key: "F3" })).toBe(MailKeyAction.Search);

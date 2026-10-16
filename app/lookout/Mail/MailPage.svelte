@@ -66,6 +66,7 @@
   import ReadingViewIcon from "lucide-svelte/icons/book-open";
   import { MailKeyAction, MailKeys } from "./MailKeys";
   import { TitleBarSearch } from "../MainWindow/TitleBarSearch";
+  import { Keyboard } from "../Shared/Keyboard";
   import { MessageActions } from "./MessageActions";
   import { MailDialogs } from "./Dialogs/MailDialogs";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
@@ -375,7 +376,7 @@
     if (!pageEl?.contains(target) && target != document.body && !isInSearchBox) {
       return;
     }
-    if (event.key == "Escape" && isSearchActive && (isInSearchBox || !MailKeys.isTextField(target))) {
+    if (event.key == "Escape" && isSearchActive && (isInSearchBox || !Keyboard.isTextField(target))) {
       event.preventDefault();
       closeSearch();
       return;
@@ -384,7 +385,7 @@
     if (!action) {
       return;
     }
-    if (MailKeys.isTextField(target) && !MailKeys.worksInTextFields(action)) {
+    if (Keyboard.isTextField(target) && !MailKeys.worksInTextFields(action)) {
       return;
     }
     event.preventDefault();
@@ -427,14 +428,6 @@
         return MailDialogs.open({ kind: "go-to-folder" });
       case MailKeyAction.AddressBook:
         return MessageActions.openAddressBook();
-      case MailKeyAction.GoToInbox: {
-        let account = MailSearch.isRealFolder(folder) ? folder.account : $accounts.first;
-        if (account?.inbox) {
-          $selectedAccount = account;
-          $selectedFolder = account.inbox;
-        }
-        return;
-      }
       case MailKeyAction.NextMessage:
         return listPane?.selectRelative(1);
       case MailKeyAction.PreviousMessage:
