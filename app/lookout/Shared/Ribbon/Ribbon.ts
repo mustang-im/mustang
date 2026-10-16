@@ -236,7 +236,7 @@ export class RibbonGroupModel {
     }
   }
 
-  static computeStageWidths(layout: RibbonLayout, items: RibbonItemInfo[], metrics: RibbonMetrics): number[] {
+  static computeStageWidths(layout: RibbonLayout, items: RibbonItemInfo[], metrics: RibbonMetrics, labelWidth = 0): number[] {
     let chrome = metrics.groupChrome;
     if (layout == "simplified") {
       let row = (width: (item: RibbonItemInfo) => number) =>
@@ -260,9 +260,9 @@ export class RibbonGroupModel {
       width: item.fixedWidth || metrics.smallIconWidth,
     })), metrics.gap);
     let classicWidths: number[] = [];
-    classicWidths[ClassicStage.Designed] = designed + chrome;
-    classicWidths[ClassicStage.SmallButtons] = small + chrome;
-    classicWidths[ClassicStage.IconsOnly] = icons + chrome;
+    classicWidths[ClassicStage.Designed] = Math.max(designed, labelWidth) + chrome;
+    classicWidths[ClassicStage.SmallButtons] = Math.max(small, labelWidth) + chrome;
+    classicWidths[ClassicStage.IconsOnly] = Math.max(icons, labelWidth) + chrome;
     classicWidths[ClassicStage.Collapsed] = metrics.largeWidth + chrome;
     return classicWidths;
   }

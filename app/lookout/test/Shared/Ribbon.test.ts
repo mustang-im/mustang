@@ -263,3 +263,12 @@ test("Buttons in a button row are icon-only, also in the simplified ribbon, and 
   expect(RibbonGroupModel.buttonRowLook("simplified", false)).toBe("simplified-icon");
   expect(RibbonGroupModel.buttonRowLook("simplified", true)).toBe("list");
 });
+
+test("Classic: a group is never narrower than its label", () => {
+  let metrics = { largeWidth: 80, smallWidth: 120, smallIconWidth: 36, simplifiedWidth: 110, simplifiedIconWidth: 40, gap: 2, groupChrome: 10 };
+  // One large button: large 80, small 120, icons only 36. The label "Send/Receive" needs 70.
+  let widths = RibbonGroupModel.computeStageWidths("classic", [{ size: "large" }], metrics, 70);
+  expect(widths).toEqual([90, 130, 80, 90]);
+  // The simplified ribbon shows no group labels
+  expect(RibbonGroupModel.computeStageWidths("simplified", [{ size: "large" }], metrics, 70)).toEqual([120, 50, 0]);
+});
