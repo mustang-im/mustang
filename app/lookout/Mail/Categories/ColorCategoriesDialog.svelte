@@ -29,7 +29,7 @@
           <span>{$t`Color:`}</span>
           <ComboBox label={$t`Color:`} options={colorOptions(selected)} value={selected?.color ?? null}
             disabled={!selected && $t`Select a category first`}
-            onChange={color => onColor(color)} width="100%" />
+            onChange={color => onColor(color)} width="100%" swatchColumns={5} />
         </vbox>
       </vbox>
     </hbox>

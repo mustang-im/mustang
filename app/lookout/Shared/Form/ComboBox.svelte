@@ -20,6 +20,11 @@
 <Menu bind:isMenuOpen={isOpen} anchor={buttonEl} placement="bottom-start" autoFocus={false}
   onClose={() => buttonEl?.focus()}
   bind:this={menu}>
+  {#if swatchColumns}
+    <ColorPalette colors={options.map(option => ({ name: option.label, color: option.color }))}
+      selected={selectedOption?.color} {label} columns={swatchColumns}
+      onChoose={color => select(options.find(option => option.color == color))} />
+  {:else}
   <div class="lo-combobox-list" style:min-width={listMinWidth}>
     {#each options as option}
       {#if option.color}
@@ -35,12 +40,14 @@
       {/if}
     {/each}
   </div>
+  {/if}
 </Menu>
 
 <script lang="ts">
   import type { ComboOption } from "./ComboOption";
   import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";
+  import ColorPalette from "../ColorPalette.svelte";
   import { showError } from "../../../frontend/Util/error";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
 
@@ -55,6 +62,7 @@
   export let width: string = null;
   export let classes = "";
   export let buttonEl: HTMLButtonElement = null;
+  export let swatchColumns = 0;
 
   let isOpen = false;
   let menu: Menu;
@@ -62,7 +70,7 @@
   $: selectedOption = options.find(option => option.value === value);
 
   async function select(option: ComboOption<T>) {
-    if (option.disabled || option.value === value) {
+    if (!option || option.disabled || option.value === value) {
       return;
     }
     value = option.value;
