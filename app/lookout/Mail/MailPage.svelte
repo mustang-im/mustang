@@ -17,7 +17,8 @@
   </Ribbon>
   <hbox flex class="panes">
     {#if $folderPane.value == FolderPaneMode.Minimized}
-      <FolderPaneMinimized folder={$selectedFolder} />
+      <FolderPaneMinimized name={$selectedFolder ? FolderTreeActions.displayName($selectedFolder) : ""}
+        onExpand={() => { folderPane.value = FolderPaneMode.Normal; }} />
     {/if}
     <Splitter name="lookout.mail.folderPane" initialRightRatio={5} leftMinWidth={180} rightMinWidth={480}
       hasLeft={$folderPane.value == FolderPaneMode.Normal || !$folderPane.value}>
@@ -78,7 +79,7 @@
   import ComposerMessageTab from "./Composer/ComposerMessageTab.svelte";
   import { InlineReplies } from "./Composer/InlineReplies";
   import FolderPane from "./FolderPane/FolderPane.svelte";
-  import FolderPaneMinimized from "./FolderPane/FolderPaneMinimized.svelte";
+  import FolderPaneMinimized from "../Shared/FolderPaneMinimized.svelte";
   import ReadingPaneLayout from "./ReadingPaneLayout.svelte";
   import MessageListPane from "./MessageList/MessageListPane.svelte";
   import ReadingPane from "./ReadingPane/ReadingPane.svelte";

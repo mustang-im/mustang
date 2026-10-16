@@ -4,22 +4,16 @@
     <ExpandIcon size={16} />
   </button>
   <button class="folder-name" on:click={onExpand} title={$t`Expand the Folder Pane`}>
-    {folder ? FolderTreeActions.displayName(folder) : ""}
+    {name}
   </button>
 </vbox>
 
 <script lang="ts">
-  import type { Folder } from "../../../logic/Mail/Folder";
-  import { FolderPaneMode, MailView } from "../MailView";
-  import { FolderTreeActions } from "./FolderTreeActions";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
-  import { t } from "../../../l10n/l10n";
+  import { t } from "../../l10n/l10n";
 
-  export let folder: Folder | null;
-
-  function onExpand() {
-    MailView.folderPane.value = FolderPaneMode.Normal;
-  }
+  export let name: string;
+  export let onExpand: () => void;
 </script>
 
 <style>
