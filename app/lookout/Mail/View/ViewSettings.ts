@@ -45,6 +45,8 @@ export interface ViewSettings {
   showSendersAboveSubject: boolean;
   alwaysExpandSelected: boolean;
   classicIndented: boolean;
+  useCompactLayout: boolean;
+  compactLayoutChars: number;
 }
 
 export class ColumnInfo {
@@ -127,7 +129,17 @@ export class MailViewSettings {
       showSendersAboveSubject: true,
       alwaysExpandSelected: false,
       classicIndented: false,
+      useCompactLayout: true,
+      compactLayoutChars: 100,
     };
+  }
+
+  static shownType(view: ViewSettings, listWidth: number, charWidth: number): ViewType {
+    if (view.type != ViewType.Compact && view.useCompactLayout &&
+        listWidth > 0 && listWidth < view.compactLayoutChars * charWidth) {
+      return ViewType.Compact;
+    }
+    return view.type;
   }
 
   static defaultColumns(): Column[] {

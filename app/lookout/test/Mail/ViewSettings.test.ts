@@ -67,3 +67,17 @@ test("Replace stores only the differences from the shared view", () => {
   MailViewSettings.replace(inbox, settings);
   expect(MailViewSettings.folders.value["acc/inbox"]).toEqual({ arrangeBy: ArrangeBy.From });
 });
+
+test("Single and Preview views use the compact layout in narrow lists, like Outlook", () => {
+  let single = { ...MailViewSettings.defaults(), type: ViewType.Single };
+  // 100 characters of 7 pixels: narrower than 700 pixels shows the compact layout
+  expect(MailViewSettings.shownType(single, 420, 7)).toBe(ViewType.Compact);
+  expect(MailViewSettings.shownType(single, 900, 7)).toBe(ViewType.Single);
+  // Width not known yet
+  expect(MailViewSettings.shownType(single, 0, 7)).toBe(ViewType.Single);
+  // Turned off in Other Settings
+  expect(MailViewSettings.shownType({ ...single, useCompactLayout: false }, 420, 7)).toBe(ViewType.Single);
+  // Another number of characters
+  expect(MailViewSettings.shownType({ ...single, compactLayoutChars: 50 }, 420, 7)).toBe(ViewType.Single);
+  expect(MailViewSettings.shownType({ ...single, type: ViewType.Preview }, 420, 7)).toBe(ViewType.Compact);
+});
