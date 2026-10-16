@@ -17,13 +17,25 @@
       {/each}
     </div>
     <div class="row all-day-row" style="grid-template-columns: {columns}">
+      {#if showsZoneLabels}
+        <hbox class="zone-labels">
+          {#each rulers as ruler, r}
+            <span class="zone-label" class:primary={ruler.isPrimary} style="width: {rulerWidths[r]}px"
+              title={ruler.shownLabel(range.days[0])}>{ruler.shownLabel(range.days[0])}</span>
+          {/each}
+        </hbox>
+      {/if}
       {#each groupEvents as group, g}
         <AllDayStrip days={range.days} firstColumn={firstColumnOf(g)} events={group.allDay} calendar={group.calendar} group={g} />
       {/each}
     </div>
   </div>
   <div class="body" style="grid-template-columns: {columns}; height: {TimeColumnLayout.kMinutesPerDay * pxPerMinute}px; --slot-height: {kSlotHeight}px">
-    <TimeRuler {pxPerMinute} />
+    <hbox class="rulers">
+      {#each rulers as ruler, r}
+        <TimeRuler {pxPerMinute} labels={rulerLabels[r]} isPrimary={ruler.isPrimary} width={rulerWidths[r]} />
+      {/each}
+    </hbox>
     {#each groupEvents as group, g}
       <div class="lines" style="grid-column: {firstColumnOf(g)} / span {range.days.length}">
         {#each slotStarts as minute}
@@ -58,6 +70,7 @@
   import { EventLook } from "../Event/EventLook";
   import { CurrentTime } from "../View/CurrentTime";
   import { WorkingHours } from "../View/WorkingHours";
+  import { TimeZoneRuler } from "../View/TimeZones";
   import { eventPeek } from "../Selected";
   import DayHeader from "./DayHeader.svelte";
   import AllDayStrip from "./AllDayStrip.svelte";
@@ -74,7 +87,9 @@
 
   const kSlotHeight = 24;
   const kRulerWidth = 56;
+  const kWideRulerWidth = 76;
   const now = CurrentTime.minute;
+  const rulerSettings = TimeZoneRuler.rulers;
 
   let scrollEl: HTMLDivElement;
   let viewHeight = 0;
@@ -83,7 +98,11 @@
   $: isSplit = groups.length > 1;
   $: pxPerMinute = kSlotHeight / timeScale;
   $: showsToday = range.contains($now);
-  $: columns = `${kRulerWidth}px ` +
+  $: rulers = $rulerSettings;
+  $: showsZoneLabels = rulers.length > 1 || !!rulers[0]?.label;
+  $: rulerLabels = rulers.map(ruler => ruler.hourLabels(range.days[0]));
+  $: rulerWidths = rulerLabels.map(labels => labels.some(label => label.length > 5) ? kWideRulerWidth : kRulerWidth);
+  $: columns = `${rulerWidths.reduce((sum, width) => sum + width, 0)}px ` +
     groups.map(() => `repeat(${range.days.length}, minmax(0, 1fr))`).join(" 8px ");
   $: slotStarts = Array.from({ length: TimeColumnLayout.kMinutesPerDay / timeScale }, (_, i) => i * timeScale);
 
@@ -150,6 +169,34 @@
   }
   .all-day-row {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .zone-labels {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+    min-width: 0;
+  }
+  .zone-label {
+    flex: none;
+    box-sizing: border-box;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    padding-inline: 2px 8px;
+    padding-block-end: 2px;
+    overflow: hidden;
+    text-align: end;
+    font-size: var(--lo-font-size-small);
+    color: var(--lo-fg-secondary);
+  }
+  .zone-label.primary {
+    color: var(--lo-fg);
+  }
+  .rulers {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
   }
   .body {
     display: grid;
