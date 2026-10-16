@@ -11,7 +11,8 @@ export type SettingsDialog =
   { kind: "options", category: OptionsCategory } |
   { kind: "account-settings", tab: AccountSettingsTab } |
   { kind: "change-account", account: Account, page: ChangeAccountPage } |
-  { kind: "import-export", preselected?: Calendar | Addressbook };
+  { kind: "import-export", preselected?: Calendar | Addressbook } |
+  { kind: "add-account" };
 
 export class SettingsDialogs {
   static readonly current = writable<SettingsDialog | null>(null);

@@ -92,6 +92,10 @@
   $: tab, selected = $accounts.first ?? null;
 
   function onNew() {
+    if (tab == "email") {
+      SettingsDialogs.open({ kind: "add-account" });
+      return;
+    }
     const kSetupURLs: Record<AccountSettingsTab, string> = {
       email: "/setup/mail",
       calendars: "/setup/calendar",
