@@ -225,6 +225,13 @@ export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStar
     return new RecurrenceRule(data);
   }
 
+  protected get effectiveWeekdays(): Weekday[] {
+    if (this.weekdays) {
+      return this.weekdays;
+    }
+    return this.frequency == Frequency.Weekly ? [this.seriesStartTime.getUTCDay()] : kAllWeekdays;
+  }
+
   getCalString(allDay: boolean): string {
     let rule: { FREQ: string, UNTIL?: string, COUNT?: number, INTERVAL?: number, BYDAY?: string, WKST?: string } = { FREQ: this.frequency };
     if (this.seriesEndTime) {
@@ -261,8 +268,8 @@ export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStar
       return false;
     }
     // Must be fast, because it's used by `event.hasChanged()`
-    let thisWeekdays = this.weekdays || kAllWeekdays;
-    let ruleWeekdays = rule.weekdays || kAllWeekdays;
+    let thisWeekdays = this.effectiveWeekdays;
+    let ruleWeekdays = rule.effectiveWeekdays;
     return rule.masterDuration == this.masterDuration &&
       rule.timezone == this.timezone &&
       rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
