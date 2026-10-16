@@ -6,7 +6,7 @@
   on:close>
   <FormGrid>
     <span>{$t`Date:`}</span>
-    <DateField bind:value={selectedDate} label={$t`Date`} />
+    <DateField date={selectedDate} label={$t`Date`} width="100%" onChange={day => selectedDate = day} />
     <span>{$t`Show in:`}</span>
     <ComboBox options={viewOptions} bind:value={view} label={$t`Show in`} />
   </FormGrid>
@@ -16,7 +16,7 @@
   import type { CalendarViewType } from "../CalendarSettings";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
-  import DateField from "../../Shared/Form/DateField.svelte";
+  import DateField from "../EditEvent/DateField.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { t } from "../../../l10n/l10n";
 
