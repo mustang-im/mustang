@@ -1,5 +1,7 @@
 {#if $dialog?.kind == "options"}
   <OptionsDialog category={$dialog.category} on:close={onClose} />
+{:else if $dialog?.kind == "trust-center"}
+  <TrustCenterDialog page={$dialog.page} identity={$dialog.identity} on:close={onClose} />
 {:else if $dialog?.kind == "account-settings"}
   <AccountSettingsDialog tab={$dialog.tab} on:close={onClose} />
 {:else if $dialog?.kind == "change-account"}
@@ -17,6 +19,7 @@
 <script lang="ts">
   import { SettingsDialogs } from "./SettingsDialogs";
   import OptionsDialog from "./Options/OptionsDialog.svelte";
+  import TrustCenterDialog from "./Options/TrustCenterDialog.svelte";
   import AccountSettingsDialog from "./Accounts/AccountSettingsDialog.svelte";
   import ChangeAccountDialog from "./Accounts/ChangeAccountDialog.svelte";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";

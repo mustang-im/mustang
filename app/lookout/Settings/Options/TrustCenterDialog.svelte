@@ -1,31 +1,63 @@
 <Dialog title={$t`Trust Center`}
   okLabel={$t`OK`}
   onOK={onOK}
-  width="560px"
+  width="820px"
+  height="560px"
   on:close>
-  <vbox class="trust-center">
-    <OptionsSection title={$t`Read as Plain Text`}>
-      <OptionsRow icon={PlainTextIcon}>
-        <CheckBox label={$t`Read all standard mail in plain text`} bind:checked={readAsPlainText} />
-      </OptionsRow>
-    </OptionsSection>
-  </vbox>
+  <hbox flex class="trust-center">
+    <CategoryList groups={pageGroups} bind:selected={page} />
+    <vbox flex class="page" role="tabpanel">
+      {#if page == "email-security"}
+        <EmailSecurityPage {draft} {identity} bind:readAsPlainText />
+      {/if}
+    </vbox>
+  </hbox>
 </Dialog>
 
 <script lang="ts">
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
-  import type { OptionsModel } from "./OptionsModel";
-  import OptionsSection from "./OptionsSection.svelte";
-  import OptionsRow from "./OptionsRow.svelte";
+  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import type { TrustCenterPage } from "../SettingsDialogs";
+  import { OptionsModel } from "./OptionsModel";
+  import { EmailSecurityDraft } from "./TrustCenter/EmailSecurityDraft";
+  import CategoryList from "./CategoryList.svelte";
+  import EmailSecurityPage from "./TrustCenter/EmailSecurityPage.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import PlainTextIcon from "lucide-svelte/icons/file-text";
   import { t } from "../../../l10n/l10n";
 
-  export let options: OptionsModel;
+  export let options: OptionsModel = null;
+  export let page: TrustCenterPage = "email-security";
+  export let identity: MailIdentity = null;
 
-  let readAsPlainText = options.readAsPlainText.value;
+  const isOwnOptions = !options;
+  const optionsModel = options ?? new OptionsModel();
+  const draft = new EmailSecurityDraft();
+  let readAsPlainText = optionsModel.readAsPlainText.value;
 
-  function onOK() {
-    options.readAsPlainText.value = readAsPlainText;
+  $: pageGroups = [
+    [
+      { id: "email-security", label: $t`Email Security` },
+    ],
+  ] as { id: TrustCenterPage, label: string }[][];
+
+  async function onOK() {
+    await draft.apply();
+    optionsModel.readAsPlainText.value = readAsPlainText;
+    if (isOwnOptions) {
+      await optionsModel.save();
+    }
   }
 </script>
+
+<style>
+  .trust-center {
+    gap: 16px;
+    height: 100%;
+    min-height: 0;
+  }
+  .page {
+    min-width: 0;
+    min-height: 0;
+    padding-inline-end: 8px;
+    overflow-y: auto;
+  }
+</style>
