@@ -97,3 +97,11 @@ test("Step to the next and previous period", () => {
   expect(CalendarRange.step("month", new Date(2026, 0, 31), 1, 1)).toEqual(new Date(2026, 1, 1));
   expect(CalendarRange.step("month", new Date(2026, 0, 31), 1, -1)).toEqual(new Date(2025, 11, 1));
 });
+
+test("Start and end of the week, Monday to Sunday", () => {
+  expect(CalendarRange.weekEdge(kThursday, false)).toEqual(new Date(2026, 9, 12));
+  expect(CalendarRange.weekEdge(kThursday, true)).toEqual(new Date(2026, 9, 18));
+  // Sunday belongs to the week before
+  expect(CalendarRange.weekEdge(new Date(2026, 9, 18, 9), false)).toEqual(new Date(2026, 9, 12));
+  expect(CalendarRange.weekEdge(new Date(2026, 10, 1), true)).toEqual(new Date(2026, 10, 1));
+});

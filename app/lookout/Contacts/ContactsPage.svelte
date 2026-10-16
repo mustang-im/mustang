@@ -209,7 +209,7 @@
   let pageEl: HTMLElement;
   function onKeyDown(event: KeyboardEvent) {
     let target = event.target as HTMLElement;
-    if (!pageEl?.contains(target) && target != document.body) {
+    if (event.defaultPrevented || !pageEl?.contains(target) && target != document.body) {
       return;
     }
     let isTextField = target?.closest?.("input, textarea, select, [contenteditable]");
@@ -219,13 +219,15 @@
     } else if (event.key == "Escape" && !isTextField && isSearch) {
       event.preventDefault();
       ContactSearch.close();
-    } else if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() == "n") {
+    } else if (event.ctrlKey && !event.altKey && event.key.toLowerCase() == "n" && !event.shiftKey ||
+        event.ctrlKey && !event.altKey && event.key.toLowerCase() == "c" && event.shiftKey) {
       event.preventDefault();
       catchErrors(() => ContactActions.newContact($selectedAddressbook));
     } else if (event.ctrlKey && !event.altKey && event.shiftKey && event.key.toLowerCase() == "l") {
       event.preventDefault();
       catchErrors(() => ContactActions.newGroup($selectedAddressbook));
-    } else if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() == "e") {
+    } else if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() == "e" ||
+        event.key == "F3" && !event.ctrlKey && !event.altKey && !event.shiftKey) {
       event.preventDefault();
       focusSearch();
     }

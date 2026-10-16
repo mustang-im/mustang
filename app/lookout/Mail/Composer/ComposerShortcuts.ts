@@ -1,4 +1,5 @@
 import type { ShortcutKey } from "../../Shared/Editor/EditorShortcuts";
+import { Keyboard } from "../../Shared/Keyboard";
 
 export enum ComposerCommand {
   Send = "send",
@@ -8,7 +9,7 @@ export enum ComposerCommand {
 export type ComposerKey = ShortcutKey;
 
 export class ComposerShortcuts {
-  static commandFor(event: ComposerKey): ComposerCommand | null {
+  static commandFor(event: ComposerKey, isMac = Keyboard.isMac): ComposerCommand | null {
     let ctrl = event.ctrlKey || event.metaKey;
     if (event.shiftKey) {
       return null;
@@ -16,7 +17,7 @@ export class ComposerShortcuts {
     if (ctrl && !event.altKey && event.key == "Enter") {
       return ComposerCommand.Send;
     }
-    if (event.altKey && !ctrl && event.code == "KeyS") {
+    if (event.altKey && !ctrl && event.code == "KeyS" && !isMac) {
       return ComposerCommand.Send;
     }
     if (ctrl && !event.altKey && event.code == "KeyS") {

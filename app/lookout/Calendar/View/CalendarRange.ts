@@ -68,6 +68,11 @@ export class CalendarRange {
     return format.formatRange(this.start, this.days[this.days.length - 1]);
   }
 
+  static weekEdge(date: Date, isEnd: boolean): Date {
+    let first = getWeekStart(date);
+    return isEnd ? new Date(first.getFullYear(), first.getMonth(), first.getDate() + 6) : first;
+  }
+
   static step(view: CalendarViewType, date: Date, dayCount: number, direction: number): Date {
     if (view == "month") {
       return new Date(date.getFullYear(), date.getMonth() + direction, 1);
