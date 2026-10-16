@@ -12,6 +12,11 @@
     onInsertPicture={onInsertPicture}
     onInsertLink={() => showLinkDialog = true}
     onSignatures={() => showSignatures = true}
+    onCheckNames={onCheckNames}
+    onDateTime={() => openTool(ComposerTool.DateTime)}
+    onMoreSymbols={() => openTool(ComposerTool.Symbol)}
+    onWordCount={() => openTool(ComposerTool.WordCount)}
+    onFind={replace => openTool(replace ? ComposerTool.Replace : ComposerTool.Find)}
     />
   <vbox flex class="composer lo-card">
     <FileDropTarget
@@ -22,6 +27,16 @@
         <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$t`Message`}</span></h1>
         <hbox flex />
         <hbox class="title-buttons">
+          <button class="quick-access" title={$t`Undo (Ctrl+Z)`} aria-label={$t`Undo`}
+            disabled={!editor?.can().undo()}
+            on:click={() => editor.chain().focus().undo().run()}>
+            <UndoIcon size={16} />
+          </button>
+          <button class="quick-access" title={$t`Redo (Ctrl+Y)`} aria-label={$t`Redo`}
+            disabled={!editor?.can().redo()}
+            on:click={() => editor.chain().focus().redo().run()}>
+            <RedoIcon size={16} />
+          </button>
           <DialogButton label={$t`Save`} icon={SaveIcon} classes="plain"
             tooltip={$t`Save as draft (Ctrl+S)`}
             disabled={saveDisabledReason ?? false}
@@ -147,6 +162,15 @@
 {#if showSignatures}
   <SignaturesDialog identity={fromIdentity} onDone={() => showSignatures = false} />
 {/if}
+{#if editor && openedTool == ComposerTool.DateTime}
+  <DateTimeDialog {editor} onDone={closeTool} />
+{:else if editor && openedTool == ComposerTool.Symbol}
+  <SymbolDialog {editor} onDone={closeTool} />
+{:else if editor && openedTool == ComposerTool.WordCount}
+  <WordCountDialog {editor} onDone={closeTool} />
+{:else if editor && (openedTool == ComposerTool.Find || openedTool == ComposerTool.Replace)}
+  <FindReplaceDialog {editor} replaceMode={openedTool == ComposerTool.Replace} onDone={closeTool} />
+{/if}
 <FileSelector bind:this={fileSelector} />
 <FileSelector bind:this={imageSelector} acceptFileTypes={["image/png", "image/jpeg", "image/gif"]} />
 
@@ -173,6 +197,10 @@
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import LinkDialog from "./LinkDialog.svelte";
   import SignaturesDialog from "./SignaturesDialog.svelte";
+  import DateTimeDialog from "./DateTimeDialog.svelte";
+  import SymbolDialog from "./SymbolDialog.svelte";
+  import WordCountDialog from "./WordCountDialog.svelte";
+  import FindReplaceDialog from "./FindReplaceDialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import AddressField from "./AddressField.svelte";
   import FromField from "./FromField.svelte";
@@ -188,6 +216,8 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import DiscardIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
+  import UndoIcon from "lucide-svelte/icons/undo-2";
+  import RedoIcon from "lucide-svelte/icons/redo-2";
   import LockIcon from "lucide-svelte/icons/lock";
   import SignIcon from "lucide-svelte/icons/signature";
   import { t, gt } from "../../../l10n/l10n";
@@ -211,6 +241,14 @@
   let showSaveChanges = false;
   let showLinkDialog = false;
   let showSignatures = false;
+  enum ComposerTool {
+    DateTime = "date-time",
+    Symbol = "symbol",
+    WordCount = "word-count",
+    Find = "find",
+    Replace = "replace",
+  }
+  let openedTool: ComposerTool | null = null;
   let ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isChips = $ribbonLayout.value == "simplified";
   let toField: AddressField;
@@ -428,9 +466,32 @@
     }
   }
 
+  function openTool(tool: ComposerTool) {
+    openedTool = tool;
+  }
+
+  function closeTool() {
+    openedTool = null;
+  }
+
+  async function onCheckNames() {
+    let fields = [toField, ccField, bccField].filter(field => !!field);
+    let errors: Error[] = [];
+    for (let field of fields) {
+      try {
+        await field.checkNames();
+      } catch (ex) {
+        errors.push(ex);
+      }
+    }
+    if (errors.length) {
+      throw errors[0];
+    }
+  }
+
   function onKeyDown(event: KeyboardEvent) {
     let command = ComposerShortcuts.commandFor(event);
-    if (!command || selectNames || showSaveChanges || showLinkDialog || showSignatures) {
+    if (!command || selectNames || showSaveChanges || showLinkDialog || showSignatures || openedTool) {
       return;
     }
     event.preventDefault();
@@ -441,6 +502,10 @@
       onSave().catch(showError);
     } else if (command == ComposerCommand.Link && editor) {
       showLinkDialog = true;
+    } else if (command == ComposerCommand.Find && editor) {
+      openTool(ComposerTool.Find);
+    } else if (command == ComposerCommand.Replace && editor) {
+      openTool(ComposerTool.Replace);
     }
   }
 </script>
@@ -496,6 +561,24 @@
   .close:hover {
     background-color: var(--lo-danger);
     color: var(--lo-danger-fg);
+  }
+  .quick-access {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-accent-text);
+  }
+  .quick-access:hover:not(:disabled) {
+    background-color: var(--lo-hover-bg);
+  }
+  .quick-access:disabled {
+    color: var(--lo-fg-disabled);
   }
   .header {
     flex-shrink: 0;

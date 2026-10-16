@@ -83,14 +83,14 @@ New message, reply and forward, with the Message, Insert, Options and Format Tex
 | HTML / Plain Text / Rich Text per message | Format Text tab > Format | A per-message override of the `mail.send.format` setting in `CreateMIME` and the protocol senders; RTF / TNEF for Rich Text |
 | Several named signatures per account (New, Rename, Delete), "Choose default signature" for new messages and for replies / forwards, the own signature visible in the editor, Personal Stationery | Signature menu > Signatures… | Named signatures per `MailIdentity` with defaults for new mail and replies, inserted when composing. Today each identity has one `signatureHTML`, appended when sending. Lookout's Signature menu lists one signature per identity and inserts the others; Signatures… edits them. |
 | Font family, size, color, highlight, alignment, indent, line spacing | Message tab > Basic Text; Format Text tab | Editor extensions (`@tiptap/extension-text-style` is installed), and a sanitizer that keeps these styles |
-| Tables, online pictures, shapes, icons, screenshots, Quick Parts, date and time, symbols, equations | Insert tab | Editor features. Lookout offers Attach File, Pictures, Link, Quote, Horizontal Line and Emoji. |
+| Tables, online pictures, shapes, icons, screenshots, Quick Parts, equations | Insert tab | Editor features. Lookout offers Attach File, Pictures, Link, Date & Time, Symbol, Horizontal Line and Emoji. |
 | Attach Item: a message, a business card, a calendar | Insert tab > Include | Attaching an `EMail` as `.eml`, a `Person` as vCard, a calendar range as iCalendar |
-| Check Names, choosing between ambiguous names, the company directory in Select Names | Message tab > Names; Select Names dialog | Address resolution against the address books and the server directory (GAL). Lookout's Select Names searches the local address books. |
+| Choosing between ambiguous names in Check Names, the company directory in Check Names and Select Names | Message tab > Names; Select Names dialog | Address resolution against the server directory (GAL). Lookout's Check Names and Select Names search the local address books. |
 | From: "Other E-mail Address…" | From menu | Sending with any From address. Today only identities and catch-all identities can send. |
 | Outlook-style reply header (From / Sent / To / Subject block) | Reply body | A quote format option in `ComposeActions`. The logic writes "*name* wrote on *date*:" and a blockquote. |
 | MailTips (recipient is out of office, large audience, external recipients) | InfoBars in the composer | EWS `GetMailTips`, Graph mail tips |
 | Inline reply in the reading pane | Reading pane | *UI only*. Lookout opens replies in the composer. |
-| Paste / Cut / Copy buttons, Format Painter, Zoom, Thesaurus, Word Count | Message tab; Review tab | *UI only* or editor features. The keyboard shortcuts work, and Spelling toggles the spell check. |
+| Format Painter, Zoom, Thesaurus, Translate, Language, Accessibility checker | Message tab; Format Text tab; Review tab | Editor features (copying marks, a zoom factor), a thesaurus, a translation service, an accessibility checker |
 
 ## Rules
 

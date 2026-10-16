@@ -2,6 +2,8 @@ export enum ComposerCommand {
   Send = "send",
   Save = "save",
   Link = "link",
+  Find = "find",
+  Replace = "replace",
 }
 
 export type ComposerKey = Pick<KeyboardEvent, "key" | "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">;
@@ -23,6 +25,12 @@ export class ComposerShortcuts {
     }
     if (ctrl && !event.altKey && event.code == "KeyK") {
       return ComposerCommand.Link;
+    }
+    if (ctrl && !event.altKey && event.code == "KeyH") {
+      return ComposerCommand.Replace;
+    }
+    if (!ctrl && !event.altKey && event.key == "F4") {
+      return ComposerCommand.Find;
     }
     return null;
   }

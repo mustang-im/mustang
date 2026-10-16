@@ -190,6 +190,7 @@
     --lo-ribbon-large-height: calc(3 * var(--lo-ribbon-row-height));
     --lo-ribbon-small-width: calc(38px + 11ch);
     --lo-ribbon-small-icon-width: 36px;
+    --lo-ribbon-row-button-width: 26px;
     --lo-ribbon-button-height: 32px;
     --lo-ribbon-simplified-width: calc(48px + 10ch);
     --lo-ribbon-simplified-icon-width: 40px;
