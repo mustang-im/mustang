@@ -1,141 +1,120 @@
 <Dialog title={isMeeting ? $t`Meeting Recurrence` : $t`Appointment Recurrence`}
-  okLabel={$t`OK`} okDisabled={okDisabled} onOK={onOK} width="600px" on:close={onClose}>
-  <fieldset>
-    <legend>{$t`Appointment time`}</legend>
-    <grid class="appointment-time">
-      <span class="label">{$t`Start`}</span>
-      <TimeCombo time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
-        onChange={time => setStartTime(time)} />
-      <span class="label">{$t`End`}</span>
-      <TimeCombo time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
-        onChange={time => setEndTime(time)} />
-      <span class="label">{$t`Duration`}</span>
-      <select value={durationMinutes} on:change={onDurationChanged} aria-label={$t`Duration`}>
-        {#each durationChoices as minutes}
-          <option value={minutes}>{TimeOptions.durationLabel(minutes)}</option>
-        {/each}
-      </select>
-    </grid>
-  </fieldset>
+  okLabel={$t`OK`} okDisabled={okDisabled} onOK={onOK} width="640px" on:close={onClose}>
+  <vbox class="groups">
+    <GroupBox label={$t`Appointment time`}>
+      <grid class="appointment-time">
+        <span class="label">{$t`Start:`}</span>
+        <TimeCombo time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
+          onChange={time => setStartTime(time)} />
+        <span class="label">{$t`End:`}</span>
+        <TimeCombo time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
+          onChange={time => setEndTime(time)} />
+        <span class="label">{$t`Duration:`}</span>
+        <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
+          onChange={minutes => setDuration(minutes)} />
+      </grid>
+    </GroupBox>
 
-  <fieldset>
-    <legend>{$t`Recurrence pattern`}</legend>
-    <hbox class="pattern">
-      <vbox class="frequencies">
-        {#each frequencies as choice}
-          <label class="radio">
-            <input type="radio" name="frequency" value={choice.value} bind:group={pattern.frequency} />
-            {choice.label}
-          </label>
-        {/each}
-      </vbox>
-      <vbox class="options">
-        {#if pattern.frequency == Frequency.Daily}
-          <label class="radio">
-            <input type="radio" name="daily" value="interval" bind:group={pattern.dailyMode} />
-            {$t`Every`}
-            <input type="number" class="number" min="1" max="999" bind:value={pattern.interval}
-              on:focus={() => pattern.dailyMode = "interval"} aria-label={$t`Interval`} />
-            {$plural(pattern.interval, { one: "day", other: "days" })}
-          </label>
-          <label class="radio" title={canRepeatOnWeekdays ? null : $t`The series starts on a weekend`}>
-            <input type="radio" name="daily" value="weekdays" bind:group={pattern.dailyMode}
-              disabled={!canRepeatOnWeekdays} />
-            {$t`Every weekday`}
-          </label>
-        {:else if pattern.frequency == Frequency.Weekly}
-          <hbox class="line">
-            {$t`Recur every`}
-            <input type="number" class="number" min="1" max="999" bind:value={pattern.interval} aria-label={$t`Interval`} />
-            {$plural(pattern.interval, { one: "week", other: "weeks" })} {$t`on:`}
-          </hbox>
-          <grid class="weekdays">
-            {#each kAllWeekdays as weekday}
-              <label class="check" title={weekday == startWeekday ? $t`The day of the start date` : null}>
-                <input type="checkbox"
+    <GroupBox label={$t`Recurrence pattern`}>
+      <hbox class="pattern">
+        <vbox class="frequencies">
+          {#each frequencies as choice}
+            <Radio label={choice.label} name="frequency" value={choice.value} bind:group={pattern.frequency} />
+          {/each}
+        </vbox>
+        <vbox class="options">
+          {#if pattern.frequency == Frequency.Daily}
+            <hbox class="line">
+              <Radio label={$t`Every`} name="daily" value="interval" bind:group={pattern.dailyMode} />
+              <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval`}
+                onChange={() => { pattern.dailyMode = "interval"; }} />
+              {$plural(pattern.interval, { one: "day", other: "days" })}
+            </hbox>
+            <hbox class="line">
+              <Radio label={$t`Every weekday`} name="daily" value="weekdays" bind:group={pattern.dailyMode}
+                disabled={!canRepeatOnWeekdays && $t`The series starts on a weekend`} />
+            </hbox>
+          {:else if pattern.frequency == Frequency.Weekly}
+            <hbox class="line">
+              {$t`Recur every`}
+              <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval`} />
+              {$plural(pattern.interval, { one: "week", other: "weeks" })} {$t`on:`}
+            </hbox>
+            <grid class="weekdays">
+              {#each kAllWeekdays as weekday}
+                <CheckBox label={weekdayLabel(weekday, "long")}
                   checked={weekday == startWeekday || pattern.weekdays.includes(weekday)}
-                  disabled={weekday == startWeekday}
-                  on:change={() => toggleWeekday(weekday)} />
-                {weekdayLabel(weekday, "long")}
-              </label>
-            {/each}
-          </grid>
-        {:else if pattern.frequency == Frequency.Monthly}
-          <label class="radio">
-            <input type="radio" name="monthly" value="day" bind:group={pattern.monthlyMode} />
-            {$t`Day ${rangeStart.getDate()} of every *=> as in: Day 15 of every 2 months`}
-            <input type="number" class="number" min="1" max="99" bind:value={pattern.interval}
-              on:focus={() => pattern.monthlyMode = "day"} aria-label={$t`Interval`} />
-            {$plural(pattern.interval, { one: "month", other: "months" })}
-          </label>
-          <label class="radio">
-            <input type="radio" name="monthly" value={weekMode} checked={pattern.monthlyMode != "day"}
-              on:change={() => pattern.monthlyMode = weekMode} />
-            {$t`The *=> as in: The third Thursday of every 2 months`}
-            <select value={weekMode} on:change={onWeekModeChanged} aria-label={$t`Week of the month`}>
-              {#each weekChoices as choice}
-                <option value={choice.mode}>{choice.label}</option>
+                  disabled={weekday == startWeekday && $t`The day of the start date`}
+                  onChange={() => toggleWeekday(weekday)} />
               {/each}
-            </select>
-            {weekdayName}
-            {$t`of every *=> as in: The third Thursday of every 2 months`}
-            <input type="number" class="number" min="1" max="99" bind:value={pattern.interval} aria-label={$t`Interval`} />
-            {$plural(pattern.interval, { one: "month", other: "months" })}
-          </label>
-        {:else if pattern.frequency == Frequency.Yearly}
-          <hbox class="line">
-            {$t`Recur every`}
-            <input type="number" class="number" min="1" max="99" bind:value={pattern.interval} aria-label={$t`Interval`} />
-            {$plural(pattern.interval, { one: "year", other: "years" })}
-          </hbox>
-          <label class="radio">
-            <input type="radio" name="yearly" value="day" bind:group={pattern.monthlyMode} />
-            {$t`On ${dayOfYear} *=> as in: On October 15`}
-          </label>
-          <label class="radio">
-            <input type="radio" name="yearly" value={weekMode} checked={pattern.monthlyMode != "day"}
-              on:change={() => pattern.monthlyMode = weekMode} />
-            {$t`On the *=> as in: On the third Thursday of October`}
-            <select value={weekMode} on:change={onWeekModeChanged} aria-label={$t`Week of the month`}>
-              {#each weekChoices as choice}
-                <option value={choice.mode}>{choice.label}</option>
-              {/each}
-            </select>
-            {$t`${weekdayName} of ${monthName} *=> as in: (On the third) Thursday of October`}
-          </label>
-        {/if}
-      </vbox>
-    </hbox>
-  </fieldset>
-
-  <fieldset>
-    <legend>{$t`Range of recurrence`}</legend>
-    <hbox class="range">
-      <hbox class="range-start">
-        <span class="label">{$t`Start`}</span>
-        <DateField date={rangeStart} label={$t`Start of the series`} onChange={day => setRangeStart(day)} />
+            </grid>
+          {:else if pattern.frequency == Frequency.Monthly}
+            <hbox class="line">
+              <Radio label={$t`Day ${rangeStart.getDate()} of every *=> as in: Day 15 of every 2 months`}
+                name="monthly" value="day" bind:group={pattern.monthlyMode} />
+              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`}
+                onChange={() => { pattern.monthlyMode = "day"; }} />
+              {$plural(pattern.interval, { one: "month", other: "months" })}
+            </hbox>
+            <hbox class="line">
+              <Radio label={$t`The *=> as in: The third Thursday of every 2 months`}
+                name="monthly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
+                onChange={() => { pattern.monthlyMode = weekMode; }} />
+              <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
+                onChange={mode => setWeekMode(mode)} />
+              {weekdayName}
+              {$t`of every *=> as in: The third Thursday of every 2 months`}
+              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`} />
+              {$plural(pattern.interval, { one: "month", other: "months" })}
+            </hbox>
+          {:else if pattern.frequency == Frequency.Yearly}
+            <hbox class="line">
+              {$t`Recur every`}
+              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`} />
+              {$plural(pattern.interval, { one: "year", other: "years" })}
+            </hbox>
+            <hbox class="line">
+              <Radio label={$t`On ${dayOfYear} *=> as in: On October 15`}
+                name="yearly" value="day" bind:group={pattern.monthlyMode} />
+            </hbox>
+            <hbox class="line">
+              <Radio label={$t`On the *=> as in: On the third Thursday of October`}
+                name="yearly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
+                onChange={() => { pattern.monthlyMode = weekMode; }} />
+              <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
+                onChange={mode => setWeekMode(mode)} />
+              {$t`${weekdayName} of ${monthName} *=> as in: (On the third) Thursday of October`}
+            </hbox>
+          {/if}
+        </vbox>
       </hbox>
-      <vbox class="range-end">
-        <label class="radio">
-          <input type="radio" name="end" value="date" bind:group={pattern.end} />
-          <span class="end-label">{$t`End by:`}</span>
-          <DateField date={pattern.endDate} label={$t`End of the series`}
-            onChange={day => { pattern.endDate = day; pattern.end = "date"; }} />
-        </label>
-        <label class="radio">
-          <input type="radio" name="end" value="count" bind:group={pattern.end} />
-          <span class="end-label">{$t`End after:`}</span>
-          <input type="number" class="number" min="1" max="999" bind:value={pattern.count}
-            on:focus={() => pattern.end = "count"} aria-label={$t`Number of occurrences`} />
-          {$plural(pattern.count, { one: "occurrence", other: "occurrences" })}
-        </label>
-        <label class="radio">
-          <input type="radio" name="end" value="none" bind:group={pattern.end} />
-          {$t`No end date`}
-        </label>
-      </vbox>
-    </hbox>
-  </fieldset>
+    </GroupBox>
+
+    <GroupBox label={$t`Range of recurrence`}>
+      <hbox class="range">
+        <hbox class="range-start">
+          <span class="label">{$t`Start:`}</span>
+          <DateField date={rangeStart} label={$t`Start of the series`} onChange={day => setRangeStart(day)} />
+        </hbox>
+        <vbox class="range-end">
+          <hbox class="line">
+            <Radio label={$t`End by:`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
+            <DateField date={pattern.endDate} label={$t`End of the series`}
+              onChange={day => { pattern.endDate = day; pattern.end = "date"; }} />
+          </hbox>
+          <hbox class="line">
+            <Radio label={$t`End after:`} name="end" value="count" bind:group={pattern.end} classes="end-label" />
+            <SpinBox bind:value={pattern.count} min={1} max={999} width="64px" label={$t`Number of occurrences`}
+              onChange={() => { pattern.end = "count"; }} />
+            {$plural(pattern.count, { one: "occurrence", other: "occurrences" })}
+          </hbox>
+          <hbox class="line">
+            <Radio label={$t`No end date`} name="end" value="none" bind:group={pattern.end} />
+          </hbox>
+        </vbox>
+      </hbox>
+    </GroupBox>
+  </vbox>
 
   <svelte:fragment slot="buttons-start">
     <DialogButton label={$t`Remove Recurrence`} disabled={!hasRecurrence} onClick={onRemove} />
@@ -153,6 +132,11 @@
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import TimeCombo from "./TimeCombo.svelte";
   import DateField from "./DateField.svelte";
+  import GroupBox from "../../Shared/Form/GroupBox.svelte";
+  import Radio from "../../Shared/Form/Radio.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import SpinBox from "../../Shared/Form/SpinBox.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { kAllWeekdays, weekdayLabel } from "../../../frontend/Util/date";
   import { getDateTimeLocale, gt, plural, t } from "../../../l10n/l10n";
 
@@ -182,10 +166,11 @@
   $: endTime = new Date(startTime.getTime() + durationMinutes * 60000);
   $: startOptions = TimeOptions.startTimes(startTime);
   $: endOptions = TimeOptions.endTimes(startTime, endTime);
-  $: durationChoices = durationList(durationMinutes, allDay);
+  $: durationOptions = durationList(durationMinutes, allDay).map(minutes => ({ value: minutes, label: TimeOptions.durationLabel(minutes) }));
   $: startWeekday = rangeStart.getDay();
   $: canRepeatOnWeekdays = RecurrencePattern.canRepeatOnWeekdays(rangeStart);
   $: weekChoices = RecurrencePattern.weekChoices(rangeStart);
+  $: weekOptions = weekChoices.map(choice => ({ value: choice.mode, label: choice.label }));
   $: weekMode = weekChoices.find(choice => choice.mode == pattern.monthlyMode)?.mode ?? weekChoices[0].mode;
   $: weekdayName = rangeStart.toLocaleDateString(getDateTimeLocale(), { weekday: "long" });
   $: monthName = rangeStart.toLocaleDateString(getDateTimeLocale(), { month: "long" });
@@ -227,8 +212,8 @@
     timesChanged = true;
   }
 
-  function onDurationChanged(changeEvent: globalThis.Event) {
-    durationMinutes = Number((changeEvent.target as HTMLSelectElement).value);
+  function setDuration(minutes: number) {
+    durationMinutes = minutes;
     timesChanged = true;
   }
 
@@ -247,8 +232,8 @@
     }
   }
 
-  function onWeekModeChanged(changeEvent: globalThis.Event) {
-    pattern.monthlyMode = (changeEvent.target as HTMLSelectElement).value as MonthlyMode;
+  function setWeekMode(mode: MonthlyMode) {
+    pattern.monthlyMode = mode;
   }
 
   function onOK() {
@@ -279,36 +264,17 @@
 </script>
 
 <style>
-  fieldset {
-    margin: 0 0 12px 0;
-    padding: 8px 12px 12px 12px;
-    border: 1px solid var(--lo-border);
-    border-radius: var(--lo-radius-small);
-  }
-  legend {
-    padding: 0 4px;
-    font-weight: 600;
+  .groups {
+    gap: 12px;
   }
   .label {
-    color: var(--lo-fg-secondary);
+    color: var(--lo-fg);
   }
   .appointment-time {
     grid-template-columns: max-content max-content;
     align-items: center;
     column-gap: 12px;
     row-gap: 6px;
-  }
-  select {
-    height: 32px;
-    padding: 0 6px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
-  }
-  .appointment-time select {
-    width: 132px;
   }
   .pattern {
     gap: 16px;
@@ -321,49 +287,36 @@
   }
   .options {
     flex: 1 1 0;
-    gap: 10px;
+    gap: 6px;
   }
-  .radio, .check, .line {
-    display: flex;
+  .line {
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
     min-height: 32px;
   }
-  .radio > input[type=radio], .check > input[type=checkbox] {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-    accent-color: var(--lo-accent);
-  }
-  .number {
-    width: 56px;
-    height: 30px;
-    padding: 0 6px;
-    border: 1px solid var(--lo-input-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-input-bg);
-    color: var(--lo-fg);
-    font: inherit;
-    text-align: end;
-  }
   .weekdays {
     grid-template-columns: repeat(4, max-content);
     column-gap: 16px;
-    row-gap: 2px;
+    row-gap: 6px;
   }
   .range {
-    gap: 24px;
+    gap: 16px;
     align-items: start;
   }
   .range-start {
     align-items: center;
     gap: 8px;
+    min-height: 32px;
   }
   .range-end {
+    flex: 1 1 0;
     gap: 4px;
   }
-  .end-label {
-    min-width: 72px;
+  .range-end .line {
+    flex-wrap: nowrap;
+  }
+  .range-end :global(.end-label) {
+    min-width: 96px;
   }
 </style>

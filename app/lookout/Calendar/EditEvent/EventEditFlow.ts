@@ -377,8 +377,8 @@ export class EventEditFlow {
   // </copied>
 
   static sameAddresses(first: PersonUID[], second: PersonUID[]): boolean {
-    let addresses = (persons: PersonUID[]) => persons.map(person => person.emailAddress?.toLowerCase()).sort().join("\n");
-    return first.length == second.length && addresses(first) == addresses(second);
+    let addresses = (persons: PersonUID[]) => [...new Set(persons.map(person => person.emailAddress?.toLowerCase()))].sort().join("\n");
+    return addresses(first) == addresses(second);
   }
 
   setAttendees(persons: PersonUID[]) {
