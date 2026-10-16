@@ -1,3 +1,5 @@
+<svelte:window on:keydown|capture={onKeyDownCapture} />
+
 <vbox flex class="main-window desktop lookout-window" dir={rtl}>
   <TitleBar />
   <vbox flex class="below-title">
@@ -30,10 +32,20 @@
 
 <script lang="ts">
   import "../app.css";
-  import { selectedApp, sidebarApp, history } from "../../frontend/AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, history, openApp } from "../../frontend/AppsBar/selectedApp";
   import { notifications } from "../../frontend/MainWindow/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { backstageState } from "../Settings/BackstageState";
+  import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
+  import { TitleBarSearch } from "./TitleBarSearch";
+  import { Keyboard } from "../Shared/Keyboard";
+  import { MessageActions } from "../Mail/MessageActions";
+  import { ContactActions } from "../Contacts/ContactActions";
+  import { selectedFolder } from "../../frontend/Mail/Selected";
+  import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
+  import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
+  import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
+  import { catchErrors } from "../../frontend/Util/error";
   import TitleBar from "./TitleBar.svelte";
   import StatusBar from "./StatusBar.svelte";
   import NavRail from "../AppsBar/NavRail.svelte";
@@ -62,6 +74,57 @@
   onDestroy(unlistenHistory);
   function onNavigate() {
     backstageState.close();
+  }
+
+  function onKeyDownCapture() {
+    // Appended anew for every key, so that it runs after the pages' own window listeners, which take precedence
+    window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+  }
+  onDestroy(() => window.removeEventListener("keydown", onKeyDown));
+
+  function onKeyDown(event: KeyboardEvent) {
+    if (event.defaultPrevented || event.cancelBubble || Keyboard.isEditor(event.target) ||
+        document.querySelector("dialog:modal")) {
+      return;
+    }
+    let action = GlobalKeys.actionFor(event);
+    if (!action) {
+      return;
+    }
+    event.preventDefault();
+    catchErrors(() => runAction(action));
+  }
+
+  function runAction(action: GlobalKeyAction) {
+    switch (action) {
+      case GlobalKeyAction.Mail:
+        return openApp(mailMustangApp, mailMustangApp.windowParams);
+      case GlobalKeyAction.Calendar:
+        return openApp(calendarMustangApp, calendarMustangApp.windowParams);
+      case GlobalKeyAction.People:
+        return openApp(contactsMustangApp, contactsMustangApp.windowParams);
+      case GlobalKeyAction.NewMail:
+        return MessageActions.newMail($selectedFolder);
+      case GlobalKeyAction.NewAppointment:
+        return MessageActions.newAppointment();
+      case GlobalKeyAction.NewMeeting:
+        return MessageActions.newMeeting();
+      case GlobalKeyAction.NewContact:
+        return MessageActions.newContact();
+      case GlobalKeyAction.NewContactGroup:
+        return ContactActions.newGroup(null);
+      case GlobalKeyAction.AddressBook:
+        return MessageActions.openAddressBook();
+      case GlobalKeyAction.Search:
+        return TitleBarSearch.input?.focus();
+      case GlobalKeyAction.TellMe:
+        return (visibleTellMeInput() ?? TitleBarSearch.input)?.focus();
+    }
+  }
+
+  function visibleTellMeInput(): HTMLInputElement | null {
+    return Array.from(document.querySelectorAll<HTMLInputElement>(".tell-me-input")).find(input => input.offsetParent) ?? null;
   }
 </script>
 
