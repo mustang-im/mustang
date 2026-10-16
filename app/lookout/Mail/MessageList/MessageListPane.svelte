@@ -1,4 +1,4 @@
-<vbox flex class="message-list-pane lo-card" style:--message-columns={gridTemplate}>
+<vbox flex class="message-list-pane lo-card" style:--message-columns={gridTemplate} bind:clientWidth={paneWidth}>
   <hbox class="list-header">
     {#if isSimplified}
       <span class="list-title" title={listTitle}>{listTitle}</span>
@@ -55,7 +55,7 @@
   {#if $listMessages.hasItems}
     <MessageList bind:this={messageList} bind:listEl
       {groups} showGroupHeaders={$settings.showInGroups}
-      viewType={$settings.type}
+      viewType={shownType}
       {columns}
       {previewIndent}
       previewLines={$settings.previewLines}
@@ -174,7 +174,13 @@
   $: arrangeLabel = ArrangeFields.all().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
   $: showsRecipients = !!folder && [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(folder.specialFolder);
 
-  $: columns = $settings.type == ViewType.Compact ? null : visibleColumns($settings, showFolder);
+  let paneWidth = 0;
+  $: shownType = shownTypeAt($settings, paneWidth);
+  function shownTypeAt(view: ViewSettings, width: number): ViewType {
+    const kCharWidth = 7;
+    return MailViewSettings.shownType(view, width, kCharWidth);
+  }
+  $: columns = shownType == ViewType.Compact ? null : visibleColumns($settings, showFolder);
   function visibleColumns(view: ViewSettings, withFolder: boolean): Column[] {
     let result = (view.columns?.length ? view.columns : MailViewSettings.defaultColumns())
       .filter(column => ColumnInfo.of(column));
