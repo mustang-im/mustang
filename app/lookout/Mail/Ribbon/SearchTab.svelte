@@ -59,26 +59,26 @@
     {/if}
   </RibbonGroup>
   <RibbonGroup label={$t`Scope`}>
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.AllAccounts)} shortLabel={MailSearch.scopeShortLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
       checked={scope == SearchScope.AllAccounts} isRadio
       onChange={() => MailSearch.update({ scope: SearchScope.AllAccounts })}
       shortCutInfo="Ctrl+Alt+A" />
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentAccount)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
       checked={scope == SearchScope.CurrentAccount} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
       onChange={() => MailSearch.update({ scope: SearchScope.CurrentAccount })} />
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
+    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
       checked={scope == SearchScope.CurrentFolder} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
       onChange={() => MailSearch.update({ scope: SearchScope.CurrentFolder })}
       shortCutInfo="Ctrl+Alt+K" />
   </RibbonGroup>
   <RibbonGroup label={$t`Options`}>
-    <RibbonMenuButton label={$t`Search Tools`} icon={SearchToolsIcon}>
+    <RibbonMenuButton label={$t`Search Tools`} shortLabel={$t`Tools *=> Search tools`} icon={SearchToolsIcon}>
       <MenuItem label={$t`Advanced Find…`} icon={AdvancedIcon} shortCutInfo="Ctrl+Shift+F"
         onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
     </RibbonMenuButton>
-    <RibbonButton label={$t`Save as Search Folder`} icon={SaveSearchIcon} size="small"
+    <RibbonButton label={$t`Save as Search Folder`} shortLabel={$t`Save Search`} icon={SaveSearchIcon} size="small"
       tooltip={$t`Save this search as a Search Folder`}
       onClick={onSaveSearch}
       disabled={saveDisabledReason} />

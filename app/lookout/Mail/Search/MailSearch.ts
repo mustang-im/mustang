@@ -183,6 +183,14 @@ export class MailSearch {
     }
   }
 
+  static scopeShortLabel(scope: SearchScope): string {
+    switch (scope) {
+      case SearchScope.AllAccounts: return gt`All *=> All mailboxes`;
+      case SearchScope.CurrentAccount: return gt`Mailbox *=> Current mailbox`;
+      case SearchScope.CurrentFolder: return gt`Folder *=> Current folder`;
+    }
+  }
+
   static newSearch(term: string | null, options: SearchOptions, account: MailAccount | null, folder: Folder | null,
       now = new Date()): SearchEMail {
     let search = newServerSearchEMail();
