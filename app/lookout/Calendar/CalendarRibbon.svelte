@@ -1,7 +1,7 @@
 <Ribbon>
   <RibbonTab label={$t`Home`}>
     <RibbonGroup label={$t`New`}>
-      <RibbonButton label={$t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo="Ctrl+N"
+      <RibbonButton label={isSimplified ? $t`New Event` : $t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo="Ctrl+N"
         onClick={() => CalendarActions.newEventAtSelection(null)}
         disabled={noCalendar} />
       <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo="Ctrl+Shift+Q"
@@ -12,7 +12,7 @@
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Online Meeting`}>
-      <RibbonButton label={$t`New Online Meeting`} icon={OnlineMeetingIcon}
+      <RibbonButton label={isSimplified ? $t`Online *=> New online meeting` : $t`New Online Meeting`} icon={OnlineMeetingIcon}
         tooltip={$t`New meeting with a link to an online meeting`}
         onClick={() => CalendarActions.newEventAtSelection(null, "online-meeting")}
         disabled={noCalendar} />
@@ -20,7 +20,7 @@
     <RibbonGroup label={$t`Go To`} onLauncher={onGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
       <RibbonButton label={$t`Today`} icon={TodayIcon} onClick={onToday} />
       <RibbonButton label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={onNext7Days} />
-      {#if $ribbonLayout.value == "simplified"}
+      {#if isSimplified}
         <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo="Ctrl+G" onClick={onGoToDate} />
       {/if}
     </RibbonGroup>
@@ -225,6 +225,7 @@
   const folderPane = CalendarSettings.folderPane;
   const readingPane = CalendarSettings.readingPane;
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  $: isSimplified = $ribbonLayout.value == "simplified";
 
   let calendars = appGlobal.calendars;
   $: noCalendar = !$calendars.hasItems && $t`Please set up a calendar first`;
