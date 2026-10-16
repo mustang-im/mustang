@@ -122,8 +122,12 @@
     </RibbonGroup>
     <RibbonGroup label={$t`Layout`}>
       <RibbonMenuButton label={$t`Folder Pane`} icon={FolderPaneIcon}>
-        <MenuItem label={$t`Normal`} checked={showFolderPane} onClick={() => onFolderPane(true)} />
-        <MenuItem label={$t`Off`} checked={!showFolderPane} onClick={() => onFolderPane(false)} />
+        <MenuItem label={$t`Normal`} checked={$folderPane.value == CalendarFolderPane.Normal}
+          onClick={() => onFolderPane(CalendarFolderPane.Normal)} />
+        <MenuItem label={$t`Minimized`} checked={$folderPane.value == CalendarFolderPane.Minimized}
+          onClick={() => onFolderPane(CalendarFolderPane.Minimized)} />
+        <MenuItem label={$t`Off`} checked={$folderPane.value == CalendarFolderPane.Off}
+          onClick={() => onFolderPane(CalendarFolderPane.Off)} />
       </RibbonMenuButton>
     </RibbonGroup>
   </RibbonTab>
@@ -132,7 +136,7 @@
 
 <script lang="ts">
   import { CalendarActions } from "./CalendarActions";
-  import { CalendarCurrentView, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
+  import { CalendarCurrentView, CalendarFolderPane, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
   import { CalendarGroups } from "./FolderPane/CalendarGroups";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { CalendarSharing } from "./Dialogs/CalendarSharing";
@@ -185,12 +189,12 @@
   export let onResetView: () => void;
   export let splitView: boolean;
   export let timeScale: number;
-  export let showFolderPane: boolean;
   export let onView: (view: CalendarViewType) => void;
   export let onToday: () => void;
   export let onNext7Days: () => void;
   export let onGoToDate: () => void;
 
+  const folderPane = CalendarSettings.folderPane;
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
 
   let calendars = appGlobal.calendars;
@@ -217,8 +221,7 @@
     CalendarSettings.timeScale.value = minutes;
   }
 
-  function onFolderPane(show: boolean) {
-    showFolderPane = show;
-    CalendarSettings.folderPane.value = show;
+  function onFolderPane(mode: CalendarFolderPane) {
+    CalendarSettings.folderPane.value = mode;
   }
 </script>

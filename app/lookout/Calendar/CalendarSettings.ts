@@ -10,6 +10,12 @@ export enum CalendarCurrentView {
   Active = "active",
 }
 
+export enum CalendarFolderPane {
+  Normal = "normal",
+  Minimized = "minimized",
+  Off = "off",
+}
+
 export enum EventTableColumn {
   Subject = "subject",
   Location = "location",
@@ -32,7 +38,7 @@ export class CalendarSettings {
   static readonly splitView = getLocalStorage<boolean>("lookout.calendar.splitView", false);
   static readonly showDeclined = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
   static readonly weekNumbers = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
-  static readonly folderPane = getLocalStorage<boolean>("lookout.calendar.folderPane", true);
+  static readonly folderPane = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
   static readonly listSortColumn = getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start);
   static readonly listSortAscending = getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true);
   static readonly listGrouping = getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence);
