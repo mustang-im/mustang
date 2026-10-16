@@ -81,12 +81,21 @@
       <MenuDivider />
       <MenuItem label={$t`Options…`} onClick={() => MailDialogs.open({ kind: "reading-pane-options" })} />
     </RibbonMenuButton>
+    <RibbonMenuButton label={$t`To-Do Bar`} icon={ToDoBarIcon}>
+      <MenuItem label={$t`Calendar`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
+        onClick={() => MailView.setToDoBarPart(ToDoBarPart.Calendar, !$toDoBar.value?.includes(ToDoBarPart.Calendar))} />
+      <MenuItem label={$t`People`} icon={PeopleIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.People)}
+        onClick={() => MailView.setToDoBarPart(ToDoBarPart.People, !$toDoBar.value?.includes(ToDoBarPart.People))} />
+      <MenuDivider />
+      <MenuItem label={$t`Off`} checked={!$toDoBar.value?.length}
+        onClick={() => { $toDoBar.value = []; }} />
+    </RibbonMenuButton>
   </RibbonGroup>
 </RibbonTab>
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { FolderPaneMode, MailView, ReadingPanePosition } from "../MailView";
+  import { FolderPaneMode, MailView, ReadingPanePosition, ToDoBarPart } from "../MailView";
   import { ApplyScope, MailViewSettings, ViewType } from "../View/ViewSettings";
   import { ViewCommands } from "../View/ViewCommands";
   import { ViewDialogs } from "../View/ViewDialogs";
@@ -118,6 +127,9 @@
   import BottomIcon from "lucide-svelte/icons/panel-bottom";
   import OffIcon from "lucide-svelte/icons/square";
   import SpacingIcon from "lucide-svelte/icons/fold-vertical";
+  import ToDoBarIcon from "lucide-svelte/icons/panel-right-open";
+  import CalendarIcon from "lucide-svelte/icons/calendar";
+  import PeopleIcon from "lucide-svelte/icons/users";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
@@ -131,6 +143,7 @@
   const folderPane = MailView.folderPane;
   const readingPane = MailView.readingPane;
   const showFavorites = MailView.showFavorites;
+  const toDoBar = MailView.toDoBar;
   $: settings = MailViewSettings.store(folder);
   let conversationsChecked = false;
   $: conversationsChecked = !!$settings.showAsConversations;
