@@ -7,9 +7,21 @@
         <RibbonButton label={$t`Delete Group`} icon={DeleteIcon}
           onClick={deleteIt} />
       </RibbonGroup>
+      <RibbonGroup label={$t`Show`}>
+        <RibbonToggleButton label={$t`Members`} icon={MembersIcon} isRadio
+          checked={page == "members"} onChange={() => { page = "members"; }} />
+        <RibbonToggleButton label={$t`Notes`} icon={NotesIcon} isRadio
+          checked={page == "notes"} onChange={() => { page = "notes"; }} />
+      </RibbonGroup>
       <RibbonGroup label={$t`Members`}>
-        <RibbonButton label={$t`Add Members`} icon={AddMembersIcon}
-          onClick={focusAddMember} />
+        <RibbonMenuButton label={$t`Add Members`} icon={AddMembersIcon}>
+          <MenuItem label={$t`From Contacts…`} icon={ContactsIcon} onClick={() => openSelectMembers()} />
+          <MenuItem label={$t`From Address Book…`} icon={AddressbookIcon} onClick={() => openSelectMembers()} />
+          <MenuItem label={$t`New E-mail Contact…`} icon={NewContactIcon} onClick={() => { isNewContactOpen = true; }} />
+        </RibbonMenuButton>
+        <RibbonButton label={$t`Remove Member`} icon={RemoveIcon}
+          disabled={!selectedMember && $t`Select a member first`}
+          onClick={removeSelected} />
       </RibbonGroup>
       <RibbonGroup label={$t`Communicate`}>
         <RibbonButton label={$t`Email`} icon={MailIcon}
@@ -23,41 +35,36 @@
   </Ribbon>
 
   <FormCard title={$group.name || $t`Untitled`} kind={$t`Contact Group`}>
-    <hbox slot="title-end" class="addressbook lo-secondary">
-      <AddressbookIcon size={16} />
-      {$group.addressbook?.name ?? ""}
-    </hbox>
-
     <vbox flex class="form-body">
-      <grid class="fields">
+      <hbox class="name-row">
         <label for="group-name">{$t`Name`}</label>
-        <input id="group-name" type="text" bind:value={group.name} bind:this={nameInput} />
-        <label for="group-description">{$t`Description`}</label>
-        <input id="group-description" type="text" bind:value={group.description} />
-      </grid>
-
-      <h2>{$t`Members`} <span class="count">{$members.length}</span></h2>
-      <hbox class="add-member" bind:this={addMemberEl}>
-        <PersonAutocomplete
-          onAddPerson={addMember}
-          skipPersonFunc={isMember}
-          placeholder={$t`Add members by name or email address`} />
+        <input id="group-name" type="text" class="lo-text-field" bind:value={group.name} bind:this={nameInput} />
       </hbox>
-      <vbox class="members">
-        {#each $members.each as member (member.id)}
-          <GroupMemberLine person={member}>
-            <button class="remove" on:click={() => group.participants.remove(member)}
-              title={$t`Remove Member`}>
-              <RemoveIcon size={14} />
-            </button>
-          </GroupMemberLine>
-        {:else}
-          <hbox class="no-members">{$t`This group has no members yet.`}</hbox>
-        {/each}
-      </vbox>
+      {#if page == "notes"}
+        <textarea class="lo-text-field notes" bind:value={group.description} aria-label={$t`Notes`} />
+      {:else}
+        <ListView items={sortedMembers} columns={memberColumns} bind:selected={selectedMember}
+          label={$t`Members`} height="auto" classes="members"
+          onOpen={member => ContactActions.edit(member)} let:item>
+          <hbox class="cell name">
+            <ContactPicture contact={item} size={20} />
+            <span class="text">{item.name || ""}</span>
+          </hbox>
+          <span class="cell text">{PreferredEntry.valueOf(item.emailAddresses) ?? ""}</span>
+          <svelte:fragment slot="empty">{$t`Use Add Members to add people to this group.`}</svelte:fragment>
+        </ListView>
+      {/if}
     </vbox>
   </FormCard>
 </vbox>
+
+{#if selectMembersField}
+  <SelectNamesDialog title={$t`Select Members: Contacts`} fields={[ selectMembersField ]}
+    onOK={onMembersPicked} onCancel={() => { selectMembersField = null; }} />
+{/if}
+{#if isNewContactOpen}
+  <NewEMailContactDialog onAdd={addNewContact} on:close={() => { isNewContactOpen = false; }} />
+{/if}
 
 <svelte:window on:keydown={onKeyDown} />
 
@@ -70,16 +77,29 @@
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../Shared/Ribbon/RibbonButton.svelte";
-  import GroupMemberLine from "./GroupMemberLine.svelte";
+  import RibbonToggleButton from "../Shared/Ribbon/RibbonToggleButton.svelte";
+  import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";
+  import MenuItem from "../Shared/Menu/MenuItem.svelte";
+  import ListView from "../Shared/Form/ListView.svelte";
+  import ContactPicture from "./ContactPicture.svelte";
+  import SelectNamesDialog from "../Mail/Composer/SelectNamesDialog.svelte";
+  import { SelectNamesField } from "../Mail/Composer/SelectNames";
+  import NewEMailContactDialog from "./Dialogs/NewEMailContactDialog.svelte";
+  import { PreferredEntry } from "./PreferredEntry";
+  import { LetterIndex } from "./LetterIndex";
+  import type { Person } from "../../logic/Abstract/Person";
   import FormCard from "./FormCard.svelte";
-  import PersonAutocomplete from "../../frontend/Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import SaveCloseIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import AddMembersIcon from "lucide-svelte/icons/user-round-plus";
   import MailIcon from "lucide-svelte/icons/mail";
   import MeetingIcon from "lucide-svelte/icons/calendar-plus";
   import AddressbookIcon from "lucide-svelte/icons/book-user";
-  import RemoveIcon from "lucide-svelte/icons/x";
+  import ContactsIcon from "lucide-svelte/icons/contact-round";
+  import NewContactIcon from "lucide-svelte/icons/mail-plus";
+  import MembersIcon from "lucide-svelte/icons/users-round";
+  import NotesIcon from "lucide-svelte/icons/notebook-pen";
+  import RemoveIcon from "lucide-svelte/icons/user-round-minus";
   import { UserError } from "../../logic/util/util";
   import { onMount, tick } from "svelte";
   import { gt, t } from "../../l10n/l10n";
@@ -87,9 +107,14 @@
   export let group: Group;
 
   let nameInput: HTMLInputElement;
-  let addMemberEl: HTMLElement;
+  let page: "members" | "notes" = "members";
+  let selectedMember: Person = null;
+  let selectMembersField: SelectNamesField = null;
+  let isNewContactOpen = false;
 
   $: members = group.participants;
+  $: sortedMembers = [...$members.contents].sort(LetterIndex.compareByName);
+  $: memberColumns = [ { label: $t`Name`, width: "minmax(0, 1fr)" }, { label: $t`E-mail`, width: "minmax(0, 1fr)" } ];
   $: hasEmailAddress = ContactActions.hasEmailAddress([$group]) && $members.hasItems;
 
   onMount(async () => {
@@ -99,21 +124,36 @@
     }
   });
 
-  function isMember(personUID: PersonUID): boolean {
-    return group.participants.contents.some(member =>
-      member.emailAddresses.some(entry => entry.value == personUID.emailAddress));
-  }
-
   function addMember(personUID: PersonUID) {
     let person = personUID.person ?? personUID.findPerson();
     if (!person) {
       throw new UserError(gt`Only people from your address books can be group members. Please add ${personUID.emailAddress} to your contacts first.`);
     }
+    if (!group.participants.contains(person)) {
+      group.participants.add(person);
+    }
+  }
+
+  function openSelectMembers() {
+    selectMembersField = new SelectNamesField(gt`Members`);
+  }
+
+  function onMembersPicked() {
+    let picks = selectMembersField.picks.contents;
+    selectMembersField = null;
+    for (let pick of picks) {
+      addMember(pick);
+    }
+  }
+
+  async function addNewContact(name: string, emailAddress: string) {
+    let person = await ContactActions.createEMailContact(group.addressbook, name, emailAddress);
     group.participants.add(person);
   }
 
-  function focusAddMember() {
-    addMemberEl?.querySelector("input")?.focus();
+  function removeSelected() {
+    group.participants.remove(selectedMember);
+    selectedMember = null;
   }
 
   async function save() {
@@ -154,78 +194,42 @@
   .group-form-page {
     min-height: 0;
   }
-  .addressbook {
-    align-items: center;
-    gap: 6px;
-  }
   .form-body {
     min-height: 0;
-    max-width: 720px;
-    overflow-y: auto;
+    gap: 12px;
     padding: 16px 24px 24px 24px;
   }
-  grid.fields {
-    display: grid;
-    grid-template-columns: 120px 1fr;
+  .name-row {
     align-items: center;
-    gap: 6px 12px;
+    gap: 12px;
+    max-width: 720px;
+  }
+  .name-row input {
+    flex: 1;
   }
   label {
     color: var(--lo-fg-secondary);
   }
-  h2 {
-    margin: 24px 0 8px 0;
-    padding-block-end: 4px;
-    border-block-end: 1px solid var(--lo-divider);
-    font-size: var(--lo-font-size);
-    font-weight: 600;
+  .form-body :global(.members) {
+    flex: 1 1 0;
+    min-height: 120px;
   }
-  .count {
-    margin-inline-start: 4px;
-    font-weight: normal;
-    color: var(--lo-fg-secondary);
+  .cell {
+    min-width: 0;
+    padding: 4px 8px;
   }
-  .add-member {
-    margin-block-end: 8px;
-  }
-  .add-member :global(.person-autocomplete) {
-    height: 32px;
-  }
-  .add-member :global(.person-autocomplete .autocomplete),
-  .add-member :global(.person-autocomplete .input-container),
-  .add-member :global(.person-autocomplete input) {
-    width: 100%;
-  }
-  .add-member :global(.person-autocomplete input) {
-    border: 1px solid var(--lo-input-border) !important;
-    border-radius: var(--lo-radius-small) !important;
-    box-shadow: none !important;
-    background-color: var(--lo-input-bg) !important;
-    font: inherit;
-  }
-  .add-member :global(.person-autocomplete input:focus) {
-    outline: none;
-    border-color: var(--lo-accent) !important;
-  }
-  .remove {
-    display: flex;
+  .cell.name {
     align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    border-radius: var(--lo-radius-small);
-    background: none;
-    color: var(--lo-fg-secondary);
-    cursor: pointer;
+    gap: 8px;
   }
-  .remove:hover {
-    background-color: var(--lo-pressed-bg);
-    color: var(--lo-danger);
+  .text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
-  .no-members {
-    margin: 8px;
-    color: var(--lo-fg-secondary);
+  .notes {
+    flex: 1 1 0;
+    min-height: 200px;
+    resize: none;
   }
 </style>

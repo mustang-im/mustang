@@ -1,4 +1,4 @@
-import { Person } from "../../logic/Abstract/Person";
+import { ContactEntry, Person } from "../../logic/Abstract/Person";
 import { Group } from "../../logic/Abstract/Group";
 import type { Contact } from "../../logic/Abstract/Contact";
 import { PersonUID } from "../../logic/Abstract/PersonUID";
@@ -48,6 +48,16 @@ export class ContactActions {
         .filter(entry => entry.purpose == "work")
         .map(entry => entry.clone()));
     }
+    return person;
+  }
+
+  static async createEMailContact(addressbook: Addressbook, name: string, emailAddress: string): Promise<Person> {
+    assert(emailAddress.includes("@"), gt`Please enter an email address`);
+    let person = addressbook.newPerson();
+    person.name = name || emailAddress;
+    person.addressbook = addressbook;
+    person.emailAddresses.add(new ContactEntry(emailAddress, "work"));
+    await person.save();
     return person;
   }
 
