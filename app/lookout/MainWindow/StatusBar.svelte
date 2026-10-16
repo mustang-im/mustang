@@ -10,6 +10,17 @@
       <StatusBarEntry {item} />
     {/each}
   </hbox>
+  {#if $section?.views?.length}
+    <hbox class="views" role="group">
+      {#each $section.views as view (view.label)}
+        <button type="button" class="view" class:active={view.isActive}
+          title={view.label} aria-label={view.label} aria-pressed={view.isActive}
+          on:click={view.onClick}>
+          <svelte:component this={view.icon} size="14" />
+        </button>
+      {/each}
+    </hbox>
+  {/if}
 </hbox>
 
 <script lang="ts">
@@ -32,6 +43,32 @@
     border-block-start: 1px solid var(--lo-divider);
     white-space: nowrap;
     overflow: hidden;
+  }
+  .views {
+    align-items: center;
+    gap: 2px;
+    margin-inline-start: 16px;
+  }
+  .view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: var(--lo-fg-secondary);
+  }
+  .view:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  .view.active {
+    background-color: var(--lo-selected-bg);
+    border-color: var(--lo-selected-hover-bg);
+    color: var(--lo-fg);
   }
   .side {
     align-items: center;

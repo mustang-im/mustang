@@ -8,11 +8,20 @@ export interface StatusBarItem {
   busy?: boolean;
 }
 
+export interface StatusBarView {
+  label: string;
+  icon: ConstructorOfATypedSvelteComponent;
+  isActive: boolean;
+  onClick: () => void;
+}
+
 export class StatusBarSection extends Observable {
   @notifyChangedProperty
   left: StatusBarItem[] = [];
   @notifyChangedProperty
   right: StatusBarItem[] = [];
+  @notifyChangedProperty
+  views: StatusBarView[] = [];
   protected readonly statusBar: StatusBarModel;
 
   constructor(statusBar: StatusBarModel) {

@@ -34,7 +34,11 @@
     {#if $tags.hasItems}
       <hbox class="categories">
         {#each $tags.each as tag (tag)}
-          <span class="category" style="--category-color: {tag.color};" title={tag.name}>{tag.name}</span>
+          {#if $ribbonLayout.value == "simplified"}
+            <span class="category" style="--category-color: {tag.color};" title={tag.name}>{tag.name}</span>
+          {:else}
+            <span class="category-square" style="--category-color: {tag.color};" title={tag.name}></span>
+          {/if}
         {/each}
       </hbox>
     {/if}
@@ -124,6 +128,8 @@
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
+  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SendingIcon from "lucide-svelte/icons/send";
   import ImportantIcon from "lucide-svelte/icons/circle-alert";
@@ -152,6 +158,7 @@
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
 
   $: tags = message.tags;
+  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: senderName = $message && ListName.of(message);
   $: senderTooltip = ListName.showsRecipient(message)
     ? $t`To: ${senderName}`
@@ -373,6 +380,14 @@
     background-color: color-mix(in srgb, var(--category-color) 22%, var(--lo-pane-bg));
     font-size: 11px;
     line-height: 16px;
+  }
+  .category-square {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background-color: var(--category-color);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
   }
   .hover-actions {
     display: none;

@@ -19,7 +19,7 @@ Features that belong to Microsoft services and don't apply to Mustang are not li
 | Account manager in the title bar: profile picture, sign out, switch account | Title bar | Pictures for all account types; a logout API for every account type |
 | Import / Export of PST files, Open Outlook Data File | File > Open & Export | A PST / OST reader and writer |
 | Unread count on the taskbar or tray icon | Taskbar | Wiring the desktop backend's `setBadgeCount()` / `setTrayIcon()` to the unread counts |
-| Zoom slider, Reading view | Status bar | A zoom / text scale setting that the frontend applies |
+| Zoom slider | Status bar | A zoom / text scale setting that the frontend applies |
 | Notification center (bell) with a history of reminders and notifications | Title bar | *UI only*. Notifications exist, Lookout shows them as a bar. |
 | KeyTips (Alt + letter), command search ("Tell me"), Customize Ribbon and Quick Access Toolbar | Ribbon; title bar search; File > Options | *UI only* |
 
