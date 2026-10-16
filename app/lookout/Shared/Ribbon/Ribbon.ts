@@ -25,11 +25,12 @@ export interface RibbonItemInfo {
 
 export class RibbonModel {
   static readonly contextKey = "lookout-ribbon";
+  static readonly collapsedSetting = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   id = "main";
   readonly tabs: Writable<RibbonTabModel[]> = writable([]);
   readonly selectedTab: Writable<RibbonTabModel> = writable(null);
   readonly layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  readonly collapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
+  readonly collapsed = RibbonModel.collapsedSetting;
   readonly metrics: Writable<RibbonMetrics> = writable(null);
   readonly isSurveying: Writable<boolean> = writable(false);
   protected surveys = 0;

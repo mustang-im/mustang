@@ -58,7 +58,7 @@
       {/if}
       <MenuDivider />
       <MenuItem label={$t`Customize the Ribbon…`} onClick={() => { isCustomizing = true; }} />
-      <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} onClick={onToggleCollapsed} />
+      <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} shortCutInfo="Ctrl+F1" onClick={onToggleCollapsed} />
     </ContextMenu>
   </hbox>
   <hbox class="ribbon-content" on:click|capture={onClickContent}>

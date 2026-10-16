@@ -11,6 +11,8 @@
 </hbox>
 
 <script lang="ts">
+  import { onMount } from "svelte";
+
   export let tabs: { id: string, label: string, disabled?: boolean }[];
   export let selected: string = tabs[0]?.id;
   export let onSelect: (id: string) => void = null;
@@ -26,13 +28,31 @@
     if (event.key != "ArrowLeft" && event.key != "ArrowRight") {
       return;
     }
+    let forward = (event.key == "ArrowRight") != (getComputedStyle(tabsEl).direction == "rtl");
+    selectNext(forward);
+    event.preventDefault();
+  }
+
+  onMount(() => {
+    let dialogEl = tabsEl.closest("dialog");
+    dialogEl?.addEventListener("keydown", onDialogKeyDown);
+    return () => dialogEl?.removeEventListener("keydown", onDialogKeyDown);
+  });
+
+  function onDialogKeyDown(event: KeyboardEvent) {
+    if (event.key != "Tab" || !event.ctrlKey || event.altKey || event.defaultPrevented) {
+      return;
+    }
+    selectNext(!event.shiftKey);
+    event.preventDefault();
+  }
+
+  function selectNext(forward: boolean) {
     let enabled = tabs.filter(tab => !tab.disabled);
     let pos = enabled.findIndex(tab => tab.id == selected);
-    let forward = (event.key == "ArrowRight") != (getComputedStyle(tabsEl).direction == "rtl");
     let next = enabled[(pos + (forward ? 1 : -1) + enabled.length) % enabled.length];
     select(next.id);
     tabsEl.querySelectorAll<HTMLElement>(".dialog-tab")[tabs.indexOf(next)]?.focus();
-    event.preventDefault();
   }
 </script>
 

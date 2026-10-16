@@ -12,6 +12,7 @@ export enum GlobalKeyAction {
   AddressBook = "address-book",
   Search = "search",
   TellMe = "tell-me",
+  CollapseRibbon = "collapse-ribbon",
 }
 
 export interface GlobalKeyPress {
@@ -40,7 +41,11 @@ export class GlobalKeys {
       if (digit) {
         return kModules[digit] ?? null;
       }
-      return key == "e" ? GlobalKeyAction.Search : null;
+      switch (key) {
+        case "e": return GlobalKeyAction.Search;
+        case "F1": return GlobalKeyAction.CollapseRibbon;
+      }
+      return null;
     }
     if (ctrl && shift && !alt) {
       switch (key) {
