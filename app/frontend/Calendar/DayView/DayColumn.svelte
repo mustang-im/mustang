@@ -1,4 +1,7 @@
 <grid class="day-column" style="grid-column: {column}">
+  {#each offWorkPeriods as period}
+    <hbox class="off-work" style="top: {position(period.start) * 100}%; bottom: {(1 - position(period.end)) * 100}%" />
+  {/each}
   {#each hourStarts as start, i}
     <HourSlot {start} row={i * kRowsPerHour + 1} empty={isEmpty($layout, i * kRowsPerHour)} on:celldblclick>
       <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} />
@@ -18,6 +21,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { WorkHours, type WorkPeriod } from "../../../logic/Calendar/WorkHours";
   import { layoutTimeColumn, kRowsPerHour, type EventInTimeColumn } from "./DayColumn";
   import HourSlot from "./HourSlot.svelte";
   import EventContainer from "./EventContainer.svelte";
@@ -32,6 +36,7 @@
   export let overlayEvents: Collection<Event> | null = null;
   export let startHour = 0;
   export let endHour = 24;
+  export let workHours: WorkHours[] = [];
 
   let hourStarts: Date[] = [];
   let dayEvents: Collection<Event>;
@@ -52,6 +57,28 @@
     dayOverlayEvents = overlayEvents?.filterObservable(isInDay) ?? new ArrayColl<Event>();
   }
 
+  let offWorkPeriods: WorkPeriod[] = [];
+  $: day, startHour, endHour, workHours, setOffWorkPeriods();
+  function setOffWorkPeriods() {
+    if (!workHours.length) {
+      offWorkPeriods = [];
+      return;
+    }
+    let dayStart = new Date(day);
+    dayStart.setHours(startHour, 0, 0, 0);
+    let dayEnd = new Date(day);
+    dayEnd.setHours(endHour, 0, 0, 0);
+    offWorkPeriods = WorkHours.offWorkPeriodsOfAll(workHours, dayStart, dayEnd);
+  }
+
+  function position(time: Date): number {
+    if (time.getDate() != day.getDate()) {
+      return time < day ? 0 : 1;
+    }
+    let hours = time.getHours() + time.getMinutes() / 60;
+    return Math.min(Math.max((hours - startHour) / (endHour - startHour), 0), 1);
+  }
+
   $: layout = derived(
     [...$dayEvents.contents, ...$dayOverlayEvents.contents],
     eventsInDay => layoutTimeColumn(eventsInDay, day, startHour, endHour));
@@ -69,5 +96,11 @@
     grid-template-columns: minmax(0, 1fr);
     position: relative;
     border-left: 1px dotted var(--border);
+  }
+  .off-work {
+    position: absolute;
+    inset-inline: 0px;
+    background-color: var(--calendar-off-work-bg);
+    pointer-events: none;
   }
 </style>
