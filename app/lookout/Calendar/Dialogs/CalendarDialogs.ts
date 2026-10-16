@@ -8,7 +8,7 @@ export type CalendarDialog =
   { kind: "properties", calendar: Calendar, tab: CalendarPropertiesTab } |
   { kind: "open-calendar", account: MailAccount | null, fromAddressBook: boolean } |
   { kind: "rename", calendar: Calendar } |
-  { kind: "view-settings" };
+  { kind: "view-settings", isTable: boolean };
 
 export class CalendarDialogs {
   static readonly current = writable<CalendarDialog | null>(null);

@@ -90,6 +90,8 @@
       <RibbonMenuButton label={$t`Change View`} icon={ChangeViewIcon}>
         <ChangeViewGallery {currentView} onChange={onCurrentView} />
       </RibbonMenuButton>
+      <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
+        onClick={() => CalendarActions.openViewSettings()} />
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
         tooltip={$t`Reset the view and the table columns to the default settings`}
         onClick={onResetView} />
@@ -98,8 +100,8 @@
       <ArrangeButtons {view} {isTable} onView={onView} />
       <RibbonMenuButton label={$t`Time Scale`} icon={TimeScaleIcon} size="small"
         disabled={view == "month" && $t`The time scale applies to the Day, Work Week, Week and Schedule views`}>
-        {#each timeScales as scale}
-          <MenuItem label={timeScaleLabel(scale)} checked={scale == timeScale}
+        {#each CalendarSettings.timeScales as scale}
+          <MenuItem label={CalendarSettings.timeScaleLabel(scale)} checked={scale == timeScale}
             onClick={() => onTimeScale(scale)} />
         {/each}
       </RibbonMenuButton>
@@ -123,12 +125,6 @@
         <MenuItem label={$t`Normal`} checked={showFolderPane} onClick={() => onFolderPane(true)} />
         <MenuItem label={$t`Off`} checked={!showFolderPane} onClick={() => onFolderPane(false)} />
       </RibbonMenuButton>
-      <RibbonToggleButton label={$t`Week Numbers`} icon={WeekNumbersIcon} size="small"
-        tooltip={$t`Show week numbers in the month view and in the date navigator`}
-        bind:checked={showWeekNumbers} onChange={onWeekNumbers} />
-      <RibbonToggleButton label={$t`Declined Events`} icon={DeclinedIcon} size="small"
-        tooltip={$t`Show events that you declined`}
-        bind:checked={showDeclined} onChange={onShowDeclined} />
     </RibbonGroup>
   </RibbonTab>
   <slot />
@@ -180,8 +176,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import TimeScaleIcon from "lucide-svelte/icons/ruler";
   import FolderPaneIcon from "lucide-svelte/icons/panel-left";
-  import WeekNumbersIcon from "lucide-svelte/icons/hash";
-  import DeclinedIcon from "lucide-svelte/icons/calendar-x-2";
+  import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import { t } from "../../l10n/l10n";
 
   export let view: CalendarViewType;
@@ -191,14 +186,11 @@
   export let splitView: boolean;
   export let timeScale: number;
   export let showFolderPane: boolean;
-  export let showWeekNumbers: boolean;
-  export let showDeclined: boolean;
   export let onView: (view: CalendarViewType) => void;
   export let onToday: () => void;
   export let onNext7Days: () => void;
   export let onGoToDate: () => void;
 
-  const timeScales = [60, 30, 15, 10, 6, 5];
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
 
   let calendars = appGlobal.calendars;
@@ -208,16 +200,6 @@
   $: isSharedCalendar = !!$selectedCalendar && CalendarGroups.isShared($selectedCalendar);
   $: canShare = CalendarSharing.canShare($selectedCalendar);
   $: overlayDisabled = (view == "month" || view == "schedule") && $t`Overlay is available in the Day, Work Week and Week views`;
-
-  function timeScaleLabel(minutes: number): string {
-    if (minutes == 60) {
-      return $t`60 minutes - Least space for details`;
-    }
-    if (minutes == 5) {
-      return $t`5 minutes - Most space for details`;
-    }
-    return $t`${minutes} minutes`;
-  }
 
   function onCalendarOptions() {
     SettingsDialogs.openOptions("calendar");
@@ -233,20 +215,11 @@
   }
 
   function onTimeScale(minutes: number) {
-    timeScale = minutes;
     CalendarSettings.timeScale.value = minutes;
   }
 
   function onFolderPane(show: boolean) {
     showFolderPane = show;
     CalendarSettings.folderPane.value = show;
-  }
-
-  function onWeekNumbers(checked: boolean) {
-    CalendarSettings.weekNumbers.value = checked;
-  }
-
-  function onShowDeclined(checked: boolean) {
-    CalendarSettings.showDeclined.value = checked;
   }
 </script>

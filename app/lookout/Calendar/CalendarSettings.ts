@@ -1,4 +1,5 @@
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+import { gt } from "../../l10n/l10n";
 
 export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule";
 
@@ -38,4 +39,15 @@ export class CalendarSettings {
   static readonly listColumns = getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", [
     EventTableColumn.Subject, EventTableColumn.Location, EventTableColumn.Start, EventTableColumn.End, EventTableColumn.Recurrence,
   ]);
+  static readonly timeScales = [60, 30, 15, 10, 6, 5];
+
+  static timeScaleLabel(minutes: number): string {
+    if (minutes == 60) {
+      return gt`60 minutes - Least space for details`;
+    }
+    if (minutes == 5) {
+      return gt`5 minutes - Most space for details`;
+    }
+    return gt`${minutes} minutes`;
+  }
 }

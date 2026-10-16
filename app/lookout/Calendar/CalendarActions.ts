@@ -5,7 +5,7 @@ import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvi
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
 import { inlineTitle, selectedSlots, type SlotSelection } from "./Selected";
-import { CalendarSettings } from "./CalendarSettings";
+import { CalendarCurrentView, CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
 import { WorkingHours } from "./View/WorkingHours";
 import { setNewEventTime } from "../../frontend/Calendar/event";
@@ -210,6 +210,12 @@ export class CalendarActions {
 
   static openSharedCalendar(account: MailAccount | null, fromAddressBook = false) {
     CalendarDialogs.open({ kind: "open-calendar", account, fromAddressBook });
+  }
+
+  static openViewSettings() {
+    let currentView = CalendarSettings.currentView.value;
+    let isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
+    CalendarDialogs.open({ kind: "view-settings", isTable });
   }
 
   static rename(calendar: Calendar) {
