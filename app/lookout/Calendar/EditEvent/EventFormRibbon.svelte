@@ -9,17 +9,17 @@
         {:else}
           <RibbonMenuButton label={$t`Accept`} icon={AcceptIcon} classes="accept">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
-              selected={$event.myParticipation == InvitationResponse.Accept}
+              checked={$event.myParticipation == InvitationResponse.Accept}
               onClick={() => flow.respond(InvitationResponse.Accept)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
-              selected={$event.myParticipation == InvitationResponse.Tentative}
+              checked={$event.myParticipation == InvitationResponse.Tentative}
               onClick={() => flow.respond(InvitationResponse.Tentative)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Decline`} icon={DeclineIcon} classes="decline">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
-              selected={$event.myParticipation == InvitationResponse.Decline}
+              checked={$event.myParticipation == InvitationResponse.Decline}
               onClick={() => flow.respond(InvitationResponse.Decline)} />
           </RibbonMenuButton>
         {/if}
@@ -119,7 +119,7 @@
         <RibbonMenuButton label={$t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} icon={ReminderIcon}
           tooltip={$t`Reminder: ${reminderLabel}`}>
           {#each reminderChoices as minutes}
-            <MenuItem label={Reminder.label(minutes)} selected={minutes == reminderMinutes}
+            <MenuItem label={Reminder.label(minutes)} checked={minutes == reminderMinutes}
               onClick={() => Reminder.setMinutesBefore(event, minutes)} />
           {/each}
         </RibbonMenuButton>
@@ -223,8 +223,8 @@
   import RibbonTabWatcher from "./RibbonTabWatcher.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { EventEditFlow } from "./EventEditFlow";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CancelIcon from "lucide-svelte/icons/calendar-x-2";

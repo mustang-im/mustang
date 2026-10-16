@@ -94,7 +94,7 @@
     </button>
     <Menu bind:isMenuOpen={isZoomMenuOpen} anchor={zoomButton} placement="top-end">
       {#each kZoomLevels as level}
-        <MenuItem label={zoomLabel(level)} selected={level == zoom} onClick={() => setZoom(level)} />
+        <MenuItem label={zoomLabel(level)} checked={level == zoom} onClick={() => setZoom(level)} />
       {/each}
     </Menu>
   </hbox>
@@ -109,8 +109,8 @@
   import { EventEditFlow } from "../EditEvent/EventEditFlow";
   import type { EventTimeEditor } from "../EditEvent/EventTimeEditor";
   import ResponseIcon from "../EditEvent/ResponseIcon.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import PersonAutocomplete from "../../../frontend/Contacts/PersonAutocomplete/PersonAutocomplete.svelte";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
