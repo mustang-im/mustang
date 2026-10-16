@@ -83,11 +83,11 @@
 </script>
 
 <style>
+  /* <copied to="../../Calendar/EditEvent/InvitationBar.svelte"> */
   .info-bar {
     align-items: center;
     flex-shrink: 0;
     gap: 8px;
-    margin: 0 20px 6px 20px;
     padding: 6px 12px;
     border-radius: var(--lo-radius-small);
     background-color: var(--lo-pane-alt-bg);
@@ -95,22 +95,9 @@
     color: var(--lo-fg);
     font-size: 13px;
   }
-  .info-bar.clickable {
-    display: flex;
-    flex-direction: row;
-    font-family: inherit;
-    text-align: start;
-    cursor: pointer;
-  }
-  .info-bar.clickable:hover {
-    background-color: var(--lo-hover-bg);
-  }
   .info-bar :global(svg) {
     flex-shrink: 0;
     color: var(--lo-fg-secondary);
-  }
-  .info-bar :global(svg.important) {
-    color: var(--lo-danger);
   }
   .info-bar.warning :global(svg) {
     color: var(--lo-warning);
@@ -126,5 +113,22 @@
   }
   .link:hover {
     text-decoration: underline;
+  }
+  /* </copied> */
+  .info-bar {
+    margin: 0 20px 6px 20px;
+  }
+  .info-bar.clickable {
+    display: flex;
+    flex-direction: row;
+    font-family: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .info-bar.clickable:hover {
+    background-color: var(--lo-hover-bg);
+  }
+  .info-bar :global(svg.important) {
+    color: var(--lo-danger);
   }
 </style>
