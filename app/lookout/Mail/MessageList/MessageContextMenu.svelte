@@ -70,8 +70,8 @@
   import MoveMenuItems from "../Menu/MoveMenuItems.svelte";
   import RulesMenuItems from "../Menu/RulesMenuItems.svelte";
   import FindRelatedMenuItems from "../Menu/FindRelatedMenuItems.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import ForwardIcon from "lucide-svelte/icons/forward";

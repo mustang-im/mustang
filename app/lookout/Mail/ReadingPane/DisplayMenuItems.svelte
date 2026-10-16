@@ -1,15 +1,13 @@
 {#each displayModes as mode}
   <MenuItem label={mode.label} tooltip={mode.tooltip}
-    icon={isCurrent(mode.id, $contentRendering.value) ? CheckIcon : BlankIcon}
-    onClick={() => $contentRendering.value = mode.id} />
+    checked={isCurrent(mode.id, $contentRendering.value)}
+    onClick={() => { $contentRendering.value = mode.id; }} />
 {/each}
 
 <script lang="ts">
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MailView } from "../MailView";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import CheckIcon from "lucide-svelte/icons/check";
-  import BlankIcon from "../../Shared/Menu/BlankIcon.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import { gt } from "../../../l10n/l10n";
 
   const contentRendering = MailView.contentRendering;

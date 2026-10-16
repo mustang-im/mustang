@@ -132,9 +132,9 @@
   import EncryptionButtons from "../../../frontend/Mail/Message/EncryptionButtons.svelte";
   import EncryptionDetails from "../../../frontend/Mail/Message/EncryptionDetails.svelte";
   import ErrorMessageInline from "../../../frontend/Shared/ErrorMessageInline.svelte";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import ForwardIcon from "lucide-svelte/icons/forward";

@@ -175,8 +175,8 @@
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import BoldIcon from "lucide-svelte/icons/bold";
   import ItalicIcon from "lucide-svelte/icons/italic";
   import UnderlineIcon from "lucide-svelte/icons/underline";

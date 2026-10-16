@@ -9,7 +9,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MailSearch } from "../Search/MailSearch";
   import { MessageActions } from "../MessageActions";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import ConversationIcon from "lucide-svelte/icons/messages-square";
   import SenderIcon from "lucide-svelte/icons/user-search";
   import { t } from "../../../l10n/l10n";

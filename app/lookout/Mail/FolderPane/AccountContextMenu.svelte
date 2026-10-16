@@ -30,9 +30,9 @@
   import { MessageActions } from "../MessageActions";
   import { MailDialogs } from "../Dialogs/MailDialogs";
   import { FolderTreeActions } from "./FolderTreeActions";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuLabel from "../../../frontend/Shared/Menu/MenuLabel.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import UpdateIcon from "lucide-svelte/icons/refresh-cw";
   import NewFolderIcon from "lucide-svelte/icons/folder-plus";
   import RulesIcon from "lucide-svelte/icons/list-filter";
