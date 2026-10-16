@@ -154,7 +154,7 @@ function findUTCOffsetChange(before: Date, after: Date, timezone: string): Date 
 }
 
 /** How many minutes the local time in `timezone` is ahead of UTC, at `time` */
-function utcOffset(time: Date, timezone: string): number {
+export function utcOffset(time: Date, timezone: string): number {
   // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
   // which we can easily read as UTC.
   let local = new Date(time.toLocaleString("lt", { timeZone: timezone }).replace(" ", "T") + "Z");
