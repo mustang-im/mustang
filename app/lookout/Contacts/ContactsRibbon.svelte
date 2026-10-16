@@ -88,10 +88,18 @@
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`Folder`}>
+    <RibbonGroup label={$t`New`}>
+      <RibbonButton label={$t`New Folder`} icon={NewFolderIcon}
+        tooltip={$t`Create a new address book on this computer`}
+        onClick={() => ContactActions.newFolder()} />
+    </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Folder`} icon={RenameIcon}
         onClick={() => ContactActions.rename($selectedAddressbook)}
         disabled={!isWritableAddressbook && $t`Select an address book first`} />
+      <RibbonButton label={$t`Delete Folder`} icon={DeleteIcon}
+        onClick={() => ContactActions.deleteFolder($selectedAddressbook)}
+        disabled={!ContactActions.canDeleteFolder($selectedAddressbook) && $t`Only address books that you added yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
       <RibbonButton label={$t`Folder Properties`} icon={PropertiesIcon}
@@ -181,6 +189,7 @@
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
   import SyncAllIcon from "lucide-svelte/icons/refresh-ccw-dot";
   import RenameIcon from "lucide-svelte/icons/pencil-line";
+  import NewFolderIcon from "lucide-svelte/icons/folder-plus";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../l10n/l10n";

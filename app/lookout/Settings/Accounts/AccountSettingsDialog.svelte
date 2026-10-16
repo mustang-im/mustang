@@ -56,10 +56,8 @@
   import { appGlobal } from "../../../logic/app";
   import { appName } from "../../../logic/build";
   import { AccountLabels } from "./AccountLabels";
-  import { backstageState } from "../BackstageState";
   import { SettingsDialogs } from "../SettingsDialogs";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../../frontend/Mail/Selected";
-  import { goTo } from "../../../frontend/AppsBar/selectedApp";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
@@ -94,16 +92,9 @@
   function onNew() {
     if (tab == "email") {
       SettingsDialogs.open({ kind: "add-account" });
-      return;
+    } else {
+      SettingsDialogs.open({ kind: "new-folder-account", folderKind: tab == "calendars" ? "calendar" : "addressbook" });
     }
-    const kSetupURLs: Record<AccountSettingsTab, string> = {
-      email: "/setup/mail",
-      calendars: "/setup/calendar",
-      addressbooks: "/setup/contacts",
-    };
-    SettingsDialogs.close();
-    backstageState.close();
-    goTo(kSetupURLs[tab], {});
   }
 
   async function onRemove() {

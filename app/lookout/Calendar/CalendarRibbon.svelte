@@ -59,15 +59,20 @@
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`Folder`}>
+    <RibbonGroup label={$t`New`}>
+      <RibbonButton label={$t`New Calendar`} icon={NewCalendarIcon}
+        tooltip={$t`Create a new calendar on this computer`}
+        onClick={() => CalendarActions.createBlankCalendar()} />
+    </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Calendar`} icon={RenameIcon}
         tooltip={$t`Rename the calendar in this app`}
         onClick={() => CalendarActions.rename($selectedCalendar)}
         disabled={noSelection} />
       <RibbonButton label={$t`Delete Calendar`} icon={DeleteIcon}
-        tooltip={$t`Remove the shared calendar from this app`}
+        tooltip={$t`Remove the calendar from this app`}
         onClick={() => onDeleteCalendar()}
-        disabled={!isSharedCalendar && $t`Only shared calendars can be removed here`} />
+        disabled={!canDelete && $t`Only calendars that you added or opened yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Open & Share`}>
       <RibbonMenuButton label={$t`Open Calendar`} icon={OpenCalendarIcon}>
@@ -146,7 +151,6 @@
 <script lang="ts">
   import { CalendarActions } from "./CalendarActions";
   import { CalendarCurrentView, CalendarFolderPane, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
-  import { CalendarGroups } from "./FolderPane/CalendarGroups";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { CalendarSharing } from "./Dialogs/CalendarSharing";
   import { SettingsDialogs } from "../Settings/SettingsDialogs";
@@ -178,6 +182,7 @@
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
   import NewItemsIcon from "lucide-svelte/icons/calendar-plus-2";
+  import NewCalendarIcon from "lucide-svelte/icons/calendar-fold";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import TodayIcon from "lucide-svelte/icons/calendar-check";
   import NextDaysIcon from "lucide-svelte/icons/calendar-clock";
@@ -225,7 +230,7 @@
   $: noCalendar = !$calendars.hasItems && $t`Please set up a calendar first`;
   $: noSelection = !$selectedCalendar && $t`Select a calendar first`;
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
-  $: isSharedCalendar = !!$selectedCalendar && CalendarGroups.isShared($selectedCalendar);
+  $: canDelete = CalendarActions.canDeleteCalendar($selectedCalendar);
   $: canShare = CalendarSharing.canShare($selectedCalendar);
   $: overlayDisabled = view == "schedule" && $t`Overlay is available in the Day, Work Week, Week and Month views`;
 
@@ -234,7 +239,7 @@
   }
 
   async function onDeleteCalendar() {
-    await CalendarActions.deleteSharedCalendar($selectedCalendar);
+    await CalendarActions.deleteCalendar($selectedCalendar);
   }
 
   function onOverlay(overlay: boolean) {

@@ -11,7 +11,6 @@ export class DateText {
     return weekday + " " + day;
   }
 
-  /** @returns `reference` with the typed day, keeping its time */
   static parse(text: string, reference: Date, locale = getDateTimeLocale()): Date {
     let numbers = text.replace(/^\s*[^\d\s]+[.,]?\s*/u, "").match(/\d+/g)?.map(Number) ?? [];
     if (!numbers.length || numbers.length > 3) {

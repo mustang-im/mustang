@@ -8,6 +8,8 @@
   <ImportExportWizard preselected={$dialog.preselected} on:close={onClose} />
 {:else if $dialog?.kind == "add-account"}
   <AddAccountDialog on:close={onClose} />
+{:else if $dialog?.kind == "new-folder-account"}
+  <NewFolderAccountDialog kind={$dialog.folderKind} localOnly={$dialog.localOnly} on:close={onClose} />
 {/if}
 <CalendarDialogHost />
 <ContactDialogHost />
@@ -19,6 +21,7 @@
   import ChangeAccountDialog from "./Accounts/ChangeAccountDialog.svelte";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
   import AddAccountDialog from "./Accounts/AddAccountDialog.svelte";
+  import NewFolderAccountDialog from "./Accounts/NewFolderAccountDialog.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";
   import ContactDialogHost from "../Contacts/Dialogs/ContactDialogHost.svelte";
 

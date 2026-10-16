@@ -1,6 +1,7 @@
 import type { Account } from "../../logic/Abstract/Account";
 import type { Addressbook } from "../../logic/Contacts/Addressbook";
 import type { Calendar } from "../../logic/Calendar/Calendar";
+import type { FolderAccountKind } from "./Accounts/NewFolderAccountFlow";
 import { writable } from "svelte/store";
 
 export type OptionsCategory = "general" | "mail" | "calendar" | "language" | "advanced" | "trust-center";
@@ -12,7 +13,8 @@ export type SettingsDialog =
   { kind: "account-settings", tab: AccountSettingsTab } |
   { kind: "change-account", account: Account, page: ChangeAccountPage } |
   { kind: "import-export", preselected?: Calendar | Addressbook } |
-  { kind: "add-account" };
+  { kind: "add-account" } |
+  { kind: "new-folder-account", folderKind: FolderAccountKind, localOnly?: boolean };
 
 export class SettingsDialogs {
   static readonly current = writable<SettingsDialog | null>(null);

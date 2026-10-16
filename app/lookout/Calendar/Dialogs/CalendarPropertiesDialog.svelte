@@ -34,10 +34,12 @@
           <ColorPalette colors={CalendarColors.palette} bind:selected={color} label={$t`Color`} columns={15}
             onChoose={chosen => color = chosen} />
         </vbox>
-        {#if isShared}
+        {#if CalendarActions.canDeleteCalendar(calendar)}
           <hbox class="divider" />
           <hbox class="delete-row">
-            <span class="lo-secondary">{$t`This is the calendar of another person. You can remove it from this app.`}</span>
+            <span class="lo-secondary">{isShared
+              ? $t`This is the calendar of another person. You can remove it from this app.`
+              : $t`You added this calendar yourself. You can remove it from this app.`}</span>
             <DialogButton label={$t`Delete Calendar`} icon={DeleteIcon} onClick={onDelete} />
           </hbox>
         {/if}
@@ -93,7 +95,7 @@
   }
 
   async function onDelete() {
-    if (await CalendarActions.deleteSharedCalendar(calendar)) {
+    if (await CalendarActions.deleteCalendar(calendar)) {
       dispatch("close");
     }
   }

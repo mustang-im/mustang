@@ -18,6 +18,10 @@
       <MenuItem label={$t`Rename Folder`} icon={RenameIcon}
         onClick={() => ContactActions.rename(addressbook)} />
     {/if}
+    {#if ContactActions.canDeleteFolder(addressbook)}
+      <MenuItem label={$t`Delete Folder`} icon={DeleteIcon}
+        onClick={() => ContactActions.deleteFolder(addressbook)} />
+    {/if}
     {#if addressbook.canSync}
       <MenuItem label={$t`Update Folder`} icon={SyncIcon}
         onClick={() => ContactActions.sync(addressbook)} />
@@ -38,6 +42,7 @@
   import AddressbookIcon from "lucide-svelte/icons/book-user";
   import RenameIcon from "lucide-svelte/icons/pencil-line";
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import { t } from "../../l10n/l10n";
 
