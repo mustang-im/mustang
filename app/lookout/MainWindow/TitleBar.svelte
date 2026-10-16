@@ -4,6 +4,7 @@
       <AppIcon icon={logo} size="18px" />
     </hbox>
     <hbox class="app-name">{appName}</hbox>
+    <QuickAccessToolbar placement="above" />
   </hbox>
   <hbox class="search-box">
     {#if isMail}
@@ -39,6 +40,9 @@
   import { appName, webMail } from "../../logic/build";
   import SearchField from "../../frontend/Shared/SearchField.svelte";
   import MailSearchBox from "../Mail/Search/MailSearchBox.svelte";
+  import QuickAccessToolbar from "../Shared/QuickAccess/QuickAccessToolbar.svelte";
+  import { QuickAccessToolbar as QuickAccess } from "../Shared/QuickAccess/QuickAccess";
+  import { MailQuickAccess } from "../Mail/MailQuickAccess";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
   import logo from "../../frontend/asset/icon/general/logo.svg?raw";
   import MinimizeIcon from "lucide-svelte/icons/minus";
@@ -51,6 +55,7 @@
   import { t } from "../../l10n/l10n";
 
   $: isMail = !!$selectedApp && ($selectedApp == mailMustangApp || mailMustangApp.subApps.includes($selectedApp));
+  $: QuickAccess.commands.set(isMail ? MailQuickAccess.commands() : [MailQuickAccess.sendReceiveAll]);
 
   /* <copied from="../../frontend/MainWindow/WindowHeader.svelte"> */
   const mac = (!webMail && getOSName() == "macintosh") ? true : false;

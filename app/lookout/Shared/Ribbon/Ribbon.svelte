@@ -42,11 +42,15 @@
         onClick={() => ribbon.setCollapsed(false)} />
       <MenuItem label={$t`Show tabs only`} checked={isCollapsed}
         onClick={() => ribbon.setCollapsed(true)} />
+      <MenuDivider />
+      <MenuItem label={$t`Show Quick Access Toolbar`} checkable checked={!$qatHidden.value}
+        onClick={() => QuickAccessToolbar.setHidden(!$qatHidden.value)} />
     </Menu>
   </hbox>
   <hbox class="ribbon-content" on:click|capture={onClickContent}>
     <slot />
   </hbox>
+  <QuickAccessToolbarView placement="below" />
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">
       <div data-metric="largeWidth" style="width: var(--lo-ribbon-large-width)"></div>
@@ -69,6 +73,9 @@
   import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuLabel from "../Menu/MenuLabel.svelte";
+  import MenuDivider from "../Menu/MenuDivider.svelte";
+  import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";
+  import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
   import OptionsIcon from "lucide-svelte/icons/chevron-down";
   import { setContext, onMount, onDestroy, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
@@ -78,6 +85,7 @@
   const tabs = ribbon.tabs;
   const selectedTab = ribbon.selectedTab;
   const layoutSetting = ribbon.layout;
+  const qatHidden = QuickAccessToolbar.isHidden;
   const collapsedSetting = ribbon.collapsed;
 
   let layout: RibbonLayout;
