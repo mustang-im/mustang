@@ -40,6 +40,7 @@
               class:has-events={daysWithEvents.has(DateNavigatorMonth.dayKey(day))}
               class:dragged={isDragged(day, dragStart, dragEnd)}
               title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
+              data-nav-day={day.getTime()}
               on:mousedown={event => onDragStart(event, day)}
               on:mouseenter={() => onDragOver(day)}
               on:click={() => onSelectDay(day)}>
@@ -241,6 +242,10 @@
   }
   .day.dragged {
     background-color: var(--lo-selected-hover-bg);
+  }
+  .day:global(.drop-target) {
+    outline: 2px solid var(--lo-accent);
+    outline-offset: -2px;
   }
   .day {
     display: flex;

@@ -1,5 +1,5 @@
 import type { Event } from "../../../logic/Calendar/Event";
-import { k1MinuteMS } from "../../../frontend/Util/date";
+import { k1DayMS, k1MinuteMS } from "../../../frontend/Util/date";
 
 export type EventDragMode = "move" | "resize-start" | "resize-end" | "move-days";
 
@@ -13,6 +13,7 @@ export class EventDrag {
   protected readonly startY: number;
   protected readonly originTarget: HTMLElement | null;
   protected target: HTMLElement | null;
+  protected navigatorTarget: HTMLElement | null = null;
   protected originalHeight: string | null = null;
   deltaMinutes = 0;
   deltaDays = 0;
@@ -38,6 +39,14 @@ export class EventDrag {
       return;
     }
     this.hasMoved = true;
+    if (this.mode == "move" || this.mode == "move-days") {
+      this.navigatorTarget = this.navigatorDayAt(pointerEvent.clientX, pointerEvent.clientY);
+      if (this.navigatorTarget) {
+        this.deltaMinutes = 0;
+        this.deltaDays = EventDrag.daysBetween(this.event.startTime, new Date(Number(this.navigatorTarget.dataset.navDay)));
+        return;
+      }
+    }
     if (this.mode != "move-days") {
       this.deltaMinutes = Math.round(dy / this.pxPerMinute / this.snapMinutes) * this.snapMinutes;
     }
@@ -68,11 +77,12 @@ export class EventDrag {
   }
 
   preview(element: HTMLElement) {
-    if (this.mode == "move-days") {
+    if (this.navigatorTarget || this.mode == "move-days") {
       for (let marked of document.querySelectorAll(".drop-target")) {
         marked.classList.remove("drop-target");
       }
-      this.target?.classList.add("drop-target");
+      (this.navigatorTarget ?? this.target)?.classList.add("drop-target");
+      element.style.transform = "";
       return;
     }
     if (this.mode == "move") {
@@ -94,6 +104,7 @@ export class EventDrag {
 
   endPreview(element: HTMLElement) {
     this.target?.classList.remove("drop-target");
+    this.navigatorTarget?.classList.remove("drop-target");
     element.style.transform = "";
     if (this.originalHeight != null) {
       element.style.height = this.originalHeight;
@@ -110,6 +121,17 @@ export class EventDrag {
     let elements = document.elementsFromPoint(x, y) as HTMLElement[];
     return elements.find(element => element.classList.contains(this.targetClass) &&
       (group === null || element.dataset.group == group)) ?? null;
+  }
+
+  protected navigatorDayAt(x: number, y: number): HTMLElement | null {
+    let elements = document.elementsFromPoint(x, y) as HTMLElement[];
+    return elements.find(element => element.dataset.navDay) ?? null;
+  }
+
+  static daysBetween(from: Date, to: Date): number {
+    let fromDay = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+    let toDay = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+    return Math.round((toDay.getTime() - fromDay.getTime()) / k1DayMS);
   }
 
   protected dayIndexOf(target: HTMLElement | null): number {
