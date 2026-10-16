@@ -4,17 +4,12 @@
       <hbox>{$t`Change the editing settings for messages.`}</hbox>
       <hbox class="field-row">
         <label for="options-compose-format">{$t`Compose messages in this format:`}</label>
-        <select id="options-compose-format" class="lo-text-field" bind:value={options.composeFormat.value}>
-          <option value="html">{$t`HTML`}</option>
-          <option value="plaintext">{$t`Plain Text`}</option>
-        </select>
+        <ComboBox options={[ { value: "html", label: $t`HTML` }, { value: "plaintext", label: $t`Plain Text` } ]}
+          bind:value={options.composeFormat.value} label={$t`Compose messages in this format`} width="200px" />
       </hbox>
     </OptionsRow>
     <OptionsRow icon={SpellingIcon}>
-      <label>
-        <input type="checkbox" bind:checked={options.spellcheck.value} />
-        {$t`Check spelling as you type`}
-      </label>
+      <CheckBox label={$t`Check spelling as you type`} bind:checked={options.spellcheck.value} />
     </OptionsRow>
   </OptionsSection>
 
@@ -28,19 +23,10 @@
   <OptionsSection title={$t`Message arrival`}>
     <OptionsRow icon={ArrivalIcon}>
       <hbox>{$t`When new messages arrive:`}</hbox>
-      <label>
-        <input type="checkbox" bind:checked={options.newMailSound.value} />
-        {$t`Play a sound`}
-      </label>
-      <label>
-        <input type="checkbox" bind:checked={options.newMailAlert.value} />
-        {$t`Display a Desktop Alert`}
-      </label>
-      <label>
-        <input type="checkbox" bind:checked={options.newMailOnlyFromContacts.value}
-          disabled={!options.newMailSound.value && !options.newMailAlert.value} />
-        {$t`Only for messages from people in my contacts`}
-      </label>
+      <CheckBox label={$t`Play a sound`} bind:checked={options.newMailSound.value} />
+      <CheckBox label={$t`Display a Desktop Alert`} bind:checked={options.newMailAlert.value} />
+      <CheckBox label={$t`Only for messages from people in my contacts`} bind:checked={options.newMailOnlyFromContacts.value}
+        disabled={!options.newMailSound.value && !options.newMailAlert.value} />
     </OptionsRow>
   </OptionsSection>
 
@@ -48,16 +34,15 @@
     <OptionsRow icon={ReplyIcon}>
       <grid class="replies">
         <label for="options-reply">{$t`When replying to a message:`}</label>
-        <select id="options-reply" class="lo-text-field" bind:value={options.replyQuote.value}>
-          <option value="below">{$t`Include original message text`}</option>
-          <option value="above">{$t`Include original message text, reply below it`}</option>
-          <option value="none">{$t`Do not include original message`}</option>
-        </select>
+        <ComboBox options={[
+            { value: "below", label: $t`Include original message text` },
+            { value: "above", label: $t`Include original message text, reply below it` },
+            { value: "none", label: $t`Do not include original message` },
+          ]}
+          bind:value={options.replyQuote.value} label={$t`When replying to a message`} width="320px" />
         <label for="options-forward">{$t`When forwarding a message:`}</label>
-        <select id="options-forward" class="lo-text-field" bind:value={options.forwardMode.value}>
-          <option value="inline">{$t`Include original message text`}</option>
-          <option value="attachment">{$t`Attach original message`}</option>
-        </select>
+        <ComboBox options={[ { value: "inline", label: $t`Include original message text` }, { value: "attachment", label: $t`Attach original message` } ]}
+          bind:value={options.forwardMode.value} label={$t`When forwarding a message`} width="320px" />
       </grid>
     </OptionsRow>
   </OptionsSection>
@@ -68,6 +53,8 @@
 {/if}
 
 <script lang="ts">
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import type { OptionsModel } from "./OptionsModel";
   import OptionsPage from "./OptionsPage.svelte";
   import OptionsSection from "./OptionsSection.svelte";

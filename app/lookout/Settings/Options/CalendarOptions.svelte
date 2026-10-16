@@ -3,30 +3,23 @@
     <OptionsRow icon={DurationIcon}>
       <hbox class="field-row">
         <label for="options-event-duration">{$t`Default duration for new appointments and meetings:`}</label>
-        <select id="options-event-duration" class="lo-text-field duration" bind:value={options.defaultEventDuration.value}>
-          {#each durations as minutes}
-            <option value={minutes}>{durationLabel(minutes)}</option>
-          {/each}
-        </select>
+        <ComboBox options={durations.map(minutes => ({ value: minutes, label: durationLabel(minutes) }))}
+          bind:value={options.defaultEventDuration.value} label={$t`Default duration for new appointments and meetings`} width="160px" />
       </hbox>
     </OptionsRow>
   </OptionsSection>
 
   <OptionsSection title={$t`Display options`}>
     <OptionsRow icon={DisplayIcon}>
-      <label>
-        <input type="checkbox" bind:checked={options.weekNumbers.value} />
-        {$t`Show week numbers in the Month View and in the Date Navigator`}
-      </label>
-      <label>
-        <input type="checkbox" bind:checked={options.showDeclined.value} />
-        {$t`Show declined meetings`}
-      </label>
+      <CheckBox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={options.weekNumbers.value} />
+      <CheckBox label={$t`Show declined meetings`} bind:checked={options.showDeclined.value} />
     </OptionsRow>
   </OptionsSection>
 </OptionsPage>
 
 <script lang="ts">
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import type { OptionsModel } from "./OptionsModel";
   import OptionsPage from "./OptionsPage.svelte";
   import OptionsSection from "./OptionsSection.svelte";

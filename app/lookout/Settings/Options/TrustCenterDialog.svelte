@@ -6,16 +6,14 @@
   <vbox class="trust-center">
     <OptionsSection title={$t`Read as Plain Text`}>
       <OptionsRow icon={PlainTextIcon}>
-        <label>
-          <input type="checkbox" bind:checked={readAsPlainText} />
-          {$t`Read all standard mail in plain text`}
-        </label>
+        <CheckBox label={$t`Read all standard mail in plain text`} bind:checked={readAsPlainText} />
       </OptionsRow>
     </OptionsSection>
   </vbox>
 </Dialog>
 
 <script lang="ts">
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import type { OptionsModel } from "./OptionsModel";
   import OptionsSection from "./OptionsSection.svelte";
   import OptionsRow from "./OptionsRow.svelte";

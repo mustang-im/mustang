@@ -10,17 +10,15 @@
     bind:selected={tab} />
   <vbox class="tab-page">
     {#if tab == "outgoing" && outgoing}
-      <label class="checkbox">
-        <input type="checkbox" bind:checked={outgoingNeedsLogin} />
-        {$t`My outgoing server (SMTP) requires authentication`}
-      </label>
+      <CheckBox label={$t`My outgoing server (SMTP) requires authentication`} bind:checked={outgoingNeedsLogin} />
       <grid class="fields indented" class:disabled={!outgoingNeedsLogin}>
         <label for="outgoing-auth">{$t`Log on using:`}</label>
-        <select id="outgoing-auth" class="lo-text-field" bind:value={outgoingAuthMethod} disabled={!outgoingNeedsLogin}>
-          <option value={AuthMethod.Password}>{$t`Password`}</option>
-          <option value={AuthMethod.OAuth2}>{$t`Sign-in page of the provider (OAuth2)`}</option>
-          <option value={AuthMethod.CRAMMD5}>CRAM-MD5</option>
-        </select>
+        <ComboBox options={[
+            { value: AuthMethod.Password, label: $t`Password` },
+            { value: AuthMethod.OAuth2, label: $t`Sign-in page of the provider (OAuth2)` },
+            { value: AuthMethod.CRAMMD5, label: "CRAM-MD5" },
+          ]}
+          bind:value={outgoingAuthMethod} disabled={!outgoingNeedsLogin} label={$t`Log on using`} />
         {#if outgoingAuthMethod != AuthMethod.OAuth2}
           <label for="outgoing-username">{$t`User Name:`}</label>
           <input id="outgoing-username" class="lo-text-field" type="text" bind:value={outgoingUsername} disabled={!outgoingNeedsLogin} />
@@ -37,22 +35,16 @@
           <DialogButton label={$t`Use Defaults`} onClick={useDefaults} />
         </hbox>
         <label for="incoming-tls" class="indented">{$t`Use the following type of encrypted connection:`}</label>
-        <select id="incoming-tls" class="lo-text-field" bind:value={incomingTLS} on:change={() => incomingPort = StandardPorts.afterTLSChange(incoming.protocol, incomingTLS, incomingPort)}>
-          {#each tlsChoices as choice}
-            <option value={choice.value}>{choice.label}</option>
-          {/each}
-        </select>
+        <ComboBox options={tlsChoices} bind:value={incomingTLS} label={$t`Encrypted connection of the incoming server`}
+          onChange={() => { incomingPort = StandardPorts.afterTLSChange(incoming.protocol, incomingTLS, incomingPort); }} />
         {#if outgoing}
           <label for="outgoing-port">{$t`Outgoing server (SMTP):`}</label>
           <hbox class="port-row">
             <input id="outgoing-port" class="lo-text-field port" type="number" min="1" max="65535" bind:value={outgoingPort} />
           </hbox>
           <label for="outgoing-tls" class="indented">{$t`Use the following type of encrypted connection:`}</label>
-          <select id="outgoing-tls" class="lo-text-field" bind:value={outgoingTLS} on:change={() => outgoingPort = StandardPorts.afterTLSChange("smtp", outgoingTLS, outgoingPort)}>
-            {#each tlsChoices as choice}
-              <option value={choice.value}>{choice.label}</option>
-            {/each}
-          </select>
+          <ComboBox options={tlsChoices} bind:value={outgoingTLS} label={$t`Encrypted connection of the outgoing server`}
+            onChange={() => { outgoingPort = StandardPorts.afterTLSChange("smtp", outgoingTLS, outgoingPort); }} />
         {/if}
       </grid>
     {/if}
@@ -60,6 +52,8 @@
 </Dialog>
 
 <script lang="ts">
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import { StandardPorts, type AccountDraft } from "./AccountDraft";
   import { AuthMethod } from "../../../logic/Abstract/Account";
   import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
