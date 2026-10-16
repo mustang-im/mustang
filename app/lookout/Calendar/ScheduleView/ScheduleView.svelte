@@ -1,16 +1,29 @@
 <div class="schedule-view" bind:this={scrollEl} on:scroll={onScroll}
   style="--name-width: {kNameWidth}px; --px-per-hour: {pxPerHour}px; --slot-width: {pxPerHour * timeScale / 60}px; --track-width: {trackWidth}px">
-  <div class="head">
-    <div class="corner" />
-    <div class="track">
-      {#each range.days as day, d}
-        <div class="date" class:today={CurrentTime.isToday(day, $now)} style="left: {d * dayWidth}px; width: {dayWidth}px">
-          <span class="date-label">{dateFormat.format(day)}</span>
+  <div class="head" style="height: {kRulerHeight * rulers.length}px">
+    <vbox class="corner">
+      {#each rulers as ruler}
+        <div class="zone-label" class:primary={ruler.isPrimary} style="height: {kRulerHeight}px"
+          title={rulers.length > 1 ? ruler.shownLabel(range.days[0]) : null}>
+          {rulers.length > 1 ? ruler.shownLabel(range.days[0]) : ruler.label}
         </div>
-        {#each hours as hour}
-          <div class="hour" style="left: {d * dayWidth + hour * pxPerHour}px; width: {pxPerHour}px">
-            {hourLabel.label(hour)}
+      {/each}
+    </vbox>
+    <div class="track">
+      {#each rulers as ruler, r}
+        {#each ruler.dateSegments(range.days) as segment}
+          <div class="date" class:primary={ruler.isPrimary}
+            class:today={ruler.isPrimary && CurrentTime.isToday(segment.time, $now)}
+            style="top: {r * kRulerHeight}px; left: {segment.startMinute * pxPerHour / 60}px; width: {(segment.endMinute - segment.startMinute) * pxPerHour / 60}px">
+            <span class="date-label">{ruler.dateFormat.format(segment.time)}</span>
           </div>
+        {/each}
+        {#each range.days as day, d}
+          {#each hours as hour}
+            <div class="hour" class:divided={r < rulers.length - 1} style="top: {r * kRulerHeight + kRulerHeight / 2}px; left: {d * dayWidth + hour * pxPerHour}px; width: {pxPerHour}px">
+              {ruler.hourLabelOn(day, hour)}
+            </div>
+          {/each}
         {/each}
       {/each}
     </div>
@@ -28,13 +41,13 @@
   import type { CalendarColumnGroup } from "../TimeGrid/TimeGrid.svelte";
   import type { CalendarRange } from "../View/CalendarRange";
   import { ScheduleLayout } from "./ScheduleLayout";
-  import { HourLabel } from "../TimeGrid/HourLabel";
+  import { TimeZoneRuler } from "../View/TimeZones";
   import { CurrentTime } from "../View/CurrentTime";
   import { WorkingHours } from "../View/WorkingHours";
   import { eventPeek } from "../Selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";
-  import { getDateTimeLocale, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   import { tick } from "svelte";
 
   export let range: CalendarRange;
@@ -44,12 +57,13 @@
   const kNameWidth = 160;
   const kSlotWidth = 56;
   const now = CurrentTime.minute;
+  const kRulerHeight = 52;
   const hours = Array.from({ length: 24 }, (_, hour) => hour);
-  const hourLabel = new HourLabel(getDateTimeLocale());
-  const dateFormat = new Intl.DateTimeFormat(getDateTimeLocale(), { dateStyle: "full" });
+  const rulerSettings = TimeZoneRuler.rulers;
 
   let scrollEl: HTMLDivElement;
 
+  $: rulers = $rulerSettings;
   $: pxPerHour = kSlotWidth * 60 / timeScale;
   $: dayWidth = pxPerHour * 24;
   $: trackWidth = dayWidth * range.days.length;
@@ -86,7 +100,6 @@
     z-index: 4;
     display: flex;
     width: calc(var(--name-width) + var(--track-width));
-    height: 52px;
     background-color: var(--lo-pane-bg);
     border-block-end: 1px solid var(--lo-border);
   }
@@ -99,6 +112,20 @@
     background-color: var(--lo-pane-bg);
     border-inline-end: 1px solid var(--lo-border);
   }
+  .zone-label {
+    box-sizing: border-box;
+    padding: 26px 8px 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: end;
+    line-height: 26px;
+    color: var(--lo-fg-secondary);
+  }
+  .zone-label.primary {
+    font-weight: 600;
+    color: var(--lo-fg);
+  }
   .track {
     position: relative;
     flex: none;
@@ -106,13 +133,15 @@
   }
   .date {
     position: absolute;
-    top: 0;
     height: 26px;
     box-sizing: border-box;
     border-inline-start: 1px solid var(--lo-border);
     border-block-end: 1px solid var(--lo-divider);
-    font-weight: 600;
     line-height: 26px;
+    white-space: nowrap;
+  }
+  .date.primary {
+    font-weight: 600;
   }
   .date.today {
     color: var(--lo-accent-text);
@@ -124,7 +153,6 @@
   }
   .hour {
     position: absolute;
-    top: 26px;
     height: 26px;
     box-sizing: border-box;
     padding-inline-start: 6px;
@@ -133,6 +161,9 @@
     font-size: var(--lo-font-size-small);
     line-height: 26px;
     white-space: nowrap;
+  }
+  .hour.divided {
+    border-block-end: 1px solid var(--lo-divider);
   }
   .empty {
     position: sticky;

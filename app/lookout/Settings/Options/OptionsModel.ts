@@ -22,6 +22,13 @@ export class OptionsModel {
   readonly defaultEventDuration = this.add(OptionValue.plain(getLocalStorage<number>("calendar.defaultEventLengthInMinutes", 60)));
   readonly weekNumbers = this.add(OptionValue.plain(CalendarSettings.weekNumbers));
   readonly showDeclined = this.add(OptionValue.plain(CalendarSettings.showDeclined));
+  readonly timeZoneLabel = this.add(OptionValue.plain(CalendarSettings.timeZoneLabel));
+  readonly secondTimeZoneShown = this.add(OptionValue.plain(CalendarSettings.secondTimeZoneShown));
+  readonly secondTimeZoneLabel = this.add(OptionValue.plain(CalendarSettings.secondTimeZoneLabel));
+  readonly secondTimeZone = this.add(OptionValue.plain(CalendarSettings.secondTimeZone));
+  readonly thirdTimeZoneShown = this.add(OptionValue.plain(CalendarSettings.thirdTimeZoneShown));
+  readonly thirdTimeZoneLabel = this.add(OptionValue.plain(CalendarSettings.thirdTimeZoneLabel));
+  readonly thirdTimeZone = this.add(OptionValue.plain(CalendarSettings.thirdTimeZone));
   readonly showReminders = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "popup"));
   readonly reminderSound = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "sound"));
 

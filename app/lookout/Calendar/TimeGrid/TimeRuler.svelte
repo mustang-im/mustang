@@ -1,24 +1,24 @@
-<div class="time-ruler">
-  {#each hours as hour}
-    <span class="hour-label" style="top: {hour * 60 * pxPerMinute}px">{hourLabel.label(hour)}</span>
+<div class="time-ruler" class:primary={isPrimary} style="width: {width}px">
+  {#each labels as label, hour}
+    <span class="hour-label" style="top: {hour * 60 * pxPerMinute}px">{label}</span>
   {/each}
 </div>
 
 <script lang="ts">
-  import { HourLabel } from "./HourLabel";
-  import { getDateTimeLocale } from "../../../l10n/l10n";
-
   export let pxPerMinute: number;
-
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const hourLabel = new HourLabel(getDateTimeLocale());
+  export let labels: string[];
+  export let isPrimary = true;
+  export let width: number;
 </script>
 
 <style>
   .time-ruler {
-    grid-column: 1;
-    grid-row: 1;
+    flex: none;
+    box-sizing: border-box;
     position: relative;
+  }
+  .time-ruler:not(.primary) {
+    border-inline-end: 1px solid var(--lo-divider);
   }
   .hour-label {
     position: absolute;

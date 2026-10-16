@@ -47,6 +47,13 @@ export class CalendarSettings {
   static readonly listColumns = getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", [
     EventTableColumn.Subject, EventTableColumn.Location, EventTableColumn.Start, EventTableColumn.End, EventTableColumn.Recurrence,
   ]);
+  static readonly timeZoneLabel = getLocalStorage<string>("lookout.calendar.timeZone.label", "");
+  static readonly secondTimeZoneShown = getLocalStorage<boolean>("lookout.calendar.timeZone2.shown", false);
+  static readonly secondTimeZoneLabel = getLocalStorage<string>("lookout.calendar.timeZone2.label", "");
+  static readonly secondTimeZone = getLocalStorage<string>("lookout.calendar.timeZone2.zone", "Etc/UTC");
+  static readonly thirdTimeZoneShown = getLocalStorage<boolean>("lookout.calendar.timeZone3.shown", false);
+  static readonly thirdTimeZoneLabel = getLocalStorage<string>("lookout.calendar.timeZone3.label", "");
+  static readonly thirdTimeZone = getLocalStorage<string>("lookout.calendar.timeZone3.zone", "Etc/UTC");
   static readonly timeScales = [60, 30, 15, 10, 6, 5];
 
   static timeScaleLabel(minutes: number): string {
