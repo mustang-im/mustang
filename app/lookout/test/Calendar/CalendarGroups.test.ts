@@ -29,8 +29,8 @@ test("Calendars of colleagues, opened via my account, are shared", () => {
 
 test("Calendars of shared accounts below my account are shared", () => {
   let mine = account("me@example.com");
-  let sharedMailbox = account("team@example.com", mine);
-  expect(CalendarGroups.isShared(calendar("Team Calendar", "team@example.com", sharedMailbox))).toBe(true);
+  let sharedAccount = account("team@example.com", mine);
+  expect(CalendarGroups.isShared(calendar("Team Calendar", "team@example.com", sharedAccount))).toBe(true);
 });
 
 test("Groups: My Calendars first, Shared Calendars only when there are some", () => {

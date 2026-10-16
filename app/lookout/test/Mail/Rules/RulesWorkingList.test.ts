@@ -68,15 +68,15 @@ test("Added and removed rules are applied, Apply without changes doesn't save", 
 });
 
 test("Copy to another account only without folders", () => {
-  let other = RulesTestAccount.create("b", ["Inbox"]);
+  let secondAccount = RulesTestAccount.create("b", ["Inbox"]);
   let rule = newRule("first");
-  expect(RuleListActions.cannotCopyTo(rule, other)).toBe(false);
-  let copy = RuleListActions.copyToAccount(rule, other, other.filterRuleActions);
-  expect(copy.account).toBe(other);
-  expect(copy.criteria.account).toBe(other);
+  expect(RuleListActions.cannotCopyTo(rule, secondAccount)).toBe(false);
+  let copy = RuleListActions.copyToAccount(rule, secondAccount, secondAccount.filterRuleActions);
+  expect(copy.account).toBe(secondAccount);
+  expect(copy.criteria.account).toBe(secondAccount);
   expect(copy.name).toBe("first");
   expect(copy.markAsRead).toBe(true);
   rule.toFolder = RulesTestAccount.folder(account, "Archive");
-  expect(RuleListActions.cannotCopyTo(rule, other)).toBeTruthy();
+  expect(RuleListActions.cannotCopyTo(rule, secondAccount)).toBeTruthy();
   expect(RuleListActions.cannotCopyTo(rule, account)).toBe(false);
 });
