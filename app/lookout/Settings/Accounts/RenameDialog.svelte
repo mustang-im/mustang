@@ -1,6 +1,6 @@
-<Dialog title={$t`Rename Calendar`}
+<Dialog {title}
   okLabel={$t`OK`}
-  okDisabled={!name.trim() && $t`Enter a name for the calendar`}
+  okDisabled={!name.trim() && $t`Enter a name`}
   onOK={onOK}
   width="400px"
   on:close>
@@ -11,21 +11,22 @@
 </Dialog>
 
 <script lang="ts">
-  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import type { Account } from "../../../logic/Abstract/Account";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let calendar: Calendar;
+  export let account: Account;
+  export let title: string;
 
-  let name = calendar.name;
+  let name = account.name;
 
   async function onOK() {
     let trimmed = name.trim();
-    if (trimmed == calendar.name) {
+    if (trimmed == account.name) {
       return;
     }
-    calendar.name = trimmed;
-    await calendar.save();
+    account.name = trimmed;
+    await account.save();
   }
 </script>
 

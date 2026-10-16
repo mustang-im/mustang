@@ -1,8 +1,51 @@
 import type { Contact } from "../../logic/Abstract/Contact";
+import { Person } from "../../logic/Abstract/Person";
 import type { Addressbook } from "../../logic/Contacts/Addressbook";
 import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
+import { writable } from "svelte/store";
+
+export enum ContactSearchScope {
+  CurrentFolder = "current",
+  AllContactItems = "all",
+}
+
+export interface ContactSearchOptions {
+  term: string | null;
+  scope: ContactSearchScope;
+  hasPhoneNumber: boolean;
+  hasAddress: boolean;
+  hasEMailAddress: boolean;
+}
 
 export class ContactSearch {
+  static readonly options = writable<ContactSearchOptions>(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder));
+
+  static defaultOptions(scope: ContactSearchScope): ContactSearchOptions {
+    return {
+      term: null,
+      scope,
+      hasPhoneNumber: false,
+      hasAddress: false,
+      hasEMailAddress: false,
+    };
+  }
+
+  static update(change: Partial<ContactSearchOptions>) {
+    ContactSearch.options.update(options => ({ ...options, ...change }));
+  }
+
+  static close() {
+    ContactSearch.options.update(options => ContactSearch.defaultOptions(options.scope));
+  }
+
+  static isActive(options: ContactSearchOptions): boolean {
+    return !!options.term?.trim() || options.hasPhoneNumber || options.hasAddress || options.hasEMailAddress;
+  }
+
+  static hasRefiners(options: ContactSearchOptions): boolean {
+    return options.hasPhoneNumber || options.hasAddress || options.hasEMailAddress;
+  }
+
   static search(addressbooks: Iterable<Addressbook>, searchTerm: string): Collection<Contact> {
     searchTerm = searchTerm.toLowerCase();
     let results = new ArrayColl<Collection<Contact>>();
@@ -11,5 +54,23 @@ export class ContactSearch {
       results.add(addressbook.groups.filterOnce(group => group.name?.toLowerCase().includes(searchTerm)));
     }
     return mergeColls(results);
+  }
+
+  static results(addressbooks: Addressbook[], allContacts: Collection<Contact>, options: ContactSearchOptions): Collection<Contact> {
+    let term = options.term?.trim();
+    let found = term ? ContactSearch.search(addressbooks, term) : allContacts;
+    if (!ContactSearch.hasRefiners(options)) {
+      return found;
+    }
+    return found.filterObservable(contact => ContactSearch.matchesRefiners(contact, options));
+  }
+
+  static matchesRefiners(contact: Contact, options: ContactSearchOptions): boolean {
+    if (!(contact instanceof Person)) {
+      return false;
+    }
+    return (!options.hasPhoneNumber || contact.phoneNumbers.hasItems) &&
+      (!options.hasAddress || contact.streetAddresses.hasItems) &&
+      (!options.hasEMailAddress || contact.emailAddresses.hasItems);
   }
 }

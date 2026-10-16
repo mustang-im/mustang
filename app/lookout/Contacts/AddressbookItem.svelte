@@ -15,32 +15,16 @@
 {#if addressbook}
   <ContextMenu bind:this={contextMenu}>
     {#if isWritable}
-      <MenuItem
-        label={$t`New Contact`}
-        icon={NewContactIcon}
-        onClick={() => ContactActions.newContact(addressbook)} />
-      <MenuItem
-        label={$t`New Contact Group`}
-        icon={NewGroupIcon}
-        onClick={() => ContactActions.newGroup(addressbook)} />
-      <MenuDivider />
+      <MenuItem label={$t`Rename Folder`} icon={RenameIcon}
+        onClick={() => ContactActions.rename(addressbook)} />
     {/if}
     {#if addressbook.canSync}
-      <MenuItem
-        label={$t`Update Folder`}
-        icon={SyncIcon}
+      <MenuItem label={$t`Update Folder`} icon={SyncIcon}
         onClick={() => ContactActions.sync(addressbook)} />
     {/if}
-    {#if isWritable}
-      <MenuItem
-        label={$t`Import / Export…`}
-        icon={ImportIcon}
-        onClick={() => openSettingsCategoryForAccount(addressbook, "contacts-import")} />
-    {/if}
-    <MenuItem
-      label={$t`Properties`}
-      icon={PropertiesIcon}
-      onClick={() => openSettingsCategoryForAccount(addressbook)} />
+    <MenuDivider />
+    <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
+      onClick={() => ContactActions.openProperties(addressbook)} />
   </ContextMenu>
 {/if}
 
@@ -48,16 +32,13 @@
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { ContactActions } from "./ContactActions";
   import { appGlobal } from "../../logic/app";
-  import { openSettingsCategoryForAccount } from "../../frontend/Settings/Window/CategoriesUtils";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
-  import MenuItem from "../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
   import AddressbookIcon from "lucide-svelte/icons/book-user";
-  import NewContactIcon from "lucide-svelte/icons/user-round-plus";
-  import NewGroupIcon from "lucide-svelte/icons/users-round";
+  import RenameIcon from "lucide-svelte/icons/pencil-line";
   import SyncIcon from "lucide-svelte/icons/refresh-cw";
-  import ImportIcon from "lucide-svelte/icons/file-input";
-  import PropertiesIcon from "lucide-svelte/icons/settings-2";
+  import PropertiesIcon from "lucide-svelte/icons/file-cog";
   import { t } from "../../l10n/l10n";
 
   export let addressbook: Addressbook = null;

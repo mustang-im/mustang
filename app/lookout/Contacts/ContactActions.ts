@@ -12,9 +12,12 @@ import { selectedCalendar } from "../../frontend/Calendar/selected";
 import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { newPerson, selectedPerson } from "../../frontend/Contacts/Person/Selected";
-import { selectedContact } from "./Selected";
+import { selectedAddressbook, selectedContact } from "./Selected";
+import { ContactDialogs } from "./Dialogs/ContactDialogs";
+import { openExternalURL } from "../../logic/util/os-integration";
 import { PreferredEntry } from "./PreferredEntry";
-import { goTo } from "../../frontend/AppsBar/selectedApp";
+import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
+import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
 import { URLPart } from "../../frontend/Util/util";
 import { assert } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
@@ -153,6 +156,25 @@ export class ContactActions {
 
   static async copyToClipboard(person: Person) {
     await navigator.clipboard.writeText(person.toPlaintext());
+  }
+
+  static show(contact: Contact) {
+    selectedAddressbook.set(null);
+    selectedContact.set(contact);
+    selectedPerson.set(contact instanceof Person ? contact : null);
+    openApp(contactsMustangApp, {});
+  }
+
+  static async call(phoneNumber: string) {
+    await openExternalURL("tel:" + phoneNumber.replace(/[^+\d]/g, ""));
+  }
+
+  static openProperties(addressbook: Addressbook) {
+    ContactDialogs.open({ kind: "addressbook-properties", addressbook });
+  }
+
+  static rename(addressbook: Addressbook) {
+    ContactDialogs.open({ kind: "rename-addressbook", addressbook });
   }
 
   static async sync(addressbook: Addressbook) {

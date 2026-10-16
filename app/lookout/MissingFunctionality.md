@@ -193,8 +193,9 @@ Address books, contact list, contact card, contact and contact group forms.
 | Linked contacts, duplicate merging | Profile card > Manage sources (new Outlook) | A duplicate finder (same email address or name). `Person.merge()` exists. |
 | Organization: manager, direct reports | Profile card (new Outlook) | Directory lookups (EWS, Graph) |
 | Mail merge, printing contacts | Home tab > Actions; File > Print | Printing in the desktop app; a mail merge generator |
-| Business Card, Card and Phone views; sort by other columns, column chooser, grouping; Map It | Home tab > Current View; View tab; contact form | *UI only*. Lookout has the People and List views. |
-| Contact history (recent mail and meetings), encryption keys in the contact form, a Lookout-styled Import / Export | Profile card; contact form > Certificates; File > Open & Export | *UI only*: `frontend/` has `ContactHistory`, `PersonPage/Encryption` and the Import / Export settings page, which Lookout opens. |
+| Column chooser and grouping in the List and Phone views; Map It | View tab > Add Columns, Arrangement; contact form | *UI only*. Lookout has the People, Business Card, Card, Phone and List views and sorts by the column headers. |
+| Contact history (recent mail and meetings), encryption keys in the contact form | Profile card; contact form > Certificates | *UI only*: `frontend/` has `ContactHistory` and `PersonPage/Encryption`. |
+| Recent Searches, search in subfolders, Categorized and other refiners | Search tab | Search history and categories on contacts; Lookout refines by phone number, address and email address |
 
 ## Logic bugs found while building Lookout
 

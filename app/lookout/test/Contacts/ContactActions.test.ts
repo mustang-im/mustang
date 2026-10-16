@@ -6,7 +6,7 @@ import { Addressbook, SearchOnlyAddressbook } from "../../../logic/Contacts/Addr
 import { ContactEntry, Person } from "../../../logic/Abstract/Person";
 import { Group } from "../../../logic/Abstract/Group";
 import { ContactActions } from "../../Contacts/ContactActions";
-import { ContactSearch } from "../../Contacts/ContactSearch";
+import { ContactSearch, ContactSearchScope } from "../../Contacts/ContactSearch";
 import { beforeEach, expect, test } from "vitest";
 
 class TestGAL extends SearchOnlyAddressbook {
@@ -119,4 +119,15 @@ test("Search covers all given address books", () => {
   second.persons.add(dora);
   let names = ContactSearch.search([addressbook, second], "an").contents.map(contact => contact.name).sort();
   expect(names).toEqual(["Anna Schmidt", "Dora Anders"]);
+});
+
+test("Search refiners keep persons with a phone number, an address or an email address", () => {
+  let options = { ...ContactSearch.defaultOptions(ContactSearchScope.AllContactItems), hasPhoneNumber: true };
+  expect(ContactSearch.isActive(options)).toBe(true);
+  let withPhone = ContactSearch.results([addressbook], addressbook.contacts, options).contents.map(contact => contact.name);
+  expect(withPhone).toEqual(["Carla Diaz"]);
+  options = { ...options, hasPhoneNumber: false, hasEMailAddress: true };
+  let withEMail = ContactSearch.results([addressbook], addressbook.contacts, options).contents.map(contact => contact.name).sort();
+  expect(withEMail).toEqual(["Anna Schmidt", "Bert Meier"]);
+  expect(ContactSearch.isActive(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder))).toBe(false);
 });

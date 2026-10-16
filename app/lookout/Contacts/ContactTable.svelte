@@ -1,10 +1,16 @@
 <vbox flex class="contact-table" on:keydown={onKeyDown} bind:this={tableEl}>
-  <div class="column-headers" style:grid-template-columns={columns} style:padding-inline-end="{scrollbarWidth}px">
-    <hbox class="column-header">{$t`Full name`}</hbox>
-    <hbox class="column-header">{$t`Job title`}</hbox>
-    <hbox class="column-header">{$t`Company`}</hbox>
-    <hbox class="column-header">{$t`Email`}</hbox>
-    <hbox class="column-header">{$t`Phone`}</hbox>
+  <div class="column-headers" style:grid-template-columns={gridColumns} style:padding-inline-end="{scrollbarWidth}px">
+    {#each columns as column}
+      <button class="column-header" class:sorted={$sort.value.column == column}
+        title={$t`Sort by ${ContactColumns.label(column)}`}
+        aria-sort={$sort.value.column == column ? ($sort.value.ascending ? "ascending" : "descending") : "none"}
+        on:click={() => sortBy(column)}>
+        <span class="label">{ContactColumns.label(column)}</span>
+        {#if $sort.value.column == column}
+          <svelte:component this={$sort.value.ascending ? AscendingIcon : DescendingIcon} size="12" />
+        {/if}
+      </button>
+    {/each}
   </div>
   {#if $contacts.hasItems}
     <FastList
@@ -12,8 +18,8 @@
       bind:selectedItem={selectedContact}
       bind:selectedItems={selectedContacts}
       on:init={onInit}
-      {columns}>
-      <ContactTableRow slot="row" let:item contact={item} {onContextMenu} />
+      columns={gridColumns}>
+      <ContactTableRow slot="row" let:item contact={item} {columns} {onContextMenu} />
     </FastList>
   {:else}
     <vbox flex class="empty">{emptyText}</vbox>
@@ -28,6 +34,9 @@
   import ContactTableRow from "./ContactTableRow.svelte";
   import ContactContextMenu from "./ContactContextMenu.svelte";
   import FastList from "../../frontend/Shared/FastList.svelte";
+  import { ContactColumns, type ContactColumn } from "./Views/ContactColumns";
+  import AscendingIcon from "lucide-svelte/icons/chevron-up";
+  import DescendingIcon from "lucide-svelte/icons/chevron-down";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
@@ -35,8 +44,14 @@
   export let selectedContact: Contact;
   export let selectedContacts: ArrayColl<Contact>;
   export let emptyText: string;
+  export let columns: ContactColumn[];
 
-  const columns = "minmax(180px, 1.6fr) minmax(100px, 1.5fr) minmax(100px, 1.2fr) minmax(160px, 1.6fr) minmax(120px, 1fr)";
+  const sort = ContactColumns.sort;
+  $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
+
+  function sortBy(column: ContactColumn) {
+    ContactColumns.sort.value = ContactColumns.toggledSort(ContactColumns.sort.value, column);
+  }
 
   let contextMenu: ContactContextMenu;
   let tableEl: HTMLElement;
@@ -74,14 +89,34 @@
     border-block-end: 1px solid var(--lo-divider);
   }
   .column-header {
+    display: flex;
     align-items: center;
+    gap: 4px;
+    min-width: 0;
     height: 32px;
     padding: 0 12px;
+    border: none;
+    border-inline-end: 1px solid var(--lo-divider);
+    background: none;
     overflow: hidden;
     white-space: nowrap;
+    font: inherit;
     font-size: var(--lo-font-size-small);
     font-weight: 600;
     color: var(--lo-fg-secondary);
+    text-align: start;
+    cursor: pointer;
+  }
+  .column-header:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
+  }
+  .column-header.sorted {
+    color: var(--lo-fg);
+  }
+  .column-header .label {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .column-header:first-child {
     padding-inline-start: 44px;
