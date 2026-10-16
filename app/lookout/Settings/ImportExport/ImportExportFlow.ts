@@ -75,7 +75,7 @@ export class ImportExportFlow {
   async finish() {
     assert(this.isLastStep && this.canGoNext, gt`Please choose a folder first`);
     if (this.action == "export") {
-      await this.exportFolder();
+      await ImportExportFlow.exportFolder(this.folder);
     } else if (this.action == "import-vcard") {
       await this.importVCard(this.folder as Addressbook, this.file);
     } else {
@@ -83,15 +83,15 @@ export class ImportExportFlow {
     }
   }
 
-  protected async exportFolder() {
-    if (this.folder instanceof Calendar) {
+  static async exportFolder(folder: Calendar | Addressbook) {
+    if (folder instanceof Calendar) {
       // <copied from="../../../frontend/Settings/Calendar/ImportExport.svelte">
-      let file = await eventsToICalFile(this.folder.events, this.folder.name);
+      let file = await eventsToICalFile(folder.events, folder.name);
       await saveBlobAsFile(file);
       // </copied>
-    } else if (this.folder instanceof Addressbook) {
+    } else if (folder instanceof Addressbook) {
       // <copied from="../../../frontend/Settings/Contacts/ImportExport.svelte">
-      let file = personsToVCardFile(this.folder.persons, this.folder.name);
+      let file = personsToVCardFile(folder.persons, folder.name);
       await saveBlobAsFile(file);
       // </copied>
     }
