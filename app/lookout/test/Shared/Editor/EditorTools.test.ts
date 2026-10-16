@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
-import { EditorFind } from "../../../Mail/Composer/EditorFind";
-import { TextStatistics } from "../../../Mail/Composer/TextStatistics";
-import { DateTimeFormats } from "../../../Mail/Composer/DateTimeFormats";
-import { SymbolTable } from "../../../Mail/Composer/SymbolTable";
+import { EditorFind } from "../../../Shared/Editor/EditorFind";
+import { TextStatistics } from "../../../Shared/Editor/TextStatistics";
+import { DateTimeFormats } from "../../../Shared/Editor/DateTimeFormats";
+import { SymbolTable } from "../../../Shared/Editor/SymbolTable";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { afterEach, expect, test } from "vitest";

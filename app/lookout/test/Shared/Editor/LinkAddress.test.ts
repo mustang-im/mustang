@@ -1,4 +1,4 @@
-import { LinkAddress, LinkTarget } from "../../../Mail/Composer/LinkAddress";
+import { LinkAddress, LinkTarget } from "../../../Shared/Editor/LinkAddress";
 import { expect, test } from "vitest";
 
 test("Web addresses stay as they are", () => {

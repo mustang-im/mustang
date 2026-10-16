@@ -1,12 +1,11 @@
+import type { ShortcutKey } from "../../Shared/Editor/EditorShortcuts";
+
 export enum ComposerCommand {
   Send = "send",
   Save = "save",
-  Link = "link",
-  Find = "find",
-  Replace = "replace",
 }
 
-export type ComposerKey = Pick<KeyboardEvent, "key" | "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">;
+export type ComposerKey = ShortcutKey;
 
 export class ComposerShortcuts {
   static commandFor(event: ComposerKey): ComposerCommand | null {
@@ -22,15 +21,6 @@ export class ComposerShortcuts {
     }
     if (ctrl && !event.altKey && event.code == "KeyS") {
       return ComposerCommand.Save;
-    }
-    if (ctrl && !event.altKey && event.code == "KeyK") {
-      return ComposerCommand.Link;
-    }
-    if (ctrl && !event.altKey && event.code == "KeyH") {
-      return ComposerCommand.Replace;
-    }
-    if (!ctrl && !event.altKey && event.key == "F4") {
-      return ComposerCommand.Find;
     }
     return null;
   }

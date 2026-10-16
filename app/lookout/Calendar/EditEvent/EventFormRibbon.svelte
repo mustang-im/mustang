@@ -154,47 +154,15 @@
     </RibbonTab>
   {/if}
   {#if !isIncoming}
-    <RibbonTab label={$t`Insert`}>
-      <RibbonGroup label={$t`Include`}>
-        <RibbonButton label={$t`Attach File`} icon={AttachIcon}
-          onClick={actions.onAttachFile} />
-      </RibbonGroup>
-    </RibbonTab>
-    <RibbonTab label={$t`Format Text`}>
-      <RibbonGroup label={$t`Font`} icon={BoldIcon}>
-        <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo="Ctrl+B"
-          checked={!!editor?.isActive("bold")} disabled={!editor}
-          onChange={() => run(chain => chain.toggleBold())} />
-        <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo="Ctrl+I"
-          checked={!!editor?.isActive("italic")} disabled={!editor}
-          onChange={() => run(chain => chain.toggleItalic())} />
-        <RibbonToggleButton label={$t`Strikethrough`} icon={StrikethroughIcon}
-          checked={!!editor?.isActive("strike")} disabled={!editor}
-          onChange={() => run(chain => chain.toggleStrike())} />
-        <RibbonButton label={$t`Clear Formatting`} icon={ClearFormattingIcon}
-          disabled={!editor}
-          onClick={() => run(chain => chain.clearNodes().unsetAllMarks())} />
-      </RibbonGroup>
-      <RibbonGroup label={$t`Paragraph`} icon={BulletsIcon}>
-        <RibbonToggleButton label={$t`Bullets`} icon={BulletsIcon}
-          checked={!!editor?.isActive("bulletList")} disabled={!editor}
-          onChange={() => run(chain => chain.toggleBulletList())} />
-        <RibbonToggleButton label={$t`Numbering`} icon={NumberingIcon}
-          checked={!!editor?.isActive("orderedList")} disabled={!editor}
-          onChange={() => run(chain => chain.toggleOrderedList())} />
-        <RibbonToggleButton label={$t`Quote`} icon={QuoteIcon}
-          checked={!!editor?.isActive("blockquote")} disabled={!editor}
-          onChange={() => run(chain => chain.toggleBlockquote())} />
-      </RibbonGroup>
-      <RibbonGroup label={$t`Editing`} icon={UndoIcon}>
-        <RibbonButton label={$t`Undo`} icon={UndoIcon} shortCutInfo="Ctrl+Z"
-          disabled={!editor?.can().undo()}
-          onClick={() => run(chain => chain.undo())} />
-        <RibbonButton label={$t`Redo`} icon={RedoIcon} shortCutInfo="Ctrl+Y"
-          disabled={!editor?.can().redo()}
-          onClick={() => run(chain => chain.redo())} />
-      </RibbonGroup>
-    </RibbonTab>
+    <InsertTab commands={editorCommands} bind:showEmojis>
+      <svelte:fragment slot="include">
+        <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
+          <SignatureMenuItems identity={null} editor={editorCommands.editor} onSignatures={actions.onSignatures} />
+        </RibbonMenuButton>
+      </svelte:fragment>
+    </InsertTab>
+    <FormatTextTab commands={editorCommands} />
+    <ReviewTab commands={editorCommands} />
   {/if}
 </Ribbon>
 
@@ -209,7 +177,7 @@
     onCheckNames: () => Promise<void>;
     onRecurrence: () => void;
     onRefreshAvailability: () => void;
-    onAttachFile: () => Promise<void>;
+    onSignatures: () => void;
   }
 </script>
 
@@ -222,9 +190,13 @@
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
-  import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import RibbonTabWatcher from "./RibbonTabWatcher.svelte";
+  import InsertTab from "../../Shared/Editor/InsertTab.svelte";
+  import FormatTextTab from "../../Shared/Editor/FormatTextTab.svelte";
+  import ReviewTab from "../../Shared/Editor/ReviewTab.svelte";
+  import type { EditorCommands } from "../../Shared/Editor/EditorCommands";
+  import SignatureMenuItems from "../../Mail/Composer/SignatureMenuItems.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { EventEditFlow } from "./EventEditFlow";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -250,25 +222,16 @@
   import ReminderIcon from "lucide-svelte/icons/bell";
   import RecurrenceIcon from "lucide-svelte/icons/repeat-2";
   import RefreshIcon from "lucide-svelte/icons/refresh-cw";
+  import SignatureIcon from "lucide-svelte/icons/pen-line";
   import CopyIcon from "lucide-svelte/icons/clipboard-copy";
-  import AttachIcon from "lucide-svelte/icons/paperclip";
-  import BoldIcon from "lucide-svelte/icons/bold";
-  import ItalicIcon from "lucide-svelte/icons/italic";
-  import StrikethroughIcon from "lucide-svelte/icons/strikethrough";
-  import ClearFormattingIcon from "lucide-svelte/icons/remove-formatting";
-  import BulletsIcon from "lucide-svelte/icons/list";
-  import NumberingIcon from "lucide-svelte/icons/list-ordered";
-  import QuoteIcon from "lucide-svelte/icons/text-quote";
-  import UndoIcon from "lucide-svelte/icons/undo-2";
-  import RedoIcon from "lucide-svelte/icons/redo-2";
-  import type { ChainedCommands, Editor } from "@tiptap/core";
   import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
   export let flow: EventEditFlow;
-  export let editor: Editor = null;
+  export let editorCommands: EditorCommands;
+  export let showEmojis = false;
   export let actions: EventFormActions;
   export let saveDisabled: string | false = false;
   export let canSchedule = false;
@@ -297,10 +260,6 @@
   async function onOffline() {
     await flow.setOffline();
     event.notifyObservers();
-  }
-
-  function run(command: (chain: ChainedCommands) => ChainedCommands) {
-    command(editor.chain().focus()).run();
   }
 </script>
 
