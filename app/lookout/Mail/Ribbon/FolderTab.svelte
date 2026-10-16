@@ -4,20 +4,20 @@
       onClick={onNewFolder}
       disabled={!realAccount ? $t`Select a folder of an account first` : folder && !isVirtual && folder.disableSubfolders()}
       shortCutInfo="Ctrl+Shift+E" />
-    <RibbonButton label={$t`New Search Folder`} icon={NewSearchFolderIcon}
+    <RibbonButton label={$t`New Search Folder`} shortLabel={$t`Search *=> New search folder`} icon={NewSearchFolderIcon}
       onClick={() => MailDialogs.open({ kind: "new-search-folder", account: realAccount })}
       shortCutInfo="Ctrl+Shift+P" />
   </RibbonGroup>
   <RibbonGroup label={$t`Actions`}>
-    <RibbonButton label={$t`Rename Folder`} icon={RenameIcon} size="small"
+    <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon} size="small"
       onClick={() => FolderTreeActions.renaming.set(folder)}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot rename this folder` : $folderStore?.disableRename()} />
-    <RibbonButton label={$t`Delete Folder`} icon={DeleteFolderIcon} size="small"
+    <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteFolderIcon} size="small"
       onClick={async () => { await FolderTreeActions.deleteFolder(folder); }}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot delete this folder` : $folderStore?.disableDelete()} />
   </RibbonGroup>
   <RibbonGroup label={$t`Clean Up`}>
-    <RibbonButton label={$t`Mark All as Read`} icon={MarkAllReadIcon}
+    <RibbonButton label={$t`Mark All as Read`} shortLabel={$t`Mark Read *=> Mark all as read`} icon={MarkAllReadIcon}
       onClick={() => FolderTreeActions.markAllRead(folder)}
       disabled={!folder && $t`Select a folder first`} />
     <RibbonButton label={$t`Delete All`} icon={DeleteAllIcon} size="small"
@@ -26,12 +26,12 @@
       disabled={!(folder && FolderTreeActions.canDeleteAll(folder)) && $t`Only available in the Trash and Junk folders`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Properties`}>
-    <RibbonButton label={$t`Folder Permissions`} icon={PermissionsIcon}
+    <RibbonButton label={$t`Folder Permissions`} shortLabel={$t`Permissions`} icon={PermissionsIcon}
       onClick={() => MailDialogs.open({ kind: "folder-properties", folder: realFolder, tab: FolderPropertiesTab.Permissions })}
       disabled={!realFolder
         ? $t`Select a folder of an account first`
         : !FolderTreeActions.canShare(realAccount) && $t`This account cannot share folders with colleagues`} />
-    <RibbonButton label={$t`Folder Properties`} icon={PropertiesIcon}
+    <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
       onClick={() => MailDialogs.open({ kind: "folder-properties", folder })}
       disabled={!folder ? $t`Select a folder first` : isVirtual && $t`This is not a real folder`} />
   </RibbonGroup>

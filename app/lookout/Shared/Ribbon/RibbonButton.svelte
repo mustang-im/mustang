@@ -1,4 +1,4 @@
-<RibbonButtonBase {label} {icon} {tooltip} {shortCutInfo} {disabled} {size} {classes}
+<RibbonButtonBase {label} {shortLabel} {icon} {tooltip} {shortCutInfo} {disabled} {size} {classes}
   {onClick} {errorCallback}
   bind:buttonEl
   />
@@ -9,6 +9,7 @@
   import { showError } from "../../../frontend/Util/error";
 
   export let label: string;
+  export let shortLabel: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let onClick: (event: Event) => void | Promise<void> = null;
   export let disabled: boolean | string = false;

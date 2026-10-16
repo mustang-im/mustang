@@ -1,11 +1,11 @@
 <div class="ribbon-item ribbon-split-button look-{look}" class:disabled={!!disabled} data-size={size}
   bind:this={wrapperEl}>
-  <RibbonButtonBase {label} {icon} {tooltip} {shortCutInfo} {disabled} {size} {errorCallback}
+  <RibbonButtonBase {label} {shortLabel} {icon} {tooltip} {shortCutInfo} {disabled} {size} {errorCallback}
     part="main" isItem={false} classes={classes}
     {onClick}
     bind:buttonEl
     />
-  <RibbonButtonBase {label} {size}
+  <RibbonButtonBase {label} {shortLabel} {size}
     part="arrow" isItem={false} classes="menu-trigger"
     tooltip={menuTooltip ?? label}
     ariaLabel={menuTooltip ?? label}
@@ -26,6 +26,7 @@
   import { getContext } from "svelte";
 
   export let label: string;
+  export let shortLabel: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
   export let onClick: (event: Event) => void | Promise<void> = null;
   export let disabled: boolean | string = false;

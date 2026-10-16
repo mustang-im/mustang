@@ -100,7 +100,7 @@
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Send/Receive`}>
-    <RibbonButton label={isSimplified ? $t`Send/Receive` : $t`Send/Receive All Folders`} icon={SendReceiveIcon}
+    <RibbonButton label={$t`Send/Receive All Folders`} shortLabel={$t`Send/Receive`} icon={SendReceiveIcon}
       tooltip={$t`Send/Receive All Folders`}
       onClick={() => MessageActions.sendReceiveAll()}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}

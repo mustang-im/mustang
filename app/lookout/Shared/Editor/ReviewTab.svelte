@@ -1,6 +1,6 @@
 <RibbonTab label={$t`Review`}>
   <RibbonGroup label={$t`Proofing`}>
-    <RibbonToggleButton label={$t`Spelling & Grammar`} icon={SpellingIcon}
+    <RibbonToggleButton label={$t`Spelling & Grammar`} shortLabel={$t`Spelling`} icon={SpellingIcon}
       tooltip={$t`Check spelling while typing`}
       bind:checked={$spellcheck.value} />
     <RibbonButton label={$t`Word Count`} icon={WordCountIcon}
