@@ -187,7 +187,7 @@ Address books, contact list, contact card, contact and contact group forms.
 | Deleted contacts, restore | Deleted folder (new Outlook); Deleted Items | A trash for contacts, or server-side soft delete. `deleteIt()` deletes permanently. |
 | Create, rename and delete address books | Folder tab | Address book management on the server (CardDAV MKCOL, EWS CreateFolder, JMAP `AddressBook/set`). Today address books come only from account setup. |
 | Forward Contact as vCard, Forward Group | Home tab > Share; contact group form | An `Attachment` from generated data for a new `EMail`. The logic can already write vCards. |
-| Add a one-off email address to a contact group; Update Now | Contact group form > Members | One-off members in `Group` (today only `Person` objects); a directory lookup per member |
+| Add a one-off email address to a contact group; Update Now | Contact group form > Members | One-off members in `Group` (today only `Person` objects); a directory lookup per member. Lookout's New E-mail Contact… creates a contact in the address book and adds it. |
 | Address Book dialog to browse the company directory | Home tab > Find > Address Book | Listing and paging in `SearchOnlyAddressbook`, which can only search. Lookout searches the directories from the left pane. |
 | Presence badge on the contact picture | Contact list; contact card | Presence from chat accounts, mapped to persons |
 | Linked contacts, duplicate merging | Profile card > Manage sources (new Outlook) | A duplicate finder (same email address or name). `Person.merge()` exists. |
