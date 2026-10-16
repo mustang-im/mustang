@@ -1,48 +1,50 @@
-<hbox class="attendees-field" class:read-only={readOnly} bind:this={fieldEl}>
-  <PersonsAutocomplete persons={attendees} {placeholder} {onAddPerson} {onRemovePerson}
-    disabled={readOnly} {autofocus}>
-    <hbox slot="person-pill-before-avatar" let:person>
-      <ParticipantConfirmIcon participant={asParticipant(person)} />
-    </hbox>
-    <hbox slot="person-popup-bottom" let:person>
-      <ParticipantConfirmText participant={asParticipant(person)} />
-    </hbox>
-  </PersonsAutocomplete>
+<hbox class="attendees-field" class:read-only={readOnly}>
+  <AddressField {recipients} label={$t`Required`} chips={$ribbonLayout.value == "simplified"}
+    disabled={readOnly} {autofocus} bind:this={addressField} />
 </hbox>
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import type { Participant } from "../../../logic/Calendar/Participant";
+  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import PersonsAutocomplete from "../../../frontend/Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
-  import ParticipantConfirmIcon from "../../../frontend/Calendar/EditEvent/ParticipantConfirmIcon.svelte";
-  import ParticipantConfirmText from "../../../frontend/Calendar/EditEvent/ParticipantConfirmText.svelte";
   import { EventEditFlow } from "./EventEditFlow";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import AddressField from "../../Mail/Composer/AddressField.svelte";
+  import { ArrayColl } from "svelte-collections";
+  import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+  export let flow: EventEditFlow;
   export let readOnly = false;
-  export let placeholder: string = null;
   export let autofocus = false;
 
-  let fieldEl: HTMLElement;
+  const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  let addressField: AddressField;
 
   $: attendees = event.participants.filterObservable(participant => participant.response != InvitationResponse.Organizer);
+  let recipients = new ArrayColl<PersonUID>(flow.attendees);
 
-  function onAddPerson(person: PersonUID) {
-    EventEditFlow.addParticipant(event, person);
+  $: takeAttendees($attendees.contents);
+  function takeAttendees(current: PersonUID[]) {
+    if (!EventEditFlow.sameAddresses(current, recipients.contents)) {
+      recipients.replaceAll(current);
+    }
   }
 
-  function onRemovePerson(person: PersonUID) {
-    event.participants.remove(asParticipant(person));
-  }
-
-  function asParticipant(person: PersonUID): Participant {
-    return person as Participant;
+  $: giveRecipients($recipients.contents);
+  function giveRecipients(current: PersonUID[]) {
+    if (!EventEditFlow.sameAddresses(current, flow.attendees)) {
+      flow.setAttendees(current);
+    }
   }
 
   export function focus() {
-    fieldEl?.querySelector("input")?.focus();
+    addressField?.focus();
+  }
+
+  export async function checkNames(): Promise<boolean> {
+    return await addressField.checkNames();
   }
 </script>
 
@@ -50,21 +52,5 @@
   .attendees-field {
     flex: 1 1 0;
     min-width: 0;
-  }
-  .attendees-field :global(.persons-autocomplete) {
-    border-block-end: none;
-    padding: 0;
-  }
-  .attendees-field :global(.person-autocomplete input) {
-    box-shadow: none;
-    padding: 0 4px !important;
-    background-color: transparent;
-  }
-  .attendees-field :global(.participant-status-icon) {
-    margin-inline-start: -2px;
-    margin-inline-end: 4px;
-  }
-  .attendees-field :global(.person:has(.declined) .name) {
-    text-decoration: line-through;
   }
 </style>

@@ -151,6 +151,7 @@
     onDeleteSeries,
     onInviteAttendees,
     onAddressBook: openAddressBook,
+    onCheckNames: async () => { await form?.checkNames(); },
     onRecurrence: openRecurrence,
     onRefreshAvailability: () => scheduling?.refresh(),
     onAttachFile,
