@@ -65,7 +65,7 @@
   .row-button {
     flex-shrink: 0;
   }
-  .row-button :global(.dialog-button) {
-    width: 168px;
+  .options-row .row-button :global(.dialog-button) {
+    min-width: 168px;
   }
 </style>
