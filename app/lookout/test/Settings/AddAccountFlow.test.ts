@@ -64,3 +64,18 @@ test("Without settings found, the password is asked for and the search repeated,
   expect(flow.draft.incoming.password).toBe("secret");
   expect(flow.notice).toContain("example.org");
 });
+
+test("Manual setup of an Exchange account takes a server URL instead of the mail servers", () => {
+  let flow = new AddAccountFlow();
+  flow.emailAddress = "fred@example.org";
+  flow.startManual(null);
+  flow.draft.outgoing.hostname = "smtp.example.org";
+  flow.setAccountType("ews");
+  expect(flow.usesURL).toBe(true);
+  expect(flow.draft.outgoing).toBe(null);
+  expect(flow.draft.incoming.url).toBe("https://mail.example.org/EWS/Exchange.asmx");
+  expect(flow.draft.incoming.username).toBe("fred@example.org");
+  flow.setAccountType("imap");
+  expect(flow.usesURL).toBe(false);
+  expect(flow.draft.outgoing.hostname).toBe("smtp.example.org");
+});

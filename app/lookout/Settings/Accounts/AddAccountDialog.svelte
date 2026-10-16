@@ -73,7 +73,7 @@
         {/if}
       </vbox>
     {:else if flow.step == AddAccountStep.Manual && flow.draft}
-      <h2>{$t`POP and IMAP Account Settings`}</h2>
+      <h2>{flow.usesURL ? $t`${labelForMailProtocol(flow.config.protocol)} Account Settings` : $t`POP and IMAP Account Settings`}</h2>
       {#if flow.notice}
         <hbox class="notice">{flow.notice}</hbox>
       {/if}
@@ -85,19 +85,30 @@
         <input id="manual-email" class="lo-text-field" type="email" bind:value={flow.draft.emailAddress} />
         <span class="section">{$t`Server Information`}</span>
         <span>{$t`Account Type:`}</span>
-        <ComboBox options={accountTypes} value={flow.config.protocol == "pop3" ? "pop3" : "imap"} label={$t`Account Type`}
+        <ComboBox options={accountTypes} value={flow.config.protocol} label={$t`Account Type`}
           onChange={protocol => { flow.setAccountType(protocol); flow = flow; }} />
-        <label for="manual-incoming">{$t`Incoming mail server:`}</label>
-        <input id="manual-incoming" class="lo-text-field" bind:value={flow.draft.incoming.hostname} />
+        {#if flow.usesURL}
+          <label for="manual-url">{$t`Server URL:`}</label>
+          <input id="manual-url" class="lo-text-field" type="url" bind:value={flow.draft.incoming.url} />
+        {:else}
+          <label for="manual-incoming">{$t`Incoming mail server:`}</label>
+          <input id="manual-incoming" class="lo-text-field" bind:value={flow.draft.incoming.hostname} />
+        {/if}
         {#if flow.draft.outgoing}
           <label for="manual-outgoing">{$t`Outgoing mail server (SMTP):`}</label>
           <input id="manual-outgoing" class="lo-text-field" bind:value={flow.draft.outgoing.hostname} />
         {/if}
         <span class="section">{$t`Logon Information`}</span>
+        {#if flow.usesURL}
+          <span>{$t`Logon method:`}</span>
+          <ComboBox options={logonMethods} bind:value={flow.draft.incoming.authMethod} label={$t`Logon method`} />
+        {/if}
         <label for="manual-username">{$t`User Name:`}</label>
         <input id="manual-username" class="lo-text-field" bind:value={flow.draft.incoming.username} />
-        <label for="manual-password">{$t`Password:`}</label>
-        <input id="manual-password" class="lo-text-field" type="password" bind:value={flow.draft.incoming.password} />
+        {#if flow.draft.incoming.authMethod != AuthMethod.OAuth2}
+          <label for="manual-password">{$t`Password:`}</label>
+          <input id="manual-password" class="lo-text-field" type="password" bind:value={flow.draft.incoming.password} />
+        {/if}
       </FormGrid>
     {:else if flow.step == AddAccountStep.Done}
       <vbox class="done">
@@ -115,7 +126,7 @@
     {/if}
   </vbox>
   <svelte:fragment slot="footer">
-    {#if flow.step == AddAccountStep.Manual}
+    {#if flow.step == AddAccountStep.Manual && !flow.usesURL}
       <DialogButton label={$t`More Settings…`} onClick={() => { isMoreSettingsOpen = true; }} />
     {/if}
     <hbox flex />
@@ -144,6 +155,8 @@
   import { AddAccountFlow, AddAccountStep } from "./AddAccountFlow";
   import { AccountLabels } from "./AccountLabels";
   import { appName } from "../../../logic/build";
+  import { AuthMethod } from "../../../logic/Abstract/Account";
+  import { listMailProtocols, labelForMailProtocol } from "../../../logic/Mail/AccountsList/MailAccounts";
   import { showError } from "../../../frontend/Util/error";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -161,9 +174,15 @@
   import { t } from "../../../l10n/l10n";
 
   const dispatch = createEventDispatcher<{ close: void }>();
-  const accountTypes = [ { value: "imap", label: "IMAP" }, { value: "pop3", label: "POP" } ];
+  const accountTypes = listMailProtocols().map(protocol => ({ value: protocol, label: labelForMailProtocol(protocol) }));
 
   let flow = new AddAccountFlow();
+
+  $: logonMethods = [
+    { value: AuthMethod.Password, label: $t`Password` },
+    ...(flow.config?.protocol == "ews" ? [{ value: AuthMethod.NTLM, label: "NTLM" }] : []),
+    { value: AuthMethod.OAuth2, label: $t`OAuth2 / MFA *=> Multi-factor authentication` },
+  ];
   let showAdvanced = false;
   let isMoreSettingsOpen = false;
 
@@ -221,6 +240,9 @@
       await pending;
     } finally {
       flow = flow;
+    }
+    if (flow.step == AddAccountStep.Login) {
+      run(login);
     }
   }
 
