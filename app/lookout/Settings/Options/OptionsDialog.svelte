@@ -5,20 +5,7 @@
   height="680px"
   on:close>
   <hbox flex class="options-dialog">
-    <vbox class="categories" role="tablist" aria-orientation="vertical">
-      {#each categoryGroups as group, groupIndex}
-        {#if groupIndex > 0}
-          <hbox class="separator" />
-        {/if}
-        {#each group as entry (entry.id)}
-          <button class="category" class:selected={entry.id == category}
-            role="tab" aria-selected={entry.id == category}
-            on:click={() => category = entry.id}>
-            {entry.label}
-          </button>
-        {/each}
-      {/each}
-    </vbox>
+    <CategoryList groups={categoryGroups} bind:selected={category} />
     <vbox flex class="page" role="tabpanel">
       {#if category == "general"}
         <GeneralOptions {options} />
@@ -47,6 +34,7 @@
   import LanguageOptions from "./LanguageOptions.svelte";
   import AdvancedOptions from "./AdvancedOptions.svelte";
   import TrustCenterOptions from "./TrustCenterOptions.svelte";
+  import CategoryList from "./CategoryList.svelte";
   import { appName } from "../../../logic/build";
   import { catchErrors } from "../../../frontend/Util/error";
   import { onMount } from "svelte";
@@ -84,48 +72,6 @@
     gap: 16px;
     height: 100%;
     min-height: 0;
-  }
-  .categories {
-    flex-shrink: 0;
-    width: 180px;
-    padding: 4px;
-    border: 1px solid var(--lo-border);
-    border-radius: var(--lo-radius-small);
-    background-color: var(--lo-pane-alt-bg);
-    overflow-y: auto;
-  }
-  .category {
-    position: relative;
-    height: 32px;
-    padding: 0 12px;
-    border: none;
-    border-radius: var(--lo-radius-small);
-    background: none;
-    color: var(--lo-fg);
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
-  }
-  .category:hover {
-    background-color: var(--lo-hover-bg);
-  }
-  .category.selected {
-    background-color: var(--lo-selected-bg);
-    font-weight: 600;
-  }
-  .category.selected::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 8px;
-    bottom: 8px;
-    width: 3px;
-    border-radius: 2px;
-    background-color: var(--lo-accent);
-  }
-  .separator {
-    margin: 6px 8px;
-    border-block-start: 1px solid var(--lo-divider);
   }
   .page {
     min-width: 0;
