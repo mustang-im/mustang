@@ -5,11 +5,8 @@
     <hbox class="person-field">
       <AddressField recipients={newPersons} label={$t`Name or email address`} chips />
     </hbox>
-    <select class="lo-text-field level" bind:value={level} aria-label={$t`Permission Level`}>
-      {#each calendar.sharePermissionLevels as permission}
-        <option value={permission}>{CalendarSharing.levelLabel(permission)}</option>
-      {/each}
-    </select>
+    <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: CalendarSharing.levelLabel(permission) }))}
+      bind:value={level} label={$t`Permission Level`} width="210px" />
     <DialogButton label={$t`Share`} primary onClick={onShare}
       disabled={!$newPersons.hasItems && $t`Enter the person first`} />
   </hbox>
@@ -46,6 +43,7 @@
   import { CalendarSharing } from "./CalendarSharing";
   import { catchErrors } from "../../../frontend/Util/error";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import AddressField from "../../Mail/Composer/AddressField.svelte";
   import RemoveIcon from "lucide-svelte/icons/trash-2";
@@ -116,10 +114,6 @@
   .person-field:focus-within {
     border-color: var(--lo-accent);
     box-shadow: inset 0 -1px 0 var(--lo-accent);
-  }
-  .level {
-    flex: none;
-    width: 210px;
   }
   .divider {
     height: 1px;

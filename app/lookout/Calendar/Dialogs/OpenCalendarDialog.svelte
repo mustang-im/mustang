@@ -7,14 +7,11 @@
   on:close>
   <vbox class="fields">
     {#if accounts.length > 1}
-      <label class="field">
+      <hbox class="field">
         <span class="label">{$t`Account:`}</span>
-        <select class="lo-text-field" bind:value={account}>
-          {#each accounts as listed (listed.id)}
-            <option value={listed}>{listed.name}</option>
-          {/each}
-        </select>
-      </label>
+        <ComboBox options={accounts.map(listed => ({ value: listed, label: listed.name }))}
+          bind:value={account} label={$t`Account`} />
+      </hbox>
     {/if}
     <hbox class="field">
       <DialogButton label={$t`Name…`} tooltip={$t`Choose the person from the address book`}
@@ -40,6 +37,7 @@
   import { SelectNamesField } from "../../Mail/Composer/SelectNames";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import AddressField from "../../Mail/Composer/AddressField.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import { ArrayColl } from "svelte-collections";
@@ -102,7 +100,7 @@
     flex: none;
     width: 72px;
   }
-  .field select {
+  .field :global(.lo-combobox) {
     flex: 1 1 auto;
   }
   .person-field {

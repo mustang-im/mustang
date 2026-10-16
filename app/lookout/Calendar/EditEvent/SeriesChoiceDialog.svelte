@@ -2,10 +2,7 @@
   <p class="question">{$t`This is one occurrence in a series. What do you want to change?`}</p>
   <vbox class="choices">
     {#each choices as option}
-      <label class="radio">
-        <input type="radio" name="series-choice" value={option} bind:group={choice} />
-        {labels[option]}
-      </label>
+      <Radio label={labels[option]} name="series-choice" value={option} bind:group={choice} />
     {/each}
   </vbox>
 </Dialog>
@@ -13,6 +10,7 @@
 <script lang="ts">
   import type { SeriesChoice } from "./EventEditFlow";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import Radio from "../../Shared/Form/Radio.svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let title: string;
@@ -36,18 +34,5 @@
   }
   .choices {
     gap: 6px;
-  }
-  .radio {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 28px;
-    cursor: pointer;
-  }
-  .radio input {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-    accent-color: var(--lo-accent);
   }
 </style>

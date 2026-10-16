@@ -18,10 +18,7 @@
         onChange={time => editor.setStart(time)} />
     {/if}
     {#if !readOnly}
-      <label class="check">
-        <input type="checkbox" checked={$event.allDay} on:change={onAllDayChanged} />
-        {$t`All day`}
-      </label>
+      <CheckBox label={$t`All day`} checked={$event.allDay} onChange={onAllDayChanged} classes="all-day" />
     {/if}
     {#if showTimezone}
       <hbox class="timezone lo-secondary" title={$t`Time zone of this event`}>
@@ -47,6 +44,7 @@
 {/if}
 
 <script lang="ts">
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import type { Event } from "../../../logic/Calendar/Event";
   import type { EventEditFlow } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
@@ -75,8 +73,7 @@
   $: endOptions = TimeOptions.endTimes($event.startTime, $event.endTime);
   $: showTimezone = !$event.allDay && !isSameTimezone($event.timezone, $event.startTime);
 
-  function onAllDayChanged(changeEvent: globalThis.Event) {
-    let checked = (changeEvent.target as HTMLInputElement).checked;
+  function onAllDayChanged(checked: boolean) {
     if (checked) {
       editor.setAllDay(true);
     } else {
@@ -96,19 +93,9 @@
     gap: 6px;
     flex-wrap: wrap;
   }
-  .check {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .time-row :global(.all-day) {
     margin-inline-start: 12px;
     white-space: nowrap;
-    cursor: pointer;
-  }
-  .check input {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-    accent-color: var(--lo-accent);
   }
   .timezone {
     align-items: center;
