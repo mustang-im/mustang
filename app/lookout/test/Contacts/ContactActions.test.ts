@@ -131,3 +131,17 @@ test("Search refiners keep persons with a phone number, an address or an email a
   expect(withEMail).toEqual(["Anna Schmidt", "Bert Meier"]);
   expect(ContactSearch.isActive(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder))).toBe(false);
 });
+
+test("Contact from the Same Company copies the company and the business numbers and addresses", () => {
+  carla.company = "ACME";
+  carla.phoneNumbers.add(new ContactEntry("+49 30 777", "home"));
+  carla.streetAddresses.add(new ContactEntry("{\"street\":\"Main St 1\"}", "work"));
+  let colleague = ContactActions.createColleague(carla);
+  expect(colleague.company).toBe("ACME");
+  expect(colleague.addressbook).toBe(addressbook);
+  expect(colleague.phoneNumbers.contents.map(entry => entry.value)).toEqual(["+49 30 555"]);
+  expect(colleague.streetAddresses.first.value).toBe("{\"street\":\"Main St 1\"}");
+  expect(colleague.streetAddresses.first).not.toBe(carla.streetAddresses.first);
+  expect(colleague.emailAddresses.isEmpty).toBe(true);
+  expect(colleague.notes).toBeFalsy();
+});
