@@ -30,7 +30,19 @@
             {:else}
               <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
               <vbox flex class="grid-area">
-                {#if view == "month"}
+                {#if view == "month" && isSplit}
+                  <hbox flex class="month-split">
+                    {#each groups as group, g (group.calendar.id)}
+                      <vbox flex class="month-column">
+                        <div class="month-tab">
+                          <CalendarTab calendar={group.calendar} firstColumn={1} span={1}
+                            isFirst={g == 0} onOverlay={() => setSplitView(false)} />
+                        </div>
+                        <MonthGrid {range} events={group.events} {showWeekNumbers} onOpenDay={openDay} />
+                      </vbox>
+                    {/each}
+                  </hbox>
+                {:else if view == "month"}
                   <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
                 {:else if view == "schedule"}
                   <ScheduleView {range} rows={scheduleRows} {timeScale} />
@@ -83,6 +95,7 @@
   import CalendarHeader from "./View/CalendarHeader.svelte";
   import TimeGrid, { type CalendarColumnGroup } from "./TimeGrid/TimeGrid.svelte";
   import MonthGrid from "./Month/MonthGrid.svelte";
+  import CalendarTab from "./TimeGrid/CalendarTab.svelte";
   import ScheduleView from "./ScheduleView/ScheduleView.svelte";
   import EventContextMenu from "./Event/EventContextMenu.svelte";
   import EventPeek from "./Event/EventPeek.svelte";
@@ -146,7 +159,7 @@
   }
 
   $: visibleEvents = visible(shownCalendarEvents, showDeclined);
-  $: isSplit = splitView && view != "month" && view != "schedule" && $shownCalendars.length > 1;
+  $: isSplit = splitView && view != "schedule" && $shownCalendars.length > 1;
   $: scheduleRows = $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) })) as CalendarColumnGroup[];
   $: groups = (isSplit
     ? $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) }))
@@ -378,6 +391,19 @@
     height: 1px;
     margin: 4px 12px;
     background-color: var(--lo-divider);
+  }
+  .month-split {
+    gap: 8px;
+    min-height: 0;
+  }
+  .month-column {
+    min-width: 0;
+    min-height: 0;
+  }
+  .month-tab {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding-inline: 4px;
   }
   .grid-area {
     position: relative;

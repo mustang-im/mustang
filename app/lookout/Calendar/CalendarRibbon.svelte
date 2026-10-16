@@ -214,7 +214,7 @@
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
   $: isSharedCalendar = !!$selectedCalendar && CalendarGroups.isShared($selectedCalendar);
   $: canShare = CalendarSharing.canShare($selectedCalendar);
-  $: overlayDisabled = (view == "month" || view == "schedule") && $t`Overlay is available in the Day, Work Week and Week views`;
+  $: overlayDisabled = view == "schedule" && $t`Overlay is available in the Day, Work Week, Week and Month views`;
 
   function onCalendarOptions() {
     SettingsDialogs.openOptions("calendar");
