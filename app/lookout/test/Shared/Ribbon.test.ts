@@ -244,3 +244,10 @@ test("Select a tab by its label", () => {
   ribbon.selectTabByLabel("Nonexistent");
   expect(get(ribbon.selectedTab)).toBe(search);
 });
+
+test("Buttons in a button row are icon-only, also in the simplified ribbon, and list items in the More menu", () => {
+  expect(RibbonGroupModel.buttonRowLook("classic", false)).toBe("small-icon");
+  expect(RibbonGroupModel.buttonRowLook("classic", true)).toBe("small-icon");
+  expect(RibbonGroupModel.buttonRowLook("simplified", false)).toBe("simplified-icon");
+  expect(RibbonGroupModel.buttonRowLook("simplified", true)).toBe("list");
+});

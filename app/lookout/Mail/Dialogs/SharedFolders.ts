@@ -34,9 +34,9 @@ export class SharedFolders {
 
   static hasMailAccountOf(account: MailAccount, person: PersonUID): boolean {
     // <copied from="../../../frontend/Settings/Mail/SharingIncoming.svelte" notYetAdded()>
-    return !!account.dependentAccounts().find(other =>
-      other.protocol == account.protocol && other instanceof MailAccount &&
-      other.isMyEMailAddress(person.emailAddress));
+    return !!account.dependentAccounts().find(dependent =>
+      dependent.protocol == account.protocol && dependent instanceof MailAccount &&
+      dependent.isMyEMailAddress(person.emailAddress));
     // </copied>
   }
 
