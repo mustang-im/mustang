@@ -61,9 +61,9 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Find Related > Messages from Sender, also for unknown senders and for "from" only | Message context menu | A free-text sender criterion in `SearchEMail`. `includesPerson` needs a `Person` and also matches recipients. |
 | Folder permissions: the permission level of existing grants, the people with access per folder, the roles Owner, Publishing Editor, Author, Contributor, None, "Default" and "Anonymous" | Folder Properties > Permissions | Reading the granted access of each person and folder (`getSharedPersons()` returns only the persons, for the whole account), and more access levels. Lookout's Permissions tab grants Reviewer, Editor or custom rights per folder or for all folders, and removes access. |
 | Send All (Outbox), Send / Receive Groups, Show Progress, Cancel All, Work Offline | Send / Receive tab | A send queue, sync schedules per account, progress and cancellation, an offline mode |
-| Search query syntax (`from:`, `subject:`, `received:`), suggestions, recent searches, Advanced Find | Search box; Search tab | A query parser for `SearchEMail`; a search history |
+| Search query syntax (`from:`, `subject:`, `received:`), recent searches | Search box; Search tab > Recent Searches | A query parser for `SearchEMail`; a search history |
 | Search scopes "Subfolders" and "All Outlook Items" | Search tab > Scope | `SearchEMail` over a folder subtree; search across apps |
-| Search refiners and filters: From / Sent To as free text, Subject only, Important, Mentioned, This Week, To me / Cc me, Categorized | Search tab > Refine; Home tab > Filter Email | These criteria in `SearchEMail`, `QuickSearchEMail` and `SQLSearchEMail` |
+| Search refiners and filters: From / Sent To as free text, Subject only, Important, Mentioned, To me / Cc me, Has calendar invites | Search tab > Refine; Home tab > Filter Email; Filter menu above the message list | These criteria in `SearchEMail`, `QuickSearchEMail` and `SQLSearchEMail` |
 | Conditional Formatting, Format Columns, Manage Views, Save Current View as a New View | View tab > Current View; View Settings | Conditional formatting needs a rule engine; the others are *UI only* |
 
 ## Composer
@@ -106,7 +106,7 @@ Rules and Alerts and Create Rule. All Mustang rules are client rules that run wh
 | More actions: forward, forward as attachment, redirect, reply with a template, flag with a date, clear categories, set importance, play a sound, display an alert, run a script | Rules Wizard; Change Rule menu | New action types in `FilterRuleAction.doAction()`. Lookout offers move, copy, delete, mark read / unread, flag, categories and junk / not junk. |
 | More conditions: subject only, sender or recipient address (free text), header contains, sent only to me, my name in To / Cc, importance, sensitivity, meeting invitation, through a specific account | Rules Wizard; Create Rule | New criteria in `SearchEMail`. Without a free-text address, rules from senders who are not in an address book, "Always Move Messages From" for such senders and "Always Move Messages To" can't be created, because `includesPerson` needs a `Person`. |
 | Server-side rules (Exchange inbox rules, Sieve, JMAP), "client-only" marker | Rules and Alerts | Reading and writing server rules per protocol |
-| Copy a rule to another account, "Create this rule on all accounts" | Rules and Alerts > Copy | Cloning a rule into another account with a folder mapping. Lookout copies within the same account. |
+| Copy a rule with a folder to another account, "Create this rule on all accounts" | Rules and Alerts > Copy | Cloning a rule into another account with a folder mapping. Lookout copies rules without a folder to any account, and rules with a folder within their account. |
 | Import / Export rules | Rules and Alerts > Options | A rules file format |
 
 ## Automatic Replies (Out of Office)

@@ -233,6 +233,12 @@ export class MessageGrouping<T extends ArrangeableMessage> {
     }
   }
 
+  static sortOrders(arrangeBy: ArrangeBy): { label: string, reversed: boolean }[] {
+    let [normal, reversed] = MessageGrouping.sortOrderLabels(arrangeBy);
+    let orders = [{ label: normal, reversed: false }, { label: reversed, reversed: true }];
+    return MessageGrouping.isDescendingByDefault(arrangeBy) ? orders.reverse() : orders;
+  }
+
   static sortOrderLabels(arrangeBy: ArrangeBy): [string, string] {
     switch (arrangeBy) {
       case ArrangeBy.From:
