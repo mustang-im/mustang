@@ -189,6 +189,8 @@ export class RibbonGroupModel {
   label: string;
   firstIcon: ConstructorOfATypedSvelteComponent = null;
   stageWidths: number[] = [0];
+  protected renderedWidths: number[] = [];
+  protected itemsKey = "";
   readonly stage: Writable<number> = writable(0);
   readonly collapsed: Writable<boolean> = writable(false);
   readonly layout: Writable<RibbonLayout> = writable("classic");
@@ -218,9 +220,23 @@ export class RibbonGroupModel {
     return this.hasOverflowStage && stage > 0 && stage == this.lastStage;
   }
 
-  setStageWidths(widths: number[], hasOverflowStage = false) {
+  setStageWidths(widths: number[], hasOverflowStage = false, itemsKey = this.itemsKey) {
+    this.forgetRenderedWidths(itemsKey);
+    widths = widths.map((width, stage) => Math.max(width, this.renderedWidths[stage] ?? 0));
     this.stageWidths = widths.length ? widths : [0];
     this.hasOverflowStage = hasOverflowStage;
+  }
+
+  setRenderedWidth(stage: number, width: number, itemsKey = this.itemsKey) {
+    this.forgetRenderedWidths(itemsKey);
+    this.renderedWidths[stage] = width;
+  }
+
+  protected forgetRenderedWidths(itemsKey: string) {
+    if (itemsKey != this.itemsKey) {
+      this.itemsKey = itemsKey;
+      this.renderedWidths = [];
+    }
   }
 
   setWidths(expandedWidth: number, collapsedWidth: number) {

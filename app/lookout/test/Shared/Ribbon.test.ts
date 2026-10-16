@@ -272,3 +272,40 @@ test("Classic: a group is never narrower than its label", () => {
   // The simplified ribbon shows no group labels
   expect(RibbonGroupModel.computeStageWidths("simplified", [{ size: "large" }], metrics, 70)).toEqual([120, 50, 0]);
 });
+
+test("Classic: a rendered group wider than computed (long small labels) counts with its rendered width", () => {
+  let group = new RibbonGroupModel("Share");
+  group.setStageWidths([150, 130, 50, 80], false, "a");
+  group.setRenderedWidth(1, 170, "a");
+  group.setStageWidths([150, 130, 50, 80], false, "a");
+  expect(group.stageWidths).toEqual([150, 170, 50, 80]);
+  // Narrower than computed: the computed width stays
+  group.setRenderedWidth(0, 120, "a");
+  group.setStageWidths([150, 130, 50, 80], false, "a");
+  expect(group.stageWidths).toEqual([150, 170, 50, 80]);
+  // Other buttons or labels: the rendered widths are forgotten
+  group.setStageWidths([150, 130, 50, 80], false, "b");
+  expect(group.stageWidths).toEqual([150, 130, 50, 80]);
+});
+
+test("Classic: the fit uses the rendered width, so the last group stays inside the ribbon", () => {
+  let tab = new RibbonTabModel("Home");
+  let share = new RibbonGroupModel("Share");
+  let find = new RibbonGroupModel("Find");
+  tab.addGroup(share);
+  tab.addGroup(find);
+  share.setStageWidths([140, 140, 50, 80], false, "share");
+  find.setStageWidths([190, 190, 190, 80], false, "find");
+  tab.setAvailableWidth(340);
+  expect(get(share.stage)).toBe(0);
+  share.setRenderedWidth(0, 170, "share");
+  share.setStageWidths([140, 140, 50, 80], false, "share");
+  tab.fitGroups();
+  expect(get(share.stage)).toBe(1);
+  // Small buttons are as wide as their long labels, too
+  share.setRenderedWidth(1, 170, "share");
+  share.setStageWidths([140, 140, 50, 80], false, "share");
+  tab.fitGroups();
+  expect(get(share.stage)).toBe(2);
+  expect(get(find.stage)).toBe(0);
+});

@@ -13,7 +13,7 @@
   <div class="body-home" style:min-width={labelWidth && $layout == "classic" ? labelWidth + "px" : null} bind:this={homeEl}>
     <div class="group-body" bind:this={bodyEl}>
       <div class="more-menu-label">{label}</div>
-      <div class="group-buttons stage-{$stage}"
+      <div class="group-buttons stage-{$stage}" data-stage={$stage}
         class:popup={$collapsed && !isInMoreMenu}
         class:open={$collapsed && !isInMoreMenu && isPopupOpen}
         style={$collapsed && !isInMoreMenu ? popupStyle : ""}
@@ -43,7 +43,7 @@
   import { showError } from "../../../frontend/Util/error";
   import LauncherIcon from "lucide-svelte/icons/arrow-down-right";
   import { getContext, setContext, onMount, onDestroy } from "svelte";
-  import { writable } from "svelte/store";
+  import { get, writable } from "svelte/store";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent = null;
@@ -78,17 +78,17 @@
     group.el = groupEl;
     group.bodyEl = bodyEl;
     tab?.addGroup(group);
-    resizeObserver = new ResizeObserver(() => measure());
+    resizeObserver = new ResizeObserver(() => measure(true));
     resizeObserver.observe(buttonsEl);
-    measure();
+    measure(false);
   });
   onDestroy(() => {
     resizeObserver?.disconnect();
     tab?.removeGroup(group);
   });
 
-  $: measure($metrics, $layout);
-  function measure(..._dependencies: any[]) {
+  $: measure(false, $metrics, $layout);
+  function measure(isRendered: boolean, ..._dependencies: any[]) {
     if (!buttonsEl || !$metrics) {
       return;
     }
@@ -109,7 +109,13 @@
       labelWidth = Math.ceil(text.getBoundingClientRect().width);
     }
     let minWidth = currentLayout == "classic" ? labelWidth : 0;
-    group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified");
+    let itemsKey = [currentLayout, label, ...items.map(item => item.querySelector(".label")?.textContent ?? "")].join("\n");
+    let renderedStage = Number(buttonsEl.dataset.stage);
+    if (isRendered && !get(collapsed) && renderedStage == get(stage)) {
+      let width = Math.max(Math.ceil(buttonsEl.getBoundingClientRect().width), minWidth) + $metrics.groupChrome;
+      group.setRenderedWidth(renderedStage, width, itemsKey);
+    }
+    group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified", itemsKey);
     tab?.fitGroups();
   }
 
