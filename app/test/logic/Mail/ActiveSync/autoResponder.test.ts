@@ -8,8 +8,7 @@ import { expect, test, vi } from "vitest";
 // DOMPurify needs a real browser DOM
 vi.mock("../../../../logic/util/convertHTML", async importOriginal => ({
   ...await importOriginal() as object,
-  sanitizeHTML: (html: string) => "sanitized:" + html,
-  convertTextToHTML: (text: string) => "converted:" + text,
+  sanitizeHTML: (html: string) => html ? "sanitized:" + html : "",
 }));
 
 /** Encodes the request and decodes the server response, without server */
@@ -53,8 +52,8 @@ const kGetResponse = settingsResponse(
   ...text(T.StartTime, "2026-10-05T07:00:00.000Z"),
   ...text(T.EndTime, "2026-10-19T16:00:00.000Z"),
   ...oofMessage(T.AppliesToInternal, "1", "<p>Back on the 19th</p>"),
-  ...oofMessage(T.AppliesToExternalKnown, "1", "I am out of office."),
-  ...oofMessage(T.AppliesToExternalUnknown, "0", "I am out of office."),
+  ...oofMessage(T.AppliesToExternalKnown, "1", "<p>I am out of office.</p>"),
+  ...oofMessage(T.AppliesToExternalUnknown, "0", "<p>I am out of office.</p>"),
   kEnd);
 
 const kSetResponse = settingsResponse();
@@ -86,7 +85,7 @@ test("Reads the settings from the server", async () => {
   expect(autoResponder.externalAudience).toBe(AutoResponderAudience.Contacts);
   expect(autoResponder.maxAudience).toBe(AutoResponderAudience.All);
   expect(autoResponder.internalHTML).toBe("sanitized:<p>Back on the 19th</p>");
-  expect(autoResponder.externalHTML).toBe("converted:I am out of office.");
+  expect(autoResponder.externalHTML).toBe("sanitized:<p>I am out of office.</p>");
 });
 
 test("Audiences that the admin disallowed are missing", async () => {
@@ -154,4 +153,28 @@ test("A server error is shown", async () => {
     open(T.Oof), ...text(T.Status, "3"), kEnd, kEnd]);
 
   await expect(account.autoResponder.load()).rejects.toThrow("Access is denied");
+});
+
+test("An unknown state is read as off", async () => {
+  let account = newAccount();
+  account.response = settingsResponse(
+    open(T.Get),
+    ...text(T.OofState, "7"),
+    ...oofMessage(T.AppliesToInternal, "1", "<p>Away</p>"),
+    kEnd);
+  let autoResponder = account.autoResponder;
+  await autoResponder.load();
+
+  expect(autoResponder.enabled).toBe(false);
+  expect(autoResponder.scheduled).toBe(false);
+});
+
+test("Only for our own account, not for shared accounts", () => {
+  let account = newAccount();
+  expect(account.autoResponder.supported).toBe(true);
+
+  // Only the owner of a shared account may change its OOF settings
+  let shared = new ActiveSyncAccount();
+  shared.initFromMainAccount(account);
+  expect(shared.autoResponder.supported).toBe(false);
 });

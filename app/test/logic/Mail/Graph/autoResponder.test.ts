@@ -7,8 +7,7 @@ import { expect, test, vi } from "vitest";
 // DOMPurify needs a real browser DOM
 vi.mock("../../../../logic/util/convertHTML", async importOriginal => ({
   ...await importOriginal() as object,
-  sanitizeHTML: (html: string) => "sanitized:" + html,
-  convertTextToHTML: (text: string) => "converted:" + text,
+  sanitizeHTML: (html: string) => html ? "sanitized:" + html : "",
 }));
 
 const kOldScope = "Mail.ReadWrite User.Read offline_access";
@@ -61,7 +60,7 @@ const kSettings = {
   scheduledStartDateTime: { dateTime: "2026-10-05T07:00:00.0000000", timeZone: "UTC" },
   scheduledEndDateTime: { dateTime: "2026-10-19T16:00:00.0000000", timeZone: "UTC" },
   internalReplyMessage: "<html>\n<body>\n<p>Back on the 19th</p></body>\n</html>\n",
-  externalReplyMessage: "I am out of office.",
+  externalReplyMessage: "<p>I am out of office.</p>",
 };
 
 test("Reads the settings from the server", async () => {
@@ -80,7 +79,22 @@ test("Reads the settings from the server", async () => {
   expect(autoResponder.endTime.toISOString()).toBe("2026-10-19T16:00:00.000Z");
   expect(autoResponder.externalAudience).toBe(AutoResponderAudience.Contacts);
   expect(autoResponder.internalHTML).toBe("sanitized:" + kSettings.internalReplyMessage);
-  expect(autoResponder.externalHTML).toBe("converted:I am out of office.");
+  expect(autoResponder.externalHTML).toBe("sanitized:<p>I am out of office.</p>");
+});
+
+test("The audience in any casing", async () => {
+  let account = setupAccount();
+  let autoResponder = account.autoResponder;
+  for (let [audience, expected] of [
+    ["ContactsOnly", AutoResponderAudience.Contacts],
+    ["All", AutoResponderAudience.All],
+    ["none", AutoResponderAudience.None],
+    ["friends", AutoResponderAudience.None],
+  ]) {
+    response = { ...kSettings, externalAudience: audience };
+    await autoResponder.load();
+    expect(autoResponder.externalAudience, audience).toBe(expected);
+  }
 });
 
 test("Writes the settings to the server", async () => {
@@ -133,7 +147,12 @@ test("A login without the permission asks to allow it", async () => {
   response = httpError(403);
   let autoResponder = account.autoResponder;
 
-  let error = await autoResponder.load().catch(ex => ex);
+  let error: any;
+  try {
+    await autoResponder.load();
+  } catch (ex) {
+    error = ex;
+  }
   expect(error.isUserError).toBe(true);
   expect(error.message).toContain("allow access");
   expect(error.message).not.toContain("https://");

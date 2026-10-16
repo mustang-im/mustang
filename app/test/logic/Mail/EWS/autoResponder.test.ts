@@ -8,8 +8,7 @@ import { expect, test, vi } from "vitest";
 // DOMPurify needs a real browser DOM
 vi.mock("../../../../logic/util/convertHTML", async importOriginal => ({
   ...await importOriginal() as object,
-  sanitizeHTML: (html: string) => "sanitized:" + html,
-  convertTextToHTML: (text: string) => "converted:" + text,
+  sanitizeHTML: (html: string) => html ? "sanitized:" + html : "",
 }));
 
 const kTypesNS = "http://schemas.microsoft.com/exchange/services/2006/types";
@@ -59,7 +58,7 @@ const kGetResponse = soap(`
           <Message>&lt;html&gt;&lt;body&gt;&lt;p&gt;Back on the &lt;b&gt;19th&lt;/b&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</Message>
         </InternalReply>
         <ExternalReply xml:lang="en-US">
-          <Message>I am out of office.</Message>
+          <Message>&lt;p&gt;I am out of office.&lt;/p&gt;</Message>
         </ExternalReply>
       </OofSettings>
       <AllowExternalOof>Known</AllowExternalOof>
@@ -88,7 +87,7 @@ test("Reads the settings from the server", async () => {
   expect(autoResponder.externalAudience).toBe(AutoResponderAudience.Contacts);
   expect(autoResponder.maxAudience).toBe(AutoResponderAudience.Contacts);
   expect(autoResponder.internalHTML).toBe("sanitized:<html><body><p>Back on the <b>19th</b>.</p></body></html>");
-  expect(autoResponder.externalHTML).toBe("converted:I am out of office.");
+  expect(autoResponder.externalHTML).toBe("sanitized:<p>I am out of office.</p>");
 });
 
 test("Old dates of a disabled responder are not kept", async () => {
@@ -103,6 +102,21 @@ test("Old dates of a disabled responder are not kept", async () => {
   expect(autoResponder.scheduled).toBe(false);
   expect(autoResponder.startTime.getTime()).toBeGreaterThan(Date.now());
   expect(autoResponder.endTime.getTime()).toBeGreaterThan(autoResponder.startTime.getTime());
+});
+
+test("Unknown values are read as off, without admin limit", async () => {
+  let account = newAccount();
+  account.response = kGetResponse
+    .replace("<OofState>Scheduled", "<OofState>Sometimes")
+    .replace("<ExternalAudience>Known", "<ExternalAudience>Friends")
+    .replace("<AllowExternalOof>Known", "<AllowExternalOof>constructor");
+  let autoResponder = account.autoResponder;
+  await autoResponder.load();
+
+  expect(autoResponder.enabled).toBe(false);
+  expect(autoResponder.scheduled).toBe(false);
+  expect(autoResponder.externalAudience).toBe(AutoResponderAudience.None);
+  expect(autoResponder.maxAudience).toBe(AutoResponderAudience.All);
 });
 
 test("Writes the settings to the server, in schema order", async () => {
@@ -174,7 +188,7 @@ test("A server error is shown", async () => {
   await expect(account.autoResponder.save()).rejects.toThrow("The specified time interval is invalid.");
 });
 
-test("Only for our own Exchange mailbox", () => {
+test("Only for our own account, not for shared accounts", () => {
   let account = newAccount();
   expect(account.autoResponder.supported).toBe(true);
 

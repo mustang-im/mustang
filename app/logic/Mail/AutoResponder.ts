@@ -1,7 +1,6 @@
 import type { MailAccount } from "./MailAccount";
 import { notifyChangedProperty, Observable } from "../util/Observable";
-import { convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
-import { AbstractFunction, assert } from "../util/util";
+import { AbstractFunction, NotReached, assert } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
 /** Automatic replies to incoming mail, e.g. during vacation.
@@ -74,7 +73,7 @@ export class AutoResponder extends Observable {
 
   /** Asks the user to log in again and allow the missing permission */
   async grantPermission(): Promise<void> {
-    throw new AbstractFunction();
+    throw new NotReached();
   }
 
   protected validate() {
@@ -91,19 +90,8 @@ export class AutoResponder extends Observable {
     }
   }
 
-  /** @param message The reply, as the server has it: HTML from Outlook, plaintext from older clients
-   * @returns HTML */
-  protected toHTML(message: string): string {
-    if (!message || typeof (message) != "string") {
-      return "";
-    }
-    return /<[a-z!\/][^>]*>/i.test(message)
-      ? sanitizeHTML(message)
-      : convertTextToHTML(message);
-  }
-
   /** @returns HTML for the server, or "" for none */
-  protected fromHTML(html: string): string {
+  protected stripEmptyParagraph(html: string): string {
     // What the editor leaves when emptied
     return !html || html == "<p></p>" ? "" : html;
   }
@@ -112,6 +100,6 @@ export class AutoResponder extends Observable {
 export enum AutoResponderAudience {
   None = "none",
   /** Only senders in the user's addressbook */
-  Contacts = "contacts",
+  Contacts = "contactsOnly",
   All = "all",
 }
