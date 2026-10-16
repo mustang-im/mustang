@@ -1,11 +1,8 @@
 <Dialog title={$t`Rules and Alerts`} on:close={onClose} width="720px" height="640px">
+  <DialogTabs tabs={[{ id: "email-rules", label: $t`Email Rules` }]} selected="email-rules" />
   <hbox class="folder-row">
-    <label for="rules-folder">{$t`Apply changes to this folder:`}</label>
-    <select id="rules-folder" class="lo-text-field" bind:value={account}>
-      {#each $accounts.each as mailAccount}
-        <option value={mailAccount}>{RuleDescription.inboxLabel(mailAccount)}</option>
-      {/each}
-    </select>
+    <span>{$t`Apply changes to this folder:`}</span>
+    <ComboBox label={$t`Apply changes to this folder:`} options={accountOptions($accounts.contents)} bind:value={account} width="320px" />
   </hbox>
   <hbox class="toolbar">
     <DialogButton label={$t`New Rule…`} icon={NewIcon} classes="plain" onClick={onNew} />
@@ -97,6 +94,9 @@
   import type { RuleItem } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
   import RuleRow from "./RuleRow.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
   import RulesWizard from "./RulesWizard.svelte";
@@ -126,6 +126,10 @@
   export let onClose: () => void;
 
   const accounts = appGlobal.emailAccounts;
+
+  function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
+    return mailAccounts.map(mailAccount => ({ value: mailAccount, label: RuleDescription.inboxLabel(mailAccount) }));
+  }
   if (!accounts.contains(account)) {
     account = accounts.first;
   }
@@ -258,11 +262,7 @@
     flex-shrink: 0;
     align-items: center;
     gap: 12px;
-    margin-block-end: 8px;
-  }
-  .folder-row select {
-    flex: 1 1 0;
-    min-width: 0;
+    margin-block: 12px 8px;
   }
   .toolbar {
     flex-shrink: 0;

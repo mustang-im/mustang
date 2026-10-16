@@ -9,13 +9,24 @@
       disableFolder={candidate => candidate.account != account && $t`Rules can only use folders of the account ${account.name}`}
       on:choose={() => dialog.submit()} />
   </vbox>
+  <svelte:fragment slot="buttons-start">
+    <DialogButton label={$t`New…`} onClick={() => { isCreating = true; }}
+      tooltip={folder ? $t`Create a subfolder of ${folder.name}` : $t`Create a new folder`} />
+  </svelte:fragment>
 </Dialog>
+{#if isCreating}
+  <NewFolderDialog {account} parent={folder?.account == account ? folder : null}
+    onCreated={created => { folder = created; }}
+    on:close={() => { isCreating = false; }} />
+{/if}
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderPicker from "../Dialogs/FolderPicker.svelte";
+  import NewFolderDialog from "../Dialogs/NewFolderDialog.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
@@ -24,6 +35,7 @@
   export let onCancel: () => void;
 
   let dialog: Dialog;
+  let isCreating = false;
 
   async function onOK() {
     if (!folder) {
