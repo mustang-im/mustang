@@ -7,10 +7,11 @@ import { predefinedConfig } from "../../logic/Mail/AutoConfig/predefinedConfig";
 // @ts-ignore ts2300
 import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
 // #endif
-import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
+import { openApp } from "../../frontend/AppsBar/selectedApp";
 import { loadMustangApps } from "../../frontend/AppsBar/loadMustangApps";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { selectedAccount } from "../../frontend/Mail/Selected";
+import { SettingsDialogs } from "../Settings/SettingsDialogs";
 
 export class Startup {
   async start() {
@@ -36,15 +37,8 @@ export class Startup {
   }
 
   protected async setup() {
-    // <copied from="../../frontend/MainWindow/MainWindow.svelte">
     // #if [!WEBMAIL]
-    let account = await predefinedConfig();
-    if (account) {
-      goTo("/setup/predefined", { account });
-    } else {
-      goTo("/setup/initial", {});
-    }
+    SettingsDialogs.openFirstRun(await predefinedConfig());
     // #endif
-    // </copied>
   }
 }
