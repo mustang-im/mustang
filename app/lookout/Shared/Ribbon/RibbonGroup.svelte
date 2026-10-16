@@ -1,4 +1,5 @@
 <div class="ribbon-group {$layout}" class:collapsed={$collapsed} class:in-more-menu={isInMoreMenu}
+  class:hidden-by-user={isHiddenByUser}
   role="group" aria-label={label}
   bind:this={groupEl}>
   {#if $collapsed && !isInMoreMenu}
@@ -39,6 +40,7 @@
 
 <script lang="ts">
   import { RibbonGroupModel, RibbonModel, RibbonTabModel, type RibbonItemInfo, type RibbonLayout } from "./Ribbon";
+  import { RibbonCustomization } from "./RibbonCustomization";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import { showError } from "../../../frontend/Util/error";
   import LauncherIcon from "lucide-svelte/icons/arrow-down-right";
@@ -62,6 +64,8 @@
   $: group.label = label;
   $: $layoutSetting, layout.set(ribbon?.currentLayout ?? "classic");
   $: isInMoreMenu = $collapsed && $layout == "simplified";
+  const customization = RibbonCustomization.setting;
+  $: isHiddenByUser = RibbonCustomization.isGroupHidden(ribbon?.id, tab?.label, label, $customization.value);
 
   let groupEl: HTMLElement;
   let homeEl: HTMLElement;
@@ -87,9 +91,14 @@
     tab?.removeGroup(group);
   });
 
-  $: measure(false, $metrics, $layout);
+  $: measure(false, $metrics, $layout, isHiddenByUser);
   function measure(isRendered: boolean, ..._dependencies: any[]) {
     if (!buttonsEl || !$metrics) {
+      return;
+    }
+    if (isHiddenByUser) {
+      group.setStageWidths([0], false, "hidden");
+      tab?.fitGroups();
       return;
     }
     let items = Array.from(buttonsEl.querySelectorAll<HTMLElement>(".ribbon-item"))
@@ -188,6 +197,10 @@
     flex: 0 0 auto;
     padding: 0 var(--lo-ribbon-group-padding);
   }
+  .ribbon-group.hidden-by-user {
+    display: none;
+  }
+
   .ribbon-group.in-more-menu {
     display: none;
   }
