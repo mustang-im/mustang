@@ -1,6 +1,7 @@
 <Popup bind:popupOpen={isMenuOpen} popupAnchor={anchor} {placement} {boundaryElSel}>
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div class="lo-menu" role="menu" tabindex="-1"
+    style:max-height={maxHeight}
     on:keydown={onKeyDown}
     bind:this={menuEl}>
     <slot />
@@ -28,6 +29,22 @@
   }
   setContext("onMenuClose", closeMenu);
   setContext("lo-close-all-menus", getContext<() => void>("lo-close-all-menus") ?? closeMenu);
+
+  let maxHeight: string = null;
+  $: if (isMenuOpen) {
+    fitHeight();
+  }
+  function fitHeight() {
+    const kWindowMargin = 12;
+    let rect = anchor?.getBoundingClientRect?.();
+    if (!rect || !(placement.startsWith("bottom") || placement.startsWith("top"))) {
+      maxHeight = null;
+      return;
+    }
+    let below = window.innerHeight - rect.bottom - kWindowMargin;
+    let above = rect.top - kWindowMargin;
+    maxHeight = Math.max(below, above) + "px";
+  }
 
   $: if (isMenuOpen && autoFocus) {
     focusMenu();
