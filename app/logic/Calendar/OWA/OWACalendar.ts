@@ -1,4 +1,7 @@
 import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
+import { ExchangeWorkHours } from "../EWS/ExchangeWorkHours";
+import type { WorkHours } from "../WorkHours";
+import { IANAToWindowsTimezone } from "../ICal/WindowsTimezone";
 import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { Attachment } from "../../Abstract/Attachment";
@@ -15,6 +18,7 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
+import { k1DayMS, myTimezone } from "../../../frontend/Util/date";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -56,7 +60,7 @@ export class OWACalendar extends ExchangeCalendar {
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
-    let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
+    let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants.map(participant => participant.emailAddress), from, to));
     let availabilities = [];
     for (let [i, participant] of participants.entries()) {
       let result = results.Responses[i];
@@ -75,6 +79,31 @@ export class OWACalendar extends ExchangeCalendar {
       });
     }
     return availabilities;
+  }
+
+  protected async fetchWorkHoursXML(): Promise<string | null> {
+    return await this.account.getUserConfigurationXMLText(ExchangeWorkHours.configurationName, ExchangeWorkHours.configurationFolder);
+  }
+
+  protected async saveWorkHoursXML(xml: string, isNew: boolean): Promise<void> {
+    await this.account.saveUserConfigurationXMLText(ExchangeWorkHours.configurationName, ExchangeWorkHours.configurationFolder, xml, isNew);
+  }
+
+  protected async fetchOtherPersonsWorkHours(): Promise<WorkHours | null> {
+    let timezone = myTimezone();
+    let windowsTimezone = IANAToWindowsTimezone[timezone];
+    if (!windowsTimezone) {
+      timezone = "UTC";
+      windowsTimezone = "UTC";
+    }
+    let from = new Date();
+    let to = new Date(from.getTime() + k1DayMS);
+    let results = await this.account.callOWA(new OWAGetUserAvailabilityRequest([this.username], from, to, windowsTimezone));
+    let result = results.Responses?.[0];
+    if (!result || result.ResponseMessage?.ResponseClass == "Error") {
+      return null;
+    }
+    return ExchangeWorkHours.fromOWAAvailability(result.CalendarView?.WorkingHours, timezone)?.toWorkHours() ?? null;
   }
 
   protected getEventByItemID(id: string): OWAEvent | undefined {
