@@ -4,17 +4,16 @@
       onClick={() => CalendarActions.open(event)} />
     {#if event.isIncomingMeeting && !event.isCancelled}
       <MenuDivider />
-      <MenuItem label={$t`Accept`} icon={AcceptIcon}
-        selected={event.myParticipation == InvitationResponse.Accept}
-        onClick={() => CalendarActions.respond(event, InvitationResponse.Accept)} />
-      <MenuItem label={$t`Tentative`} icon={TentativeIcon}
-        selected={event.myParticipation == InvitationResponse.Tentative}
-        onClick={() => CalendarActions.respond(event, InvitationResponse.Tentative)} />
-      <MenuItem label={$t`Decline`} icon={DeclineIcon}
-        selected={event.myParticipation == InvitationResponse.Decline}
-        onClick={() => CalendarActions.respond(event, InvitationResponse.Decline)} />
+      {#each responses as response}
+        <SubMenu label={response.label} icon={response.icon}>
+          <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
+            checked={event.myParticipation == response.value}
+            onClick={() => CalendarActions.respond(event, response.value)} />
+        </SubMenu>
+      {/each}
     {/if}
     {#if !event.isCancelled}
+      <MenuDivider />
       <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
         onClick={() => CalendarActions.forward(event)} />
     {/if}
@@ -23,21 +22,25 @@
       <MenuItem label={$t`Remove from Calendar`} icon={DeleteIcon}
         onClick={() => CalendarActions.deleteOccurrence(event)} />
     {:else if isRecurring && event.isOutgoingMeeting}
-      <MenuItem label={$t`Cancel Occurrence`} icon={CancelIcon}
-        onClick={() => CalendarActions.cancelMeeting(event)} />
-      <MenuItem label={$t`Cancel Series`} icon={CancelIcon}
-        onClick={() => CalendarActions.deleteSeries(event)} />
+      <SubMenu label={$t`Cancel Meeting`} icon={CancelIcon}>
+        <MenuItem label={$t`Cancel Occurrence`} icon={CancelIcon}
+          onClick={() => CalendarActions.cancelMeeting(event)} />
+        <MenuItem label={$t`Cancel Series`} icon={CancelIcon}
+          onClick={() => CalendarActions.deleteSeries(event)} />
+      </SubMenu>
     {:else if isRecurring}
-      {#if !event.isIncomingMeeting}
-        <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} shortCutInfo="Del"
-          onClick={() => CalendarActions.deleteOccurrence(event)} />
-        {#if event.seriesStatus == "middle"}
-          <MenuItem label={$t`Delete This and Following`} icon={DeleteIcon}
-            onClick={() => CalendarActions.deleteRemainder(event)} />
+      <SubMenu label={$t`Delete`} icon={DeleteIcon}>
+        {#if !event.isIncomingMeeting}
+          <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} shortCutInfo="Del"
+            onClick={() => CalendarActions.deleteOccurrence(event)} />
+          {#if event.seriesStatus == "middle"}
+            <MenuItem label={$t`Delete This and Following`} icon={DeleteIcon}
+              onClick={() => CalendarActions.deleteRemainder(event)} />
+          {/if}
         {/if}
-      {/if}
-      <MenuItem label={$t`Delete Series`} icon={DeleteIcon}
-        onClick={() => CalendarActions.deleteSeries(event)} />
+        <MenuItem label={$t`Delete Series`} icon={DeleteIcon}
+          onClick={() => CalendarActions.deleteSeries(event)} />
+      </SubMenu>
     {:else if event.isOutgoingMeeting}
       <MenuItem label={$t`Cancel Meeting`} icon={CancelIcon}
         onClick={() => CalendarActions.cancelMeeting(event)} />
@@ -50,11 +53,13 @@
 
 <script lang="ts">
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { CalendarActions } from "../CalendarActions";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
-  import MenuDivider from "../../../frontend/Shared/Menu/MenuDivider.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
+  import SubMenu from "../../Shared/Menu/SubMenu.svelte";
+  import SendIcon from "lucide-svelte/icons/send";
   import OpenIcon from "lucide-svelte/icons/square-pen";
   import AcceptIcon from "lucide-svelte/icons/check";
   import TentativeIcon from "lucide-svelte/icons/circle-help";
@@ -67,6 +72,11 @@
   let contextMenu: ContextMenu;
   let event: Event | null = null;
 
+  $: responses = [
+    { value: InvitationResponse.Accept, label: $t`Accept`, icon: AcceptIcon },
+    { value: InvitationResponse.Tentative, label: $t`Tentative`, icon: TentativeIcon },
+    { value: InvitationResponse.Decline, label: $t`Decline`, icon: DeclineIcon },
+  ] as { value: InvitationResponseInMessage, label: string, icon: typeof AcceptIcon }[];
   $: isRecurring = event?.recurrenceCase == RecurrenceCase.Instance || event?.recurrenceCase == RecurrenceCase.Exception;
 
   export function openFor(mouseEvent: MouseEvent, forEvent: Event) {

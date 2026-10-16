@@ -19,7 +19,7 @@
   </button>
   <Menu bind:isMenuOpen={isViewMenuOpen} anchor={viewButtonEl} placement="bottom-end">
     {#each viewTypes as viewType}
-      <MenuItem label={viewLabels[viewType]} icon={viewIcons[viewType]} selected={viewType == view}
+      <MenuItem label={viewLabels[viewType]} icon={viewIcons[viewType]} checked={viewType == view}
         onClick={() => onView(viewType)} />
     {/each}
   </Menu>
@@ -28,8 +28,8 @@
 <script lang="ts">
   import type { CalendarViewType } from "../CalendarSettings";
   import type { CalendarRange } from "./CalendarRange";
-  import Menu from "../../../frontend/Shared/Menu/Menu.svelte";
-  import MenuItem from "../../../frontend/Shared/Menu/MenuItem.svelte";
+  import Menu from "../../Shared/Menu/Menu.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
