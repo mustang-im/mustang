@@ -10,7 +10,7 @@
       bind:buttonEl={collapsedButtonEl}
       />
   {/if}
-  <div class="body-home" bind:this={homeEl}>
+  <div class="body-home" style:min-width={labelWidth && $layout == "classic" ? labelWidth + "px" : null} bind:this={homeEl}>
     <div class="group-body" bind:this={bodyEl}>
       <div class="more-menu-label">{label}</div>
       <div class="group-buttons stage-{$stage}"
@@ -25,7 +25,7 @@
   </div>
   {#if !$collapsed}
     <div class="group-label">
-      <span class="group-label-text">{label}</span>
+      <span class="group-label-text" bind:this={labelTextEl}>{label}</span>
       {#if onLauncher}
         <button class="launcher" title={launcherTooltip ?? label} aria-label={launcherTooltip ?? label}
           on:click={onLauncherClicked}>
@@ -68,6 +68,8 @@
   let bodyEl: HTMLElement;
   let buttonsEl: HTMLElement;
   let collapsedButtonEl: HTMLButtonElement;
+  let labelTextEl: HTMLElement;
+  let labelWidth = 0;
   let isPopupOpen = false;
   let popupStyle = "";
 
@@ -101,7 +103,11 @@
       fixedWidth: fixedItems.includes(item) ? item.offsetWidth : 0,
     }));
     let currentLayout: RibbonLayout = $layout;
-    group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics), currentLayout == "simplified");
+    if (labelTextEl) {
+      labelWidth = Math.ceil(labelTextEl.scrollWidth);
+    }
+    let minWidth = currentLayout == "classic" ? labelWidth : 0;
+    group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified");
     tab?.fitGroups();
   }
 
