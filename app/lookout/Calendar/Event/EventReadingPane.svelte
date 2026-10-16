@@ -1,0 +1,129 @@
+<vbox flex class="event-reading-pane lo-card">
+  {#if event}
+    <vbox class="header" style="--event-color: {look.color ?? "var(--lo-accent)"}">
+      <hbox class="calendar-name">
+        <span class="dot" />
+        <span>{$event.calendar?.name ?? ""}</span>
+      </hbox>
+      <h2 class="title" class:muted={look.status == "declined" || look.status == "cancelled"}>{look.title}</h2>
+      {#if $event.isCancelled}
+        <hbox class="notice">{$t`This meeting has been cancelled by the organizer.`}</hbox>
+        <hbox class="buttons">
+          <ResponseButton label={$t`Remove from Calendar`} icon={DeleteIcon}
+            onClick={() => CalendarActions.deleteOccurrence(event)} />
+        </hbox>
+      {:else if $event.isIncomingMeeting}
+        <hbox class="buttons">
+          <ResponseButton label={$t`Accept`} icon={AcceptIcon} classes="accept"
+            pressed={$event.myParticipation == InvitationResponse.Accept}
+            onClick={() => CalendarActions.respond(event, InvitationResponse.Accept)} />
+          <ResponseButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative"
+            pressed={$event.myParticipation == InvitationResponse.Tentative}
+            onClick={() => CalendarActions.respond(event, InvitationResponse.Tentative)} />
+          <ResponseButton label={$t`Decline`} icon={DeclineIcon} classes="decline"
+            pressed={$event.myParticipation == InvitationResponse.Decline}
+            onClick={() => CalendarActions.respond(event, InvitationResponse.Decline)} />
+        </hbox>
+      {/if}
+    </vbox>
+    <vbox class="details">
+      <EventDetails {event} />
+    </vbox>
+    {#if $event.hasDescription}
+      <vbox flex class="body">
+        <WebView html={$event.descriptionHTML} title="" {headHTML} />
+      </vbox>
+    {/if}
+  {:else}
+    <vbox flex class="empty">
+      <CalendarIcon size="48" strokeWidth={1} />
+      <span>{$t`Select an item to read`}</span>
+    </vbox>
+  {/if}
+</vbox>
+
+<script lang="ts">
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { EventLook } from "./EventLook";
+  import { CalendarActions } from "../CalendarActions";
+  import EventDetails from "./EventDetails.svelte";
+  import ResponseButton from "../EditEvent/ResponseButton.svelte";
+  import WebView from "../../../frontend/Shared/WebView.svelte";
+  import cssContent from "../../../frontend/Mail/Message/content.css?inline";
+  import cssBody from "../../../frontend/Mail/Message/content-body.css?inline";
+  import AcceptIcon from "lucide-svelte/icons/check";
+  import TentativeIcon from "lucide-svelte/icons/circle-help";
+  import DeclineIcon from "lucide-svelte/icons/x";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import CalendarIcon from "lucide-svelte/icons/calendar";
+  import { t } from "../../../l10n/l10n";
+
+  export let event: Event | null;
+
+  $: look = event ? new EventLook($event) : null;
+
+  // <copied from="../../../frontend/Calendar/Invitation/InvitationInCalendar.svelte">
+  let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
+  // </copied>
+</script>
+
+<style>
+  .event-reading-pane {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .header {
+    gap: 8px;
+    padding: 16px 20px 12px 20px;
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  .calendar-name {
+    align-items: center;
+    gap: 6px;
+    font-size: var(--lo-font-size-small);
+    color: var(--lo-fg-secondary);
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--event-color);
+  }
+  .title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .title.muted {
+    color: var(--lo-fg-secondary);
+  }
+  .notice {
+    padding: 8px 12px;
+    border-radius: var(--lo-radius-small);
+    background-color: color-mix(in srgb, var(--lo-warning) 15%, var(--lo-pane-bg));
+  }
+  .buttons {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .details {
+    padding: 12px 20px;
+  }
+  .body {
+    min-height: 0;
+    padding: 0 20px 12px 20px;
+    border-block-start: 1px solid var(--lo-divider);
+  }
+  .body > :global(*) {
+    flex: 1 0 0;
+  }
+  .empty {
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--lo-fg-secondary);
+  }
+</style>

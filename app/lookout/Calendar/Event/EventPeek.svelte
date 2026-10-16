@@ -17,45 +17,7 @@
       </button>
     </hbox>
     <div class="title" class:muted={look.status == "declined" || look.status == "cancelled"}>{look.title}</div>
-    <vbox class="details">
-      <hbox class="row">
-        <ClockIcon size="16" />
-        <span>{when}</span>
-      </hbox>
-      {#if recurrence}
-        <hbox class="row">
-          <RecurrenceIcon size="16" />
-          <span>{recurrence}</span>
-        </hbox>
-      {/if}
-      {#if $event.location}
-        <hbox class="row">
-          <LocationIcon size="16" />
-          <span class="wrap">{$event.location}</span>
-        </hbox>
-      {/if}
-      {#if $event.isOnline && $event.onlineMeetingURL}
-        <hbox class="row">
-          <OnlineMeetingIcon size="16" />
-          <button class="peek-button primary join" on:click={onJoin}>{$t`Join`}</button>
-        </hbox>
-      {/if}
-      {#if organizer}
-        <hbox class="row person">
-          <PersonCircle name={organizer.name || organizer.emailAddress} colorKey={organizer.emailAddress} size={24} />
-          <vbox class="person-text">
-            <span class="person-name">{organizer.name || organizer.emailAddress}</span>
-            <span class="secondary">{$t`Organizer`}</span>
-          </vbox>
-        </hbox>
-      {/if}
-      {#if attendeeSummary}
-        <hbox class="row">
-          <AttendeesIcon size="16" />
-          <span>{attendeeSummary}</span>
-        </hbox>
-      {/if}
-    </vbox>
+    <EventDetails {event} />
     {#if $event.isCancelled}
       <hbox class="notice">
         {$t`This meeting has been cancelled by the organizer.`}
@@ -94,22 +56,14 @@
   import { eventPeek, type EventPeek } from "../Selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import Popup from "../../../frontend/Shared/Popup.svelte";
-  import { EventFormInfo } from "../EditEvent/EventFormInfo";
-  import { EventTable } from "../ListView/EventTable";
-  import { openExternalURL } from "../../../logic/util/os-integration";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
-  import ClockIcon from "lucide-svelte/icons/clock-8";
-  import RecurrenceIcon from "lucide-svelte/icons/repeat";
-  import LocationIcon from "lucide-svelte/icons/map-pin";
-  import OnlineMeetingIcon from "lucide-svelte/icons/video";
-  import AttendeesIcon from "lucide-svelte/icons/users-round";
   import OpenIcon from "lucide-svelte/icons/square-pen";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
   import AcceptIcon from "lucide-svelte/icons/check";
   import TentativeIcon from "lucide-svelte/icons/circle-help";
   import DeclineIcon from "lucide-svelte/icons/x";
-  import { getDateTimeLocale, gPlural, t } from "../../../l10n/l10n";
+  import EventDetails from "./EventDetails.svelte";
+  import { t } from "../../../l10n/l10n";
 
   export let peek: EventPeek;
 
@@ -121,10 +75,6 @@
   $: event = peek.event;
   $: look = new EventLook($event);
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;
-  $: when = EventFormInfo.whenText($event, getDateTimeLocale());
-  $: recurrence = isRecurring || $event.recurrenceRule ? EventTable.recurrenceLabel($event.parentEvent ?? $event) : "";
-  $: organizer = $event.participants.hasItems ? $event.organizer : null;
-  $: attendeeSummary = $event.participants.hasItems ? summarizeResponses() : "";
   $: deleteLabel = $event.isCancelled ? $t`Remove from Calendar`
     : $event.isOutgoingMeeting ? $t`Cancel Meeting`
     : isRecurring ? $t`Delete Occurrence`
@@ -142,22 +92,6 @@
   function onDelete() {
     onClose();
     catchErrors(() => CalendarActions.deleteDefault(event));
-  }
-
-  function summarizeResponses(): string {
-    let counts = EventFormInfo.responseCounts($event);
-    let parts = [
-      counts.accepted ? $t`${counts.accepted} accepted` : null,
-      counts.tentative ? $t`${counts.tentative} tentative` : null,
-      counts.declined ? $t`${counts.declined} declined` : null,
-      counts.none ? $t`${counts.none} didn't respond` : null,
-    ].filter(Boolean);
-    let total = counts.accepted + counts.tentative + counts.declined + counts.none;
-    return $t`${total} ${gPlural(total, { one: "attendee", other: "attendees" })}` + (parts.length ? ": " + parts.join(", ") : "");
-  }
-
-  function onJoin() {
-    catchErrors(() => openExternalURL(event.onlineMeetingURL));
   }
 
   function respond(response: InvitationResponseInMessage) {
@@ -231,41 +165,6 @@
   }
   .title.muted {
     color: var(--lo-fg-secondary);
-  }
-  .details {
-    gap: 10px;
-  }
-  .row {
-    align-items: flex-start;
-    gap: 12px;
-    min-width: 0;
-  }
-  .row > :global(svg) {
-    flex: none;
-    margin-block-start: 2px;
-    color: var(--lo-fg-secondary);
-  }
-  .wrap {
-    overflow-wrap: anywhere;
-  }
-  .person {
-    align-items: center;
-    gap: 8px;
-  }
-  .person-text {
-    min-width: 0;
-  }
-  .person-name {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .secondary {
-    color: var(--lo-fg-secondary);
-    font-size: var(--lo-font-size-small);
-  }
-  .join {
-    height: 28px;
   }
   .notice {
     margin-block-start: 12px;

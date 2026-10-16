@@ -20,26 +20,32 @@
         <hbox class="divider" />
         <CalendarList />
       </vbox>
-      <vbox flex class="main lo-card" slot="right">
-        {#if tableEvents}
-          <EventTable events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
-            showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
-        {:else}
-          <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
-          <vbox flex class="grid-area">
-            {#if view == "month"}
-              <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
-            {:else if view == "schedule"}
-              <ScheduleView {range} rows={scheduleRows} {timeScale} />
+      <hbox flex class="main-area" slot="right">
+        <ReadingPaneLayout position={$readingPaneSetting.value ?? ReadingPanePosition.Off}
+          name="lookout.calendar.readingPane" readingRatio={0.6}>
+          <vbox flex class="main lo-card" slot="list">
+            {#if tableEvents}
+              <EventTable events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
+                showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
             {:else}
-              <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
-            {/if}
-            {#if view != "schedule"}
-              <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+              <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
+              <vbox flex class="grid-area">
+                {#if view == "month"}
+                  <MonthGrid {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
+                {:else if view == "schedule"}
+                  <ScheduleView {range} rows={scheduleRows} {timeScale} />
+                {:else}
+                  <TimeGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
+                {/if}
+                {#if view != "schedule"}
+                  <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+                {/if}
+              </vbox>
             {/if}
           </vbox>
-        {/if}
-      </vbox>
+          <EventReadingPane slot="reading" event={$selectedEvent} />
+        </ReadingPaneLayout>
+      </hbox>
     </Splitter>
   </hbox>
 
@@ -80,6 +86,9 @@
   import ScheduleView from "./ScheduleView/ScheduleView.svelte";
   import EventContextMenu from "./Event/EventContextMenu.svelte";
   import EventPeek from "./Event/EventPeek.svelte";
+  import EventReadingPane from "./Event/EventReadingPane.svelte";
+  import ReadingPaneLayout from "../Mail/ReadingPaneLayout.svelte";
+  import { ReadingPanePosition } from "../Mail/MailView";
   import SlotContextMenu from "./View/SlotContextMenu.svelte";
   import GoToDateDialog from "./View/GoToDateDialog.svelte";
   import AdjacentEventTabs from "./View/AdjacentEventTabs.svelte";
@@ -104,6 +113,7 @@
   $: showWeekNumbers = $weekNumbersSetting.value;
   $: showDeclined = $showDeclinedSetting.value;
   const splitViewSetting = CalendarSettings.splitView;
+  const readingPaneSetting = CalendarSettings.readingPane;
   $: splitView = $splitViewSetting.value;
   const folderPaneSetting = CalendarSettings.folderPane;
   $: showFolderPane = ($folderPaneSetting.value ?? CalendarFolderPane.Normal) == CalendarFolderPane.Normal;
@@ -193,6 +203,7 @@
 
   function resetView() {
     CalendarSettings.folderPane.value = CalendarFolderPane.Normal;
+    CalendarSettings.readingPane.value = ReadingPanePosition.Off;
     setCurrentView(CalendarCurrentView.Calendar);
     setView("workweek");
     setSplitView(false);
@@ -372,10 +383,13 @@
     position: relative;
     min-height: 0;
   }
+  .main-area {
+    min-width: 0;
+    min-height: 0;
+  }
   .main {
     min-width: 0;
     min-height: 0;
-    margin: 0 8px 8px 0;
     overflow: hidden;
   }
 </style>
