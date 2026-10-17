@@ -106,20 +106,17 @@
   export let label: string = null;
   export let single = false;
   export let title: string = null;
-  export let fields: SelectNamesField[] = null;
-  export let onOK: () => void = null;
-  export let onCancel: () => void = null;
 
   const dispatch = createEventDispatcher<{ ok: void, close: void }>();
 
-  const shownFields = fields ?? (mail
+  const shownFields = mail
     ? [
       new SelectNamesField(gt`To`, mail.to.contents),
       new SelectNamesField(gt`Cc`, mail.cc.contents),
       new SelectNamesField(gt`Bcc`, mail.bcc.contents),
     ]
-    : [new SelectNamesField(label, persons?.contents ?? [], single)]);
-  const defaultPick = mail && !fields
+    : [new SelectNamesField(label, persons?.contents ?? [], single)];
+  const defaultPick = mail
     ? shownFields[[RecipientField.To, RecipientField.Cc, RecipientField.Bcc].indexOf(defaultField)]
     : shownFields[0];
 
@@ -177,20 +174,18 @@
   }
 
   function onOKClicked() {
-    if (mail && !fields) {
+    if (mail) {
       mail.to.replaceAll(shownFields[0].picks.contents);
       mail.cc.replaceAll(shownFields[1].picks.contents);
       mail.bcc.replaceAll(shownFields[2].picks.contents);
     } else if (persons) {
       persons.replaceAll(shownFields[0].picks.contents);
     }
-    onOK?.();
     dispatch("ok");
     dispatch("close");
   }
 
   function onCancelClicked() {
-    onCancel?.();
     dispatch("close");
   }
 </script>

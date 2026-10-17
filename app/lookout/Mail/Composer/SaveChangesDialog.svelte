@@ -17,12 +17,10 @@
   export let onYes: () => Promise<void>;
   export let yesDisabled: string | null = null;
   export let onNo: () => Promise<void>;
-  export let onCancel: () => void = null;
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
   function onClose() {
-    onCancel?.();
     dispatch("close");
   }
 </script>

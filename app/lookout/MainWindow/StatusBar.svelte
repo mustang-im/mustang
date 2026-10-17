@@ -1,18 +1,18 @@
 <hbox class="status-bar" role="status">
   <hbox class="side left">
-    {#each shown?.left ?? [] as item}
+    {#each $statusBarContent?.left ?? [] as item}
       <StatusBarEntry {item} />
     {/each}
   </hbox>
   <hbox flex class="spacer" />
   <hbox class="side right">
-    {#each shown?.right ?? [] as item}
+    {#each $statusBarContent?.right ?? [] as item}
       <StatusBarEntry {item} />
     {/each}
   </hbox>
-  {#if shown?.views?.length}
+  {#if $statusBarContent?.views?.length}
     <hbox class="views" role="group">
-      {#each shown.views as view (view.label)}
+      {#each $statusBarContent.views as view (view.label)}
         <button type="button" class="view" class:active={view.isActive}
           title={view.label} aria-label={view.label} aria-pressed={view.isActive}
           on:click={view.onClick}>
@@ -50,12 +50,7 @@
 </script>
 
 <script lang="ts">
-  import { statusBar } from "./StatusBar";
   import StatusBarEntry from "./StatusBarEntry.svelte";
-
-  const sections = statusBar.sections;
-  $: section = $sections.last;
-  $: shown = $statusBarContent ?? $section;
 </script>
 
 <style>

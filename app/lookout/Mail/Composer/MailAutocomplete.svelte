@@ -68,9 +68,7 @@
   import { appGlobal } from "../../../logic/app";
   import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
 
-  export let addresses: ArrayColl<PersonUID> = null;
-  export let recipients: ArrayColl<PersonUID> = null;
-  $: addresses = recipients ?? addresses;
+  export let addresses: ArrayColl<PersonUID>;
   export let label: string;
   export let chips = false;
   export let disabled = false;

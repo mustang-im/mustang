@@ -85,7 +85,6 @@
   import { t } from "../../../l10n/l10n";
 
   export let identity: MailIdentity = null;
-  export let onDone: () => void = null;
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -132,12 +131,10 @@
 
   async function onOK() {
     await signatureEdits.saveAll();
-    onDone?.();
     dispatch("close");
   }
 
   function onCancel() {
-    onDone?.();
     dispatch("close");
   }
 </script>

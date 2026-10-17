@@ -55,7 +55,6 @@
   import { t } from "../../../l10n/l10n";
 
   export let editor: Editor;
-  export let onDone: () => void = null;
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -95,7 +94,6 @@
   }
 
   function close() {
-    onDone?.();
     dispatch("close");
   }
 </script>
