@@ -1,4 +1,4 @@
-<MenuItem label={$t`Mark as Junk`} icon={JunkIcon}
+<MenuItem label={$t`Mark as Junk`} icon={JunkIcon} shortCutInfo="Ctrl+J"
   tooltip={$t`Move to the Junk folder, and train the junk filter`}
   disabled={allJunk && $t`The selected messages are already junk`}
   onClick={() => MessageActions.junk(messages, true)} />

@@ -9,6 +9,7 @@ export enum MailKeyAction {
   Archive = "archive",
   MarkRead = "mark-read",
   MarkUnread = "mark-unread",
+  MarkJunk = "mark-junk",
   ToggleFlag = "toggle-flag",
   MoveToFolder = "move-to-folder",
   CopyToFolder = "copy-to-folder",
@@ -30,6 +31,7 @@ export enum MailKeyAction {
 
 export interface KeyPress {
   key: string;
+  code?: string;
   ctrlKey?: boolean;
   metaKey?: boolean;
   shiftKey?: boolean;
@@ -43,9 +45,11 @@ export class MailKeys {
     let shift = !!event.shiftKey;
     let alt = !!event.altKey;
     if (ctrl && alt && !shift) {
-      switch (key) {
+      let letter = event.code?.startsWith("Key") ? event.code.slice(3).toLowerCase() : key;
+      switch (letter) {
         case "f": return MailKeyAction.ForwardAsAttachment;
         case "j": return MailKeyAction.NotJunk;
+        case "u": return MailKeyAction.MarkRead;
         case "k": return MailKeyAction.ScopeCurrentFolder;
         case "a": return MailKeyAction.ScopeAllAccounts;
       }
@@ -75,6 +79,7 @@ export class MailKeys {
         case "d": return MailKeyAction.Delete;
         case "q": return event.ctrlKey ? MailKeyAction.MarkRead : null;
         case "u": return MailKeyAction.MarkUnread;
+        case "j": return MailKeyAction.MarkJunk;
         case "m": return event.ctrlKey ? MailKeyAction.SendReceiveAll : null;
         case "e": return MailKeyAction.Search;
         case "y": return MailKeyAction.GoToFolder;

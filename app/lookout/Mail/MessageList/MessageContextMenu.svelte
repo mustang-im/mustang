@@ -15,7 +15,7 @@
   <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo="Ctrl+U"
     onClick={() => MessageActions.markRead(messages, false)} />
 {:else}
-  <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo="Ctrl+Q"
+  <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo="Ctrl+Alt+U"
     onClick={() => MessageActions.markRead(messages, true)} />
 {/if}
 <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>

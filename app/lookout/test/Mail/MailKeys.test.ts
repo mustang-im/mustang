@@ -23,6 +23,16 @@ test("Delete, archive, read state, flag", () => {
   expect(MailKeys.actionFor({ key: "j", ctrlKey: true, altKey: true })).toBe(MailKeyAction.NotJunk);
 });
 
+test("Mustang keys for junk and read: Ctrl+J junk, Ctrl+Alt reverses (like Outlook's Ctrl+Alt+J)", () => {
+  expect(MailKeys.actionFor({ key: "j", ctrlKey: true })).toBe(MailKeyAction.MarkJunk);
+  expect(MailKeys.actionFor({ key: "j", metaKey: true })).toBe(MailKeyAction.MarkJunk);
+  expect(MailKeys.actionFor({ key: "u", ctrlKey: true, altKey: true })).toBe(MailKeyAction.MarkRead);
+  expect(MailKeys.actionFor({ key: "u", metaKey: true, altKey: true })).toBe(MailKeyAction.MarkRead);
+  // AltGr layouts: Ctrl+Alt+U types another character, the physical key counts
+  expect(MailKeys.actionFor({ key: "€", code: "KeyU", ctrlKey: true, altKey: true })).toBe(MailKeyAction.MarkRead);
+  expect(MailKeys.actionFor({ key: "ĵ", code: "KeyJ", ctrlKey: true, altKey: true })).toBe(MailKeyAction.NotJunk);
+});
+
 test("Folders, sync, search, navigation", () => {
   expect(MailKeys.actionFor({ key: "V", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.MoveToFolder);
   expect(MailKeys.actionFor({ key: "Y", ctrlKey: true, shiftKey: true })).toBe(MailKeyAction.CopyToFolder);

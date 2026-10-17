@@ -69,7 +69,7 @@
     <RibbonButton label={$t`Unread/ Read`} icon={shouldMarkRead ? ReadIcon : UnreadIcon} size="small"
       tooltip={shouldMarkRead ? $t`Mark as Read` : $t`Mark as Unread`}
       onClick={() => MessageActions.toggleRead(messages)}
-      disabled={noSelection} shortCutInfo={shouldMarkRead ? "Ctrl+Q" : "Ctrl+U"} />
+      disabled={noSelection} shortCutInfo={shouldMarkRead ? "Ctrl+Alt+U" : "Ctrl+U"} />
     <RibbonMenuButton label={$t`Categorize`} icon={CategorizeIcon} size="small" disabled={noSelection}>
       <CategorizeMenuItems {messages} />
     </RibbonMenuButton>

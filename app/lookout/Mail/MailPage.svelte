@@ -450,6 +450,8 @@
         return await MessageActions.markRead(messages, false);
       case MailKeyAction.ToggleFlag:
         return await MessageActions.toggleFlag(messages);
+      case MailKeyAction.MarkJunk:
+        return await MessageActions.junk(messages, true);
       case MailKeyAction.NotJunk:
         return await MessageActions.junk(messages, false);
       case MailKeyAction.MoveToFolder:
