@@ -1,4 +1,4 @@
-<CollapsibleHeader {label} {tooltip} {collapsed} large={!!account}
+<CollapsibleHeader label={account ? $account.name : label} tooltip={account ? $account.emailAddress : tooltip} {collapsed} large={!!account}
   onToggle={() => MailView.setSectionCollapsed(id, !collapsed)}
   on:contextmenu={onContextMenu}>
   {#if account && $account.fatalError}
@@ -22,7 +22,7 @@
   import ErrorIcon from "lucide-svelte/icons/circle-alert";
 
   export let id: string;
-  export let label: string;
+  export let label: string = null;
   export let tooltip: string = null;
   export let account: MailAccount = null;
 

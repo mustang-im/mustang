@@ -16,7 +16,7 @@
       {/if}
     {/if}
     {#each accountTrees as account (account.id)}
-      <SectionHeader id={account.id} label={account.name} tooltip={account.emailAddress} {account} />
+      <SectionHeader id={account.id} {account} />
       {#if !isCollapsed(account.id, $collapsedIDs)}
         <AccountFolders {account} />
       {/if}
