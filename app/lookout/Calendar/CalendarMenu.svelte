@@ -27,10 +27,10 @@
     <MenuDivider />
     <MenuItem label={$t`Move Up`} icon={MoveUpIcon}
       disabled={!groups.canMove(calendar, -1)}
-      onClick={() => { CalendarGroups.order.value = groups.orderAfterMove(calendar, -1); }} />
+      onClick={() => { order.value = groups.orderAfterMove(calendar, -1); }} />
     <MenuItem label={$t`Move Down`} icon={MoveDownIcon}
       disabled={!groups.canMove(calendar, 1)}
-      onClick={() => { CalendarGroups.order.value = groups.orderAfterMove(calendar, 1); }} />
+      onClick={() => { order.value = groups.orderAfterMove(calendar, 1); }} />
     <MenuDivider />
     <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
       onClick={() => $openCalendarProperties = { calendar, tab: "general" }} />
@@ -74,6 +74,7 @@
   let renamingCalendar: Calendar | null = null;
   let groups: CalendarGroups;
   const splitView = getLocalStorage<boolean>("lookout.calendar.splitView", false);
+  const order = getLocalStorage<string[]>("lookout.calendar.order", []);
 
   function toggleOverlay() {
     splitView.value = !splitView.value;
@@ -97,7 +98,7 @@
   export function openFor(event: MouseEvent, forCalendar: Calendar) {
     event.preventDefault();
     calendar = forCalendar;
-    groups = new CalendarGroups(appGlobal.calendars.contents, CalendarGroups.order.value);
+    groups = new CalendarGroups(appGlobal.calendars.contents, order.value);
     contextMenu.onContextMenu(event);
   }
 </script>

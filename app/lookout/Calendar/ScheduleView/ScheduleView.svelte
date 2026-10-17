@@ -41,9 +41,8 @@
   import type { CalendarColumnGroup } from "../DayView/DayViewGrid.svelte";
   import type { CalendarRange } from "../View/CalendarRange";
   import { ScheduleLayout } from "./ScheduleLayout";
-  import { TimeZoneRuler } from "../TimeZones";
   import { WorkingHours } from "../View/WorkingHours";
-  import { now, eventPeek } from "../selected";
+  import { now, eventPeek, timeZoneRulers } from "../selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";
   import { t } from "../../../l10n/l10n";
@@ -60,11 +59,10 @@
   const kSlotWidth = 56;
   const kRulerHeight = 52;
   const hours = Array.from({ length: 24 }, (_, hour) => hour);
-  const rulerSettings = TimeZoneRuler.rulers;
 
   let scrollEl: HTMLDivElement;
 
-  $: rulers = $rulerSettings;
+  $: rulers = $timeZoneRulers;
   $: pxPerHour = kSlotWidth * 60 / timeScale;
   $: dayWidth = pxPerHour * 24;
   $: trackWidth = dayWidth * range.days.length;

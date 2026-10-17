@@ -69,8 +69,7 @@
   import { TimeColumnLayout } from "./DayColumn";
   import { EventLook } from "../Event/EventLook";
   import { WorkingHours } from "../View/WorkingHours";
-  import { TimeZoneRuler } from "../TimeZones";
-  import { now, eventPeek } from "../selected";
+  import { now, eventPeek, timeZoneRulers } from "../selected";
   import { selectedDate, shownWorkHours } from "../../../frontend/Calendar/selected";
   import DayHeader from "./DayHeader.svelte";
   import AllDayEvents from "./AllDayEvents.svelte";
@@ -91,7 +90,6 @@
   $: timeScale = $timeScaleSetting.value;
   const kSlotHeight = 24;
   const kRulerWidth = 56;
-  const rulerSettings = TimeZoneRuler.rulers;
   const shownWorkingHours = WorkingHours.ofAll(shownWorkHours);
 
   let scrollEl: HTMLDivElement;
@@ -102,7 +100,7 @@
   $: isSplit = groups.length > 1;
   $: pxPerMinute = kSlotHeight / timeScale;
   $: showsToday = range.contains($now);
-  $: rulers = $rulerSettings;
+  $: rulers = $timeZoneRulers;
   $: showsZoneLabels = rulers.length > 1 || !!rulers[0]?.label;
   $: rulerLabels = rulers.map(ruler => ruler.hourLabels(range.days[0]));
   $: textContext = rulersEl ? textContextOf(rulersEl) : null;

@@ -7,7 +7,9 @@ import { k1MinuteMS } from "../../frontend/Util/date";
 import { EventTable } from "./ListView/EventTable";
 import { appGlobal } from "../../logic/app";
 import { mergeColls, type Collection } from "svelte-collections";
-import { readable, writable } from "svelte/store";
+import { TimeZoneRuler } from "./TimeZones";
+import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+import { derived, readable, writable, type Readable } from "svelte/store";
 
 export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule" | "dual";
 
@@ -61,6 +63,7 @@ export interface EventPeek {
 }
 
 export const selectedSlots = writable<SlotSelection | null>(null);
+export const updatingCount = writable(0);
 export const eventPeek = writable<EventPeek | null>(null);
 export const inlineTitle = writable<string | null>(null);
 // <copied from="../../frontend/Calendar/CurrentTimeMarker.svelte">
@@ -84,3 +87,16 @@ export interface CalendarMenus {
   openSlotMenu(mouseEvent: MouseEvent, slots: SlotSelection): void;
 }
 export const kCalendarMenus = "lookout-calendar-menus";
+
+export const timeZoneRulers: Readable<TimeZoneRuler[]> = derived([
+  getLocalStorage<string>("lookout.calendar.timeZone.label", ""),
+  getLocalStorage<boolean>("lookout.calendar.timeZone2.shown", false),
+  getLocalStorage<string>("lookout.calendar.timeZone2.label", ""),
+  getLocalStorage<string>("lookout.calendar.timeZone2.zone", "Etc/UTC"),
+  getLocalStorage<boolean>("lookout.calendar.timeZone3.shown", false),
+  getLocalStorage<string>("lookout.calendar.timeZone3.label", ""),
+  getLocalStorage<string>("lookout.calendar.timeZone3.zone", "Etc/UTC"),
+], ([label, secondShown, secondLabel, secondZone, thirdShown, thirdLabel, thirdZone]) => TimeZoneRuler.ofZones(label.value, [
+  { shown: thirdShown.value, zone: thirdZone.value, label: thirdLabel.value },
+  { shown: secondShown.value, zone: secondZone.value, label: secondLabel.value },
+]));

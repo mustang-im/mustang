@@ -1,6 +1,5 @@
 import type { Calendar } from "../../../logic/Calendar/Calendar";
 import type { Account } from "../../../logic/Abstract/Account";
-import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { gt } from "../../../l10n/l10n";
 
 export class CalendarGroup {
@@ -16,7 +15,6 @@ export class CalendarGroup {
 }
 
 export class CalendarGroups {
-  static readonly order = getLocalStorage<string[]>("lookout.calendar.order", []);
   readonly groups: CalendarGroup[];
 
   constructor(calendars: Calendar[], order: string[] = []) {

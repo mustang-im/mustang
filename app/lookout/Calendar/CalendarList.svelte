@@ -34,6 +34,7 @@
   import { CalendarGroups, type CalendarGroup } from "./FolderPane/CalendarGroups";
   import { selectedCalendar, shownCalendars } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import CalendarListItem from "./CalendarListItem.svelte";
   import CheckBox from "../Shared/Form/CheckBox.svelte";
   import CalendarMenu from "./CalendarMenu.svelte";
@@ -43,7 +44,7 @@
   let calendars = appGlobal.calendars;
   let contextMenu: CalendarMenu;
 
-  const order = CalendarGroups.order;
+  const order = getLocalStorage<string[]>("lookout.calendar.order", []);
   $: groups = new CalendarGroups($calendars.contents, $order.value).groups;
 
   let collapsed = new Set<string>();

@@ -111,7 +111,7 @@
   import { openComposer } from "../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
@@ -218,7 +218,6 @@
     : null;
   $: tableEvents = searchResults ?? listEvents;
 
-  const updatingCount = CalendarActions.updatingCount;
   let status: StatusBarContent;
   $: status = {
     left: [ { label: $t`Items: ${tableEvents ? $tableEvents.length : $eventsInRange.length}` } ],

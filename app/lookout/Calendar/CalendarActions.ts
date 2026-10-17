@@ -2,7 +2,7 @@ import type { Event } from "../../logic/Calendar/Event";
 import type { Calendar } from "../../logic/Calendar/Calendar";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedDate, selectedEvent, startDate } from "../../frontend/Calendar/selected";
-import { inlineTitle, selectedSlots, workWeekHours, type CalendarViewType, type SlotSelection } from "./selected";
+import { inlineTitle, selectedSlots, updatingCount, workWeekHours, type CalendarViewType, type SlotSelection } from "./selected";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { CalendarRange } from "./View/CalendarRange";
 import { WorkingHours } from "./View/WorkingHours";
@@ -15,12 +15,11 @@ import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
 import { catchErrors } from "../../frontend/Util/error";
 import { gt } from "../../l10n/l10n";
-import { get, writable } from "svelte/store";
+import { get } from "svelte/store";
 
 export type NewEventKind = "appointment" | "meeting" | "all-day" | "recurring" | "recurring-meeting" | "online-meeting";
 
 export class CalendarActions {
-  static readonly updatingCount = writable(0);
 
   static newEvent(calendar: Calendar | null, start: Date, end: Date | null, kind: NewEventKind = "appointment") {
     calendar ??= get(selectedCalendar) ?? appGlobal.calendars.first;
@@ -184,11 +183,11 @@ export class CalendarActions {
   }
 
   static async update(calendars: Calendar[]) {
-    CalendarActions.updatingCount.update(count => count + 1);
+    updatingCount.update(count => count + 1);
     try {
       await Promise.all(calendars.map(calendar => calendar.listEvents()));
     } finally {
-      CalendarActions.updatingCount.update(count => count - 1);
+      updatingCount.update(count => count - 1);
     }
   }
 

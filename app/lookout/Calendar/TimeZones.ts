@@ -1,9 +1,7 @@
 import { HourLabel } from "./TimeGrid/HourLabel";
-import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { WindowsToIANATimezone } from "../../logic/Calendar/ICal/WindowsTimezone";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { logError } from "../../frontend/Util/error";
-import { derived, type Readable } from "svelte/store";
 
 export class ZoneClock {
   readonly zone: string | undefined;
@@ -133,18 +131,6 @@ export class TimeZoneRuler {
     return rulers;
   }
 
-  static readonly rulers: Readable<TimeZoneRuler[]> = derived([
-    getLocalStorage<string>("lookout.calendar.timeZone.label", ""),
-    getLocalStorage<boolean>("lookout.calendar.timeZone2.shown", false),
-    getLocalStorage<string>("lookout.calendar.timeZone2.label", ""),
-    getLocalStorage<string>("lookout.calendar.timeZone2.zone", "Etc/UTC"),
-    getLocalStorage<boolean>("lookout.calendar.timeZone3.shown", false),
-    getLocalStorage<string>("lookout.calendar.timeZone3.label", ""),
-    getLocalStorage<string>("lookout.calendar.timeZone3.zone", "Etc/UTC"),
-  ], ([label, secondShown, secondLabel, secondZone, thirdShown, thirdLabel, thirdZone]) => TimeZoneRuler.ofZones(label.value, [
-    { shown: thirdShown.value, zone: thirdZone.value, label: thirdLabel.value },
-    { shown: secondShown.value, zone: secondZone.value, label: secondLabel.value },
-  ]));
 }
 
 export class TimeZoneChoice {
