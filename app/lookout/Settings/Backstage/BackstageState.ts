@@ -1,21 +1,13 @@
-import { Observable, notifyChangedProperty } from "../../../logic/util/Observable";
+import { backstagePage, isBackstageOpen, type BackstagePage } from "./selected";
+import { derived } from "svelte/store";
 
-export type BackstagePage = "info" | "open-export" | "print" | "account";
-
-export class BackstageState extends Observable {
-  @notifyChangedProperty
-  isOpen = false;
-  @notifyChangedProperty
-  page: BackstagePage = "info";
-
+export const backstageState = {
+  subscribe: derived([isBackstageOpen, backstagePage], ([isOpen, page]) => ({ isOpen, page })).subscribe,
   open(page: BackstagePage = "info") {
-    this.page = page;
-    this.isOpen = true;
-  }
-
+    backstagePage.set(page);
+    isBackstageOpen.set(true);
+  },
   close() {
-    this.isOpen = false;
-  }
-}
-
-export const backstageState = new BackstageState();
+    isBackstageOpen.set(false);
+  },
+};

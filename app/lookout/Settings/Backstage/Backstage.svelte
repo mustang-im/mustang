@@ -3,13 +3,13 @@
     <button class="nav-item back" title={$t`Back`} aria-label={$t`Back`} on:click={onBack}>
       <BackIcon size="20" />
     </button>
-    <button class="nav-item" class:selected={$backstageState.page == "info"}
-      on:click={() => backstageState.open("info")}>
+    <button class="nav-item" class:selected={$backstagePage == "info"}
+      on:click={() => $backstagePage = "info"}>
       <InfoIcon size="18" />
       <hbox class="label">{$t`Info`}</hbox>
     </button>
-    <button class="nav-item" class:selected={$backstageState.page == "open-export"}
-      on:click={() => backstageState.open("open-export")}>
+    <button class="nav-item" class:selected={$backstagePage == "open-export"}
+      on:click={() => $backstagePage = "open-export"}>
       <OpenExportIcon size="18" />
       <hbox class="label">{$t`Open & Export`}</hbox>
     </button>
@@ -25,8 +25,8 @@
         <SaveAttachmentsIcon size="18" />
         <hbox class="label">{$t`Save Attachments`}</hbox>
       </button>
-      <button class="nav-item" class:selected={$backstageState.page == "print"}
-        on:click={() => backstageState.open("print")}>
+      <button class="nav-item" class:selected={$backstagePage == "print"}
+        on:click={() => $backstagePage = "print"}>
         <PrintIcon size="18" />
         <hbox class="label">{$t`Print`}</hbox>
       </button>
@@ -42,8 +42,8 @@
       </button>
     {/if}
     <vbox flex class="spacer" />
-    <button class="nav-item" class:selected={$backstageState.page == "account"}
-      on:click={() => backstageState.open("account")}>
+    <button class="nav-item" class:selected={$backstagePage == "account"}
+      on:click={() => $backstagePage = "account"}>
       <AccountIcon size="18" />
       <hbox class="label">{appName}</hbox>
     </button>
@@ -57,13 +57,13 @@
     </button>
   </vbox>
   <vbox flex class="backstage-page">
-    {#if $backstageState.page == "info"}
+    {#if $backstagePage == "info"}
       <InfoPage />
-    {:else if $backstageState.page == "open-export"}
+    {:else if $backstagePage == "open-export"}
       <OpenExportPage />
-    {:else if $backstageState.page == "print" && area == "mail"}
+    {:else if $backstagePage == "print" && area == "mail"}
       <PrintPage />
-    {:else if $backstageState.page == "account"}
+    {:else if $backstagePage == "account"}
       <ProductAccountPage />
     {/if}
   </vbox>
@@ -74,7 +74,7 @@
 <svelte:window on:keydown={onKeyDown} />
 
 <script lang="ts">
-  import { backstageState } from "./BackstageState";
+  import { backstagePage, isBackstageOpen } from "./selected";
   import { SettingsDialogs } from "../SettingsDialogs";
   import InfoPage from "./InfoPage.svelte";
   import OpenExportPage from "./OpenExportPage.svelte";
@@ -144,7 +144,7 @@
   }
 
   function onBack() {
-    backstageState.close();
+    $isBackstageOpen = false;
   }
 
   function onExit() {
@@ -153,7 +153,7 @@
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key == "Escape" && !event.defaultPrevented) {
-      backstageState.close();
+      $isBackstageOpen = false;
     }
   }
 </script>
