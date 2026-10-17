@@ -26,7 +26,7 @@
       {#each shownMonth.shownWeeks(i == 0, i == months.length - 1) as week}
         {#if showWeekNumbers}
           <button class="week-number" title={$t`Show this week`}
-            on:click={() => onSelectWeek(firstDay(week))}>{WeekNumber.of(firstDay(week))}</button>
+            on:click={() => onSelectWeek(firstDay(week))}>{getWeekNumber(firstDay(week))}</button>
         {/if}
         {#each week as day}
           {#if day}
@@ -66,7 +66,7 @@
   import type { CalendarRange } from "./View/CalendarRange";
   import { DateNavigatorMonth } from "./FolderPane/DateNavigatorMonth";
   import { now } from "./selected";
-  import { WeekNumber } from "../Util/date";
+  import { getWeekNumber } from "../Util/date";
   import { shownCalendarEvents } from "../../frontend/Calendar/selected";
   import Menu from "../Shared/Menu/Menu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";

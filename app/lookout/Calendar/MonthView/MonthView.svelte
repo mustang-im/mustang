@@ -12,7 +12,7 @@
   {#each range.weeks as week, weekIndex (week[0].getTime())}
     <hbox flex class="week-row">
       {#if showWeekNumbers}
-        <div class="week-number" title={$t`Week ${WeekNumber.of(week[0])}`}>{WeekNumber.of(week[0])}</div>
+        <div class="week-number" title={$t`Week ${getWeekNumber(week[0])}`}>{getWeekNumber(week[0])}</div>
       {/if}
       <WeekRow days={week} {weekIndex} {range} events={inRange} {onOpenDay} />
     </hbox>
@@ -22,7 +22,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { CalendarRange } from "../View/CalendarRange";
-  import { WeekNumber } from "../../Util/date";
+  import { getWeekNumber } from "../../Util/date";
   import WeekRow from "./WeekRow.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { Collection } from "svelte-collections";

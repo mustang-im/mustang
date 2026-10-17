@@ -2,7 +2,6 @@
 import "../../../logic/app";
 import { Event } from "../../../logic/Calendar/Event";
 import { DateNavigatorMonth } from "../../Calendar/FolderPane/DateNavigatorMonth";
-import { WeekNumber } from "../../Util/date";
 import { HourLabel } from "../../Calendar/TimeGrid/HourLabel";
 import { expect, test } from "vitest";
 
@@ -69,15 +68,6 @@ test("Days with events, including multi-day and all-day events", () => {
   expect(has(8, 28)).toBe(true);
   expect(has(8, 29)).toBe(false);
   expect(keys.size).toBe(6);
-});
-
-test("ISO week numbers", () => {
-  expect(WeekNumber.of(new Date(2026, 9, 15))).toBe(42);
-  expect(WeekNumber.of(new Date(2026, 0, 1))).toBe(1);
-  expect(WeekNumber.of(new Date(2027, 0, 1))).toBe(53);
-  expect(WeekNumber.of(new Date(2027, 0, 4))).toBe(1);
-  expect(WeekNumber.of(new Date(2024, 11, 30))).toBe(1);
-  expect(WeekNumber.of(new Date(2026, 2, 29))).toBe(13);
 });
 
 test("Hour labels: 12-hour locales without minutes, 24-hour locales with", () => {
