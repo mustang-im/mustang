@@ -13,16 +13,16 @@
 {/if}
 {#if allRead}
   <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo="Ctrl+U"
-    onClick={async () => { await Promise.all(messages.map(message => message.markRead(false))); }} />
+    onClick={async () => { await Promise.all(messages.contents.map(message => message.markRead(false))); }} />
 {:else}
   <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo="Ctrl+Alt+U"
-    onClick={async () => { await Promise.all(messages.map(message => message.markRead(true))); }} />
+    onClick={async () => { await Promise.all(messages.contents.map(message => message.markRead(true))); }} />
 {/if}
 <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
-  <CategorizeMenuItems {messages} />
+  <CategorizeMenuItems messages={messages.contents} />
 </SubMenu>
 <SubMenu label={$t`Follow Up`} icon={FlagIcon}>
-  <FollowUpMenuItems {messages} />
+  <FollowUpMenuItems messages={messages.contents} />
 </SubMenu>
 <MenuDivider />
 {#if single}
@@ -34,16 +34,16 @@
   </SubMenu>
 {/if}
 <SubMenu label={$t`Move`} icon={MoveIcon}>
-  <MoveMenuItems {messages} />
+  <MoveMenuItems messages={messages.contents} />
 </SubMenu>
 <MenuDivider />
 <SubMenu label={$t`Junk`} icon={JunkIcon}>
-  <JunkMenuItems {messages} />
+  <JunkMenuItems messages={messages.contents} />
 </SubMenu>
 <MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Del"
-  onClick={async () => { await Promise.all(messages.map(message => message.deleteMessage())); }} />
+  onClick={async () => { await Promise.all(messages.contents.map(message => message.deleteMessage())); }} />
 <MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo="Backspace"
-  onClick={() => MessageActions.archive(messages)} />
+  onClick={() => MessageActions.archive(messages.contents)} />
 {#if single}
   <MenuDivider />
   <MenuItem label={$t`Save As…`} icon={SaveIcon}
@@ -81,12 +81,13 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let messages: EMail[];
+  export let messages: Collection<EMail>;
 
   const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
 
-  $: single = messages.length == 1 ? messages[0] : null;
-  $: allRead = messages.length > 0 && messages.every(message => message.isRead);
+  $: single = messages.length == 1 ? messages.first : null;
+  $: allRead = messages.hasItems && messages.contents.every(message => message.isRead);
 </script>

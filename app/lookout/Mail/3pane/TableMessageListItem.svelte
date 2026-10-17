@@ -15,6 +15,7 @@
   on:click
   on:dblclick
   on:contextmenu
+  on:contextmenu={onContextMenu}
   >
   <div class="cells">
     {#each columns as column (column)}
@@ -89,6 +90,9 @@
     </div>
   {/if}
 </div>
+<ContextMenu bind:this={contextMenu}>
+  <MessageMenu messages={menuMessages} />
+</ContextMenu>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -111,6 +115,10 @@
   import DraftIcon from "lucide-svelte/icons/square-pen";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { selectedMessages } from "../../../frontend/Mail/Selected";
+  import MessageMenu from "../Message/MessageMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
+  import { ArrayColl, type Collection } from "svelte-collections";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
@@ -154,6 +162,15 @@
     : $message.isForwarded ? $t`Forwarded`
     : $message.isReplied ? $t`Replied`
     : $message.isRead ? $t`Read` : $t`Unread`;
+
+  // <copied to="../Vertical/VerticalMessageListItem.svelte">
+  let contextMenu: ContextMenu;
+  let menuMessages: Collection<EMail> = new ArrayColl<EMail>();
+  function onContextMenu(event: MouseEvent) {
+    menuMessages = new ArrayColl($selectedMessages?.contains(message) ? $selectedMessages.contents : [message]);
+    contextMenu.onContextMenu(event);
+  }
+  // </copied>
 </script>
 
 <style>

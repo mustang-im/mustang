@@ -16,6 +16,7 @@
   on:click
   on:dblclick
   on:contextmenu
+  on:contextmenu={onContextMenu}
   >
   <hbox class="line first-line">
     {#if threadSize > 1}
@@ -117,6 +118,9 @@
     </hbox>
   {/if}
 </div>
+<ContextMenu bind:this={contextMenu}>
+  <MessageMenu messages={menuMessages} />
+</ContextMenu>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -141,6 +145,10 @@
   import ForwardedIcon from "lucide-svelte/icons/forward";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { selectedMessages } from "../../../frontend/Mail/Selected";
+  import MessageMenu from "../Message/MessageMenu.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
+  import { ArrayColl, type Collection } from "svelte-collections";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
@@ -175,6 +183,15 @@
   $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
   $: hasInlineReply = $inlineReplies.some(reply => reply.original == message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
+
+  // <copied from="../3pane/TableMessageListItem.svelte">
+  let contextMenu: ContextMenu;
+  let menuMessages: Collection<EMail> = new ArrayColl<EMail>();
+  function onContextMenu(event: MouseEvent) {
+    menuMessages = new ArrayColl($selectedMessages?.contains(message) ? $selectedMessages.contents : [message]);
+    contextMenu.onContextMenu(event);
+  }
+  // </copied>
 </script>
 
 <style>

@@ -57,9 +57,6 @@
     {/each}
   </div>
 </div>
-<ContextMenu bind:this={contextMenu}>
-  <MessageMenu messages={contextMessages} />
-</ContextMenu>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
@@ -71,8 +68,6 @@
   import { MessageGrouping } from "./MessageGrouping";
   import VerticalMessageListItem from "../Vertical/VerticalMessageListItem.svelte";
   import TableMessageListItem from "./TableMessageListItem.svelte";
-  import MessageMenu from "../Message/MessageMenu.svelte";
-  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import type { ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -287,16 +282,12 @@
     select(range, to);
   }
 
-  let contextMenu: ContextMenu;
-  let contextMessages: EMail[] = [];
   function onContextMenu(message: EMail, event: MouseEvent) {
     event.preventDefault();
     if (!selection.contains(message)) {
       select([message], message);
       anchor = message;
     }
-    contextMessages = selection.contents;
-    contextMenu.onContextMenu(event);
   }
 
   function onKeyDown(event: KeyboardEvent) {
