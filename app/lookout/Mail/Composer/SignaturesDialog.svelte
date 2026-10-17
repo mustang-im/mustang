@@ -63,7 +63,7 @@
   </vbox>
 </Dialog>
 {#if showLinkDialog && editor}
-  <LinkDialog {editor} onDone={() => showLinkDialog = false} />
+  <LinkDialog {editor} on:close={() => showLinkDialog = false} />
 {/if}
 
 <script lang="ts">
