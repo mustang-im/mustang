@@ -74,7 +74,7 @@
       ribbon.startSurvey();
     }
     await tick();
-    entries = RibbonCommands.collect(ribbonEl);
+    entries = collect(ribbonEl);
   }
 
   function endSurvey() {
@@ -164,7 +164,7 @@
     await tick();
     close();
     await tick();
-    let el = entry.el.isConnected ? entry.el : RibbonCommands.collect(ribbonEl)
+    let el = entry.el.isConnected ? entry.el : collect(ribbonEl)
       .find(candidate => candidate.tabLabel == entry.tabLabel && candidate.groupLabel == entry.groupLabel && candidate.label == entry.label)?.el;
     if (!el) {
       return;
@@ -177,6 +177,44 @@
     } else {
       el.click();
     }
+  }
+
+  function collect(ribbonEl: HTMLElement): RibbonCommandEntry[] {
+    const kItemSelector = "button.ribbon-button:not(.part-arrow):not(.group-collapsed-button):not(.more-button), button.launcher, .ribbon-textbox, .ribbon-checkbox";
+    let entries: RibbonCommandEntry[] = [];
+    let seen = new Set<string>();
+    for (let content of Array.from(ribbonEl.querySelectorAll<HTMLElement>(".ribbon-tab-content"))) {
+      let tabLabel = content.getAttribute("aria-label") ?? "";
+      for (let el of Array.from(content.querySelectorAll<HTMLElement>(kItemSelector))) {
+        let entry = commandEntry(el, tabLabel);
+        let key = [entry.tabLabel, entry.groupLabel, entry.label].join("\n");
+        if (!entry.label || seen.has(key)) {
+          continue;
+        }
+        seen.add(key);
+        entries.push(entry);
+      }
+    }
+    return entries;
+  }
+
+  function commandEntry(el: HTMLElement, tabLabel: string): RibbonCommandEntry {
+    let input = el.querySelector("input");
+    let label = el.classList.contains("ribbon-textbox")
+      ? input?.getAttribute("aria-label")
+      : el.classList.contains("ribbon-checkbox")
+        ? el.textContent
+        : el.getAttribute("aria-label") || el.textContent;
+    let groupEl = el.closest<HTMLElement>(".ribbon-group");
+    return {
+      label: (label ?? "").replace(/\s+/g, " ").trim(),
+      tooltip: el.getAttribute("title") ?? "",
+      tabLabel,
+      groupLabel: groupEl?.getAttribute("aria-label") ?? "",
+      iconHTML: el.querySelector(".icon svg")?.outerHTML ?? "",
+      disabled: !!(el as HTMLButtonElement).disabled || !!input?.disabled,
+      el,
+    };
   }
 </script>
 

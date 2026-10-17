@@ -15,6 +15,10 @@
   on:blur={exit}
   on:resize={exit} />
 
+<script lang="ts" context="module">
+  const handledEvents = new WeakSet<Event>();
+</script>
+
 <script lang="ts">
   import { KeyTips } from "./KeyTips";
   import { tick } from "svelte";
@@ -178,17 +182,17 @@
     isAltPending = false;
     if (!level) {
       if (event.key == "F10" && !event.ctrlKey && !event.altKey && !event.metaKey && !event.shiftKey &&
-          isActiveRibbon() && !KeyTips.handledEvents.has(event)) {
-        KeyTips.handledEvents.add(event);
+          isActiveRibbon() && !handledEvents.has(event)) {
+        handledEvents.add(event);
         event.preventDefault();
         showTabTips();
       }
       return;
     }
-    if (KeyTips.handledEvents.has(event)) {
+    if (handledEvents.has(event)) {
       return;
     }
-    KeyTips.handledEvents.add(event);
+    handledEvents.add(event);
     if (event.key == "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -217,7 +221,7 @@
   function onTyped(char: string) {
     let candidate = typed + char;
     let tips = badges.map(badge => badge.tip);
-    let matches = KeyTips.matching(tips, candidate);
+    let matches = tips.map((tip, i) => tip.startsWith(candidate) ? i : -1).filter(i => i >= 0);
     if (!matches.length) {
       return;
     }
@@ -239,10 +243,10 @@
       return;
     }
     isAltPending = false;
-    if (KeyTips.handledEvents.has(event) || (!level && !isActiveRibbon())) {
+    if (handledEvents.has(event) || (!level && !isActiveRibbon())) {
       return;
     }
-    KeyTips.handledEvents.add(event);
+    handledEvents.add(event);
     event.preventDefault();
     if (level) {
       exit();

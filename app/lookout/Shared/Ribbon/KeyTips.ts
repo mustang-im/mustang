@@ -1,6 +1,4 @@
 export class KeyTips {
-  static readonly handledEvents = new WeakSet<Event>();
-
   static assign(labels: string[], reserved: string[] = [], preferSingle = false): string[] {
     let tips: string[] = labels.map(() => null);
     let used = new Set(reserved.map(tip => tip.toUpperCase()));
@@ -102,9 +100,5 @@ export class KeyTips {
       return "0" + String(9 - beyond);
     }
     return "0" + String.fromCharCode("A".charCodeAt(0) + beyond - 9);
-  }
-
-  static matching(tips: string[], typed: string): number[] {
-    return tips.map((tip, i) => tip.startsWith(typed) ? i : -1).filter(i => i >= 0);
   }
 }

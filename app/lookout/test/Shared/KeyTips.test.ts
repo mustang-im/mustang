@@ -40,8 +40,3 @@ test("Quick Access Toolbar tips count 1 to 9, then 09 down to 01, then 0A", () =
   expect([0, 1, 8, 9, 10, 17, 18].map(i => KeyTips.quickAccessTip(i))).toEqual(["1", "2", "9", "09", "08", "01", "0A"]);
 });
 
-test("Typed letters filter the tips by prefix", () => {
-  expect(KeyTips.matching(["N", "RA", "RE", "D"], "R")).toEqual([1, 2]);
-  expect(KeyTips.matching(["N", "RA", "RE", "D"], "RE")).toEqual([2]);
-  expect(KeyTips.matching(["N", "RA"], "X")).toEqual([]);
-});

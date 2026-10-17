@@ -9,45 +9,6 @@ export interface RibbonCommandEntry {
 }
 
 export class RibbonCommands {
-  static readonly itemSelector = "button.ribbon-button:not(.part-arrow):not(.group-collapsed-button):not(.more-button), button.launcher, .ribbon-textbox, .ribbon-checkbox";
-
-  static collect(ribbonEl: HTMLElement): RibbonCommandEntry[] {
-    let entries: RibbonCommandEntry[] = [];
-    let seen = new Set<string>();
-    for (let content of Array.from(ribbonEl.querySelectorAll<HTMLElement>(".ribbon-tab-content"))) {
-      let tabLabel = content.getAttribute("aria-label") ?? "";
-      for (let el of Array.from(content.querySelectorAll<HTMLElement>(RibbonCommands.itemSelector))) {
-        let entry = RibbonCommands.entry(el, tabLabel);
-        let key = [entry.tabLabel, entry.groupLabel, entry.label].join("\n");
-        if (!entry.label || seen.has(key)) {
-          continue;
-        }
-        seen.add(key);
-        entries.push(entry);
-      }
-    }
-    return entries;
-  }
-
-  protected static entry(el: HTMLElement, tabLabel: string): RibbonCommandEntry {
-    let input = el.querySelector("input");
-    let label = el.classList.contains("ribbon-textbox")
-      ? input?.getAttribute("aria-label")
-      : el.classList.contains("ribbon-checkbox")
-        ? el.textContent
-        : el.getAttribute("aria-label") || el.textContent;
-    let groupEl = el.closest<HTMLElement>(".ribbon-group");
-    return {
-      label: (label ?? "").replace(/\s+/g, " ").trim(),
-      tooltip: el.getAttribute("title") ?? "",
-      tabLabel,
-      groupLabel: groupEl?.getAttribute("aria-label") ?? "",
-      iconHTML: el.querySelector(".icon svg")?.outerHTML ?? "",
-      disabled: !!(el as HTMLButtonElement).disabled || !!input?.disabled,
-      el,
-    };
-  }
-
   static search<T extends Pick<RibbonCommandEntry, "label" | "tooltip" | "groupLabel" | "tabLabel">>(entries: T[], searchTerm: string, max = 10): T[] {
     let term = searchTerm?.trim().toLowerCase();
     if (!term) {
