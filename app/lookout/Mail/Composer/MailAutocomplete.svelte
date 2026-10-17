@@ -1,7 +1,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <hbox class="address-field" class:chips class:disabled bind:this={fieldEl}
   on:click={onFieldClick}>
-  {#each $recipients.each as recipient (recipient)}
+  {#each $addresses.each as recipient (recipient)}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <hbox class="recipient" class:selected={recipient == selected}
       title={recipient.emailAddress}
@@ -28,7 +28,7 @@
       aria-expanded={isListOpen} aria-controls={listID}
       aria-activedescendant={isListOpen ? `${listID}-${highlighted}` : null}
       autocomplete="off" spellcheck="false"
-      placeholder={$recipients.isEmpty ? placeholder : null}
+      placeholder={$addresses.isEmpty ? placeholder : null}
       {tabindex} {autofocus}
       on:input={onInput}
       on:keydown={onKeyDown}
@@ -67,7 +67,9 @@
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let recipients: ArrayColl<PersonUID>;
+  export let addresses: ArrayColl<PersonUID> = null;
+  export let recipients: ArrayColl<PersonUID> = null;
+  $: addresses = recipients ?? addresses;
   export let label: string;
   export let chips = false;
   export let disabled = false;
@@ -120,14 +122,14 @@
   }
 
   function isAdded(recipient: PersonUID): boolean {
-    return recipients.some(existing => existing.emailAddress == recipient.emailAddress);
+    return addresses.some(existing => existing.emailAddress == recipient.emailAddress);
   }
 
   function add(recipient: PersonUID) {
     if (!recipient || isAdded(recipient)) {
       return;
     }
-    recipients.add(recipient);
+    addresses.add(recipient);
     onAdd?.(recipient);
   }
 
@@ -135,7 +137,7 @@
     if (!recipient) {
       return;
     }
-    recipients.remove(recipient);
+    addresses.remove(recipient);
     if (selected == recipient) {
       selected = null;
     }
@@ -210,9 +212,9 @@
     } else if ((event.key == "Backspace" || event.key == "Delete") && selected) {
       event.preventDefault();
       remove(selected);
-    } else if ((event.key == "Backspace" || event.key == "ArrowLeft") && atStart && recipients.hasItems) {
+    } else if ((event.key == "Backspace" || event.key == "ArrowLeft") && atStart && addresses.hasItems) {
       event.preventDefault();
-      selected = recipients.getIndex(recipients.length - 1);
+      selected = addresses.getIndex(addresses.length - 1);
     } else if (event.key != "Shift" && event.key != "Control") {
       selected = null;
     }

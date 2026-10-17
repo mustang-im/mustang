@@ -37,7 +37,8 @@
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { ArrangeFields, ColumnInfo, MailViewSettings, type ViewSettings } from "./ViewSettings";
   import { MessageGrouping } from "../3pane/MessageGrouping";
-  import { MailView, ReadingPanePosition } from "../MailView";
+  import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -51,7 +52,8 @@
   export let folder: Folder | null;
 
   let draft: ViewSettings = MailViewSettings.of(folder);
-  let readingPane: ReadingPanePosition = MailView.readingPane.value ?? ReadingPanePosition.Right;
+  const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
+  let readingPane: ReadingPanePosition = readingPaneSetting.value ?? "right";
   let open: "columns" | "group-by" | "sort" | "filter" | "other" | null = null;
 
   $: columnsSummary = draft.columns.map(column => ColumnInfo.labelOf(column)).join(", ");
@@ -74,7 +76,7 @@
 
   function save() {
     MailViewSettings.replace(folder, draft);
-    MailView.readingPane.value = readingPane;
+    readingPaneSetting.value = readingPane;
   }
 </script>
 

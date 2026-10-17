@@ -35,15 +35,23 @@
 
   export let label: string;
   export let contextual = false;
+  export let isSelected = false;
 
   const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
   const tab = new RibbonTabModel(label);
   tab.isContextual = contextual;
   setContext(RibbonTabModel.contextKey, tab);
   ribbon.addTab(tab);
+  if (isSelected) {
+    ribbon.selectTab(tab);
+  }
   onDestroy(() => ribbon.removeTab(tab));
   $: ribbon.setTabLabel(tab, label);
   const selectedTab = ribbon.selectedTab;
+  $: isSelected = $selectedTab == tab;
+  $: if (isSelected && $selectedTab != tab) {
+    ribbon.selectTab(tab);
+  }
   const isSurveying = ribbon.isSurveying;
   const overflowGroups = tab.overflowGroups;
   const isMoreMenuOpen = tab.isMoreMenuOpen;

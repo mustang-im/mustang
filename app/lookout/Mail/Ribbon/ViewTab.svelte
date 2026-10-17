@@ -15,7 +15,7 @@
       onClick={() => ViewCommands.openViewSettings(folder)} />
     <RibbonButton label={$t`Reset View`} icon={ResetIcon} size="small"
       tooltip={$t`Reset the message list and the layout to the default settings`}
-      onClick={() => MailView.resetView(folder)} />
+      onClick={onResetView} />
   </RibbonGroup>
   <RibbonGroup label={$t`Messages`}>
     <RibbonCheckBox label={$t`Show as Conversations`}
@@ -72,12 +72,12 @@
         onClick={() => { $showFavorites.value = !$showFavorites.value; }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}>
-      <MenuItem label={$t`Right`} icon={RightIcon} checked={$readingPane.value == ReadingPanePosition.Right}
-        onClick={() => { $readingPane.value = ReadingPanePosition.Right; }} />
-      <MenuItem label={$t`Bottom`} icon={BottomIcon} checked={$readingPane.value == ReadingPanePosition.Bottom}
-        onClick={() => { $readingPane.value = ReadingPanePosition.Bottom; }} />
-      <MenuItem label={$t`Off`} icon={OffIcon} checked={$readingPane.value == ReadingPanePosition.Off}
-        onClick={() => { $readingPane.value = ReadingPanePosition.Off; }} />
+      <MenuItem label={$t`Right`} icon={RightIcon} checked={$readingPane.value == "right"}
+        onClick={() => { $readingPane.value = "right"; }} />
+      <MenuItem label={$t`Bottom`} icon={BottomIcon} checked={$readingPane.value == "bottom"}
+        onClick={() => { $readingPane.value = "bottom"; }} />
+      <MenuItem label={$t`Off`} icon={OffIcon} checked={$readingPane.value == "off"}
+        onClick={() => { $readingPane.value = "off"; }} />
       <MenuDivider />
       <MenuItem label={$t`Options…`} onClick={() => MailDialogs.open({ kind: "reading-pane-options" })} />
     </RibbonMenuButton>
@@ -96,7 +96,9 @@
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { FolderPaneMode, MailView, ReadingPanePosition, ToDoBarPart } from "../MailView";
+  import { FolderPaneMode, MailView, ToDoBarPart } from "../MailView";
+  import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { ApplyScope, MailViewSettings, ViewType } from "../ViewSettings/ViewSettings";
   import { ViewCommands } from "../View/ViewCommands";
   import { ViewDialogs } from "../View/ViewDialogs";
@@ -143,7 +145,7 @@
   export let onCollapseAll: (collapsed: boolean) => void;
 
   const folderPane = MailView.folderPane;
-  const readingPane = MailView.readingPane;
+  const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
   const showFavorites = MailView.showFavorites;
   const toDoBar = MailView.toDoBar;
   $: settings = MailViewSettings.store(folder);
@@ -153,6 +155,12 @@
   async function onShowAsConversations(checked: boolean) {
     await ViewCommands.setShowAsConversations(folder, checked);
     conversationsChecked = !!MailViewSettings.of(folder).showAsConversations;
+  }
+
+  function onResetView() {
+    MailViewSettings.reset(folder);
+    $readingPane.value = "right";
+    $folderPane.value = FolderPaneMode.Normal;
   }
 
   const viewTypes = [

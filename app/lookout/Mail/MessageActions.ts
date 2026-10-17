@@ -9,7 +9,8 @@ import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
 import { SelectionState } from "./SelectionState";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
-import { MailView, ReadingPanePosition } from "./MailView";
+import { MailView } from "./MailView";
+import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
 import { InlineReplies } from "./Composer/InlineReplies";
 import { ComposerSettings } from "./Composer/ComposerSettings";
 import { recentFolders } from "./RecentFolders";
@@ -104,7 +105,7 @@ export class MessageActions {
 
   static respondsInline(original: EMail): boolean {
     return !ComposerSettings.repliesInNewWindow.value &&
-      MailView.readingPane.value != ReadingPanePosition.Off &&
+      getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right").value != "off" &&
       get(selectedApp) == mailMustangApp &&
       get(selectedMessage) == original &&
       (get(selectedMessages)?.length ?? 0) <= 1;

@@ -8,43 +8,21 @@
       onCollapseAll={collapsed => listPane?.setAllGroupsCollapsed(collapsed)} />
     {#if isSearchActive}
       <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} onClose={closeSearch} />
-      <RibbonTabSelector label={$t`Search`} />
     {/if}
     {#if $inlineRibbon}
       <ComposerMessageTab commands={$inlineRibbon.commands} isInline />
-      <RibbonTabSelector label={$t`Message`} />
     {/if}
   </Ribbon>
-  <hbox flex class="panes">
-    {#if $folderPane.value == FolderPaneMode.Minimized}
-      <FolderPaneMinimized name={$shownFolder ? FolderTreeActions.displayName($shownFolder) : ""}
-        onExpand={() => { folderPane.value = FolderPaneMode.Normal; }} />
-    {/if}
-    <Splitter name="lookout.mail.folderPane" initialRightRatio={5} leftMinWidth={180} rightMinWidth={480}
-      hasLeft={$folderPane.value == FolderPaneMode.Normal || !$folderPane.value}>
-      <LeftPane slot="left" />
-      <hbox flex class="main" slot="right">
-        <ReadingPaneLayout position={$readingPane.value}>
-          <MessageListPane slot="list" bind:this={listPane}
-            folder={$selectedFolder}
-            listMessages={listMessages}
-            selection={$selectedMessages}
-            bind:selectedMessage={$selectedMessage}
-            isSearchResult={!!searchResults}
-            onMoreResults={!isSearching && MailSearch.isLimitReached(searchResults) && !isShowingAllResults ? showAllResults : null}
-            showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
-            highlight={searchResults ? searchTerm : null}
-            isLoading={isLoading || isSearching} />
-          <MessageDisplay slot="reading"
-            message={$selectedArray.length > 1 ? null : $selectedMessage}
-            selectedCount={$selectedArray.length} />
-        </ReadingPaneLayout>
-        {#if $toDoBar.value?.length}
-          <ToDoBar parts={$toDoBar.value} />
-        {/if}
-      </hbox>
-    </Splitter>
-  </hbox>
+  <ThreePane bind:listPane
+    messages={listMessages}
+    selectedFolder={$selectedFolder}
+    bind:selectedMessage={$selectedMessage}
+    selectedMessages={$selectedMessages}
+    isSearchResult={!!searchResults}
+    onMoreResults={!isSearching && MailSearch.isLimitReached(searchResults) && !isShowingAllResults ? showAllResults : null}
+    showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
+    highlight={searchResults ? searchTerm : null}
+    isLoading={isLoading || isSearching} />
 </vbox>
 <MailDialogHost />
 <ViewDialogHost />
@@ -60,8 +38,8 @@
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages, quickSearch } from "../../frontend/Mail/Selected";
   import { getParams, globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../frontend/Util/error";
-  import { statusBar, type StatusBarView } from "../MainWindow/StatusBar";
-  import { FolderPaneMode, MailView } from "./MailView";
+  import { statusBarContent, type StatusBarContent, type StatusBarView } from "../MainWindow/StatusBar.svelte";
+  import { MailView } from "./MailView";
   import NormalViewIcon from "lucide-svelte/icons/layout-panel-left";
   import ReadingViewIcon from "lucide-svelte/icons/book-open";
   import { MailKeyAction, MailKeys } from "./MailKeys";
@@ -78,34 +56,26 @@
   import FolderTab from "./Ribbon/FolderTab.svelte";
   import ViewTab from "./Ribbon/ViewTab.svelte";
   import SearchTab from "./Ribbon/SearchTab.svelte";
-  import RibbonTabSelector from "./Ribbon/RibbonTabSelector.svelte";
   import ComposerMessageTab from "./Composer/ComposerMessageTab.svelte";
   import { InlineReplies } from "./Composer/InlineReplies";
-  import LeftPane from "./LeftPane/LeftPane.svelte";
-  import FolderPaneMinimized from "../Shared/FolderPaneMinimized.svelte";
-  import ReadingPaneLayout from "./ReadingPaneLayout.svelte";
-  import MessageListPane from "./3pane/MessageListPane.svelte";
-  import MessageDisplay from "./Message/MessageDisplay.svelte";
+  import ThreePane from "./3pane/3Pane.svelte";
+  import type MessageListPane from "./3pane/MessageListPane.svelte";
   import MessagePrint from "./Message/MessagePrint.svelte";
   import MailDialogHost from "./Dialogs/MailDialogHost.svelte";
   import ViewDialogHost from "./View/ViewDialogHost.svelte";
-  import ToDoBar from "./ToDoBar/ToDoBar.svelte";
   import { ViewDialogs } from "./View/ViewDialogs";
-  import Splitter from "../../frontend/Shared/Splitter.svelte";
   import ConnectedIcon from "lucide-svelte/icons/plug-zap";
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import ErrorIcon from "lucide-svelte/icons/circle-alert";
   import FilterIcon from "lucide-svelte/icons/funnel";
   import { ArrayColl, type Collection } from "svelte-collections";
-  import { derived, type Readable } from "svelte/store";
+  import { derived, get, type Readable } from "svelte/store";
   import { useLocation } from "svelte-navigator";
   import { onDestroy, tick } from "svelte";
   import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
 
   const folderPane = MailView.folderPane;
-  const toDoBar = MailView.toDoBar;
-  const readingPane = MailView.readingPane;
   const searchOptions = MailSearch.options;
   const updatingFolders = MessageActions.updatingFolders;
   const accounts = appGlobal.emailAccounts;
@@ -305,11 +275,9 @@
     }
   }
 
-  const status = statusBar.addSection();
-  onDestroy(() => status.remove());
   $: unreadStore = FolderTreeActions.countStore($selectedFolder, false);
   $: totalStore = FolderTreeActions.countStore($selectedFolder, true);
-  $: status.left = statusLeft($listMessages, $unreadStore, $totalStore, hasFilter, searchResults, isSearching, $selectedArray, isShowingAllResults);
+  $: statusItemsLeft = statusLeft($listMessages, $unreadStore, $totalStore, hasFilter, searchResults, isSearching, $selectedArray, isShowingAllResults);
   function statusLeft(messages: Collection<EMail>, unread: number, total: number, isFiltered: boolean, results: Collection<EMail> | null,
       searching: boolean, selected: EMail[], _showingAll: boolean) {
     let items = [];
@@ -336,9 +304,9 @@
 
   $: statusAccounts = MailSearch.isRealFolder($selectedFolder) ? [$selectedFolder.account] : $accounts.contents;
   $: accountStates = derived(statusAccounts, () => statusAccounts);
-  $: status.right = statusRight($accountStates, $updatingFolders);
+  $: statusItemsRight = statusRight($accountStates, $updatingFolders);
   const ribbonCollapsed = MailView.ribbonCollapsed;
-  $: status.views = viewButtons(MailView.isReadingView($folderPane.value, !!$ribbonCollapsed.value));
+  $: statusViews = viewButtons(MailView.isReadingView($folderPane.value, !!$ribbonCollapsed.value));
   function viewButtons(isReading: boolean): StatusBarView[] {
     return [
       { label: $t`Normal`, icon: NormalViewIcon, isActive: !isReading, onClick: () => MailView.setReadingView(false) },
@@ -369,6 +337,15 @@
     }
     return items;
   }
+
+  let status: StatusBarContent;
+  $: status = { left: statusItemsLeft, right: statusItemsRight, views: statusViews };
+  $: $statusBarContent = status;
+  onDestroy(() => {
+    if (get(statusBarContent) == status) {
+      statusBarContent.set(null);
+    }
+  });
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.defaultPrevented || $dialog || $viewDialog) {
@@ -483,13 +460,5 @@
   .mail-page {
     min-height: 0;
     min-width: 0;
-  }
-  .panes {
-    min-height: 0;
-    min-width: 0;
-  }
-  .main {
-    min-width: 0;
-    min-height: 0;
   }
 </style>

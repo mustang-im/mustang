@@ -1,4 +1,4 @@
-<Dialog title={title ?? $t`Select Names: ${addressbook?.name ?? $t`All address books`}`} on:close={onCancel} width="800px" height="620px">
+<Dialog title={title ?? $t`Select Names: ${addressbook?.name ?? $t`All address books`}`} on:close={onCancelClicked} width="800px" height="620px">
   <grid class="search-grid">
     <hbox class="search-label">
       <label for="select-names-search" class="label">{$t`Search:`}</label>
@@ -21,7 +21,7 @@
       bind:value={addressbook} width="220px" />
   </grid>
   <vbox flex class="list">
-    <FastList items={persons} bind:selectedItems columns="minmax(150px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(170px, 1.5fr)">
+    <FastList items={foundPersons} bind:selectedItems columns="minmax(150px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(170px, 1.5fr)">
       <svelte:fragment slot="header">
         <hbox class="column-header">{$t`Name`}</hbox>
         <hbox class="column-header">{$t`Title`}</hbox>
@@ -31,20 +31,20 @@
         <hbox class="column-header">{$t`E-mail Address`}</hbox>
       </svelte:fragment>
       <svelte:fragment slot="row" let:item={person}>
-        <hbox class="cell name" on:dblclick={() => onAdd(defaultField)}>
+        <hbox class="cell name" on:dblclick={() => onAdd(defaultPick)}>
           <UserIcon size={14} />
           <span>{person.name ?? ""}</span>
         </hbox>
-        <hbox class="cell" on:dblclick={() => onAdd(defaultField)}><span>{person.position ?? ""}</span></hbox>
-        <hbox class="cell" on:dblclick={() => onAdd(defaultField)}><span>{SelectNames.businessPhone(person)}</span></hbox>
-        <hbox class="cell" on:dblclick={() => onAdd(defaultField)}><span>{person.department ?? ""}</span></hbox>
-        <hbox class="cell" on:dblclick={() => onAdd(defaultField)}><span>{person.company ?? ""}</span></hbox>
-        <hbox class="cell" on:dblclick={() => onAdd(defaultField)}>
-          <span>{SelectNames.preferredEMail(person)?.value ?? ""}</span>
+        <hbox class="cell" on:dblclick={() => onAdd(defaultPick)}><span>{person.position ?? ""}</span></hbox>
+        <hbox class="cell" on:dblclick={() => onAdd(defaultPick)}><span>{businessPhone(person)}</span></hbox>
+        <hbox class="cell" on:dblclick={() => onAdd(defaultPick)}><span>{person.department ?? ""}</span></hbox>
+        <hbox class="cell" on:dblclick={() => onAdd(defaultPick)}><span>{person.company ?? ""}</span></hbox>
+        <hbox class="cell" on:dblclick={() => onAdd(defaultPick)}>
+          <span>{person.emailAddresses.sortBy(entry => entry.preference).first?.value ?? ""}</span>
         </hbox>
       </svelte:fragment>
     </FastList>
-    {#if $persons.isEmpty}
+    {#if $foundPersons.isEmpty}
       <hbox class="empty lo-secondary">
         {#if searchTerm}
           {$t`No matching names`}
@@ -57,22 +57,32 @@
     {/if}
   </vbox>
   <grid class="picks">
-    {#each fields as field}
+    {#each shownFields as field}
       <DialogButton label={field.label + " ->"} onClick={() => onAdd(field)}
         disabled={$selectedItems.isEmpty && $t`Select a name first`} />
       <hbox class="pick-field">
-        <MailAutocomplete recipients={field.picks} label={field.label} />
+        <MailAutocomplete addresses={field.picks} label={field.label} />
       </hbox>
     {/each}
   </grid>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`OK`} primary onClick={onOK} />
-    <DialogButton label={$t`Cancel`} onClick={onCancel} />
+    <DialogButton label={$t`OK`} primary onClick={onOKClicked} />
+    <DialogButton label={$t`Cancel`} onClick={onCancelClicked} />
   </svelte:fragment>
 </Dialog>
 
+<script lang="ts" context="module">
+  export enum RecipientField {
+    To = "to",
+    Cc = "cc",
+    Bcc = "bcc",
+  }
+</script>
+
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
@@ -87,13 +97,31 @@
   import GoIcon from "lucide-svelte/icons/arrow-right";
   import ClearIcon from "lucide-svelte/icons/x";
   import { ArrayColl } from "svelte-collections";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
-  export let fields: SelectNamesField[];
-  export let defaultField: SelectNamesField = fields[0];
+  export let mail: EMail = null;
+  export let defaultField: RecipientField = RecipientField.To;
+  export let persons: ArrayColl<PersonUID> = null;
+  export let label: string = null;
+  export let single = false;
   export let title: string = null;
-  export let onOK: () => void;
-  export let onCancel: () => void;
+  export let fields: SelectNamesField[] = null;
+  export let onOK: () => void = null;
+  export let onCancel: () => void = null;
+
+  const dispatch = createEventDispatcher<{ ok: void, close: void }>();
+
+  const shownFields = fields ?? (mail
+    ? [
+      new SelectNamesField(gt`To`, mail.to.contents),
+      new SelectNamesField(gt`Cc`, mail.cc.contents),
+      new SelectNamesField(gt`Bcc`, mail.bcc.contents),
+    ]
+    : [new SelectNamesField(label, persons?.contents ?? [], single)]);
+  const defaultPick = mail && !fields
+    ? shownFields[[RecipientField.To, RecipientField.Cc, RecipientField.Bcc].indexOf(defaultField)]
+    : shownFields[0];
 
   let addressbooks = appGlobal.addressbooks;
   let searchOnlyAddressbooks = appGlobal.searchOnlyAddressbooks;
@@ -113,7 +141,7 @@
   $: searchedBooks = addressbook ? [addressbook]
     : searchTerm ? [...$addressbooks.each, ...$searchOnlyAddressbooks.each]
     : $addressbooks.contents;
-  $: persons = isSearchOnly && !searchTerm
+  $: foundPersons = isSearchOnly && !searchTerm
     ? new ArrayColl<Person>()
     : SelectNames.persons(searchedBooks, searchTerm, nameOnly);
 
@@ -141,6 +169,29 @@
 
   function onAdd(field: SelectNamesField) {
     field.add(selectedItems);
+  }
+
+  function businessPhone(person: Person): string {
+    let phones = person.phoneNumbers.sortBy(entry => entry.preference);
+    return (phones.find(entry => entry.purpose == "work") ?? phones.first)?.value ?? "";
+  }
+
+  function onOKClicked() {
+    if (mail && !fields) {
+      mail.to.replaceAll(shownFields[0].picks.contents);
+      mail.cc.replaceAll(shownFields[1].picks.contents);
+      mail.bcc.replaceAll(shownFields[2].picks.contents);
+    } else if (persons) {
+      persons.replaceAll(shownFields[0].picks.contents);
+    }
+    onOK?.();
+    dispatch("ok");
+    dispatch("close");
+  }
+
+  function onCancelClicked() {
+    onCancel?.();
+    dispatch("close");
   }
 </script>
 

@@ -4,7 +4,7 @@
   <FormGrid columns="max-content minmax(0, 1fr)">
     <DialogButton label={$t`Name…`} onClick={() => { isPicking = true; }} />
     <hbox class="name-field">
-      <MailAutocomplete {recipients} label={$t`Name`} />
+      <MailAutocomplete addresses={recipients} label={$t`Name`} />
     </hbox>
     <span class="lo-form-label">{$t`Folder type:`}</span>
     <ComboBox label={$t`Folder type:`} options={typeOptions} bind:value={type} width="100%" />

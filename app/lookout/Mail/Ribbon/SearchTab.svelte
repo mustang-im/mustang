@@ -1,4 +1,4 @@
-<RibbonTab label={$t`Search`}>
+<RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Refine`}>
     <RibbonToggleButton label={$t`From`} icon={FromIcon}
       checked={MailSearch.isFrom($options)}

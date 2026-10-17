@@ -53,7 +53,7 @@
             {$t`To`}
           </button>
           <hbox class="field">
-            <MailAutocomplete recipients={mail.to} label={$t`To`} chips={isChips} tabindex={1}
+            <MailAutocomplete addresses={mail.to} label={$t`To`} chips={isChips} tabindex={1}
               autofocus={autofocus && mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
           </hbox>
           <button class="field-button" on:click={() => openSelectNames(RecipientField.Cc)} tabindex={-1}
@@ -61,7 +61,7 @@
             {$t`Cc`}
           </button>
           <hbox class="field">
-            <MailAutocomplete recipients={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
+            <MailAutocomplete addresses={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
               onAdd={onRecipientAdded} bind:this={ccField} />
           </hbox>
           {#if showBCC}
@@ -70,7 +70,7 @@
               {$t`Bcc`}
             </button>
             <hbox class="field">
-              <MailAutocomplete recipients={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
+              <MailAutocomplete addresses={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
                 onAdd={onRecipientAdded} bind:this={bccField} />
             </hbox>
           {/if}
@@ -117,9 +117,9 @@
   </vbox>
 </vbox>
 
-{#if selectNames}
-  <SelectNamesDialog fields={selectNames.fields} defaultField={selectNames.field(selectNamesField)}
-    onOK={onSelectNamesOK} onCancel={() => selectNames = null} />
+{#if isSelectNamesOpen}
+  <SelectNamesDialog {mail} defaultField={selectNamesField}
+    on:close={() => isSelectNamesOpen = false} />
 {/if}
 {#if showSaveChanges}
   <SaveChangesDialog
@@ -157,12 +157,11 @@
   import { Keyboard } from "../../Util/keyboard";
   import { ComposerEncryption } from "./ComposerEncryption";
   import { DraftContent } from "./DraftContent";
-  import { RecipientField, SelectNames } from "./SelectNames";
   import { EditorTool } from "../../Shared/Editor/EditorCommands";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import { EditorSettings } from "../../Shared/Editor/EditorSettings";
   import ComposerRibbon from "./ComposerRibbon.svelte";
-  import SelectNamesDialog from "./SelectNamesDialog.svelte";
+  import SelectNamesDialog, { RecipientField } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import SignaturesDialog from "./SignaturesDialog.svelte";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
@@ -205,7 +204,7 @@
   const showBccSetting = ComposerSettings.showBcc;
   let encryptionError: string | null = null;
   let showEmojis = false;
-  let selectNames: SelectNames | null = null;
+  let isSelectNamesOpen = false;
   let selectNamesField = RecipientField.To;
   let showSaveChanges = false;
   let showSignatures = false;
@@ -434,12 +433,7 @@
 
   function openSelectNames(field: RecipientField) {
     selectNamesField = field;
-    selectNames = new SelectNames(mail);
-  }
-
-  function onSelectNamesOK() {
-    selectNames.apply(mail);
-    selectNames = null;
+    isSelectNamesOpen = true;
   }
 
   let imageSelector: FileSelector;
@@ -469,7 +463,7 @@
     // ProseMirror prevents the default of every Escape in the message body
     if (event.key != "Escape" || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey ||
         !Keyboard.isTextField(event.target) || event.defaultPrevented && !Keyboard.isEditor(event.target) ||
-        selectNames || showSaveChanges || showSignatures || openedTool) {
+        isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
       return;
     }
     event.preventDefault();
@@ -480,7 +474,7 @@
   function onKeyDown(event: KeyboardEvent) {
     let command = ComposerShortcuts.commandFor(event);
     let tool = editor ? EditorShortcuts.toolFor(event) : null;
-    if (!command && !tool || selectNames || showSaveChanges || showSignatures || openedTool) {
+    if (!command && !tool || isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
       return;
     }
     event.preventDefault();

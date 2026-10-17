@@ -47,7 +47,7 @@
           <PersonCircle name={person.name} picture={person.picture} size={24} />
           <vbox class="suggestion-text">
             <span class="suggestion-name">{person.name}</span>
-            <span class="suggestion-address">{SelectNames.preferredEMail(person)?.value ?? ""}</span>
+            <span class="suggestion-address">{person.emailAddresses.sortBy(entry => entry.preference).first?.value ?? ""}</span>
           </vbox>
         </hbox>
       {/each}

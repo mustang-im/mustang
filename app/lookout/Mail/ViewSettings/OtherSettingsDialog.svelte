@@ -21,9 +21,9 @@
     </GroupBox>
     <GroupBox label={$t`Reading Pane`}>
       <hbox class="radios">
-        <Radio label={$t`Right`} bind:group={readingPane} value={ReadingPanePosition.Right} />
-        <Radio label={$t`Bottom`} bind:group={readingPane} value={ReadingPanePosition.Bottom} />
-        <Radio label={$t`Off`} bind:group={readingPane} value={ReadingPanePosition.Off} />
+        <Radio label={$t`Right`} bind:group={readingPane} value="right" />
+        <Radio label={$t`Bottom`} bind:group={readingPane} value="bottom" />
+        <Radio label={$t`Off`} bind:group={readingPane} value="off" />
       </hbox>
     </GroupBox>
   </vbox>
@@ -31,7 +31,7 @@
 
 <script lang="ts">
   import type { ViewSettings } from "./ViewSettings";
-  import { ReadingPanePosition } from "../MailView";
+  import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";

@@ -1,18 +1,18 @@
 <hbox class="status-bar" role="status">
   <hbox class="side left">
-    {#each $section?.left ?? [] as item}
+    {#each shown?.left ?? [] as item}
       <StatusBarEntry {item} />
     {/each}
   </hbox>
   <hbox flex class="spacer" />
   <hbox class="side right">
-    {#each $section?.right ?? [] as item}
+    {#each shown?.right ?? [] as item}
       <StatusBarEntry {item} />
     {/each}
   </hbox>
-  {#if $section?.views?.length}
+  {#if shown?.views?.length}
     <hbox class="views" role="group">
-      {#each $section.views as view (view.label)}
+      {#each shown.views as view (view.label)}
         <button type="button" class="view" class:active={view.isActive}
           title={view.label} aria-label={view.label} aria-pressed={view.isActive}
           on:click={view.onClick}>
@@ -23,12 +23,39 @@
   {/if}
 </hbox>
 
+<script lang="ts" context="module">
+  import { writable } from "svelte/store";
+
+  export interface StatusBarItem {
+    label: string;
+    icon?: ConstructorOfATypedSvelteComponent;
+    tooltip?: string;
+    busy?: boolean;
+  }
+
+  export interface StatusBarView {
+    label: string;
+    icon: ConstructorOfATypedSvelteComponent;
+    isActive: boolean;
+    onClick: () => void;
+  }
+
+  export interface StatusBarContent {
+    left: StatusBarItem[];
+    right: StatusBarItem[];
+    views: StatusBarView[];
+  }
+
+  export const statusBarContent = writable<StatusBarContent | null>(null);
+</script>
+
 <script lang="ts">
   import { statusBar } from "./StatusBar";
   import StatusBarEntry from "./StatusBarEntry.svelte";
 
   const sections = statusBar.sections;
   $: section = $sections.last;
+  $: shown = $statusBarContent ?? $section;
 </script>
 
 <style>

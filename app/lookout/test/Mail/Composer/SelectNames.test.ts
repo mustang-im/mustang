@@ -4,8 +4,7 @@ import "../../../../logic/app";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { ContactEntry, Person } from "../../../../logic/Abstract/Person";
 import { PersonUID } from "../../../../logic/Abstract/PersonUID";
-import { SelectNames, SelectNamesField, RecipientField, type Recipients } from "../../../Mail/Composer/SelectNames";
-import { ArrayColl } from "svelte-collections";
+import { SelectNames, SelectNamesField } from "../../../Mail/Composer/SelectNames";
 import { beforeEach, expect, test } from "vitest";
 
 let personal: Addressbook;
@@ -21,14 +20,6 @@ function newPerson(addressbook: Addressbook, name: string, ...emailAddresses: Co
   person.emailAddresses.addAll(emailAddresses);
   addressbook.persons.add(person);
   return person;
-}
-
-function newRecipients(): Recipients {
-  return {
-    to: new ArrayColl<PersonUID>(),
-    cc: new ArrayColl<PersonUID>(),
-    bcc: new ArrayColl<PersonUID>(),
-  } as Recipients;
 }
 
 beforeEach(() => {
@@ -62,33 +53,12 @@ test("Search matches name and email address", () => {
 });
 
 test("Adds the preferred email address, without duplicates", () => {
-  let selectNames = new SelectNames(newRecipients());
-  selectNames.field(RecipientField.To).add([anna, bert, anna, carla]);
-  let to = selectNames.field(RecipientField.To).picks.contents;
+  let field = new SelectNamesField("To");
+  field.add([anna, bert, anna, carla]);
+  let to = field.picks.contents;
   expect(to.map(recipient => recipient.emailAddress)).toEqual(["anna@work.example", "bert@example.com"]);
   expect(to[0].name).toBe("Anna Schmidt");
   expect(to[0].person).toBe(anna);
-});
-
-test("Starts with the recipients of the mail and applies the picks", () => {
-  let recipients = newRecipients();
-  let existing = new PersonUID("eve@example.com", "Eve");
-  recipients.to.add(existing);
-  let selectNames = new SelectNames(recipients);
-  expect(selectNames.field(RecipientField.To).picks.contents).toEqual([existing]);
-  expect(selectNames.fields.map(field => field.label)).toEqual(["To", "Cc", "Bcc"]);
-
-  selectNames.field(RecipientField.Cc).add([bert]);
-  selectNames.field(RecipientField.Bcc).add([dora]);
-  selectNames.field(RecipientField.To).remove(existing);
-  // Nothing changes before apply()
-  expect(recipients.to.contents).toEqual([existing]);
-  expect(recipients.cc.isEmpty).toBe(true);
-
-  selectNames.apply(recipients);
-  expect(recipients.to.isEmpty).toBe(true);
-  expect(recipients.cc.contents.map(recipient => recipient.emailAddress)).toEqual(["bert@example.com"]);
-  expect(recipients.bcc.contents.map(recipient => recipient.emailAddress)).toEqual(["dora@corp.example"]);
 });
 
 test("Name only searches only the name", () => {
@@ -112,9 +82,3 @@ test("A pick field starts with the given picks and adds without duplicates", () 
   expect(users.picks.contents.map(pick => pick.emailAddress)).toEqual(["eve@example.com", "bert@example.com"]);
 });
 
-test("Business phone prefers the work number", () => {
-  bert.phoneNumbers.add(new ContactEntry("+49 1", "mobile", null, 10));
-  bert.phoneNumbers.add(new ContactEntry("+49 2", "work", null, 50));
-  expect(SelectNames.businessPhone(bert)).toBe("+49 2");
-  expect(SelectNames.businessPhone(dora)).toBe("");
-});

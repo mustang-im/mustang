@@ -1,19 +1,6 @@
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
+import type { StatusBarItem, StatusBarView } from "./StatusBar.svelte";
 import { ArrayColl } from "svelte-collections";
-
-export interface StatusBarItem {
-  label: string;
-  icon?: ConstructorOfATypedSvelteComponent;
-  tooltip?: string;
-  busy?: boolean;
-}
-
-export interface StatusBarView {
-  label: string;
-  icon: ConstructorOfATypedSvelteComponent;
-  isActive: boolean;
-  onClick: () => void;
-}
 
 export class StatusBarSection extends Observable {
   @notifyChangedProperty

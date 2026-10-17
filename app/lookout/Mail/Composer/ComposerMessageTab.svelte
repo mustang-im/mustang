@@ -1,4 +1,4 @@
-<RibbonTab label={$t`Message`} contextual={isInline}>
+<RibbonTab label={$t`Message`} contextual={isInline} isSelected={isInline}>
   <RibbonGroup label={$t`Clipboard`} icon={PasteIcon}>
     <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo="Ctrl+V"
       disabled={!editor} onClick={() => EditorClipboard.paste(editor)}>

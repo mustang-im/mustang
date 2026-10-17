@@ -1,5 +1,4 @@
 import type { Folder } from "../../logic/Mail/Folder";
-import { MailViewSettings } from "./ViewSettings/ViewSettings";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 
 export enum ReadingPanePosition {
@@ -20,7 +19,6 @@ export enum ToDoBarPart {
 }
 
 export class MailView {
-  static readonly readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", ReadingPanePosition.Right);
   static readonly folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   static readonly showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
   static readonly separateAccountList = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
@@ -47,12 +45,6 @@ export class MailView {
   static setReadingView(reading: boolean) {
     MailView.folderPane.value = reading ? FolderPaneMode.Minimized : FolderPaneMode.Normal;
     MailView.ribbonCollapsed.value = reading;
-  }
-
-  static resetView(folder: Folder | null) {
-    MailViewSettings.reset(folder);
-    MailView.readingPane.value = ReadingPanePosition.Right;
-    MailView.folderPane.value = FolderPaneMode.Normal;
   }
 
   static isSectionCollapsed(id: string): boolean {

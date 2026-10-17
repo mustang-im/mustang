@@ -17,9 +17,9 @@
       <hbox class="field-row">
         <label for="options-reading-pane">{$t`Reading Pane:`}</label>
         <ComboBox options={[
-            { value: ReadingPanePosition.Right, label: $t`Right` },
-            { value: ReadingPanePosition.Bottom, label: $t`Bottom` },
-            { value: ReadingPanePosition.Off, label: $t`Off` },
+            { value: "right", label: $t`Right` },
+            { value: "bottom", label: $t`Bottom` },
+            { value: "off", label: $t`Off` },
           ]}
           bind:value={$readingPaneSetting.value} label={$t`Reading Pane`} width="160px" />
       </hbox>
@@ -94,7 +94,8 @@
 <script lang="ts">
   import type { Tag } from "../../../logic/Abstract/Tag";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { MailView, ReadingPanePosition } from "../../Mail/MailView";
+  import { MailView } from "../../Mail/MailView";
+  import type { ReadingPanePosition } from "../../Mail/3pane/3Pane.svelte";
   import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
   import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
   import { CategoryColors } from "../../Mail/Categories/CategoryColors";
@@ -129,7 +130,7 @@
   const repliesInNewWindowSetting = ComposerSettings.repliesInNewWindow;
   const notificationsSetting = getLocalStorage<string[]>("notifications.mail", ["popup"]);
   const onlyFromContactsSetting = getLocalStorage<boolean>("notifications.mail.only.addressbook", true);
-  const readingPaneSetting = MailView.readingPane;
+  const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
   const separateAccountListSetting = MailView.separateAccountList;
 
   let isMarkingRead = MailView.readAfter.value >= 0;
