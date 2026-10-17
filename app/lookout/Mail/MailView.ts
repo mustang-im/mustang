@@ -23,6 +23,7 @@ export class MailView {
   static readonly readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", ReadingPanePosition.Right);
   static readonly folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   static readonly showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
+  static readonly separateAccountList = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
   static readonly ribbonCollapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   static readonly toDoBar = getLocalStorage<ToDoBarPart[]>("lookout.mail.toDoBar", []);
 

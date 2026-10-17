@@ -15,12 +15,29 @@
         {/each}
       {/if}
     {/if}
-    {#each accountTrees as account (account.id)}
-      <SectionHeader id={account.id} {account} />
-      {#if !isCollapsed(account.id, $collapsedIDs)}
-        <AccountFolders {account} />
+    {#if $separateAccountList.value}
+      <SectionHeader id="accounts" label={$t`Accounts`} />
+      {#if !isCollapsed("accounts", $collapsedIDs)}
+        <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
+          {#each accountTrees as account (account.id)}
+            <AccountRow {account} selected={account == shownAccount} />
+          {/each}
+        </vbox>
       {/if}
-    {/each}
+      {#if shownAccount}
+        <SectionHeader id={shownAccount.id} account={shownAccount} />
+        {#if !isCollapsed(shownAccount.id, $collapsedIDs)}
+          <AccountFolders account={shownAccount} />
+        {/if}
+      {/if}
+    {:else}
+      {#each accountTrees as account (account.id)}
+        <SectionHeader id={account.id} {account} />
+        {#if !isCollapsed(account.id, $collapsedIDs)}
+          <AccountFolders {account} />
+        {/if}
+      {/each}
+    {/if}
     {#if allAccountSearches.length}
       <SectionHeader id="search-folders" label={$t`Search Folders`} />
       {#if !isCollapsed("search-folders", $collapsedIDs)}
@@ -37,9 +54,11 @@
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
+  import { selectedAccount } from "../../../frontend/Mail/Selected";
   import { FolderPaneMode, MailView } from "../MailView";
   import SectionHeader from "./SectionHeader.svelte";
   import AccountFolders from "./AccountFolders.svelte";
+  import AccountRow from "./AccountRow.svelte";
   import FolderNode from "./FolderNode.svelte";
   import MinimizeIcon from "lucide-svelte/icons/chevron-left";
   import { t } from "../../../l10n/l10n";
@@ -50,6 +69,16 @@
   $: allAccountSearches = $savedSearches.contents.filter(folder => !folder.search.account || !$accounts.contains(folder.search.account));
   const accounts = appGlobal.emailAccounts;
   const collapsedIDs = MailView.collapsedSections;
+  const separateAccountList = MailView.separateAccountList;
+
+  let shownAccount: MailAccount = null;
+  $: shownAccount = accountToShow($selectedAccount, accountTrees);
+  function accountToShow(selected: MailAccount, all: MailAccount[]): MailAccount {
+    if (all.includes(selected)) {
+      return selected;
+    }
+    return all.includes(shownAccount) ? shownAccount : all[0] ?? null;
+  }
 
   $: accountTrees = mainAccountsFirst($accounts.contents);
   function mainAccountsFirst(all: MailAccount[]): MailAccount[] {
@@ -98,6 +127,9 @@
   .minimize:hover {
     background-color: var(--lo-hover-bg);
     color: var(--lo-fg);
+  }
+  .account-list {
+    flex-shrink: 0;
   }
   .scroll {
     flex: 1 0 0;
