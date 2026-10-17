@@ -1,7 +1,7 @@
-<Dialog title={$t`Sort`} okLabel={$t`OK`} onOK={() => onOK(sortColumn, sortAscending)} width="420px" on:close>
-  <GroupBox label={$t`Sort items by`}>
+<Dialog title={title ?? $t`Sort`} okLabel={$t`OK`} onOK={() => onOK(sortColumn, sortAscending)} width="420px" on:close>
+  <GroupBox label={itemsLabel ?? $t`Sort items by`}>
     <hbox class="sort-row">
-      <ComboBox options={columnOptions} bind:value={sortColumn} label={$t`Sort items by`} width="200px" />
+      <ComboBox options={columnOptions} bind:value={sortColumn} label={itemsLabel ?? $t`Sort items by`} width="200px" />
       <vbox class="order">
         <Radio label={$t`Ascending`} bind:group={sortAscending} value={true} />
         <Radio label={$t`Descending`} bind:group={sortAscending} value={false} />
@@ -23,6 +23,8 @@
   export let column: T;
   export let ascending: boolean;
   export let onOK: (column: T, ascending: boolean) => void;
+  export let title: string = null;
+  export let itemsLabel: string = null;
 
   let sortColumn = column;
   let sortAscending = ascending;

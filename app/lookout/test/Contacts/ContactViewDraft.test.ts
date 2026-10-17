@@ -32,3 +32,20 @@ test("Remove and move a column from the header", () => {
   ContactColumns.moveColumn(ContactView.Phone, ContactColumn.FullName, null);
   expect(ContactColumns.phoneColumns.value.at(-1)).toBe(ContactColumn.FullName);
 });
+
+test("List view is grouped by Company by default, Phone view isn't; grouping changes only on save", () => {
+  ContactViewDraft.defaults(ContactView.List).save();
+  ContactViewDraft.defaults(ContactView.Phone).save();
+  expect(ContactColumns.listGroupBy.value).toEqual({ column: ContactColumn.Company, ascending: true });
+  expect(ContactColumns.phoneGroupBy.value).toBeNull();
+  let draft = ContactViewDraft.fromSettings(ContactView.Phone);
+  expect(draft.groupBySummary).toBe("None");
+  draft.groupBy = { column: ContactColumn.HomeCity, ascending: false };
+  expect(ContactColumns.phoneGroupBy.value).toBeNull();
+  draft.save();
+  expect(ContactColumns.phoneGroupBy.value).toEqual({ column: ContactColumn.HomeCity, ascending: false });
+  expect(draft.groupBySummary).toBe("Home City (descending)");
+  expect(ContactColumns.listGroupBy.value).toEqual({ column: ContactColumn.Company, ascending: true });
+  ContactViewDraft.defaults(ContactView.Phone).save();
+  expect(ContactColumns.phoneGroupBy.value).toBeNull();
+});

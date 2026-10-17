@@ -28,7 +28,22 @@
       <span class="add-label">{$t`Click here to add a new Contact`}</span>
     </button>
   {/if}
-  {#if $contacts.hasItems}
+  {#if $contacts.hasItems && grouping}
+    <FastList
+      items={rowItems}
+      bind:selectedItem={selectedRow}
+      bind:selectedItems={selectedRows}
+      on:init={onInit}
+      columns={gridColumns}>
+      <svelte:fragment slot="row" let:item>
+        {#if ContactGrouping.isHeader(item)}
+          <ContactGroupRow group={item} onToggle={toggleGroup} />
+        {:else}
+          <ContactTableRow contact={item} {columns} {onContextMenu} />
+        {/if}
+      </svelte:fragment>
+    </FastList>
+  {:else if $contacts.hasItems}
     <FastList
       items={contacts}
       bind:selectedItem={selectedContact}
@@ -63,6 +78,16 @@
     onClick={() => { $sort.value = { column: $sort.value.column, ascending: !$sort.value.ascending }; }} />
   <MenuDivider />
   {#if headerColumn}
+    <MenuItem label={$t`Group By This Field`} icon={GroupIcon}
+      checked={$groupBySetting.value?.column == headerColumn}
+      onClick={() => groupBy(headerColumn)} />
+  {/if}
+  {#if grouping}
+    <MenuItem label={$t`Expand All Groups`} icon={ExpandAllIcon} onClick={() => setAllCollapsed(false)} />
+    <MenuItem label={$t`Collapse All Groups`} icon={CollapseAllIcon} onClick={() => setAllCollapsed(true)} />
+  {/if}
+  <MenuDivider />
+  {#if headerColumn}
     <MenuItem label={$t`Remove This Column`} icon={RemoveIcon}
       disabled={headerColumn == ContactColumn.FullName && $t`The list needs the Full Name column`}
       onClick={() => ContactColumns.removeColumn(view, headerColumn)} />
@@ -76,6 +101,12 @@
   import type { Contact } from "../../logic/Abstract/Contact";
   import { ContactActions } from "./ContactActions";
   import ContactTableRow from "./ContactTableRow.svelte";
+  import ContactGroupRow from "./ContactGroupRow.svelte";
+  import { ContactGrouping, type ContactGroupHeader, type ContactRow } from "./Views/ContactGrouping";
+  import { ObservedItems } from "../Shared/ObservedItems";
+  import GroupIcon from "lucide-svelte/icons/group";
+  import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
+  import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
   import ContactContextMenu from "./ContactContextMenu.svelte";
   import { selectedAddressbook } from "./Selected";
   import { appGlobal } from "../../logic/app";
@@ -95,7 +126,7 @@
   import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import AscendingIcon from "lucide-svelte/icons/chevron-up";
   import DescendingIcon from "lucide-svelte/icons/chevron-down";
-  import type { ArrayColl, Collection } from "svelte-collections";
+  import { ArrayColl, type Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
   export let contacts: Collection<Contact>;
@@ -107,6 +138,57 @@
 
   const sort = ContactColumns.sort;
   $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
+
+  $: groupBySetting = ContactColumns.groupBySetting(view);
+  $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
+  $: listedContacts = ObservedItems.of(contacts);
+  let collapsed = new Set<string>();
+  const rowItems = new ArrayColl<ContactRow>();
+  $: rowItems.replaceAll(grouping ? grouping.rows($listedContacts, collapsed) : []);
+  let selectedRows = new ArrayColl<ContactRow>();
+  let selectedRow: ContactRow = null;
+  $: grouping && selectionToOutside($selectedRows);
+  $: grouping && selectionFromOutside($selectedContacts);
+
+  function selectionToOutside(rows: ArrayColl<ContactRow>) {
+    let selected = rows.contents.filter(row => !ContactGrouping.isHeader(row)) as Contact[];
+    if (!sameItems(selected, selectedContacts.contents)) {
+      selectedContacts.replaceAll(selected);
+    }
+    selectedContact = selected[0] ?? null;
+  }
+
+  function selectionFromOutside(outside: ArrayColl<Contact>) {
+    let inside = selectedRows.contents.filter(row => !ContactGrouping.isHeader(row));
+    if (!sameItems(inside, outside.contents)) {
+      selectedRows.replaceAll(outside.contents);
+    }
+  }
+
+  function sameItems(first: ContactRow[], second: ContactRow[]): boolean {
+    return first.length == second.length && first.every((item, i) => item == second[i]);
+  }
+
+  function toggleGroup(group: ContactGroupHeader) {
+    setCollapsed(group, !group.isCollapsed);
+  }
+
+  function setCollapsed(group: ContactGroupHeader, isCollapsed: boolean) {
+    if (isCollapsed) {
+      collapsed.add(group.id);
+    } else {
+      collapsed.delete(group.id);
+    }
+    collapsed = collapsed;
+  }
+
+  function setAllCollapsed(isCollapsed: boolean) {
+    collapsed = new Set(isCollapsed ? grouping.groups($listedContacts).map(group => group.id) : []);
+  }
+
+  function groupBy(column: ContactColumn) {
+    $groupBySetting.value = $groupBySetting.value?.column == column ? null : { column, ascending: true };
+  }
 
   function sortBy(column: ContactColumn) {
     ContactColumns.sort.value = ContactColumns.toggledSort(ContactColumns.sort.value, column);
@@ -157,7 +239,7 @@
   let tableEl: HTMLElement;
   let scrollbarWidth = 0;
 
-  function onInit(event: CustomEvent<{ scrollToItem: (contact: Contact) => void }>) {
+  function onInit(event: CustomEvent<{ scrollToItem: (row: ContactRow) => void }>) {
     if (!contacts.contains(selectedContact)) {
       selectedContacts.clear();
       selectedContacts.add(contacts.first);
@@ -172,6 +254,13 @@
   }
 
   function onKeyDown(event: KeyboardEvent) {
+    if (grouping && ContactGrouping.isHeader(selectedRow) && !event.ctrlKey && !event.altKey &&
+        (event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Enter")) {
+      event.preventDefault();
+      let group = selectedRow;
+      setCollapsed(group, event.key == "Enter" ? !group.isCollapsed : event.key == "ArrowLeft");
+      return;
+    }
     if (event.key == "Enter" && selectedContact && !event.ctrlKey && !event.altKey) {
       event.preventDefault();
       ContactActions.edit(selectedContact);

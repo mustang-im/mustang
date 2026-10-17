@@ -4,6 +4,8 @@
     <div class="rows">
       <DialogButton label={$t`Columns…`} classes="settings-button" onClick={() => { open = "columns"; }} />
       <span class="summary" title={draft.columnsSummary}>{draft.columnsSummary}</span>
+      <DialogButton label={$t`Group By…`} classes="settings-button" onClick={() => { open = "group-by"; }} />
+      <span class="summary">{draft.groupBySummary}</span>
       <DialogButton label={$t`Sort…`} classes="settings-button" onClick={() => { open = "sort"; }} />
       <span class="summary">{draft.sortSummary}</span>
     </div>
@@ -17,6 +19,12 @@
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
     columnSets={ContactColumns.columnSets()}
     onOK={columns => { draft.columns = columns; draft = draft; }} on:close={closeSub} />
+{:else if open == "group-by"}
+  <SortDialog title={$t`Group By`} itemsLabel={$t`Group items by`}
+    columnOptions={[ { value: kNoGrouping, label: $t`(none)` }, ...sortOptions ]}
+    column={draft.groupBy?.column ?? kNoGrouping} ascending={draft.groupBy?.ascending ?? true}
+    onOK={(column, ascending) => { draft.groupBy = column == kNoGrouping ? null : { column: column as ContactColumn, ascending }; draft = draft; }}
+    on:close={closeSub} />
 {:else if open == "sort"}
   <SortDialog columnOptions={sortOptions} column={draft.sort.column} ascending={draft.sort.ascending}
     onOK={(column, ascending) => { draft.sort = { column, ascending }; draft = draft; }} on:close={closeSub} />
@@ -35,7 +43,8 @@
   export let view: ContactView;
 
   let draft = ContactViewDraft.fromSettings(view);
-  let open: "columns" | "sort" | null = null;
+  let open: "columns" | "group-by" | "sort" | null = null;
+  const kNoGrouping = "none";
   $: sortOptions = ContactColumns.columnSets().at(-1).columns
     .map(column => ({ value: column, label: ContactColumns.label(column) }));
 

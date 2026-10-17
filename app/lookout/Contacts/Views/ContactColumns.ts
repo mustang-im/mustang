@@ -71,6 +71,19 @@ export class ContactColumns {
   static readonly phoneColumns = getLocalStorage<ContactColumn[]>("lookout.contacts.phone.columns",
     ContactColumns.defaultColumns(ContactView.Phone));
 
+  static readonly listGroupBy = getLocalStorage<ContactSort | null>("lookout.contacts.list.groupBy",
+    ContactColumns.defaultGroupBy(ContactView.List));
+  static readonly phoneGroupBy = getLocalStorage<ContactSort | null>("lookout.contacts.phone.groupBy",
+    ContactColumns.defaultGroupBy(ContactView.Phone));
+
+  static defaultGroupBy(view: ContactView): ContactSort | null {
+    return view == ContactView.List ? { column: ContactColumn.Company, ascending: true } : null;
+  }
+
+  static groupBySetting(view: ContactView) {
+    return view == ContactView.Phone ? ContactColumns.phoneGroupBy : ContactColumns.listGroupBy;
+  }
+
   static defaultColumns(view: ContactView): ContactColumn[] {
     if (view == ContactView.Phone) {
       return [

@@ -196,6 +196,8 @@
     ContactColumns.sort.value = ContactColumns.sort.defaultValue;
     ContactColumns.listColumns.value = ContactColumns.listColumns.defaultValue;
     ContactColumns.phoneColumns.value = ContactColumns.phoneColumns.defaultValue;
+    ContactColumns.listGroupBy.value = ContactColumns.listGroupBy.defaultValue;
+    ContactColumns.phoneGroupBy.value = ContactColumns.phoneGroupBy.defaultValue;
     ContactColumns.folderPane.value = true;
     ContactColumns.readingPane.value = true;
   }
