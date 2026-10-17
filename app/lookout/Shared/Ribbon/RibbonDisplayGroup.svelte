@@ -14,11 +14,11 @@
     onChange={checked => { $qatHidden.value = !checked; }} />
   <RibbonButton label={$t`Customize Ribbon…`} icon={CustomizeIcon} size="small"
     tooltip={$t`Choose which tabs and groups the ribbon shows`}
-    onClick={() => ribbon.isCustomizing.set(true)} />
+    onClick={() => { $isCustomizing = true; }} />
 </RibbonGroup>
 
 <script lang="ts">
-  import { RibbonModel, type RibbonLayout } from "./RibbonGroup";
+  import type { RibbonLayout } from "./RibbonGroup";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonGroup from "./RibbonGroup.svelte";
   import RibbonButton from "./RibbonButton.svelte";
@@ -28,9 +28,10 @@
   import QuickAccessIcon from "lucide-svelte/icons/app-window";
   import CustomizeIcon from "lucide-svelte/icons/settings-2";
   import { getContext } from "svelte";
+  import type { Writable } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
-  const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
+  const isCustomizing = getContext<Writable<boolean>>("ribbonIsCustomizing");
   const layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   const collapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);

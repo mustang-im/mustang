@@ -35,7 +35,7 @@
 </Dialog>
 
 <script lang="ts">
-  import type { RibbonModel, RibbonTabInfo } from "./RibbonGroup";
+  import type { RibbonTabInfo } from "./RibbonGroup";
   import { RibbonCustomization, type RibbonHiddenParts } from "./RibbonCustomization";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../Dialog/Dialog.svelte";
@@ -43,27 +43,25 @@
   import CheckBox from "../Form/CheckBox.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
-  import { createEventDispatcher, onDestroy, onMount, tick } from "svelte";
+  import { createEventDispatcher, onMount, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let ribbon: RibbonModel;
+  export let tabs: RibbonTabInfo[];
+  export let ribbonID: string;
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  const tabs = ribbon.tabs;
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
-  let hiddenTabs = new Set(customization.value?.[ribbon.id]?.tabs ?? []);
-  let hiddenGroups = new Set(customization.value?.[ribbon.id]?.groups ?? []);
+  let hiddenTabs = new Set(customization.value?.[ribbonID]?.tabs ?? []);
+  let hiddenGroups = new Set(customization.value?.[ribbonID]?.groups ?? []);
   let collapsedTabs = new Set<string>();
   let isReady = false;
 
-  $: mainTabs = isReady ? $tabs.filter(tab => !tab.isContextual) : [];
+  $: mainTabs = isReady ? tabs.filter(tab => !tab.isContextual) : [];
 
   onMount(async () => {
-    ribbon.startSurvey();
     await tick();
     isReady = true;
   });
-  onDestroy(() => ribbon.endSurvey());
 
   function groupLabels(tab: RibbonTabInfo): string[] {
     return [...new Set(tab.groups.map(group => group.label).filter(label => label))];
@@ -107,7 +105,7 @@
     if (!shownTabs.length && mainTabs.length) {
       hiddenTabs.delete(mainTabs[0].label);
     }
-    customization.value = RibbonCustomization.withHiddenParts(customization.value, ribbon.id, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
+    customization.value = RibbonCustomization.withHiddenParts(customization.value, ribbonID, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
   }
 
   function onClose() {

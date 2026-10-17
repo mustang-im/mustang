@@ -44,18 +44,16 @@
 </Menu>
 
 <script lang="ts">
-  import { RibbonModel } from "./RibbonGroup";
   import { RibbonCommands, type RibbonCommandEntry } from "./RibbonCommands";
   import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuLabel from "../Menu/MenuLabel.svelte";
   import TellMeIcon from "lucide-svelte/icons/lightbulb";
-  import { getContext, tick } from "svelte";
+  import { tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let ribbonEl: HTMLElement;
 
-  const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
 
   let fieldEl: HTMLElement;
   let inputEl: HTMLInputElement;
@@ -64,14 +62,13 @@
   let isMenuOpen = false;
   let isExpanded = false;
   let isActive = false;
-  let isSurveying = false;
+  export let isSurveying = false;
   let entries: RibbonCommandEntry[] = [];
   let results: RibbonCommandEntry[] = [];
 
   async function startSurvey() {
     if (!isSurveying) {
       isSurveying = true;
-      ribbon.startSurvey();
     }
     await tick();
     entries = collect(ribbonEl);
@@ -80,7 +77,6 @@
   function endSurvey() {
     if (isSurveying) {
       isSurveying = false;
-      ribbon.endSurvey();
     }
   }
 

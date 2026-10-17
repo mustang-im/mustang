@@ -22,7 +22,7 @@
     </hbox>
     <hbox flex class="spacer" />
     <slot name="tab-row-end" />
-    <TellMe {ribbonEl} />
+    <TellMe {ribbonEl} bind:isSurveying={isTellMeSurveying} />
     <ContextMenu bind:this={contextMenu}>
       {#if !$qatHidden.value}
         <MenuItem label={$qatPosition.value == "below" ? $t`Show Quick Access Toolbar Above the Ribbon` : $t`Show Quick Access Toolbar Below the Ribbon`}
@@ -41,7 +41,7 @@
   <QuickAccessToolbarView placement="below" />
   <KeyTipsLayer {ribbonEl} />
   {#if $isCustomizing}
-    <CustomizeRibbonDialog {ribbon} on:close={() => $isCustomizing = false} />
+    <CustomizeRibbonDialog tabs={$tabs} {ribbonID} on:close={() => $isCustomizing = false} />
   {/if}
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">
@@ -60,7 +60,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} />
 
 <script lang="ts">
-  import { RibbonModel, type RibbonTabInfo, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
+  import type { RibbonTabInfo, RibbonLayout, RibbonMetrics } from "./RibbonGroup";
   import { backstagePage, isBackstageOpen } from "../../Settings/Backstage/selected";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
@@ -71,7 +71,7 @@
   import ContextMenu from "../Menu/ContextMenu.svelte";
   import type { RibbonHiddenParts } from "./RibbonCustomization";
   import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
-  import { get } from "svelte/store";
+  import { get, writable } from "svelte/store";
   import type { QuickAccessPosition } from "../QuickAccess/QuickAccess";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { setContext, onMount, onDestroy, tick } from "svelte";
@@ -79,21 +79,45 @@
 
   export let id: string = null;
 
-  const ribbon = new RibbonModel();
-  ribbon.id = id ?? get(selectedApp)?.id ?? ribbon.id;
-  setContext(RibbonModel.contextKey, ribbon);
-  const tabs = ribbon.tabs;
-  const selectedTab = ribbon.selectedTab;
+  const ribbonID = id ?? get(selectedApp)?.id ?? "main";
+  const tabs = writable<RibbonTabInfo[]>([]);
+  const selectedTab = writable<RibbonTabInfo>(null);
+  const metrics = writable<RibbonMetrics>(null);
+  const isSurveying = writable(false);
+  const isCustomizing = writable(false);
+  let isTellMeSurveying = false;
+  $: $isSurveying = isTellMeSurveying || $isCustomizing;
+  setContext("ribbonID", ribbonID);
+  setContext("ribbonTabs", tabs);
+  setContext("ribbonSelectedTab", selectedTab);
+  setContext("ribbonMetrics", metrics);
+  setContext("ribbonIsSurveying", isSurveying);
+  setContext("ribbonIsCustomizing", isCustomizing);
+  setContext("onRibbonTabAdded", addTab);
+  setContext("onRibbonTabRemoved", removeTab);
+
+  function addTab(tab: RibbonTabInfo) {
+    tabs.update(list => [...list, tab]);
+    if (!get(selectedTab)) {
+      selectedTab.set(tab);
+    }
+  }
+
+  function removeTab(tab: RibbonTabInfo) {
+    tabs.update(list => list.filter(existing => existing != tab));
+    if (get(selectedTab) == tab) {
+      selectedTab.set(get(tabs)[0] ?? null);
+    }
+  }
   const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
   const qatPosition = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
-  const isCustomizing = ribbon.isCustomizing;
   let contextMenu: ContextMenu;
 
-  $: shownTabs = $tabs.filter(tab => tab.isContextual || !($customization.value?.[ribbon.id]?.tabs ?? []).includes(tab.label));
+  $: shownTabs = $tabs.filter(tab => tab.isContextual || !($customization.value?.[ribbonID]?.tabs ?? []).includes(tab.label));
   $: if ($selectedTab && shownTabs.length && !shownTabs.includes($selectedTab)) {
-    ribbon.selectTab(shownTabs[0]);
+    $selectedTab = shownTabs[0];
   }
   const collapsedSetting = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
 
@@ -122,11 +146,15 @@
     if (!probeEl) {
       return;
     }
-    let metrics = {} as RibbonMetrics;
+    let measured = {} as RibbonMetrics;
     for (let probe of probeEl.querySelectorAll<HTMLElement>("[data-metric]")) {
-      metrics[probe.dataset.metric] = probe.getBoundingClientRect().width;
+      measured[probe.dataset.metric] = probe.getBoundingClientRect().width;
     }
-    ribbon.setMetrics(metrics);
+    let old = get(metrics);
+    if (old && Object.keys(measured).every(key => old[key] == measured[key])) {
+      return;
+    }
+    metrics.set(measured);
   }
   let isTempOpen = false;
 
@@ -140,7 +168,7 @@
     if (isCollapsed) {
       isTempOpen = !(isTempOpen && tab == $selectedTab);
     }
-    ribbon.selectTab(tab);
+    $selectedTab = tab;
   }
 
   function onToggleCollapsed() {

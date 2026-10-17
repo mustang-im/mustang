@@ -27,19 +27,24 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closeMoreMenu} />
 
 <script lang="ts">
-  import { RibbonGroupLayout, RibbonModel, type RibbonGroupInfo, type RibbonLayout, type RibbonTabInfo } from "./RibbonGroup";
+  import { RibbonGroupLayout, type RibbonGroupInfo, type RibbonLayout, type RibbonMetrics, type RibbonTabInfo } from "./RibbonGroup";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { getContext, setContext, onDestroy } from "svelte";
-  import { writable } from "svelte/store";
+  import { writable, type Readable, type Writable } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let label: string;
   export let contextual = false;
   export let isSelected = false;
 
-  const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
+  const tabs = getContext<Writable<RibbonTabInfo[]>>("ribbonTabs");
+  const selectedTab = getContext<Writable<RibbonTabInfo>>("ribbonSelectedTab");
+  const isSurveying = getContext<Readable<boolean>>("ribbonIsSurveying");
+  const metrics = getContext<Readable<RibbonMetrics>>("ribbonMetrics");
+  const onTabAdded = getContext<(tab: RibbonTabInfo) => void>("onRibbonTabAdded");
+  const onTabRemoved = getContext<(tab: RibbonTabInfo) => void>("onRibbonTabRemoved");
   const tab: RibbonTabInfo = { label, isContextual: contextual, groups: [] };
   const tabLabel = writable(label);
   $: $tabLabel = label;
@@ -48,19 +53,23 @@
   setContext("onRibbonGroupRemoved", removeGroup);
   setContext("onRibbonGroupResized", fitGroups);
   setContext("onRibbonMoreMenuClose", closeMoreMenu);
-  ribbon.addTab(tab);
+  onTabAdded(tab);
   if (isSelected) {
-    ribbon.selectTab(tab);
+    $selectedTab = tab;
   }
-  onDestroy(() => ribbon.removeTab(tab));
-  $: ribbon.setTabLabel(tab, label);
-  const selectedTab = ribbon.selectedTab;
+  onDestroy(() => onTabRemoved(tab));
+  $: renameTab(label);
+  function renameTab(newLabel: string) {
+    if (tab.label == newLabel) {
+      return;
+    }
+    tab.label = newLabel;
+    tabs.update(list => list);
+  }
   $: isSelected = $selectedTab == tab;
   $: if (isSelected && $selectedTab != tab) {
-    ribbon.selectTab(tab);
+    selectedTab.set(tab);
   }
-  const isSurveying = ribbon.isSurveying;
-  const metrics = ribbon.metrics;
   const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   let overflowGroups: RibbonGroupInfo[] = [];
   let isMoreMenuOpen = false;

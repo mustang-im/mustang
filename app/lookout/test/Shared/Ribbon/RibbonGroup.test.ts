@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
-import { RibbonGroupLayout, RibbonLabel, RibbonModel, type RibbonGroupInfo, type RibbonTabInfo } from "../../../Shared/Ribbon/RibbonGroup";
+import { RibbonGroupLayout, RibbonLabel, type RibbonGroupInfo } from "../../../Shared/Ribbon/RibbonGroup";
 import { expect, test } from "vitest";
-import { get } from "svelte/store";
 
 function makeGroup(label: string, expandedWidth: number, collapsedWidth = 82): RibbonGroupInfo {
   return makeStagedGroup(label, [expandedWidth, collapsedWidth]);
@@ -155,37 +154,6 @@ test("Button look depends on layout, stage and size", () => {
   expect(RibbonGroupLayout.itemLook("simplified", 0, false, "large")).toBe("simplified");
   expect(RibbonGroupLayout.itemLook("simplified", 1, false, "small")).toBe("simplified-icon");
   expect(RibbonGroupLayout.itemLook("simplified", 2, true, "small")).toBe("list");
-});
-
-function makeTab(label: string): RibbonTabInfo {
-  return { label, isContextual: false, groups: [] };
-}
-
-test("Tabs: first added tab is selected, removing it selects the next", () => {
-  let ribbon = new RibbonModel();
-  let home = makeTab("Home");
-  let view = makeTab("View");
-  ribbon.addTab(home);
-  ribbon.addTab(view);
-  expect(get(ribbon.selectedTab)).toBe(home);
-  expect(get(ribbon.tabs)).toEqual([home, view]);
-  ribbon.removeTab(home);
-  expect(get(ribbon.selectedTab)).toBe(view);
-  ribbon.setTabLabel(view, "Ansicht");
-  expect(get(ribbon.tabs)[0].label).toBe("Ansicht");
-});
-
-test("Select a tab by its label", () => {
-  let ribbon = new RibbonModel();
-  let home = makeTab("Home");
-  let search = makeTab("Search");
-  ribbon.addTab(home);
-  ribbon.addTab(search);
-  ribbon.selectTabByLabel("Search");
-  expect(get(ribbon.selectedTab)).toBe(search);
-  // An unknown label keeps the selection
-  ribbon.selectTabByLabel("Nonexistent");
-  expect(get(ribbon.selectedTab)).toBe(search);
 });
 
 test("Classic: a group is never narrower than its label", () => {

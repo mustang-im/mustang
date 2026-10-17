@@ -39,7 +39,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closePopup} />
 
 <script lang="ts">
-  import { RibbonGroupLayout, RibbonModel, type RibbonGroupInfo, type RibbonGroupLook, type RibbonItemInfo, type RibbonLayout } from "./RibbonGroup";
+  import { RibbonGroupLayout, type RibbonGroupInfo, type RibbonGroupLook, type RibbonItemInfo, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
   import type { RibbonHiddenParts } from "./RibbonCustomization";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
@@ -53,7 +53,7 @@
   export let onLauncher: () => void | Promise<void> = null;
   export let launcherTooltip: string = null;
 
-  const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
+  const ribbonID = getContext<string>("ribbonID");
   const tabLabel = getContext<Readable<string>>("ribbonTabLabel") ?? readable<string>(undefined);
   const onGroupAdded = getContext<(group: RibbonGroupInfo) => void>("onRibbonGroupAdded");
   const onGroupRemoved = getContext<(group: RibbonGroupInfo) => void>("onRibbonGroupRemoved");
@@ -73,7 +73,7 @@
   let collapsed = false;
   const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   let layout: RibbonLayout;
-  $: layout = ribbon && $layoutSetting.value == "simplified" ? "simplified" : "classic";
+  $: layout = ribbonID && $layoutSetting.value == "simplified" ? "simplified" : "classic";
   const look = writable<RibbonGroupLook>({ layout: "classic", stage, collapsed });
   $: $look = { layout, stage, collapsed };
   setContext("ribbonGroupLook", look);
@@ -84,10 +84,10 @@
     }
   });
 
-  const metrics = ribbon?.metrics ?? writable(null);
+  const metrics = getContext<Readable<RibbonMetrics>>("ribbonMetrics") ?? readable<RibbonMetrics>(null);
   $: isInMoreMenu = collapsed && layout == "simplified";
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
-  $: isHiddenByUser = ($customization.value?.[ribbon?.id]?.groups ?? []).includes($tabLabel + "/" + label);
+  $: isHiddenByUser = ($customization.value?.[ribbonID]?.groups ?? []).includes($tabLabel + "/" + label);
 
   let groupEl: HTMLElement;
   let homeEl: HTMLElement;

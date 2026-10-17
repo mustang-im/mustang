@@ -1,5 +1,3 @@
-import { writable, get, type Writable } from "svelte/store";
-
 export type RibbonLayout = "classic" | "simplified";
 export type RibbonItemSize = "large" | "small";
 export type RibbonItemLook = "large" | "small" | "small-icon" | "simplified" | "simplified-icon" | "list";
@@ -41,70 +39,6 @@ export interface RibbonGroupLook {
   layout: RibbonLayout;
   stage: number;
   collapsed: boolean;
-}
-
-export class RibbonModel {
-  static readonly contextKey = "lookout-ribbon";
-  id = "main";
-  readonly tabs: Writable<RibbonTabInfo[]> = writable([]);
-  readonly selectedTab: Writable<RibbonTabInfo> = writable(null);
-  readonly metrics: Writable<RibbonMetrics> = writable(null);
-  readonly isSurveying: Writable<boolean> = writable(false);
-  readonly isCustomizing: Writable<boolean> = writable(false);
-  protected surveys = 0;
-
-  addTab(tab: RibbonTabInfo) {
-    this.tabs.update(tabs => [...tabs, tab]);
-    if (!get(this.selectedTab)) {
-      this.selectedTab.set(tab);
-    }
-  }
-
-  removeTab(tab: RibbonTabInfo) {
-    this.tabs.update(tabs => tabs.filter(existing => existing != tab));
-    if (get(this.selectedTab) == tab) {
-      this.selectedTab.set(get(this.tabs)[0] ?? null);
-    }
-  }
-
-  setTabLabel(tab: RibbonTabInfo, label: string) {
-    if (tab.label == label) {
-      return;
-    }
-    tab.label = label;
-    this.tabs.update(tabs => tabs);
-  }
-
-  selectTab(tab: RibbonTabInfo) {
-    this.selectedTab.set(tab);
-  }
-
-  selectTabByLabel(label: string) {
-    let tab = get(this.tabs).find(candidate => candidate.label == label);
-    if (tab) {
-      this.selectTab(tab);
-    }
-  }
-
-  startSurvey() {
-    this.surveys++;
-    this.isSurveying.set(true);
-  }
-
-  endSurvey() {
-    this.surveys = Math.max(0, this.surveys - 1);
-    if (!this.surveys) {
-      this.isSurveying.set(false);
-    }
-  }
-
-  setMetrics(metrics: RibbonMetrics) {
-    let old = get(this.metrics);
-    if (old && Object.keys(metrics).every(key => old[key] == metrics[key])) {
-      return;
-    }
-    this.metrics.set(metrics);
-  }
 }
 
 export class RibbonGroupLayout {
