@@ -50,7 +50,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
-  import { TimeColumnLayout } from "../TimeGrid/TimeColumnLayout";
+  import { TimeColumnLayout } from "./DayColumn";
   import type { WorkingHours } from "../View/WorkingHours";
   import { CalendarActions } from "../CalendarActions";
   import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";

@@ -1,5 +1,5 @@
 import type { Event } from "../../../logic/Calendar/Event";
-import { TimeColumnLayout } from "../TimeGrid/TimeColumnLayout";
+import { TimeColumnLayout } from "../DayView/DayColumn";
 import { EventLook } from "../Event/EventLook";
 
 export interface DayPreviewItem {

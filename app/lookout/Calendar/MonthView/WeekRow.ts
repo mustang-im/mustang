@@ -1,7 +1,7 @@
 import type { Event } from "../../../logic/Calendar/Event";
 import { layoutDayRow, type EventInDayRow } from "../../../frontend/Calendar/MonthView/WeekRow";
 
-export class MonthWeekLayout {
+export class WeekRowLayout {
   readonly shown: EventInDayRow[];
   readonly hiddenCounts: number[];
 

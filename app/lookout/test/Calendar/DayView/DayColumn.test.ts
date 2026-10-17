@@ -1,7 +1,7 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
-import "../../../logic/app";
-import { Event } from "../../../logic/Calendar/Event";
-import { TimeColumnLayout } from "../../Calendar/TimeGrid/TimeColumnLayout";
+import "../../../../logic/app";
+import { Event } from "../../../../logic/Calendar/Event";
+import { TimeColumnLayout } from "../../../Calendar/DayView/DayColumn";
 import { expect, test } from "vitest";
 
 const kDay = new Date(2026, 9, 15);

@@ -66,7 +66,7 @@
 
 <script lang="ts">
   import type { CalendarRange } from "../View/CalendarRange";
-  import { TimeColumnLayout } from "../TimeGrid/TimeColumnLayout";
+  import { TimeColumnLayout } from "./DayColumn";
   import { EventLook } from "../Event/EventLook";
   import { WorkingHours } from "../View/WorkingHours";
   import { TimeZoneRuler } from "../TimeZones";

@@ -38,7 +38,7 @@
 </div>
 
 <script lang="ts">
-  import type { TimedEventItem } from "../TimeGrid/TimeColumnLayout";
+  import type { TimedEventItem } from "./DayColumn";
   import { EventLook } from "../Event/EventLook";
   import { EventInteraction } from "../Event/EventInteraction";
   import { EventDrag, type EventDragMode } from "../EventDrag";

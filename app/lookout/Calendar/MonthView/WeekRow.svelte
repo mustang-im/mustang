@@ -48,7 +48,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { CalendarRange } from "../View/CalendarRange";
-  import { MonthWeekLayout } from "../Month/MonthWeekLayout";
+  import { WeekRowLayout } from "./WeekRow";
   import { CalendarActions } from "../CalendarActions";
   import { DayAtPoint } from "../View/DayAtPoint";
   import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
@@ -85,7 +85,7 @@
     let weekEnd = new Date(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate() + 1);
     weekEvents = events.filterObservable(event => event.startTime < weekEnd && event.endTime > weekStart);
   }
-  $: layout = derived([...$weekEvents.contents], eventsInWeek => new MonthWeekLayout(eventsInWeek, days, maxLines));
+  $: layout = derived([...$weekEvents.contents], eventsInWeek => new WeekRowLayout(eventsInWeek, days, maxLines));
 
   function dayAt(clientX: number): Date {
     return DayAtPoint.find(weekEl, clientX, days);
