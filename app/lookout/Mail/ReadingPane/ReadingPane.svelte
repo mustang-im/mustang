@@ -12,12 +12,12 @@
           <hbox class="attachments">
             <AttachmentList attachments={shownMessage.attachments} />
           </hbox>
-          {#if MailInvitation.isInvitationMail(shownMessage)}
+          {#if MailInvitation.isInvitationMail($shownMessage)}
             <InvitationBar message={shownMessage} />
           {:else}
-            {#if shownMessage.sml}
+            {#if $shownMessage.sml}
               <vbox class="sml">
-                <SMLCard message={shownMessage} sml={shownMessage.sml} />
+                <SMLCard message={shownMessage} sml={$shownMessage.sml} />
               </vbox>
             {/if}
           {/if}
