@@ -28,6 +28,7 @@
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
   import { LetterIndex } from "./LetterIndex";
+  import { ObservedItems } from "../Shared/ObservedItems";
   import { ContactActions } from "./ContactActions";
   import ContactListItem from "./ContactListItem.svelte";
   import ContactContextMenu from "./ContactContextMenu.svelte";
@@ -44,7 +45,8 @@
   let scrollToItem: (contact: Contact) => void = null;
   let scrollToIndex: (index: number) => void = null;
 
-  $: letterIndex = new LetterIndex($contacts.contents);
+  $: observedContacts = ObservedItems.of(contacts);
+  $: letterIndex = new LetterIndex($observedContacts);
 
   function onInit(event: CustomEvent<{ scrollToIndex: (index: number) => void, scrollToItem: (contact: Contact) => void }>) {
     scrollToItem = event.detail.scrollToItem;

@@ -64,6 +64,7 @@
   import { ContactColumns, ContactView } from "./Views/ContactColumns";
   import { LetterIndex } from "./LetterIndex";
   import { AddressbookSections } from "./AddressbookSections";
+  import { ObservedItems } from "../Shared/ObservedItems";
   import { appGlobal } from "../../logic/app";
   import { selectedPerson } from "../../frontend/Contacts/Person/Selected";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
@@ -126,9 +127,17 @@
   $: listedContacts = isSearch
     ? ContactSearch.results(searchedAddressbooks, isCurrentFolder ? folderContacts : allContacts, $searchOptions)
     : folderContacts;
-  $: sortedContacts = view == ContactView.List || view == ContactView.Phone
-    ? listedContacts.sort(ContactColumns.compare($sort.value))
-    : listedContacts.sort(LetterIndex.compareByName);
+  $: compareContacts = view == ContactView.List || view == ContactView.Phone
+    ? ContactColumns.compare($sort.value)
+    : LetterIndex.compareByName;
+  $: sortedContacts = listedContacts.sort(compareContacts);
+  $: observedContacts = ObservedItems.of(sortedContacts);
+  $: sortAgainWhenChanged($observedContacts);
+  function sortAgainWhenChanged(contacts: Contact[]) {
+    if (contacts.some((contact, i) => i > 0 && compareContacts(contacts[i - 1], contact) > 0)) {
+      sortedContacts = listedContacts.sort(compareContacts);
+    }
+  }
   $: shownAddressbook = $selectedAddressbook;
   $: searchPlaceholder = $shownAddressbook
     ? $t`Search ${$shownAddressbook.name}`
