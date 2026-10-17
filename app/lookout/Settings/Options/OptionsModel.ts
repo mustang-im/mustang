@@ -6,11 +6,9 @@ import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { Account } from "../../../logic/Abstract/Account";
 import { CalendarSettings } from "../../Calendar/CalendarSettings";
 import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
-import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { appGlobal } from "../../../logic/app";
-import { appName } from "../../../logic/build";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-import { getDateTimeLocalePref, getUILocale, getUILocalePref, gt, saveDateTimeLocale, saveUILocale, setUILocale } from "../../../l10n/l10n";
+import { getDateTimeLocalePref, getUILocale, getUILocalePref, saveDateTimeLocale, saveUILocale, setUILocale } from "../../../l10n/l10n";
 
 export class OptionsModel {
   protected readonly options: OptionValue<any, any>[] = [];
@@ -119,9 +117,6 @@ export class OptionsModel {
     }
     if (this.needsRestart) {
       setUILocale(getUILocale());
-      await appGlobal.remoteApp.restartApp();
-    } else if (this.frontend.isChanged &&
-        await MessageBox.ask(appName, gt`You need to restart ${appName} to switch the user interface. Restart now?`)) {
       await appGlobal.remoteApp.restartApp();
     }
   }
