@@ -22,7 +22,7 @@
       <hbox class="row all-attendees">{$t`All Attendees`}</hbox>
       {#each $shownParticipants as participant (participant)}
         <hbox class="row person">
-          <ParticipantConfirmIcon response={participant.response} />
+          <ParticipantConfirmIcon {participant} />
           <vbox flex class="person-text">
             <span class="name" title={participant.emailAddress}>{participant.name || participant.emailAddress}</span>
             {#if freeBusy && !loading}

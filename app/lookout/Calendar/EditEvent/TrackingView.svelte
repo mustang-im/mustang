@@ -24,7 +24,7 @@
           <tr>
             <td>
               <hbox class="name">
-                <ParticipantConfirmIcon response={participant.response} />
+                <ParticipantConfirmIcon {participant} />
                 <span>{participant.name || participant.emailAddress}</span>
                 {#if participant.name && participant.emailAddress}
                   <span class="lo-secondary">{participant.emailAddress}</span>

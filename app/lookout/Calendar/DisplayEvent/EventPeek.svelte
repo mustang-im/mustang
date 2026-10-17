@@ -1,4 +1,4 @@
-<Popup bind:popupOpen popupAnchor={peek.anchor} placement="right-start" boundaryElSel=".calendar-page">
+<Popup bind:popupOpen popupAnchor={anchor} placement="right-start" boundaryElSel=".calendar-page">
   <vbox class="event-peek lo-card" style="--event-color: {$event.color ?? $calendar?.color ?? "var(--lo-accent)"}"
     on:keydown={onKeyDown} role="dialog" aria-label={look.title} tabindex="-1">
     <hbox class="header">
@@ -49,12 +49,12 @@
 </Popup>
 
 <script lang="ts">
-  import { RecurrenceCase } from "../../../logic/Calendar/Event";
+  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventLook } from "../Event/EventLook";
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
-  import { eventPeek, type EventPeek } from "../selected";
+  import { eventPeek } from "../selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import OpenIcon from "lucide-svelte/icons/square-pen";
@@ -66,14 +66,14 @@
   import DetailsGrid from "./DetailsGrid.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let peek: EventPeek;
+  export let event: Event;
+  export let anchor: HTMLElement;
 
   let popupOpen = true;
   $: if (!popupOpen) {
     onClose();
   }
 
-  $: event = peek.event;
   $: calendar = $event.calendar;
   $: look = new EventLook($event);
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;

@@ -1,7 +1,7 @@
 <hbox class="attendee-list">
   {#each attendees as participant, index (participant)}
     <span class="attendee" title={tooltip(participant)}>
-      <ParticipantConfirmIcon response={participant.response} size={14} title={EventFormInfo.responseLabel(participant)} />
+      <ParticipantConfirmIcon {participant} size={14} />
       <span><span class="name">{participant.name || participant.emailAddress}</span>{index < attendees.length - 1 ? ";" : ""}</span>
     </span>
   {/each}
