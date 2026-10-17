@@ -5,7 +5,7 @@
       {#if workHours}
         {#each kWeekdays as weekday}
           {@const day = $workHours.days[weekday]}
-          <CheckBox label={weekdayName(weekday)} checked={day.isWorkDay} disabled={readOnly}
+          <Checkbox label={weekdayName(weekday)} checked={day.isWorkDay} disabled={readOnly}
             onChange={checked => onWorkDayChanged(weekday, checked)} />
           <TimeInput time={timeOf(day.startMinutes)} options={startTimes}
             label={$t`Start time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
@@ -46,7 +46,7 @@
   import { TimeZoneChoice, ZoneClock } from "../../Calendar/TimeZones";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import TimeInput from "../../Calendar/EditEvent/TimeInput.svelte";
   import WorkHoursIcon from "lucide-svelte/icons/briefcase-business";

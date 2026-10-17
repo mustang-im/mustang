@@ -48,7 +48,7 @@
       <vbox class="folders">
         {#each available as folder (folder.url)}
           <hbox class="folder">
-            <CheckBox label={String(folder.displayName || folder.url)} checked={chosen.includes(folder)}
+            <Checkbox label={String(folder.displayName || folder.url)} checked={chosen.includes(folder)}
               onChange={checked => toggle(folder, checked)} />
           </hbox>
         {/each}
@@ -81,7 +81,7 @@
   import FormGrid from "../Shared/Form/FormGrid.svelte";
   import TextField from "../Shared/Form/TextField.svelte";
   import ComboBox from "../Shared/Form/ComboBox.svelte";
-  import CheckBox from "../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../Shared/Form/Checkbox.svelte";
   import Radio from "../Shared/Form/Radio.svelte";
   import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../l10n/l10n";

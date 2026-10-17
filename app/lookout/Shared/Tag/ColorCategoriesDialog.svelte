@@ -12,7 +12,7 @@
         <ListView items={$tags} columns={[{ label: $t`Name` }]} bind:selected
           label={$t`Categories`} height="240px" let:item>
           <hbox class="category">
-            <CheckBox checked={stateOf(item, choiceVersion) == TagState.All}
+            <Checkbox checked={stateOf(item, choiceVersion) == TagState.All}
               indeterminate={stateOf(item, choiceVersion) == TagState.Some}
               tooltip={item.name}
               onChange={() => toggle(item)} />
@@ -56,7 +56,7 @@
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
   import ListView from "../Form/ListView.svelte";
-  import CheckBox from "../Form/CheckBox.svelte";
+  import Checkbox from "../Form/Checkbox.svelte";
   import ComboBox from "../Form/ComboBox.svelte";
   import type { ComboOption } from "../Form/ComboOption";
   import { createEventDispatcher } from "svelte";

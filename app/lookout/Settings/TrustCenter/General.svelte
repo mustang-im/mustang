@@ -38,10 +38,10 @@
             {/if}
           {/if}
         </grid>
-        <CheckBox label={$t`Encrypt contents and attachments for outgoing messages`}
+        <Checkbox label={$t`Encrypt contents and attachments for outgoing messages`}
           checked={encrypt} disabled={!isUsable && noKeyReason}
           onChange={onEncrypt} />
-        <CheckBox label={$t`Add digital signature to outgoing messages`}
+        <Checkbox label={$t`Add digital signature to outgoing messages`}
           checked={sign}
           disabled={!isUsable ? noKeyReason : encrypt && $t`Encrypted messages are always signed`}
           onChange={onSign} />
@@ -65,7 +65,7 @@
 
   <OptionsSection title={$t`Read as Plain Text`}>
     <OptionsRow icon={PlainTextIcon}>
-      <CheckBox label={$t`Read all standard mail in plain text`} checked={$contentRenderingSetting.value == "plaintext"}
+      <Checkbox label={$t`Read all standard mail in plain text`} checked={$contentRenderingSetting.value == "plaintext"}
         onChange={checked => { contentRenderingSetting.value = checked ? "plaintext" : "html"; }} />
     </OptionsRow>
   </OptionsSection>
@@ -99,7 +99,7 @@
   import DigitalIDDialog from "./DigitalIDDialog.svelte";
   import GetDigitalIDDialog from "./GetDigitalIDDialog.svelte";
   import CertificateRequestDialog from "./CertificateRequestDialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";

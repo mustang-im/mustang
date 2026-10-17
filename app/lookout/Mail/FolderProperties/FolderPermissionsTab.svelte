@@ -26,25 +26,25 @@
     <grid class="rights">
       <GroupBox label={$t`Read`} disabled={!canEditRights}>
         {#each [Right.Read] as right}
-          <CheckBox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
+          <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
         {/each}
       </GroupBox>
       <GroupBox label={$t`Write`} disabled={!canEditRights}>
         {#each [Right.Create, Right.CreateSubfolders, Right.FlagChange] as right}
-          <CheckBox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
+          <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
         {/each}
       </GroupBox>
       <GroupBox label={$t`Delete items`} disabled={!canEditRights}>
         {#each [Right.Delete] as right}
-          <CheckBox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
+          <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
         {/each}
       </GroupBox>
       <GroupBox label={$t`Other`} disabled={!canEditRights}>
         {#each [Right.DeleteFolder] as right}
-          <CheckBox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
+          <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
         {/each}
       </GroupBox>
@@ -52,7 +52,7 @@
   </GroupBox>
   <hbox class="scope">
     <Radio label={$t`This folder`} bind:group={permissions.allFolders} value={false} />
-    <CheckBox label={$t`Include subfolders`} bind:checked={permissions.includeSubfolders}
+    <Checkbox label={$t`Include subfolders`} bind:checked={permissions.includeSubfolders}
       disabled={permissions.allFolders} />
     <Radio label={$t`All folders of ${permissions.account.name}`} bind:group={permissions.allFolders} value={true} />
   </hbox>
@@ -71,7 +71,7 @@
   import ListView from "../../Shared/Form/ListView.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import { catchErrors, showError } from "../../../frontend/Util/error";

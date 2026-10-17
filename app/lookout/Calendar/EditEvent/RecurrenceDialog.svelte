@@ -42,7 +42,7 @@
             </hbox>
             <grid class="weekdays">
               {#each kAllWeekdays as weekday}
-                <CheckBox label={weekdayLabel(weekday, "long")}
+                <Checkbox label={weekdayLabel(weekday, "long")}
                   checked={weekday == startWeekday || pattern.weekdays.includes(weekday)}
                   disabled={weekday == startWeekday && $t`The day of the start date`}
                   onChange={() => toggleWeekday(weekday)} />
@@ -134,7 +134,7 @@
   import DateField from "../../Shared/Form/DateField.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { kAllWeekdays, weekdayLabel } from "../../../frontend/Util/date";

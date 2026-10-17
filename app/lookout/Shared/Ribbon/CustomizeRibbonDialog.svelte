@@ -14,13 +14,13 @@
             on:click={() => toggleExpanded(tab.label)}>
             <svelte:component this={collapsedTabs.has(tab.label) ? ExpandIcon : CollapseIcon} size={14} />
           </button>
-          <CheckBox label={tab.label} checked={!hiddenTabs.has(tab.label)}
+          <Checkbox label={tab.label} checked={!hiddenTabs.has(tab.label)}
             onChange={checked => setTabShown(tab.label, checked)} />
         </hbox>
         {#if !collapsedTabs.has(tab.label)}
           {#each groupLabels(tab) as groupLabel}
             <hbox class="tree-row group-row" role="treeitem" aria-selected="false">
-              <CheckBox label={groupLabel} checked={!hiddenGroups.has(tab.label + "/" + groupLabel)}
+              <Checkbox label={groupLabel} checked={!hiddenGroups.has(tab.label + "/" + groupLabel)}
                 disabled={hiddenTabs.has(tab.label)}
                 onChange={checked => setGroupShown(tab.label, groupLabel, checked)} />
             </hbox>
@@ -40,7 +40,7 @@
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
-  import CheckBox from "../Form/CheckBox.svelte";
+  import Checkbox from "../Form/Checkbox.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
   import { createEventDispatcher, onMount, tick } from "svelte";

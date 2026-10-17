@@ -1,9 +1,9 @@
 <div class="ribbon-item fixed-width ribbon-checkbox look-{look}" data-size="small">
-  <CheckBox {label} bind:checked {disabled} {tooltip} {onChange} />
+  <Checkbox {label} bind:checked {disabled} {tooltip} {onChange} />
 </div>
 
 <script lang="ts">
-  import CheckBox from "../Form/CheckBox.svelte";
+  import Checkbox from "../Form/Checkbox.svelte";
   import { RibbonGroupLayout, type RibbonGroupLook, type RibbonItemLook } from "./RibbonGroup";
   import { getContext } from "svelte";
   import { readable, type Readable } from "svelte/store";

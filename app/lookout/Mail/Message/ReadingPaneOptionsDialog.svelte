@@ -4,7 +4,7 @@
   onOK={onSave}
   on:close>
   <vbox class="dialog-content">
-    <CheckBox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead} />
+    <Checkbox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead} />
     <hbox class="delay" class:disabled={!isMarkingRead}>
       <span>{$t`Wait`}</span>
       <SpinBox label={$t`Seconds`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead} />
@@ -22,7 +22,7 @@
 <script lang="ts">
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import { t } from "../../../l10n/l10n";
 

@@ -8,7 +8,7 @@
       </hbox>
     </OptionsRow>
     <OptionsRow icon={SpellingIcon}>
-      <CheckBox label={$t`Check spelling as you type`} bind:checked={$spellcheckSetting.value} />
+      <Checkbox label={$t`Check spelling as you type`} bind:checked={$spellcheckSetting.value} />
     </OptionsRow>
   </OptionsSection>
 
@@ -23,7 +23,7 @@
           ]}
           bind:value={$readingPaneSetting.value} label={$t`Reading Pane`} width="160px" />
       </hbox>
-      <CheckBox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead}
+      <Checkbox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead}
         onChange={checked => { isMarkingRead = checked; onSaveReadAfter(); }} />
       <hbox class="delay indented" class:disabled={!isMarkingRead}>
         <span>{$t`Wait`}</span>
@@ -33,7 +33,7 @@
       </hbox>
     </OptionsRow>
     <OptionsRow icon={AccountListIcon}>
-      <CheckBox label={$t`Show a separate account list, with the folders of the selected account below it`}
+      <Checkbox label={$t`Show a separate account list, with the folders of the selected account below it`}
         bind:checked={$separateAccountListSetting.value} />
     </OptionsRow>
   </OptionsSection>
@@ -41,18 +41,18 @@
   <OptionsSection title={$t`Message arrival`}>
     <OptionsRow icon={ArrivalIcon}>
       <hbox>{$t`When new messages arrive:`}</hbox>
-      <CheckBox label={$t`Play a sound`} checked={$notificationsSetting.value.includes("sound")}
+      <Checkbox label={$t`Play a sound`} checked={$notificationsSetting.value.includes("sound")}
         onChange={checked => onNotification("sound", checked)} />
-      <CheckBox label={$t`Display a Desktop Alert`} checked={$notificationsSetting.value.includes("popup")}
+      <Checkbox label={$t`Display a Desktop Alert`} checked={$notificationsSetting.value.includes("popup")}
         onChange={checked => onNotification("popup", checked)} />
-      <CheckBox label={$t`Only for messages from people in my contacts`} bind:checked={$onlyFromContactsSetting.value}
+      <Checkbox label={$t`Only for messages from people in my contacts`} bind:checked={$onlyFromContactsSetting.value}
         disabled={!$notificationsSetting.value.length} />
     </OptionsRow>
   </OptionsSection>
 
   <OptionsSection title={$t`Replies and forwards`}>
     <OptionsRow icon={ReplyIcon}>
-      <CheckBox label={$t`Open replies and forwards in a new window`} bind:checked={$repliesInNewWindowSetting.value} />
+      <Checkbox label={$t`Open replies and forwards in a new window`} bind:checked={$repliesInNewWindowSetting.value} />
       <grid class="replies">
         <label for="options-reply">{$t`When replying to a message:`}</label>
         <ComboBox options={[
@@ -101,7 +101,7 @@
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { appName } from "../../../logic/build";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";

@@ -3,9 +3,9 @@
     (hasAfter && !after && $t`Enter the date for After`) ||
     (hasBefore && !before && $t`Enter the date for Before`)}>
   <grid class="received">
-    <CheckBox label={$t`After`} bind:checked={hasAfter} />
+    <Checkbox label={$t`After`} bind:checked={hasAfter} />
     <DateField label={$t`After`} bind:value={after} disabled={!hasAfter} onChange={() => { hasAfter = true; }} />
-    <CheckBox label={$t`Before`} bind:checked={hasBefore} />
+    <Checkbox label={$t`Before`} bind:checked={hasBefore} />
     <DateField label={$t`Before`} bind:value={before} disabled={!hasBefore} onChange={() => { hasBefore = true; }} />
   </grid>
 </Dialog>
@@ -13,7 +13,7 @@
 <script lang="ts">
   import { RuleItems } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";

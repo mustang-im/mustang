@@ -3,14 +3,14 @@
   <vbox class="other-settings">
     <GroupBox label={$t`Column Headings and Rows`}>
       <hbox class="compact-row">
-        <CheckBox label={$t`Use compact layout in widths smaller than`} bind:checked={useCompactLayout} />
+        <Checkbox label={$t`Use compact layout in widths smaller than`} bind:checked={useCompactLayout} />
         <SpinBox label={$t`Characters`} bind:value={compactLayoutChars} min={10} max={999} width="72px" disabled={!useCompactLayout} />
         <span class:disabled={!useCompactLayout}>{$t`characters`}</span>
       </hbox>
-      <CheckBox label={$t`Use tighter spacing`} bind:checked={tighterSpacing} />
+      <Checkbox label={$t`Use tighter spacing`} bind:checked={tighterSpacing} />
     </GroupBox>
     <GroupBox label={$t`Grid Lines and Group Headings`}>
-      <CheckBox label={$t`Show items in Groups`} bind:checked={showInGroups} />
+      <Checkbox label={$t`Show items in Groups`} bind:checked={showInGroups} />
     </GroupBox>
     <GroupBox label={$t`Message Preview`}>
       <hbox class="radios">
@@ -34,7 +34,7 @@
   import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import { createEventDispatcher } from "svelte";

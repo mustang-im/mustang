@@ -27,8 +27,8 @@
 
   <OptionsSection title={$t`Display options`}>
     <OptionsRow icon={DisplayIcon}>
-      <CheckBox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={$weekNumbers.value} />
-      <CheckBox label={$t`Show declined meetings`} bind:checked={$showDeclined.value} />
+      <Checkbox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={$weekNumbers.value} />
+      <Checkbox label={$t`Show declined meetings`} bind:checked={$showDeclined.value} />
     </OptionsRow>
   </OptionsSection>
 
@@ -41,7 +41,7 @@
         <ComboBox options={zoneChoices} value={systemZone} label={$t`Time zone`} width={kZoneWidth}
           disabled={$t`The calendar shows the time zone of the operating system`} />
       </grid>
-      <CheckBox label={$t`Show a second time zone`} bind:checked={$secondTimeZoneShown.value} />
+      <Checkbox label={$t`Show a second time zone`} bind:checked={$secondTimeZoneShown.value} />
       <grid class="time-zone indented">
         <span class:disabled={!$secondTimeZoneShown.value}>{$t`Label:`}</span>
         <TextField bind:value={$secondTimeZoneLabel.value} label={$t`Label of the second time zone`} width="200px"
@@ -50,7 +50,7 @@
         <ComboBox options={zoneChoices} bind:value={$secondTimeZone.value} label={$t`Second time zone`} width={kZoneWidth}
           disabled={!$secondTimeZoneShown.value} />
       </grid>
-      <CheckBox label={$t`Show a third time zone`} bind:checked={$thirdTimeZoneShown.value} />
+      <Checkbox label={$t`Show a third time zone`} bind:checked={$thirdTimeZoneShown.value} />
       <grid class="time-zone indented">
         <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Label:`}</span>
         <TextField bind:value={$thirdTimeZoneLabel.value} label={$t`Label of the third time zone`} width="200px"
@@ -64,9 +64,9 @@
 
   <OptionsSection title={$t`Reminders`}>
     <OptionsRow icon={RemindersIcon}>
-      <CheckBox label={$t`Show reminders`} checked={$notifications.value.includes("popup")}
+      <Checkbox label={$t`Show reminders`} checked={$notifications.value.includes("popup")}
         onChange={checked => setNotification("popup", checked)} />
-      <CheckBox label={$t`Play reminder sound`} checked={$notifications.value.includes("sound")}
+      <Checkbox label={$t`Play reminder sound`} checked={$notifications.value.includes("sound")}
         onChange={checked => setNotification("sound", checked)} />
     </OptionsRow>
   </OptionsSection>
@@ -82,7 +82,7 @@
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";

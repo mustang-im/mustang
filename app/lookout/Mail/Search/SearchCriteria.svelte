@@ -77,11 +77,11 @@
     <span class="label">{$t`Size`}</span>
     <ComboBox label={$t`Size`} options={sizeOptions} bind:value={draft.size} width="100%" />
     <span class="label">{$t`Attachments`}</span>
-    <CheckBox label={$t`Has Attachments`} bind:checked={draft.hasAttachment} />
+    <Checkbox label={$t`Has Attachments`} bind:checked={draft.hasAttachment} />
     <span class="label">{$t`Flagged`}</span>
-    <CheckBox label={$t`Flagged for follow up`} bind:checked={draft.flagged} />
+    <Checkbox label={$t`Flagged for follow up`} bind:checked={draft.flagged} />
     <span class="label">{$t`Replied`}</span>
-    <CheckBox label={$t`I replied to it`} bind:checked={draft.replied} />
+    <Checkbox label={$t`I replied to it`} bind:checked={draft.replied} />
   </grid>
   {#if showButtons}
     <hbox class="buttons">
@@ -117,7 +117,7 @@
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
   import RemoveIcon from "lucide-svelte/icons/x";

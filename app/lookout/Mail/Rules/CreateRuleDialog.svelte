@@ -7,9 +7,9 @@
   <Dialog title={$t`Create Rule`} on:close={onClose} width="540px">
     <GroupBox label={$t`When I get email with all of the selected conditions`} classes="rule-box">
       <grid class="fields">
-        <CheckBox label={$t`From ${quickRule.senderName}`} bind:checked={quickRule.fromSender}
+        <Checkbox label={$t`From ${quickRule.senderName}`} bind:checked={quickRule.fromSender}
           disabled={!quickRule.sender && $t`The sender is not in your address book`} classes="check from" />
-        <CheckBox label={$t`Subject or body contains`} bind:checked={quickRule.hasText} classes="check" />
+        <Checkbox label={$t`Subject or body contains`} bind:checked={quickRule.hasText} classes="check" />
         <input type="text" class="value lo-text-field" bind:value={quickRule.text}
           aria-label={$t`Subject or body contains`}
           on:input={() => quickRule.hasText = !!quickRule.text} />
@@ -17,14 +17,14 @@
     </GroupBox>
     <GroupBox label={$t`Do the following`} classes="rule-box">
       <grid class="fields">
-        <CheckBox label={$t`Move the item to folder:`} bind:checked={quickRule.moveToFolder} classes="check" />
+        <Checkbox label={$t`Move the item to folder:`} bind:checked={quickRule.moveToFolder} classes="check" />
         <hbox class="folder-row">
           <input type="text" class="value folder lo-text-field" readonly value={quickRule.folder?.name ?? ""}
             aria-label={$t`Folder`} />
           <DialogButton label={$t`Select Folder…`} onClick={() => { isChoosingFolder = true; }} />
         </hbox>
-        <CheckBox label={$t`Mark it as read`} bind:checked={quickRule.markAsRead} classes="check wide" />
-        <CheckBox label={$t`Flag message for follow up`} bind:checked={quickRule.flag} classes="check wide" />
+        <Checkbox label={$t`Mark it as read`} bind:checked={quickRule.markAsRead} classes="check wide" />
+        <Checkbox label={$t`Flag message for follow up`} bind:checked={quickRule.flag} classes="check wide" />
       </grid>
     </GroupBox>
     <svelte:fragment slot="footer">
@@ -49,7 +49,7 @@
   import { QuickRule } from "./QuickRule";
   import { catchErrors } from "../../../frontend/Util/error";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RulesWizard from "./RulesWizard.svelte";

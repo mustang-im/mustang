@@ -9,7 +9,7 @@
         on:click={() => toggleGroup(group.id)}>
         <ChevronIcon size={14} class="chevron {collapsed.has(group.id) ? 'collapsed' : ''}" />
       </button>
-      <CheckBox classes="group-checkbox"
+      <Checkbox classes="group-checkbox"
         checked={allShown && group.calendars.length > 0}
         indeterminate={someShown && !allShown}
         disabled={!group.calendars.length}
@@ -36,7 +36,7 @@
   import { appGlobal } from "../../logic/app";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import CalendarListItem from "./CalendarListItem.svelte";
-  import CheckBox from "../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../Shared/Form/Checkbox.svelte";
   import CalendarMenu from "./CalendarMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import { t } from "../../l10n/l10n";

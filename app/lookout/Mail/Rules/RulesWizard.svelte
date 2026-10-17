@@ -32,13 +32,13 @@
         aria-label={page == RuleWizardPage.Conditions ? $t`Conditions` : $t`Actions`}>
         {#each items as item (item.id)}
           <hbox class="row" class:selected={selectedItem == item}>
-            <CheckBox checked={model.isChecked(item)} onChange={checked => onCheck(item, checked)}>
+            <Checkbox checked={model.isChecked(item)} onChange={checked => onCheck(item, checked)}>
               <span class="phrase">
                 {#each item.listParts() as part}
                   {#if part.isValue}<span class="link">{part.text}</span>{:else}{part.text}{/if}
                 {/each}
               </span>
-            </CheckBox>
+            </Checkbox>
           </hbox>
         {/each}
       </vbox>
@@ -78,7 +78,7 @@
   import type { RuleTemplate } from "./RuleTemplates";
   import type { RuleItem } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
   import RuleValuePicker from "./RuleValuePicker.svelte";

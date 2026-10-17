@@ -1,6 +1,6 @@
 <Dialog title={$t`Group By`} okLabel={$t`OK`} onOK={save} width="440px" on:close>
   <vbox class="group-by">
-    <CheckBox label={$t`Automatically group according to arrangement`} bind:checked={isAutomatic} />
+    <Checkbox label={$t`Automatically group according to arrangement`} bind:checked={isAutomatic} />
     <GroupBox label={$t`Group items by`} disabled={isAutomatic}>
       <hbox class="field-row">
         <ComboBox label={$t`Group items by`} options={fieldOptions} bind:value={field}
@@ -18,7 +18,7 @@
   import { ArrangeFields, type ViewSettings } from "./ViewSettings";
   import { ArrangeBy, MessageGrouping } from "../3pane/MessageGrouping";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";

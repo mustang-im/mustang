@@ -8,7 +8,7 @@
       <span>{$t`E-mail address:`}</span>
       <TextField bind:value={emailAddress} type="email" label={$t`E-mail address`} />
     </FormGrid>
-    <CheckBox label={$t`Add to Contacts`} checked disabled={$t`Contact groups can only have contacts as members`} />
+    <Checkbox label={$t`Add to Contacts`} checked disabled={$t`Contact groups can only have contacts as members`} />
   </vbox>
 </Dialog>
 
@@ -16,7 +16,7 @@
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../Shared/Form/FormGrid.svelte";
   import TextField from "../Shared/Form/TextField.svelte";
-  import CheckBox from "../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../Shared/Form/Checkbox.svelte";
   import { t } from "../../l10n/l10n";
 
   export let onAdd: (name: string, emailAddress: string) => Promise<void>;

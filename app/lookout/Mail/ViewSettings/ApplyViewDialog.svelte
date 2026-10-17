@@ -7,7 +7,7 @@
         <hbox class="account">{account.name}</hbox>
         {#each flatten(account.rootFolders.contents, 0) as entry (entry.folder)}
           <hbox class="folder" style:padding-inline-start={12 + entry.depth * 16 + "px"}>
-            <CheckBox label={FolderTreeActions.displayName(entry.folder)}
+            <Checkbox label={FolderTreeActions.displayName(entry.folder)}
               checked={checked.has(entry.folder)}
               disabled={entry.folder == folder}
               onChange={isChecked => toggle(entry.folder, isChecked)} />
@@ -15,7 +15,7 @@
         {/each}
       {/each}
     </vbox>
-    <CheckBox label={$t`Apply view to subfolders`} bind:checked={withSubfolders} />
+    <Checkbox label={$t`Apply view to subfolders`} bind:checked={withSubfolders} />
   </vbox>
 </Dialog>
 
@@ -31,7 +31,7 @@
   import { MailViewSettings } from "./ViewSettings";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder | null;

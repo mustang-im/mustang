@@ -7,10 +7,10 @@
       </hbox>
     </GroupBox>
     <GroupBox label={$t`Month and Date Navigator`}>
-      <CheckBox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={chosenWeekNumbers} />
+      <Checkbox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={chosenWeekNumbers} />
     </GroupBox>
     <GroupBox label={$t`Meetings`}>
-      <CheckBox label={$t`Show declined meetings`} bind:checked={chosenShowDeclined} />
+      <Checkbox label={$t`Show declined meetings`} bind:checked={chosenShowDeclined} />
     </GroupBox>
   </vbox>
 </Dialog>
@@ -18,7 +18,7 @@
 <script lang="ts">
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { t } from "../../../l10n/l10n";
 

@@ -6,7 +6,7 @@
     <vbox class="list">
       {#each attachments as attachment (attachment)}
         <hbox class="row">
-          <CheckBox label={attachment.filename} checked={chosen.includes(attachment)}
+          <Checkbox label={attachment.filename} checked={chosen.includes(attachment)}
             onChange={checked => toggle(attachment, checked)} />
         </hbox>
       {/each}
@@ -17,7 +17,7 @@
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let attachments: Attachment[];

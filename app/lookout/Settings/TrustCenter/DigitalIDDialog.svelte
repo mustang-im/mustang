@@ -38,8 +38,8 @@
               label={$t`Password`} disabled={mode != "export" || !withPrivateKey} classes="code" />
             <span />
           </FormGrid>
-          <CheckBox label={$t`Include the private key`} bind:checked={withPrivateKey} disabled={mode != "export"} />
-          <CheckBox label={$t`Delete Digital ID from System`} bind:checked={deleteAfterExport}
+          <Checkbox label={$t`Include the private key`} bind:checked={withPrivateKey} disabled={mode != "export"} />
+          <Checkbox label={$t`Delete Digital ID from System`} bind:checked={deleteAfterExport}
             disabled={mode != "export" || !withPrivateKey} />
         </vbox>
       </vbox>
@@ -60,7 +60,7 @@
   import TextField from "../../Shared/Form/TextField.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { gt, t } from "../../../l10n/l10n";
 

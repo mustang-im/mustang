@@ -18,7 +18,7 @@
         onChange={time => editor.setStart(time)} />
     {/if}
     {#if !readOnly}
-      <CheckBox label={$t`All day`} checked={$event.allDay} onChange={onAllDayChanged} classes="all-day" />
+      <Checkbox label={$t`All day`} checked={$event.allDay} onChange={onAllDayChanged} classes="all-day" />
     {/if}
     {#if showTimezone}
       <hbox class="timezone lo-secondary" title={$t`Time zone of this event`}>
@@ -44,7 +44,7 @@
 {/if}
 
 <script lang="ts">
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import type { Event } from "../../../logic/Calendar/Event";
   import type { EventEditFlow } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";

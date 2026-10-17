@@ -31,7 +31,7 @@
           name="certificate-trust" value={TrustLevel.Distrusted} bind:group={trustLevel} />
       </vbox>
     </GroupBox>
-    <CheckBox label={$t`Encrypt my emails to ${personName} with this certificate`}
+    <Checkbox label={$t`Encrypt my emails to ${personName} with this certificate`}
       bind:checked={encryptByDefault}
       disabled={trustLevel == TrustLevel.Distrusted && $t`The certificate is marked as bad`} />
   </vbox>
@@ -46,7 +46,7 @@
   import TextField from "../../Shared/Form/TextField.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let key: PublicKey;

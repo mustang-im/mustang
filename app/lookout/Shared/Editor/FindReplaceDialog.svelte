@@ -13,7 +13,7 @@
   {#if showOptions}
     <vbox class="options">
       <hbox class="caption">{$t`Search Options`}</hbox>
-      <CheckBox label={$t`Match case`} bind:checked={matchCase} />
+      <Checkbox label={$t`Match case`} bind:checked={matchCase} />
     </vbox>
   {/if}
   <hbox class="status" role="status">{status}</hbox>
@@ -35,7 +35,7 @@
   import DialogButton from "../Dialog/DialogButton.svelte";
   import DialogTabs from "../Dialog/DialogTabs.svelte";
   import TextField from "../Form/TextField.svelte";
-  import CheckBox from "../Form/CheckBox.svelte";
+  import Checkbox from "../Form/Checkbox.svelte";
   import type { Editor } from "@tiptap/core";
   import { createEventDispatcher, onDestroy } from "svelte";
   import { t } from "../../../l10n/l10n";

@@ -12,13 +12,13 @@
       </FormGrid>
     {:else}
       <FormGrid columns="190px minmax(0, 1fr)">
-        <CheckBox label={$t`Only items that are:`} bind:checked={isReadFiltered} />
+        <Checkbox label={$t`Only items that are:`} bind:checked={isReadFiltered} />
         <ComboBox label={$t`Only items that are:`} options={readOptions} bind:value={readValue}
           disabled={!isReadFiltered} width="100%" />
-        <CheckBox label={$t`Only items with:`} bind:checked={isAttachmentFiltered} />
+        <Checkbox label={$t`Only items with:`} bind:checked={isAttachmentFiltered} />
         <ComboBox label={$t`Only items with:`} options={attachmentOptions} bind:value={attachmentValue}
           disabled={!isAttachmentFiltered} width="100%" />
-        <CheckBox label={$t`Only items which:`} bind:checked={isFlagFiltered} />
+        <Checkbox label={$t`Only items which:`} bind:checked={isFlagFiltered} />
         <ComboBox label={$t`Only items which:`} options={flagOptions} bind:value={flagValue}
           disabled={!isFlagFiltered} width="100%" />
       </FormGrid>
@@ -37,7 +37,7 @@
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import CheckBox from "../../Shared/Form/CheckBox.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { booleanHasValue } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
