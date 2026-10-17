@@ -1,4 +1,4 @@
-<hbox class="cell name" class:broken={isBroken} on:dblclick={onEdit}>
+<hbox class="cell name" class:broken={isBroken} on:dblclick={() => dispatch("edit")}>
   <span class="text">{$rule.name}</span>
   {#if $rule.when == FilterMoment.Outgoing}
     <span class="suffix lo-secondary">{$t`(outgoing)`}</span>
@@ -7,7 +7,7 @@
     <span class="suffix" title={$t`The target folder does not exist anymore`}>{$t`(Error)`}</span>
   {/if}
 </hbox>
-<hbox class="cell actions" on:dblclick={onEdit}>
+<hbox class="cell actions" on:dblclick={() => dispatch("edit")}>
   <RuleActionIcons {rule} />
 </hbox>
 
@@ -15,10 +15,12 @@
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
   import RuleActionIcons from "./RuleActionIcons.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
-  export let onEdit: () => void;
+
+  const dispatch = createEventDispatcher<{ edit: void }>();
 
   $: isBroken = $rule && ((!!rule.toFolderID && !rule.toFolder) || (!!rule.criteria.folderID && !rule.criteria.folder));
 </script>

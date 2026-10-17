@@ -39,7 +39,7 @@
         <hbox class="column-header">{$t`Actions`}</hbox>
       </svelte:fragment>
       <svelte:fragment slot="row" let:item={rule}>
-        <RulesListItem {rule} onEdit={onEdit} />
+        <RulesListItem {rule} on:edit={onEdit} />
       </svelte:fragment>
     </FastList>
     {#if $rules.isEmpty}
