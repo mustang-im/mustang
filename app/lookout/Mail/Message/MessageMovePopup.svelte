@@ -8,7 +8,7 @@
       {copy ? $t`Copy the selected items to the folder:` : $t`Move the selected items to the folder:`}
     </span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
-      disableFolder={folder => !copy && MessageActions.isInFolder(messages, folder) && $t`The items are already in this folder`}
+      disableFolder={folder => !copy && MessageActions.isInFolder(messages.contents, folder) && $t`The items are already in this folder`}
       on:choose={() => dialog.submit()} />
   </vbox>
   <svelte:fragment slot="buttons-start">
@@ -38,20 +38,21 @@
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FolderPicker from "../LeftPane/FolderPicker.svelte";
   import NewFolderDialog from "../LeftPane/NewFolderDialog.svelte";
+  import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let messages: EMail[];
+  export let messages: Collection<EMail>;
   export let copy = false;
 
   let dialog: Dialog;
   let target: Folder | null = null;
-  let targetAccount: MailAccount | null = messages[0]?.folder?.account ?? null;
+  let targetAccount: MailAccount | null = messages.first?.folder?.account ?? null;
 
   async function onMove() {
     if (copy) {
-      await MessageActions.copyTo(messages, target);
+      await MessageActions.copyTo(messages.contents, target);
     } else {
-      await MessageActions.moveTo(messages, target);
+      await MessageActions.moveTo(messages.contents, target);
     }
   }
 

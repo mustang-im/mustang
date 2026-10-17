@@ -27,9 +27,10 @@
   import SendIcon from "lucide-svelte/icons/send";
   import CopyIcon from "lucide-svelte/icons/copy";
   import ContactIcon from "lucide-svelte/icons/contact-round";
+  import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let recipients: PersonUID[];
+  export let recipients: Collection<PersonUID>;
   export let withAddress = false;
   export let maxShown = 8;
 
@@ -37,8 +38,8 @@
   let isMenuOpen = false;
   let menuAnchor: HTMLElement = null;
   let menuRecipient: PersonUID = null;
-  $: shown = isExpanded ? recipients : recipients.slice(0, maxShown);
-  $: hiddenCount = recipients.length - shown.length;
+  $: shown = isExpanded ? $recipients.contents : $recipients.contents.slice(0, maxShown);
+  $: hiddenCount = $recipients.length - shown.length;
 
   function openMenu(recipient: PersonUID, event: MouseEvent) {
     menuRecipient = recipient;

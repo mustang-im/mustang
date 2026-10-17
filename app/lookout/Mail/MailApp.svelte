@@ -25,7 +25,7 @@
     isLoading={isLoading || isSearching} />
 </vbox>
 {#if $openMoveMessages}
-  <MessageMovePopup messages={$openMoveMessages.messages} copy={$openMoveMessages.copy} on:close={() => $openMoveMessages = null} />
+  <MessageMovePopup messages={new ArrayColl($openMoveMessages.messages)} copy={$openMoveMessages.copy} on:close={() => $openMoveMessages = null} />
 {/if}
 {#if $openNewFolder}
   <NewFolderDialog account={$openNewFolder.account} parent={$openNewFolder.parent} on:close={() => $openNewFolder = null} />

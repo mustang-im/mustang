@@ -31,9 +31,20 @@
           <hbox flex class="part reading" slot="second"
             class:right={position == "right"}
             class:bottom={position == "bottom"}>
-            <MessageDisplay
-              message={$selectedMessages.length > 1 ? null : selectedMessage}
-              selectedCount={$selectedMessages.length} />
+            {#if selectedMessage && $selectedMessages.length <= 1}
+              <MessageDisplay message={selectedMessage} />
+            {:else}
+              <vbox flex class="reading-pane-placeholder lo-card">
+                {#if $selectedMessages.length > 1}
+                  <MultipleIcon size={56} strokeWidth={1} />
+                  <span class="placeholder-title">{$t`${$selectedMessages.length} items selected`}</span>
+                {:else}
+                  <ReadIcon size={56} strokeWidth={1} />
+                  <span class="placeholder-title">{$t`Select an item to read`}</span>
+                  <span class="placeholder-hint">{$t`Nothing is selected`}</span>
+                {/if}
+              </vbox>
+            {/if}
           </hbox>
         </SplitterBidirectional>
       </hbox>
@@ -60,6 +71,9 @@
   import Splitter from "../../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../../frontend/Shared/SplitterBidirectional.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import ReadIcon from "lucide-svelte/icons/mail-open";
+  import MultipleIcon from "lucide-svelte/icons/mails";
+  import { t } from "../../../l10n/l10n";
   import type { ArrayColl, Collection } from "svelte-collections";
 
   export let messages: Collection<EMail>;
@@ -122,4 +136,21 @@
     flex: 1 0 0;
   }
   /* </copied> */
+  .reading-pane-placeholder {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--lo-fg-secondary);
+  }
+  .reading-pane-placeholder :global(svg) {
+    color: var(--lo-fg-disabled);
+  }
+  .placeholder-title {
+    color: var(--lo-fg);
+    font-size: 16px;
+    font-weight: 600;
+  }
 </style>

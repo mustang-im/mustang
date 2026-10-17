@@ -12,7 +12,7 @@
           <hbox class="attachments">
             <AttachmentsUI attachments={shownMessage.attachments} />
           </hbox>
-          {#if MailInvitation.isInvitationMail($shownMessage)}
+          {#if $shownMessage.event || $shownMessage.invitationMessage}
             <InvitationInMail message={shownMessage} />
           {:else}
             {#if $shownMessage.sml}
@@ -27,17 +27,6 @@
         {/if}
       </vbox>
     {/key}
-  {:else}
-    <vbox flex class="placeholder">
-      {#if selectedCount > 1}
-        <MultipleIcon size={56} strokeWidth={1} />
-        <span class="placeholder-title">{$t`${selectedCount} items selected`}</span>
-      {:else}
-        <ReadIcon size={56} strokeWidth={1} />
-        <span class="placeholder-title">{$t`Select an item to read`}</span>
-        <span class="placeholder-hint">{$t`Nothing is selected`}</span>
-      {/if}
-    </vbox>
   {/if}
 </vbox>
 
@@ -52,16 +41,11 @@
   import AttachmentsUI from "./AttachmentsUI.svelte";
   import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import InvitationInMail from "../../Calendar/Invitation/InvitationInMail.svelte";
-  import { MailInvitation } from "../../Calendar/EditEvent/MailInvitation";
   import MessageBody from "../../../frontend/Mail/Message/MessageBody.svelte";
-  import ReadIcon from "lucide-svelte/icons/mail-open";
-  import MultipleIcon from "lucide-svelte/icons/mails";
   import { catchErrors, backgroundError } from "../../../frontend/Util/error";
   import { onDestroy } from "svelte";
-  import { t } from "../../../l10n/l10n";
 
-  export let message: EMail | null;
-  export let selectedCount = 0;
+  export let message: EMail;
 
   const readDelaySetting = getLocalStorage<number>("mail.read.after", 0);
   const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
@@ -143,19 +127,5 @@
   }
   .body :global(.message-body) {
     min-height: 0;
-  }
-  .placeholder {
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: var(--lo-fg-secondary);
-  }
-  .placeholder :global(svg) {
-    color: var(--lo-fg-disabled);
-  }
-  .placeholder-title {
-    color: var(--lo-fg);
-    font-size: 16px;
-    font-weight: 600;
   }
 </style>

@@ -9,26 +9,26 @@
       <hbox class="from">
         <hbox class="sender-name">
           {#if $message.from}
-            <RecipientsList recipients={[$message.from]} withAddress />
+            <RecipientsList recipients={new ArrayColl([$message.from])} withAddress />
           {/if}
         </hbox>
       </hbox>
       {#if $to.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`To:`}</span>
-          <RecipientsList recipients={$to.contents} />
+          <RecipientsList recipients={to} />
         </hbox>
       {/if}
       {#if $cc.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`Cc:`}</span>
-          <RecipientsList recipients={$cc.contents} />
+          <RecipientsList recipients={cc} />
         </hbox>
       {/if}
       {#if $bcc.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`Bcc:`}</span>
-          <RecipientsList recipients={$bcc.contents} />
+          <RecipientsList recipients={bcc} />
         </hbox>
       {/if}
     </vbox>
@@ -165,6 +165,7 @@
   import RemoveIcon from "lucide-svelte/icons/x";
   import ErrorIcon from "lucide-svelte/icons/circle-x";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
