@@ -37,7 +37,7 @@
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { isBackstageOpen } from "../Settings/Backstage/selected";
   import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
-  import { RibbonModel } from "../Shared/Ribbon/RibbonGroup";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "../Mail/MessageActions";
   import { ContactActions } from "../Contacts/ContactActions";
@@ -130,11 +130,12 @@
       case GlobalKeyAction.TellMe:
         return openTellMe();
       case GlobalKeyAction.CollapseRibbon:
-        RibbonModel.collapsedSetting.value = !RibbonModel.collapsedSetting.value;
+        $ribbonCollapsed.value = !$ribbonCollapsed.value;
         return;
     }
   }
 
+  const ribbonCollapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   let windowHeader: WindowHeader;
 
   function openTellMe() {

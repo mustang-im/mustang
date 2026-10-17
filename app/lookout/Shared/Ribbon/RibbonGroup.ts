@@ -1,4 +1,3 @@
-import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { writable, get, type Writable } from "svelte/store";
 
 export type RibbonLayout = "classic" | "simplified";
@@ -25,12 +24,9 @@ export interface RibbonItemInfo {
 
 export class RibbonModel {
   static readonly contextKey = "lookout-ribbon";
-  static readonly collapsedSetting = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
   id = "main";
   readonly tabs: Writable<RibbonTabModel[]> = writable([]);
   readonly selectedTab: Writable<RibbonTabModel> = writable(null);
-  readonly layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  readonly collapsed = RibbonModel.collapsedSetting;
   readonly metrics: Writable<RibbonMetrics> = writable(null);
   readonly isSurveying: Writable<boolean> = writable(false);
   readonly isCustomizing: Writable<boolean> = writable(false);
@@ -79,18 +75,6 @@ export class RibbonModel {
     if (!this.surveys) {
       this.isSurveying.set(false);
     }
-  }
-
-  setLayout(layout: RibbonLayout) {
-    this.layout.value = layout;
-  }
-
-  get currentLayout(): RibbonLayout {
-    return this.layout.value == "simplified" ? "simplified" : "classic";
-  }
-
-  setCollapsed(collapsed: boolean) {
-    this.collapsed.value = collapsed;
   }
 
   setMetrics(metrics: RibbonMetrics) {

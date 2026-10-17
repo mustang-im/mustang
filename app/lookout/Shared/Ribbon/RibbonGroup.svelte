@@ -60,10 +60,10 @@
   const collapsed = group.collapsed;
   const stage = group.stage;
   const layout = group.layout;
-  const layoutSetting = ribbon?.layout ?? writable(null);
+  const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   const metrics = ribbon?.metrics ?? writable(null);
   $: group.label = label;
-  $: $layoutSetting, layout.set(ribbon?.currentLayout ?? "classic");
+  $: layout.set(ribbon && $layoutSetting.value == "simplified" ? "simplified" : "classic");
   $: isInMoreMenu = $collapsed && $layout == "simplified";
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
   $: isHiddenByUser = ($customization.value?.[ribbon?.id]?.groups ?? []).includes(tab?.label + "/" + label);

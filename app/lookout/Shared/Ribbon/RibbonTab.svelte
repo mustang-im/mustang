@@ -27,7 +27,8 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={() => tab.closeMoreMenu()} />
 
 <script lang="ts">
-  import { RibbonModel, RibbonTabModel, type RibbonGroupModel } from "./RibbonGroup";
+  import { RibbonModel, RibbonTabModel, type RibbonGroupModel, type RibbonLayout } from "./RibbonGroup";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { getContext, setContext, onDestroy } from "svelte";
@@ -56,9 +57,9 @@
   const overflowGroups = tab.overflowGroups;
   const isMoreMenuOpen = tab.isMoreMenuOpen;
   const metrics = ribbon.metrics;
-  const layoutSetting = ribbon.layout;
+  const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
 
-  $: $layoutSetting, tab.setOverflowWidth(ribbon.currentLayout == "simplified" && $metrics
+  $: tab.setOverflowWidth($layoutSetting.value == "simplified" && $metrics
     ? $metrics.simplifiedIconWidth + $metrics.groupChrome
     : 0);
 

@@ -84,7 +84,7 @@
   setContext(RibbonModel.contextKey, ribbon);
   const tabs = ribbon.tabs;
   const selectedTab = ribbon.selectedTab;
-  const layoutSetting = ribbon.layout;
+  const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
   const qatPosition = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
@@ -95,10 +95,9 @@
   $: if ($selectedTab && shownTabs.length && !shownTabs.includes($selectedTab)) {
     ribbon.selectTab(shownTabs[0]);
   }
-  const collapsedSetting = ribbon.collapsed;
+  const collapsedSetting = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
 
-  let layout: RibbonLayout;
-  $: $layoutSetting, layout = ribbon.currentLayout;
+  $: layout = ($layoutSetting.value == "simplified" ? "simplified" : "classic") as RibbonLayout;
   $: isCollapsed = !!$collapsedSetting.value;
 
   let ribbonEl: HTMLElement;
@@ -146,7 +145,7 @@
 
   function onToggleCollapsed() {
     isTempOpen = false;
-    ribbon.setCollapsed(!isCollapsed);
+    $collapsedSetting.value = !isCollapsed;
   }
 
   function onClickContent(event: MouseEvent) {

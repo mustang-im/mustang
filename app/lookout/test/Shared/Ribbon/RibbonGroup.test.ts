@@ -232,18 +232,6 @@ test("Tabs: first added tab is selected, removing it selects the next", () => {
   expect(get(ribbon.tabs)[0].label).toBe("Ansicht");
 });
 
-test("Layout setting", () => {
-  let ribbon = new RibbonModel();
-  ribbon.setLayout("simplified");
-  expect(ribbon.currentLayout).toBe("simplified");
-  ribbon.layout.value = "bogus" as any;
-  expect(ribbon.currentLayout).toBe("classic");
-  ribbon.setLayout("classic");
-  ribbon.setCollapsed(true);
-  expect(ribbon.collapsed.value).toBe(true);
-  ribbon.setCollapsed(false);
-});
-
 test("Select a tab by its label", () => {
   let ribbon = new RibbonModel();
   let home = new RibbonTabModel("Home");
