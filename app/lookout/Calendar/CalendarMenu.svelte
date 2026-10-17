@@ -1,7 +1,7 @@
 <ContextMenu bind:this={contextMenu}>
   {#if calendar}
     <MenuItem label={$t`Rename Calendar`} icon={RenameIcon}
-      onClick={() => CalendarActions.rename(calendar)} />
+      onClick={() => renamingCalendar = calendar} />
     {#if CalendarActions.canDeleteCalendar(calendar)}
       <MenuItem label={$t`Delete Calendar`} icon={DeleteIcon}
         onClick={() => CalendarActions.deleteCalendar(calendar)} />
@@ -10,9 +10,9 @@
       <MenuDivider />
       <SubMenu label={$t`Share`} icon={ShareIcon}>
         <MenuItem label={$t`Share Calendar`} icon={ShareIcon}
-          onClick={() => CalendarActions.openSharing(calendar)} />
+          onClick={() => $openCalendarProperties = { calendar, tab: "permissions" }} />
         <MenuItem label={$t`Calendar Permissions`} icon={PermissionsIcon}
-          onClick={() => CalendarActions.openSharing(calendar)} />
+          onClick={() => $openCalendarProperties = { calendar, tab: "permissions" }} />
       </SubMenu>
     {/if}
     <MenuDivider />
@@ -33,9 +33,12 @@
       onClick={() => CalendarActions.move(calendar, 1)} />
     <MenuDivider />
     <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
-      onClick={() => CalendarActions.openProperties(calendar)} />
+      onClick={() => $openCalendarProperties = { calendar, tab: "general" }} />
   {/if}
 </ContextMenu>
+{#if renamingCalendar}
+  <RenameDialog account={renamingCalendar} title={$t`Rename Calendar`} on:close={() => renamingCalendar = null} />
+{/if}
 
 <script lang="ts">
   import type { Calendar } from "../../logic/Calendar/Calendar";
@@ -44,11 +47,13 @@
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { CalendarSharing } from "./Dialogs/CalendarSharing";
   import { catchErrors } from "../../frontend/Util/error";
+  import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../Shared/Menu/SubMenu.svelte";
   import ColorPalette from "../Shared/ColorPalette.svelte";
+  import RenameDialog from "../Settings/Shared/RenameDialog.svelte";
   import RenameIcon from "lucide-svelte/icons/pencil-line";
   import ShowOnlyIcon from "lucide-svelte/icons/eye";
   import ShareIcon from "lucide-svelte/icons/share-2";
@@ -65,6 +70,7 @@
 
   let contextMenu: ContextMenu;
   let calendar: Calendar | null = null;
+  let renamingCalendar: Calendar | null = null;
   let groups: CalendarGroups;
   const splitView = CalendarSettings.splitView;
 

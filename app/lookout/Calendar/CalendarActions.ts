@@ -5,7 +5,7 @@ import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvi
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
 import { inlineTitle, selectedSlots, workWeekHours, type SlotSelection } from "./selected";
-import { CalendarCurrentView, CalendarSettings } from "./CalendarSettings";
+import { CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
 import { CalendarGroups } from "./FolderPane/CalendarGroups";
 import { WorkingHours } from "./View/WorkingHours";
@@ -16,8 +16,6 @@ import { openComposer } from "../../frontend/Mail/open";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
 import { openApp } from "../../frontend/AppsBar/selectedApp";
 import { SettingsDialogs } from "../Settings/SettingsDialogs";
-import type { MailAccount } from "../../logic/Mail/MailAccount";
-import { CalendarDialogs, type CalendarPropertiesTab } from "./Dialogs/CalendarDialogs";
 import { CalendarQuestions } from "./CalendarQuestions";
 import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
@@ -205,31 +203,9 @@ export class CalendarActions {
     selectedCalendar.set(calendar);
   }
 
-  static openProperties(calendar: Calendar, tab: CalendarPropertiesTab = "general") {
-    CalendarDialogs.open({ kind: "properties", calendar, tab });
-  }
-
-  static openSharing(calendar: Calendar) {
-    CalendarActions.openProperties(calendar, "permissions");
-  }
-
-  static openSharedCalendar(account: MailAccount | null, fromAddressBook = false) {
-    CalendarDialogs.open({ kind: "open-calendar", account, fromAddressBook });
-  }
-
-  static openViewSettings() {
-    let currentView = CalendarSettings.currentView.value;
-    let isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
-    CalendarDialogs.open({ kind: "view-settings", isTable });
-  }
-
   static move(calendar: Calendar, offset: number) {
     let groups = new CalendarGroups(appGlobal.calendars.contents, CalendarGroups.order.value);
     CalendarGroups.order.value = groups.orderAfterMove(calendar, offset);
-  }
-
-  static rename(calendar: Calendar) {
-    CalendarDialogs.open({ kind: "rename", calendar });
   }
 
   static openAddressBook() {

@@ -3,7 +3,7 @@
   <vbox class="commands">
     <button class="command" disabled={!sharingAccounts.length}
       title={sharingAccounts.length ? null : $t`None of your accounts can open the calendars of colleagues`}
-      on:click={() => CalendarActions.openSharedCalendar(null)}>
+      on:click={() => isOpenCalendarOpen = true}>
       <hbox class="command-icon"><OpenCalendarIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Open Calendar`}</span>
@@ -28,6 +28,9 @@
   </vbox>
 </vbox>
 
+{#if isOpenCalendarOpen}
+  <OpenCalendarDialog on:close={() => isOpenCalendarOpen = false} />
+{/if}
 {#if isSharedFolderOpen && mailAccount}
   <SharedFolderDialog account={mailAccount} on:close={() => isSharedFolderOpen = false} />
 {/if}
@@ -36,8 +39,8 @@
   import { appGlobal } from "../../../logic/app";
   import { SettingsDialogs } from "../SettingsDialogs";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
-  import { CalendarActions } from "../../Calendar/CalendarActions";
   import { SharedCalendars } from "../../Calendar/Dialogs/SharedCalendars";
+  import OpenCalendarDialog from "../../Calendar/OpenCalendarDialog.svelte";
   import SharedFolderDialog from "../../Mail/LeftPane/SharedFolderDialog.svelte";
   import OpenCalendarIcon from "lucide-svelte/icons/calendar-search";
   import ImportExportIcon from "lucide-svelte/icons/arrow-left-right";
@@ -45,6 +48,7 @@
   import { t } from "../../../l10n/l10n";
 
   const emailAccounts = appGlobal.emailAccounts;
+  let isOpenCalendarOpen = false;
   let isSharedFolderOpen = false;
   let sharingAccounts = SharedCalendars.accounts();
   $: $emailAccounts, sharingAccounts = SharedCalendars.accounts();

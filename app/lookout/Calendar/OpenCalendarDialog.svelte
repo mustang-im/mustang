@@ -29,6 +29,12 @@
     onOK={onPicked} onCancel={onPickCancelled} />
 {/if}
 
+<script lang="ts" context="module">
+  import { writable } from "svelte/store";
+
+  export const openSharedCalendar = writable<{ fromAddressBook: boolean } | null>(null);
+</script>
+
 <script lang="ts">
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
@@ -44,11 +50,10 @@
   import { createEventDispatcher, tick } from "svelte";
   import { t } from "../../l10n/l10n";
 
-  export let account: MailAccount | null = null;
   export let fromAddressBook = false;
 
   const accounts = SharedCalendars.accounts();
-  account ??= accounts[0];
+  let account: MailAccount | null = accounts[0];
 
   let persons = new ArrayColl<PersonUID>();
   let pickField = new SelectNamesField($t`Calendar`, [], true);

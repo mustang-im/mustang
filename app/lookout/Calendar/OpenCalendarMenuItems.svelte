@@ -1,9 +1,9 @@
 <MenuItem label={$t`From Address Book…`} icon={AddressBookIcon}
   disabled={!sharingAccounts.length && $t`None of your accounts can open the calendars of colleagues`}
-  onClick={() => CalendarActions.openSharedCalendar(null, true)} />
+  onClick={() => $openSharedCalendar = { fromAddressBook: true }} />
 <MenuItem label={$t`Open Shared Calendar…`} icon={SharedCalendarIcon}
   disabled={!sharingAccounts.length && $t`None of your accounts can open the calendars of colleagues`}
-  onClick={() => CalendarActions.openSharedCalendar(null)} />
+  onClick={() => $openSharedCalendar = { fromAddressBook: false }} />
 <MenuItem label={$t`Create New Blank Calendar…`} icon={NewCalendarIcon}
   onClick={() => CalendarActions.createBlankCalendar()} />
 <MenuDivider />
@@ -13,6 +13,7 @@
 <script lang="ts">
   import { CalendarActions } from "./CalendarActions";
   import { SharedCalendars } from "./Dialogs/SharedCalendars";
+  import { openSharedCalendar } from "./OpenCalendarDialog.svelte";
   import { appGlobal } from "../../logic/app";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";

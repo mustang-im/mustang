@@ -20,8 +20,11 @@
   <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5" onClick={() => onView("schedule")} />
   <MenuItem label={$t`Day/Month`} icon={DualIcon} onClick={() => onView("dual")} />
   <MenuDivider />
-  <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => CalendarActions.openViewSettings()} />
+  <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => isViewSettingsOpen = true} />
 </ContextMenu>
+{#if isViewSettingsOpen}
+  <ViewSettingsDialog on:close={() => isViewSettingsOpen = false} />
+{/if}
 
 <script lang="ts">
   import type { CalendarViewType } from "./CalendarSettings";
@@ -29,6 +32,7 @@
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
+  import ViewSettingsDialog from "./ViewSettings/ViewSettingsDialog.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
   import AllDayIcon from "lucide-svelte/icons/sun";
@@ -50,6 +54,7 @@
   export let onView: (view: CalendarViewType) => void;
 
   let contextMenu: ContextMenu;
+  let isViewSettingsOpen = false;
 
   export function openFor(mouseEvent: MouseEvent) {
     contextMenu.onContextMenu(mouseEvent);

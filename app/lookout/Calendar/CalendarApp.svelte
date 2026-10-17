@@ -73,6 +73,15 @@
   {#if isGoToDateOpen}
     <GoToDateDialog date={rangeDate} {view} onGoTo={goToDate} on:close={() => isGoToDateOpen = false} />
   {/if}
+  {#if $openCalendarProperties}
+    {#key $openCalendarProperties}
+      <CalendarPropertiesDialog calendar={$openCalendarProperties.calendar} tab={$openCalendarProperties.tab}
+        on:close={() => $openCalendarProperties = null} />
+    {/key}
+  {/if}
+  {#if $openSharedCalendar}
+    <OpenCalendarDialog fromAddressBook={$openSharedCalendar.fromAddressBook} on:close={() => $openSharedCalendar = null} />
+  {/if}
   {#if $eventPeek}
     {#key $eventPeek}
       <EventPeek peek={$eventPeek} />
@@ -113,6 +122,8 @@
   import { ReadingPanePosition } from "../Mail/MailView";
   import SlotMenu from "./SlotMenu.svelte";
   import GoToDateDialog from "./GoToDateDialog.svelte";
+  import CalendarPropertiesDialog, { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
+  import OpenCalendarDialog, { openSharedCalendar } from "./OpenCalendarDialog.svelte";
   import AdjacentEventTabs from "./AdjacentEventTabs.svelte";
   import ListView from "./ListView/ListView.svelte";
   import CalendarSearchTab from "./ListView/CalendarSearchTab.svelte";

@@ -35,7 +35,7 @@
 
 <script lang="ts">
   import { CalendarViewDraft } from "./CalendarViewDraft";
-  import { EventTableColumn } from "../CalendarSettings";
+  import { CalendarCurrentView, CalendarSettings, EventTableColumn } from "../CalendarSettings";
   import { EventTable } from "../ListView/EventTable";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -46,8 +46,8 @@
   import OtherSettingsDialog from "./OtherSettingsDialog.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let isTable: boolean;
-
+  const currentView = CalendarSettings.currentView;
+  $: isTable = $currentView.value == CalendarCurrentView.List || $currentView.value == CalendarCurrentView.Active;
   let draft = CalendarViewDraft.fromSettings();
   let open: "columns" | "group-by" | "sort" | "other" | null = null;
   $: tableOnly = $t`Available in the List and Active views`;

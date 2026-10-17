@@ -34,10 +34,10 @@
     </RibbonGroup>
     <RibbonGroup label={$t`Share`}>
       <RibbonButton label={$t`Share Calendar`} icon={ShareIcon}
-        onClick={() => CalendarActions.openSharing($selectedCalendar)}
+        onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!canShare && $t`This calendar cannot be shared`} />
       <RibbonButton label={$t`Calendar Permissions`} icon={PermissionsIcon}
-        onClick={() => CalendarActions.openSharing($selectedCalendar)}
+        onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!canShare && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
@@ -67,7 +67,7 @@
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Calendar`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename the calendar in this app`}
-        onClick={() => CalendarActions.rename($selectedCalendar)}
+        onClick={() => { renamingCalendar = $selectedCalendar; }}
         disabled={noSelection} />
       <RibbonButton label={$t`Delete Calendar`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Remove the calendar from this app`}
@@ -81,17 +81,17 @@
       </RibbonMenuButton>
       <RibbonButton label={$t`Share Calendar`} shortLabel={$t`Share`} icon={ShareIcon}
         tooltip={$t`Share Calendar`}
-        onClick={() => CalendarActions.openSharing($selectedCalendar)}
+        onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!canShare && $t`This calendar cannot be shared`} />
       <RibbonButton label={$t`Calendar Permissions`} shortLabel={$t`Permissions`} icon={PermissionsIcon}
         tooltip={$t`Calendar Permissions`}
-        onClick={() => CalendarActions.openSharing($selectedCalendar)}
+        onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!canShare && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
       <RibbonButton label={$t`Calendar Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
         tooltip={$t`Calendar Properties`}
-        onClick={() => CalendarActions.openProperties($selectedCalendar)}
+        onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "general" }; }}
         disabled={noSelection} />
     </RibbonGroup>
   </RibbonTab>
@@ -101,7 +101,7 @@
         <ChangeViewGallery views={calendarViews} {currentView} onChange={onCurrentView} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
-        onClick={() => CalendarActions.openViewSettings()} />
+        onClick={() => { isViewSettingsOpen = true; }} />
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
         tooltip={$t`Reset the view and the table columns to the default settings`}
         onClick={onResetView} />
@@ -152,8 +152,15 @@
   </RibbonTab>
   <slot />
 </Ribbon>
+{#if renamingCalendar}
+  <RenameDialog account={renamingCalendar} title={$t`Rename Calendar`} on:close={() => renamingCalendar = null} />
+{/if}
+{#if isViewSettingsOpen}
+  <ViewSettingsDialog on:close={() => isViewSettingsOpen = false} />
+{/if}
 
 <script lang="ts">
+  import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarCurrentView, CalendarFolderPane, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
   import { CalendarColors } from "./FolderPane/CalendarColors";
@@ -179,6 +186,9 @@
   import ChangeViewGallery from "../Shared/Ribbon/ChangeViewGallery.svelte";
   import NewEventMenu from "./NewEventMenu.svelte";
   import OpenCalendarMenuItems from "./OpenCalendarMenuItems.svelte";
+  import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
+  import ViewSettingsDialog from "./ViewSettings/ViewSettingsDialog.svelte";
+  import RenameDialog from "../Settings/Shared/RenameDialog.svelte";
   import ChangeViewIcon from "lucide-svelte/icons/layout-template";
   import CalendarViewIcon from "lucide-svelte/icons/calendar-days";
   import PreviewViewIcon from "lucide-svelte/icons/scan-text";
@@ -239,6 +249,8 @@
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
   $: canDelete = CalendarActions.canDeleteCalendar($selectedCalendar);
   $: canShare = CalendarSharing.canShare($selectedCalendar);
+  let renamingCalendar: Calendar | null = null;
+  let isViewSettingsOpen = false;
   $: overlayDisabled = view == "schedule" && $t`Overlay is available in the Day, Work Week, Week and Month views`;
 
   function onCalendarOptions() {

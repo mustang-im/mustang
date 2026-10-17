@@ -48,9 +48,15 @@
   </vbox>
 </Dialog>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Calendar } from "../../logic/Calendar/Calendar";
-  import type { CalendarPropertiesTab } from "./Dialogs/CalendarDialogs";
+  import { writable } from "svelte/store";
+
+  export type CalendarPropertiesTab = "general" | "permissions";
+  export const openCalendarProperties = writable<{ calendar: Calendar, tab: CalendarPropertiesTab } | null>(null);
+</script>
+
+<script lang="ts">
   import { CalendarSharing } from "./Dialogs/CalendarSharing";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { CalendarGroups } from "./FolderPane/CalendarGroups";
