@@ -5,7 +5,6 @@ import { PGPPrivateKey } from "../../../logic/Mail/Encryption/PGP/PGPPrivateKey"
 import { SMIMEPrivateKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
 import { KeyStatus } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { importPrivateKey, readKeyFile } from "../../../logic/Mail/Encryption/KeyUtils";
-import { ContactCertificates } from "../../Contacts/Form/ContactCertificates";
 import { saveBlobAsFile } from "../../../frontend/Util/util";
 import { assert } from "../../../logic/util/util";
 import { gt } from "../../../l10n/l10n";
@@ -27,7 +26,7 @@ export class DigitalIDs {
   }
 
   static nameOf(key: PublicKey): string {
-    return ContactCertificates.nameOf(key);
+    return key.name || key.userIDs.first || key.defaultName;
   }
 
   static label(key: DigitalID): string {

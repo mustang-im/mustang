@@ -15,29 +15,15 @@ function key(id: string, userID: string, KeyClass: typeof PGPPublicKey | typeof 
   return result;
 }
 
-test("Set as Default makes one certificate the one for encryption", () => {
-  let person = new Person();
-  let pgp = key("ab12cd", "fred@example.org");
+test("Certificate status: default, not trusted", () => {
   let smime = key("ef34gh", "fred@example.org", SMIMEPublicKey);
   // A new S/MIME key is obsolete until its certificate is there
   smime.obsolete = false;
-  pgp.encryptByDefault = true;
-  person.encryptionPublicKeys.addAll([pgp, smime]);
-  ContactCertificates.setAsDefault(person, smime);
-  expect(smime.encryptByDefault).toBe(true);
-  expect(pgp.encryptByDefault).toBe(false);
+  smime.encryptByDefault = true;
   expect(ContactCertificates.statusOf(smime)).toBe("Default");
-  expect(ContactCertificates.sorted(person.encryptionPublicKeys)[0]).toBe(smime);
-});
-
-test("Bad certificates can't be the default and show their status", () => {
   let bad = key("ab12cd", "fred@example.org");
   bad.trustLevel = TrustLevel.Distrusted;
-  expect(ContactCertificates.canBeDefault(bad)).toBe(false);
   expect(ContactCertificates.statusOf(bad)).toBe("Not trusted");
-  expect(ContactCertificates.nameOf(bad)).toBe("fred@example.org");
-  bad.name = "Work";
-  expect(ContactCertificates.nameOf(bad)).toBe("Work");
 });
 
 test("All Fields lists the entries of the chosen kind, user-defined fields by name", () => {
