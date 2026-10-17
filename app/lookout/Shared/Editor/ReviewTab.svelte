@@ -5,12 +5,12 @@
       bind:checked={$spellcheck.value} />
     <RibbonButton label={$t`Word Count`} icon={WordCountIcon}
       tooltip={$t`The number of words, characters and paragraphs in the text or the selection`}
-      disabled={!editor} onClick={() => openTool(EditorTool.WordCount)} />
+      disabled={!editor} onClick={() => { openedTool = EditorTool.WordCount; }} />
   </RibbonGroup>
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorTool, type EditorCommands } from "./EditorCommands";
+  import { EditorTool } from "./EditorCommands";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";
@@ -23,21 +23,8 @@
 
   export let editor: Editor = null;
   export let openedTool: EditorTool | null = null;
-  export let commands: EditorCommands = null;
 
-  $: if (commands) {
-    editor = commands.editor;
-  }
 
-  // <copied from="FormatTextTab.svelte">
-  function openTool(tool: EditorTool) {
-    if (commands) {
-      commands.openTool(tool);
-    } else {
-      openedTool = tool;
-    }
-  }
-  // </copied>
 
   const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
 </script>

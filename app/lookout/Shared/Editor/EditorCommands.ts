@@ -1,4 +1,4 @@
-import type { ChainedCommands, Editor } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 
 export enum EditorTool {
   Link = "link",
@@ -14,10 +14,4 @@ export interface EditorCommands {
   onAttachFile: () => Promise<void>;
   onInsertPicture: (() => Promise<void>) | null;
   openTool: (tool: EditorTool) => void;
-}
-
-export class EditorChain {
-  static run(editor: Editor, command: (chain: ChainedCommands) => ChainedCommands) {
-    command(editor.chain().focus()).run();
-  }
 }

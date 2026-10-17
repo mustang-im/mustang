@@ -11,16 +11,16 @@
   {/if}
   <RibbonGroup label={$t`Links`}>
     <RibbonButton label={$t`Link`} icon={LinkIcon} shortCutInfo="Ctrl+K"
-      disabled={!editor} onClick={() => openTool(EditorTool.Link)} />
+      disabled={!editor} onClick={() => { openedTool = EditorTool.Link; }} />
   </RibbonGroup>
   <RibbonGroup label={$t`Text`}>
     <RibbonButton label={$t`Date & Time`} icon={DateTimeIcon}
       tooltip={$t`Insert the current date or time`}
-      disabled={!editor} onClick={() => openTool(EditorTool.DateTime)} />
+      disabled={!editor} onClick={() => { openedTool = EditorTool.DateTime; }} />
   </RibbonGroup>
   <RibbonGroup label={$t`Symbols`}>
     <RibbonMenuButton label={$t`Symbol`} icon={SymbolIcon} disabled={!editor}>
-      <SymbolGallery {editor} onMoreSymbols={() => openTool(EditorTool.Symbol)} />
+      <SymbolGallery {editor} onMoreSymbols={() => { openedTool = EditorTool.Symbol; }} />
     </RibbonMenuButton>
     <RibbonButton label={$t`Horizontal Line`} shortLabel={$t`Line`} icon={HorizontalLineIcon} size="small"
       disabled={!editor}
@@ -35,7 +35,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorTool, type EditorCommands } from "./EditorCommands";
+  import { EditorTool } from "./EditorCommands";
   import SymbolGallery from "./SymbolGallery.svelte";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";
@@ -57,21 +57,4 @@
   export let onAttachFile: () => Promise<void> = null;
   export let onInsertPicture: (() => Promise<void>) | null = null;
   export let showEmojis = false;
-  export let commands: EditorCommands = null;
-
-  $: if (commands) {
-    editor = commands.editor;
-    onAttachFile = commands.onAttachFile;
-    onInsertPicture = commands.onInsertPicture;
-  }
-
-  // <copied from="FormatTextTab.svelte">
-  function openTool(tool: EditorTool) {
-    if (commands) {
-      commands.openTool(tool);
-    } else {
-      openedTool = tool;
-    }
-  }
-  // </copied>
 </script>
