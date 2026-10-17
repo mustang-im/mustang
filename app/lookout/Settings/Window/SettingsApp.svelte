@@ -4,7 +4,7 @@
   height="720px"
   on:close={onClose}>
   <hbox flex class="settings-app">
-    <CategoriesPane {categories} account={showOnlyAccount ? account : null} />
+    <CategoriesPane {categories} account={showOnlyAccount ? $selectedAccount : null} />
     <MainContent category={$selectedCategory} />
   </hbox>
 </Dialog>

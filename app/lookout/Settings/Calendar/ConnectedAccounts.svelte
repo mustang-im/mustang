@@ -5,12 +5,12 @@
       <ComboBox options={$identities.contents.map(identity => ({ value: identity, label: identity.name }))}
         value={$account.inviteAs} label={$t`Send invitations from`} width="320px"
         disabled={$identities.length <= 1}
-        onChange={identity => { account.inviteAs = identity; }} />
+        onChange={identity => { account.inviteAs = identity; return onSave(); }} />
       <span>{$t`Online meeting:`}</span>
       <ComboBox options={$meetAccounts.contents.map(meetAccount => ({ value: meetAccount, label: meetAccount.name }))}
         value={$account.meetAccount} label={$t`Online meeting`} width="320px"
         disabled={$meetAccounts.length <= 1}
-        onChange={meetAccount => { account.meetAccount = meetAccount; }} />
+        onChange={meetAccount => { account.meetAccount = meetAccount; return onSave(); }} />
     </grid>
   </OptionsRow>
 </OptionsSection>
@@ -27,6 +27,10 @@
 
   $: identities = account.identitiesAvailable;
   $: meetAccounts = account.meetAccountsAvailable;
+
+  async function onSave() {
+    await account.save();
+  }
 </script>
 
 <style>

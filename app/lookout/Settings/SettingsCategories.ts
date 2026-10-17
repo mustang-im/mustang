@@ -15,7 +15,7 @@ import ContactsGeneral from "./Contacts/General.svelte";
 import TrustCenterGeneral from "./TrustCenter/General.svelte";
 import AccountGeneral from "./AccountGeneral.svelte";
 import AccountURLServer from "../../frontend/Settings/AccountURLServer.svelte";
-import AccountSubAccounts from "../../frontend/Settings/AccountSubAccounts.svelte";
+import AccountSubAccounts from "./AccountSubAccounts.svelte";
 import AccountMailServer from "../../frontend/Settings/Mail/Account/Server.svelte";
 import AccountFolders from "../../frontend/Settings/Mail/Account/Folders.svelte";
 import AccountIdentity from "../../frontend/Settings/Mail/Account/Identity.svelte";
@@ -23,9 +23,10 @@ import MailRules from "../../frontend/Settings/Mail/Rules.svelte";
 import MailSharing from "../../frontend/Settings/Mail/Sharing.svelte";
 import MailConnectedAccounts from "../../frontend/Settings/Mail/ConnectedAccounts.svelte";
 import AccountXMPPServer from "../../frontend/Settings/Chat/AccountXMPPServer.svelte";
-import ChatNotifications from "../../frontend/Settings/Chat/Notifications.svelte";
+import ChatGeneral from "./Chat/General.svelte";
+import FilesGeneral from "./Files/General.svelte";
 import WhatsAppImportBackup from "../../frontend/Settings/Chat/WhatsAppImportBackup.svelte";
-import CalendarConnectedAccounts from "../../frontend/Settings/Calendar/ConnectedAccounts.svelte";
+import CalendarConnectedAccounts from "./Calendar/ConnectedAccounts.svelte";
 import CalendarImportExport from "./Calendar/ImportExport.svelte";
 import CalendarWorkHours from "./Calendar/WorkHours.svelte";
 import ContactsImportExport from "./Contacts/ImportExport.svelte";
@@ -110,8 +111,7 @@ accountSettings.add(new AccSetting(Addressbook, "contacts-import", gt`Import/Exp
 accountSettings.add(new AccSetting(CardDAVAddressbook, "contacts-server", gt`Server`, AccountURLServer));
 // </copied>
 
-// <copied from="../../frontend/Settings/SettingsCategories.ts">
-const filesSettings = new SettingsCategory("files", gt`Files`, null, true);
+const filesSettings = new SettingsCategory("files", gt`Files`, FilesGeneral, true);
 filesSettings.accounts = appGlobal.fileSharingAccounts.filterObservable(acc => acc != myHarddrive);
 filesSettings.newAccountURL = "/setup/files";
 filesSettings.forApp = filesMustangApp;
@@ -119,10 +119,7 @@ accountSettings.add(new AccSetting(WebDAVAccount, "webdav-server", gt`Server`, A
 settingsCategories.add(filesSettings);
 
 // #if [DEV]
-const chatSettings = new SettingsCategory("chat", gt`Chat`, null, true);
-chatSettings.subCategories.addAll([
-  new SettingsCategory("chat-notifications", gt`Notifications`, ChatNotifications),
-]);
+const chatSettings = new SettingsCategory("chat", gt`Chat`, ChatGeneral, true);
 chatSettings.accounts = appGlobal.chatAccounts;
 chatSettings.newAccountURL = "/setup/chat";
 chatSettings.forApp = chatMustangApp;
@@ -134,10 +131,7 @@ accountSettings.add(new AccSetting(WhatsAppAccount, "whatsapp-import", gt`Import
 // #endif
 
 // #if [PROPRIETARY]
-const meetSettings = new SettingsCategory("meet", gt`Meet`, null, true);
-meetSettings.subCategories.addAll([
-  new SettingsCategory("meet-devices", gt`Devices`, Devices),
-]);
+const meetSettings = new SettingsCategory("meet", gt`Meet`, Devices, true);
 meetSettings.accounts = appGlobal.meetAccounts;
 // #endif
 // #if [!WEBMAIL && PROPRIETARY]
@@ -150,7 +144,6 @@ settingsCategories.add(meetSettings);
 accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountURLServer, true));
 accountSettings.add(new AccSetting(SIPAccount, "sip", gt`Details`, SIP, true));
 // #endif
-// </copied>
 
 settingsCategories.add(new SettingsCategory("language", gt`Language`, GlobalLanguage, true));
 settingsCategories.add(new SettingsCategory("trust-center", gt`Trust Center`, TrustCenterGeneral, true));
