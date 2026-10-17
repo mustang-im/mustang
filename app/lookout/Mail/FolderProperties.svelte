@@ -35,6 +35,7 @@
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogTabs from "../Shared/Dialog/DialogTabs.svelte";
   import { assert } from "../../logic/util/util";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { gt, t } from "../../l10n/l10n";
 
   export let folder: Folder;
@@ -42,9 +43,10 @@
 
   let name = folder.name;
   let specialFolder = folder.specialFolder;
-  let initialCountMode = FolderTreeActions.showsTotalCount(folder) ? FolderCountMode.Total : FolderCountMode.Unread;
+  const countModes = getLocalStorage<Record<string, FolderCountMode>>("lookout.mail.folderCountModes", {});
+  let initialCountMode = FolderTreeActions.showsTotalCount(folder, countModes.value) ? FolderCountMode.Total : FolderCountMode.Unread;
   let countMode = initialCountMode;
-  let permissions = FolderTreeActions.canShare(folder.account) ? new FolderPermissions(folder) : null;
+  let permissions = (!!folder.account && folder.account.canShareWithPersons() && !folder.account.isDependentAccount) ? new FolderPermissions(folder) : null;
   let permissionsVersion = 0;
 
   $: tabs = [
@@ -74,7 +76,7 @@
       await folder.save();
     }
     if (countMode != initialCountMode) {
-      FolderTreeActions.setCountMode(folder, countMode);
+      countModes.value = { ...countModes.value, [folder.account?.id + "/" + folder.id]: countMode };
       initialCountMode = countMode;
     }
     if (permissions?.isChanged) {

@@ -1,12 +1,11 @@
 import { type Folder, SpecialFolder, specialFolderNames } from "../../../logic/Mail/Folder";
-import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { assert } from "../../../logic/util/util";
 import { selectedFolder } from "../../../frontend/Mail/Selected";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-import { derived, get, readable, writable, type Readable } from "svelte/store";
+import { derived, get, readable, type Readable } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
 
 export enum FolderCountMode {
@@ -15,7 +14,6 @@ export enum FolderCountMode {
 }
 
 export class FolderTreeActions {
-  static readonly renaming = writable<Folder | null>(null);
   protected static draggedFolder: Folder | null = null;
 
   static displayName(folder: Folder): string {
@@ -25,34 +23,12 @@ export class FolderTreeActions {
     return specialFolderNames[folder.specialFolder] ?? folder.name;
   }
 
-  static canShare(account: MailAccount | null): boolean {
-    return !!account && account.canShareWithPersons() && !account.isDependentAccount;
-  }
-
-  static isVirtual(folder: Folder): boolean {
-    return folder instanceof AllFolders || folder instanceof SavedSearchFolder;
-  }
-
-  static readonly countModes = getLocalStorage<Record<string, FolderCountMode>>("lookout.mail.folderCountModes", {});
-
-  static showsTotalCount(folder: Folder, countModes = FolderTreeActions.countModes.value): boolean {
-    let mode = countModes?.[FolderTreeActions.keyOf(folder)];
+  static showsTotalCount(folder: Folder, countModes: Record<string, FolderCountMode>): boolean {
+    let mode = countModes?.[folder.account?.id + "/" + folder.id];
     if (mode) {
       return mode == FolderCountMode.Total;
     }
     return folder.specialFolder == SpecialFolder.Drafts || folder.specialFolder == SpecialFolder.Outbox;
-  }
-
-  static setCountMode(folder: Folder, mode: FolderCountMode) {
-    FolderTreeActions.countModes.value = { ...FolderTreeActions.countModes.value, [FolderTreeActions.keyOf(folder)]: mode };
-  }
-
-  static keyOf(folder: Folder): string {
-    return folder.account?.id + "/" + folder.id;
-  }
-
-  static countedFolders(folder: Folder): Folder[] {
-    return folder instanceof AllFolders ? folder.folders?.contents ?? [] : [folder];
   }
 
   static countStore(folder: Folder | null, total: boolean): Readable<number> {
@@ -65,7 +41,7 @@ export class FolderTreeActions {
   }
 
   static disableMove(folder: Folder): string | false {
-    if (FolderTreeActions.isVirtual(folder)) {
+    if (folder instanceof AllFolders || folder instanceof SavedSearchFolder) {
       return gt`This is not a real folder`;
     }
     if (folder.specialFolder && folder.specialFolder != SpecialFolder.Normal) {
@@ -77,7 +53,7 @@ export class FolderTreeActions {
   static canMoveFolderInto(folder: Folder, target: Folder): boolean {
     return !!folder && !!target &&
       !FolderTreeActions.disableMove(folder) &&
-      !FolderTreeActions.isVirtual(target) &&
+      !(target instanceof AllFolders || target instanceof SavedSearchFolder) &&
       folder.account == target.account &&
       folder.parent != target &&
       !FolderTreeActions.isInside(target, folder) &&
@@ -142,7 +118,7 @@ export class FolderTreeActions {
   }
 
   static async markAllRead(folder: Folder) {
-    for (let counted of FolderTreeActions.countedFolders(folder)) {
+    for (let counted of folder instanceof AllFolders ? folder.folders?.contents ?? [] : [folder]) {
       await counted.markAllRead();
     }
   }

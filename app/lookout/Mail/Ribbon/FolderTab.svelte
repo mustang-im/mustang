@@ -10,7 +10,7 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Actions`}>
     <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon} size="small"
-      onClick={() => FolderTreeActions.renaming.set(folder)}
+      onClick={() => { $renamingFolder = folder; }}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot rename this folder` : $folderStore?.disableRename()} />
     <RibbonButton label={$t`Move Folder`} shortLabel={$t`Move`} icon={MoveFolderIcon} size="small"
       onClick={() => { $openMoveFolder = folder; }}
@@ -33,7 +33,7 @@
       onClick={() => { $openFolderProperties = { folder: realFolder, tab: FolderPropertiesTab.Permissions }; }}
       disabled={!realFolder
         ? $t`Select a folder of an account first`
-        : !FolderTreeActions.canShare(realAccount) && $t`This account cannot share folders with colleagues`} />
+        : !(!!realAccount && realAccount.canShareWithPersons() && !realAccount.isDependentAccount) && $t`This account cannot share folders with colleagues`} />
     <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
       onClick={() => { $openFolderProperties = { folder }; }}
       disabled={!folder ? $t`Select a folder first` : isVirtual && $t`This is not a real folder`} />
@@ -44,6 +44,7 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
+  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import { FolderPropertiesTab, openFolderProperties } from "../FolderProperties.svelte";
@@ -62,13 +63,14 @@
   import DeleteAllIcon from "lucide-svelte/icons/trash-2";
   import PropertiesIcon from "lucide-svelte/icons/folder-cog";
   import PermissionsIcon from "lucide-svelte/icons/folder-key";
+  import { renamingFolder } from "../LeftPane/FolderLine.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder | null = null;
   export let account: MailAccount | null = null;
 
   $: folderStore = folder;
-  $: isVirtual = folder && FolderTreeActions.isVirtual(folder);
+  $: isVirtual = folder && (folder instanceof AllFolders || folder instanceof SavedSearchFolder);
   $: realFolder = folder && !isVirtual ? folder : realAccount?.inbox ?? null;
   $: realAccount = folder && !isVirtual
     ? folder.account

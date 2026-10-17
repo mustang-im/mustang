@@ -15,7 +15,7 @@
 {/if}
 <MenuItem label={$t`Rename Folder`} icon={RenameIcon}
   disabled={folder instanceof AllFolders ? $t`You cannot rename this folder` : $folder.disableRename()}
-  onClick={() => FolderTreeActions.renaming.set(folder)} />
+  onClick={() => { $renamingFolder = folder; }} />
 <MenuItem label={$t`Move Folder…`} icon={MoveIcon}
   disabled={FolderTreeActions.disableMove(folder)}
   onClick={() => { $openMoveFolder = folder; }} />
@@ -69,11 +69,12 @@
   import PropertiesIcon from "lucide-svelte/icons/folder-cog";
   import CustomizeIcon from "lucide-svelte/icons/folder-search";
   import ConnectIcon from "lucide-svelte/icons/plug";
+  import { renamingFolder } from "./FolderLine.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder;
 
-  $: isVirtual = FolderTreeActions.isVirtual(folder);
+  $: isVirtual = folder instanceof AllFolders || folder instanceof SavedSearchFolder;
   $: searchFolder = folder instanceof SavedSearchFolder ? folder : null;
   $: isSearchFolder = !!searchFolder;
   $: messages = folder.messages;

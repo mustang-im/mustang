@@ -4,7 +4,7 @@
 <MenuItem label={$t`Update Folder`} icon={UpdateIcon}
   tooltip={$t`Get new mail for this account`}
   onClick={onGetNewMail} />
-{#if FolderTreeActions.canShare(account)}
+{#if (!!account && account.canShareWithPersons() && !account.isDependentAccount)}
   <MenuItem label={$t`Open Shared Folder…`} icon={SharedFolderIcon}
     tooltip={$t`Open the folders that colleagues shared with you`}
     onClick={() => { $openSharedFolder = account; }} />
@@ -35,7 +35,6 @@
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { openNewFolder } from "./NewFolderDialog.svelte";
   import { openSharedFolder } from "./SharedFolderDialog.svelte";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import UpdateIcon from "lucide-svelte/icons/refresh-cw";

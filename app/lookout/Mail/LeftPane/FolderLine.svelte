@@ -47,13 +47,22 @@
   <FolderMenu {folder} />
 </ContextMenu>
 
+<script lang="ts" context="module">
+  import type { Folder } from "../../../logic/Mail/Folder";
+  import { writable } from "svelte/store";
+
+  export const renamingFolder = writable<Folder | null>(null);
+</script>
+
 <script lang="ts">
-  import { SpecialFolder, type Folder } from "../../../logic/Mail/Folder";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
+  import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { onDragOverMail } from "../../../frontend/Mail/Message/drag";
   import { MessageActions } from "../MessageActions";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderCountMode, FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import FolderMenu from "./FolderMenu.svelte";
   import ConnectButton from "./ConnectButton.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
@@ -84,14 +93,14 @@
     $expandedIDs.value = ids;
   }
   /* </copied> */
-  const renaming = FolderTreeActions.renaming;
+  const renaming = renamingFolder;
   const accounts = appGlobal.emailAccounts;
 
   $: name = $folder && FolderTreeActions.displayName(folder);
   $: account = folder.account;
   $: isInbox = !isFavorite && folder.specialFolder == SpecialFolder.Inbox;
-  $: isVirtual = FolderTreeActions.isVirtual(folder);
-  const countModes = FolderTreeActions.countModes;
+  $: isVirtual = folder instanceof AllFolders || folder instanceof SavedSearchFolder;
+  const countModes = getLocalStorage<Record<string, FolderCountMode>>("lookout.mail.folderCountModes", {});
   $: showsTotal = FolderTreeActions.showsTotalCount(folder, $countModes.value);
   $: accountsCount = $accounts.length;
   $: countStore = FolderTreeActions.countStore(folder, showsTotal);
