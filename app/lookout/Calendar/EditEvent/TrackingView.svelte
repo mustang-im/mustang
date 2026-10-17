@@ -42,6 +42,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import { EventFormInfo, type TrackingColumn } from "./EventFormInfo";
   import ResponseIcon from "./ResponseIcon.svelte";
   import InfoIcon from "lucide-svelte/icons/info";
@@ -54,9 +55,9 @@
   let sortColumn: TrackingColumn = null;
   let ascending = true;
 
-  $: participants = event.participants;
+  $: participants = ObservedItems.of(event.participants);
   $: summary = $participants && EventFormInfo.responseSummary(event);
-  $: rows = EventFormInfo.sortForTracking($participants.contents, sortColumn, ascending);
+  $: rows = EventFormInfo.sortForTracking($participants, sortColumn, ascending);
   $: columns = [
     { id: "name" as TrackingColumn, label: $t`Name` },
     { id: "attendance" as TrackingColumn, label: $t`Attendance` },

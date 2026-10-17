@@ -12,12 +12,13 @@
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventFormInfo } from "./EventFormInfo";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import ResponseIcon from "./ResponseIcon.svelte";
 
   export let event: Event;
 
-  $: participants = event.participants;
-  $: attendees = $participants.contents.filter(participant => participant.response != InvitationResponse.Organizer);
+  $: participants = ObservedItems.of(event.participants);
+  $: attendees = $participants.filter(participant => participant.response != InvitationResponse.Organizer);
 
   function tooltip(participant: Participant): string {
     return [participant.name, participant.emailAddress, EventFormInfo.responseLabel(participant)]

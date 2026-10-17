@@ -42,6 +42,7 @@
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { EventFormInfo } from "../EditEvent/EventFormInfo";
   import { EventTable } from "../ListView/EventTable";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { catchErrors } from "../../../frontend/Util/error";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
@@ -57,8 +58,9 @@
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;
   $: when = EventFormInfo.whenText($event, getDateTimeLocale());
   $: recurrence = isRecurring || $event.recurrenceRule ? EventTable.recurrenceLabel($event.parentEvent ?? $event) : "";
-  $: organizer = $event.participants.hasItems ? $event.organizer : null;
-  $: attendeeSummary = $event.participants.hasItems ? summarizeResponses() : "";
+  $: participants = ObservedItems.of(event.participants);
+  $: organizer = $participants.length ? $event.organizer : null;
+  $: attendeeSummary = $participants.length ? summarizeResponses() : "";
 
   function summarizeResponses(): string {
     let counts = EventFormInfo.responseCounts($event);
