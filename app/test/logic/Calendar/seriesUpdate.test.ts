@@ -7,6 +7,7 @@ import { InvitationResponse } from '../../../logic/Calendar/Invitation/Invitatio
 import { OutgoingInvitation } from '../../../logic/Calendar/Invitation/OutgoingInvitation';
 import { DummyCalendarStorage } from '../../../logic/Calendar/SQL/DummyCalendarStorage';
 import { Frequency, Weekday } from '../../../logic/Calendar/RecurrenceRule';
+import type { Collection } from 'svelte-collections';
 
 /** A weekly meeting series that our user organizes, every Monday at 9:00 */
 function meetingSeries(): Event {
@@ -106,4 +107,109 @@ test("A new series end keeps the exceptions within the series", async () => {
   expect(master.exceptions.length).toBe(1);
   expect(master.exceptions.contains(early)).toBe(true);
   expect(master.exceptions.contains(late)).toBe(false);
+});
+
+/** Records the invitation emails that the organizer sends, instead of sending them */
+function spyOnSentInvitations() {
+  let sent: { method: string, event: Event, to: string[] }[] = [];
+  vi.spyOn(OutgoingInvitation.prototype as any, "send").mockImplementation(async function (this: OutgoingInvitation, method: string, participants: Collection<Participant>) {
+    sent.push({ method, event: this.event, to: participants.contents.map(participant => participant.emailAddress) });
+  });
+  return sent;
+}
+
+function occurrence(master: Event, index: number): Event {
+  return master.getOccurrenceByDate(master.recurrenceRule.getOccurrenceByIndex(index));
+}
+
+function exclusionIndexes(master: Event): number[] {
+  return master.exclusions.contents
+    .map(exclusion => master.recurrenceRule.getIndexOfOccurrence(exclusion))
+    .sort((a, b) => a - b);
+}
+
+// "Delete this and following" saved the shortened series without an editing
+// session, so `hasChanged()` was false, and the attendees kept all occurrences.
+test.each(["no end", "10 times", "1 March"])("Attendees get an update when the organizer deletes this and following occurrences of a series with %s", async (end) => {
+  let master = meetingSeries();
+  await kSeriesEnds[end](master);
+  let sent = spyOnSentInvitations();
+
+  await occurrence(master, 5).truncateRecurrence();
+
+  expect(master.recurrenceRule.count).toBe(5);
+  expect(sent).toEqual([{ method: "REQUEST", event: master, to: ["attendee@example.com"] }]);
+  expect(master.unedited).toBeNull();
+});
+
+// With a later exception, the series ends with that exception,
+// and the occurrences from this one until it are excluded.
+test("Attendees get an update when the organizer deletes this and following occurrences, and a later occurrence was changed", async () => {
+  let master = meetingSeries();
+  let early = addException(master, 2);
+  let late = addException(master, 8);
+  let sent = spyOnSentInvitations();
+
+  await occurrence(master, 5).truncateRecurrence();
+
+  expect(master.recurrenceRule.count).toBe(9);
+  expect(exclusionIndexes(master)).toEqual([5, 6, 7]);
+  expect(master.exceptions.contents).toEqual([early, late]);
+  expect(sent).toEqual([{ method: "REQUEST", event: master, to: ["attendee@example.com"] }]);
+});
+
+// The series already ends with the exception, so only exclusions are added,
+// and the recurrence rule stays the same.
+test("Attendees get an update when deleting this and following occurrences only excludes occurrences", async () => {
+  let master = meetingSeries();
+  await master.setRecurrenceCount(10);
+  let rule = master.recurrenceRule;
+  addException(master, 9);
+  let sent = spyOnSentInvitations();
+
+  await occurrence(master, 5).truncateRecurrence();
+
+  expect(master.recurrenceRule).toBe(rule);
+  expect(exclusionIndexes(master)).toEqual([5, 6, 7, 8]);
+  expect(sent).toEqual([{ method: "REQUEST", event: master, to: ["attendee@example.com"] }]);
+});
+
+// "This and following": The organizer changes an occurrence for it and all later
+// ones. That splits the series: A new series starts with the changed occurrence,
+// and the old series ends before it. This mirrors `onChangeRemainder()` in
+// `frontend/Calendar/EditEvent/DialogHeader.svelte`.
+test("Attendees get the new series and an update of the old series when the organizer changes this and following occurrences", async () => {
+  let master = meetingSeries();
+  let sent = spyOnSentInvitations();
+  let changed = occurrence(master, 5);
+  changed.startEditing();
+  changed.title = "Weekly, new";
+
+  let newMaster = master.calendar.newEvent();
+  newMaster.startEditing();
+  newMaster.copyEditableFieldsFrom(changed);
+  newMaster.calUID = null;
+  newMaster.newRecurrenceRule(Frequency.Weekly, 1, 0, [Weekday.Monday]);
+  await newMaster.save();
+  newMaster.finishEditing();
+  changed.cancelEditing();
+  master.cancelEditing();
+  await changed.truncateRecurrence();
+
+  expect(newMaster.title).toBe("Weekly, new");
+  expect(master.title).toBe("Weekly");
+  expect(master.recurrenceRule.count).toBe(5);
+  expect(sent).toEqual([
+    { method: "REQUEST", event: newMaster, to: ["attendee@example.com"] },
+    { method: "REQUEST", event: master, to: ["attendee@example.com"] },
+  ]);
+});
+
+test("A new exclusion changes the series and needs to be sent", () => {
+  let master = meetingSeries();
+  master.startEditing();
+  master.exclusions.add(master.recurrenceRule.getOccurrenceByIndex(3));
+
+  expect(master.hasChanged()).toBe(true);
+  expect(master.outgoingInvitation.changesNeedToNotify()).toBe(true);
 });
