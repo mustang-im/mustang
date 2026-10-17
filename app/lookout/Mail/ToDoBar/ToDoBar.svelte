@@ -68,17 +68,19 @@
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import { MailView, ToDoBarPart } from "../MailView";
   import { ToDoAgenda } from "./ToDoAgenda";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import CloseIcon from "lucide-svelte/icons/x";
   import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
 
   export let parts: ToDoBarPart[];
 
   const now = CurrentTime.minute;
-  const events = shownCalendarEvents;
+  const events = ObservedItems.of(shownCalendarEvents);
+  const persons = ObservedItems.of(appGlobal.persons);
   let selectedDay = new Date();
 
-  $: agenda = ToDoAgenda.days($events.contents, selectedDay);
-  $: frequentPeople = topPeople(appGlobal.persons.contents);
+  $: agenda = ToDoAgenda.days($events, selectedDay);
+  $: frequentPeople = topPeople($persons);
 
   function topPeople(persons: Person[]): Person[] {
     const kCount = 10;
