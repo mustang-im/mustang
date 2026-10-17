@@ -61,7 +61,7 @@
 
 <script lang="ts">
   import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
-  import { backstageState } from "../../Settings/Backstage/BackstageState";
+  import { backstagePage, isBackstageOpen } from "../../Settings/Backstage/selected";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
   import QuickAccessToolbarView from "../../MainWindow/QuickAccessToolbar.svelte";
@@ -133,7 +133,8 @@
 
   function onFile() {
     isTempOpen = false;
-    backstageState.open();
+    $backstagePage = "info";
+    $isBackstageOpen = true;
   }
 
   function onSelectTab(tab: RibbonTabModel) {

@@ -20,7 +20,7 @@
       </vbox>
     </hbox>
     <StatusBar />
-    {#if $backstageState.isOpen}
+    {#if $isBackstageOpen}
       <vbox class="backstage-overlay">
         <Backstage />
       </vbox>
@@ -35,7 +35,7 @@
   import { selectedApp, sidebarApp, history, openApp, mustangApps } from "../../frontend/AppsBar/selectedApp";
   import { notifications } from "../../frontend/MainWindow/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
-  import { backstageState } from "../Settings/Backstage/BackstageState";
+  import { isBackstageOpen } from "../Settings/Backstage/selected";
   import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
   import { RibbonModel } from "../Shared/Ribbon/RibbonGroup";
   import { Keyboard } from "../Util/keyboard";
@@ -82,7 +82,7 @@
   const unlistenHistory = history.listen(onNavigate);
   onDestroy(unlistenHistory);
   function onNavigate() {
-    backstageState.close();
+    $isBackstageOpen = false;
   }
 
   function onKeyDownCapture() {
