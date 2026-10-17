@@ -50,7 +50,6 @@
   import type { CalendarRange } from "../View/CalendarRange";
   import { WeekRowLayout } from "./WeekRow";
   import { CalendarActions } from "../CalendarActions";
-  import { DayAtPoint } from "../View/DayAtPoint";
   import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
   import { selectedCalendar, selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -87,9 +86,23 @@
   }
   $: layout = derived([...$weekEvents.contents], eventsInWeek => new WeekRowLayout(eventsInWeek, days, maxLines));
 
+  // <copied from="../DayView/AllDayEvents.svelte">
   function dayAt(clientX: number): Date {
-    return DayAtPoint.find(weekEl, clientX, days);
+    let cells = Array.from(weekEl.querySelectorAll<HTMLElement>(":scope > [data-day-index]"));
+    let index = cells.findIndex(cell => {
+      let rect = cell.getBoundingClientRect();
+      return rect.left <= clientX && clientX < rect.right;
+    });
+    if (index < 0) {
+      let rect = weekEl.getBoundingClientRect();
+      index = Math.floor((clientX - rect.left) / rect.width * days.length);
+      if (getComputedStyle(weekEl).direction == "rtl") {
+        index = days.length - 1 - index;
+      }
+    }
+    return days[Math.min(Math.max(index, 0), days.length - 1)];
   }
+  // </copied>
 
   function selectDay(day: Date) {
     CalendarActions.commitInlineTitle();

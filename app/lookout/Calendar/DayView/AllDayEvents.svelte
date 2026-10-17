@@ -26,7 +26,6 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { layoutDayRow } from "../../../frontend/Calendar/MonthView/WeekRow";
   import { CalendarActions } from "../CalendarActions";
-  import { DayAtPoint } from "../View/DayAtPoint";
   import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -48,9 +47,23 @@
 
   $: layout = derived([...$events.contents], allDayEvents => layoutDayRow(allDayEvents, days));
 
+  // <copied to="../MonthView/WeekRow.svelte">
   function dayAt(clientX: number): Date {
-    return DayAtPoint.find(stripEl, clientX, days);
+    let cells = Array.from(stripEl.querySelectorAll<HTMLElement>(":scope > [data-day-index]"));
+    let index = cells.findIndex(cell => {
+      let rect = cell.getBoundingClientRect();
+      return rect.left <= clientX && clientX < rect.right;
+    });
+    if (index < 0) {
+      let rect = stripEl.getBoundingClientRect();
+      index = Math.floor((clientX - rect.left) / rect.width * days.length);
+      if (getComputedStyle(stripEl).direction == "rtl") {
+        index = days.length - 1 - index;
+      }
+    }
+    return days[Math.min(Math.max(index, 0), days.length - 1)];
   }
+  // </copied>
 
   function selectDay(day: Date) {
     CalendarActions.commitInlineTitle();

@@ -18,7 +18,7 @@
     <MenuDivider />
     <SubMenu label={$t`Color`} icon={ColorIcon}>
       <ColorPalette colors={CalendarColors.palette} selected={calendar.color} label={$t`Calendar color`}
-        columns={5} onChoose={color => catchErrors(() => CalendarColors.setColor(calendar, color))} />
+        columns={5} onChoose={color => catchErrors(async () => { calendar.color = color; await calendar.save(); })} />
     </SubMenu>
     <MenuItem label={$t`Overlay`} icon={OverlayIcon} checked={!$splitView.value} checkable
       onClick={toggleOverlay} />

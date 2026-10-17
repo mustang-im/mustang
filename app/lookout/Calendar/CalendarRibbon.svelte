@@ -126,7 +126,7 @@
         disabled={noSelection}>
         {#if $selectedCalendar}
           <ColorPalette colors={CalendarColors.palette} selected={$selectedCalendar.color} label={$t`Calendar color`}
-            columns={5} onChoose={color => catchErrors(() => CalendarColors.setColor($selectedCalendar, color))} />
+            columns={5} onChoose={color => catchErrors(async () => { $selectedCalendar.color = color; await $selectedCalendar.save(); })} />
         {/if}
       </RibbonMenuButton>
     </RibbonGroup>

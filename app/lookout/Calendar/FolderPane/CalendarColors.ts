@@ -1,4 +1,3 @@
-import type { Calendar } from "../../../logic/Calendar/Calendar";
 import { gt } from "../../../l10n/l10n";
 
 export class CalendarColors {
@@ -20,10 +19,5 @@ export class CalendarColors {
       { name: gt`Salmon`, color: "#EE8C82" },
       { name: gt`Olive`, color: "#909B3E" },
     ];
-  }
-
-  static async setColor(calendar: Calendar, color: string) {
-    calendar.color = color;
-    await calendar.save();
   }
 }

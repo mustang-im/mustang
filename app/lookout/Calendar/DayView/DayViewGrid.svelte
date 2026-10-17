@@ -76,7 +76,6 @@
   import AllDayEvents from "./AllDayEvents.svelte";
   import DayColumn from "./DayColumn.svelte";
   import TimeRuler from "./TimeRuler.svelte";
-  import { TextWidth } from "../../Shared/TextWidth";
   import CalendarTab from "./CalendarTab.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { derived } from "svelte/store";
@@ -106,8 +105,8 @@
   $: rulers = $rulerSettings;
   $: showsZoneLabels = rulers.length > 1 || !!rulers[0]?.label;
   $: rulerLabels = rulers.map(ruler => ruler.hourLabels(range.days[0]));
-  $: textWidth = rulersEl ? new TextWidth(rulersEl) : null;
-  $: rulerWidths = rulers.map((ruler, r) => rulerWidth(textWidth, rulerLabels[r], showsZoneLabels ? ruler.shownLabel(range.days[0]) : ""));
+  $: textContext = rulersEl ? textContextOf(rulersEl) : null;
+  $: rulerWidths = rulers.map((ruler, r) => rulerWidth(textContext, rulerLabels[r], showsZoneLabels ? ruler.shownLabel(range.days[0]) : ""));
   $: dayColumns = range.days.map(day =>
     enlargeSelectedDay && day.toDateString() == $selectedDate?.toDateString() ? "minmax(0, 3fr)" : "minmax(0, 1fr)").join(" ");
   $: columns = `${rulerWidths.reduce((sum, width) => sum + width, 0)}px ` +
@@ -127,12 +126,22 @@
     };
   });
 
-  function rulerWidth(textWidth: TextWidth | null, hourLabels: string[], zoneLabel: string): number {
+  function textContextOf(element: Element): CanvasRenderingContext2D | null {
+    let context = document.createElement("canvas").getContext("2d");
+    let style = getComputedStyle(element);
+    if (context) {
+      context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    }
+    return context;
+  }
+
+  function rulerWidth(context: CanvasRenderingContext2D | null, hourLabels: string[], zoneLabel: string): number {
     const kRulerPadding = 14;
-    if (!textWidth) {
+    if (!context) {
       return kRulerWidth;
     }
-    let widest = Math.max(textWidth.ofLongestWord(zoneLabel), ...hourLabels.map(label => textWidth.of(label)));
+    let widthOf = (text: string) => Math.ceil(context.measureText(text).width);
+    let widest = Math.max(0, ...zoneLabel.split(/\s+/).map(widthOf), ...hourLabels.map(widthOf));
     return Math.max(kRulerWidth, widest + kRulerPadding);
   }
 
