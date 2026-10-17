@@ -1,55 +1,55 @@
 <Dialog title={title} width="520px" on:close>
   <vbox class="new-folder-account" class:wizard={!localOnly}>
-    {#if flow.step == "type"}
+    {#if step == "type"}
       <span class="heading">{isCalendar ? $t`Where do you want to keep the calendar?` : $t`Where do you want to keep the address book?`}</span>
       <vbox class="types">
         <hbox class="type">
           <Radio label={$t`On this computer`} name="folder-account-type" value={true}
-            bind:group={flow.isLocal} />
+            bind:group={isLocal} />
           <span class="lo-secondary">{isCalendar
             ? $t`A new calendar that only this computer has.`
             : $t`A new address book that only this computer has.`}</span>
         </hbox>
         <hbox class="type">
           <Radio label={isCalendar ? $t`CalDAV server` : $t`CardDAV server`} name="folder-account-type" value={false}
-            bind:group={flow.isLocal} />
+            bind:group={isLocal} />
           <span class="lo-secondary">{isCalendar
             ? $t`An existing calendar on the server of your provider or company.`
             : $t`An existing address book on the server of your provider or company.`}</span>
         </hbox>
       </vbox>
-    {:else if flow.step == "settings" && flow.isLocal}
+    {:else if step == "settings" && isLocal}
       <FormGrid columns="140px minmax(0, 1fr)">
         <span>{$t`Name:`}</span>
-        <TextField bind:value={flow.config.name} label={$t`Name`} />
+        <TextField bind:value={config.name} label={$t`Name`} />
         <span>{$t`Folder contains:`}</span>
-        <ComboBox options={contentOptions} value={flow.kind} label={$t`Folder contains`} disabled />
+        <ComboBox options={contentOptions} value={kind} label={$t`Folder contains`} disabled />
         <span>{$t`Location:`}</span>
         <span class="value">{$t`On this computer`}</span>
       </FormGrid>
-    {:else if flow.step == "settings"}
+    {:else if step == "settings"}
       <span class="heading">{isCalendar ? $t`CalDAV Calendar Settings` : $t`CardDAV Address Book Settings`}</span>
       <FormGrid columns="140px minmax(0, 1fr)">
         <span class="section">{$t`Folder Information`}</span>
         <span>{$t`Name:`}</span>
-        <TextField bind:value={flow.config.name} label={$t`Name`} />
+        <TextField bind:value={config.name} label={$t`Name`} />
         <span class="section">{$t`Server Information`}</span>
         <span>{$t`Server URL:`}</span>
-        <TextField type="url" bind:value={flow.config.url} label={$t`Server URL`}
+        <TextField type="url" bind:value={config.url} label={$t`Server URL`}
           placeholder={isCalendar ? "https://dav.example.com/calendar/" : "https://dav.example.com/contacts/"} />
         <span class="section">{$t`Logon Information`}</span>
         <span>{$t`User Name:`}</span>
-        <TextField bind:value={flow.config.username} label={$t`User Name`} />
+        <TextField bind:value={config.username} label={$t`User Name`} />
         <span>{$t`Password:`}</span>
-        <TextField type="password" bind:value={flow.config.password} label={$t`Password`} />
+        <TextField type="password" bind:value={config.password} label={$t`Password`} />
       </FormGrid>
-    {:else if flow.step == "choose"}
+    {:else if step == "choose"}
       <span class="heading">{isCalendar ? $t`Select the calendars to add:` : $t`Select the address books to add:`}</span>
       <vbox class="folders">
-        {#each flow.available as folder (folder.url)}
+        {#each available as folder (folder.url)}
           <hbox class="folder">
-            <CheckBox label={String(folder.displayName || folder.url)} checked={flow.chosen.includes(folder)}
-              onChange={checked => { flow.toggle(folder, checked); flow = flow; }} />
+            <CheckBox label={String(folder.displayName || folder.url)} checked={chosen.includes(folder)}
+              onChange={checked => toggle(folder, checked)} />
           </hbox>
         {/each}
       </vbox>
@@ -58,19 +58,24 @@
   <svelte:fragment slot="footer">
     <hbox flex />
     {#if !localOnly}
-      <DialogButton label={$t`< Back`} disabled={flow.step == "type"} onClick={back} />
+      <DialogButton label={$t`< Back`} disabled={step == "type"} onClick={back} />
     {/if}
     {#if isLastStep}
-      <DialogButton label={localOnly ? $t`OK` : $t`Finish`} primary disabled={!flow.canContinue} onClick={next} />
+      <DialogButton label={localOnly ? $t`OK` : $t`Finish`} primary disabled={!canContinue} onClick={next} />
     {:else}
-      <DialogButton label={$t`Next >`} primary disabled={!flow.canContinue} onClick={next} />
+      <DialogButton label={$t`Next >`} primary disabled={!canContinue} onClick={next} />
     {/if}
     <DialogButton label={$t`Cancel`} onClick={close} />
   </svelte:fragment>
 </Dialog>
 
 <script lang="ts">
-  import { NewFolderAccountFlow, type FolderAccountKind } from "./NewFolderAccountFlow";
+  import type { Calendar } from "../../logic/Calendar/Calendar";
+  import type { Addressbook } from "../../logic/Contacts/Addressbook";
+  import { newCalendarForProtocol } from "../../logic/Calendar/AccountsList/Calendars";
+  import { newAddressbookForProtocol } from "../../logic/Contacts/AccountsList/Addressbooks";
+  import { NewFolderAccountFlow, type FolderAccountKind, type ServerFolder } from "./NewFolderAccountFlow";
+  import { assert } from "../../logic/util/util";
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
   import FormGrid from "../Shared/Form/FormGrid.svelte";
@@ -79,14 +84,21 @@
   import CheckBox from "../Shared/Form/CheckBox.svelte";
   import Radio from "../Shared/Form/Radio.svelte";
   import { createEventDispatcher } from "svelte";
-  import { t } from "../../l10n/l10n";
+  import { gt, t } from "../../l10n/l10n";
 
   export let kind: FolderAccountKind;
   export let localOnly = false;
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  let flow = new NewFolderAccountFlow(kind, localOnly);
+  let step: "type" | "settings" | "choose" = "type";
+  let isLocal = true;
+  let config: Calendar | Addressbook | null = null;
+  let available: ServerFolder[] = [];
+  let chosen: ServerFolder[] = [];
+  if (localOnly) {
+    chooseType(true);
+  }
 
   $: isCalendar = kind == "calendar";
   $: title = localOnly
@@ -96,22 +108,58 @@
     { value: "calendar", label: $t`Calendar Items` },
     { value: "addressbook", label: $t`Contact Items` },
   ];
-  $: isLastStep = flow.step == "choose" || flow.step == "settings" && flow.isLocal;
+  $: isLastStep = step == "choose" || step == "settings" && isLocal;
+  $: canContinue = step == "type" ||
+    (step == "choose"
+      ? chosen.length > 0
+      : !!config?.name?.trim() && (isLocal || !!config.url?.trim() && !!config.username?.trim()));
+
+  function chooseType(local: boolean) {
+    isLocal = local;
+    let protocol = kind == "calendar"
+      ? (isLocal ? "calendar-local" : "caldav")
+      : (isLocal ? "addressbook-local" : "carddav");
+    config = kind == "calendar"
+      ? newCalendarForProtocol(protocol)
+      : newAddressbookForProtocol(protocol);
+    step = "settings";
+  }
+
+  function toggle(folder: ServerFolder, isChosen: boolean) {
+    chosen = isChosen
+      ? [...chosen.filter(existing => existing != folder), folder]
+      : chosen.filter(existing => existing != folder);
+  }
 
   async function next() {
-    try {
-      await flow.next();
-    } finally {
-      flow = flow;
+    assert(canContinue, gt`Please fill in the fields first`);
+    if (step == "type") {
+      chooseType(isLocal);
+      return;
     }
-    if (flow.isDone) {
+    if (step == "settings" && isLocal) {
+      await NewFolderAccountFlow.saveLocal(config);
       close();
+      return;
     }
+    if (step == "settings") {
+      try {
+        available = await NewFolderAccountFlow.findServerFolders(config, kind);
+      } finally {
+        config = config;
+      }
+      chosen = [available[0]];
+      if (available.length > 1) {
+        step = "choose";
+        return;
+      }
+    }
+    await NewFolderAccountFlow.saveServerFolders(config, available, chosen);
+    close();
   }
 
   function back() {
-    flow.back();
-    flow = flow;
+    step = step == "choose" ? "settings" : "type";
   }
 
   function close() {

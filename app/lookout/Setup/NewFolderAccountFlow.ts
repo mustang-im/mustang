@@ -13,86 +13,10 @@ import { gt } from "../../l10n/l10n";
 import type { DAVCalendar, DAVAddressBook } from "tsdav";
 
 export type FolderAccountKind = "calendar" | "addressbook";
-export type FolderAccountStep = "type" | "settings" | "choose";
-type ServerFolder = DAVCalendar | DAVAddressBook;
+export type ServerFolder = DAVCalendar | DAVAddressBook;
 
 export class NewFolderAccountFlow {
-  readonly kind: FolderAccountKind;
-  step: FolderAccountStep = "type";
-  isLocal = true;
-  config: Calendar | Addressbook | null = null;
-  available: ServerFolder[] = [];
-  chosen: ServerFolder[] = [];
-  isDone = false;
-
-  constructor(kind: FolderAccountKind, localOnly = false) {
-    this.kind = kind;
-    if (localOnly) {
-      this.chooseType(true);
-    }
-  }
-
-  get protocol(): string {
-    if (this.kind == "calendar") {
-      return this.isLocal ? "calendar-local" : "caldav";
-    }
-    return this.isLocal ? "addressbook-local" : "carddav";
-  }
-
-  chooseType(isLocal: boolean) {
-    this.isLocal = isLocal;
-    this.config = this.kind == "calendar"
-      ? newCalendarForProtocol(this.protocol)
-      : newAddressbookForProtocol(this.protocol);
-    this.step = "settings";
-  }
-
-  get canContinue(): boolean {
-    let config = this.config;
-    if (this.step == "type") {
-      return true;
-    }
-    if (this.step == "choose") {
-      return this.chosen.length > 0;
-    }
-    return !!config?.name?.trim() && (this.isLocal || !!config.url?.trim() && !!config.username?.trim());
-  }
-
-  toggle(folder: ServerFolder, isChosen: boolean) {
-    this.chosen = isChosen
-      ? [...this.chosen.filter(existing => existing != folder), folder]
-      : this.chosen.filter(existing => existing != folder);
-  }
-
-  back() {
-    assert(this.step != "type", "Already at the first step");
-    this.step = this.step == "choose" ? "settings" : "type";
-  }
-
-  async next() {
-    assert(this.canContinue, gt`Please fill in the fields first`);
-    if (this.step == "type") {
-      this.chooseType(this.isLocal);
-      return;
-    }
-    if (this.step == "settings" && this.isLocal) {
-      await this.saveLocal();
-      this.isDone = true;
-      return;
-    }
-    if (this.step == "settings") {
-      await this.findServerFolders();
-      if (this.available.length > 1) {
-        this.step = "choose";
-        return;
-      }
-    }
-    await this.saveServerFolders();
-    this.isDone = true;
-  }
-
-  protected async saveLocal() {
-    let config = this.config;
+  static async saveLocal(config: Calendar | Addressbook) {
     config.name = config.name.trim();
     // <copied from="../../frontend/Setup/Calendar/LocalCalendarSetup.svelte"> and Contacts/LocalAddressbookSetup.svelte
     await config.save();
@@ -104,8 +28,7 @@ export class NewFolderAccountFlow {
     // </copied>
   }
 
-  protected async findServerFolders() {
-    let config = this.config;
+  static async findServerFolders(config: Calendar | Addressbook, kind: FolderAccountKind): Promise<ServerFolder[]> {
     config.url = config.url.trim();
     config.username = config.username.trim();
     // <copied from="../../frontend/Setup/Calendar/CalDAVSetup.svelte"> and Contacts/CardDAVSetup.svelte
@@ -115,17 +38,15 @@ export class NewFolderAccountFlow {
     let available = config instanceof CalDAVCalendar
       ? await config.listCalendars()
       : await (config as CardDAVAddressbook).listAddressbooks();
-    assert(available?.hasItems, this.kind == "calendar"
+    assert(available?.hasItems, kind == "calendar"
       ? gt`No calendars found in this account`
       : gt`No address books found in this account`);
-    this.available = available.contents;
-    this.chosen = [this.available[0]];
+    return available.contents;
   }
 
-  protected async saveServerFolders() {
-    let primary = this.available.find(folder => this.chosen.includes(folder));
+  static async saveServerFolders(config: Calendar | Addressbook, available: ServerFolder[], chosen: ServerFolder[]) {
+    let primary = available.find(folder => chosen.includes(folder));
     assert(primary, gt`Please choose at least one`);
-    let config = this.config;
     // <copied from="../../frontend/Setup/Calendar/CalDAVSelectCalendar.svelte" onContinue()> and Contacts/CardDAVSelectAddressbook.svelte
     if (config instanceof CalDAVCalendar) {
       config.calendarURL = sanitize.url(primary.url);
@@ -140,7 +61,7 @@ export class NewFolderAccountFlow {
     }
     await config.save();
     let i = 0;
-    for (let additional of this.chosen) {
+    for (let additional of chosen) {
       if (additional == primary) {
         continue;
       }
