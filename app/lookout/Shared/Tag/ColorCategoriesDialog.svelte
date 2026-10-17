@@ -16,7 +16,7 @@
               indeterminate={stateOf(item, choiceVersion) == TagState.Some}
               tooltip={item.name}
               onChange={() => toggle(item)} />
-            <CategorySquare color={item.color} />
+            <CategorySquare tag={item} />
             <span class="name">{item.name}</span>
           </hbox>
           <span slot="empty">{$t`There are no categories yet. Click New… to add one.`}</span>
@@ -36,7 +36,7 @@
   </vbox>
 </Dialog>
 {#if isAdding}
-  <TagAdd onAdded={onAdded} onClose={() => isAdding = false} />
+  <TagAdd on:add={event => onAdded(event.detail)} on:close={() => isAdding = false} />
 {/if}
 
 <script lang="ts" context="module">

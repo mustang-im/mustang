@@ -6,7 +6,7 @@
   {@const state = tagState(messages, tag)}
   <MenuItem label={tag.name} selected={state == TagState.All}
     onClick={() => MessageActions.toggleTag(messages, tag)}>
-    <CategorySquare slot="icon" color={tag.color} {state} />
+    <CategorySquare slot="icon" {tag} {state} />
   </MenuItem>
 {:else}
   <MenuLabel label={$t`No categories yet`} />

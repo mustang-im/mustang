@@ -1,4 +1,4 @@
-<hbox class="category-square" style:background-color={color}>
+<hbox class="category-square" style:background-color={$tag.color}>
   {#if state == TagState.All}
     <CheckIcon size={12} strokeWidth={3} />
   {:else if state == TagState.Some}
@@ -15,10 +15,11 @@
 </script>
 
 <script lang="ts">
+  import type { Tag } from "../../../logic/Abstract/Tag";
   import CheckIcon from "lucide-svelte/icons/check";
   import PartialIcon from "lucide-svelte/icons/minus";
 
-  export let color: string;
+  export let tag: Tag;
   export let state: TagState = TagState.None;
 </script>
 

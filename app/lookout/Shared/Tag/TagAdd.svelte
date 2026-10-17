@@ -1,4 +1,4 @@
-<Dialog title={$t`Add New Category`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="380px"
+<Dialog title={$t`Add New Category`} okLabel={$t`OK`} onOK={onSubmit} on:close width="380px"
   okDisabled={!name.trim() && $t`Please enter a name for the category`}>
   <FormGrid>
     <span class="lo-form-label">{$t`Name:`}</span>
@@ -19,10 +19,10 @@
   import TextField from "../Form/TextField.svelte";
   import ComboBox from "../Form/ComboBox.svelte";
   import type { ComboOption } from "../Form/ComboOption";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let onAdded: (tag: Tag) => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ add: Tag }>();
 
   const colorOptions: ComboOption<string>[] = CategoryColors.palette
     .map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
@@ -30,6 +30,6 @@
   let color = colorOptions[0].value;
 
   async function onSubmit() {
-    onAdded(await CategoryChoice.addCategory(name, color));
+    dispatch("add", await CategoryChoice.addCategory(name, color));
   }
 </script>

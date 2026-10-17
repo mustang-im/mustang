@@ -1,6 +1,6 @@
 {#each $tags.each as tag (tag)}
   <MenuItem label={tag.name} checkable checked={selected.includes(tag)} {keepOpen} onClick={() => onToggle(tag)}>
-    <CategorySquare slot="icon" color={tag.color} state={selected.includes(tag) ? TagState.All : TagState.None} />
+    <CategorySquare slot="icon" {tag} state={selected.includes(tag) ? TagState.All : TagState.None} />
   </MenuItem>
 {:else}
   <MenuLabel label={$t`No categories yet`} />

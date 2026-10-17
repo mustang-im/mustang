@@ -61,7 +61,7 @@
         on:click|stopPropagation={() => isCategoriesOpen = !isCategoriesOpen}>
         <hbox flex class="combo-value">
           {#each draft.tags as tag (tag)}
-            <hbox class="category"><CategorySquare color={tag.color} />{tag.name}</hbox>
+            <hbox class="category"><CategorySquare {tag} />{tag.name}</hbox>
           {:else}
             <span class="lo-secondary">{$tags.hasItems ? $t`Any` : $t`No categories yet`}</span>
           {/each}

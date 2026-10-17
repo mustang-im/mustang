@@ -74,7 +74,7 @@
       <vbox class="categories">
         {#each $availableTags.each as tag (tag.name)}
           <hbox class="category">
-            <CategorySquare color={tag.color} />
+            <CategorySquare {tag} />
             <span class="category-name">{tag.name}</span>
             <ComboBox label={$t`Color of ${tag.name}`} options={colorOptions} value={tag.color}
               onChange={color => CategoryChoice.setColor(tag, color)} width="160px" swatchColumns={5} />
