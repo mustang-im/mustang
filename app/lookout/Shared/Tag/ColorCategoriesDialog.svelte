@@ -60,13 +60,14 @@
   import CheckBox from "../Form/CheckBox.svelte";
   import ComboBox from "../Form/ComboBox.svelte";
   import type { ComboOption } from "../Form/ComboOption";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let items: TaggableObject[] = [];
   export let isChooseMode = false;
   export let chosen: Iterable<Tag> = [];
   export let onChosen: (tags: Tag[]) => void = null;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const tags = ObservedItems.of(availableTags);
   let choice = new CategoryChoice(items, chosen);
@@ -116,6 +117,10 @@
     } else {
       await choice.applyToItems();
     }
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

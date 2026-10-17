@@ -15,12 +15,13 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let sentDateMin: Date | null;
   export let sentDateMax: Date | null;
   export let onOK: (sentDateMin: Date | null, sentDateMax: Date | null) => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let after: Date | null = RuleItems.afterDay(sentDateMin);
   let before: Date | null = RuleItems.beforeDay(sentDateMax);
@@ -31,6 +32,10 @@
     onOK(
       hasAfter ? RuleItems.sentDateMin(after) : null,
       hasBefore ? RuleItems.sentDateMax(before) : null);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

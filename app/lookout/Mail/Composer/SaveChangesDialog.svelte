@@ -1,9 +1,9 @@
-<Dialog title={appName} on:close={onCancel} width="420px">
+<Dialog title={appName} on:close={onClose} width="420px">
   <hbox class="question">{$t`Do you want to save changes to this message?`}</hbox>
   <svelte:fragment slot="footer">
     <DialogButton label={$t`Yes`} primary onClick={onYes} disabled={yesDisabled ?? false} />
     <DialogButton label={$t`No`} onClick={onNo} />
-    <DialogButton label={$t`Cancel`} onClick={onCancel} />
+    <DialogButton label={$t`Cancel`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 
@@ -11,12 +11,20 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import { appName } from "../../../logic/build";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let onYes: () => Promise<void>;
   export let yesDisabled: string | null = null;
   export let onNo: () => Promise<void>;
-  export let onCancel: () => void;
+  export let onCancel: () => void = null;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
+
+  function onClose() {
+    onCancel?.();
+    dispatch("close");
+  }
 </script>
 
 <style>

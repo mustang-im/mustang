@@ -126,10 +126,10 @@
     yesDisabled={saveDisabledReason}
     onYes={onSaveAndClose}
     onNo={onDiscard}
-    onCancel={() => showSaveChanges = false} />
+    on:close={() => showSaveChanges = false} />
 {/if}
 {#if showSignatures}
-  <SignaturesDialog identity={fromIdentity} onDone={() => showSignatures = false} />
+  <SignaturesDialog identity={fromIdentity} on:close={() => showSignatures = false} />
 {/if}
 <EditorToolDialogs {editor} bind:openedTool />
 <FileSelector bind:this={fileSelector} />

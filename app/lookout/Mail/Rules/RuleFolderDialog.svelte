@@ -2,7 +2,7 @@
   okLabel={$t`OK`}
   okDisabled={!folder && $t`Select a folder first`}
   onOK={onOK}
-  on:close={onCancel} width="400px">
+  on:close={onClose} width="400px">
   <vbox class="content">
     <span class="caption">{$t`Choose a folder:`}</span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={folder}
@@ -27,12 +27,13 @@
   import FolderPicker from "../LeftPane/FolderPicker.svelte";
   import NewFolderDialog from "../LeftPane/NewFolderDialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
   export let folder: Folder | null = null;
   export let onChosen: (folder: Folder) => void | Promise<void>;
-  export let onCancel: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let dialog: Dialog;
   let isCreating = false;
@@ -42,6 +43,10 @@
       return;
     }
     await onChosen(folder);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

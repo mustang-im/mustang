@@ -59,21 +59,21 @@
   </svelte:fragment>
 </Dialog>
 {#if wizard}
-  <RulesWizard model={wizard} onFinish={onWizardFinish} onCancel={() => wizard = null} />
+  <RulesWizard model={wizard} onFinish={onWizardFinish} on:close={() => wizard = null} />
 {/if}
 {#if renaming}
-  <RenameRuleDialog rule={renaming} onDone={() => { renaming = null; changed(); }} />
+  <RenameRuleDialog rule={renaming} on:close={() => { renaming = null; changed(); }} />
 {/if}
 {#if folderAction && selected}
   <RuleFolderDialog account={selected.account} folder={selected.toFolder}
     onChosen={onFolderChosen}
-    onCancel={() => folderAction = null} />
+    on:close={() => folderAction = null} />
 {/if}
 {#if pickerItem && selected}
   <RuleValuePicker rule={selected} item={pickerItem} onDone={onPickerDone} />
 {/if}
 {#if isCopying && selected}
-  <CopyRulesDialog rule={selected} onCopy={onCopyTo} onClose={() => isCopying = false} />
+  <CopyRulesDialog rule={selected} onCopy={onCopyTo} on:close={() => isCopying = false} />
 {/if}
 {#if deleting}
   <RuleMessageBox title={$t`Rules and Alerts`} isQuestion
@@ -120,10 +120,11 @@
   import MoveUpIcon from "lucide-svelte/icons/arrow-up";
   import MoveDownIcon from "lucide-svelte/icons/arrow-down";
   import InfoIcon from "lucide-svelte/icons/info";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const accounts = appGlobal.emailAccounts;
 
@@ -254,6 +255,10 @@
   async function onOK() {
     await onApply();
     onClose();
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

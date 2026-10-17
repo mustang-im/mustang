@@ -13,7 +13,7 @@
   </FormGrid>
 </Dialog>
 {#if isEditingCriteria}
-  <SearchFolderCriteriaDialog {search} onOK={() => { search = search; }} onClose={() => { isEditingCriteria = false; }} />
+  <SearchFolderCriteriaDialog {search} onOK={() => { search = search; }} on:close={() => { isEditingCriteria = false; }} />
 {/if}
 
 <script lang="ts" context="module">
@@ -35,13 +35,14 @@
   import TextField from "../../Shared/Form/TextField.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let title: string;
   export let name: string;
   export let search: SearchEMail;
   export let onOK: (name: string, search: SearchEMail) => void | Promise<void>;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let account: MailAccount | null = search.account && appGlobal.emailAccounts.contains(search.account) ? search.account : null;
   let isEditingCriteria = false;
@@ -82,6 +83,10 @@
   async function onSubmit() {
     search.account = account;
     await onOK(name.trim(), search);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

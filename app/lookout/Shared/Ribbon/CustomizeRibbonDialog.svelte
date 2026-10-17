@@ -42,11 +42,11 @@
   import CheckBox from "../Form/CheckBox.svelte";
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import CollapseIcon from "lucide-svelte/icons/chevron-down";
-  import { onDestroy, onMount, tick } from "svelte";
+  import { createEventDispatcher, onDestroy, onMount, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let ribbon: RibbonModel;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const tabs = ribbon.tabs;
   let initial = RibbonCustomization.hiddenParts(ribbon.id);
@@ -107,6 +107,10 @@
       hiddenTabs.delete(mainTabs[0].label);
     }
     RibbonCustomization.save(ribbon.id, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

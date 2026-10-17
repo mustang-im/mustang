@@ -43,7 +43,7 @@
   <ReadingPaneOptionsDialog on:close={() => $openReadingPaneOptions = false} />
 {/if}
 {#if $openColorCategories}
-  <ColorCategoriesDialog items={$openColorCategories} onClose={() => $openColorCategories = null} />
+  <ColorCategoriesDialog items={$openColorCategories} on:close={() => $openColorCategories = null} />
 {/if}
 {#if $openSaveSearch}
   <SavedSearchUI search={$openSaveSearch} on:close={() => $openSaveSearch = null} />
@@ -68,7 +68,7 @@
   <CustomizeSearchFolderDialog title={$t`Customize Search Folder`}
     name={$openCustomizeSearchFolder.name} search={$openCustomizeSearchFolder.search.clone()}
     onOK={(name, search) => SearchFolderCustomizing.save($openCustomizeSearchFolder, name, search)}
-    onClose={() => $openCustomizeSearchFolder = null} />
+    on:close={() => $openCustomizeSearchFolder = null} />
 {/if}
 {#if $openViewSettings}
   <ViewSettingsDialog folder={$openViewSettings.folder} on:close={() => $openViewSettings = null} />

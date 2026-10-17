@@ -1,34 +1,34 @@
 {#if item.picker == RulePicker.Person}
   <RuleAddressDialog person={rule.criteria.includesPerson}
     onOK={person => apply(() => rule.criteria.includesPerson = person)}
-    onClose={onClose} />
+    on:close={onClose} />
 {:else if item.picker == RulePicker.Words}
   <SearchTextDialog text={rule.criteria.bodyText}
     onOK={text => apply(() => rule.criteria.bodyText = text)}
-    onClose={onClose} />
+    on:close={onClose} />
 {:else if item.picker == RulePicker.Category}
   <ColorCategoriesDialog isChooseMode chosen={item.isAction ? rule.addTags : rule.criteria.tags}
     onChosen={tags => apply(() => (item.isAction ? rule.addTags : rule.criteria.tags).replaceAll(tags))}
-    onClose={onClose} />
+    on:close={onClose} />
 {:else if item.picker == RulePicker.Size}
   <MessageSizeDialog sizeMin={rule.criteria.sizeMin} sizeMax={rule.criteria.sizeMax}
     onOK={(sizeMin, sizeMax) => apply(() => {
       rule.criteria.sizeMin = sizeMin;
       rule.criteria.sizeMax = sizeMax;
     })}
-    onClose={onClose} />
+    on:close={onClose} />
 {:else if item.picker == RulePicker.Date}
   <ReceivedDateDialog sentDateMin={rule.criteria.sentDateMin} sentDateMax={rule.criteria.sentDateMax}
     onOK={(sentDateMin, sentDateMax) => apply(() => {
       rule.criteria.sentDateMin = sentDateMin;
       rule.criteria.sentDateMax = sentDateMax;
     })}
-    onClose={onClose} />
+    on:close={onClose} />
 {:else if item.picker == RulePicker.Folder}
   <RuleFolderDialog account={rule.account}
     folder={item.isAction ? rule.toFolder : rule.criteria.folder}
     onChosen={folder => apply(() => setFolder(folder))}
-    onCancel={onClose} />
+    on:close={onClose} />
 {/if}
 
 <script lang="ts">

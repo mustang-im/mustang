@@ -1,4 +1,4 @@
-<Dialog title={$t`Rename`} on:close={onDone} width="400px"
+<Dialog title={$t`Rename`} on:close={onClose} width="400px"
   okLabel={$t`OK`}
   okDisabled={!name.trim() && $t`Please enter a name`}
   onOK={onOK}>
@@ -11,15 +11,20 @@
 <script lang="ts">
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
-  export let onDone: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let name = rule.name;
 
   function onOK() {
     rule.name = name.trim();
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

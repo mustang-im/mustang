@@ -25,11 +25,12 @@
 <script lang="ts">
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let text: string | null;
   export let onOK: (text: string | null) => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let phrase = text ?? "";
   let typed = "";
@@ -57,6 +58,10 @@
 
   function onSubmit() {
     onOK(phrase || typed.trim() || null);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

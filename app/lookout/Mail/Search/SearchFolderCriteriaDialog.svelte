@@ -11,11 +11,12 @@
   import SearchCriteria from "./SearchCriteria.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let search: SearchEMail;
   export let onOK: () => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let dialog: Dialog;
   let criteria = new SearchFolderCriteria(search);
@@ -28,5 +29,9 @@
   function onSubmit() {
     criteria.writeTo(search);
     onOK();
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>

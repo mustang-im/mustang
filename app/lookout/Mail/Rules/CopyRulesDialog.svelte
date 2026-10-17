@@ -15,11 +15,12 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
   export let onCopy: (account: MailAccount) => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const accounts = appGlobal.emailAccounts;
   let target: MailAccount = rule.account;
@@ -34,6 +35,10 @@
 
   function onOK() {
     onCopy(target);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

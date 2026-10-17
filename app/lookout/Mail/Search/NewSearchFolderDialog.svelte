@@ -40,18 +40,18 @@
     onPick={person => { values.person = person; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Categorized}
   <ColorCategoriesDialog isChooseMode chosen={values.tags}
-    onChosen={tags => { values.tags = tags; }} onClose={closeChooser} />
+    onChosen={tags => { values.tags = tags; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Large}
   <MessageSizeDialog sizeMin={values.sizeMin} sizeMax={values.sizeMax}
-    onOK={(sizeMin, sizeMax) => { values.sizeMin = sizeMin; values.sizeMax = sizeMax; }} onClose={closeChooser} />
+    onOK={(sizeMin, sizeMax) => { values.sizeMin = sizeMin; values.sizeMax = sizeMax; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Words}
   <SearchTextDialog text={values.words}
-    onOK={words => { values.words = words; }} onClose={closeChooser} />
+    onOK={words => { values.words = words; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Custom}
   <CustomizeSearchFolderDialog title={$t`Custom Search Folder`}
     name={values.customName ?? ""} search={values.customSearch ?? newSearchEMail()}
     onOK={(name, search) => { values.customName = name; values.customSearch = search; account = search.account; }}
-    onClose={closeChooser} />
+    on:close={closeChooser} />
 {/if}
 
 <script lang="ts" context="module">

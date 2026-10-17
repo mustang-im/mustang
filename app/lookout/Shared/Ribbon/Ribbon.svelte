@@ -41,7 +41,7 @@
   <QuickAccessToolbarView placement="below" />
   <KeyTipsLayer {ribbonEl} />
   {#if $isCustomizing}
-    <CustomizeRibbonDialog {ribbon} onClose={() => $isCustomizing = false} />
+    <CustomizeRibbonDialog {ribbon} on:close={() => $isCustomizing = false} />
   {/if}
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">

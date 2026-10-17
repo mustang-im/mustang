@@ -16,18 +16,23 @@
   import { RuleItems } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let sizeMin: number | null;
   export let sizeMax: number | null;
   export let onOK: (sizeMin: number | null, sizeMax: number | null) => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let atLeast: number | null = RuleItems.kilobytes(sizeMin);
   let atMost: number | null = RuleItems.kilobytes(sizeMax);
 
   function onSubmit() {
     onOK(atLeast ? atLeast * 1024 : null, atMost ? atMost * 1024 : null);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

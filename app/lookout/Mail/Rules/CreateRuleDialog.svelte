@@ -1,5 +1,5 @@
 {#if wizard}
-  <RulesWizard model={wizard} onFinish={onWizardFinish} onCancel={onClose} />
+  <RulesWizard model={wizard} onFinish={onWizardFinish} on:close={onClose} />
 {:else if createdRule}
   <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created.`}
     onAnswer={onClose} />
@@ -37,7 +37,7 @@
   {#if isChoosingFolder}
     <RuleFolderDialog account={quickRule.account} folder={quickRule.folder}
       onChosen={onFolderChosen}
-      onCancel={() => isChoosingFolder = false} />
+      on:close={() => isChoosingFolder = false} />
   {/if}
 {/if}
 
@@ -55,10 +55,11 @@
   import RulesWizard from "./RulesWizard.svelte";
   import RuleFolderDialog from "./RuleFolderDialog.svelte";
   import RuleMessageBox from "./RuleMessageBox.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let quickRule = new QuickRule(message);
   let isChoosingFolder = false;
@@ -88,6 +89,10 @@
     await rule.account.save();
     // </copied>
     onClose();
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

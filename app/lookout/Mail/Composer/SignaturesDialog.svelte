@@ -81,10 +81,13 @@
   import UnderlineIcon from "lucide-svelte/icons/underline";
   import LinkIcon from "lucide-svelte/icons/link";
   import type { ChainedCommands, Editor } from "@tiptap/core";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let identity: MailIdentity = null;
-  export let onDone: () => void;
+  export let onDone: () => void = null;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let accounts = appGlobal.emailAccounts;
   let account: MailAccount = identity?.account ?? appGlobal.emailAccounts.first;
@@ -129,11 +132,13 @@
 
   async function onOK() {
     await signatureEdits.saveAll();
-    onDone();
+    onDone?.();
+    dispatch("close");
   }
 
   function onCancel() {
-    onDone();
+    onDone?.();
+    dispatch("close");
   }
 </script>
 

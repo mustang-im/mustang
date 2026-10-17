@@ -5,15 +5,20 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
   import { ArrayColl } from "svelte-collections";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let person: Person | null;
   export let onOK: (person: Person | null) => void;
-  export let onClose: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const picks = new ArrayColl<PersonUID>(person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : []);
 
   function onPicked() {
     onOK(picks.first?.findPerson() ?? null);
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>

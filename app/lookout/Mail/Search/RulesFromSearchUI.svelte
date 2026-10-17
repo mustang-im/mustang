@@ -1,4 +1,4 @@
-<RulesWizard {model} onFinish={onFinish} onCancel={onClose} />
+<RulesWizard {model} onFinish={onFinish} on:close={onClose} />
 
 <script lang="ts" context="module">
   import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";

@@ -1,4 +1,4 @@
-<Dialog title={$t`Rules Wizard`} width="520px" height="640px" on:close={onCancel}>
+<Dialog title={$t`Rules Wizard`} width="520px" height="640px" on:close={onClose}>
   <vbox flex class="wizard">
     {#if page == RuleWizardPage.Templates}
       <span class="question">{$t`Start from a template or from a blank rule`}</span>
@@ -55,7 +55,7 @@
     <hbox class="divider" />
   </vbox>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`Cancel`} onClick={onCancel} />
+    <DialogButton label={$t`Cancel`} onClick={onClose} />
     <DialogButton label={$t`< Back`} disabled={!model.canGoBack} onClick={onBack} />
     <DialogButton label={$t`Next >`} primary={page != RuleWizardPage.Finish}
       disabled={model.nextDisabledReason ?? false} onClick={onNext} />
@@ -87,11 +87,12 @@
   import ReceiveIcon from "lucide-svelte/icons/mail";
   import ReceiveAfterJunkIcon from "lucide-svelte/icons/shield-check";
   import SendIcon from "lucide-svelte/icons/send";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let model: RuleWizardModel;
   export let onFinish: (rule: FilterRuleAction) => Promise<void> | void;
-  export let onCancel: () => void;
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let pickerItem: RuleItem | null = null;
   let selectedItem: RuleItem | null = null;
@@ -184,6 +185,10 @@
       return;
     }
     await onFinish(model.finish());
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

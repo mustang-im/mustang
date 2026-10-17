@@ -1,4 +1,4 @@
-<RuleFolderDialog account={message.folder.account} onChosen={onChosen} onCancel={onClose} />
+<RuleFolderDialog account={message.folder.account} onChosen={onChosen} on:close={onClose} />
 
 <script lang="ts" context="module">
   import type { EMail } from "../../../logic/Mail/EMail";

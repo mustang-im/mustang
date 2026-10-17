@@ -4,11 +4,11 @@
 <Route path="/*">
   <MailApp />
   <Route path="rules">
-    <Rules account={params?.account ?? $selectedAccount ?? appGlobal.emailAccounts.first} onClose={goBack} />
+    <Rules account={params?.account ?? $selectedAccount ?? appGlobal.emailAccounts.first} on:close={goBack} />
   </Route>
   <Route path="rules/create">
     {#if params?.message}
-      <CreateRuleDialog message={params.message} onClose={goBack} />
+      <CreateRuleDialog message={params.message} on:close={goBack} />
     {/if}
   </Route>
 </Route>
