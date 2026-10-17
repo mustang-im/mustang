@@ -5,7 +5,7 @@
       bind:checked={$spellcheck.value} />
     <RibbonButton label={$t`Word Count`} icon={WordCountIcon}
       tooltip={$t`The number of words, characters and paragraphs in the text or the selection`}
-      disabled={!commands.editor} onClick={() => commands.openTool(EditorTool.WordCount)} />
+      disabled={!editor} onClick={() => openTool(EditorTool.WordCount)} />
   </RibbonGroup>
 </RibbonTab>
 
@@ -18,9 +18,26 @@
   import RibbonToggleButton from "../Ribbon/RibbonToggleButton.svelte";
   import SpellingIcon from "lucide-svelte/icons/spell-check";
   import WordCountIcon from "lucide-svelte/icons/whole-word";
+  import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 
-  export let commands: EditorCommands;
+  export let editor: Editor = null;
+  export let openedTool: EditorTool | null = null;
+  export let commands: EditorCommands = null;
+
+  $: if (commands) {
+    editor = commands.editor;
+  }
+
+  // <copied from="FormatTextTab.svelte">
+  function openTool(tool: EditorTool) {
+    if (commands) {
+      commands.openTool(tool);
+    } else {
+      openedTool = tool;
+    }
+  }
+  // </copied>
 
   const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
 </script>

@@ -153,15 +153,15 @@
     </RibbonTab>
   {/if}
   {#if !isIncoming}
-    <InsertTab commands={editorCommands} bind:showEmojis>
+    <InsertTab {editor} bind:openedTool {onAttachFile} bind:showEmojis>
       <svelte:fragment slot="include">
         <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
-          <SignatureMenuItems identity={null} editor={editorCommands.editor} onSignatures={actions.onSignatures} />
+          <SignatureMenuItems identity={null} {editor} onSignatures={actions.onSignatures} />
         </RibbonMenuButton>
       </svelte:fragment>
     </InsertTab>
-    <FormatTextTab commands={editorCommands} />
-    <ReviewTab commands={editorCommands} />
+    <FormatTextTab {editor} bind:openedTool />
+    <ReviewTab {editor} bind:openedTool />
   {/if}
 </Ribbon>
 
@@ -193,7 +193,8 @@
   import InsertTab from "../../Shared/Editor/InsertTab.svelte";
   import FormatTextTab from "../../Shared/Editor/FormatTextTab.svelte";
   import ReviewTab from "../../Shared/Editor/ReviewTab.svelte";
-  import type { EditorCommands } from "../../Shared/Editor/EditorCommands";
+  import type { EditorTool } from "../../Shared/Editor/EditorCommands";
+  import type { Editor } from "@tiptap/core";
   import SignatureMenuItems from "../../Mail/Composer/SignatureMenuItems.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import { EventEditFlow } from "./EventEditFlow";
@@ -226,7 +227,9 @@
 
   export let event: Event;
   export let flow: EventEditFlow;
-  export let editorCommands: EditorCommands;
+  export let editor: Editor;
+  export let openedTool: EditorTool | null = null;
+  export let onAttachFile: () => Promise<void>;
   export let showEmojis = false;
   export let actions: EventFormActions;
   export let saveDisabled: string | false = false;

@@ -1,30 +1,30 @@
 <RibbonTab label={$t`Insert`}>
   <RibbonGroup label={$t`Include`}>
-    <RibbonButton label={$t`Attach File`} icon={AttachIcon} onClick={commands.onAttachFile} />
+    <RibbonButton label={$t`Attach File`} icon={AttachIcon} onClick={onAttachFile} />
     <slot name="include" />
   </RibbonGroup>
-  {#if commands.onInsertPicture}
+  {#if onInsertPicture}
     <RibbonGroup label={$t`Illustrations`}>
       <RibbonButton label={$t`Pictures`} icon={PictureIcon}
-        disabled={!editor} onClick={commands.onInsertPicture} />
+        disabled={!editor} onClick={onInsertPicture} />
     </RibbonGroup>
   {/if}
   <RibbonGroup label={$t`Links`}>
     <RibbonButton label={$t`Link`} icon={LinkIcon} shortCutInfo="Ctrl+K"
-      disabled={!editor} onClick={() => commands.openTool(EditorTool.Link)} />
+      disabled={!editor} onClick={() => openTool(EditorTool.Link)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Text`}>
     <RibbonButton label={$t`Date & Time`} icon={DateTimeIcon}
       tooltip={$t`Insert the current date or time`}
-      disabled={!editor} onClick={() => commands.openTool(EditorTool.DateTime)} />
+      disabled={!editor} onClick={() => openTool(EditorTool.DateTime)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Symbols`}>
     <RibbonMenuButton label={$t`Symbol`} icon={SymbolIcon} disabled={!editor}>
-      <SymbolGallery {editor} onMoreSymbols={() => commands.openTool(EditorTool.Symbol)} />
+      <SymbolGallery {editor} onMoreSymbols={() => openTool(EditorTool.Symbol)} />
     </RibbonMenuButton>
     <RibbonButton label={$t`Horizontal Line`} shortLabel={$t`Line`} icon={HorizontalLineIcon} size="small"
       disabled={!editor}
-      onClick={() => EditorChain.run(editor, chain => chain.setHorizontalRule())} />
+      onClick={() => { editor.chain().focus().setHorizontalRule().run(); }} />
   </RibbonGroup>
   <RibbonGroup label={$t`Emoji`}>
     <RibbonToggleButton label={$t`Emoji`} icon={EmojiIcon}
@@ -35,7 +35,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorChain, EditorTool, type EditorCommands } from "./EditorCommands";
+  import { EditorTool, type EditorCommands } from "./EditorCommands";
   import SymbolGallery from "./SymbolGallery.svelte";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";
@@ -49,10 +49,29 @@
   import SymbolIcon from "lucide-svelte/icons/omega";
   import HorizontalLineIcon from "lucide-svelte/icons/separator-horizontal";
   import EmojiIcon from "lucide-svelte/icons/smile";
+  import type { Editor } from "@tiptap/core";
   import { t } from "../../../l10n/l10n";
 
-  export let commands: EditorCommands;
+  export let editor: Editor = null;
+  export let openedTool: EditorTool | null = null;
+  export let onAttachFile: () => Promise<void> = null;
+  export let onInsertPicture: (() => Promise<void>) | null = null;
   export let showEmojis = false;
+  export let commands: EditorCommands = null;
 
-  $: editor = commands.editor;
+  $: if (commands) {
+    editor = commands.editor;
+    onAttachFile = commands.onAttachFile;
+    onInsertPicture = commands.onInsertPicture;
+  }
+
+  // <copied from="FormatTextTab.svelte">
+  function openTool(tool: EditorTool) {
+    if (commands) {
+      commands.openTool(tool);
+    } else {
+      openedTool = tool;
+    }
+  }
+  // </copied>
 </script>

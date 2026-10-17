@@ -79,9 +79,9 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Editing`} icon={FindIcon}>
     <RibbonButton label={$t`Find`} icon={FindIcon} size="small" shortCutInfo="F4"
-      disabled={!editor} onClick={() => commands.openTool(EditorTool.Find)} />
+      disabled={!editor} onClick={() => openTool(EditorTool.Find)} />
     <RibbonButton label={$t`Replace`} icon={ReplaceIcon} size="small" shortCutInfo="Ctrl+H"
-      disabled={!editor} onClick={() => commands.openTool(EditorTool.Replace)} />
+      disabled={!editor} onClick={() => openTool(EditorTool.Replace)} />
     <RibbonMenuButton label={$t`Select`} icon={SelectIcon} size="small" disabled={!editor}>
       <MenuItem label={$t`Select All`} icon={SelectAllIcon} shortCutInfo="Ctrl+A"
         onClick={() => run(chain => chain.selectAll())} />
@@ -90,7 +90,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorChain, EditorTool, type EditorCommands } from "./EditorCommands";
+  import { EditorTool, type EditorCommands } from "./EditorCommands";
   import { EditorClipboard } from "./EditorClipboard";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";
@@ -127,13 +127,27 @@
   import SelectIcon from "lucide-svelte/icons/text-select";
   import SelectAllIcon from "lucide-svelte/icons/square-dashed-mouse-pointer";
   import { t } from "../../../l10n/l10n";
-  import type { ChainedCommands } from "@tiptap/core";
+  import type { ChainedCommands, Editor } from "@tiptap/core";
 
-  export let commands: EditorCommands;
+  export let editor: Editor = null;
+  export let openedTool: EditorTool | null = null;
+  export let commands: EditorCommands = null;
 
-  $: editor = commands.editor;
+  $: if (commands) {
+    editor = commands.editor;
+  }
 
   function run(command: (chain: ChainedCommands) => ChainedCommands) {
-    EditorChain.run(editor, command);
+    command(editor.chain().focus()).run();
   }
+
+  // <copied to="InsertTab.svelte, ReviewTab.svelte">
+  function openTool(tool: EditorTool) {
+    if (commands) {
+      commands.openTool(tool);
+    } else {
+      openedTool = tool;
+    }
+  }
+  // </copied>
 </script>

@@ -1,6 +1,6 @@
 <vbox flex class="event-form-page" on:keydown={onKeyDown}>
   {#key ribbonKey}
-    <EventFormRibbon {event} {flow} {editorCommands} {actions} {saveDisabled} {canSchedule}
+    <EventFormRibbon {event} {flow} {editor} bind:openedTool {onAttachFile} {actions} {saveDisabled} {canSchedule}
       {schedulingLabel} {trackingLabel}
       bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
   {/key}
@@ -82,7 +82,7 @@
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import SignaturesDialog from "../../Mail/Composer/SignaturesDialog.svelte";
   import { FreeBusy } from "../Scheduling/FreeBusy";
-  import { EditorTool, type EditorCommands } from "../../Shared/Editor/EditorCommands";
+  import type { EditorTool } from "../../Shared/Editor/EditorCommands";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
@@ -176,14 +176,6 @@
     onRecurrence: openRecurrence,
     onRefreshAvailability: () => scheduling?.refresh(),
     onSignatures: () => { showSignatures = true; },
-  };
-
-  let editorCommands: EditorCommands;
-  $: editorCommands = {
-    editor,
-    onAttachFile,
-    onInsertPicture: null,
-    openTool: (tool: EditorTool) => { openedTool = tool; },
   };
 
   function changesText(isMeeting: boolean, isSaved: boolean) {
