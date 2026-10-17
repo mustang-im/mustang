@@ -10,6 +10,7 @@ import { writable } from "svelte/store";
 export type MailDialog =
   { kind: "move-messages", messages: EMail[], copy: boolean } |
   { kind: "new-folder", account: MailAccount, parent: Folder | null } |
+  { kind: "move-folder", folder: Folder } |
   { kind: "go-to-folder" } |
   { kind: "folder-properties", folder: Folder, tab?: FolderPropertiesTab } |
   { kind: "reading-pane-options" } |

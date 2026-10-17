@@ -31,7 +31,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 |---|---|---|
 | Editable Favorites (add and remove folders, drag a folder to Favorites); unified Deleted Items | Folder pane; Folder tab > Favorites | A stored list of favorite folders across accounts; a unified Trash in `AllAccounts.specialFolders`. Lookout shows the fixed unified Inbox, Sent and Drafts. |
 | Custom folder order (dragging folders up and down), and with it "Show All Folders A to Z" / "Sort Subfolders A to Z" | Folder tab > Clean Up; folder context menu | A stored folder order per account. Mustang always lists the default folders first and the others A to Z. |
-| Move Folder, Copy Folder | Folder tab; folder context menu; dragging a folder | A working `Folder.moveFolderHere()` (see [Logic bugs](#logic-bugs-found-while-building-lookout)), `MailAccount.moveFolderHere()` for the top level, and a recursive `Folder.copyFolderHere()` |
+| Copy Folder; moving a folder to the top level of the account | Folder tab; folder context menu; dragging a folder | A recursive `Folder.copyFolderHere()`; `MailAccount.moveFolderHere()` for the top level |
 | Empty Folder for any folder | Folder context menu | `Folder.empty()` on the server (IMAP expunge, EWS EmptyFolder). Lookout offers "Delete All" in Trash and Junk only, like `frontend/`. |
 | Clean Up Folder / Conversation, Ignore Conversation | Home tab > Delete | Detection of redundant quoted messages in a thread; a per-thread ignore list applied to new mail |
 | Recover Deleted Items, AutoArchive, retention policies | Folder tab | Exchange recoverable items; an archive policy engine |
@@ -215,7 +215,6 @@ Info, Open & Export, Save As, Print, Account Settings, Add Account and the Optio
 
 These are bugs in `app/logic/`, which Lookout must not change. They are not fixed on this branch.
 
-- **`Folder.moveFolderHere()` always throws** (`logic/Mail/Folder.ts`). Its asserts reject every normal folder: `assert(!folder.specialFolder)` fails because `SpecialFolder.Normal` is the non-empty string `"normal"`. And `assert(this.subFolders.contains(folder))` is inverted: it requires the folder to already be a subfolder of the target. All protocol subclasses call it first. Lookout therefore has no Move Folder. The removed UI (Folder tab button, context menu, folder drag and drop, dialog) is in commit "Lookout: Mail: Remove Move Folder, which the logic cannot do yet" and can be restored once this is fixed.
 - **All-day events on the day the clocks go back count as 2 days** (`Event.duration`). For all-day events it rounds the real number of seconds up to whole days, and that day has 25 hours (e.g. Europe/Berlin, 2026-10-25). Changing the start date of such an event in the form makes it 2 days long. `frontend/` has the same bug. `duration` should count calendar days between the local dates.
 - **No update to the attendees when only the series end changes.** `RecurrenceRule.matches()` / `timesMatch()` ignore the series end, so `Event.hasChanged()` is false, and `sendInvitationsDirectly()` sends nothing. The new end is saved.
 - **No update to the attendees after "This and following" or "Delete this and following"** (`Event.truncateRecurrence()`). The shortened old series is saved after `cancelEditing()`, so `hasChanged()` is false, and no update is sent. `frontend/` behaves the same.

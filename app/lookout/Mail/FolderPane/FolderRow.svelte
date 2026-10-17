@@ -9,8 +9,11 @@
   aria-selected={$selectedFolder == folder}
   aria-expanded={hasChildren ? isExpanded : undefined}
   title={tooltip}
+  draggable={!isVirtual && !isRenaming}
   on:click={onSelect}
   on:contextmenu={onContextMenu}
+  on:dragstart={event => FolderTreeActions.startDrag(event, folder)}
+  on:dragend={() => FolderTreeActions.endDrag()}
   on:dragover={onDragOver}
   on:dragleave={() => isDropTarget = false}
   on:drop={onDrop}
@@ -99,6 +102,14 @@
 
   let isDropTarget = false;
   function onDragOver(event: DragEvent) {
+    if (FolderTreeActions.isFolderDrag(event)) {
+      if (FolderTreeActions.canDropFolder(folder)) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        isDropTarget = true;
+      }
+      return;
+    }
     if (isVirtual || !event.dataTransfer?.types.includes("message/drag-ids")) {
       return;
     }
@@ -107,6 +118,11 @@
   }
   function onDrop(event: DragEvent) {
     isDropTarget = false;
+    if (FolderTreeActions.isFolderDrag(event)) {
+      event.preventDefault();
+      catchErrors(() => FolderTreeActions.dropFolder(folder));
+      return;
+    }
     catchErrors(() => MessageActions.dropMessages(event, folder));
   }
 
