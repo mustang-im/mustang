@@ -64,11 +64,11 @@
           <span class="text size">{$message.size ? fileSize($message.size) : ""}</span>
         {:else if column == Column.Categories}
           <hbox class="categories">
-            {#each $tags.each as tag (tag)}
+            {#each $tags as tag (tag)}
               <span class="category-square" style="--category-color: {tag.color};" title={tag.name}></span>
             {/each}
             {#if $tags.length == 1}
-              <span class="text category-name">{$tags.first.name}</span>
+              <span class="text category-name">{$tags[0].name}</span>
             {/if}
           </hbox>
         {:else if column == Column.Flag}
@@ -96,6 +96,7 @@
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { fileSize } from "../../../frontend/Files/file";
   import { Column, ColumnInfo } from "../View/ViewSettings";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import { MessageActions } from "../MessageActions";
   import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "./MessageDates";
@@ -130,7 +131,7 @@
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
   const inlineReplies = InlineReplies.replies;
 
-  $: tags = message.tags;
+  $: tags = ObservedItems.of(message.tags);
   $: to = message.to;
   $: senderName = $message && ListName.of(message);
   $: senderTooltip = ListName.showsRecipient(message)

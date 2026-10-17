@@ -31,9 +31,9 @@
       <span class="thread-size" title={$t`${threadSize} messages in this conversation`}>{threadSize}</span>
     {/if}
     <hbox flex />
-    {#if $tags.hasItems}
+    {#if $tags.length}
       <hbox class="categories">
-        {#each $tags.each as tag (tag)}
+        {#each $tags as tag (tag)}
           {#if $ribbonLayout.value == "simplified"}
             <span class="category" style="--category-color: {tag.color};" title={tag.name}>{tag.name}</span>
           {:else}
@@ -126,6 +126,7 @@
   import { MessageDates } from "./MessageDates";
   import { ListName } from "./ListName";
   import { TextHighlight } from "./TextHighlight";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
@@ -159,7 +160,7 @@
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
   const inlineReplies = InlineReplies.replies;
 
-  $: tags = message.tags;
+  $: tags = ObservedItems.of(message.tags);
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: senderName = $message && ListName.of(message);
   $: senderTooltip = ListName.showsRecipient(message)

@@ -40,7 +40,7 @@
             <ReplyIcon size={18} />
           </button>
           <button class="respond" on:click={() => catchErrors(() => MessageActions.replyAll(message))}
-            disabled={!MessageActions.canReplyAll(message)}
+            disabled={!MessageActions.canReplyAll($message)}
             title={$t`Reply All`} aria-label={$t`Reply All`}>
             <ReplyAllIcon size={18} />
           </button>
@@ -59,9 +59,9 @@
       </span>
     </vbox>
   </hbox>
-  {#if $tags.hasItems}
+  {#if $tags.length}
     <hbox class="categories">
-      {#each $tags.each as tag (tag)}
+      {#each $tags as tag (tag)}
         <span class="category" style="--category-color: {tag.color};">
           {tag.name}
           <button class="remove-category" on:click={() => catchErrors(() => message.removeTag(tag))}
@@ -129,6 +129,7 @@
   import { MessageActions } from "../MessageActions";
   import { MailDialogs } from "../Dialogs/MailDialogs";
   import { MessageDates } from "../MessageList/MessageDates";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import FollowUpMenuItems from "../Menu/FollowUpMenuItems.svelte";
@@ -168,7 +169,7 @@
   $: to = message.to;
   $: cc = message.cc;
   $: bcc = message.bcc;
-  $: tags = message.tags;
+  $: tags = ObservedItems.of(message.tags);
 
 
   let moreEl: HTMLButtonElement;

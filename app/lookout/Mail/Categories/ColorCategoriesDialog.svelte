@@ -9,7 +9,7 @@
     </span>
     <hbox class="main">
       <vbox flex class="list">
-        <ListView items={$tags.contents} columns={[{ label: $t`Name` }]} bind:selected
+        <ListView items={$tags} columns={[{ label: $t`Name` }]} bind:selected
           label={$t`Categories`} height="240px" let:item>
           <hbox class="category">
             <CheckBox checked={stateOf(item, choiceVersion) == TagState.All}
@@ -46,6 +46,7 @@
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { CategoryChoice } from "./CategoryChoice";
   import { CategoryColors } from "./CategoryColors";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import AddCategoryDialog from "./AddCategoryDialog.svelte";
   import CategorySquare from "./CategorySquare.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
@@ -62,7 +63,7 @@
   export let onChosen: (tags: Tag[]) => void = null;
   export let onClose: () => void;
 
-  const tags = availableTags;
+  const tags = ObservedItems.of(availableTags);
   let choice = new CategoryChoice(items, chosen);
   let choiceVersion = 0;
   let selected: Tag = null;
