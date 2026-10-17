@@ -1,4 +1,4 @@
-import { TagState } from "../../Shared/Tag/CategorySquare.svelte";
+import { TagState } from "./CategorySquare.svelte";
 import { availableTags, getTagByName, saveTagsList, type Tag, type TaggableObject } from "../../../logic/Abstract/Tag";
 import { assert } from "../../../logic/util/util";
 import { gt } from "../../../l10n/l10n";

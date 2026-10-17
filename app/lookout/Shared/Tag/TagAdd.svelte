@@ -12,8 +12,8 @@
 
 <script lang="ts">
   import type { Tag } from "../../../logic/Abstract/Tag";
-  import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
-  import { CategoryColors } from "../../Mail/Categories/CategoryColors";
+  import { CategoryChoice } from "./CategoryChoice";
+  import { CategoryColors } from "./CategoryColors";
   import Dialog from "../Dialog/Dialog.svelte";
   import FormGrid from "../Form/FormGrid.svelte";
   import TextField from "../Form/TextField.svelte";

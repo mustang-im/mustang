@@ -49,8 +49,8 @@
 <script lang="ts">
   import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
   import { MessageBox } from "../Dialog/MessageBox";
-  import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
-  import { CategoryColors } from "../../Mail/Categories/CategoryColors";
+  import { CategoryChoice } from "./CategoryChoice";
+  import { CategoryColors } from "./CategoryColors";
   import TagAdd from "./TagAdd.svelte";
   import CategorySquare, { TagState } from "./CategorySquare.svelte";
   import Dialog from "../Dialog/Dialog.svelte";

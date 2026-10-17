@@ -95,8 +95,8 @@
   import type { Tag } from "../../../logic/Abstract/Tag";
   import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
   import type { ReadingPanePosition } from "../../Mail/3pane/3Pane.svelte";
-  import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
-  import { CategoryColors } from "../../Mail/Categories/CategoryColors";
+  import { CategoryChoice } from "../../Shared/Tag/CategoryChoice";
+  import { CategoryColors } from "../../Shared/Tag/CategoryColors";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { appName } from "../../../logic/build";

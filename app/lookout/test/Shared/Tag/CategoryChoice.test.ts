@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
-import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
-import { TagState } from "../../Shared/Tag/CategorySquare.svelte";
-import { availableTags, getTagByName, type Tag, type TaggableObject } from "../../../logic/Abstract/Tag";
+import { CategoryChoice } from "../../../Shared/Tag/CategoryChoice";
+import { TagState } from "../../../Shared/Tag/CategorySquare.svelte";
+import { availableTags, getTagByName, type Tag, type TaggableObject } from "../../../../logic/Abstract/Tag";
 import { SetColl } from "svelte-collections";
 import { beforeEach, expect, test } from "vitest";
 
