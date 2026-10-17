@@ -9,14 +9,12 @@
 {:else if $dialog?.kind == "new-folder-account"}
   <NewFolderAccountDialog kind={$dialog.folderKind} localOnly={$dialog.localOnly} on:close={onClose} />
 {/if}
-<ContactDialogHost />
 
 <script lang="ts">
   import { SettingsDialogs } from "./SettingsDialogs";
   import SettingsApp from "./Window/SettingsApp.svelte";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
   import NewFolderAccountDialog from "../Setup/NewFolderAccountDialog.svelte";
-  import ContactDialogHost from "../Contacts/Dialogs/ContactDialogHost.svelte";
 
   const dialog = SettingsDialogs.current;
 

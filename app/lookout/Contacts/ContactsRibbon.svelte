@@ -96,7 +96,7 @@
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename Folder`}
-        onClick={() => ContactActions.rename($selectedAddressbook)}
+        onClick={() => { renamingAddressbook = $selectedAddressbook; }}
         disabled={!isWritableAddressbook && $t`Select an address book first`} />
       <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Delete Folder`}
@@ -106,7 +106,7 @@
     <RibbonGroup label={$t`Properties`}>
       <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
         tooltip={$t`Folder Properties`}
-        onClick={() => ContactActions.openProperties($selectedAddressbook)}
+        onClick={() => { propertiesAddressbook = $selectedAddressbook; }}
         disabled={!$selectedAddressbook && $t`Select an address book first`} />
     </RibbonGroup>
   </RibbonTab>
@@ -117,7 +117,7 @@
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} shortLabel={$t`Settings`} icon={ViewSettingsIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}
-        onClick={() => ContactDialogs.open({ kind: "view-settings", view: $view.value })} />
+        onClick={() => { isViewSettingsOpen = true; }} />
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
         tooltip={$t`Reset the view, the sort order and the panes to the default settings`}
         onClick={resetView} />
@@ -135,7 +135,7 @@
         onClick={reverseSort} />
       <RibbonButton label={$t`Add Columns`} shortLabel={$t`Columns`} icon={AddColumnsIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}
-        onClick={() => ContactDialogs.open({ kind: "show-columns", view: $view.value })} />
+        onClick={() => { isShowColumnsOpen = true; }} />
     </RibbonGroup>
     <RibbonGroup label={$t`Layout`}>
       <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
@@ -152,6 +152,24 @@
   </RibbonTab>
   <slot />
 </Ribbon>
+{#if renamingAddressbook}
+  <RenameDialog account={renamingAddressbook} title={$t`Rename Folder`} on:close={() => renamingAddressbook = null} />
+{/if}
+{#if propertiesAddressbook}
+  <AddressBookPropertiesDialog addressbook={propertiesAddressbook} on:close={() => propertiesAddressbook = null} />
+{/if}
+{#if isViewSettingsOpen}
+  <ViewSettingsDialog view={$view.value} on:close={() => isViewSettingsOpen = false} />
+{/if}
+{#if isShowColumnsOpen}
+  <!-- <copied from="Person/PersonsTable.svelte"> -->
+  <ShowColumnsDialog columns={ContactColumns.shownColumns(ContactColumns.columnsSetting($view.value).value)}
+    allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
+    requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
+    columnSets={ContactColumns.columnSets()}
+    onOK={columns => ContactColumns.setColumns($view.value, columns)} on:close={() => isShowColumnsOpen = false} />
+  <!-- </copied> -->
+{/if}
 
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
@@ -159,7 +177,6 @@
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedAddressbook } from "./Person/Selected";
   import { ContactActions } from "./ContactActions";
-  import { ContactDialogs } from "./Dialogs/ContactDialogs";
   import { ContactColumn, ContactColumns, ContactView } from "./Person/ContactColumns";
   import type { AddressbookSection } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
@@ -175,6 +192,10 @@
   import SubMenu from "../Shared/Menu/SubMenu.svelte";
   import ChangeViewGallery from "../Shared/Ribbon/ChangeViewGallery.svelte";
   import SearchPeopleBox from "./Search/SearchPeopleBox.svelte";
+  import AddressBookPropertiesDialog from "./AddressBookPropertiesDialog.svelte";
+  import ViewSettingsDialog from "./ViewSettings/ViewSettingsDialog.svelte";
+  import ShowColumnsDialog from "../Shared/ViewSettings/ShowColumnsDialog.svelte";
+  import RenameDialog from "../Settings/Shared/RenameDialog.svelte";
   import NewContactIcon from "lucide-svelte/icons/user-round-plus";
   import NewGroupIcon from "lucide-svelte/icons/users-round";
   import NewItemsIcon from "lucide-svelte/icons/file-plus-corner";
@@ -218,6 +239,10 @@
 
   const addressbooks = appGlobal.addressbooks;
   const view = ContactColumns.view;
+  let renamingAddressbook: Addressbook | null = null;
+  let propertiesAddressbook: Addressbook | null = null;
+  let isViewSettingsOpen = false;
+  let isShowColumnsOpen = false;
   const sort = ContactColumns.sort;
   const folderPane = ContactColumns.folderPane;
   const readingPane = ContactColumns.readingPane;

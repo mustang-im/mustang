@@ -13,7 +13,6 @@ import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { newPerson, selectedPerson } from "../../frontend/Contacts/Person/Selected";
 import { selectedAddressbook, selectedContact } from "./Person/Selected";
-import { ContactDialogs } from "./Dialogs/ContactDialogs";
 import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
 import { appName } from "../../logic/build";
@@ -191,14 +190,6 @@ export class ContactActions {
 
   static async call(phoneNumber: string) {
     await openExternalURL("tel:" + phoneNumber.replace(/[^+\d]/g, ""));
-  }
-
-  static openProperties(addressbook: Addressbook) {
-    ContactDialogs.open({ kind: "addressbook-properties", addressbook });
-  }
-
-  static rename(addressbook: Addressbook) {
-    ContactDialogs.open({ kind: "rename-addressbook", addressbook });
   }
 
   static newFolder() {

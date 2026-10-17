@@ -92,10 +92,22 @@
       disabled={headerColumn == ContactColumn.FullName && $t`The list needs the Full Name column`}
       onClick={() => ContactColumns.removeColumn(view, headerColumn)} />
   {/if}
-  <MenuItem label={$t`Add Columns…`} icon={AddColumnsIcon} onClick={() => ContactDialogs.open({ kind: "show-columns", view })} />
+  <MenuItem label={$t`Add Columns…`} icon={AddColumnsIcon} onClick={() => isShowColumnsOpen = true} />
   <MenuDivider />
-  <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => ContactDialogs.open({ kind: "view-settings", view })} />
+  <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => isViewSettingsOpen = true} />
 </ContextMenu>
+{#if isShowColumnsOpen}
+  <!-- <copied to="../ContactsRibbon.svelte"> -->
+  <ShowColumnsDialog columns={ContactColumns.shownColumns(ContactColumns.columnsSetting(view).value)}
+    allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
+    requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
+    columnSets={ContactColumns.columnSets()}
+    onOK={columns => ContactColumns.setColumns(view, columns)} on:close={() => isShowColumnsOpen = false} />
+  <!-- </copied> -->
+{/if}
+{#if isViewSettingsOpen}
+  <ViewSettingsDialog {view} on:close={() => isViewSettingsOpen = false} />
+{/if}
 
 <script lang="ts">
   import type { Contact } from "../../../logic/Abstract/Contact";
@@ -120,7 +132,8 @@
   import ReverseIcon from "lucide-svelte/icons/arrow-up-down";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import { ContactColumn, ContactColumns, type ContactView } from "./ContactColumns";
-  import { ContactDialogs } from "../Dialogs/ContactDialogs";
+  import ShowColumnsDialog from "../../Shared/ViewSettings/ShowColumnsDialog.svelte";
+  import ViewSettingsDialog from "../ViewSettings/ViewSettingsDialog.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
   import AddColumnsIcon from "lucide-svelte/icons/columns-3";
   import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
@@ -137,6 +150,8 @@
   export let view: ContactView;
 
   const sort = ContactColumns.sort;
+  let isShowColumnsOpen = false;
+  let isViewSettingsOpen = false;
   $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
 
   $: groupBySetting = ContactColumns.groupBySetting(view);
