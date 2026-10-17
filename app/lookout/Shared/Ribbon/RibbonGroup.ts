@@ -22,31 +22,52 @@ export interface RibbonItemInfo {
   fixedWidth?: number;
 }
 
+export interface RibbonGroupInfo {
+  label: string;
+  el: HTMLElement;
+  bodyEl: HTMLElement;
+  stageWidths: number[];
+  hasOverflowStage: boolean;
+  setStage: (stage: number) => void;
+}
+
+export interface RibbonTabInfo {
+  label: string;
+  isContextual: boolean;
+  groups: RibbonGroupInfo[];
+}
+
+export interface RibbonGroupLook {
+  layout: RibbonLayout;
+  stage: number;
+  collapsed: boolean;
+}
+
 export class RibbonModel {
   static readonly contextKey = "lookout-ribbon";
   id = "main";
-  readonly tabs: Writable<RibbonTabModel[]> = writable([]);
-  readonly selectedTab: Writable<RibbonTabModel> = writable(null);
+  readonly tabs: Writable<RibbonTabInfo[]> = writable([]);
+  readonly selectedTab: Writable<RibbonTabInfo> = writable(null);
   readonly metrics: Writable<RibbonMetrics> = writable(null);
   readonly isSurveying: Writable<boolean> = writable(false);
   readonly isCustomizing: Writable<boolean> = writable(false);
   protected surveys = 0;
 
-  addTab(tab: RibbonTabModel) {
+  addTab(tab: RibbonTabInfo) {
     this.tabs.update(tabs => [...tabs, tab]);
     if (!get(this.selectedTab)) {
       this.selectedTab.set(tab);
     }
   }
 
-  removeTab(tab: RibbonTabModel) {
+  removeTab(tab: RibbonTabInfo) {
     this.tabs.update(tabs => tabs.filter(existing => existing != tab));
     if (get(this.selectedTab) == tab) {
       this.selectedTab.set(get(this.tabs)[0] ?? null);
     }
   }
 
-  setTabLabel(tab: RibbonTabModel, label: string) {
+  setTabLabel(tab: RibbonTabInfo, label: string) {
     if (tab.label == label) {
       return;
     }
@@ -54,7 +75,7 @@ export class RibbonModel {
     this.tabs.update(tabs => tabs);
   }
 
-  selectTab(tab: RibbonTabModel) {
+  selectTab(tab: RibbonTabInfo) {
     this.selectedTab.set(tab);
   }
 
@@ -86,82 +107,33 @@ export class RibbonModel {
   }
 }
 
-export class RibbonTabModel {
-  static readonly contextKey = "lookout-ribbon-tab";
-  label: string;
-  isContextual = false;
-  readonly groups: RibbonGroupModel[] = [];
-  readonly overflowGroups: Writable<RibbonGroupModel[]> = writable([]);
-  readonly isMoreMenuOpen: Writable<boolean> = writable(false);
-  overflowWidth = 0;
-  protected availableWidth = 0;
-
-  constructor(label: string) {
-    this.label = label;
-  }
-
-  addGroup(group: RibbonGroupModel) {
-    let pos = this.groups.findIndex(existing => existing.el && group.el &&
-      group.el.compareDocumentPosition(existing.el) & Node.DOCUMENT_POSITION_FOLLOWING);
-    this.groups.splice(pos < 0 ? this.groups.length : pos, 0, group);
-    this.fitGroups();
-  }
-
-  removeGroup(group: RibbonGroupModel) {
-    let pos = this.groups.indexOf(group);
-    if (pos >= 0) {
-      this.groups.splice(pos, 1);
+export class RibbonGroupLayout {
+  static fitStages(groups: RibbonGroupInfo[], availableWidth: number, overflowWidth: number): number[] {
+    let stages = RibbonGroupLayout.stagesFor(groups, availableWidth);
+    if (overflowWidth && groups.some((group, i) => RibbonGroupLayout.isOverflowStage(group, stages[i]))) {
+      stages = RibbonGroupLayout.stagesFor(groups, availableWidth - overflowWidth);
     }
-    this.fitGroups();
+    return stages;
   }
 
-  setAvailableWidth(width: number) {
-    this.availableWidth = width;
-    this.fitGroups();
+  static isOverflowStage(group: RibbonGroupInfo, stage: number): boolean {
+    return group.hasOverflowStage && stage > 0 && stage == group.stageWidths.length - 1;
   }
 
-  closeMoreMenu() {
-    this.isMoreMenuOpen.set(false);
-  }
-
-  setOverflowWidth(width: number) {
-    if (this.overflowWidth == width) {
-      return;
-    }
-    this.overflowWidth = width;
-    this.fitGroups();
-  }
-
-  fitGroups() {
-    if (!this.availableWidth) {
-      return;
-    }
-    let stages = this.stagesFor(this.availableWidth);
-    if (this.overflowWidth && this.groups.some((group, i) => group.isOverflowStage(stages[i]))) {
-      stages = this.stagesFor(this.availableWidth - this.overflowWidth);
-    }
-    this.groups.forEach((group, i) => group.setStage(stages[i]));
-    let overflowGroups = this.groups.filter(group => group.isOverflowStage(get(group.stage)));
-    let old = get(this.overflowGroups);
-    if (old.length != overflowGroups.length || old.some((group, i) => group != overflowGroups[i])) {
-      this.overflowGroups.set(overflowGroups);
-    }
-  }
-
-  protected stagesFor(availableWidth: number): number[] {
-    let stages = this.groups.map(() => 0);
-    let widths = this.groups.map(group => group.widthAt(0));
+  protected static stagesFor(groups: RibbonGroupInfo[], availableWidth: number): number[] {
+    let stages = groups.map(() => 0);
+    let widths = groups.map(group => group.stageWidths[0] ?? 0);
     let totalWidth = widths.reduce((sum, width) => sum + width, 0);
-    let maxStage = Math.max(0, ...this.groups.map(group => group.lastStage));
+    let maxStage = Math.max(0, ...groups.map(group => group.stageWidths.length - 1));
     let reducedInLastPass: { index: number, previousStage: number, previousWidth: number }[] = [];
     for (let stage = 1; stage <= maxStage && totalWidth > availableWidth; stage++) {
       reducedInLastPass = [];
-      for (let i = this.groups.length - 1; i >= 0 && totalWidth > availableWidth; i--) {
-        let group = this.groups[i];
-        if (stage > group.lastStage) {
+      for (let i = groups.length - 1; i >= 0 && totalWidth > availableWidth; i--) {
+        let group = groups[i];
+        if (stage > group.stageWidths.length - 1) {
           continue;
         }
-        let width = group.widthAt(stage);
+        let width = group.stageWidths[stage] ?? 0;
         if (width >= widths[i]) {
           continue;
         }
@@ -182,77 +154,6 @@ export class RibbonTabModel {
     }
     return stages;
   }
-}
-
-export class RibbonGroupModel {
-  static readonly contextKey = "lookout-ribbon-group";
-  static readonly buttonRowKey = "lookout-ribbon-button-row";
-  label: string;
-  firstIcon: ConstructorOfATypedSvelteComponent = null;
-  stageWidths: number[] = [0];
-  protected renderedWidths: number[] = [];
-  protected itemsKey = "";
-  readonly stage: Writable<number> = writable(0);
-  readonly collapsed: Writable<boolean> = writable(false);
-  readonly layout: Writable<RibbonLayout> = writable("classic");
-  hasOverflowStage = false;
-  el: HTMLElement = null;
-  bodyEl: HTMLElement = null;
-
-  constructor(label: string) {
-    this.label = label;
-  }
-
-  offerIcon(icon: ConstructorOfATypedSvelteComponent) {
-    if (!this.firstIcon && icon) {
-      this.firstIcon = icon;
-    }
-  }
-
-  get lastStage(): number {
-    return this.stageWidths.length - 1;
-  }
-
-  widthAt(stage: number): number {
-    return this.stageWidths[Math.min(stage, this.lastStage)] ?? 0;
-  }
-
-  isOverflowStage(stage: number): boolean {
-    return this.hasOverflowStage && stage > 0 && stage == this.lastStage;
-  }
-
-  setStageWidths(widths: number[], hasOverflowStage = false, itemsKey = this.itemsKey) {
-    this.forgetRenderedWidths(itemsKey);
-    widths = widths.map((width, stage) => Math.max(width, this.renderedWidths[stage] ?? 0));
-    this.stageWidths = widths.length ? widths : [0];
-    this.hasOverflowStage = hasOverflowStage;
-  }
-
-  setRenderedWidth(stage: number, width: number, itemsKey = this.itemsKey) {
-    this.forgetRenderedWidths(itemsKey);
-    this.renderedWidths[stage] = width;
-  }
-
-  protected forgetRenderedWidths(itemsKey: string) {
-    if (itemsKey != this.itemsKey) {
-      this.itemsKey = itemsKey;
-      this.renderedWidths = [];
-    }
-  }
-
-  setWidths(expandedWidth: number, collapsedWidth: number) {
-    this.setStageWidths([expandedWidth, collapsedWidth]);
-  }
-
-  setStage(stage: number) {
-    let collapsed = stage > 0 && stage == this.lastStage;
-    if (get(this.stage) != stage) {
-      this.stage.set(stage);
-    }
-    if (get(this.collapsed) != collapsed) {
-      this.collapsed.set(collapsed);
-    }
-  }
 
   static computeStageWidths(layout: RibbonLayout, items: RibbonItemInfo[], metrics: RibbonMetrics, labelWidth = 0): number[] {
     let chrome = metrics.groupChrome;
@@ -265,15 +166,15 @@ export class RibbonGroupModel {
       simplifiedWidths[SimplifiedStage.InMoreMenu] = 0;
       return simplifiedWidths;
     }
-    let designed = RibbonGroupModel.columnsWidth(items.map(item => ({
+    let designed = RibbonGroupLayout.columnsWidth(items.map(item => ({
       rows: item.size == "large" && !item.fixedWidth ? 3 : 1,
       width: item.fixedWidth || (item.size == "large" ? metrics.largeWidth : metrics.smallWidth),
     })), metrics.gap);
-    let small = RibbonGroupModel.columnsWidth(items.map(item => ({
+    let small = RibbonGroupLayout.columnsWidth(items.map(item => ({
       rows: 1,
       width: item.fixedWidth || metrics.smallWidth,
     })), metrics.gap);
-    let icons = RibbonGroupModel.columnsWidth(items.map(item => ({
+    let icons = RibbonGroupLayout.columnsWidth(items.map(item => ({
       rows: 1,
       width: item.fixedWidth || metrics.smallIconWidth,
     })), metrics.gap);
@@ -298,13 +199,6 @@ export class RibbonGroupModel {
       row += cell.rows;
     }
     return columns.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, columns.length - 1);
-  }
-
-  static buttonRowLook(layout: RibbonLayout, collapsed: boolean): RibbonItemLook {
-    if (layout == "simplified") {
-      return collapsed ? "list" : "simplified-icon";
-    }
-    return "small-icon";
   }
 
   static itemLook(layout: RibbonLayout, stage: number, collapsed: boolean, size: RibbonItemSize): RibbonItemLook {

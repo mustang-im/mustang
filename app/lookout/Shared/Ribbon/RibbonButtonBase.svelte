@@ -29,11 +29,12 @@
 </button>
 
 <script lang="ts">
-  import { RibbonGroupModel, RibbonLabel, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
+  import { RibbonGroupLayout, RibbonLabel, type RibbonGroupLook, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
   import LoadingIcon from "lucide-svelte/icons/loader-circle";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { getContext } from "svelte";
+  import { readable, type Readable } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let label: string;
@@ -48,7 +49,7 @@
   export let size: RibbonItemSize = "large";
   export let fixedLook: RibbonItemLook = null;
   export let part: "whole" | "main" | "arrow" = "whole";
-  export let isItem = !getContext<boolean>(RibbonGroupModel.buttonRowKey);
+  export let isItem = !getContext<boolean>("ribbonButtonRow");
   export let ariaLabel: string = null;
   export let classes = "";
   export let onClick: (event: Event) => void | Promise<void> = null;
@@ -56,18 +57,24 @@
   export let buttonEl: HTMLButtonElement = null;
   export let loadDelayMS = 500;
 
-  const group = getContext<RibbonGroupModel>(RibbonGroupModel.contextKey) ?? new RibbonGroupModel("");
-  const isInButtonRow = !!getContext<boolean>(RibbonGroupModel.buttonRowKey);
+  const groupLook = getContext<Readable<RibbonGroupLook>>("ribbonGroupLook") ?? readable<RibbonGroupLook>({ layout: "classic", stage: 0, collapsed: false });
+  const isInButtonRow = !!getContext<boolean>("ribbonButtonRow");
   if (part != "arrow") {
-    group.offerIcon(icon);
+    getContext<(itemIcon: ConstructorOfATypedSvelteComponent) => void>("onRibbonItemIcon")?.(icon);
   }
-  const layout = group.layout;
-  const stage = group.stage;
-  const collapsed = group.collapsed;
   let look: RibbonItemLook;
   $: look = fixedLook ?? (isInButtonRow
-    ? RibbonGroupModel.buttonRowLook($layout, $collapsed)
-    : RibbonGroupModel.itemLook($layout, $stage, $collapsed, size));
+    ? buttonRowLook($groupLook)
+    : RibbonGroupLayout.itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, size));
+
+  // <copied to="RibbonButtonRow.svelte">
+  function buttonRowLook(group: RibbonGroupLook): RibbonItemLook {
+    if (group.layout == "simplified") {
+      return group.collapsed ? "list" : "simplified-icon";
+    }
+    return "small-icon";
+  }
+  // </copied>
 
   $: shownLabel = shortLabel && (look == "simplified" || look == "simplified-icon") ? shortLabel : label;
   // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.

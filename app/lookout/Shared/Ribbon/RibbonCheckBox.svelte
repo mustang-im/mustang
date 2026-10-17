@@ -4,8 +4,9 @@
 
 <script lang="ts">
   import CheckBox from "../Form/CheckBox.svelte";
-  import { RibbonGroupModel, type RibbonItemLook } from "./RibbonGroup";
+  import { RibbonGroupLayout, type RibbonGroupLook, type RibbonItemLook } from "./RibbonGroup";
   import { getContext } from "svelte";
+  import { readable, type Readable } from "svelte/store";
 
   export let label: string;
   export let checked = false;
@@ -13,12 +14,9 @@
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
 
-  const group = getContext<RibbonGroupModel>(RibbonGroupModel.contextKey) ?? new RibbonGroupModel("");
-  const layout = group.layout;
-  const stage = group.stage;
-  const collapsed = group.collapsed;
+  const groupLook = getContext<Readable<RibbonGroupLook>>("ribbonGroupLook") ?? readable<RibbonGroupLook>({ layout: "classic", stage: 0, collapsed: false });
   let look: RibbonItemLook;
-  $: look = RibbonGroupModel.itemLook($layout, $stage, $collapsed, "small");
+  $: look = RibbonGroupLayout.itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, "small");
 </script>
 
 <style>

@@ -60,7 +60,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} />
 
 <script lang="ts">
-  import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
+  import { RibbonModel, type RibbonTabInfo, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
   import { backstagePage, isBackstageOpen } from "../../Settings/Backstage/selected";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
@@ -136,7 +136,7 @@
     $isBackstageOpen = true;
   }
 
-  function onSelectTab(tab: RibbonTabModel) {
+  function onSelectTab(tab: RibbonTabInfo) {
     if (isCollapsed) {
       isTempOpen = !(isTempOpen && tab == $selectedTab);
     }

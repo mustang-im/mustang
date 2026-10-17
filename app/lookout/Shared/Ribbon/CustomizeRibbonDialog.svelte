@@ -35,7 +35,7 @@
 </Dialog>
 
 <script lang="ts">
-  import type { RibbonModel, RibbonTabModel } from "./RibbonGroup";
+  import type { RibbonModel, RibbonTabInfo } from "./RibbonGroup";
   import { RibbonCustomization, type RibbonHiddenParts } from "./RibbonCustomization";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../Dialog/Dialog.svelte";
@@ -65,7 +65,7 @@
   });
   onDestroy(() => ribbon.endSurvey());
 
-  function groupLabels(tab: RibbonTabModel): string[] {
+  function groupLabels(tab: RibbonTabInfo): string[] {
     return [...new Set(tab.groups.map(group => group.label).filter(label => label))];
   }
 

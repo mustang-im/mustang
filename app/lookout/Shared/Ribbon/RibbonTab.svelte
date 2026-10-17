@@ -5,33 +5,34 @@
     <hbox class="groups">
       <slot />
     </hbox>
-    {#if $overflowGroups.length}
+    {#if overflowGroups.length}
       <hbox class="more" bind:this={moreEl}>
         <RibbonButtonBase label={$t`More commands`} icon={MoreIcon}
           fixedLook="simplified-icon" isItem={false}
           classes="menu-trigger more-button"
-          pressed={$isMoreMenuOpen}
+          pressed={isMoreMenuOpen}
           onClick={onToggleMoreMenu} />
       </hbox>
     {/if}
   </hbox>
 {/if}
-<div class="ribbon-more-menu" class:open={$isMoreMenuOpen && $overflowGroups.length}
+<div class="ribbon-more-menu" class:open={isMoreMenuOpen && overflowGroups.length}
   style={moreMenuStyle}
   role="menu" aria-label={$t`More commands`}
   bind:this={moreMenuEl}>
-  {#each $overflowGroups as group (group)}
+  {#each overflowGroups as group (group)}
     <div class="more-menu-group" use:hostGroupBody={group}></div>
   {/each}
 </div>
-<svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={() => tab.closeMoreMenu()} />
+<svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closeMoreMenu} />
 
 <script lang="ts">
-  import { RibbonModel, RibbonTabModel, type RibbonGroupModel, type RibbonLayout } from "./RibbonGroup";
+  import { RibbonGroupLayout, RibbonModel, type RibbonGroupInfo, type RibbonLayout, type RibbonTabInfo } from "./RibbonGroup";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { getContext, setContext, onDestroy } from "svelte";
+  import { writable } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let label: string;
@@ -39,9 +40,14 @@
   export let isSelected = false;
 
   const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
-  const tab = new RibbonTabModel(label);
-  tab.isContextual = contextual;
-  setContext(RibbonTabModel.contextKey, tab);
+  const tab: RibbonTabInfo = { label, isContextual: contextual, groups: [] };
+  const tabLabel = writable(label);
+  $: $tabLabel = label;
+  setContext("ribbonTabLabel", tabLabel);
+  setContext("onRibbonGroupAdded", addGroup);
+  setContext("onRibbonGroupRemoved", removeGroup);
+  setContext("onRibbonGroupResized", fitGroups);
+  setContext("onRibbonMoreMenuClose", closeMoreMenu);
   ribbon.addTab(tab);
   if (isSelected) {
     ribbon.selectTab(tab);
@@ -54,14 +60,54 @@
     ribbon.selectTab(tab);
   }
   const isSurveying = ribbon.isSurveying;
-  const overflowGroups = tab.overflowGroups;
-  const isMoreMenuOpen = tab.isMoreMenuOpen;
   const metrics = ribbon.metrics;
   const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  let overflowGroups: RibbonGroupInfo[] = [];
+  let isMoreMenuOpen = false;
+  let availableWidth = 0;
+  let overflowWidth = 0;
 
-  $: tab.setOverflowWidth($layoutSetting.value == "simplified" && $metrics
+  $: setOverflowWidth($layoutSetting.value == "simplified" && $metrics
     ? $metrics.simplifiedIconWidth + $metrics.groupChrome
     : 0);
+  function setOverflowWidth(width: number) {
+    if (overflowWidth == width) {
+      return;
+    }
+    overflowWidth = width;
+    fitGroups();
+  }
+
+  function addGroup(group: RibbonGroupInfo) {
+    let pos = tab.groups.findIndex(existing => existing.el && group.el &&
+      group.el.compareDocumentPosition(existing.el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    tab.groups.splice(pos < 0 ? tab.groups.length : pos, 0, group);
+    fitGroups();
+  }
+
+  function removeGroup(group: RibbonGroupInfo) {
+    let pos = tab.groups.indexOf(group);
+    if (pos >= 0) {
+      tab.groups.splice(pos, 1);
+    }
+    fitGroups();
+  }
+
+  function fitGroups() {
+    if (!availableWidth) {
+      return;
+    }
+    let stages = RibbonGroupLayout.fitStages(tab.groups, availableWidth, overflowWidth);
+    tab.groups.forEach((group, i) => group.setStage(stages[i]));
+    let fittedOverflow = tab.groups.filter((group, i) => RibbonGroupLayout.isOverflowStage(group, stages[i]));
+    if (overflowGroups.length != fittedOverflow.length || overflowGroups.some((group, i) => group != fittedOverflow[i])) {
+      overflowGroups = fittedOverflow;
+    }
+  }
+
+  function closeMoreMenu() {
+    isMoreMenuOpen = false;
+  }
 
   let contentEl: HTMLElement;
   let moreEl: HTMLElement;
@@ -74,27 +120,30 @@
     if (!el) {
       return;
     }
-    resizeObserver = new ResizeObserver(entries => tab.setAvailableWidth(entries[0].contentRect.width));
+    resizeObserver = new ResizeObserver(entries => {
+      availableWidth = entries[0].contentRect.width;
+      fitGroups();
+    });
     resizeObserver.observe(el);
   }
   onDestroy(() => resizeObserver?.disconnect());
 
-  $: if (!$overflowGroups.length || $selectedTab != tab) {
-    tab.closeMoreMenu();
+  $: if (!overflowGroups.length || $selectedTab != tab) {
+    closeMoreMenu();
   }
 
   function onToggleMoreMenu() {
-    if ($isMoreMenuOpen) {
-      tab.closeMoreMenu();
+    if (isMoreMenuOpen) {
+      closeMoreMenu();
       return;
     }
     let anchor = moreEl.getBoundingClientRect();
     let right = Math.max(4, window.innerWidth - anchor.right);
     moreMenuStyle = `right: ${right}px; top: ${anchor.bottom + 4}px;`;
-    $isMoreMenuOpen = true;
+    isMoreMenuOpen = true;
   }
 
-  function hostGroupBody(node: HTMLElement, group: RibbonGroupModel) {
+  function hostGroupBody(node: HTMLElement, group: RibbonGroupInfo) {
     if (group.bodyEl) {
       node.appendChild(group.bodyEl);
     }
@@ -102,18 +151,18 @@
 
   function onClickOutside(event: MouseEvent) {
     let target = event.target as Node;
-    if (!$isMoreMenuOpen || moreMenuEl?.contains(target) || moreEl?.contains(target)) {
+    if (!isMoreMenuOpen || moreMenuEl?.contains(target) || moreEl?.contains(target)) {
       return;
     }
     if (target instanceof Element && target.closest(".popup")) {
       return;
     }
-    tab.closeMoreMenu();
+    closeMoreMenu();
   }
 
   function onKeyDown(event: KeyboardEvent) {
-    if ($isMoreMenuOpen && event.key == "Escape") {
-      tab.closeMoreMenu();
+    if (isMoreMenuOpen && event.key == "Escape") {
+      closeMoreMenu();
     }
   }
 </script>

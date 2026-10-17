@@ -3,17 +3,25 @@
 </div>
 
 <script lang="ts">
-  import { RibbonGroupModel, type RibbonItemLook } from "./RibbonGroup";
+  import type { RibbonGroupLook, RibbonItemLook } from "./RibbonGroup";
   import { getContext, setContext } from "svelte";
+  import { readable, type Readable } from "svelte/store";
 
   export let label: string;
 
-  setContext(RibbonGroupModel.buttonRowKey, true);
-  const group = getContext<RibbonGroupModel>(RibbonGroupModel.contextKey) ?? new RibbonGroupModel("");
-  const layout = group.layout;
-  const collapsed = group.collapsed;
+  setContext("ribbonButtonRow", true);
+  const groupLook = getContext<Readable<RibbonGroupLook>>("ribbonGroupLook") ?? readable<RibbonGroupLook>({ layout: "classic", stage: 0, collapsed: false });
   let look: RibbonItemLook;
-  $: look = RibbonGroupModel.buttonRowLook($layout, $collapsed);
+  $: look = buttonRowLook($groupLook);
+
+  // <copied from="RibbonButtonBase.svelte">
+  function buttonRowLook(group: RibbonGroupLook): RibbonItemLook {
+    if (group.layout == "simplified") {
+      return group.collapsed ? "list" : "simplified-icon";
+    }
+    return "small-icon";
+  }
+  // </copied>
 </script>
 
 <style>

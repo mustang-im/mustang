@@ -1,9 +1,9 @@
-<div class="ribbon-group {$layout}" class:collapsed={$collapsed} class:in-more-menu={isInMoreMenu}
+<div class="ribbon-group {layout}" class:collapsed={collapsed} class:in-more-menu={isInMoreMenu}
   class:hidden-by-user={isHiddenByUser}
   role="group" aria-label={label}
   bind:this={groupEl}>
-  {#if $collapsed && !isInMoreMenu}
-    <RibbonButtonBase {label} icon={icon ?? group.firstIcon}
+  {#if collapsed && !isInMoreMenu}
+    <RibbonButtonBase {label} icon={icon ?? firstIcon}
       classes="group-collapsed-button menu-trigger"
       size="large" fixedLook="large"
       hasMenu pressed={isPopupOpen}
@@ -11,20 +11,20 @@
       bind:buttonEl={collapsedButtonEl}
       />
   {/if}
-  <div class="body-home" style:min-width={labelWidth && $layout == "classic" ? labelWidth + "px" : null} bind:this={homeEl}>
+  <div class="body-home" style:min-width={labelWidth && layout == "classic" ? labelWidth + "px" : null} bind:this={homeEl}>
     <div class="group-body" bind:this={bodyEl}>
       <div class="more-menu-label">{label}</div>
-      <div class="group-buttons stage-{$stage}" data-stage={$stage}
-        class:popup={$collapsed && !isInMoreMenu}
-        class:open={$collapsed && !isInMoreMenu && isPopupOpen}
-        style={$collapsed && !isInMoreMenu ? popupStyle : ""}
+      <div class="group-buttons stage-{stage}" data-stage={stage}
+        class:popup={collapsed && !isInMoreMenu}
+        class:open={collapsed && !isInMoreMenu && isPopupOpen}
+        style={collapsed && !isInMoreMenu ? popupStyle : ""}
         on:click|capture={onClickInside}
         bind:this={buttonsEl}>
         <slot />
       </div>
     </div>
   </div>
-  {#if !$collapsed}
+  {#if !collapsed}
     <div class="group-label">
       <span class="group-label-text" bind:this={labelTextEl}>{label}</span>
       {#if onLauncher}
@@ -39,14 +39,14 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closePopup} />
 
 <script lang="ts">
-  import { RibbonGroupModel, RibbonModel, RibbonTabModel, type RibbonItemInfo, type RibbonLayout } from "./RibbonGroup";
+  import { RibbonGroupLayout, RibbonModel, type RibbonGroupInfo, type RibbonGroupLook, type RibbonItemInfo, type RibbonLayout } from "./RibbonGroup";
   import type { RibbonHiddenParts } from "./RibbonCustomization";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import { showError } from "../../../frontend/Util/error";
   import LauncherIcon from "lucide-svelte/icons/arrow-down-right";
   import { getContext, setContext, onMount, onDestroy } from "svelte";
-  import { get, writable } from "svelte/store";
+  import { readable, writable, type Readable } from "svelte/store";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent = null;
@@ -54,19 +54,40 @@
   export let launcherTooltip: string = null;
 
   const ribbon = getContext<RibbonModel>(RibbonModel.contextKey);
-  const tab = getContext<RibbonTabModel>(RibbonTabModel.contextKey);
-  const group = new RibbonGroupModel(label);
-  setContext(RibbonGroupModel.contextKey, group);
-  const collapsed = group.collapsed;
-  const stage = group.stage;
-  const layout = group.layout;
-  const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  const metrics = ribbon?.metrics ?? writable(null);
+  const tabLabel = getContext<Readable<string>>("ribbonTabLabel") ?? readable<string>(undefined);
+  const onGroupAdded = getContext<(group: RibbonGroupInfo) => void>("onRibbonGroupAdded");
+  const onGroupRemoved = getContext<(group: RibbonGroupInfo) => void>("onRibbonGroupRemoved");
+  const onGroupResized = getContext<() => void>("onRibbonGroupResized");
+  const onMoreMenuClose = getContext<() => void>("onRibbonMoreMenuClose");
+  const group: RibbonGroupInfo = {
+    label,
+    el: null,
+    bodyEl: null,
+    stageWidths: [0],
+    hasOverflowStage: false,
+    setStage,
+  };
   $: group.label = label;
-  $: layout.set(ribbon && $layoutSetting.value == "simplified" ? "simplified" : "classic");
-  $: isInMoreMenu = $collapsed && $layout == "simplified";
+
+  let stage = 0;
+  let collapsed = false;
+  const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
+  let layout: RibbonLayout;
+  $: layout = ribbon && $layoutSetting.value == "simplified" ? "simplified" : "classic";
+  const look = writable<RibbonGroupLook>({ layout: "classic", stage, collapsed });
+  $: $look = { layout, stage, collapsed };
+  setContext("ribbonGroupLook", look);
+  let firstIcon: ConstructorOfATypedSvelteComponent = null;
+  setContext("onRibbonItemIcon", (itemIcon: ConstructorOfATypedSvelteComponent) => {
+    if (!firstIcon && itemIcon) {
+      firstIcon = itemIcon;
+    }
+  });
+
+  const metrics = ribbon?.metrics ?? writable(null);
+  $: isInMoreMenu = collapsed && layout == "simplified";
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
-  $: isHiddenByUser = ($customization.value?.[ribbon?.id]?.groups ?? []).includes(tab?.label + "/" + label);
+  $: isHiddenByUser = ($customization.value?.[ribbon?.id]?.groups ?? []).includes($tabLabel + "/" + label);
 
   let groupEl: HTMLElement;
   let homeEl: HTMLElement;
@@ -82,24 +103,24 @@
   onMount(() => {
     group.el = groupEl;
     group.bodyEl = bodyEl;
-    tab?.addGroup(group);
+    onGroupAdded?.(group);
     resizeObserver = new ResizeObserver(() => measure(true));
     resizeObserver.observe(buttonsEl);
     measure(false);
   });
   onDestroy(() => {
     resizeObserver?.disconnect();
-    tab?.removeGroup(group);
+    onGroupRemoved?.(group);
   });
 
-  $: measure(false, $metrics, $layout, isHiddenByUser);
+  $: measure(false, $metrics, layout, isHiddenByUser);
   function measure(isRendered: boolean, ..._dependencies: any[]) {
     if (!buttonsEl || !$metrics) {
       return;
     }
     if (isHiddenByUser) {
-      group.setStageWidths([0], false, "hidden");
-      tab?.fitGroups();
+      setStageWidths([0], false, "hidden");
+      onGroupResized?.();
       return;
     }
     let items = Array.from(buttonsEl.querySelectorAll<HTMLElement>(".ribbon-item"))
@@ -112,7 +133,7 @@
       size: item.dataset.size == "small" ? "small" : "large",
       fixedWidth: fixedItems.includes(item) ? item.offsetWidth : 0,
     }));
-    let currentLayout: RibbonLayout = $layout;
+    let currentLayout: RibbonLayout = layout;
     if (labelTextEl) {
       let text = document.createRange();
       text.selectNodeContents(labelTextEl);
@@ -121,12 +142,38 @@
     let minWidth = currentLayout == "classic" ? labelWidth : 0;
     let itemsKey = [currentLayout, label, ...items.map(item => item.querySelector(".label")?.textContent ?? "")].join("\n");
     let renderedStage = Number(buttonsEl.dataset.stage);
-    if (isRendered && !get(collapsed) && renderedStage == get(stage)) {
+    if (isRendered && !collapsed && renderedStage == stage) {
       let width = Math.max(Math.ceil(buttonsEl.getBoundingClientRect().width), minWidth) + $metrics.groupChrome;
-      group.setRenderedWidth(renderedStage, width, itemsKey);
+      setRenderedWidth(renderedStage, width, itemsKey);
     }
-    group.setStageWidths(RibbonGroupModel.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified", itemsKey);
-    tab?.fitGroups();
+    setStageWidths(RibbonGroupLayout.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified", itemsKey);
+    onGroupResized?.();
+  }
+
+  let renderedWidths: number[] = [];
+  let measuredItemsKey = "";
+  function setStageWidths(widths: number[], hasOverflowStage: boolean, itemsKey: string) {
+    forgetRenderedWidths(itemsKey);
+    widths = widths.map((width, widthStage) => Math.max(width, renderedWidths[widthStage] ?? 0));
+    group.stageWidths = widths.length ? widths : [0];
+    group.hasOverflowStage = hasOverflowStage;
+  }
+
+  function setRenderedWidth(renderedStage: number, width: number, itemsKey: string) {
+    forgetRenderedWidths(itemsKey);
+    renderedWidths[renderedStage] = width;
+  }
+
+  function forgetRenderedWidths(itemsKey: string) {
+    if (itemsKey != measuredItemsKey) {
+      measuredItemsKey = itemsKey;
+      renderedWidths = [];
+    }
+  }
+
+  function setStage(newStage: number) {
+    stage = newStage;
+    collapsed = newStage > 0 && newStage == group.stageWidths.length - 1;
   }
 
   $: placeBody(isInMoreMenu);
@@ -136,7 +183,7 @@
     }
   }
 
-  $: if (!$collapsed) {
+  $: if (!collapsed) {
     isPopupOpen = false;
   }
 
@@ -156,7 +203,7 @@
   }
 
   function onClickInside(event: MouseEvent) {
-    if (!$collapsed || (!isPopupOpen && !isInMoreMenu)) {
+    if (!collapsed || (!isPopupOpen && !isInMoreMenu)) {
       return;
     }
     let target = event.target as HTMLElement;
@@ -164,7 +211,7 @@
       return;
     }
     closePopup();
-    tab?.closeMoreMenu();
+    onMoreMenuClose?.();
   }
 
   function onClickOutside(event: MouseEvent) {
