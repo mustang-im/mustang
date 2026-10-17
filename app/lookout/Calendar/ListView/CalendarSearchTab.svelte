@@ -4,40 +4,41 @@
       checked={$options.scope == CalendarSearchScope.CurrentFolder}
       disabled={!hasSelectedCalendar && $t`Select a calendar first`}
       tooltip={$t`Search only the selected calendar`}
-      onChange={() => CalendarSearch.update({ scope: CalendarSearchScope.CurrentFolder })} />
+      onChange={() => update({ scope: CalendarSearchScope.CurrentFolder })} />
     <RibbonToggleButton label={$t`All Calendar Items`} icon={AllCalendarsIcon} isRadio
       checked={$options.scope == CalendarSearchScope.AllCalendarItems}
       tooltip={$t`Search all calendars`}
-      onChange={() => CalendarSearch.update({ scope: CalendarSearchScope.AllCalendarItems })} />
+      onChange={() => update({ scope: CalendarSearchScope.AllCalendarItems })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Refine`}>
     <RibbonMenuButton label={organizerLabel} icon={OrganizerIcon}
       disabled={!organizers.length && !$options.organizerEMail && $t`None of the found items has an organizer`}>
       <MenuItem label={$t`Any Organizer`} icon={AnyOrganizerIcon} checked={!$options.organizerEMail}
-        onClick={() => CalendarSearch.update({ organizerEMail: null })} />
+        onClick={() => update({ organizerEMail: null })} />
       <MenuDivider />
       {#each organizers as organizer (organizer.emailAddress)}
         <MenuItem label={organizer.name || organizer.emailAddress} tooltip={organizer.emailAddress}
           icon={OrganizerIcon} checked={$options.organizerEMail == organizer.emailAddress}
-          onClick={() => CalendarSearch.update({ organizerEMail: organizer.emailAddress })} />
+          onClick={() => update({ organizerEMail: organizer.emailAddress })} />
       {/each}
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
       checked={$options.hasAttachments}
-      onChange={checked => CalendarSearch.update({ hasAttachments: checked })} />
+      onChange={checked => update({ hasAttachments: checked })} />
     <RibbonToggleButton label={$t`Recurring`} icon={RecurringIcon}
       checked={$options.isRecurring}
-      onChange={checked => CalendarSearch.update({ isRecurring: checked })} />
+      onChange={checked => update({ isRecurring: checked })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo="Esc"
-      onClick={() => CalendarSearch.close()} />
+      onClick={closeSearch} />
   </RibbonGroup>
 </RibbonTab>
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { CalendarSearch, CalendarSearchScope } from "./CalendarSearch";
+  import { calendarSearchOptions as options, CalendarSearchScope, type CalendarSearchOptions } from "../selected";
+  import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -57,10 +58,20 @@
   export let organizers: PersonUID[];
   export let hasSelectedCalendar: boolean;
 
-  const options = CalendarSearch.options;
 
   $: chosenOrganizer = organizers.find(organizer => organizer.emailAddress == $options.organizerEMail);
   $: organizerLabel = $options.organizerEMail
     ? chosenOrganizer?.name || $options.organizerEMail
     : $t`Organizer`;
+
+  function update(change: Partial<CalendarSearchOptions>) {
+    $options = { ...$options, ...change };
+  }
+
+  // <copied from="../CalendarApp.svelte">
+  function closeSearch() {
+    $globalSearchTerm = null;
+    $options = { scope: $options.scope, isRecurring: false, hasAttachments: false, organizerEMail: null };
+  }
+  // </copied>
 </script>

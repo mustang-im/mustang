@@ -4,6 +4,9 @@ import { WorkingHours } from "./View/WorkingHours";
 import { shownCalendars } from "../../frontend/Calendar/selected";
 import { ShownWorkHours } from "../../frontend/Calendar/ShownWorkHours";
 import { k1MinuteMS } from "../../frontend/Util/date";
+import { EventTable } from "./ListView/EventTable";
+import { appGlobal } from "../../logic/app";
+import { mergeColls, type Collection } from "svelte-collections";
 import { readable, writable } from "svelte/store";
 
 export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule" | "dual";
@@ -20,6 +23,30 @@ export enum CalendarFolderPane {
   Minimized = "minimized",
   Off = "off",
 }
+
+export enum CalendarSearchScope {
+  CurrentFolder = "current",
+  AllCalendarItems = "all",
+}
+
+export interface CalendarSearchOptions {
+  scope: CalendarSearchScope;
+  isRecurring: boolean;
+  hasAttachments: boolean;
+  organizerEMail: string | null;
+}
+
+export const calendarSearchOptions = writable<CalendarSearchOptions>({
+  scope: CalendarSearchScope.AllCalendarItems,
+  isRecurring: false,
+  hasAttachments: false,
+  organizerEMail: null,
+});
+
+export const listedEvents: Collection<Event> =
+  mergeColls(shownCalendars.map(calendar => calendar.events)).filterObservable(event => EventTable.isListed(event));
+export const allListedEvents: Collection<Event> =
+  mergeColls(appGlobal.calendars.map(calendar => calendar.events)).filterObservable(event => EventTable.isListed(event));
 
 export interface SlotSelection {
   start: Date;

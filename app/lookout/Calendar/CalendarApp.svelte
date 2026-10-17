@@ -34,7 +34,7 @@
               <vbox flex class="main lo-card">
                 {#if tableEvents}
                   <ListView events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
-                    showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
+                    showCalendarColumn={isSearch && $calendarSearchOptions.scope == CalendarSearchScope.AllCalendarItems} />
                 {:else if view == "dual"}
                   <DualView bind:start={$startDate} events={visibleEvents} {groups} {timeScale} {showWeekNumbers}>
                     <ViewSelector slot="top-right" {view} onView={setView} />
@@ -110,7 +110,7 @@
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, CalendarCurrentView, CalendarFolderPane, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
@@ -140,8 +140,8 @@
   import AdjacentEventTabs from "./AdjacentEventTabs.svelte";
   import ListView from "./ListView/ListView.svelte";
   import CalendarSearchTab from "./ListView/CalendarSearchTab.svelte";
-  import { EventLists } from "./ListView/EventLists";
-  import { CalendarSearch, CalendarSearchScope } from "./ListView/CalendarSearch";
+  import { CalendarSearch } from "./ListView/CalendarSearch";
+  import type { Calendar } from "../../logic/Calendar/Calendar";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../frontend/Shared/SplitterBidirectional.svelte";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
@@ -207,15 +207,14 @@
 
   $: eventsInRange = visibleEvents.filterObservable(event => event.startTime < range.end && event.endTime > range.start);
 
-  const searchOptions = CalendarSearch.options;
   $: searchTerm = $globalSearchTerm?.trim() || null;
   $: isSearch = !!searchTerm;
   $: searchResults = searchTerm
-    ? EventLists.searchResults(searchTerm, $searchOptions, $selectedCalendar)
+    ? searchedEvents(searchTerm, $calendarSearchOptions, $selectedCalendar)
     : null;
-  $: searchOrganizers = searchTerm ? CalendarSearch.organizers(EventLists.searchResults(searchTerm, { ...$searchOptions, organizerEMail: null }, $selectedCalendar).contents) : [];
-  $: listEvents = currentView == CalendarCurrentView.List ? EventLists.shown
-    : currentView == CalendarCurrentView.Active ? EventLists.active()
+  $: searchOrganizers = searchTerm ? CalendarSearch.organizers(searchedEvents(searchTerm, { ...$calendarSearchOptions, organizerEMail: null }, $selectedCalendar).contents) : [];
+  $: listEvents = currentView == CalendarCurrentView.List ? listedEvents
+    : currentView == CalendarCurrentView.Active ? listedEvents.filterObservable(event => event.isUpcoming())
     : null;
   $: tableEvents = searchResults ?? listEvents;
   $: tableLabel = isSearch ? $t`Search results` : currentView == CalendarCurrentView.Active ? $t`Active appointments` : $t`All appointments`;
@@ -252,12 +251,29 @@
     showCalendar();
   }
 
+  function searchedEvents(term: string, options: CalendarSearchOptions, calendar: Calendar | null): Collection<Event> {
+    let scope = options.scope == CalendarSearchScope.CurrentFolder && calendar
+      ? calendar.events.filterObservable(event => EventTable.isListed(event))
+      : allListedEvents;
+    return scope.filterObservable(event => event.matchesSearch(term.trim().toLowerCase()) &&
+      (!options.isRecurring || !!event.recurrenceRule) &&
+      (!options.hasAttachments || event.attachments.hasItems) &&
+      (!options.organizerEMail || event.organizer?.emailAddress == options.organizerEMail));
+  }
+
+  // <copied to="ListView/CalendarSearchTab.svelte">
+  function closeSearch() {
+    $globalSearchTerm = null;
+    $calendarSearchOptions = { scope: $calendarSearchOptions.scope, isRecurring: false, hasAttachments: false, organizerEMail: null };
+  }
+  // </copied>
+
   function setCurrentView(newView: CalendarCurrentView) {
     currentView = newView;
     currentViewSetting.value = newView;
     $eventPeek = null;
     if (isSearch) {
-      CalendarSearch.close();
+      closeSearch();
     }
   }
 
@@ -265,7 +281,7 @@
     if (currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active) {
       setCurrentView(CalendarCurrentView.Calendar);
     } else if (isSearch) {
-      CalendarSearch.close();
+      closeSearch();
     }
   }
 
@@ -434,7 +450,7 @@
       break;
     case "escape":
       if (isSearch) {
-        CalendarSearch.close();
+        closeSearch();
       }
       $eventPeek = null;
       $inlineTitle = null;

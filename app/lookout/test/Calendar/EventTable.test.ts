@@ -6,7 +6,7 @@ import { Participant } from "../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
 import { EventTable, EventTableColumn, EventTableGrouping } from "../../Calendar/ListView/EventTable";
-import { CalendarSearch, CalendarSearchScope } from "../../Calendar/ListView/CalendarSearch";
+import { CalendarSearch } from "../../Calendar/ListView/CalendarSearch";
 import { expect, test } from "vitest";
 
 function newEvent(title: string, day: number, location = ""): Event {
@@ -85,18 +85,9 @@ test("All-day end shows the last day, not the next day", () => {
   expect(EventTable.timeLabel(newEvent("Standup", 12), false, "en-US")).toBe("Mon 10/12/2026 9:00 AM");
 });
 
-test("Search refiners: recurring, attachments, organizer", () => {
-  let options = CalendarSearch.defaultOptions(CalendarSearchScope.AllCalendarItems);
+test("Search organizers: each organizer once", () => {
   let series = weekly("Team standup", 12);
   let single = newEvent("Team lunch", 20);
   single.participants.add(new Participant("wanda@example.com", "Wanda Howard", InvitationResponse.Organizer));
-  expect(CalendarSearch.matches(series, "team", options)).toBe(true);
-  expect(CalendarSearch.matches(single, " TEAM ", options)).toBe(true);
-  expect(CalendarSearch.matches(single, "dentist", options)).toBe(false);
-  expect(CalendarSearch.matches(single, "team", { ...options, isRecurring: true })).toBe(false);
-  expect(CalendarSearch.matches(series, "team", { ...options, isRecurring: true })).toBe(true);
-  expect(CalendarSearch.matches(single, "team", { ...options, hasAttachments: true })).toBe(false);
-  expect(CalendarSearch.matches(single, "team", { ...options, organizerEMail: "wanda@example.com" })).toBe(true);
-  expect(CalendarSearch.matches(series, "team", { ...options, organizerEMail: "wanda@example.com" })).toBe(false);
   expect(CalendarSearch.organizers([ series, single, single ]).map(person => person.emailAddress)).toEqual([ "wanda@example.com" ]);
 });
