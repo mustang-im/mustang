@@ -160,7 +160,7 @@ export class EventEditFlow {
   async save() {
     let event = this.event;
     event.parentEvent?.cancelEditing();
-    // Lookout: Also moves the recurrence with the series, confirms changes of the series rule here, and sets the series end, which `hasChanged()` does not see
+    // Lookout: Also moves the recurrence with the series, confirms changes of the series rule here, and sets the series end from the recurrence dialog
     if (!event.parentEvent) {
       this.moveRecurrenceWithSeries();
       if (!await this.confirmAndChangeRecurrenceRule()) {

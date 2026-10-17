@@ -148,7 +148,6 @@ export class RecurrencePattern {
     return endTime;
   }
 
-  // `RecurrenceRule.matches()` ignores the end, so `master.hasChanged()` doesn't see this change
   async applyEndTo(master: Event, skippedOccurrences = 0): Promise<void> {
     let rule = master.recurrenceRule;
     if (!rule) {
