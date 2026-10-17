@@ -42,11 +42,13 @@
 
   let contextMenu: ContactContextMenu;
   let scrollToItem: (contact: Contact) => void = null;
+  let scrollToIndex: (index: number) => void = null;
 
   $: letterIndex = new LetterIndex($contacts.contents);
 
-  function onInit(event: CustomEvent<{ scrollToItem: (contact: Contact) => void }>) {
+  function onInit(event: CustomEvent<{ scrollToIndex: (index: number) => void, scrollToItem: (contact: Contact) => void }>) {
     scrollToItem = event.detail.scrollToItem;
+    scrollToIndex = event.detail.scrollToIndex;
     if (!contacts.contains(selectedContact)) {
       selectedContacts.clear();
       selectedContacts.add(contacts.first);
@@ -61,7 +63,16 @@
     }
     selectedContacts.clear();
     selectedContacts.add(contact);
-    scrollToItem?.(contact);
+    scrollToTop(contact);
+  }
+
+  function scrollToTop(contact: Contact) {
+    if (!scrollToIndex) {
+      return;
+    }
+    // FastList scrolls only as far as needed, so coming from below puts the row at the top
+    scrollToIndex(contacts.length - 1);
+    scrollToIndex(contacts.contents.indexOf(contact));
   }
 
   function onContextMenu(event: MouseEvent, contact: Contact) {
