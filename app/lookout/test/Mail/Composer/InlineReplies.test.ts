@@ -2,7 +2,7 @@
 import { InlineReplies, InlineReply } from "../../../Mail/Composer/InlineReplies";
 import { inlineReplies, inlineRibbon } from "../../../Mail/Selected";
 import type { ComposerCommands } from "../../../Mail/Composer/ComposerCommands";
-import { MessageBox } from "../../../Shared/Dialog/MessageBox";
+import { messageBoxQuestion } from "../../../Shared/Dialog/MessageBox";
 import type { EMail } from "../../../../logic/Mail/EMail";
 import { afterEach, expect, test } from "vitest";
 import { get } from "svelte/store";
@@ -45,7 +45,7 @@ test("A new response replaces an empty one without asking", async () => {
   let forward = mail();
   await InlineReplies.start(original, reply);
   await InlineReplies.start(original, forward);
-  expect(get(MessageBox.current)).toBeNull();
+  expect(get(messageBoxQuestion)).toBeNull();
   expect(replyFor(original).draft).toBe(forward);
   expect(inlineReplies.length).toBe(1);
 });
@@ -56,13 +56,13 @@ test("A new response asks before it replaces one with text", async () => {
   await InlineReplies.start(original, reply);
 
   let keep = InlineReplies.start(original, mail());
-  get(MessageBox.current).answer(false);
+  get(messageBoxQuestion).answer(false);
   await keep;
   expect(replyFor(original).draft).toBe(reply);
 
   let forward = mail();
   let replace = InlineReplies.start(original, forward);
-  get(MessageBox.current).answer(true);
+  get(messageBoxQuestion).answer(true);
   await replace;
   expect(replyFor(original).draft).toBe(forward);
 });

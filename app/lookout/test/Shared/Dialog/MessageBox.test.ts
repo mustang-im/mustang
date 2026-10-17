@@ -1,10 +1,10 @@
-import { MessageBox } from "../../../Shared/Dialog/MessageBox";
+import { MessageBox, messageBoxQuestion } from "../../../Shared/Dialog/MessageBox";
 import { expect, test } from "vitest";
 import { get } from "svelte/store";
 
 test("A message box answers once and closes", async () => {
   let answer = MessageBox.confirm("Delete", "Do you want to permanently delete the selected message?");
-  let question = get(MessageBox.current);
+  let question = get(messageBoxQuestion);
   expect(question.title).toBe("Delete");
   expect(question.okLabel).toBe("OK");
   expect(question.cancelLabel).toBe("Cancel");
@@ -12,12 +12,12 @@ test("A message box answers once and closes", async () => {
   // A second answer, e.g. the dialog's close event after OK, changes nothing
   question.answer(false);
   expect(await answer).toBe(true);
-  expect(get(MessageBox.current)).toBeNull();
+  expect(get(messageBoxQuestion)).toBeNull();
 });
 
 test("Yes / No question", async () => {
   let answer = MessageBox.ask("Delete Folder", "Are you sure?");
-  let question = get(MessageBox.current);
+  let question = get(messageBoxQuestion);
   expect([question.okLabel, question.cancelLabel]).toEqual(["Yes", "No"]);
   question.answer(false);
   expect(await answer).toBe(false);
@@ -27,7 +27,7 @@ test("A new message box cancels the one that is still open", async () => {
   let first = MessageBox.confirm("First", "first");
   let second = MessageBox.confirm("Second", "second");
   expect(await first).toBe(false);
-  expect(get(MessageBox.current).title).toBe("Second");
-  get(MessageBox.current).answer(true);
+  expect(get(messageBoxQuestion).title).toBe("Second");
+  get(messageBoxQuestion).answer(true);
   expect(await second).toBe(true);
 });

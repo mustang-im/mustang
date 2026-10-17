@@ -1,4 +1,4 @@
-import { writable, type Writable } from "svelte/store";
+import { writable } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
 
 export interface MessageBoxQuestion {
@@ -9,8 +9,9 @@ export interface MessageBoxQuestion {
   answer: (ok: boolean) => void;
 }
 
+export const messageBoxQuestion = writable<MessageBoxQuestion | null>(null);
+
 export class MessageBox {
-  static readonly current: Writable<MessageBoxQuestion | null> = writable(null);
   protected static pending: MessageBoxQuestion | null = null;
 
   static confirm(title: string, message: string, okLabel = gt`OK`, cancelLabel = gt`Cancel`): Promise<boolean> {
@@ -26,12 +27,12 @@ export class MessageBox {
             return;
           }
           MessageBox.pending = null;
-          MessageBox.current.set(null);
+          messageBoxQuestion.set(null);
           resolve(ok);
         },
       };
       MessageBox.pending = question;
-      MessageBox.current.set(question);
+      messageBoxQuestion.set(question);
     });
   }
 
