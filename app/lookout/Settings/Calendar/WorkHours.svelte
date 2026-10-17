@@ -1,83 +1,120 @@
-<OptionsSection title={$t`Work time`}>
-  <OptionsRow icon={WorkTimeIcon}>
-    <grid class="work-time">
-      {#if !isCalendarFixed && $calendars.length > 1}
-        <span class="first">{$t`Calendar:`}</span>
-        <hbox class="wide">
-          <ComboBox options={$calendars.contents.map(entry => ({ value: entry, label: entry.name }))}
-            bind:value={calendar} label={$t`Calendar`} width="280px" />
-        </hbox>
-      {/if}
-      {#if calendar && workHours}
-        <span class="all">{$t`Work hours:`}</span>
-        {#each weekdays as weekday (weekday.weekday)}
-          <WorkDayRow day={workHours.days[weekday.weekday]} name={weekday.name} {times} disabled={readOnly} />
+<OptionsSection title={$t`Work hours`}>
+  <OptionsRow icon={WorkHoursIcon}>
+    <slot name="calendar" />
+    {#if workHours}
+      <grid class="days">
+        {#each kWeekdays as weekday}
+          {@const day = $workHours.days[weekday]}
+          <CheckBox label={weekdayName(weekday)} checked={day.isWorkDay} disabled={readOnly}
+            onChange={checked => onWorkDayChanged(weekday, checked)} />
+          <TimeCombo time={timeOf(day.startMinutes)} options={startTimes}
+            label={$t`Start time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
+            onChange={time => onStartChanged(weekday, time)} />
+          <span class="until" class:disabled={readOnly || !day.isWorkDay}>{$t`to`}</span>
+          <TimeCombo time={timeOf(day.endMinutes)} options={endTimes}
+            label={$t`End time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
+            onChange={time => onEndChanged(weekday, time)} />
         {/each}
         <span class="first" class:disabled={readOnly}>{$t`Time zone:`}</span>
         <hbox class="wide">
-          <ComboBox options={zoneChoices} value={$workHours.timezone ?? ""} label={$t`Time zone of the work hours`}
+          <ComboBox options={timezones} value={$workHours.timezone ?? ""} label={$t`Time zone of the work hours`}
             width="100%" disabled={readOnly}
-            onChange={zone => { workHours.timezone = zone || null; }} />
+            onChange={onTimezoneChanged} />
         </hbox>
-      {/if}
-    </grid>
-    {#if calendar}
-      <span class="note">
-        {#if readOnly && workHours}
-          {$t`These are the work hours of ${$calendar.name}, as the server tells them.`}
-        {:else if readOnly || !workHours}
-          {$t`The server does not tell the work hours of ${$calendar.name}.`}
-        {:else if $calendar.canSaveWorkHoursPerDayOnServer}
-          {$t`The work hours are saved on the server.`}
-        {:else if $calendar.canSaveWorkHoursOnServer}
-          {$t`The server saves one time range for all work days. The times of each day are saved on this computer.`}
-        {:else}
-          {$t`The work hours are saved only on this computer, because the server cannot store them.`}
-        {/if}
-      </span>
+      </grid>
     {/if}
+    <span class="note">
+      {#if readOnly && workHours}
+        {$t`These are the work hours of ${$account.name}, as the server tells them.`}
+      {:else if !workHours}
+        {$t`The server does not tell the work hours of ${$account.name}.`}
+      {:else if $account.canSaveWorkHoursPerDayOnServer}
+        {$t`The work hours are saved on the server.`}
+      {:else if $account.canSaveWorkHoursOnServer}
+        {$t`The server saves one time range for all work days. The times of each day are saved on this computer.`}
+      {:else}
+        {$t`The work hours are saved only on this computer, because the server cannot store them.`}
+      {/if}
+    </span>
   </OptionsRow>
 </OptionsSection>
 
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
-  import type { WorkHoursDrafts } from "./WorkHoursDrafts";
-  import { WorkTimeOptions } from "./WorkTimeOptions";
+  import { kMinutesPerDay } from "../../../logic/Calendar/WorkHours";
+  import { TimeOptions } from "../../Calendar/EditEvent/TimeOptions";
   import { TimeZoneChoice, ZoneClock } from "../../Calendar/View/TimeZones";
-  import { appGlobal } from "../../../logic/app";
-  import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
-  import WorkDayRow from "./WorkDayRow.svelte";
+  import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import WorkTimeIcon from "lucide-svelte/icons/briefcase-business";
-  import { t } from "../../../l10n/l10n";
+  import TimeCombo from "../../Calendar/EditEvent/TimeCombo.svelte";
+  import WorkHoursIcon from "lucide-svelte/icons/briefcase-business";
+  import { catchErrors } from "../../../frontend/Util/error";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
+  import debounce from "lodash/debounce";
 
-  export let drafts: WorkHoursDrafts;
-  export let calendar: Calendar = $selectedCalendar ?? appGlobal.calendars.first;
-  export let isCalendarFixed = false;
+  export let account: Calendar;
 
-  const calendars = appGlobal.calendars;
-  const times = new WorkTimeOptions();
-  const weekdays = WorkTimeOptions.weekdays();
+  const kWeekdays = [1, 2, 3, 4, 5, 6, 0];
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
+  const startTimes = TimeOptions.startTimes(today);
+  const endTimes = [ ...startTimes.slice(1), { time: timeOf(kMinutesPerDay), label: TimeOptions.timeLabel(timeOf(kMinutesPerDay)) } ];
 
-  $: workHours = calendar && $calendar ? drafts.draftOf($calendar) : null;
-  $: readOnly = !!calendar && $calendar.isOtherPersonsCalendar;
-  $: zoneChoices = [
+  $: workHours = $account.workHours;
+  $: readOnly = $account.isOtherPersonsCalendar;
+  $: timezones = [
     { value: "", label: $t`Time zone of this computer (${ZoneClock.systemZone})` },
     ...TimeZoneChoice.all(undefined, [ workHours?.timezone ]).map(choice => ({ value: choice.zone, label: choice.label })),
   ];
+
+  function weekdayName(weekday: number): string {
+    // 2024-01-07 is a Sunday
+    return new Date(Date.UTC(2024, 0, 7 + weekday))
+      .toLocaleDateString(getDateTimeLocale(), { weekday: "long", timeZone: "UTC" });
+  }
+
+  function timeOf(minutes: number): Date {
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, minutes);
+  }
+
+  function minutesOf(time: Date): number {
+    return time.toDateString() == today.toDateString()
+      ? time.getHours() * 60 + time.getMinutes()
+      : kMinutesPerDay;
+  }
+
+  function onWorkDayChanged(weekday: number, isWorkDay: boolean) {
+    workHours.days[weekday].isWorkDay = isWorkDay;
+    save();
+  }
+
+  function onStartChanged(weekday: number, time: Date) {
+    workHours.days[weekday].startMinutes = minutesOf(time);
+    save();
+  }
+
+  function onEndChanged(weekday: number, time: Date) {
+    workHours.days[weekday].endMinutes = minutesOf(time) || kMinutesPerDay;
+    save();
+  }
+
+  function onTimezoneChanged(timezone: string) {
+    workHours.timezone = timezone || null;
+    save();
+  }
+
+  const save = debounce(() => catchErrors(() => account.saveWorkHours()), 1000);
 </script>
 
 <style>
-  .work-time {
+  .days {
     grid-template-columns: 184px max-content max-content max-content minmax(0, 1fr);
     align-items: center;
     gap: 6px 10px;
   }
-  .work-time > :global(.lo-checkbox) {
+  .days > :global(.lo-checkbox) {
     grid-column: 1;
-    padding-inline-start: 24px;
   }
   .first {
     grid-column: 1;
@@ -86,11 +123,10 @@
     grid-column: 2 / -1;
     max-width: 420px;
   }
-  .all {
-    grid-column: 1 / -1;
+  .until {
+    color: var(--lo-fg-secondary);
   }
   .note {
-    margin-block-start: 4px;
     color: var(--lo-fg-secondary);
   }
   .disabled {
