@@ -21,14 +21,13 @@
 
   export let sizeMin: number | null;
   export let sizeMax: number | null;
-  export let onOK: (sizeMin: number | null, sizeMax: number | null) => void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ choose: { sizeMin: number | null, sizeMax: number | null }, close: void }>();
 
   let atLeast: number | null = RuleItems.kilobytes(sizeMin);
   let atMost: number | null = RuleItems.kilobytes(sizeMax);
 
   function onSubmit() {
-    onOK(atLeast ? atLeast * 1024 : null, atMost ? atMost * 1024 : null);
+    dispatch("choose", { sizeMin: atLeast ? atLeast * 1024 : null, sizeMax: atMost ? atMost * 1024 : null });
   }
 
   function onClose() {

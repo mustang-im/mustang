@@ -40,13 +40,13 @@
     onPick={person => { values.person = person; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Categorized}
   <ColorCategoriesDialog isChooseMode chosen={values.tags}
-    onChosen={tags => { values.tags = tags; }} on:close={closeChooser} />
+    on:choose={event => { values.tags = event.detail; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Large}
   <MessageSizeDialog sizeMin={values.sizeMin} sizeMax={values.sizeMax}
-    onOK={(sizeMin, sizeMax) => { values.sizeMin = sizeMin; values.sizeMax = sizeMax; }} on:close={closeChooser} />
+    on:choose={event => { values.sizeMin = event.detail.sizeMin; values.sizeMax = event.detail.sizeMax; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Words}
   <SearchTextDialog text={values.words}
-    onOK={words => { values.words = words; }} on:close={closeChooser} />
+    on:choose={event => { values.words = event.detail; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Custom}
   <CustomizeSearchFolderDialog title={$t`Custom Search Folder`}
     name={values.customName ?? ""} search={values.customSearch ?? newSearchEMail()}

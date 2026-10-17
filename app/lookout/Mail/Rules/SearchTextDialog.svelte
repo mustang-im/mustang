@@ -29,8 +29,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let text: string | null;
-  export let onOK: (text: string | null) => void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ choose: string | null, close: void }>();
 
   let phrase = text ?? "";
   let typed = "";
@@ -57,7 +56,7 @@
   }
 
   function onSubmit() {
-    onOK(phrase || typed.trim() || null);
+    dispatch("choose", phrase || typed.trim() || null);
   }
 
   function onClose() {

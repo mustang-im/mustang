@@ -9,13 +9,12 @@
   import { t } from "../../../l10n/l10n";
 
   export let person: Person | null;
-  export let onOK: (person: Person | null) => void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ choose: Person | null, close: void }>();
 
   const picks = new ArrayColl<PersonUID>(person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : []);
 
   function onPicked() {
-    onOK(picks.first?.findPerson() ?? null);
+    dispatch("choose", picks.first?.findPerson() ?? null);
   }
 
   function onClose() {

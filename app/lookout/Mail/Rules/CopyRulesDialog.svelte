@@ -18,8 +18,7 @@
   import { gt, t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
-  export let onCopy: (account: MailAccount) => void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ copy: MailAccount, close: void }>();
 
   const accounts = appGlobal.emailAccounts;
   let target: MailAccount = rule.account;
@@ -33,7 +32,7 @@
   }
 
   function onOK() {
-    onCopy(target);
+    dispatch("copy", target);
   }
 
   function onClose() {

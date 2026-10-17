@@ -70,10 +70,10 @@
     on:close={() => folderAction = null} />
 {/if}
 {#if pickerItem && selected}
-  <RuleValuePicker rule={selected} item={pickerItem} onDone={onPickerDone} />
+  <RuleValuePicker rule={selected} item={pickerItem} on:change={changed} on:close={() => pickerItem = null} />
 {/if}
 {#if isCopying && selected}
-  <CopyRulesDialog rule={selected} onCopy={onCopyTo} on:close={() => isCopying = false} />
+  <CopyRulesDialog rule={selected} on:copy={event => onCopyTo(event.detail)} on:close={() => isCopying = false} />
 {/if}
 {#if deleting}
   <RuleMessageBox title={$t`Rules and Alerts`} isQuestion
@@ -202,13 +202,6 @@
 
   function onValueClick(item: RuleItem) {
     pickerItem = item;
-  }
-
-  function onPickerDone(isValueChanged: boolean) {
-    pickerItem = null;
-    if (isValueChanged) {
-      changed();
-    }
   }
 
   function onCopyTo(target: MailAccount) {

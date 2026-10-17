@@ -1,27 +1,27 @@
 {#if item.picker == RulePicker.Person}
   <RuleAddressDialog person={rule.criteria.includesPerson}
-    onOK={person => apply(() => rule.criteria.includesPerson = person)}
+    on:choose={event => apply(() => rule.criteria.includesPerson = event.detail)}
     on:close={onClose} />
 {:else if item.picker == RulePicker.Words}
   <SearchTextDialog text={rule.criteria.bodyText}
-    onOK={text => apply(() => rule.criteria.bodyText = text)}
+    on:choose={event => apply(() => rule.criteria.bodyText = event.detail)}
     on:close={onClose} />
 {:else if item.picker == RulePicker.Category}
   <ColorCategoriesDialog isChooseMode chosen={item.isAction ? rule.addTags : rule.criteria.tags}
-    onChosen={tags => apply(() => (item.isAction ? rule.addTags : rule.criteria.tags).replaceAll(tags))}
+    on:choose={event => apply(() => (item.isAction ? rule.addTags : rule.criteria.tags).replaceAll(event.detail))}
     on:close={onClose} />
 {:else if item.picker == RulePicker.Size}
   <MessageSizeDialog sizeMin={rule.criteria.sizeMin} sizeMax={rule.criteria.sizeMax}
-    onOK={(sizeMin, sizeMax) => apply(() => {
-      rule.criteria.sizeMin = sizeMin;
-      rule.criteria.sizeMax = sizeMax;
+    on:choose={event => apply(() => {
+      rule.criteria.sizeMin = event.detail.sizeMin;
+      rule.criteria.sizeMax = event.detail.sizeMax;
     })}
     on:close={onClose} />
 {:else if item.picker == RulePicker.Date}
   <ReceivedDateDialog sentDateMin={rule.criteria.sentDateMin} sentDateMax={rule.criteria.sentDateMax}
-    onOK={(sentDateMin, sentDateMax) => apply(() => {
-      rule.criteria.sentDateMin = sentDateMin;
-      rule.criteria.sentDateMax = sentDateMax;
+    on:choose={event => apply(() => {
+      rule.criteria.sentDateMin = event.detail.sentDateMin;
+      rule.criteria.sentDateMax = event.detail.sentDateMax;
     })}
     on:close={onClose} />
 {:else if item.picker == RulePicker.Folder}
@@ -41,10 +41,11 @@
   import MessageSizeDialog from "./MessageSizeDialog.svelte";
   import ReceivedDateDialog from "./ReceivedDateDialog.svelte";
   import RuleFolderDialog from "./RuleFolderDialog.svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let rule: FilterRuleAction;
   export let item: RuleItem;
-  export let onDone: (changed: boolean) => void;
+  const dispatch = createEventDispatcher<{ change: void, close: void }>();
 
   let changed = false;
 
@@ -63,6 +64,9 @@
   }
 
   function onClose() {
-    onDone(changed);
+    if (changed) {
+      dispatch("change");
+    }
+    dispatch("close");
   }
 </script>

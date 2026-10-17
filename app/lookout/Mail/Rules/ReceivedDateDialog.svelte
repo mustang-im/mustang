@@ -20,8 +20,7 @@
 
   export let sentDateMin: Date | null;
   export let sentDateMax: Date | null;
-  export let onOK: (sentDateMin: Date | null, sentDateMax: Date | null) => void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ choose: { sentDateMin: Date | null, sentDateMax: Date | null }, close: void }>();
 
   let after: Date | null = RuleItems.afterDay(sentDateMin);
   let before: Date | null = RuleItems.beforeDay(sentDateMax);
@@ -29,9 +28,10 @@
   let hasBefore = !!before;
 
   function onSubmit() {
-    onOK(
-      hasAfter ? RuleItems.sentDateMin(after) : null,
-      hasBefore ? RuleItems.sentDateMax(before) : null);
+    dispatch("choose", {
+      sentDateMin: hasAfter ? RuleItems.sentDateMin(after) : null,
+      sentDateMax: hasBefore ? RuleItems.sentDateMax(before) : null,
+    });
   }
 
   function onClose() {

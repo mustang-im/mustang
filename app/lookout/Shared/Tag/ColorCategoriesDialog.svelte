@@ -65,8 +65,7 @@
   export let items: TaggableObject[] = [];
   export let isChooseMode = false;
   export let chosen: Iterable<Tag> = [];
-  export let onChosen: (tags: Tag[]) => void = null;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ choose: Tag[], close: void }>();
 
   $: tags = derived($availableTags.contents, () => availableTags.contents);
   let choice = new CategoryChoice(items, chosen);
@@ -114,7 +113,7 @@
 
   async function onSubmit() {
     if (isChooseMode) {
-      onChosen?.(choice.chosenTags);
+      dispatch("choose", choice.chosenTags);
     } else {
       await choice.applyToItems();
     }

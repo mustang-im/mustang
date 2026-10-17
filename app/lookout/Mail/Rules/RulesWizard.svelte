@@ -64,7 +64,7 @@
   </svelte:fragment>
 </Dialog>
 {#if pickerItem}
-  <RuleValuePicker rule={model.rule} item={pickerItem} onDone={onPickerDone} />
+  <RuleValuePicker rule={model.rule} item={pickerItem} on:change={onPickerChange} on:close={onPickerClose} />
 {/if}
 {#if question}
   <RuleMessageBox title={$t`Rules Wizard`} message={question.text} isQuestion onAnswer={question.answer} />
@@ -141,10 +141,11 @@
     pickerItem = item;
   }
 
-  function onPickerDone(changed: boolean) {
-    if (changed) {
-      model.valueChanged(pickerItem);
-    }
+  function onPickerChange() {
+    model.valueChanged(pickerItem);
+  }
+
+  function onPickerClose() {
     pickerItem = null;
     refresh();
   }
