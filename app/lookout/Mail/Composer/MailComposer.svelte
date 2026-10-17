@@ -102,7 +102,7 @@
           {#if loading}
             <hbox class="loading"><Spinner size="32px" /></hbox>
           {/if}
-          <SMLComposer {mail} {sml} onRemove={() => setSML(null)} />
+          <SMLComposer bind:mail />
           <vbox flex class="editor" spellcheck={$spellcheck.value}>
             <!-- The html in the mail passed in MUST already be sanitized HTML.
             Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->

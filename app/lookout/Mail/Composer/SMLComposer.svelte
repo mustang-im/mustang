@@ -24,7 +24,6 @@
 {/if}
 
 <script lang="ts">
-  import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { EMail } from "../../../logic/Mail/EMail";
   import PollIcon from "lucide-svelte/icons/list-checks";
   import SchedulingPollIcon from "lucide-svelte/icons/calendar-clock";
@@ -40,8 +39,11 @@
   import { gt, t } from "../../../l10n/l10n";
 
   export let mail: EMail;
-  export let sml: SMLData;
-  export let onRemove: () => void;
+
+  $: sml = mail.sml;
+  function onRemove() {
+    mail.sml = null;
+  }
 
   let preview = false;
   $: type = sml?.type ?? sml?.sml?.["@type"];
