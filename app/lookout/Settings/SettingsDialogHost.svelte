@@ -1,6 +1,6 @@
-{#if $dialog?.kind == "options" || $dialog?.kind == "account-settings" || $dialog?.kind == "change-account"}
+{#if $dialog?.kind == "options" || $dialog?.kind == "account"}
   {#key $dialog}
-    <SettingsApp selection={OptionsNavigation.selectionFor($dialog)} on:close={onClose} />
+    <SettingsApp categoryID={$dialog.categoryID} account={$dialog.account} showOnlyAccount={$dialog.kind == "account"} on:close={onClose} />
   {/key}
 {:else if $dialog?.kind == "trust-center"}
   <TrustCenterDialog page={$dialog.page} identity={$dialog.identity} on:close={onClose} />
@@ -18,7 +18,6 @@
   import { SettingsDialogs } from "./SettingsDialogs";
   import SettingsApp from "./Window/SettingsApp.svelte";
   import TrustCenterDialog from "./TrustCenter/TrustCenterDialog.svelte";
-  import { OptionsNavigation } from "./Window/OptionsNavigation";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
   import NewFolderAccountDialog from "../Setup/NewFolderAccountDialog.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";

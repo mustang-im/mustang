@@ -1,16 +1,25 @@
-<OptionsPage icon={icon} description={$t`Change the settings of ${$account.name}.`}>
-  <OptionsSection title={draft.isMailAccount ? $t`User Information` : $t`Account`}>
-    <OptionsRow icon={UserIcon}>
+<OptionsPage {icon} description={$t`Change the settings of ${$account.name}.`}>
+  <OptionsSection title={$t`Account`}>
+    <OptionsRow icon={AccountIcon}>
       <grid class="fields">
         <label for="account-name">{$t`Account name:`}</label>
-        <input id="account-name" class="lo-text-field" type="text" bind:value={draft.name} required />
-        {#if draft.isMailAccount}
-          <label for="account-realname">{$t`Your Name:`}</label>
-          <input id="account-realname" class="lo-text-field" type="text" bind:value={draft.realname} />
-          <label for="account-email">{$t`Email Address:`}</label>
-          <input id="account-email" class="lo-text-field" type="email" bind:value={draft.emailAddress} required />
+        <hbox class="name-row">
+          <input id="account-name" class="lo-text-field" type="text" bind:value={account.name} on:input={onChange} required />
+          <input type="color" class="color" bind:value={account.color} on:change={onChange} list="proposed-colors"
+            title={$t`Color`} aria-label={$t`Color`} />
+        </hbox>
+        {#if account instanceof MailAccount || account instanceof ChatAccount || account instanceof MeetAccount}
+          <label for="account-realname" title={$t`Your real name, as shown to other people when you are sending messages`}>{$t`Your name:`}</label>
+          <input id="account-realname" class="lo-text-field" type="text" bind:value={account.realname} on:input={onChange}
+            title={$t`Your real name, as shown to other people when you are sending messages`} />
         {/if}
-        <span>{$t`Account Type:`}</span>
+        <label for="account-workspace">{$t`Workspace:`}</label>
+        <select id="account-workspace" class="lo-text-field" bind:value={account.workspace} on:change={onChange}>
+          {#each $workspaces.each as workspace}
+            <option value={workspace}>{workspace.name}</option>
+          {/each}
+        </select>
+        <span>{$t`Account type:`}</span>
         <span class="value">{AccountLabels.typeLabel(account)}</span>
       </grid>
     </OptionsRow>
@@ -21,11 +30,17 @@
       <OptionsRow icon={MainAccountIcon}>
         <span>{$t`This is part of the account ${$mainAccount.name}, which has the server and logon settings.`}</span>
         <hbox>
-          <DialogButton label={$t`Go to ${$mainAccount.name}`} onClick={() => onOpenAccount(mainAccount)} />
+          <DialogButton label={$t`Go to ${$mainAccount.name}`} onClick={onOpenMainAccount} />
         </hbox>
       </OptionsRow>
     </OptionsSection>
   {/if}
+
+  <vbox class="extra-settings">
+    {#each $extraSettings.each as category}
+      <svelte:component this={category.windowContent} {account} />
+    {/each}
+  </vbox>
 
   <OptionsSection title={$t`Remove account`}>
     <OptionsRow icon={RemoveIcon}>
@@ -37,35 +52,64 @@
   </OptionsSection>
 </OptionsPage>
 
+<!-- <copied from="../../frontend/Settings/AccountGeneral.svelte"> -->
+<datalist id="proposed-colors">
+  {#each accountColors as color}
+    <option value={color}></option>
+  {/each}
+</datalist>
+<!-- </copied> -->
+
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import type { AccountDraft } from "./Mail/Account/AccountDraft";
+  import { accountSettings, settingsCategories } from "./SettingsCategories";
+  import { selectedCategory, selectedAccount as selectedSettingsAccount } from "./Window/selected";
+  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
+  import { getAccountIcon } from "../../frontend/Settings/Shared/accountUIHelper";
   import { AccountLabels } from "./Shared/AccountLabels";
   import { MessageBox } from "../Shared/Dialog/MessageBox";
+  import { accountColors } from "../../logic/Abstract/Workspace";
+  import { MailAccount } from "../../logic/Mail/MailAccount";
+  import { ChatAccount } from "../../logic/Chat/ChatAccount";
+  import { MeetAccount } from "../../logic/Meet/MeetAccount";
   import { appGlobal } from "../../logic/app";
   import { appName } from "../../logic/build";
-  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
+  import { catchErrors } from "../../frontend/Util/error";
   import OptionsPage from "./Shared/OptionsPage.svelte";
   import OptionsSection from "./Shared/OptionsSection.svelte";
   import OptionsRow from "./Shared/OptionsRow.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
-  import UserIcon from "lucide-svelte/icons/id-card";
+  import AccountIcon from "lucide-svelte/icons/id-card";
   import MainAccountIcon from "lucide-svelte/icons/link";
   import RemoveIcon from "lucide-svelte/icons/user-x";
+  import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
 
   export let account: Account;
-  export let draft: AccountDraft;
-  export let icon: ConstructorOfATypedSvelteComponent;
-  export let onOpenAccount: (account: Account) => void;
-  export let onRemoved: (account: Account) => void;
 
+  const workspaces = appGlobal.workspaces;
+
+  $: icon = getAccountIcon(account) as ConstructorOfATypedSvelteComponent;
   $: mainAccount = $account.isDependentAccount ? $account.mainAccount : null;
+  $: extraSettings = accountSettings.filterObservable(cat => account instanceof cat.type && cat.isMain && cat.id != "acc-general");
+
+  // <copied from="../../frontend/Settings/AccountGeneral.svelte">
+  const onChange = debounce(() => catchErrors(onSave), 500);
+  async function onSave() {
+    await account.save();
+  }
+  // </copied>
+
+  function onOpenMainAccount() {
+    $selectedSettingsAccount = mainAccount;
+    $selectedCategory = accountSettings.find(cat => mainAccount instanceof cat.type && cat.isMain);
+  }
 
   async function onRemove() {
     if (!await MessageBox.ask($t`Remove account`, $t`Are you sure that you want to remove the account ${account.name} from ${appName}? All its content on this computer will be deleted. Content stored on the server will not be affected.`)) {
       return;
     }
+    let appCategory = settingsCategories.find(cat => cat.accounts.contains(account));
     await account.deleteIt();
     if ($selectedAccount == account) {
       $selectedAccount = appGlobal.emailAccounts.first;
@@ -73,7 +117,8 @@
       $selectedMessage = null;
       $selectedMessages?.clear();
     }
-    onRemoved(account);
+    $selectedSettingsAccount = null;
+    $selectedCategory = appCategory ?? settingsCategories.first;
   }
 </script>
 
@@ -83,7 +128,26 @@
     align-items: center;
     gap: 8px 12px;
   }
+  .name-row {
+    align-items: center;
+    gap: 8px;
+  }
+  .name-row input[type="text"] {
+    flex: 1;
+    min-width: 0;
+  }
+  .color {
+    width: 32px;
+    height: 28px;
+    padding: 2px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background: none;
+  }
   .value {
     color: var(--lo-fg-secondary);
+  }
+  .extra-settings {
+    gap: 8px;
   }
 </style>

@@ -8,18 +8,13 @@ import { openApp, selectedApp } from "../../frontend/AppsBar/selectedApp";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { get, writable } from "svelte/store";
 
-export type OptionsCategory = "general" | "mail" | "calendar" | "people" | "language" | "advanced" | "trust-center";
-export type AccountSettingsTab = "email" | "calendars" | "addressbooks";
-export type ChangeAccountPage = "general" | "server";
-export type AccountPage = ChangeAccountPage | "identities" | "work-hours";
 export type TrustCenterPage = "email-security";
 export type ImportExportAction = "export" | "import-vcard" | "import-ical" | "import-program";
 
 export type SettingsDialog =
-  { kind: "options", category: OptionsCategory } |
+  { kind: "options", categoryID?: string, account?: Account } |
+  { kind: "account", account: Account, categoryID?: string } |
   { kind: "trust-center", page: TrustCenterPage, identity?: MailIdentity } |
-  { kind: "account-settings", tab: AccountSettingsTab, account?: Account } |
-  { kind: "change-account", account: Account, page: AccountPage } |
   { kind: "import-export", preselected?: Calendar | Addressbook, action?: ImportExportAction } |
   { kind: "new-folder-account", folderKind: FolderAccountKind, localOnly?: boolean };
 
@@ -30,12 +25,12 @@ export class SettingsDialogs {
     SettingsDialogs.current.set(dialog);
   }
 
-  static openOptions(category: OptionsCategory = "general") {
-    SettingsDialogs.open({ kind: "options", category });
+  static openOptions(categoryID = "global") {
+    SettingsDialogs.open({ kind: "options", categoryID });
   }
 
-  static openAccount(account: Account, page: AccountPage = "general") {
-    SettingsDialogs.open({ kind: "change-account", account, page });
+  static openAccount(account: Account, categoryID = "acc-general") {
+    SettingsDialogs.open({ kind: "account", account, categoryID });
   }
 
   static openTrustCenter(page: TrustCenterPage = "email-security", identity: MailIdentity = null) {

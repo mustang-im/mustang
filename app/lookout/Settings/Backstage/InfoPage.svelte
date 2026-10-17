@@ -22,7 +22,7 @@
       description={account
         ? $t`Change the settings of ${$account.name}, its server and logon information, or add and remove accounts.`
         : $t`Add and remove accounts or change existing connection settings.`}
-      onClick={() => account ? SettingsDialogs.openAccount(account) : SettingsDialogs.open({ kind: "account-settings", tab: "email" })} />
+      onClick={() => account ? SettingsDialogs.openAccount(account) : SettingsDialogs.openOptions("mail")} />
 
     <BackstageTile icon={RulesIcon} label={$t`Manage Rules & Alerts`}
       title={$t`Rules and Alerts`}

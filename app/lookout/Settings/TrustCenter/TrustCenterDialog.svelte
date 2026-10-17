@@ -17,21 +17,19 @@
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { TrustCenterPage } from "../SettingsDialogs";
-  import { OptionsModel } from "../Window/OptionsModel";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { EmailSecurityDraft } from "./EmailSecurityDraft";
   import CategoryList from "./CategoryList.svelte";
   import EmailSecurityPage from "./EmailSecurityPage.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let options: OptionsModel = null;
   export let page: TrustCenterPage = "email-security";
   export let identity: MailIdentity = null;
 
-  const isOwnOptions = !options;
-  const optionsModel = options ?? new OptionsModel();
+  const contentRenderingSetting = getLocalStorage<string>("mail.contentRendering", "html");
   const draft = new EmailSecurityDraft();
-  let readAsPlainText = optionsModel.readAsPlainText.value;
+  let readAsPlainText = contentRenderingSetting.value == "plaintext";
 
   $: pageGroups = [
     [
@@ -41,10 +39,7 @@
 
   async function onOK() {
     await draft.apply();
-    optionsModel.readAsPlainText.value = readAsPlainText;
-    if (isOwnOptions) {
-      await optionsModel.save();
-    }
+    contentRenderingSetting.value = readAsPlainText ? "plaintext" : "html";
   }
 </script>
 

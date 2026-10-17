@@ -8,11 +8,10 @@
 </OptionsPage>
 
 {#if isTrustCenterOpen}
-  <TrustCenterDialog {options} on:close={() => isTrustCenterOpen = false} />
+  <TrustCenterDialog on:close={() => isTrustCenterOpen = false} />
 {/if}
 
 <script lang="ts">
-  import type { OptionsModel } from "../Window/OptionsModel";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
@@ -22,8 +21,6 @@
   import TrustCenterIcon from "lucide-svelte/icons/shield-check";
   import SecurityIcon from "lucide-svelte/icons/shield";
   import { t } from "../../../l10n/l10n";
-
-  export let options: OptionsModel;
 
   let isTrustCenterOpen = false;
 </script>

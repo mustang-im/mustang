@@ -1,38 +1,63 @@
-<button class="entry account" class:open={isOpen} class:selected={isOpen && pages.length == 1}
-  role="treeitem" aria-expanded={pages.length > 1 ? isOpen : undefined} aria-selected={isOpen}
+<button class="entry account" class:selected={itemSelected} class:open={accountSelected}
+  role="treeitem" aria-selected={itemSelected} aria-expanded={$subCategories.hasItems ? accountSelected : undefined}
   title={$account.name}
-  on:click={() => selection = { category, account, accountPage: "general" }}>
+  on:click={onSelect}>
   <svelte:component this={icon} size={16} />
   <span class="name">{$account.name}</span>
 </button>
-{#if isOpen && pages.length > 1}
-  {#each pages as page (page.id)}
-    <button class="entry page" class:selected={selection.accountPage == page.id}
-      role="treeitem" aria-selected={selection.accountPage == page.id}
-      on:click={() => selection = { category, account, accountPage: page.id }}>
-      {page.label}
-    </button>
-  {/each}
+{#if accountSelected}
+  <vbox class="account-pages">
+    <SubCategoriesList {subCategories} mainCategory={category} />
+  </vbox>
 {/if}
 
 <script lang="ts">
   import type { Account } from "../../../logic/Abstract/Account";
-  import type { OptionsCategory } from "../SettingsDialogs";
-  import { OptionsNavigation, type OptionsSelection } from "./OptionsNavigation";
+  import type { SettingsCategory } from "../../../frontend/Settings/SettingsCategory";
+  import { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { accountSettings } from "../SettingsCategories";
+  import { selectedCategory, selectedAccount } from "./selected";
+  import { getAccountIcon } from "../../../frontend/Settings/Shared/accountUIHelper";
+  import SubCategoriesList from "./SubCategoriesList.svelte";
 
   export let account: Account;
-  export let category: OptionsCategory;
-  export let icon: ConstructorOfATypedSvelteComponent;
-  export let selection: OptionsSelection;
+  export let category: SettingsCategory;
 
-  $: isOpen = selection.account == account;
-  $: pages = OptionsNavigation.pagesOf($account);
+  $: icon = getAccountIcon(account) as ConstructorOfATypedSvelteComponent;
+  $: accountSelected = account == $selectedAccount;
+  $: itemSelected = accountSelected && $selectedCategory == mainAccountCategory;
+  $: mainAccountCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);
+  $: subCategories = accountSettings.filterObservable(cat => account instanceof cat.type && !cat.isMain && showCat(cat, account));
+
+  // <copied from="../../../frontend/Settings/Window/AccountItem.svelte">
+  function showCat(category: SettingsCategory, account: Account): boolean {
+    if (category.id == "mail-sharing" && account instanceof MailAccount) {
+      return account.canShareWithPersons();
+    }
+    return true;
+  }
+  // </copied>
+
+  function onSelect() {
+    $selectedAccount = account;
+    $selectedCategory = mainAccountCategory;
+  }
 </script>
 
 <style>
+  .entry.account {
+    height: 30px;
+    padding-inline-start: 24px;
+  }
+  .entry.account.open {
+    font-weight: 600;
+  }
   .name {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+  .account-pages {
+    flex-shrink: 0;
   }
 </style>

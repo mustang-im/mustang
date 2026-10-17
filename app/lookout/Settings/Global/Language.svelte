@@ -4,57 +4,71 @@
       <hbox class="field-row">
         <label for="options-display-language" class="field-label">{$t`Display language:`}</label>
         <ComboBox options={[ { value: "", label: $t`Use system setting` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
-          bind:value={options.displayLanguage.value} label={$t`Display language`} width="240px" />
+          bind:value={language} onChange={newLanguage => { dateTimeFormat = newLanguage; }} label={$t`Display language`} width="240px" />
+        {#if language != getUILocalePref()}
+          <DialogButton label={$t`Save and restart`} icon={RestartIcon} onClick={onSaveLanguage} />
+        {/if}
       </hbox>
-      {#if options.displayLanguage.isChanged}
-        <hbox class="hint restart">{$t`${appName} restarts when you click OK, so that the new display language can take effect.`}</hbox>
-      {/if}
     </OptionsRow>
   </OptionsSection>
-
   <OptionsSection title={$t`Date and time format`}>
     <OptionsRow icon={DateFormatIcon}>
       <hbox class="field-row">
         <label for="options-date-format" class="field-label">{$t`Format:`}</label>
         <ComboBox options={[ { value: "", label: $t`Same as the display language` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
-          bind:value={options.dateTimeFormat.value} label={$t`Format`} width="240px" />
+          bind:value={dateTimeFormat} onChange={newFormat => { dateTimeFormat = newFormat; onSaveDateTimeFormat(); }} label={$t`Format`} width="240px" />
       </hbox>
       <grid class="samples">
         <span class="lo-secondary">{$t`Short date:`}</span>
-        <span>{sampleDate.toLocaleDateString(sampleLocale, { year: "numeric", month: "2-digit", day: "2-digit" })}</span>
+        <span>{sampleDate.toLocaleDateString(dateTimeFormatDisplayed, { year: "numeric", month: "2-digit", day: "2-digit" })}</span>
         <span class="lo-secondary">{$t`Long date:`}</span>
-        <span>{sampleDate.toLocaleDateString(sampleLocale, { dateStyle: "long" })}</span>
+        <span>{sampleDate.toLocaleDateString(dateTimeFormatDisplayed, { dateStyle: "long" })}</span>
         <span class="lo-secondary">{$t`Time:`}</span>
-        <span>{sampleDate.toLocaleTimeString(sampleLocale, { hour: "numeric", minute: "numeric" })}</span>
+        <span>{sampleDate.toLocaleTimeString(dateTimeFormatDisplayed, { hour: "numeric", minute: "numeric" })}</span>
       </grid>
     </OptionsRow>
   </OptionsSection>
 </OptionsPage>
 
 <script lang="ts">
+  import { appGlobal } from "../../../logic/app";
+  import { appName } from "../../../logic/build";
+  import { localeNames } from "../../../l10n/list";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import type { OptionsModel } from "../Window/OptionsModel";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
-  import { appName } from "../../../logic/build";
-  import { localeNames } from "../../../l10n/list";
   import LanguageIcon from "lucide-svelte/icons/languages";
   import DisplayLanguageIcon from "lucide-svelte/icons/monitor";
   import DateFormatIcon from "lucide-svelte/icons/calendar-clock";
-  import { t } from "../../../l10n/l10n";
-
-  export let options: OptionsModel;
+  import RestartIcon from "lucide-svelte/icons/rotate-ccw";
+  import { getUILocale, getUILocalePref, getDateTimeLocale, getDateTimeLocalePref, saveDateTimeLocale, saveUILocale, setUILocale, t } from "../../../l10n/l10n";
 
   const languages = Object.keys(localeNames);
+
+  // <copied from="../../../frontend/Settings/Global/Appearance.svelte">
+  let language = getUILocalePref();
+  let dateTimeFormat = getDateTimeLocalePref();
+  let dateTimeFormatDisplayed = getDateTimeLocale();
+
   const sampleDate = new Date(new Date().getFullYear() + 1, 0, 20, 13, 0, 0);
-  $: sampleLocale = options.dateTimeFormat.value || options.displayLanguage.value || navigator.language;
+
+  async function onSaveLanguage() {
+    saveUILocale(language);
+    setUILocale(getUILocale());
+    onSaveDateTimeFormat();
+    await appGlobal.remoteApp.restartApp(); // unfortunately needed for the strings in ts modules
+  }
+
+  function onSaveDateTimeFormat() {
+    saveDateTimeLocale(dateTimeFormat);
+    dateTimeFormatDisplayed = getDateTimeLocale();
+  }
+  // </copied>
 </script>
 
 <style>
-  .restart {
-    color: var(--lo-warning);
-  }
   grid.samples {
     display: grid;
     grid-template-columns: 136px auto;

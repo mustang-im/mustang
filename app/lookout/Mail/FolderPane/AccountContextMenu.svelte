@@ -13,7 +13,7 @@
   onClick={() => MessageActions.openRules(account)} />
 <MenuDivider />
 <MenuItem label={$t`Account Properties…`} icon={SettingsIcon}
-  onClick={() => SettingsDialogs.open({ kind: "change-account", account, page: "general" })} />
+  onClick={() => SettingsDialogs.openAccount(account)} />
 {#if account.mainAccount}
   <MenuItem label={$t`Close "${$account.name}"`} icon={CloseIcon}
     tooltip={$t`Remove your colleague's shared folders from the folder pane`}
