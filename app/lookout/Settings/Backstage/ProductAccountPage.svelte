@@ -1,19 +1,24 @@
 <vbox class="account-page">
-  <h1>{$t`${appName} Account`}</h1>
+  <h1>{appName}</h1>
   <hbox class="columns">
     <vbox class="column">
       <h2>{$t`User Information`}</h2>
       {#if mainAccount}
         <hbox class="user">
-          <PersonCircle name={mainAccount.realname || mainAccount.emailAddress} colorKey={mainAccount.emailAddress} size={48} />
+          <PersonCircle name={$mainAccount.realname || $mainAccount.name} colorKey={$mainAccount.emailAddress} size={48} />
           <vbox class="user-text">
-            <span class="user-name">{mainAccount.realname || mainAccount.name}</span>
-            <span class="lo-secondary">{mainAccount.emailAddress}</span>
+            <label for="backstage-realname" class="lo-secondary">{$t`Your name:`}</label>
+            <input id="backstage-realname" class="lo-text-field" type="text"
+              title={$t`Your real name, as shown to other people when you are sending messages`}
+              value={$mainAccount.realname ?? ""}
+              on:change={event => catchErrors(() => saveRealname(event.currentTarget.value))} />
           </vbox>
         </hbox>
       {:else}
         <span class="lo-secondary">{$t`No email account is set up yet.`}</span>
       {/if}
+      <h2>{$t`License`}</h2>
+      <LicenseSection />
       <h2>{$t`${appName} Theme`}</h2>
       <ComboBox options={themeOptions} value={$theme.value} label={$t`${appName} Theme`} width="240px"
         onChange={value => { $theme.value = value; }} />
@@ -37,6 +42,8 @@
       <BackstageTile label={$t`About ${appName}`} icon={AboutIcon}
         title={$t`About ${appName}`} description={$t`Learn more about ${appName}, its version and copyright.`}
         onClick={() => { isAboutOpen = true; }} />
+      <h2>{$t`Open-Source Licenses`}</h2>
+      <OpenSourceSection />
     </vbox>
   </hbox>
 </vbox>
@@ -54,6 +61,9 @@
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import BackstageTile from "./BackstageTile.svelte";
   import AboutDialog from "./AboutDialog.svelte";
+  import LicenseSection from "./LicenseSection.svelte";
+  import OpenSourceSection from "./OpenSourceSection.svelte";
+  import { catchErrors } from "../../../frontend/Util/error";
   import logo from "../../../frontend/asset/icon/general/logo.svg?raw";
   import UpdateIcon from "lucide-svelte/icons/refresh-cw";
   import InstallIcon from "lucide-svelte/icons/download";
@@ -73,6 +83,11 @@
     { value: "light", label: $t`Light` },
     { value: "dark", label: $t`Dark` },
   ];
+
+  async function saveRealname(name: string) {
+    mainAccount.realname = name.trim();
+    await mainAccount.save();
+  }
 
   async function checkForUpdate() {
     updateText = $t`Checking for updates…`;
@@ -114,10 +129,10 @@
     gap: 12px;
   }
   .user-text {
+    flex: 1 1 0;
     min-width: 0;
-  }
-  .user-name {
-    font-weight: 600;
+    max-width: 320px;
+    gap: 4px;
   }
   .product {
     align-items: center;

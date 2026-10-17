@@ -45,7 +45,7 @@
     <button class="nav-item" class:selected={$backstageState.page == "account"}
       on:click={() => backstageState.open("account")}>
       <AccountIcon size="18" />
-      <hbox class="label">{$t`${appName} Account`}</hbox>
+      <hbox class="label">{appName}</hbox>
     </button>
     <button class="nav-item" on:click={() => SettingsDialogs.openOptions()}>
       <OptionsIcon size="18" />
