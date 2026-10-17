@@ -89,7 +89,7 @@
 
   const workspaces = appGlobal.workspaces;
 
-  $: icon = getAccountIcon(account) as ConstructorOfATypedSvelteComponent;
+  $: icon = getAccountIcon(account);
   $: mainAccount = $account.isDependentAccount ? $account.mainAccount : null;
   $: extraSettings = accountSettings.filterObservable(cat => account instanceof cat.type && cat.isMain && cat.id != "acc-general");
 

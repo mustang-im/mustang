@@ -3,9 +3,6 @@
     <AccountItem {account} category={null} />
   {:else}
     {#each $categories.each as category (category.id)}
-      {#if category.id == "trust-center"}
-        <hbox class="separator" />
-      {/if}
       <CategoryItem {category} />
     {/each}
   {/if}
@@ -71,10 +68,5 @@
   .settings-categories-pane :global(.entry svg) {
     flex-shrink: 0;
     color: var(--lo-accent-text);
-  }
-  .separator {
-    flex-shrink: 0;
-    margin: 6px 8px;
-    border-block-start: 1px solid var(--lo-divider);
   }
 </style>

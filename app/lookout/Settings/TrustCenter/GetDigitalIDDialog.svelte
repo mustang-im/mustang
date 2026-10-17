@@ -16,7 +16,7 @@
       <GroupBox label={$t`Certificate request`}>
         <vbox class="request">
           <CertificateRequestFields {request} />
-          <span class="hint">{$t`The key is created on this computer, and the certificate request is saved as a .csr file. Send it to a certificate authority, e.g. your organization. When you get the certificate, add it with Settings… > Add Certificate…, or import the .p12 or .pfx file with Import/Export.`}</span>
+          <span class="hint">{$t`The key is created on this computer, and the certificate request is saved as a .csr file. Send it to a certificate authority, e.g. your organization. When you get the certificate, add it in the Trust Center with Add Certificate…, or import the .p12 or .pfx file with Import/Export.`}</span>
         </vbox>
       </GroupBox>
     {/if}

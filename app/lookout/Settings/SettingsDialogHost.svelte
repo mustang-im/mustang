@@ -2,8 +2,6 @@
   {#key $dialog}
     <SettingsApp categoryID={$dialog.categoryID} account={$dialog.account} showOnlyAccount={$dialog.kind == "account"} on:close={onClose} />
   {/key}
-{:else if $dialog?.kind == "trust-center"}
-  <TrustCenterDialog page={$dialog.page} identity={$dialog.identity} on:close={onClose} />
 {:else if $dialog?.kind == "import-export"}
   {#key $dialog}
     <ImportExportWizard preselected={$dialog.preselected} action={$dialog.action} on:close={onClose} />
@@ -17,7 +15,6 @@
 <script lang="ts">
   import { SettingsDialogs } from "./SettingsDialogs";
   import SettingsApp from "./Window/SettingsApp.svelte";
-  import TrustCenterDialog from "./TrustCenter/TrustCenterDialog.svelte";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
   import NewFolderAccountDialog from "../Setup/NewFolderAccountDialog.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";

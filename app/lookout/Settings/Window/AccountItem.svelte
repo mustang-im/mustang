@@ -2,7 +2,7 @@
   role="treeitem" aria-selected={itemSelected} aria-expanded={$subCategories.hasItems ? accountSelected : undefined}
   title={$account.name}
   on:click={onSelect}>
-  <svelte:component this={icon} size={16} />
+  <AppIcon icon={getAccountIcon(account)} size="16px" />
   <span class="name">{$account.name}</span>
 </button>
 {#if accountSelected}
@@ -19,11 +19,11 @@
   import { selectedCategory, selectedAccount } from "./selected";
   import { getAccountIcon } from "../../../frontend/Settings/Shared/accountUIHelper";
   import SubCategoriesList from "./SubCategoriesList.svelte";
+  import AppIcon from "../../../frontend/AppsBar/AppIcon.svelte";
 
   export let account: Account;
   export let category: SettingsCategory;
 
-  $: icon = getAccountIcon(account) as ConstructorOfATypedSvelteComponent;
   $: accountSelected = account == $selectedAccount;
   $: itemSelected = accountSelected && $selectedCategory == mainAccountCategory;
   $: mainAccountCategory = accountSettings.find(cat => account instanceof cat.type && cat.isMain);

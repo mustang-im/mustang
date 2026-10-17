@@ -38,6 +38,23 @@ export class DigitalIDs {
     return identity.realname ? `${identity.realname} (${identity.emailAddress})` : identity.emailAddress;
   }
 
+  static async setDefault(identity: MailIdentity, key: DigitalID, encrypt: boolean, sign: boolean) {
+    let keys = identity.encryptionPrivateKeys;
+    for (let otherKey of keys) {
+      if (otherKey != key) {
+        otherKey.encryptByDefault = false;
+        otherKey.useToSign = false;
+      }
+    }
+    key.encryptByDefault = encrypt;
+    key.useToSign = sign || encrypt;
+    // `getMyPrivateKey()` falls back to the first key, when no key is used to sign
+    if (keys.first != key) {
+      keys.replaceAll([key, ...keys.contents.filter(listed => listed != key)]);
+    }
+    await identity.account.save();
+  }
+
   static async importFile(identity: MailIdentity, file: File, passphrase: string, name: string): Promise<DigitalID> {
     // <copied from="../../../frontend/Settings/Mail/Account/EncryptionImport.svelte" onImportFile()>
     let fileContent = await readKeyFile(file, passphrase);

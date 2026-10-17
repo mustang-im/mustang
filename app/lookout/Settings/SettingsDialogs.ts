@@ -3,6 +3,7 @@ import type { Addressbook } from "../../logic/Contacts/Addressbook";
 import type { Calendar } from "../../logic/Calendar/Calendar";
 import type { MailIdentity } from "../../logic/Mail/MailIdentity";
 import type { FolderAccountKind } from "../Setup/NewFolderAccountFlow";
+import { selectedIdentity } from "./TrustCenter/selected";
 import { SetupMustangApp } from "../../frontend/Setup/SetupMustangApp";
 import { openApp, selectedApp } from "../../frontend/AppsBar/selectedApp";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
@@ -14,7 +15,6 @@ export type ImportExportAction = "export" | "import-vcard" | "import-ical" | "im
 export type SettingsDialog =
   { kind: "options", categoryID?: string, account?: Account } |
   { kind: "account", account: Account, categoryID?: string } |
-  { kind: "trust-center", page: TrustCenterPage, identity?: MailIdentity } |
   { kind: "import-export", preselected?: Calendar | Addressbook, action?: ImportExportAction } |
   { kind: "new-folder-account", folderKind: FolderAccountKind, localOnly?: boolean };
 
@@ -34,7 +34,8 @@ export class SettingsDialogs {
   }
 
   static openTrustCenter(page: TrustCenterPage = "email-security", identity: MailIdentity = null) {
-    SettingsDialogs.open({ kind: "trust-center", page, identity });
+    selectedIdentity.set(identity);
+    SettingsDialogs.openOptions("trust-center");
   }
 
   static openSetup(setupURL: string, returnTo: SettingsDialog | null = null) {
