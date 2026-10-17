@@ -8,7 +8,7 @@ import { myHarddrive } from "../../logic/Files/Harddrive/HarddriveAccount";
 import { appGlobal } from "../../logic/app";
 import GlobalAppearance from "./Global/Appearance.svelte";
 import GlobalLanguage from "./Global/Language.svelte";
-import GlobalWorkspaces from "../../frontend/Settings/Global/Workspaces.svelte";
+import GlobalWorkspaces from "./Global/Workspaces.svelte";
 import MailGeneral from "./Mail/General.svelte";
 import CalendarGeneral from "./Calendar/General.svelte";
 import ContactsGeneral from "./Contacts/General.svelte";
