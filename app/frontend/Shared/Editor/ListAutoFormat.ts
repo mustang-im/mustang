@@ -57,6 +57,9 @@ class ListLine {
     if (listBefore && ListLine.continues(listBefore, listType, attributes) && canJoin(tr.doc, lineRange.start)) {
       tr.join(lineRange.start);
     }
+    // TrailingNode's paragraph after a list at the end would come in an extra transaction,
+    // which clears the input rule's undo, so Backspace could not undo the list. It comes with the next change.
+    tr.setMeta('skipTrailingNode', true);
   }
 
   protected static nextLineBreak(doc: Node, from: number, to: number): number | null {
