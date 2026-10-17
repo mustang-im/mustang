@@ -30,9 +30,37 @@
           {$t`Unread`}
         </button>
       </hbox>
+      <hbox class="pivots quick-filters">
+        <button class="pivot icon-pivot" class:active={$quickSearch.isStarred === true} aria-pressed={$quickSearch.isStarred === true}
+          title={$t`Show only flagged messages`} aria-label={$t`Show only flagged messages`}
+          on:click={() => MailFilters.toggle(QuickFilter.Flagged)}>
+          <FlagIcon size={16} />
+        </button>
+        <button class="pivot icon-pivot" class:active={$quickSearch.hasAttachment === true} aria-pressed={$quickSearch.hasAttachment === true}
+          title={$t`Show only messages with attachments`} aria-label={$t`Show only messages with attachments`}
+          on:click={() => MailFilters.toggle(QuickFilter.Attachments)}>
+          <AttachmentIcon size={16} />
+        </button>
+        <button class="pivot icon-pivot" class:active={isFolderSearchOpen} aria-pressed={isFolderSearchOpen}
+          title={$t`Search only the currently displayed folder for a keyword`} aria-label={$t`Search only this folder`}
+          on:click={toggleFolderSearch}>
+          <SearchIcon size={16} />
+        </button>
+      </hbox>
+      {#if isFolderSearchOpen}
+        <input type="search" class="folder-search"
+          bind:value={quickSearch.bodyText}
+          placeholder={$t`Search only this folder`}
+          aria-label={$t`Search only this folder`}
+          autocomplete="off"
+          on:keydown={onFolderSearchKey}
+          use:focusOnMount />
+      {/if}
     {/if}
     {#if !isSimplified}
-    <hbox flex />
+    {#if !showsFolderSearch}
+      <hbox flex />
+    {/if}
     <button class="arrange" bind:this={arrangeEl} on:click|stopPropagation={() => isArrangeMenuOpen = !isArrangeMenuOpen}
       title={$t`Arrange By`} aria-haspopup="menu">
       {arrangeLabel}
@@ -128,6 +156,7 @@
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
+  import SearchIcon from "lucide-svelte/icons/search";
   import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
@@ -221,6 +250,25 @@
     quickSearch.isRead = unreadOnly ? false : null;
   }
 
+  let isFolderSearchOpen = !!quickSearch.bodyText;
+  $: showsFolderSearch = isFolderSearchOpen && !isSimplified && !isSearchResult;
+  function toggleFolderSearch() {
+    isFolderSearchOpen = !isFolderSearchOpen;
+    if (!isFolderSearchOpen) {
+      quickSearch.bodyText = null;
+    }
+  }
+  function onFolderSearchKey(event: KeyboardEvent) {
+    if (event.key == "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleFolderSearch();
+    }
+  }
+  function focusOnMount(input: HTMLInputElement) {
+    input.focus();
+  }
+
   export function scrollToTop() {
     messageList?.scrollToTop();
   }
@@ -288,6 +336,36 @@
   .pivot.active {
     color: var(--lo-accent-text);
     font-weight: 600;
+  }
+  .quick-filters {
+    gap: 0;
+  }
+  .icon-pivot {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    color: var(--lo-fg-secondary);
+  }
+  .pivot.icon-pivot.active::after {
+    left: 4px;
+    right: 4px;
+  }
+  .folder-search {
+    flex: 1 1 0;
+    min-width: 80px;
+    margin-inline: 4px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--lo-input-border);
+    border-radius: var(--lo-radius-small);
+    background-color: var(--lo-input-bg);
+    color: var(--lo-fg);
+    font: inherit;
+    font-size: 13px;
+  }
+  .folder-search:focus {
+    outline: none;
+    border-color: var(--lo-accent);
   }
   .pivot.active::after {
     content: "";
