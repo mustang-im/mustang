@@ -176,6 +176,8 @@ test("Group By a different field than the sort: groups ordered by the group fiel
 test("Ascending / descending default per field", () => {
   expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Date)).toBe(true);
   expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Size)).toBe(true);
+  expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Importance)).toBe(true);
+  expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Flag)).toBe(true);
   expect(MessageGrouping.isDescendingByDefault(ArrangeBy.From)).toBe(false);
   expect(MessageGrouping.isDescendingByDefault(ArrangeBy.Subject)).toBe(false);
 });

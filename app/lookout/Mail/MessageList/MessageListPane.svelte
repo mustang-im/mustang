@@ -38,14 +38,6 @@
       {arrangeLabel}
       <ChevronIcon size={14} />
     </button>
-    <button class="reverse" on:click={() => ViewCommands.setReverseSort(folder, !$settings.reverseSort)}
-      title={$t`Reverse Sort`} aria-label={$t`Reverse Sort`}>
-      {#if $settings.reverseSort}
-        <SortDownIcon size={16} />
-      {:else}
-        <SortUpIcon size={16} />
-      {/if}
-    </button>
     {/if}
   </hbox>
   {#if columns}
@@ -95,7 +87,7 @@
       onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
     <MenuDivider />
   {/if}
-  <ArrangeByMenuItems {folder} withLabel />
+  <ArrangeByMenuItems {folder} withLabel withSortOrder />
 </Menu>
 <Menu bind:isMenuOpen={isFilterMenuOpen} anchor={filterEl} placement="bottom-end">
   <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={() => MailFilters.clear()} />
@@ -118,7 +110,6 @@
   import { MessageGrouping } from "./MessageGrouping";
   import { ListName } from "./ListName";
   import { ArrangeFields, Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../View/ViewSettings";
-  import { ViewCommands } from "../View/ViewCommands";
   import { MailFilters, QuickFilter } from "../MailFilters";
   import { catchErrors } from "../../../frontend/Util/error";
   import { CurrentTime } from "../../Calendar/View/CurrentTime";
@@ -131,8 +122,6 @@
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
-  import SortUpIcon from "lucide-svelte/icons/arrow-up";
-  import SortDownIcon from "lucide-svelte/icons/arrow-down";
   import FilterIcon from "lucide-svelte/icons/list-filter";
   import SortIcon from "lucide-svelte/icons/arrow-down-wide-narrow";
   import AllIcon from "lucide-svelte/icons/mails";
@@ -343,8 +332,7 @@
     font-size: 15px;
     font-weight: 600;
   }
-  .arrange,
-  .reverse {
+  .arrange {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -358,11 +346,7 @@
     font-size: 13px;
     cursor: pointer;
   }
-  .reverse {
-    padding: 0 6px;
-  }
-  .arrange:hover,
-  .reverse:hover {
+  .arrange:hover {
     background-color: var(--lo-hover-bg);
   }
   .empty {
