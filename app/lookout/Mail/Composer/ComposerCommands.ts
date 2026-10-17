@@ -1,14 +1,19 @@
+import type { Editor } from "@tiptap/core";
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
 import type { SMLData } from "../../../logic/Mail/SML/SMLData";
-import type { EditorCommands } from "../../Shared/Editor/EditorCommands";
+import type { EditorTool } from "../../Shared/Editor/EditorCommands";
 
-export interface ComposerCommands extends EditorCommands {
+export interface ComposerCommands {
   mail: EMail;
+  editor: Editor | null;
   identity: MailIdentity;
   canShowFrom: boolean;
   bccLocked: boolean;
   onAddressBook: () => void;
+  onAttachFile: () => Promise<void>;
+  onInsertPicture: (() => Promise<void>) | null;
+  openTool: (tool: EditorTool) => void;
   onSignatures: () => void;
   onCheckNames: () => Promise<void>;
   sml: SMLData | null;
