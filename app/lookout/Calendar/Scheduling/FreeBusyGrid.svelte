@@ -20,7 +20,7 @@
     <vbox class="names">
       <hbox class="hours-spacer" />
       <hbox class="row all-attendees">{$t`All Attendees`}</hbox>
-      {#each $participants.each as participant (participant)}
+      {#each $shownParticipants as participant (participant)}
         <hbox class="row person">
           <ResponseIcon response={participant.response} />
           <vbox flex class="person-text">
@@ -113,6 +113,7 @@
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "./FreeBusy";
   import { Timeline } from "./Timeline";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import { EventEditFlow } from "../EditEvent/EventEditFlow";
   import type { EventTimeEditor } from "../EditEvent/EventTimeEditor";
   import ResponseIcon from "../EditEvent/ResponseIcon.svelte";
@@ -154,6 +155,7 @@
   let lastStartTime = event.startTime.getTime();
 
   $: participants = event.participants;
+  $: shownParticipants = ObservedItems.of(event.participants);
   let newAttendees = new ArrayColl<PersonUID>();
 
   function onAddAttendee(person: PersonUID) {
