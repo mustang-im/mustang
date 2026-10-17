@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
-import { InlineReplies } from "../../../Mail/Composer/InlineReplies";
+import { InlineReplies, InlineReply } from "../../../Mail/Composer/InlineReplies";
+import { inlineReplies, inlineRibbon } from "../../../Mail/Selected";
 import type { ComposerCommands } from "../../../Mail/Composer/ComposerCommands";
 import { MessageBox } from "../../../Shared/Dialog/MessageBox";
 import type { EMail } from "../../../../logic/Mail/EMail";
@@ -16,9 +17,13 @@ function commandsFor(draft: EMail): ComposerCommands {
 
 const kLongText = "<p>" + "This is what I want to say about it. ".repeat(4) + "</p>";
 
+function replyFor(original: EMail) {
+  return inlineReplies.find(reply => reply.original == original) ?? null;
+}
+
 afterEach(() => {
-  InlineReplies.replies.clear();
-  InlineReplies.ribbon.set(null);
+  inlineReplies.clear();
+  inlineRibbon.set(null);
 });
 
 test("A reply is kept per original message", async () => {
@@ -28,11 +33,10 @@ test("A reply is kept per original message", async () => {
   let secondDraft = mail();
   await InlineReplies.start(first, firstDraft);
   await InlineReplies.start(second, secondDraft);
-  expect(InlineReplies.replyFor(first).draft).toBe(firstDraft);
-  expect(InlineReplies.replyFor(second).draft).toBe(secondDraft);
-  expect(InlineReplies.replyFor(first).isNew).toBe(true);
-  expect(InlineReplies.hasReply(mail())).toBe(false);
-  expect(InlineReplies.replyFor(null)).toBeNull();
+  expect(replyFor(first).draft).toBe(firstDraft);
+  expect(replyFor(second).draft).toBe(secondDraft);
+  expect(replyFor(first).isNew).toBe(true);
+  expect(replyFor(mail())).toBeNull();
 });
 
 test("A new response replaces an empty one without asking", async () => {
@@ -42,8 +46,8 @@ test("A new response replaces an empty one without asking", async () => {
   await InlineReplies.start(original, reply);
   await InlineReplies.start(original, forward);
   expect(get(MessageBox.current)).toBeNull();
-  expect(InlineReplies.replyFor(original).draft).toBe(forward);
-  expect(InlineReplies.replies.length).toBe(1);
+  expect(replyFor(original).draft).toBe(forward);
+  expect(inlineReplies.length).toBe(1);
 });
 
 test("A new response asks before it replaces one with text", async () => {
@@ -54,29 +58,28 @@ test("A new response asks before it replaces one with text", async () => {
   let keep = InlineReplies.start(original, mail());
   get(MessageBox.current).answer(false);
   await keep;
-  expect(InlineReplies.replyFor(original).draft).toBe(reply);
+  expect(replyFor(original).draft).toBe(reply);
 
   let forward = mail();
   let replace = InlineReplies.start(original, forward);
   get(MessageBox.current).answer(true);
   await replace;
-  expect(InlineReplies.replyFor(original).draft).toBe(forward);
+  expect(replyFor(original).draft).toBe(forward);
 });
 
-test("The ribbon shows the Message tab of the last shown reply, until that one closes", async () => {
+test("Removing a reply hides its Message tab", async () => {
   let first = mail();
   let second = mail();
   await InlineReplies.start(mail(), first);
   await InlineReplies.start(mail(), second);
-  InlineReplies.showRibbon(first, commandsFor(first));
-  InlineReplies.showRibbon(second, commandsFor(second));
-  // The composer of the first reply is destroyed after the second one was shown
-  InlineReplies.hideRibbon(first);
-  expect(get(InlineReplies.ribbon).draft).toBe(second);
+  inlineRibbon.set({ draft: second, commands: commandsFor(second) });
+  InlineReplies.remove(first);
+  expect(get(inlineRibbon).draft).toBe(second);
+  inlineReplies.add(new InlineReply(mail(), first));
 
   InlineReplies.remove(second);
-  expect(get(InlineReplies.ribbon)).toBeNull();
-  expect(InlineReplies.replies.length).toBe(1);
+  expect(get(inlineRibbon)).toBeNull();
+  expect(inlineReplies.length).toBe(1);
   InlineReplies.remove(first);
-  expect(InlineReplies.replies.isEmpty).toBe(true);
+  expect(inlineReplies.isEmpty).toBe(true);
 });

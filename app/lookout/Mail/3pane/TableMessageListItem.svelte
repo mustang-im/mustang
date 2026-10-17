@@ -97,7 +97,7 @@
   import { fileSize } from "../../../frontend/Files/file";
   import { Column, ColumnInfo } from "../ViewSettings/ViewSettings";
   import { ObservedItems } from "../../Shared/ObservedItems";
-  import { InlineReplies } from "../Composer/InlineReplies";
+  import { inlineReplies } from "../Selected";
   import { MessageDates } from "../MessageList/MessageDates";
   import { TextHighlight } from "../MessageList/TextHighlight";
   import ReadIcon from "lucide-svelte/icons/mail-open";
@@ -128,7 +128,6 @@
   export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
-  const inlineReplies = InlineReplies.replies;
 
   $: tags = ObservedItems.of(message.tags);
   $: to = message.to;
@@ -141,7 +140,7 @@
     : $message.from?.emailAddress ?? "";
   $: recipients = $to.contents.map(person => personDisplayName(person) || person.emailAddress).join("; ");
   $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
-  $: hasInlineReply = $inlineReplies && InlineReplies.hasReply(message);
+  $: hasInlineReply = $inlineReplies.some(reply => reply.original == message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
   $: stateIcon = isDraft ? DraftIcon
     : $message.invitationMessage ? MeetingIcon

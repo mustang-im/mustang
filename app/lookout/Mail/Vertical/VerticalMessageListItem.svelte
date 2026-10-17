@@ -121,7 +121,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
-  import { InlineReplies } from "../Composer/InlineReplies";
+  import { inlineReplies } from "../Selected";
   import { MessageDates } from "../MessageList/MessageDates";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { TextHighlight } from "../MessageList/TextHighlight";
@@ -158,7 +158,6 @@
   export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
-  const inlineReplies = InlineReplies.replies;
 
   $: tags = ObservedItems.of(message.tags);
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
@@ -171,7 +170,7 @@
     : $message.from?.emailAddress ?? "";
   $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;
   $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
-  $: hasInlineReply = $inlineReplies && InlineReplies.hasReply(message);
+  $: hasInlineReply = $inlineReplies.some(reply => reply.original == message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
 </script>
 

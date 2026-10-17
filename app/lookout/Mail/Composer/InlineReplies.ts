@@ -2,8 +2,8 @@ import type { EMail } from "../../../logic/Mail/EMail";
 import type { ComposerCommands } from "./ComposerCommands";
 import { DraftContent } from "./DraftContent";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
-import { ArrayColl } from "svelte-collections";
-import { get, writable, type Writable } from "svelte/store";
+import { inlineReplies, inlineRibbon } from "../Selected";
+import { get } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
 
 export class InlineReply {
@@ -23,22 +23,8 @@ export interface InlineRibbon {
 }
 
 export class InlineReplies {
-  static readonly replies = new ArrayColl<InlineReply>();
-  static readonly ribbon: Writable<InlineRibbon | null> = writable(null);
-
-  static replyFor(original: EMail | null): InlineReply | null {
-    if (!original) {
-      return null;
-    }
-    return InlineReplies.replies.find(reply => reply.original == original) ?? null;
-  }
-
-  static hasReply(original: EMail | null): boolean {
-    return !!InlineReplies.replyFor(original);
-  }
-
   static async start(original: EMail, draft: EMail) {
-    let existing = InlineReplies.replyFor(original);
+    let existing = inlineReplies.find(reply => reply.original == original) ?? null;
     if (existing && DraftContent.hasUserText(existing.draft.html) &&
         !await MessageBox.ask(gt`Discard Draft`, gt`You already started a response to this message. Do you want to discard it and start a new one?`)) {
       return;
@@ -46,24 +32,16 @@ export class InlineReplies {
     if (existing) {
       InlineReplies.remove(existing.draft);
     }
-    InlineReplies.replies.add(new InlineReply(original, draft));
+    inlineReplies.add(new InlineReply(original, draft));
   }
 
   static remove(draft: EMail) {
-    let reply = InlineReplies.replies.find(existing => existing.draft == draft);
+    let reply = inlineReplies.find(existing => existing.draft == draft);
     if (reply) {
-      InlineReplies.replies.remove(reply);
+      inlineReplies.remove(reply);
     }
-    InlineReplies.hideRibbon(draft);
-  }
-
-  static showRibbon(draft: EMail, commands: ComposerCommands) {
-    InlineReplies.ribbon.set({ draft, commands });
-  }
-
-  static hideRibbon(draft: EMail) {
-    if (get(InlineReplies.ribbon)?.draft == draft) {
-      InlineReplies.ribbon.set(null);
+    if (get(inlineRibbon)?.draft == draft) {
+      inlineRibbon.set(null);
     }
   }
 }

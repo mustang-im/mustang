@@ -115,7 +115,7 @@
   import ViewTab from "./Ribbon/ViewTab.svelte";
   import SearchTab from "./Ribbon/SearchTab.svelte";
   import ComposerMessageTab from "./Composer/ComposerMessageTab.svelte";
-  import { InlineReplies } from "./Composer/InlineReplies";
+  import { inlineRibbon, updatingFolders } from "./Selected";
   import ThreePane from "./3pane/3Pane.svelte";
   import type MessageListPane from "./3pane/MessageListPane.svelte";
   import MessagePrint from "./Message/MessagePrint.svelte";
@@ -154,9 +154,7 @@
 
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   const searchOptions = MailSearch.options;
-  const updatingFolders = MessageActions.updatingFolders;
   const accounts = appGlobal.emailAccounts;
-  const inlineRibbon = InlineReplies.ribbon;
 
   let pageEl: HTMLElement;
   let listPane: MessageListPane;

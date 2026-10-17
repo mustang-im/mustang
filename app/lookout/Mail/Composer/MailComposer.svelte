@@ -149,6 +149,8 @@
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import type { ComposerCommands } from "./ComposerCommands";
   import { InlineReplies } from "./InlineReplies";
+  import { inlineRibbon } from "../Selected";
+  import { get } from "svelte/store";
   import { MessageActions } from "../MessageActions";
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
   import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
@@ -384,9 +386,13 @@
     onInsertSML: setSML,
   };
   $: if (isInline && !closing) {
-    InlineReplies.showRibbon(mail, commands);
+    $inlineRibbon = { draft: mail, commands };
   }
-  onDestroy(() => InlineReplies.hideRibbon(mail));
+  onDestroy(() => {
+    if (get(inlineRibbon)?.draft == mail) {
+      inlineRibbon.set(null);
+    }
+  });
 
   function onPopOut() {
     closing = true;

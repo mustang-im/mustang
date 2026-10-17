@@ -10,6 +10,7 @@ import { appGlobal } from "../../logic/app";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
 import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
 import { InlineReplies } from "./Composer/InlineReplies";
+import { updatingFolders } from "./Selected";
 import { recentFolders } from "./RecentFolders";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
@@ -26,7 +27,7 @@ import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../logic/util/util";
 import { ArrayColl } from "svelte-collections";
 import { gt } from "../../l10n/l10n";
-import { get, writable } from "svelte/store";
+import { get } from "svelte/store";
 
 export interface MessagePrinter {
   print(message: EMail): Promise<void>;
@@ -34,7 +35,6 @@ export interface MessagePrinter {
 
 export class MessageActions {
   static printer: MessagePrinter | null = null;
-  static readonly updatingFolders = writable<Folder[]>([]);
 
   static accountForNewMail(folder: Folder | null): MailAccount {
     let account = folder?.account && appGlobal.emailAccounts.contains(folder.account)
@@ -249,7 +249,7 @@ export class MessageActions {
     }
     let disabled = MessageActions.disableGetNewMail(folder);
     assert(!disabled, disabled as string);
-    MessageActions.updatingFolders.update(folders => [...folders, folder]);
+    updatingFolders.update(folders => [...folders, folder]);
     try {
       // <copied from="../../frontend/Mail/LeftPane/FolderMenu.svelte">
       let account = folder.account;
@@ -259,7 +259,7 @@ export class MessageActions {
       await folder.getNewMessages();
       // </copied>
     } finally {
-      MessageActions.updatingFolders.update(folders => folders.filter(updating => updating != folder));
+      updatingFolders.update(folders => folders.filter(updating => updating != folder));
     }
   }
 

@@ -34,7 +34,8 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { InlineReplies, type InlineReply } from "../Composer/InlineReplies";
+  import type { InlineReply } from "../Composer/InlineReplies";
+  import { inlineReplies } from "../Selected";
   import MailComposer from "../Composer/MailComposer.svelte";
   import MessageHeader from "./MessageHeader.svelte";
   import InfoBars from "./InfoBars.svelte";
@@ -57,12 +58,11 @@
   }
   $: catchErrors(() => markMessageAsRead(shownMessage, readDelay), backgroundError);
 
-  const inlineReplies = InlineReplies.replies;
   let reply: InlineReply | null = null;
   let focusReply = false;
   $: $inlineReplies, shownMessage, updateReply();
   function updateReply() {
-    let current = InlineReplies.replyFor(shownMessage);
+    let current = shownMessage ? inlineReplies.find(reply => reply.original == shownMessage) ?? null : null;
     if (current == reply) {
       return;
     }
