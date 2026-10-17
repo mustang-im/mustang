@@ -2,8 +2,9 @@
   <hbox class="attachment-list">
     {#each $visible.each as attachment (attachment)}
       <AttachmentUI {attachment} {isComposing}
-        onRemove={() => attachments.remove(attachment)}
-        onSaveAll={!isComposing && $visible.length > 1 ? () => { isSavingAll = true; } : null} />
+        canSaveAll={!isComposing && $visible.length > 1}
+        on:remove={() => attachments.remove(attachment)}
+        on:saveAll={() => { isSavingAll = true; }} />
     {/each}
   </hbox>
 {/if}

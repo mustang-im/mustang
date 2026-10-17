@@ -25,12 +25,12 @@
       onClick={() => attachment.openOSFolder()} />
   {/if}
   <MenuItem label={$t`Save As`} icon={SaveIcon} onClick={() => attachment.saveFile()} />
-  {#if onSaveAll}
-    <MenuItem label={$t`Save All Attachments…`} icon={SaveAllIcon} onClick={onSaveAll} />
+  {#if canSaveAll}
+    <MenuItem label={$t`Save All Attachments…`} icon={SaveAllIcon} onClick={() => { dispatch("saveAll"); }} />
   {/if}
   {#if isComposing}
     <MenuDivider />
-    <MenuItem label={$t`Remove Attachment`} icon={RemoveIcon} onClick={onRemove} />
+    <MenuItem label={$t`Remove Attachment`} icon={RemoveIcon} onClick={() => { dispatch("remove"); }} />
   {/if}
 </Menu>
 
@@ -51,12 +51,13 @@
   import RemoveIcon from "lucide-svelte/icons/x";
   import { catchErrors } from "../../../frontend/Util/error";
   import { assert } from "../../../logic/util/util";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let attachment: Attachment;
   export let isComposing = false;
-  export let onRemove: () => void = null;
-  export let onSaveAll: () => void = null;
+  export let canSaveAll = false;
+  const dispatch = createEventDispatcher<{ remove: void, saveAll: void }>();
 
   let isMenuOpen = false;
   let menuButton: HTMLButtonElement;
