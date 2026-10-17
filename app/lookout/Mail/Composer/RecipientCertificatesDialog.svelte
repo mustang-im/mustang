@@ -53,9 +53,17 @@
   }
 
   function onRemove() {
-    RecipientKeys.removeRecipients(mail, [selected]);
+    removeRecipients([selected]);
     selected = null;
   }
+
+  /* <copied from="EncryptionDetails.svelte"> */
+  function removeRecipients(recipients: PersonUID[]) {
+    mail.to.removeAll(recipients);
+    mail.cc.removeAll(recipients);
+    mail.bcc.removeAll(recipients);
+  }
+  /* </copied> */
 </script>
 
 <style>

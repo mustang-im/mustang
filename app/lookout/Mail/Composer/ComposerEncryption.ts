@@ -11,20 +11,6 @@ import { gt } from "../../../l10n/l10n";
 type MyKey = PublicKey & PrivateKey;
 
 export class ComposerEncryption {
-  static privateKey(identity: MailIdentity): MyKey | null {
-    return identity ? getMyPrivateKey(identity) ?? null : null;
-  }
-
-  static signDisabledReason(privateKey: MyKey | null): string | null {
-    return privateKey ? null : gt`No secret keys enabled for signing`;
-  }
-
-  static encryptDisabledReason(mail: EMail): string | null {
-    return mail.mustEncrypt
-      ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
-      : null;
-  }
-
   static applyIdentityDefaults(mail: EMail, privateKey: MyKey | null) {
     // <copied from="../../../frontend/Mail/Composer/EncryptionButtons.svelte" changedIdentity()>
     let extra = mail as any;
@@ -74,7 +60,9 @@ export class ComposerEncryption {
     if (mail.mustEncrypt) {
       return;
     }
-    let encryptDisabledReason = ComposerEncryption.encryptDisabledReason(mail);
+    let encryptDisabledReason = mail.mustEncrypt
+      ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
+      : null;
     if (!mail.shouldEncrypt && encryptDisabledReason) {
       showError(new UserError(encryptDisabledReason));
       return;
@@ -89,16 +77,12 @@ export class ComposerEncryption {
 
   static sign(mail: EMail, identity: MailIdentity) {
     // <copied from="../../../frontend/Mail/Composer/EncryptionButtons.svelte" doSign()>
-    if (ComposerEncryption.signDisabledReason(ComposerEncryption.privateKey(identity))) {
-      ComposerEncryption.openTrustCenter(identity);
+    if (!getMyPrivateKey(identity)) {
+      SettingsDialogs.openTrustCenter(identity);
       return;
     }
     mail.signedByKeyID = getMyPrivateKey(identity)?.id;
     assert(mail.signedByKeyID, "No signing key found");
     // </copied>
-  }
-
-  static openTrustCenter(identity: MailIdentity) {
-    SettingsDialogs.openTrustCenter(identity);
   }
 }

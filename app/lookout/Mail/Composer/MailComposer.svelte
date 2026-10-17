@@ -155,6 +155,7 @@
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
   import { Keyboard } from "../../Util/keyboard";
   import { ComposerEncryption } from "./ComposerEncryption";
+  import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { DraftContent } from "./DraftContent";
   import { EditorTool } from "../../Shared/Editor/EditorCommands";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
@@ -358,7 +359,7 @@
   $: showBCC = $showBccSetting.value || hasBCC;
   $: showFromRow = $showFromSetting.value && hasSeveralIdentities;
 
-  $: privateKey = ComposerEncryption.privateKey(fromIdentity);
+  $: privateKey = fromIdentity ? getMyPrivateKey(fromIdentity) ?? null : null;
   $: privateKey, fromIdentity && catchErrors(() => ComposerEncryption.applyIdentityDefaults(mail, privateKey));
 
   $: sml = mail.sml;

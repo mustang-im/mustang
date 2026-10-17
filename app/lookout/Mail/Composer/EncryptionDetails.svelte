@@ -9,7 +9,7 @@
       <button class="link" on:click={() => catchErrors(() => RecipientKeys.queryKeyServers(recipientsWithoutKeys))}>{$t`Query Key Servers`}</button>
     {/if}
     <button class="link" on:click={() => { isDialogOpen = true; }}>{$t`Certificates…`}</button>
-    <button class="link" on:click={() => RecipientKeys.removeRecipients(mail, recipientsWithoutKeys.contents)}>{$t`Remove These Recipients`}</button>
+    <button class="link" on:click={() => removeRecipients(recipientsWithoutKeys.contents)}>{$t`Remove These Recipients`}</button>
   </hbox>
 {/if}
 {#if isDialogOpen}
@@ -20,13 +20,14 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { EncryptionSystem } from "../../../logic/Mail/Encryption/enums";
+  import { getEncryptionSystem, getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { RecipientKeys } from "./RecipientKeys";
   import RecipientCertificatesDialog from "./RecipientCertificatesDialog.svelte";
   import WarningIcon from "lucide-svelte/icons/triangle-alert";
   import { catchErrors } from "../../../frontend/Util/error";
   import type { Collection } from "svelte-collections";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let mail: EMail;
   export let identity: MailIdentity;
@@ -42,17 +43,27 @@
   let recipientsWithoutKeys: Collection<PersonUID>;
   $: $recipientKeys, recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPersonUID(p));
   let hasKeyServers = false;
-  $: identity, hasKeyServers = RecipientKeys.hasKeyServers(mail);
+  $: identity, hasKeyServers = getEncryptionSystem(mail) == EncryptionSystem.PGP;
   $: $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
-  $: encryptionError = RecipientKeys.encryptionError($mail, $recipientsWithoutKeys);
+  $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
+    gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function autoFetchMissingKeys() {
     await Promise.all([
-      RecipientKeys.fetchAddressbookKeys(recipientsWithoutKeys),
+      Promise.all(recipientsWithoutKeys.contents.map(recipient =>
+        recipient.findPerson()?.fetchEncryptionKeys())),
       hasKeyServers ? RecipientKeys.queryKeyServers(recipientsWithoutKeys, true) : null,
     ]);
   }
   // </copied>
+
+  /* <copied to="RecipientCertificatesDialog.svelte"> */
+  function removeRecipients(recipients: PersonUID[]) {
+    mail.to.removeAll(recipients);
+    mail.cc.removeAll(recipients);
+    mail.bcc.removeAll(recipients);
+  }
+  /* </copied> */
 </script>
 
 <style>
