@@ -6,7 +6,8 @@ import { DeleteStrategy } from "../MailAccount";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPPerson } from "./TJMAPMail";
-import type { TJMAPGetResponse } from "./TJMAPGeneric";
+import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
+import { checkChangeError } from "./JMAPError";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -257,10 +258,7 @@ export class JMAPEMail extends EMail {
       this.folder.deletions.add(this.jmapID);
       if (strategy == DeleteStrategy.DeleteImmediately ||
           [SpecialFolder.Trash, SpecialFolder.Spam].includes(this.folder.specialFolder)) {
-        await this.folder.account.makeSingleCall("Email/set", {
-          accountId: this.folder.account.accountID,
-          destroy: [ this.jmapID ],
-        });
+        await this.removeFromFolderOnServer();
       } else if (strategy == DeleteStrategy.MoveToTrash || strategy == DeleteStrategy.Flag) {
         let trash = this.folder.account.getSpecialFolder(SpecialFolder.Trash);
         assert(trash, gt`Trash folder is not set. Cannot delete the email. Please go to folder properties and set Use As: Trash.`);
@@ -271,6 +269,29 @@ export class JMAPEMail extends EMail {
     } finally {
       this.folder.deletions.delete(this.jmapID);
     }
+  }
+
+  /** Destroying an email removes it from all folders, so destroy it only if it is in no other folder. */
+  protected async removeFromFolderOnServer() {
+    let account = this.folder.account;
+    let getResponse = await account.makeSingleCall("Email/get", {
+      accountId: account.accountID,
+      ids: [this.jmapID],
+      properties: ["mailboxIds"],
+    }) as TJMAPGetResponse<TJMAPEMailHeaders>;
+    let json = getResponse.list[0];
+    if (!json) {
+      return;
+    }
+    let isInOtherFolders = Object.keys(json.mailboxIds ?? {}).some(folderID => folderID != this.folder.id);
+    let change = isInOtherFolders
+      ? { update: { [this.jmapID]: { [`mailboxIds/${this.folder.id}`]: null } } }
+      : { destroy: [this.jmapID] };
+    let setResponse = await account.makeSingleCall("Email/set", {
+      accountId: account.accountID,
+      ...change,
+    }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    checkChangeError(setResponse);
   }
 }
 
