@@ -98,7 +98,8 @@
   import { SplashScreen } from '@capacitor/splash-screen';
   // #endif
 
-  const frontend = getLocalStorage("appearance.frontend", "classic").value;
+  const frontendSetting = getLocalStorage("appearance.frontend", "classic");
+  $: frontend = $frontendSetting.value;
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;

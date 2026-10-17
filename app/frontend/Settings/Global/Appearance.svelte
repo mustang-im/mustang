@@ -13,8 +13,8 @@
         </label>
         {#if frontend != $frontendSetting.value}
           <Button
-            label={$t`Save and restart`}
-            icon={RestartIcon}
+            label={$t`Switch`}
+            icon={SwitchIcon}
             onClick={onSaveFrontend}
             classes="restart"
             />
@@ -74,20 +74,23 @@
   import { appGlobal } from "../../../logic/app";
   import { appName } from "../../../logic/build";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { openApp } from "../../AppsBar/selectedApp";
+  import { mailMustangApp } from "../../Mail/MailMustangApp";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import AppThemeColors from "./AppThemeColors.svelte";
   import LanguageDropDown from "./LanguageDropDown.svelte";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
   import RestartIcon from "lucide-svelte/icons/rotate-ccw";
+  import SwitchIcon from "lucide-svelte/icons/arrow-left-right";
   import { catchErrors } from "../../Util/error";
 
   let frontendSetting = getLocalStorage("appearance.frontend", "classic");
   let frontend = frontendSetting.value;
 
-  async function onSaveFrontend() {
+  function onSaveFrontend() {
+    openApp(mailMustangApp, {});
     frontendSetting.value = frontend;
-    await appGlobal.remoteApp.restartApp();
   }
 
   let language = getUILocalePref();
