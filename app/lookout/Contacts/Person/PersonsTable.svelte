@@ -28,7 +28,7 @@
       <span class="add-label">{$t`Click here to add a new Contact`}</span>
     </button>
   {/if}
-  {#if $contacts.hasItems && grouping}
+  {#if $persons.hasItems && grouping}
     <FastList
       items={rowItems}
       bind:selectedItem={selectedRow}
@@ -43,11 +43,11 @@
         {/if}
       </svelte:fragment>
     </FastList>
-  {:else if $contacts.hasItems}
+  {:else if $persons.hasItems}
     <FastList
-      items={contacts}
-      bind:selectedItem={selectedContact}
-      bind:selectedItems={selectedContacts}
+      items={persons}
+      bind:selectedItem={selected}
+      bind:selectedItems={selectedPersons}
       on:init={onInit}
       columns={gridColumns}>
       <PersonsTableRow slot="row" let:item contact={item} {columns} {onContextMenu} />
@@ -144,11 +144,10 @@
   import { ArrayColl, type Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let contacts: Collection<Contact>;
-  export let selectedContact: Contact;
-  export let selectedContacts: ArrayColl<Contact>;
+  export let persons: Collection<Contact>;
+  export let selected: Contact;
+  export let selectedPersons: ArrayColl<Contact>;
   export let emptyText: string;
-  export let columns: ContactColumn[];
   export let view: ContactView;
 
   const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
@@ -157,23 +156,24 @@
   $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
 
   $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
+  $: columns = ContactColumns.shownColumns($columnsSetting.value);
   $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
   $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
-  $: listedContacts = ObservedItems.of(contacts);
+  $: listedContacts = ObservedItems.of(persons);
   let collapsed = new Set<string>();
   const rowItems = new ArrayColl<ContactRow>();
   $: rowItems.replaceAll(grouping ? grouping.rows($listedContacts, collapsed) : []);
   let selectedRows = new ArrayColl<ContactRow>();
   let selectedRow: ContactRow = null;
   $: grouping && selectionToOutside($selectedRows);
-  $: grouping && selectionFromOutside($selectedContacts);
+  $: grouping && selectionFromOutside($selectedPersons);
 
   function selectionToOutside(rows: ArrayColl<ContactRow>) {
-    let selected = rows.contents.filter(row => !ContactGrouping.isHeader(row)) as Contact[];
-    if (!sameItems(selected, selectedContacts.contents)) {
-      selectedContacts.replaceAll(selected);
+    let selectedInRows = rows.contents.filter(row => !ContactGrouping.isHeader(row)) as Contact[];
+    if (!sameItems(selectedInRows, selectedPersons.contents)) {
+      selectedPersons.replaceAll(selectedInRows);
     }
-    selectedContact = selected[0] ?? null;
+    selected = selectedInRows[0] ?? null;
   }
 
   function selectionFromOutside(outside: ArrayColl<Contact>) {
@@ -266,17 +266,17 @@
   let scrollbarWidth = 0;
 
   function onInit(event: CustomEvent<{ scrollToItem: (row: ContactRow) => void }>) {
-    if (!contacts.contains(selectedContact)) {
-      selectedContacts.clear();
-      selectedContacts.add(contacts.first);
+    if (!persons.contains(selected)) {
+      selectedPersons.clear();
+      selectedPersons.add(persons.first);
     }
-    event.detail.scrollToItem(selectedContacts.first ?? selectedContact);
+    event.detail.scrollToItem(selectedPersons.first ?? selected);
     let listEl = tableEl.querySelector(".fast-list") as HTMLElement;
     scrollbarWidth = listEl ? listEl.offsetWidth - listEl.clientWidth : 0;
   }
 
   function onContextMenu(event: MouseEvent, contact: Contact) {
-    contextMenu.openFor(event, contact, selectedContacts);
+    contextMenu.openFor(event, contact, selectedPersons);
   }
 
   function onKeyDown(event: KeyboardEvent) {
@@ -287,9 +287,9 @@
       setCollapsed(group, event.key == "Enter" ? !group.isCollapsed : event.key == "ArrowLeft");
       return;
     }
-    if (event.key == "Enter" && selectedContact && !event.ctrlKey && !event.altKey) {
+    if (event.key == "Enter" && selected && !event.ctrlKey && !event.altKey) {
       event.preventDefault();
-      ContactActions.edit(selectedContact);
+      ContactActions.edit(selected);
     }
   }
 </script>

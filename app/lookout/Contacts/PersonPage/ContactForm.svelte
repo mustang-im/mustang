@@ -112,7 +112,7 @@
         <vbox class="picture-box">
           <button class="picture" on:click={() => catchErrors(onSelectPicture)}
             title={$person.picture ? $t`Change Picture…` : $t`Add Picture…`}>
-            <PersonPicture contact={person} size={104} />
+            <PersonPicture {person} size={104} />
             <hbox class="camera"><CameraIcon size={16} /></hbox>
           </button>
         </vbox>
@@ -122,7 +122,7 @@
         <vbox class="column side">
           <vbox class="business-card">
             <hbox class="card-top">
-              <PersonPicture contact={person} size={56} />
+              <PersonPicture {person} size={56} />
               <vbox class="card-text">
                 <span class="card-name">{$person.name || $t`Untitled`}</span>
                 {#if $person.company}<span>{$person.company}</span>{/if}

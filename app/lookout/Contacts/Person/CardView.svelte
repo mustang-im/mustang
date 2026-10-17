@@ -3,11 +3,11 @@
     {@const person = contact instanceof Person ? contact : null}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="address-card" role="option" tabindex="-1"
-      class:selected={$selectedContacts.contains(contact)}
-      aria-selected={$selectedContacts.contains(contact)}
+      class:selected={$selectedPersons.contains(contact)}
+      aria-selected={$selectedPersons.contains(contact)}
       on:click={event => select(event, contact)}
       on:dblclick={() => ContactActions.edit(contact)}
-      on:contextmenu={event => contextMenu.openFor(event, contact, selectedContacts)}>
+      on:contextmenu={event => contextMenu.openFor(event, contact, selectedPersons)}>
       <div class="card-name">{contact.name || $t`(No name)`}</div>
       {#if person}
         <div class="fields">
@@ -37,27 +37,27 @@
   import type { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let contacts: Collection<Contact>;
-  export let selectedContact: Contact;
-  export let selectedContacts: ArrayColl<Contact>;
+  export let persons: Collection<Contact>;
+  export let selected: Contact;
+  export let selectedPersons: ArrayColl<Contact>;
   export let emptyText: string;
 
   let contextMenu: PersonMenu;
 
-  $: shownContacts = ObservedItems.of(contacts);
-  $: selectedContact = $selectedContacts.first ?? null;
+  $: shownContacts = ObservedItems.of(persons);
+  $: selected = $selectedPersons.first ?? null;
 
   // <copied from="BusinessCardView.svelte">
   function select(event: MouseEvent, contact: Contact) {
     if (event.ctrlKey || event.metaKey) {
-      if (selectedContacts.contains(contact)) {
-        selectedContacts.remove(contact);
+      if (selectedPersons.contains(contact)) {
+        selectedPersons.remove(contact);
       } else {
-        selectedContacts.add(contact);
+        selectedPersons.add(contact);
       }
       return;
     }
-    selectedContacts.replaceAll([contact]);
+    selectedPersons.replaceAll([contact]);
   }
   // </copied>
 </script>

@@ -47,7 +47,7 @@
           label={$t`Members`} height="auto" classes="members"
           onOpen={member => ContactActions.edit(member)} let:item>
           <hbox class="cell name">
-            <PersonPicture contact={item} size={20} />
+            <PersonPicture person={item} size={20} />
             <span class="text">{item.name || ""}</span>
           </hbox>
           <span class="cell text">{PreferredEntry.valueOf(item.emailAddresses) ?? ""}</span>

@@ -1,5 +1,5 @@
-<PersonCircle name={$contact?.name} picture={$contact?.picture} colorKey={preferredEmail}
-  isGroup={contact instanceof Group} {size} />
+<PersonCircle name={$person?.name} picture={$person?.picture} colorKey={preferredEmail}
+  isGroup={person instanceof Group} {size} />
 
 <script lang="ts">
   import type { PersonOrGroup } from "../../../frontend/Contacts/Person/PersonOrGroup";
@@ -9,9 +9,9 @@
   import PersonCircle from "./PersonCircle.svelte";
   import { ArrayColl } from "svelte-collections";
 
-  export let contact: PersonOrGroup;
+  export let person: PersonOrGroup;
   export let size = 40;
 
-  $: emailAddresses = contact instanceof Person ? contact.emailAddresses : new ArrayColl<ContactEntry>();
+  $: emailAddresses = person instanceof Person ? person.emailAddresses : new ArrayColl<ContactEntry>();
   $: preferredEmail = PreferredEntry.valueOf($emailAddresses);
 </script>

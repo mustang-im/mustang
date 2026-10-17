@@ -1,12 +1,12 @@
 <hbox class="contact-item"
-  on:dblclick={() => ContactActions.edit(contact)}
-  on:contextmenu={event => onContextMenu(event, contact)}
-  title={$contact.name}>
-  <PersonPicture {contact} size={40} />
+  on:dblclick={() => ContactActions.edit(person)}
+  on:contextmenu={event => onContextMenu(event, person)}
+  title={$person.name}>
+  <PersonPicture {person} size={40} />
   <vbox class="text">
     <hbox class="name">
-      {#if $contact.name}
-        {$contact.name}
+      {#if $person.name}
+        {$person.name}
       {:else}
         <span class="lo-secondary">{$t`(No name)`}</span>
       {/if}
@@ -26,14 +26,14 @@
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let contact: Contact;
-  export let onContextMenu: (event: MouseEvent, contact: Contact) => void;
+  export let person: Contact;
+  export let onContextMenu: (event: MouseEvent, person: Contact) => void;
 
-  $: person = contact instanceof Person ? contact : null;
-  $: emailAddresses = person?.emailAddresses ?? new ArrayColl<ContactEntry>();
+  $: asPerson = person instanceof Person ? person : null;
+  $: emailAddresses = asPerson?.emailAddresses ?? new ArrayColl<ContactEntry>();
   $: preferredEmail = PreferredEntry.valueOf($emailAddresses);
-  $: secondLine = person
-    ? preferredEmail || $person.company || $person.position
+  $: secondLine = asPerson
+    ? preferredEmail || $asPerson.company || $asPerson.position
     : $t`Contact group`;
 </script>
 

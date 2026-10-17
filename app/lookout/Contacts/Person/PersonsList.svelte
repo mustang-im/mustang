@@ -9,14 +9,14 @@
       </button>
     {/each}
   </vbox>
-  {#if $contacts.hasItems}
+  {#if $persons.hasItems}
     <FastList
-      items={contacts}
-      bind:selectedItem={selectedContact}
-      bind:selectedItems={selectedContacts}
+      items={persons}
+      bind:selectedItem={selected}
+      bind:selectedItems={selectedPersons}
       on:init={onInit}
       columns="auto">
-      <PersonLine slot="row" let:item contact={item} {onContextMenu} />
+      <PersonLine slot="row" let:item person={item} {onContextMenu} />
     </FastList>
   {:else}
     <vbox flex class="empty">{emptyText}</vbox>
@@ -36,26 +36,26 @@
   import type { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let contacts: Collection<Contact>;
-  export let selectedContact: Contact;
-  export let selectedContacts: ArrayColl<Contact>;
+  export let persons: Collection<Contact>;
+  export let selected: Contact;
+  export let selectedPersons: ArrayColl<Contact>;
   export let emptyText: string;
 
   let contextMenu: PersonMenu;
   let scrollToItem: (contact: Contact) => void = null;
   let scrollToIndex: (index: number) => void = null;
 
-  $: observedContacts = ObservedItems.of(contacts);
+  $: observedContacts = ObservedItems.of(persons);
   $: letterIndex = new LetterIndex($observedContacts);
 
   function onInit(event: CustomEvent<{ scrollToIndex: (index: number) => void, scrollToItem: (contact: Contact) => void }>) {
     scrollToItem = event.detail.scrollToItem;
     scrollToIndex = event.detail.scrollToIndex;
-    if (!contacts.contains(selectedContact)) {
-      selectedContacts.clear();
-      selectedContacts.add(contacts.first);
+    if (!persons.contains(selected)) {
+      selectedPersons.clear();
+      selectedPersons.add(persons.first);
     }
-    scrollToItem(selectedContacts.first ?? selectedContact);
+    scrollToItem(selectedPersons.first ?? selected);
   }
 
   function jumpTo(letter: string) {
@@ -63,9 +63,9 @@
     if (!contact) {
       return;
     }
-    selectedContacts.clear();
-    selectedContacts.add(contact);
-    let index = contacts.contents.indexOf(contact);
+    selectedPersons.clear();
+    selectedPersons.add(contact);
+    let index = persons.contents.indexOf(contact);
     scrollToTop(Math.max(index - 1, 0));
   }
 
@@ -74,21 +74,21 @@
       return;
     }
     // FastList scrolls only as far as needed, so coming from below puts the row at the top
-    scrollToIndex(contacts.length - 1);
+    scrollToIndex(persons.length - 1);
     scrollToIndex(index);
   }
 
   function onContextMenu(event: MouseEvent, contact: Contact) {
-    contextMenu.openFor(event, contact, selectedContacts);
+    contextMenu.openFor(event, contact, selectedPersons);
   }
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.ctrlKey || event.altKey || event.metaKey) {
       return;
     }
-    if (event.key == "Enter" && selectedContact) {
+    if (event.key == "Enter" && selected) {
       event.preventDefault();
-      ContactActions.edit(selectedContact);
+      ContactActions.edit(selected);
     } else if (event.key.length == 1 && /\p{L}/u.test(event.key)) {
       event.preventDefault();
       jumpTo(LetterIndex.letterFor(event.key));

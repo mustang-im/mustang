@@ -3,13 +3,13 @@
     {@const person = contact instanceof Person ? contact : null}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="business-card" role="option" tabindex="-1"
-      class:selected={$selectedContacts.contains(contact)}
-      aria-selected={$selectedContacts.contains(contact)}
+      class:selected={$selectedPersons.contains(contact)}
+      aria-selected={$selectedPersons.contains(contact)}
       on:click={event => select(event, contact)}
       on:dblclick={() => ContactActions.edit(contact)}
       on:contextmenu={event => onContextMenu(event, contact)}>
       <vbox class="picture">
-        <PersonPicture {contact} size={72} />
+        <PersonPicture person={contact} size={72} />
       </vbox>
       <vbox class="text">
         <span class="name">{contact.name || $t`(No name)`}</span>
@@ -42,32 +42,32 @@
   import type { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let contacts: Collection<Contact>;
-  export let selectedContact: Contact;
-  export let selectedContacts: ArrayColl<Contact>;
+  export let persons: Collection<Contact>;
+  export let selected: Contact;
+  export let selectedPersons: ArrayColl<Contact>;
   export let emptyText: string;
 
   let contextMenu: PersonMenu;
 
-  $: shownContacts = ObservedItems.of(contacts);
-  $: selectedContact = $selectedContacts.first ?? null;
+  $: shownContacts = ObservedItems.of(persons);
+  $: selected = $selectedPersons.first ?? null;
 
   // <copied to="CardView.svelte">
   function select(event: MouseEvent, contact: Contact) {
     if (event.ctrlKey || event.metaKey) {
-      if (selectedContacts.contains(contact)) {
-        selectedContacts.remove(contact);
+      if (selectedPersons.contains(contact)) {
+        selectedPersons.remove(contact);
       } else {
-        selectedContacts.add(contact);
+        selectedPersons.add(contact);
       }
       return;
     }
-    selectedContacts.replaceAll([contact]);
+    selectedPersons.replaceAll([contact]);
   }
   // </copied>
 
   function onContextMenu(event: MouseEvent, contact: Contact) {
-    contextMenu.openFor(event, contact, selectedContacts);
+    contextMenu.openFor(event, contact, selectedPersons);
   }
 </script>
 

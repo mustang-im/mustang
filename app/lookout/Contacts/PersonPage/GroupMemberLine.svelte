@@ -1,5 +1,5 @@
 <hbox class="member" on:dblclick={() => ContactActions.edit(person)} title={$person.name}>
-  <PersonPicture contact={person} size={32} />
+  <PersonPicture {person} size={32} />
   <vbox class="text">
     <span class="name">{$person.name || preferredEmail || ""}</span>
     {#if preferredEmail}

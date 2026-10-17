@@ -18,14 +18,14 @@
               <ContactSearchBox bind:this={searchBox} placeholder={searchPlaceholder} />
             </hbox>
             {#if view == ContactView.People}
-              <PersonsList contacts={sortedContacts} bind:selectedContact={currentContact} bind:selectedContacts {emptyText} />
+              <PersonsList persons={sortedContacts} bind:selected={currentContact} bind:selectedPersons={selectedContacts} {emptyText} />
             {:else if view == ContactView.BusinessCard}
-              <BusinessCardView contacts={sortedContacts} bind:selectedContact={currentContact} {selectedContacts} {emptyText} />
+              <BusinessCardView persons={sortedContacts} bind:selected={currentContact} selectedPersons={selectedContacts} {emptyText} />
             {:else if view == ContactView.Card}
-              <CardView contacts={sortedContacts} bind:selectedContact={currentContact} {selectedContacts} {emptyText} />
+              <CardView persons={sortedContacts} bind:selected={currentContact} selectedPersons={selectedContacts} {emptyText} />
             {:else}
-              <PersonsTable contacts={sortedContacts} columns={ContactColumns.shownColumns($columnsSetting.value)} {view}
-                bind:selectedContact={currentContact} bind:selectedContacts {emptyText} />
+              <PersonsTable persons={sortedContacts} {view}
+                bind:selected={currentContact} bind:selectedPersons={selectedContacts} {emptyText} />
             {/if}
           </vbox>
           <vbox flex class="card-pane lo-card" slot="right">
@@ -100,7 +100,6 @@
 
   $: view = Object.values(ContactView).includes($viewSetting.value) ? $viewSetting.value : ContactView.People;
   $: showCardPane = $readingPane.value != false && view == ContactView.People;
-  $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
 
   let searchBox: ContactSearchBox;
   let lastGlobalSearchTerm = $globalSearchTerm;

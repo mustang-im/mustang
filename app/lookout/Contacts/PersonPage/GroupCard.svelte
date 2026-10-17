@@ -1,6 +1,6 @@
 <vbox flex class="group-card">
   <hbox class="header">
-    <PersonPicture contact={group} size={72} />
+    <PersonPicture person={group} size={72} />
     <vbox class="title">
       <h1 class="name">{$group.name || $t`(No name)`}</h1>
       <hbox class="kind">{$t`Contact group`}</hbox>

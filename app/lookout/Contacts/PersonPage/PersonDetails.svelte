@@ -1,6 +1,6 @@
 <vbox flex class="contact-card">
   <hbox class="header">
-    <PersonPicture contact={person} size={72} />
+    <PersonPicture {person} size={72} />
     <vbox class="title">
       <h1 class="name">{$person.name || $t`(No name)`}</h1>
       {#if jobLine}

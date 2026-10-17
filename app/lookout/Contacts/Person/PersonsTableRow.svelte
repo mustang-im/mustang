@@ -4,7 +4,7 @@
   {#each columns as column}
     {#if column == ContactColumn.FullName}
       <hbox class="cell name">
-        <PersonPicture {contact} size={24} />
+        <PersonPicture person={contact} size={24} />
         <span class="text">
           {#if $contact.name}
             {$contact.name}
