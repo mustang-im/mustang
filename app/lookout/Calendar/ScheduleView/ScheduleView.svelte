@@ -39,9 +39,9 @@
 
 <script lang="ts">
   import type { CalendarColumnGroup } from "../DayView/DayViewGrid.svelte";
-  import type { CalendarRange } from "../View/CalendarRange";
+  import type { CalendarRange } from "../CalendarRange";
   import { ScheduleLayout } from "./ScheduleLayout";
-  import { WorkingHours } from "../View/WorkingHours";
+  import { WorkingHours } from "../WorkingHours";
   import { now, eventPeek, timeZoneRulers } from "../selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";

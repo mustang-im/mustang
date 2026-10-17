@@ -51,7 +51,7 @@
 <script lang="ts">
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { EventLook } from "../Event/EventLook";
+  import { EventLook } from "./EventLook";
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { eventPeek } from "../selected";

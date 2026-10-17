@@ -16,7 +16,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { CalendarRange } from "./View/CalendarRange";
+  import type { CalendarRange } from "./CalendarRange";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import { getDateTimeLocale, t } from "../../l10n/l10n";

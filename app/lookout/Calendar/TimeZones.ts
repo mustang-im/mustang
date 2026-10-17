@@ -1,4 +1,4 @@
-import { HourLabel } from "./TimeGrid/HourLabel";
+import { HourLabel } from "./DayView/HourLabel";
 import { WindowsToIANATimezone } from "../../logic/Calendar/ICal/WindowsTimezone";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { logError } from "../../frontend/Util/error";

@@ -16,8 +16,8 @@
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
-  import type { CalendarRange } from "./View/CalendarRange";
-  import { EventLook } from "./Event/EventLook";
+  import type { CalendarRange } from "./CalendarRange";
+  import { EventLook } from "./DisplayEvent/EventLook";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import type { Collection } from "svelte-collections";

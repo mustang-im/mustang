@@ -37,7 +37,7 @@
 
 <script lang="ts">
   import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
-  import { AllFields, type FieldRow, type FieldSet } from "../Form/AllFields";
+  import { AllFields, type FieldRow, type FieldSet } from "./AllFields";
   import { ContactColumns } from "../Person/ContactColumns";
   import ListView from "../../Shared/Form/ListView.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";

@@ -1,4 +1,4 @@
-import { CalendarRange } from "../../Calendar/View/CalendarRange";
+import { CalendarRange } from "../../Calendar/CalendarRange";
 import { expect, test } from "vitest";
 
 // Thursday, 2026-10-15

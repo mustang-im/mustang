@@ -3,7 +3,7 @@ import "../../../../logic/app"; // first, to resolve the import cycle around Abs
 import { Calendar } from "../../../../logic/Calendar/Calendar";
 import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
-import { FreeBusy } from "../../../Calendar/Scheduling/FreeBusy";
+import { FreeBusy } from "../../../Calendar/EditEvent/FreeBusy";
 import { expect, test } from "vitest";
 
 function at(hours: number, minutes = 0): Date {

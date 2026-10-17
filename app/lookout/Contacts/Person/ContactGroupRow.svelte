@@ -9,7 +9,7 @@
 </hbox>
 
 <script lang="ts">
-  import type { ContactGroupHeader } from "../Views/ContactGrouping";
+  import type { ContactGroupHeader } from "./ContactGrouping";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../l10n/l10n";
 

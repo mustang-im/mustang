@@ -1,8 +1,8 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../logic/app";
 import { Event } from "../../../logic/Calendar/Event";
-import { DateNavigatorMonth } from "../../Calendar/FolderPane/DateNavigatorMonth";
-import { HourLabel } from "../../Calendar/TimeGrid/HourLabel";
+import { DateNavigatorMonth } from "../../Calendar/DateNavigatorMonth";
+import { HourLabel } from "../../Calendar/DayView/HourLabel";
 import { expect, test } from "vitest";
 
 function newEvent(start: Date, end: Date, allDay = false): Event {

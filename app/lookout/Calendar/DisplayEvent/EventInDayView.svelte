@@ -50,7 +50,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { appGlobal } from "../../../logic/app";
   import { DayPreviewLayout } from "./EventInDayView";
-  import { HourLabel } from "../TimeGrid/HourLabel";
+  import { HourLabel } from "../DayView/HourLabel";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 

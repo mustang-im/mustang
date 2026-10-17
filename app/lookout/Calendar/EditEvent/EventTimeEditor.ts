@@ -1,5 +1,5 @@
 import type { Event } from "../../../logic/Calendar/Event";
-import { WorkingHours } from "../View/WorkingHours";
+import { WorkingHours } from "../WorkingHours";
 import { setNewEventTime } from "../../../frontend/Calendar/event";
 
 export class EventTimeEditor {

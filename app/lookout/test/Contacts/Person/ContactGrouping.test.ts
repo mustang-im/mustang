@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
-import { ContactGrouping, ContactGroupHeader } from "../../Contacts/Views/ContactGrouping";
-import { ContactColumn } from "../../Contacts/Person/ContactColumns";
-import { Person } from "../../../logic/Abstract/Person";
+import { ContactGrouping, ContactGroupHeader } from "../../../Contacts/Person/ContactGrouping";
+import { ContactColumn } from "../../../Contacts/Person/ContactColumns";
+import { Person } from "../../../../logic/Abstract/Person";
 import { expect, test } from "vitest";
 
 function person(name: string, company: string): Person {

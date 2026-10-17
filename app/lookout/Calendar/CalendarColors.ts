@@ -1,4 +1,4 @@
-import { gt } from "../../../l10n/l10n";
+import { gt } from "../../l10n/l10n";
 
 export class CalendarColors {
   static get palette(): { name: string, color: string }[] {

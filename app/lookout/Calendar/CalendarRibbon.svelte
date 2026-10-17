@@ -164,9 +164,9 @@
   import { CalendarActions } from "./CalendarActions";
   import { openApp } from "../../frontend/AppsBar/selectedApp";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
-  import { CalendarGroups } from "./FolderPane/CalendarGroups";
+  import { CalendarGroups } from "./CalendarGroups";
   import { CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
-  import { CalendarColors } from "./FolderPane/CalendarColors";
+  import { CalendarColors } from "./CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { SettingsDialogs } from "../Settings/SettingsDialogs";
   import { selectedCalendar } from "../../frontend/Calendar/selected";

@@ -63,8 +63,8 @@
 <svelte:window on:mouseup={onDragEnd} />
 
 <script lang="ts">
-  import type { CalendarRange } from "./View/CalendarRange";
-  import { DateNavigatorMonth } from "./FolderPane/DateNavigatorMonth";
+  import type { CalendarRange } from "./CalendarRange";
+  import { DateNavigatorMonth } from "./DateNavigatorMonth";
   import { now } from "./selected";
   import { getWeekNumber } from "../Util/date";
   import { shownCalendarEvents } from "../../frontend/Calendar/selected";

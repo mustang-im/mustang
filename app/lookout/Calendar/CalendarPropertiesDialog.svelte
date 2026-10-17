@@ -58,8 +58,8 @@
 
 <script lang="ts">
   import { MailAccount } from "../../logic/Mail/MailAccount";
-  import { CalendarColors } from "./FolderPane/CalendarColors";
-  import { CalendarGroups } from "./FolderPane/CalendarGroups";
+  import { CalendarColors } from "./CalendarColors";
+  import { CalendarGroups } from "./CalendarGroups";
   import { CalendarActions } from "./CalendarActions";
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";

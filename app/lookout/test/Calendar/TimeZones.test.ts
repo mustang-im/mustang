@@ -1,5 +1,5 @@
 import { TimeZoneChoice, TimeZoneRuler, ZoneClock } from "../../Calendar/TimeZones";
-import { HourLabel } from "../../Calendar/TimeGrid/HourLabel";
+import { HourLabel } from "../../Calendar/DayView/HourLabel";
 import { expect, test } from "vitest";
 
 test("Zone clock: wall clock, offset and standard offset of a time zone", () => {

@@ -1,6 +1,6 @@
-import type { Calendar } from "../../../logic/Calendar/Calendar";
-import type { Account } from "../../../logic/Abstract/Account";
-import { gt } from "../../../l10n/l10n";
+import type { Calendar } from "../../logic/Calendar/Calendar";
+import type { Account } from "../../logic/Abstract/Account";
+import { gt } from "../../l10n/l10n";
 
 export class CalendarGroup {
   readonly id: "mine" | "shared";

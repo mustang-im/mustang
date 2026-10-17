@@ -33,7 +33,7 @@
 </vbox>
 
 <script lang="ts">
-  import { DateNavigatorMonth } from "../../Calendar/FolderPane/DateNavigatorMonth";
+  import { DateNavigatorMonth } from "../../Calendar/DateNavigatorMonth";
   import { now } from "../../Calendar/selected";
   import PreviousIcon from "lucide-svelte/icons/chevron-up";
   import NextIcon from "lucide-svelte/icons/chevron-down";

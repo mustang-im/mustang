@@ -8,7 +8,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { EventLook } from "../Event/EventLook";
+  import { EventLook } from "./EventLook";
   import { now } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
 

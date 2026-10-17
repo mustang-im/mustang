@@ -1,9 +1,9 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
-import "../../../logic/app";
-import { Event } from "../../../logic/Calendar/Event";
-import { Participant } from "../../../logic/Calendar/Participant";
-import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-import { EventLook } from "../../Calendar/Event/EventLook";
+import "../../../../logic/app";
+import { Event } from "../../../../logic/Calendar/Event";
+import { Participant } from "../../../../logic/Calendar/Participant";
+import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
+import { EventLook } from "../../../Calendar/DisplayEvent/EventLook";
 import { expect, test } from "vitest";
 
 function newEvent(start = new Date(2026, 9, 15, 9), end = new Date(2026, 9, 15, 10)): Event {

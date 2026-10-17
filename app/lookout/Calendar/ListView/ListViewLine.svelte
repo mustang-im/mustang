@@ -32,7 +32,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventTable } from "./EventTable";
   import { EventTableColumn } from "./EventTable";
-  import { EventLook } from "../Event/EventLook";
+  import { EventLook } from "../DisplayEvent/EventLook";
   import { kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { openEvent } from "../../../frontend/Calendar/open";

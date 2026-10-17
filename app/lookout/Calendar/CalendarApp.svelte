@@ -105,7 +105,7 @@
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import { InvitationResponse } from "../../logic/Calendar/Invitation/InvitationStatus";
-  import { CalendarRange } from "./View/CalendarRange";
+  import { CalendarRange } from "./CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { openEvent } from "../../frontend/Calendar/open";
   import { openComposer } from "../../frontend/Mail/open";

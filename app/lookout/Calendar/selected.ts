@@ -1,6 +1,6 @@
 import type { Event } from "../../logic/Calendar/Event";
 import type { Calendar } from "../../logic/Calendar/Calendar";
-import { WorkingHours } from "./View/WorkingHours";
+import { WorkingHours } from "./WorkingHours";
 import { shownCalendars } from "../../frontend/Calendar/selected";
 import { ShownWorkHours } from "../../frontend/Calendar/ShownWorkHours";
 import { k1MinuteMS } from "../../frontend/Util/date";

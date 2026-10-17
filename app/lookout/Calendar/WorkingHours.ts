@@ -1,5 +1,5 @@
-import type { Calendar } from "../../../logic/Calendar/Calendar";
-import { WorkHours, kMinutesPerDay } from "../../../logic/Calendar/WorkHours";
+import type { Calendar } from "../../logic/Calendar/Calendar";
+import { WorkHours, kMinutesPerDay } from "../../logic/Calendar/WorkHours";
 import { derived, type Readable } from "svelte/store";
 
 export interface MinuteRange {

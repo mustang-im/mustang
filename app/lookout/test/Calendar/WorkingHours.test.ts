@@ -1,5 +1,5 @@
-import { WorkingHours } from "../../Calendar/View/WorkingHours";
-import { CalendarRange } from "../../Calendar/View/CalendarRange";
+import { WorkingHours } from "../../Calendar/WorkingHours";
+import { CalendarRange } from "../../Calendar/CalendarRange";
 import { WorkHours } from "../../../logic/Calendar/WorkHours";
 import { get, writable } from "svelte/store";
 import { expect, test } from "vitest";

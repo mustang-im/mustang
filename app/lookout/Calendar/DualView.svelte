@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-  import { CalendarRange } from "./View/CalendarRange";
+  import { CalendarRange } from "./CalendarRange";
   import { eventPeek } from "./selected";
   import { selectedDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";

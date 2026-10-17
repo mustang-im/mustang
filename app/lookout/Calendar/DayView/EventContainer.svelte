@@ -49,7 +49,7 @@
 
 <script lang="ts">
   import type { TimedEventItem } from "./DayColumn";
-  import { EventLook } from "../Event/EventLook";
+  import { EventLook } from "../DisplayEvent/EventLook";
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { catchErrors } from "../../../frontend/Util/error";

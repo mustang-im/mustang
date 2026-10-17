@@ -45,7 +45,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { EventLook } from "../Event/EventLook";
+  import { EventLook } from "./EventLook";
   import { CalendarActions } from "../CalendarActions";
   import DetailsGrid from "./DetailsGrid.svelte";
   import ResponseButton from "../Invitation/ResponseButton.svelte";

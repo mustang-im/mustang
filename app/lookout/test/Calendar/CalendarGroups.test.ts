@@ -1,4 +1,4 @@
-import { CalendarGroups } from "../../Calendar/FolderPane/CalendarGroups";
+import { CalendarGroups } from "../../Calendar/CalendarGroups";
 import type { Calendar } from "../../../logic/Calendar/Calendar";
 import { expect, test } from "vitest";
 

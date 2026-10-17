@@ -38,7 +38,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
-  import { SharedCalendars } from "./Dialogs/SharedCalendars";
+  import { SharedCalendars } from "./SharedCalendars";
   import { selectedCalendar } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import Dialog from "../Shared/Dialog/Dialog.svelte";

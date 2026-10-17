@@ -40,7 +40,7 @@
 <script lang="ts">
   import type { Calendar } from "../../logic/Calendar/Calendar";
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
-  import { CalendarSharing } from "./Dialogs/CalendarSharing";
+  import { CalendarSharing } from "./CalendarSharing";
   import { MessageBox } from "../Shared/Dialog/MessageBox";
   import { catchErrors } from "../../frontend/Util/error";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";

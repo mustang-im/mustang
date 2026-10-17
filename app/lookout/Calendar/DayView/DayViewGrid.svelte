@@ -65,9 +65,9 @@
 </script>
 
 <script lang="ts">
-  import type { CalendarRange } from "../View/CalendarRange";
+  import type { CalendarRange } from "../CalendarRange";
   import { TimeColumnLayout } from "./DayColumn";
-  import { WorkingHours } from "../View/WorkingHours";
+  import { WorkingHours } from "../WorkingHours";
   import { now, eventPeek, timeZoneRulers } from "../selected";
   import { selectedDate, shownWorkHours } from "../../../frontend/Calendar/selected";
   import DayHeader from "./DayHeader.svelte";

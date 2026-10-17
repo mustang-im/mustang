@@ -114,7 +114,7 @@
   import { ContactActions } from "../ContactActions";
   import PersonsTableRow from "./PersonsTableRow.svelte";
   import ContactGroupRow from "./ContactGroupRow.svelte";
-  import { ContactGrouping, type ContactGroupHeader, type ContactRow } from "../Views/ContactGrouping";
+  import { ContactGrouping, type ContactGroupHeader, type ContactRow } from "./ContactGrouping";
   import GroupIcon from "lucide-svelte/icons/group";
   import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
   import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";

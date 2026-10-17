@@ -43,9 +43,9 @@
 <script lang="ts">
   import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
-  import { CalendarGroups } from "./FolderPane/CalendarGroups";
+  import { CalendarGroups } from "./CalendarGroups";
   import { selectedCalendar, shownCalendars } from "../../frontend/Calendar/selected";
-  import { CalendarColors } from "./FolderPane/CalendarColors";
+  import { CalendarColors } from "./CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { catchErrors } from "../../frontend/Util/error";
   import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";

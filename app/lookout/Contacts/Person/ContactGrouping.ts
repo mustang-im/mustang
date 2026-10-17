@@ -1,5 +1,5 @@
 import type { Contact } from "../../../logic/Abstract/Contact";
-import { ContactColumns, type ContactSort } from "../Person/ContactColumns";
+import { ContactColumns, type ContactSort } from "./ContactColumns";
 import { gt } from "../../../l10n/l10n";
 
 export class ContactGroupHeader {

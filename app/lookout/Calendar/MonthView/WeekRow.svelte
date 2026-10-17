@@ -47,7 +47,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import type { CalendarRange } from "../View/CalendarRange";
+  import type { CalendarRange } from "../CalendarRange";
   import { WeekRowLayout } from "./WeekRow";
   import { CalendarActions } from "../CalendarActions";
   import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
@@ -55,7 +55,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
   import InlineEventTitle from "../InlineEventTitle.svelte";
-  import { WorkingHours } from "../View/WorkingHours";
+  import { WorkingHours } from "../WorkingHours";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";

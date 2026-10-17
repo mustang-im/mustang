@@ -33,7 +33,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { ScheduleLayout } from "./ScheduleLayout";
-  import { WorkingHours } from "../View/WorkingHours";
+  import { WorkingHours } from "../WorkingHours";
   import { CalendarActions } from "../CalendarActions";
   import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedCalendar, selectedEvent } from "../../../frontend/Calendar/selected";

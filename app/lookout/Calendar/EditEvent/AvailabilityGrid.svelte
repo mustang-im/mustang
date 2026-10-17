@@ -111,7 +111,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "../Scheduling/FreeBusy";
+  import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "./FreeBusy";
   import { Timeline } from "./AvailabilityGrid";
   import { EventEditFlow } from "./EventEditFlow";
   import type { EventTimeEditor } from "./EventTimeEditor";

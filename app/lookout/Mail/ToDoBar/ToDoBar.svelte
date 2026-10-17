@@ -69,7 +69,7 @@
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
-  import { CalendarRange } from "../../Calendar/View/CalendarRange";
+  import { CalendarRange } from "../../Calendar/CalendarRange";
   import { now } from "../../Calendar/selected";
   import DateNavigator from "../../Calendar/DateNavigator.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";

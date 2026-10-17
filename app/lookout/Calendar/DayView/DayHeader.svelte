@@ -13,7 +13,7 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { CalendarActions } from "../CalendarActions";
-  import { WorkingHours } from "../View/WorkingHours";
+  import { WorkingHours } from "../WorkingHours";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import AddIcon from "lucide-svelte/icons/circle-plus";

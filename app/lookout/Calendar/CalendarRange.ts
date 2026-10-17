@@ -1,5 +1,5 @@
-import type { CalendarViewType } from "../selected";
-import { getWeekStart, k1DayMS } from "../../../frontend/Util/date";
+import type { CalendarViewType } from "./selected";
+import { getWeekStart, k1DayMS } from "../../frontend/Util/date";
 
 export class CalendarRange {
   readonly view: CalendarViewType;

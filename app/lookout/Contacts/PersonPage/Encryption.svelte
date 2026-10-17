@@ -38,7 +38,7 @@
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
-  import { ContactCertificates } from "../Form/ContactCertificates";
+  import { ContactCertificates } from "./ContactCertificates";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";

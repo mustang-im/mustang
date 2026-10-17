@@ -51,7 +51,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { TimeColumnLayout } from "./DayColumn";
-  import type { WorkingHours } from "../View/WorkingHours";
+  import type { WorkingHours } from "../WorkingHours";
   import { CalendarActions } from "../CalendarActions";
   import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";

@@ -1,5 +1,5 @@
-import type { Event } from "../../../logic/Calendar/Event";
-import { getWeekStart } from "../../../frontend/Util/date";
+import type { Event } from "../../logic/Calendar/Event";
+import { getWeekStart } from "../../frontend/Util/date";
 
 export class DateNavigatorMonth {
   readonly month: Date;

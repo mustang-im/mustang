@@ -1,11 +1,11 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
-import "../../../logic/app";
-import { Person, ContactEntry } from "../../../logic/Abstract/Person";
-import { PGPPublicKey } from "../../../logic/Mail/Encryption/PGP/PGPPublicKey";
-import { SMIMEPublicKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
-import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
-import { AllFields } from "../../Contacts/Form/AllFields";
-import { ContactCertificates } from "../../Contacts/Form/ContactCertificates";
+import "../../../../logic/app";
+import { Person, ContactEntry } from "../../../../logic/Abstract/Person";
+import { PGPPublicKey } from "../../../../logic/Mail/Encryption/PGP/PGPPublicKey";
+import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
+import { TrustLevel } from "../../../../logic/Mail/Encryption/enums";
+import { AllFields } from "../../../Contacts/PersonPage/AllFields";
+import { ContactCertificates } from "../../../Contacts/PersonPage/ContactCertificates";
 import { expect, test } from "vitest";
 
 function key(id: string, userID: string, KeyClass: typeof PGPPublicKey | typeof SMIMEPublicKey = PGPPublicKey): PGPPublicKey | SMIMEPublicKey {
