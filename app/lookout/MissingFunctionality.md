@@ -220,10 +220,7 @@ Settings of `frontend/` that Lookout's Options dialog leaves out:
 
 ## Logic bugs found while building Lookout
 
-These are bugs in `app/logic/`, which Lookout must not change. They are not fixed on this branch.
+These are bugs in `app/logic/`, which Lookout must not change. They are not fixed on this branch. The other bugs found while building Lookout are fixed in master: moving a folder (#1488), all-day events on the day the clocks go back (#1489), no update to the attendees when only the series end changes (#1491), and a meeting link after turning "Online meeting" off (#1493).
 
-- **All-day events on the day the clocks go back count as 2 days** (`Event.duration`). For all-day events it rounds the real number of seconds up to whole days, and that day has 25 hours (e.g. Europe/Berlin, 2026-10-25). Changing the start date of such an event in the form makes it 2 days long. `frontend/` has the same bug. `duration` should count calendar days between the local dates.
-- **No update to the attendees when only the series end changes.** `RecurrenceRule.matches()` / `timesMatch()` ignore the series end, so `Event.hasChanged()` is false, and `sendInvitationsDirectly()` sends nothing. The new end is saved.
 - **No update to the attendees after "This and following" or "Delete this and following"** (`Event.truncateRecurrence()`). The shortened old series is saved after `cancelEditing()`, so `hasChanged()` is false, and no update is sent. `frontend/` behaves the same.
-- **Turning "Online meeting" off still creates a meeting link.** `Event.createOnlineMeetingWithAccount` stays set, and `Event.createOnlineMeeting()` doesn't check `isOnline`. `frontend/` behaves the same.
 - **A weekly rule without weekdays counts as every day in `RecurrenceRule.timesMatch()`.** Servers can send a weekly rule without BYDAY (meaning: the weekday of the series start). Rebuilding the same series with its weekday then counts as a time change, which asks "Save changes?" and, on saving, removes all exceptions. Lookout's recurrence dialog keeps an unchanged rule as it is, so this doesn't happen there; `frontend/`'s recurrence editor triggers it just by opening.
