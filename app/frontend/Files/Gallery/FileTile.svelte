@@ -55,6 +55,7 @@
     background-color: transparent;
     padding-inline: 0px;
     margin-block-start: 2px;
+    overflow: hidden;
   }
   .icon :global(svg) {
     stroke-width: 1.5px;
