@@ -1,6 +1,5 @@
 <vbox flex class="calendar-page" bind:this={pageEl}>
   <CalendarRibbon {view} {currentView}
-    {splitView} {timeScale}
     onView={setView} onCurrentView={setCurrentView} onResetView={resetView}
     onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
     {#if isSearch}
@@ -36,7 +35,7 @@
                   <ListView events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
                     showCalendarColumn={isSearch && $calendarSearchOptions.scope == CalendarSearchScope.AllCalendarItems} />
                 {:else if view == "dual"}
-                  <DualView bind:start={$startDate} events={visibleEvents} {groups} {timeScale} {showWeekNumbers}>
+                  <DualView bind:start={$startDate} events={visibleEvents} {groups}>
                     <ViewSelector slot="top-right" {view} onView={setView} />
                   </DualView>
                 {:else}
@@ -52,16 +51,16 @@
                               <CalendarTab calendar={group.calendar} firstColumn={1} span={1}
                                 isFirst={g == 0} onOverlay={() => setSplitView(false)} />
                             </div>
-                            <MonthView {range} events={group.events} {showWeekNumbers} onOpenDay={openDay} />
+                            <MonthView {range} events={group.events} onOpenDay={openDay} />
                           </vbox>
                         {/each}
                       </hbox>
                     {:else if view == "month"}
-                      <MonthView {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
+                      <MonthView {range} events={visibleEvents} onOpenDay={openDay} />
                     {:else if view == "schedule"}
-                      <ScheduleView {range} rows={scheduleRows} {timeScale} />
+                      <ScheduleView {range} rows={scheduleRows} />
                     {:else}
-                      <DayViewGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
+                      <DayViewGrid {range} {groups} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
                     {/if}
                     {#if view != "schedule"}
                       <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
@@ -159,7 +158,6 @@
   const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
   const weekNumbersSetting = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
   const showDeclinedSetting = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
-  $: timeScale = $timeScaleSetting.value;
   $: showWeekNumbers = $weekNumbersSetting.value;
   $: showDeclined = $showDeclinedSetting.value;
   const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);

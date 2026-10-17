@@ -1,14 +1,14 @@
 <SplitterBidirectional horizontal={$appGlobal.isSmall} initialSecondRatio={1} firstMinPx={200} secondMinPx={200}>
   <vbox flex class="days" slot="first">
     <DateRange range={daysRange} onToday={goToToday} onStep={stepDays} />
-    <DayViewGrid range={daysRange} {groups} {timeScale} enlargeSelectedDay={true}
+    <DayViewGrid range={daysRange} {groups} enlargeSelectedDay={true}
       onOpenDay={selectDay} onOverlay={showOverlay} />
   </vbox>
   <vbox flex class="month" slot="second">
     <DateRange range={monthRange} onStep={stepMonth}>
       <slot name="top-right" />
     </DateRange>
-    <MonthView range={monthRange} {events} {showWeekNumbers} onOpenDay={selectDay} />
+    <MonthView range={monthRange} {events} onOpenDay={selectDay} />
   </vbox>
 </SplitterBidirectional>
 
@@ -29,8 +29,6 @@
   export let start: Date;
   export let events: Collection<Event>;
   export let groups: CalendarColumnGroup[];
-  export let timeScale: number;
-  export let showWeekNumbers = false;
 
   $: daysRange = new CalendarRange("dual", $selectedDate);
   $: monthRange = new CalendarRange("month", start);

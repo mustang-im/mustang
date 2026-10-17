@@ -47,11 +47,14 @@
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";
   import { t } from "../../../l10n/l10n";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { tick } from "svelte";
 
   export let range: CalendarRange;
   export let rows: CalendarColumnGroup[];
-  export let timeScale: number;
+
+  const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
+  $: timeScale = $timeScaleSetting.value;
 
   const kNameWidth = 160;
   const kSlotWidth = 56;

@@ -78,16 +78,18 @@
   import TimeRuler from "./TimeRuler.svelte";
   import { TextWidth } from "../../Shared/TextWidth";
   import CalendarTab from "./CalendarTab.svelte";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { derived } from "svelte/store";
   import { onMount, tick } from "svelte";
 
   export let range: CalendarRange;
   export let groups: CalendarColumnGroup[];
-  export let timeScale: number;
   export let enlargeSelectedDay = false;
   export let onOpenDay: (day: Date) => void;
   export let onOverlay: () => void;
 
+  const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
+  $: timeScale = $timeScaleSetting.value;
   const kSlotHeight = 24;
   const kRulerWidth = 56;
   const rulerSettings = TimeZoneRuler.rulers;

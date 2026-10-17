@@ -225,8 +225,6 @@
   export let currentView: CalendarCurrentView;
   export let onCurrentView: (view: CalendarCurrentView) => void;
   export let onResetView: () => void;
-  export let splitView: boolean;
-  export let timeScale: number;
   export let onView: (view: CalendarViewType) => void;
   export let onToday: () => void;
   export let onNext7Days: () => void;
@@ -242,6 +240,8 @@
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", "off");
   const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);
   const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
+  $: splitView = $splitViewSetting.value;
+  $: timeScale = $timeScaleSetting.value;
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isSimplified = $ribbonLayout.value == "simplified";
 

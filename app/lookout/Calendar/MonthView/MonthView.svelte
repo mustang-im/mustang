@@ -24,13 +24,16 @@
   import type { CalendarRange } from "../View/CalendarRange";
   import { WeekNumber } from "../../Util/date";
   import WeekRow from "./WeekRow.svelte";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { Collection } from "svelte-collections";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let range: CalendarRange;
   export let events: Collection<Event>;
-  export let showWeekNumbers = false;
   export let onOpenDay: (day: Date) => void;
+
+  const weekNumbersSetting = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
+  $: showWeekNumbers = $weekNumbersSetting.value;
 
   let width = 1000;
 
