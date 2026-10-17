@@ -193,7 +193,7 @@
   import InsertTab from "../../Shared/Editor/InsertTab.svelte";
   import FormatTextTab from "../../Shared/Editor/FormatTextTab.svelte";
   import ReviewTab from "../../Shared/Editor/ReviewTab.svelte";
-  import type { EditorTool } from "../../Shared/Editor/EditorCommands";
+  import type { EditorTool } from "../../Shared/Editor/EditorTool";
   import type { Editor } from "@tiptap/core";
   import SignatureMenuItems from "../../Mail/Composer/SignatureMenuItems.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";

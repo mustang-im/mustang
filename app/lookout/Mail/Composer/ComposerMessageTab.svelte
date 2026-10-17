@@ -70,7 +70,7 @@
 
 <script lang="ts">
   import type { ComposerCommands } from "./ComposerCommands";
-  import { EditorTool } from "../../Shared/Editor/EditorCommands";
+  import { EditorTool } from "../../Shared/Editor/EditorTool";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { EditorClipboard } from "../../Shared/Editor/EditorClipboard";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";

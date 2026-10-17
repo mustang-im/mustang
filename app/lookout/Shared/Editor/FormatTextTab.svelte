@@ -90,7 +90,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorTool } from "./EditorCommands";
+  import { EditorTool } from "./EditorTool";
   import { EditorClipboard } from "./EditorClipboard";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";

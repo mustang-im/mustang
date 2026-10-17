@@ -35,7 +35,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorTool } from "./EditorCommands";
+  import { EditorTool } from "./EditorTool";
   import SymbolGallery from "./SymbolGallery.svelte";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";

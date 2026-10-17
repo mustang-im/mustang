@@ -11,7 +11,7 @@
 {/if}
 
 <script lang="ts">
-  import { EditorTool } from "./EditorCommands";
+  import { EditorTool } from "./EditorTool";
   import LinkDialog from "./LinkDialog.svelte";
   import DateTimeDialog from "./DateTimeDialog.svelte";
   import SymbolDialog from "./SymbolDialog.svelte";

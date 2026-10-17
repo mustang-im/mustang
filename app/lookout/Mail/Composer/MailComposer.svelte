@@ -159,7 +159,7 @@
   import { ComposerEncryption } from "./ComposerEncryption";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { DraftContent } from "./DraftContent";
-  import { EditorTool } from "../../Shared/Editor/EditorCommands";
+  import { EditorTool } from "../../Shared/Editor/EditorTool";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField } from "./SelectNamesDialog.svelte";

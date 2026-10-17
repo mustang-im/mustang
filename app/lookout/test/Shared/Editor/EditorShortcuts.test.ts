@@ -1,5 +1,5 @@
 import { EditorShortcuts, type ShortcutKey } from "../../../Shared/Editor/EditorShortcuts";
-import { EditorTool } from "../../../Shared/Editor/EditorCommands";
+import { EditorTool } from "../../../Shared/Editor/EditorTool";
 import { expect, test } from "vitest";
 
 function key(key: string, code: string, modifiers: Partial<ShortcutKey> = {}): ShortcutKey {

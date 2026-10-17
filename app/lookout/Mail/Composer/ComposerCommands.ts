@@ -2,7 +2,7 @@ import type { Editor } from "@tiptap/core";
 import type { EMail } from "../../../logic/Mail/EMail";
 import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
 import type { SMLData } from "../../../logic/Mail/SML/SMLData";
-import type { EditorTool } from "../../Shared/Editor/EditorCommands";
+import type { EditorTool } from "../../Shared/Editor/EditorTool";
 
 export interface ComposerCommands {
   mail: EMail;

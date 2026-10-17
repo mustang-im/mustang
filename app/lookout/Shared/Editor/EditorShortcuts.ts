@@ -1,4 +1,4 @@
-import { EditorTool } from "./EditorCommands";
+import { EditorTool } from "./EditorTool";
 
 export type ShortcutKey = Pick<KeyboardEvent, "key" | "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">;
 

@@ -10,7 +10,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { EditorTool } from "./EditorCommands";
+  import { EditorTool } from "./EditorTool";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";

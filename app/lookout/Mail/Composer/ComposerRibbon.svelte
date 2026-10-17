@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import type { ComposerCommands } from "./ComposerCommands";
-  import type { EditorTool } from "../../Shared/Editor/EditorCommands";
+  import type { EditorTool } from "../../Shared/Editor/EditorTool";
   import Ribbon from "../../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
