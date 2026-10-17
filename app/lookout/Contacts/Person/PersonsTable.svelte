@@ -153,10 +153,10 @@
   const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
   let isShowColumnsOpen = false;
   let isViewSettingsOpen = false;
-  $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
 
   $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
-  $: columns = ContactColumns.shownColumns($columnsSetting.value);
+  $: columns = columnsSetting && ContactColumns.shownColumns($columnsSetting.value);
+  $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
   $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
   $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
   $: listedContacts = ObservedItems.of(persons);
