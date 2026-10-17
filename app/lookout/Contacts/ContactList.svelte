@@ -63,16 +63,17 @@
     }
     selectedContacts.clear();
     selectedContacts.add(contact);
-    scrollToTop(contact);
+    let index = contacts.contents.indexOf(contact);
+    scrollToTop(Math.max(index - 1, 0));
   }
 
-  function scrollToTop(contact: Contact) {
+  function scrollToTop(index: number) {
     if (!scrollToIndex) {
       return;
     }
     // FastList scrolls only as far as needed, so coming from below puts the row at the top
     scrollToIndex(contacts.length - 1);
-    scrollToIndex(contacts.contents.indexOf(contact));
+    scrollToIndex(index);
   }
 
   function onContextMenu(event: MouseEvent, contact: Contact) {
