@@ -343,6 +343,16 @@
     return coll.contents.findIndex(a => a == item);
   }
 
+  $: selectedItem, selectItemFromCaller();
+  function selectItemFromCaller() {
+    let item = selectedItem; // `clear()` below clears it
+    if (!item || selectedItems.includes(item) || !items.includes(item)) {
+      return;
+    }
+    selectedItems.clear();
+    selectedItems.add(item);
+  }
+
   /**
    * Convenience class which returns just the first selected item
    */
