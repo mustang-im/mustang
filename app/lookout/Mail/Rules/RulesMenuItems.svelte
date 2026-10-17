@@ -2,7 +2,7 @@
   icon={AlwaysMoveIcon}
   disabled={(!message && $t`Select a message first`) ||
     (!message.from?.findPerson() && $t`The sender is not in your address book`)}
-  onClick={() => MailDialogs.open({ kind: "always-move-from", message })} />
+  onClick={() => { $openAlwaysMove = message; }} />
 <MenuItem label={$t`Create Rule…`} icon={CreateRuleIcon}
   disabled={!message && $t`Select a message first`}
   onClick={() => MessageActions.createRule(message)} />
@@ -14,7 +14,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { MessageActions } from "../MessageActions";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openAlwaysMove } from "./AlwaysMoveDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import AlwaysMoveIcon from "lucide-svelte/icons/folder-input";
   import CreateRuleIcon from "lucide-svelte/icons/list-plus";

@@ -54,8 +54,14 @@
     onClose={closeChooser} />
 {/if}
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { writable } from "svelte/store";
+
+  export const openNewSearchFolder = writable<{ account: MailAccount | null } | null>(null);
+</script>
+
+<script lang="ts">
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";

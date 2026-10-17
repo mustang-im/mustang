@@ -63,7 +63,7 @@
   import { openEvent } from "../../../frontend/Calendar/open";
   import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
   import { CalendarRange } from "../../Calendar/View/CalendarRange";
-  import { CurrentTime } from "../../Calendar/View/CurrentTime";
+  import { now } from "../../Calendar/selected";
   import DateNavigator from "../../Calendar/DateNavigator.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import { MailView, ToDoBarPart } from "../MailView";
@@ -74,7 +74,6 @@
 
   export let parts: ToDoBarPart[];
 
-  const now = CurrentTime.minute;
   const events = ObservedItems.of(shownCalendarEvents);
   const persons = ObservedItems.of(appGlobal.persons);
   let selectedDay = new Date();

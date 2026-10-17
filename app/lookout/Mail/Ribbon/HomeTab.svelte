@@ -57,10 +57,10 @@
   <RibbonGroup label={$t`Move`}>
     <RibbonButton label={$t`Move`} icon={MoveIcon} disabled={noSelection}
       tooltip={$t`Move the selected messages to another folder`} shortCutInfo="Ctrl+Shift+V"
-      onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: false })} />
+      onClick={() => { $openMoveMessages = { messages, copy: false }; }} />
     <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" disabled={noSelection}
       tooltip={$t`Copy the selected messages to another folder`} shortCutInfo="Ctrl+Shift+Y"
-      onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: true })} />
+      onClick={() => { $openMoveMessages = { messages, copy: true }; }} />
     <RibbonMenuButton label={$t`Rules`} icon={RulesIcon} size="small">
       <RulesMenuItems message={single} account={realAccount} />
     </RibbonMenuButton>
@@ -117,7 +117,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
   import { MessageActions } from "../MessageActions";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openMoveMessages } from "../Message/MessageMovePopup.svelte";
   import { SelectionState } from "../SelectionState";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";

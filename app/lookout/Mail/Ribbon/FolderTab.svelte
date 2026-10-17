@@ -5,7 +5,7 @@
       disabled={!realAccount ? $t`Select a folder of an account first` : folder && !isVirtual && folder.disableSubfolders()}
       shortCutInfo="Ctrl+Shift+E" />
     <RibbonButton label={$t`New Search Folder`} shortLabel={$t`Search *=> New search folder`} icon={NewSearchFolderIcon}
-      onClick={() => MailDialogs.open({ kind: "new-search-folder", account: realAccount })}
+      onClick={() => { $openNewSearchFolder = { account: realAccount }; }}
       shortCutInfo="Ctrl+Shift+P" />
   </RibbonGroup>
   <RibbonGroup label={$t`Actions`}>
@@ -13,7 +13,7 @@
       onClick={() => FolderTreeActions.renaming.set(folder)}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot rename this folder` : $folderStore?.disableRename()} />
     <RibbonButton label={$t`Move Folder`} shortLabel={$t`Move`} icon={MoveFolderIcon} size="small"
-      onClick={() => MailDialogs.open({ kind: "move-folder", folder })}
+      onClick={() => { $openMoveFolder = folder; }}
       disabled={!folder ? $t`Select a folder first` : FolderTreeActions.disableMove(folder)} />
     <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteFolderIcon} size="small"
       onClick={async () => { await FolderTreeActions.deleteFolder(folder); }}
@@ -30,12 +30,12 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Properties`}>
     <RibbonButton label={$t`Folder Permissions`} shortLabel={$t`Permissions`} icon={PermissionsIcon}
-      onClick={() => MailDialogs.open({ kind: "folder-properties", folder: realFolder, tab: FolderPropertiesTab.Permissions })}
+      onClick={() => { $openFolderProperties = { folder: realFolder, tab: FolderPropertiesTab.Permissions }; }}
       disabled={!realFolder
         ? $t`Select a folder of an account first`
         : !FolderTreeActions.canShare(realAccount) && $t`This account cannot share folders with colleagues`} />
     <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
-      onClick={() => MailDialogs.open({ kind: "folder-properties", folder })}
+      onClick={() => { $openFolderProperties = { folder }; }}
       disabled={!folder ? $t`Select a folder first` : isVirtual && $t`This is not a real folder`} />
   </RibbonGroup>
 </RibbonTab>
@@ -46,8 +46,10 @@
   import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
   import { appGlobal } from "../../../logic/app";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
-  import { FolderPropertiesTab } from "../Dialogs/FolderProperties/FolderPropertiesTab";
+  import { FolderPropertiesTab, openFolderProperties } from "../FolderProperties.svelte";
+  import { openNewFolder } from "../LeftPane/NewFolderDialog.svelte";
+  import { openMoveFolder } from "../LeftPane/MoveFolderDialog.svelte";
+  import { openNewSearchFolder } from "../Search/NewSearchFolderDialog.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -73,6 +75,6 @@
     : account && appGlobal.emailAccounts.contains(account) ? account : null;
 
   function onNewFolder() {
-    MailDialogs.open({ kind: "new-folder", account: realAccount, parent: folder && !isVirtual ? folder : null });
+    $openNewFolder = { account: realAccount, parent: folder && !isVirtual ? folder : null };
   }
 </script>

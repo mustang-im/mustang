@@ -13,9 +13,15 @@
   </vbox>
 </Dialog>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { writable } from "svelte/store";
+
+  export const openNewFolder = writable<{ account: MailAccount, parent: Folder | null } | null>(null);
+</script>
+
+<script lang="ts">
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { MailView } from "../MailView";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";

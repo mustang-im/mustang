@@ -13,11 +13,22 @@
   {/if}
 </Dialog>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Folder } from "../../logic/Mail/Folder";
+  import { writable } from "svelte/store";
+
+  export enum FolderPropertiesTab {
+    General = "general",
+    Permissions = "permissions",
+    Synchronization = "synchronization",
+  }
+
+  export const openFolderProperties = writable<{ folder: Folder, tab?: FolderPropertiesTab } | null>(null);
+</script>
+
+<script lang="ts">
   import { FolderCountMode, FolderTreeActions } from "./FolderPane/FolderTreeActions";
   import { FolderPermissions } from "./Dialogs/FolderProperties/FolderPermissions";
-  import { FolderPropertiesTab } from "./Dialogs/FolderProperties/FolderPropertiesTab";
   import FolderGeneralTab from "./FolderProperties/FolderGeneralTab.svelte";
   import FolderPermissionsTab from "./FolderProperties/FolderPermissionsTab.svelte";
   import FolderSyncTab from "./FolderProperties/FolderSyncTab.svelte";

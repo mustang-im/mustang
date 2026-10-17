@@ -10,16 +10,16 @@
   <MenuDivider />
 {/if}
 <MenuItem label={$t`Other Folder…`} icon={MoveIcon} shortCutInfo="Ctrl+Shift+V"
-  onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: false })} />
+  onClick={() => { $openMoveMessages = { messages, copy: false }; }} />
 <MenuItem label={$t`Copy to Folder…`} icon={CopyIcon} shortCutInfo="Ctrl+Shift+Y"
-  onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: true })} />
+  onClick={() => { $openMoveMessages = { messages, copy: true }; }} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { appGlobal } from "../../../logic/app";
   import { recentFolders } from "../RecentFolders";
   import { MessageActions } from "../MessageActions";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openMoveMessages } from "./MessageMovePopup.svelte";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";

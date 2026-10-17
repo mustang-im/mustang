@@ -11,8 +11,14 @@
   </svelte:fragment>
 </Dialog>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import { ApplyScope } from "./ViewSettings";
+  import { writable } from "svelte/store";
+
+  export const askedScope = writable<{ question: string, onChoice: (scope: ApplyScope | null) => void } | null>(null);
+</script>
+
+<script lang="ts">
   import { appName } from "../../../logic/build";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";

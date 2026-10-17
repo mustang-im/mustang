@@ -13,6 +13,12 @@
   </vbox>
 </Dialog>
 
+<script lang="ts" context="module">
+  import { writable } from "svelte/store";
+
+  export const openReadingPaneOptions = writable(false);
+</script>
+
 <script lang="ts">
   import { MailView } from "../MailView";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";

@@ -101,7 +101,9 @@
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "../Search/MailSearch";
   import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
+  import { openSaveSearch } from "../Search/SavedSearchUI.svelte";
+  import { openRulesFromSearch } from "../Search/RulesFromSearchUI.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -142,7 +144,7 @@
   $: scope = MailSearch.effectiveScope($options, account, folder);
 
   function pickPerson(fieldLabel: string, onPick: (person: Person) => void) {
-    MailDialogs.open({ kind: "search-person", fieldLabel, person: $options.person, onPick });
+    $openSearchPerson = { fieldLabel, person: $options.person, onPick };
     // The From toggle shows as pressed only once the person is picked
     MailSearch.update({});
   }
@@ -153,12 +155,12 @@
       ? $t`Search Folders can't filter by the received date`
       : false;
   function onSaveSearch() {
-    MailDialogs.open({ kind: "save-search", search });
+    $openSaveSearch = search;
   }
 
   $: ruleAccount = search?.account ??
     (MailSearch.isRealFolder(folder) ? folder.account : MailSearch.isRealAccount(account) ? account : null);
   function onCreateRule() {
-    MailDialogs.open({ kind: "rule-from-search", search, account: ruleAccount });
+    $openRulesFromSearch = { search, account: ruleAccount };
   }
 </script>

@@ -4,15 +4,15 @@
       {#each viewTypes as viewType}
         <MenuItem label={viewType.label} tooltip={viewType.tooltip} icon={viewType.icon}
           checked={$settings.type == viewType.id}
-          onClick={() => ViewCommands.changeView(folder, viewType.id)} />
+          onClick={() => MailViewSettings.change(folder, { type: viewType.id })} />
       {/each}
       <MenuDivider />
       <MenuItem label={$t`Apply Current View to Other Mail Folders…`}
-        onClick={() => ViewDialogs.open({ kind: "apply-view", folder })} />
+        onClick={() => { $openApplyView = { folder }; }} />
     </RibbonMenuButton>
     <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon} size="small"
       tooltip={$t`Change the columns, grouping, sorting and filter of this view`}
-      onClick={() => ViewCommands.openViewSettings(folder)} />
+      onClick={() => { $openViewSettings = { folder }; }} />
     <RibbonButton label={$t`Reset View`} icon={ResetIcon} size="small"
       tooltip={$t`Reset the message list and the layout to the default settings`}
       onClick={onResetView} />
@@ -24,18 +24,18 @@
     <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings`} icon={ConversationSettingsIcon} size="small"
       disabled={!$settings.showAsConversations && $t`Turn on Show as Conversations first`}>
       <MenuItem label={$t`Show Senders Above the Subject`} checked={$settings.showSendersAboveSubject} checkable
-        onClick={() => ViewCommands.setConversationOption(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject })} />
+        onClick={() => MailViewSettings.change(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject }, ApplyScope.AllFolders)} />
       <MenuItem label={$t`Always Expand Selected Conversation`} checked={$settings.alwaysExpandSelected} checkable
-        onClick={() => ViewCommands.setConversationOption(folder, { alwaysExpandSelected: !$settings.alwaysExpandSelected })} />
+        onClick={() => MailViewSettings.change(folder, { alwaysExpandSelected: !$settings.alwaysExpandSelected }, ApplyScope.AllFolders)} />
       <MenuItem label={$t`Use Classic Indented View`} checked={$settings.classicIndented} checkable
-        onClick={() => ViewCommands.setConversationOption(folder, { classicIndented: !$settings.classicIndented })} />
+        onClick={() => MailViewSettings.change(folder, { classicIndented: !$settings.classicIndented }, ApplyScope.AllFolders)} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Arrangement`}>
     <RibbonMenuButton label={$t`Message Preview`} icon={PreviewIcon}>
       {#each previewOptions as option}
         <MenuItem label={option.label} checked={$settings.previewLines == option.lines}
-          onClick={() => ViewCommands.setPreviewLines(folder, option.lines)} />
+          onClick={() => onPreviewLines(option.lines)} />
       {/each}
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`Arrange By`} shortLabel={$t`Arrange`} icon={ArrangeIcon}>
@@ -43,10 +43,10 @@
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Reverse Sort`} icon={ReverseIcon} size="small"
       checked={!!$settings.reverseSort}
-      onChange={checked => ViewCommands.setReverseSort(folder, checked)} />
+      onChange={checked => MailViewSettings.change(folder, { reverseSort: checked })} />
     <RibbonButton label={$t`Add Columns`} icon={AddColumnsIcon} size="small"
       tooltip={$t`Choose the columns of the single-line view`}
-      onClick={() => ViewCommands.addColumns(folder)} />
+      onClick={onAddColumns} />
     <RibbonMenuButton label={$t`Expand/Collapse`} icon={ExpandCollapseIcon} size="small"
       disabled={!$settings.showInGroups && $t`Turn on Show in Groups first`}>
       <MenuItem label={$t`Collapse This Group`} icon={CollapseIcon} onClick={() => onCollapseGroup(true)} />
@@ -79,7 +79,7 @@
       <MenuItem label={$t`Off`} icon={OffIcon} checked={$readingPane.value == "off"}
         onClick={() => { $readingPane.value = "off"; }} />
       <MenuDivider />
-      <MenuItem label={$t`Options…`} onClick={() => MailDialogs.open({ kind: "reading-pane-options" })} />
+      <MenuItem label={$t`Options…`} onClick={() => { $openReadingPaneOptions = true; }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`To-Do Bar`} icon={ToDoBarIcon}>
       <MenuItem label={$t`Calendar`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
@@ -100,9 +100,11 @@
   import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { ApplyScope, MailViewSettings, ViewType } from "../ViewSettings/ViewSettings";
-  import { ViewCommands } from "../View/ViewCommands";
-  import { ViewDialogs } from "../View/ViewDialogs";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openViewSettings } from "../ViewSettings/ViewSettingsDialog.svelte";
+  import { openShowColumns } from "../ViewSettings/ShowColumnsDialog.svelte";
+  import { askedScope } from "../ViewSettings/ApplyScopeDialog.svelte";
+  import { openApplyView } from "../ViewSettings/ApplyViewDialog.svelte";
+  import { openReadingPaneOptions } from "../Message/ReadingPaneOptionsDialog.svelte";
   import ArrangeByMenuItems from "../ViewSettings/ArrangeByMenuItems.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -153,9 +155,34 @@
   $: conversationsChecked = !!$settings.showAsConversations;
 
   async function onShowAsConversations(checked: boolean) {
-    await ViewCommands.setShowAsConversations(folder, checked);
+    let scope = await askScope(checked
+      ? $t`Do you want to show messages arranged by conversations in all folders or just this folder?`
+      : $t`Do you want to stop showing messages arranged by conversations in all folders or just this folder?`);
+    if (scope) {
+      MailViewSettings.change(folder, { showAsConversations: checked }, scope);
+    }
     conversationsChecked = !!MailViewSettings.of(folder).showAsConversations;
   }
+
+  async function onPreviewLines(lines: number) {
+    let scope = await askScope($t`Do you want to change the message preview in all folders or just this folder?`);
+    if (scope) {
+      MailViewSettings.change(folder, { previewLines: lines }, scope);
+    }
+  }
+
+  function askScope(question: string): Promise<ApplyScope | null> {
+    return new Promise(resolve => $askedScope = { question, onChoice: resolve });
+  }
+
+  /* <copied to="../3pane/ColumnHeader.svelte"> */
+  function onAddColumns() {
+    if (MailViewSettings.of(folder).type == ViewType.Compact) {
+      MailViewSettings.change(folder, { type: ViewType.Single });
+    }
+    $openShowColumns = { folder };
+  }
+  /* </copied> */
 
   function onResetView() {
     MailViewSettings.reset(folder);

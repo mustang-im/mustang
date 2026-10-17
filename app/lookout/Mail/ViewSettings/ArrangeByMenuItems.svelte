@@ -9,23 +9,24 @@
   <MenuLabel label={$t`Sort order`} />
   {#each sortOrders as order}
     <MenuItem label={order.label} checked={!!$settings.reverseSort == order.reversed}
-      onClick={() => ViewCommands.setReverseSort(folder, order.reversed)} />
+      onClick={() => MailViewSettings.change(folder, { reverseSort: order.reversed })} />
   {/each}
 {/if}
 <MenuDivider />
 {#if !withSortOrder}
   <MenuItem label={$t`Reverse Sort`} checked={$settings.reverseSort} checkable
-    onClick={() => ViewCommands.setReverseSort(folder, !$settings.reverseSort)} />
+    onClick={() => MailViewSettings.change(folder, { reverseSort: !$settings.reverseSort })} />
 {/if}
 <MenuItem label={$t`Show in Groups`} checked={$settings.showInGroups} checkable
-  onClick={() => ViewCommands.setShowInGroups(folder, !$settings.showInGroups)} />
+  onClick={() => MailViewSettings.change(folder, { showInGroups: !$settings.showInGroups })} />
 <MenuDivider />
-<MenuItem label={$t`View Settings…`} onClick={() => ViewCommands.openViewSettings(folder)} />
+<MenuItem label={$t`View Settings…`} onClick={() => { $openViewSettings = { folder }; }} />
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import { ArrangeFields, MailViewSettings } from "./ViewSettings";
   import { ViewCommands } from "../View/ViewCommands";
+  import { openViewSettings } from "./ViewSettingsDialog.svelte";
   import { MessageGrouping } from "../3pane/MessageGrouping";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";

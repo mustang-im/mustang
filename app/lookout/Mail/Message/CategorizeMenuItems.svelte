@@ -13,14 +13,14 @@
 {/each}
 <MenuDivider />
 <MenuItem label={$t`All Categories…`} icon={AllCategoriesIcon}
-  onClick={() => MailDialogs.open({ kind: "color-categories", messages })} />
+  onClick={() => { $openColorCategories = messages; }} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { MessageActions } from "../MessageActions";
   import { SelectionState, TagState } from "../SelectionState";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openColorCategories } from "../../Shared/Tag/ColorCategoriesDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";

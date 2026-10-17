@@ -19,8 +19,14 @@
   </vbox>
 </Dialog>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Folder } from "../../../logic/Mail/Folder";
+  import { writable } from "svelte/store";
+
+  export const openApplyView = writable<{ folder: Folder | null } | null>(null);
+</script>
+
+<script lang="ts">
   import { appGlobal } from "../../../logic/app";
   import { MailViewSettings } from "./ViewSettings";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";

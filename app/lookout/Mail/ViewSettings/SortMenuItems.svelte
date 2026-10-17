@@ -6,7 +6,7 @@
 <MenuLabel label={$t`Sort order`} />
 {#each sortOrders as order}
   <MenuItem label={order.label} checkable checked={!!$settings.reverseSort == order.reversed}
-    onClick={() => ViewCommands.setReverseSort(folder, order.reversed)} />
+    onClick={() => MailViewSettings.change(folder, { reverseSort: order.reversed })} />
 {/each}
 
 <script lang="ts">

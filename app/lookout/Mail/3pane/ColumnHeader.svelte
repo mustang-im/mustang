@@ -42,20 +42,22 @@
     <MenuItem label={$t`Sort Descending`} icon={DescendingIcon}
       onClick={() => sortColumn(contextInfo.sortField, false)} />
     <MenuItem label={$t`Group By This Field`} icon={GroupIcon}
-      onClick={() => ViewCommands.groupByField(folder, contextInfo.sortField)} />
+      onClick={() => MailViewSettings.change(folder, { groupBy: contextInfo.sortField, groupReverse: false, showInGroups: true })} />
     <MenuDivider />
   {/if}
   <MenuItem label={$t`Remove This Column`} icon={RemoveIcon}
     disabled={contextColumn == Column.Subject && $t`The list needs the Subject column`}
-    onClick={() => ViewCommands.removeColumn(folder, contextColumn)} />
-  <MenuItem label={$t`Add Columns…`} icon={AddColumnsIcon} onClick={() => ViewCommands.addColumns(folder)} />
+    onClick={() => MailViewSettings.change(folder, { columns: MailViewSettings.of(folder).columns.filter(column => column != contextColumn) })} />
+  <MenuItem label={$t`Add Columns…`} icon={AddColumnsIcon} onClick={onAddColumns} />
   <MenuDivider />
-  <MenuItem label={$t`View Settings…`} icon={SettingsIcon} onClick={() => ViewCommands.openViewSettings(folder)} />
+  <MenuItem label={$t`View Settings…`} icon={SettingsIcon} onClick={() => { $openViewSettings = { folder }; }} />
 </ContextMenu>
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { Column, ColumnInfo, type ViewSettings } from "../ViewSettings/ViewSettings";
+  import { Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
+  import { openViewSettings } from "../ViewSettings/ViewSettingsDialog.svelte";
+  import { openShowColumns } from "../ViewSettings/ShowColumnsDialog.svelte";
   import { ViewCommands } from "../View/ViewCommands";
   import { ArrangeBy, MessageGrouping } from "./MessageGrouping";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
@@ -107,12 +109,21 @@
 
   function sortColumn(field: ArrangeBy, ascending: boolean) {
     ViewCommands.arrangeBy(folder, field);
-    ViewCommands.setReverseSort(folder, MessageGrouping.isDescendingByDefault(field) == ascending);
+    MailViewSettings.change(folder, { reverseSort: MessageGrouping.isDescendingByDefault(field) == ascending });
   }
 
   let contextMenu: ContextMenu;
   let contextColumn: Column = null;
   $: contextInfo = contextColumn ? ColumnInfo.of(contextColumn) : null;
+  /* <copied from="../Ribbon/ViewTab.svelte"> */
+  function onAddColumns() {
+    if (MailViewSettings.of(folder).type == ViewType.Compact) {
+      MailViewSettings.change(folder, { type: ViewType.Single });
+    }
+    $openShowColumns = { folder };
+  }
+  /* </copied> */
+
   function onContextMenu(column: Column, event: MouseEvent) {
     event.preventDefault();
     contextColumn = column;
@@ -137,7 +148,7 @@
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
       onResizing(column, null);
-      ViewCommands.resizeColumn(folder, column, width);
+      MailViewSettings.change(folder, { columnWidths: { ...MailViewSettings.of(folder).columnWidths, [column]: Math.round(width) } });
     }
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);

@@ -25,8 +25,14 @@
     onOK={onPicked} onCancel={() => { isPicking = false; }} />
 {/if}
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { writable } from "svelte/store";
+
+  export const openSharedFolder = writable<MailAccount | null>(null);
+</script>
+
+<script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { SharedFolders, SharedFolderType } from "../Dialogs/SharedFolders";
   import { SelectNamesField } from "../Composer/SelectNames";

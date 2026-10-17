@@ -1,5 +1,5 @@
 <MenuItem label={$t`New Folder…`} icon={NewFolderIcon}
-  onClick={() => MailDialogs.open({ kind: "new-folder", account, parent: null })} />
+  onClick={() => { $openNewFolder = { account, parent: null }; }} />
 <MenuDivider />
 <MenuItem label={$t`Update Folder`} icon={UpdateIcon}
   tooltip={$t`Get new mail for this account`}
@@ -7,7 +7,7 @@
 {#if FolderTreeActions.canShare(account)}
   <MenuItem label={$t`Open Shared Folder…`} icon={SharedFolderIcon}
     tooltip={$t`Open the folders that colleagues shared with you`}
-    onClick={() => MailDialogs.open({ kind: "shared-folder", account })} />
+    onClick={() => { $openSharedFolder = account; }} />
 {/if}
 <MenuItem label={$t`Manage Rules & Alerts…`} icon={RulesIcon}
   onClick={() => MessageActions.openRules(account)} />
@@ -34,7 +34,8 @@
   import { SettingsDialogs } from "../../Settings/SettingsDialogs";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import { MessageActions } from "../MessageActions";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openNewFolder } from "./NewFolderDialog.svelte";
+  import { openSharedFolder } from "./SharedFolderDialog.svelte";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";

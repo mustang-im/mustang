@@ -1,8 +1,14 @@
 <RulesWizard {model} onFinish={onFinish} onCancel={onClose} />
 
-<script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+<script lang="ts" context="module">
   import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { writable } from "svelte/store";
+
+  export const openRulesFromSearch = writable<{ search: SearchEMail, account: MailAccount } | null>(null);
+</script>
+
+<script lang="ts">
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { RuleWizardModel } from "../Rules/RuleWizardModel";
   import RulesWizard from "../Rules/RulesWizard.svelte";

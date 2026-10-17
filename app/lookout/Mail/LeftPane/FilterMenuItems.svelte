@@ -33,7 +33,7 @@
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { MailFilters, QuickFilter } from "../MailFilters";
   import { MailSearch } from "../Search/MailSearch";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
@@ -65,11 +65,10 @@
   }
 
   function onSentTo() {
-    MailDialogs.open({
-      kind: "search-person",
+    $openSearchPerson = {
       fieldLabel: $t`To`,
       person: MailSearch.isSentTo($options) ? $options.person : null,
       onPick: person => person && MailFilters.searchInFolder({ person, isOutgoing: true }),
-    });
+    };
   }
 </script>

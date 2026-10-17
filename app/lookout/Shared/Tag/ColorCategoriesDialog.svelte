@@ -39,8 +39,14 @@
   <TagAdd onAdded={onAdded} onClose={() => isAdding = false} />
 {/if}
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Tag, TaggableObject } from "../../../logic/Abstract/Tag";
+  import { writable } from "svelte/store";
+
+  export const openColorCategories = writable<TaggableObject[] | null>(null);
+</script>
+
+<script lang="ts">
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { TagState } from "../../Mail/SelectionState";
   import { MessageBox } from "../Dialog/MessageBox";

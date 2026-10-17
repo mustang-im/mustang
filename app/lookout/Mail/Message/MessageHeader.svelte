@@ -120,14 +120,17 @@
     <DisplayModeSwitcher />
   </SubMenu>
   <MenuItem label={$t`Message Properties…`} icon={PropertiesIcon}
-    onClick={() => MailDialogs.open({ kind: "message-properties", message })} />
+    onClick={() => { isPropertiesOpen = true; }} />
 </Menu>
+{#if isPropertiesOpen}
+  <MessagePropertiesDialog {message} on:close={() => isPropertiesOpen = false} />
+{/if}
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
-  import { MailDialogs } from "../Dialogs/MailDialogs";
+  import MessagePropertiesDialog from "./MessagePropertiesDialog.svelte";
   import { MessageDates } from "../MessageList/MessageDates";
   import { ObservedItems } from "../../Shared/ObservedItems";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
@@ -174,6 +177,7 @@
 
   let moreEl: HTMLButtonElement;
   let isMoreOpen = false;
+  let isPropertiesOpen = false;
 </script>
 
 <style>

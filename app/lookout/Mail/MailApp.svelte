@@ -24,8 +24,66 @@
     highlight={searchResults ? searchTerm : null}
     isLoading={isLoading || isSearching} />
 </vbox>
-<MailDialogHost />
-<ViewDialogHost />
+{#if $openMoveMessages}
+  <MessageMovePopup messages={$openMoveMessages.messages} copy={$openMoveMessages.copy} on:close={() => $openMoveMessages = null} />
+{/if}
+{#if $openNewFolder}
+  <NewFolderDialog account={$openNewFolder.account} parent={$openNewFolder.parent} on:close={() => $openNewFolder = null} />
+{/if}
+{#if $openMoveFolder}
+  <MoveFolderDialog folder={$openMoveFolder} on:close={() => $openMoveFolder = null} />
+{/if}
+{#if isGoToFolderOpen}
+  <GoToFolderDialog on:close={() => isGoToFolderOpen = false} />
+{/if}
+{#if $openFolderProperties}
+  <FolderProperties folder={$openFolderProperties.folder} tab={$openFolderProperties.tab} on:close={() => $openFolderProperties = null} />
+{/if}
+{#if $openReadingPaneOptions}
+  <ReadingPaneOptionsDialog on:close={() => $openReadingPaneOptions = false} />
+{/if}
+{#if $openColorCategories}
+  <ColorCategoriesDialog items={$openColorCategories} onClose={() => $openColorCategories = null} />
+{/if}
+{#if $openSaveSearch}
+  <SavedSearchUI search={$openSaveSearch} on:close={() => $openSaveSearch = null} />
+{/if}
+{#if $openRulesFromSearch}
+  <RulesFromSearchUI search={$openRulesFromSearch.search} account={$openRulesFromSearch.account} on:close={() => $openRulesFromSearch = null} />
+{/if}
+{#if $openAlwaysMove}
+  <AlwaysMoveDialog message={$openAlwaysMove} on:close={() => $openAlwaysMove = null} />
+{/if}
+{#if $openSearchPerson}
+  <SearchPersonDialog fieldLabel={$openSearchPerson.fieldLabel} person={$openSearchPerson.person} onPick={$openSearchPerson.onPick}
+    on:close={() => $openSearchPerson = null} />
+{/if}
+{#if $openSharedFolder}
+  <SharedFolderDialog account={$openSharedFolder} on:close={() => $openSharedFolder = null} />
+{/if}
+{#if $openNewSearchFolder}
+  <NewSearchFolderDialog defaultAccount={$openNewSearchFolder.account} on:close={() => $openNewSearchFolder = null} />
+{/if}
+{#if $openCustomizeSearchFolder}
+  <CustomizeSearchFolderDialog title={$t`Customize Search Folder`}
+    name={$openCustomizeSearchFolder.name} search={$openCustomizeSearchFolder.search.clone()}
+    onOK={(name, search) => SearchFolderCustomizing.save($openCustomizeSearchFolder, name, search)}
+    onClose={() => $openCustomizeSearchFolder = null} />
+{/if}
+{#if $openViewSettings}
+  <ViewSettingsDialog folder={$openViewSettings.folder} on:close={() => $openViewSettings = null} />
+{/if}
+{#if $openShowColumns}
+  <ShowColumnsDialog columns={MailViewSettings.of($openShowColumns.folder).columns}
+    onOK={columns => MailViewSettings.change($openShowColumns.folder, { columns })}
+    on:close={() => $openShowColumns = null} />
+{/if}
+{#if $openApplyView}
+  <ApplyViewDialog folder={$openApplyView.folder} on:close={() => $openApplyView = null} />
+{/if}
+{#if $askedScope}
+  <ApplyScopeDialog question={$askedScope.question} onChoice={$askedScope.onChoice} on:close={onScopeClosed} />
+{/if}
 <MessagePrint />
 <svelte:window on:keydown={onKeyDown} on:focusin={onFocusChange} on:focusout={onFocusChange} />
 
@@ -46,7 +104,6 @@
   import { TitleBarSearch } from "../MainWindow/TitleBarSearch";
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "./MessageActions";
-  import { MailDialogs } from "./Dialogs/MailDialogs";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
   import { QuickFilterList } from "./QuickFilterList";
   import { FolderTreeActions } from "./FolderPane/FolderTreeActions";
@@ -61,9 +118,26 @@
   import ThreePane from "./3pane/3Pane.svelte";
   import type MessageListPane from "./3pane/MessageListPane.svelte";
   import MessagePrint from "./Message/MessagePrint.svelte";
-  import MailDialogHost from "./Dialogs/MailDialogHost.svelte";
-  import ViewDialogHost from "./View/ViewDialogHost.svelte";
-  import { ViewDialogs } from "./View/ViewDialogs";
+  import MessageMovePopup, { openMoveMessages } from "./Message/MessageMovePopup.svelte";
+  import NewFolderDialog, { openNewFolder } from "./LeftPane/NewFolderDialog.svelte";
+  import MoveFolderDialog, { openMoveFolder } from "./LeftPane/MoveFolderDialog.svelte";
+  import GoToFolderDialog from "./LeftPane/GoToFolderDialog.svelte";
+  import FolderProperties, { openFolderProperties } from "./FolderProperties.svelte";
+  import ReadingPaneOptionsDialog, { openReadingPaneOptions } from "./Message/ReadingPaneOptionsDialog.svelte";
+  import ColorCategoriesDialog, { openColorCategories } from "../Shared/Tag/ColorCategoriesDialog.svelte";
+  import SavedSearchUI, { openSaveSearch } from "./Search/SavedSearchUI.svelte";
+  import RulesFromSearchUI, { openRulesFromSearch } from "./Search/RulesFromSearchUI.svelte";
+  import AlwaysMoveDialog, { openAlwaysMove } from "./Rules/AlwaysMoveDialog.svelte";
+  import SearchPersonDialog, { openSearchPerson } from "./Search/SearchPersonDialog.svelte";
+  import SharedFolderDialog, { openSharedFolder } from "./LeftPane/SharedFolderDialog.svelte";
+  import NewSearchFolderDialog, { openNewSearchFolder } from "./Search/NewSearchFolderDialog.svelte";
+  import CustomizeSearchFolderDialog, { openCustomizeSearchFolder } from "./Search/CustomizeSearchFolderDialog.svelte";
+  import { SearchFolderCustomizing } from "./Search/SearchFolderCriteria";
+  import ViewSettingsDialog, { openViewSettings } from "./ViewSettings/ViewSettingsDialog.svelte";
+  import ShowColumnsDialog, { openShowColumns } from "./ViewSettings/ShowColumnsDialog.svelte";
+  import ApplyViewDialog, { openApplyView } from "./ViewSettings/ApplyViewDialog.svelte";
+  import ApplyScopeDialog, { askedScope } from "./ViewSettings/ApplyScopeDialog.svelte";
+  import { MailViewSettings } from "./ViewSettings/ViewSettings";
   import ConnectedIcon from "lucide-svelte/icons/plug-zap";
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import ErrorIcon from "lucide-svelte/icons/circle-alert";
@@ -79,8 +153,6 @@
   const searchOptions = MailSearch.options;
   const updatingFolders = MessageActions.updatingFolders;
   const accounts = appGlobal.emailAccounts;
-  const dialog = MailDialogs.current;
-  const viewDialog = ViewDialogs.current;
   const inlineRibbon = InlineReplies.ribbon;
 
   let pageEl: HTMLElement;
@@ -347,8 +419,36 @@
     }
   });
 
+  let isGoToFolderOpen = false;
+
+  function onScopeClosed() {
+    $askedScope.onChoice(null);
+    $askedScope = null;
+  }
+
+  onDestroy(() => {
+    $openMoveMessages = null;
+    $openNewFolder = null;
+    $openMoveFolder = null;
+    $openFolderProperties = null;
+    $openReadingPaneOptions = false;
+    $openColorCategories = null;
+    $openSaveSearch = null;
+    $openRulesFromSearch = null;
+    $openAlwaysMove = null;
+    $openSearchPerson = null;
+    $openSharedFolder = null;
+    $openNewSearchFolder = null;
+    $openCustomizeSearchFolder = null;
+    $openViewSettings = null;
+    $openShowColumns = null;
+    $openApplyView = null;
+    $askedScope?.onChoice(null);
+    $askedScope = null;
+  });
+
   function onKeyDown(event: KeyboardEvent) {
-    if (event.defaultPrevented || $dialog || $viewDialog) {
+    if (event.defaultPrevented || document.querySelector("dialog:modal")) {
       return;
     }
     let target = event.target as HTMLElement;
@@ -397,15 +497,17 @@
         return;
       case MailKeyAction.NewFolder:
         if (MailSearch.isRealFolder(folder)) {
-          MailDialogs.open({ kind: "new-folder", account: folder.account, parent: folder });
+          $openNewFolder = { account: folder.account, parent: folder };
         } else if (MailSearch.isRealAccount($selectedAccount) || $accounts.hasItems) {
-          MailDialogs.open({ kind: "new-folder", account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : $accounts.first, parent: null });
+          $openNewFolder = { account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : $accounts.first, parent: null };
         }
         return;
       case MailKeyAction.NewSearchFolder:
-        return MailDialogs.open({ kind: "new-search-folder", account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : null });
+        $openNewSearchFolder = { account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : null };
+        return;
       case MailKeyAction.GoToFolder:
-        return MailDialogs.open({ kind: "go-to-folder" });
+        isGoToFolderOpen = true;
+        return;
       case MailKeyAction.AddressBook:
         return MessageActions.openAddressBook();
       case MailKeyAction.NextMessage:
@@ -434,9 +536,11 @@
       case MailKeyAction.NotJunk:
         return await MessageActions.junk(messages, false);
       case MailKeyAction.MoveToFolder:
-        return MailDialogs.open({ kind: "move-messages", messages, copy: false });
+        $openMoveMessages = { messages, copy: false };
+        return;
       case MailKeyAction.CopyToFolder:
-        return MailDialogs.open({ kind: "move-messages", messages, copy: true });
+        $openMoveMessages = { messages, copy: true };
+        return;
     }
     if (!single) {
       return;

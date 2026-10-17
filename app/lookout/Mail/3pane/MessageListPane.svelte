@@ -149,7 +149,7 @@
   import { ArrangeFields, Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
   import { MailFilters, QuickFilter } from "../MailFilters";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { CurrentTime } from "../../Calendar/View/CurrentTime";
+  import { now } from "../../Calendar/selected";
   import TableMessageList from "./TableMessageList.svelte";
   import ColumnHeader from "./ColumnHeader.svelte";
   import ConnectButton from "../LeftPane/ConnectButton.svelte";
@@ -185,7 +185,6 @@
   export let onMoreResults: () => Promise<void> = null;
   export let listEl: HTMLDivElement = null;
 
-  const currentMinute = CurrentTime.minute;
 
   let messageList: TableMessageList;
   let arrangeEl: HTMLButtonElement;
@@ -251,7 +250,7 @@
   }
 
   let grouping: MessageGrouping<EMail>;
-  $: todayStart = new Date($currentMinute).setHours(0, 0, 0, 0);
+  $: todayStart = new Date($now).setHours(0, 0, 0, 0);
   $: todayStart, grouping = new MessageGrouping<EMail>($settings.arrangeBy, !!$settings.reverseSort, !!$settings.showInGroups,
     message => ListName.of(message), new Date(), !!$settings.showAsConversations,
     $settings.groupBy ?? null, !!$settings.groupReverse);
