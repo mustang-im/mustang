@@ -225,6 +225,7 @@ export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStar
     return new RecurrenceRule(data);
   }
 
+  // Must be fast, because it's used by `event.hasChanged()`
   protected get effectiveWeekdays(): Weekday[] {
     if (this.weekdays) {
       return this.weekdays;
