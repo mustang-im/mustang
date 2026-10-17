@@ -4,7 +4,7 @@
     {slot.label}{onClick ? "…" : ""}
   </button>
   <button type="button" class="arrow" aria-label={$t`Choose the field`} aria-haspopup="menu"
-    on:click={() => isMenuOpen = !isMenuOpen}>
+    on:click|stopPropagation={() => isMenuOpen = !isMenuOpen}>
     <ChevronDownIcon size="12" />
   </button>
 </hbox>

@@ -11,7 +11,7 @@
   <h1 class="title">{range.title(getDateTimeLocale())}</h1>
   <hbox flex />
   <slot />
-  <button class="view-button" bind:this={viewButtonEl} on:click={() => isViewMenuOpen = !isViewMenuOpen}
+  <button class="view-button" bind:this={viewButtonEl} on:click|stopPropagation={() => isViewMenuOpen = !isViewMenuOpen}
     aria-haspopup="menu" title={$t`Change the view`}>
     <svelte:component this={viewIcons[view]} size="16" />
     <span>{viewLabels[view]}</span>
