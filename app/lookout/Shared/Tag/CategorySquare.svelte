@@ -6,8 +6,15 @@
   {/if}
 </hbox>
 
+<script lang="ts" context="module">
+  export enum TagState {
+    None = "none",
+    Some = "some",
+    All = "all",
+  }
+</script>
+
 <script lang="ts">
-  import { TagState } from "../../Mail/SelectionState";
   import CheckIcon from "lucide-svelte/icons/check";
   import PartialIcon from "lucide-svelte/icons/minus";
 

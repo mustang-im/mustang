@@ -10,7 +10,6 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MessageActions } from "../MessageActions";
-  import { SelectionState } from "../SelectionState";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import FlagIcon from "lucide-svelte/icons/flag";
@@ -19,6 +18,6 @@
 
   export let messages: EMail[];
 
-  $: allFlagged = SelectionState.allFlagged(messages);
+  $: allFlagged = messages.length > 0 && messages.every(message => message.isStarred);
   $: anyFlagged = messages.some(message => message.isStarred);
 </script>

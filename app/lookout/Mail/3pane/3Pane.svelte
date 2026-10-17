@@ -88,6 +88,7 @@
     min-width: 0;
     min-height: 0;
   }
+  /* <copied to="../../Calendar/CalendarApp.svelte"> */
   .reading-pane-layout {
     min-width: 0;
     min-height: 0;
@@ -120,4 +121,5 @@
   .part :global(> *) {
     flex: 1 0 0;
   }
+  /* </copied> */
 </style>

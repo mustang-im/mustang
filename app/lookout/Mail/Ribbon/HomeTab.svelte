@@ -118,7 +118,6 @@
   import { appGlobal } from "../../../logic/app";
   import { MessageActions } from "../MessageActions";
   import { openMoveMessages } from "../Message/MessageMovePopup.svelte";
-  import { SelectionState } from "../SelectionState";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -195,6 +194,6 @@
       openPerson(peopleMatches[0]);
     }
   }
-  $: shouldMarkRead = !messages.length || SelectionState.shouldMarkRead(messages);
+  $: shouldMarkRead = !messages.length || !messages.every(message => message.isRead);
   $: realAccount = account && appGlobal.emailAccounts.contains(account) ? account : null;
 </script>

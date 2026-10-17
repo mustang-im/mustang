@@ -48,13 +48,12 @@
 
 <script lang="ts">
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { TagState } from "../../Mail/SelectionState";
   import { MessageBox } from "../Dialog/MessageBox";
   import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
   import { CategoryColors } from "../../Mail/Categories/CategoryColors";
   import { ObservedItems } from "../ObservedItems";
   import TagAdd from "./TagAdd.svelte";
-  import CategorySquare from "./CategorySquare.svelte";
+  import CategorySquare, { TagState } from "./CategorySquare.svelte";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
   import ListView from "../Form/ListView.svelte";

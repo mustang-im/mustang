@@ -417,12 +417,14 @@
 
   let status: StatusBarContent;
   $: status = { left: statusItemsLeft, right: statusItemsRight, views: statusViews };
+  // <copied to="../Calendar/CalendarApp.svelte, ../Contacts/ContactsAppD.svelte">
   $: $statusBarContent = status;
   onDestroy(() => {
     if (get(statusBarContent) == status) {
       statusBarContent.set(null);
     }
   });
+  // </copied>
 
   let isGoToFolderOpen = false;
 

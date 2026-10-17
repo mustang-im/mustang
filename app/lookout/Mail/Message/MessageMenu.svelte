@@ -55,7 +55,6 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { MessageActions } from "../MessageActions";
-  import { SelectionState } from "../SelectionState";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import FollowUpMenuItems from "./FollowUpMenuItems.svelte";
   import JunkMenuItems from "./JunkMenuItems.svelte";
@@ -86,5 +85,5 @@
   export let messages: EMail[];
 
   $: single = messages.length == 1 ? messages[0] : null;
-  $: allRead = SelectionState.allRead(messages);
+  $: allRead = messages.length > 0 && messages.every(message => message.isRead);
 </script>

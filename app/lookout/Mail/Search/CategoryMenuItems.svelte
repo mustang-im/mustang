@@ -8,10 +8,9 @@
 
 <script lang="ts">
   import { availableTags, type Tag } from "../../../logic/Abstract/Tag";
-  import { TagState } from "../SelectionState";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
-  import CategorySquare from "../../Shared/Tag/CategorySquare.svelte";
+  import CategorySquare, { TagState } from "../../Shared/Tag/CategorySquare.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let selected: Tag[];

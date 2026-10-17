@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { QuickFilterList } from "../../Mail/QuickFilterList";
-import { SelectionState } from "../../Mail/SelectionState";
 import { QuickSearchEMail } from "../../../logic/Mail/Store/QuickSearchEMail";
 import { ArrayColl } from "svelte-collections";
 import { expect, test } from "vitest";
@@ -96,14 +95,4 @@ test("No filter: no list of its own", async () => {
   let search = new QuickSearchEMail();
   search.folder = folder;
   expect(await new QuickFilterList().filter(search, new ArrayColl<any>())).toBeNull();
-});
-
-test("Only a deleted or moved message hands the selection to its neighbor, not a message that left the view", () => {
-  let folder = newFolder(["a", "b"]);
-  let [a, b] = folder.messages.contents;
-  a.isRead = true;
-  expect(SelectionState.isRemovedFromFolder(a)).toBe(false);
-  folder.messages.remove(b);
-  expect(SelectionState.isRemovedFromFolder(b)).toBe(true);
-  expect(SelectionState.isRemovedFromFolder({ folder: null })).toBe(true);
 });

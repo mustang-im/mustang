@@ -7,7 +7,6 @@ import type { Tag } from "../../logic/Abstract/Tag";
 import { Person } from "../../logic/Abstract/Person";
 import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
-import { SelectionState } from "./SelectionState";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
 import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
 import { InlineReplies } from "./Composer/InlineReplies";
@@ -199,7 +198,7 @@ export class MessageActions {
   }
 
   static async toggleRead(messages: EMail[]) {
-    await MessageActions.markRead(messages, SelectionState.shouldMarkRead(messages));
+    await MessageActions.markRead(messages, !messages.every(message => message.isRead));
   }
 
   static async flag(messages: EMail[], flagged: boolean) {
@@ -207,7 +206,7 @@ export class MessageActions {
   }
 
   static async toggleFlag(messages: EMail[]) {
-    await MessageActions.flag(messages, SelectionState.shouldFlag(messages));
+    await MessageActions.flag(messages, !messages.every(message => message.isStarred));
   }
 
   static async toggleTag(messages: EMail[], tag: Tag) {
