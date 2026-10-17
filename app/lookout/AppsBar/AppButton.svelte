@@ -2,7 +2,7 @@
   title={$title}
   aria-label={$title}
   aria-current={selected ? "page" : undefined}
-  on:click={() => catchErrors(onSelect)}>
+  on:click>
   <hbox class="icon">
     <AppIcon icon={app.icon} size={small ? "16px" : "24px"} />
   </hbox>
@@ -13,24 +13,13 @@
 
 <script lang="ts">
   import type { MustangApp } from "../../frontend/AppsBar/MustangApp";
-  import { openApp } from "../../frontend/AppsBar/selectedApp";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
-  import { catchErrors } from "../../frontend/Util/error";
 
   export let app: MustangApp;
   export let selected = false;
   export let small = false;
-  export let onClick: () => void = null;
 
   $: title = app.title;
-
-  function onSelect() {
-    if (onClick) {
-      onClick();
-      return;
-    }
-    openApp(app, app.windowParams);
-  }
 </script>
 
 <style>

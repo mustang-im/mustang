@@ -1,10 +1,10 @@
 <svelte:window on:keydown|capture={onKeyDownCapture} />
 
 <vbox flex class="main-window desktop lookout-window" dir={rtl}>
-  <WindowHeader bind:this={windowHeader} />
+  <WindowHeader selectedApp={$selectedApp} bind:this={windowHeader} />
   <vbox flex class="below-title">
     <hbox flex class="window-body">
-      <AppBar />
+      <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
       <vbox flex class="app-area">
         <NotificationBar notifications={$notifications} />
         {#if $selectedApp}
@@ -32,7 +32,7 @@
 
 <script lang="ts">
   import lookoutCSS from "../app.css?inline";
-  import { selectedApp, sidebarApp, history, openApp } from "../../frontend/AppsBar/selectedApp";
+  import { selectedApp, sidebarApp, history, openApp, mustangApps } from "../../frontend/AppsBar/selectedApp";
   import { notifications } from "../../frontend/MainWindow/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { backstageState } from "../Settings/Backstage/BackstageState";

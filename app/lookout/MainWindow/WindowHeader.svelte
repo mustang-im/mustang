@@ -34,7 +34,8 @@
 </grid>
 
 <script lang="ts">
-  import { globalSearchTerm, selectedApp } from "../../frontend/AppsBar/selectedApp";
+  import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
+  import type { MustangApp } from "../../frontend/AppsBar/MustangApp";
   import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
   import { appGlobal } from "../../logic/app";
   import { appName, webMail } from "../../logic/build";
@@ -63,7 +64,9 @@
   import { rtlLocales } from "../../l10n/list";
   import { gt, t } from "../../l10n/l10n";
 
-  $: isMail = !!$selectedApp && ($selectedApp == mailMustangApp || mailMustangApp.subApps.includes($selectedApp));
+  export let selectedApp: MustangApp;
+
+  $: isMail = !!selectedApp && (selectedApp == mailMustangApp || mailMustangApp.subApps.includes(selectedApp));
 
   let searchField: SearchField;
   export function focusSearch() {
