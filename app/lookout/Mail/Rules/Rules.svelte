@@ -58,8 +58,8 @@
     <DialogButton label={$t`Apply`} onClick={onApply} disabled={!isChanged && $t`There are no changes to apply`} />
   </svelte:fragment>
 </Dialog>
-{#if wizard}
-  <RulesWizard model={wizard} onFinish={onWizardFinish} on:close={() => wizard = null} />
+{#if isWizardOpen}
+  <RulesWizard rule={editedRule} {account} on:finish={event => onWizardFinish(event.detail)} on:close={() => isWizardOpen = false} />
 {/if}
 {#if renaming}
   <RenameRuleDialog rule={renaming} on:close={() => { renaming = null; changed(); }} />
@@ -140,7 +140,8 @@
   let changeButton: HTMLButtonElement;
   let renaming: FilterRuleAction | null = null;
   let folderAction: "move" | "copy" | null = null;
-  let wizard: RuleWizardModel | null = null;
+  let isWizardOpen = false;
+  let editedRule: FilterRuleAction | null = null;
   let pickerItem: RuleItem | null = null;
   let isCopying = false;
   let deleting: FilterRuleAction | null = null;
@@ -175,19 +176,21 @@
   }
 
   function onNew() {
-    wizard = RuleWizardModel.forNewRule(account);
+    editedRule = null;
+    isWizardOpen = true;
   }
 
   function onEdit() {
     if (!selected) {
       return;
     }
-    wizard = RuleWizardModel.forRule(selected);
+    editedRule = selected;
+    isWizardOpen = true;
   }
 
   function onWizardFinish(rule: FilterRuleAction) {
-    let target = wizard.isNew ? null : selected;
-    wizard = null;
+    let target = editedRule;
+    isWizardOpen = false;
     if (target) {
       RuleWizardModel.copyInto(rule, target);
     } else {

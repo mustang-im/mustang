@@ -72,6 +72,7 @@
 
 <script lang="ts">
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
   import { RuleWizardModel, RuleWizardPage } from "./RuleWizardModel";
   import type { RuleTemplate } from "./RuleTemplates";
@@ -90,9 +91,11 @@
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let model: RuleWizardModel;
-  export let onFinish: (rule: FilterRuleAction) => Promise<void> | void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  export let rule: FilterRuleAction | null = null;
+  export let account: MailAccount = null;
+  const dispatch = createEventDispatcher<{ finish: FilterRuleAction, close: void }>();
+
+  let model = rule ? RuleWizardModel.forRule(rule) : RuleWizardModel.forNewRule(account);
 
   let pickerItem: RuleItem | null = null;
   let selectedItem: RuleItem | null = null;
@@ -184,7 +187,7 @@
     if (model.asksNoConditionsQuestion && !await ask(model.noConditionsQuestion)) {
       return;
     }
-    await onFinish(model.finish());
+    dispatch("finish", model.finish());
   }
 
   function onClose() {

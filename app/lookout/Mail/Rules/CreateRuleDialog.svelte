@@ -1,5 +1,5 @@
-{#if wizard}
-  <RulesWizard model={wizard} onFinish={onWizardFinish} on:close={onClose} />
+{#if wizardRule}
+  <RulesWizard rule={wizardRule} on:finish={event => catchErrors(() => onWizardFinish(event.detail))} on:close={onClose} />
 {:else if createdRule}
   <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created.`}
     onAnswer={onClose} />
@@ -47,7 +47,7 @@
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { UserError } from "../../../logic/util/util";
   import { QuickRule } from "./QuickRule";
-  import { RuleWizardModel } from "./RuleWizardModel";
+  import { catchErrors } from "../../../frontend/Util/error";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -63,7 +63,7 @@
 
   let quickRule = new QuickRule(message);
   let isChoosingFolder = false;
-  let wizard: RuleWizardModel | null = null;
+  let wizardRule: FilterRuleAction | null = null;
   let createdRule: FilterRuleAction | null = null;
 
   function onFolderChosen(folder: Folder) {
@@ -80,7 +80,7 @@
   }
 
   function onAdvanced() {
-    wizard = RuleWizardModel.forRule(quickRule.createRule(), true);
+    wizardRule = quickRule.createRule();
   }
 
   async function onWizardFinish(rule: FilterRuleAction) {
