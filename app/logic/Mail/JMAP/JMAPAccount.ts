@@ -432,22 +432,23 @@ export class JMAPAccount extends MailAccount {
       "ids": null,
     }) as TJMAPGetResponse<TJMAPFolder>;
     for (let folderJSON of serverFoldersResponse.list) {
-      // If the server lists the parent only later, we move the folder there on the next listing
-      let parent = folderJSON.parentId
-        ? this.findFolder(folder => folder.id == folderJSON.parentId) as JMAPFolder
-        : null;
-      let parentFolders = parent ? parent.subFolders : this.rootFolders;
-      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as JMAPFolder;
-      if (!folder) {
-        // We may already have the folder from our database, or it moved
-        folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
-        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
-        oldParentFolders.remove(folder);
-        folder.parent = parent;
-        parentFolders.add(folder);
-      }
+      // We may already have the folder from our database
+      let folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
       folder.fromJMAP(folderJSON);
       currentFolders.set(folder.id, folder);
+    }
+    // Only now, because the server may list a folder before its parent
+    for (let folderJSON of serverFoldersResponse.list) {
+      let folder = currentFolders.get(folderJSON.id);
+      let parent = currentFolders.get(folderJSON.parentId) ?? null;
+      let parentFolders = parent ? parent.subFolders : this.rootFolders;
+      if (parentFolders.contains(folder)) {
+        continue;
+      }
+      let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+      oldParentFolders.remove(folder);
+      folder.parent = parent;
+      parentFolders.add(folder);
     }
 
     for (let folder of oldFolders) {
