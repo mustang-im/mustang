@@ -422,6 +422,69 @@ export class JMAPAccount extends MailAccount {
     return uploadResponse;
   }
 
+  /** Updates the folders that changed on the server, e.g. their counts.
+   * A change of the folder tree lists all folders again.
+   * <https://www.rfc-editor.org/rfc/rfc8621.html#section-2.2> */
+  async fetchChangedFolders(): Promise<void> {
+    let sinceState = this.syncState.get("Mailbox");
+    if (!sinceState) {
+      await this.listFolders();
+      return;
+    }
+    let response: Record<string, any>;
+    try {
+      response = await this.makeCombinedCall([
+        [
+          "Mailbox/changes", {
+            accountId: this.accountID,
+            sinceState: sinceState,
+          },
+          "changes",
+        ], [
+          "Mailbox/get", {
+            accountId: this.accountID,
+            "#ids": {
+              resultOf: "changes",
+              name: "Mailbox/changes",
+              path: "/updated",
+            },
+            "#properties": {
+              resultOf: "changes",
+              name: "Mailbox/changes",
+              path: "/updatedProperties",
+            },
+          },
+          "updated",
+        ],
+      ]);
+    } catch (ex) {
+      if (ex.code != "cannotCalculateChanges") {
+        throw ex;
+      }
+      await this.listFolders();
+      return;
+    }
+    let changes = response["changes"];
+    if (changes.created?.length || changes.destroyed?.length || !changes.updatedProperties) {
+      await this.listFolders();
+      return;
+    }
+    for (let json of (response["updated"] as TJMAPGetResponse<TJMAPFolder>).list) {
+      let folder = this.findFolder(folder => folder.id == json.id);
+      if (!folder) {
+        continue;
+      }
+      folder.countTotal = sanitize.integer(json.totalEmails, folder.countTotal);
+      folder.countUnread = sanitize.integer(json.unreadEmails, folder.countUnread);
+      await this.storage.saveFolderProperties(folder);
+    }
+    this.syncState.set("Mailbox", changes.newState);
+    await this.save();
+    if (changes.hasMoreChanges) {
+      await this.fetchChangedFolders();
+    }
+  }
+
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
     let currentFolders = new Map<string, JMAPFolder>();
@@ -462,6 +525,7 @@ export class JMAPAccount extends MailAccount {
         await this.storage.saveFolder(folder);
       }
     }
+    this.syncState.set("Mailbox", serverFoldersResponse.state);
   }
 
   async createToplevelFolder(name: string): Promise<JMAPFolder> {
@@ -611,6 +675,9 @@ export class JMAPAccount extends MailAccount {
       return;
     }
 
+    if (type == "Mailbox") {
+      await this.fetchChangedFolders();
+    }
     if (type == "Email") {
       await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
@@ -635,7 +702,7 @@ export class JMAPAccount extends MailAccount {
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     assert(url, "Need event source URL");
-    let types = ["Email", "Identity"];
+    let types = ["Mailbox", "Email", "Identity"];
     if (this.haveContacts) {
       types.push("ContactCard");
     }

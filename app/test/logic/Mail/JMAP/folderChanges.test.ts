@@ -1,0 +1,103 @@
+import { appGlobal } from "../../../../logic/app";
+import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
+import { DummyMailStorage } from "../../../../logic/Mail/Store/DummyMailStorage";
+import type { TJMAPSession } from "../../../../logic/Mail/JMAP/TJMAPGeneric";
+import { expect, test } from "vitest";
+
+appGlobal.remoteApp ??= { kyCreate: () => { throw new Error("The test should not talk to a real server") } } as any;
+
+function stalwartMailbox(id: string, name: string, role: string | null, totalEmails: number, unreadEmails: number) {
+  return {
+    id, name, parentId: null, role, sortOrder: 0, isSubscribed: true,
+    totalEmails, unreadEmails, totalThreads: totalEmails, unreadThreads: unreadEmails,
+    myRights: { mayReadItems: true, mayAddItems: true, mayRemoveItems: true, maySetSeen: true, maySetKeywords: true, mayCreateChild: true, mayRename: true, maySubmit: true, mayDelete: true, mayShare: true },
+  };
+}
+
+/** Answers like Stalwart, which also gave us the `Mailbox/changes` responses below */
+class FakeServer {
+  mailboxes = [stalwartMailbox("a", "Inbox", "inbox", 30, 28), stalwartMailbox("d", "Drafts", "drafts", 2, 0)];
+  changes: Record<string, any> | null = null;
+  methodsCalled: string[] = [];
+
+  answer(request: { methodCalls: [string, Record<string, any>, string][] }) {
+    let results: Record<string, any> = {};
+    let methodResponses = [];
+    for (let [method, args, callID] of request.methodCalls) {
+      this.methodsCalled.push(method);
+      if (method == "Mailbox/changes") {
+        if (!this.changes) {
+          methodResponses.push(["error", { type: "cannotCalculateChanges", description: "The server cannot calculate the changes between the old and new states." }, callID]);
+          continue;
+        }
+        results[callID] = { accountId: "e", oldState: args.sinceState, ...this.changes };
+        methodResponses.push([method, results[callID], callID]);
+        continue;
+      }
+      let changes = args["#ids"] && results[args["#ids"].resultOf];
+      if (args["#ids"] && !changes) {
+        methodResponses.push(["error", { type: "invalidResultReference" }, callID]);
+        continue;
+      }
+      let ids = changes ? changes.updated : args.ids;
+      let properties = changes ? changes.updatedProperties : args.properties;
+      let list = this.mailboxes
+        .filter(mailbox => !ids || ids.includes(mailbox.id))
+        .map(mailbox => properties
+          ? Object.fromEntries(Object.entries(mailbox).filter(([key]) => key == "id" || properties.includes(key)))
+          : mailbox);
+      methodResponses.push([method, { accountId: "e", state: "s7maq", list, notFound: [] }, callID]);
+    }
+    return { methodResponses, sessionState: "s1" };
+  }
+}
+
+async function setup() {
+  let server = new FakeServer();
+  let account = new JMAPAccount();
+  account.accountID = "e";
+  account.session = { apiUrl: "http://jmap.example.com/jmap/", capabilities: {}, accounts: {}, primaryAccounts: {} } as any as TJMAPSession;
+  account.storage = new DummyMailStorage();
+  account.save = async () => {};
+  account.httpPost = async (url: string, request: any) => server.answer(request);
+  await account.listFolders();
+  server.methodsCalled = [];
+  return { server, account };
+}
+
+test("The folder listing stores the Mailbox state", async () => {
+  let { account } = await setup();
+  expect(account.syncState.get("Mailbox")).toBe("s7maq");
+});
+
+test("When only the counts changed, only the counts are fetched", async () => {
+  let { server, account } = await setup();
+  server.mailboxes[0].unreadEmails = 27;
+  server.changes = { newState: "s7naq", hasMoreChanges: false, created: [], updated: ["a"], destroyed: [], updatedProperties: ["totalEmails", "unreadEmails", "totalThreads", "unreadThreads"] };
+
+  await account.sync("Mailbox", "s7naq");
+
+  expect(account.inbox.countUnread).toBe(27);
+  expect(server.methodsCalled).toEqual(["Mailbox/changes", "Mailbox/get"]);
+  expect(account.syncState.get("Mailbox")).toBe("s7naq");
+});
+
+test("A folder created on another device appears", async () => {
+  let { server, account } = await setup();
+  server.mailboxes.push(stalwartMailbox("k", "Projects", null, 0, 0));
+  server.changes = { newState: "s7naq", hasMoreChanges: false, created: ["k"], updated: [], destroyed: [], updatedProperties: null };
+
+  await account.sync("Mailbox", "s7naq");
+
+  expect(account.getAllFolders().contents.map(folder => folder.name)).toContain("Projects");
+});
+
+test("When the server can't tell the changes, all folders are listed again", async () => {
+  let { server, account } = await setup();
+  server.mailboxes = server.mailboxes.filter(mailbox => mailbox.id != "d");
+  server.changes = null;
+
+  await account.sync("Mailbox", "s7naq");
+
+  expect(account.getAllFolders().contents.map(folder => folder.name)).toEqual(["Inbox"]);
+});
