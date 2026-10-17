@@ -4,7 +4,7 @@ import type { JMAPAccount } from "./JMAPAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { TJMAPEMailHeaders, TJMAPFolder } from "./TJMAPMail";
-import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
+import type { TJMAPChangeResponse, TJMAPGetResponse, TJMAPQueryResponse } from "./TJMAPGeneric";
 import { checkChangeError } from "./JMAPError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -68,14 +68,17 @@ export class JMAPFolder extends Folder {
     const batchSize = 200;
     let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
-    for (let i = 0; i < this.countTotal; i += batchSize) {
-      let { newMessages, syncState } = await retryOnTransientError(() =>
-        this.fetchMessageList(i, batchSize));
+    let position = 0;
+    do {
+      let { newMessages, syncState, total } = await retryOnTransientError(() =>
+        this.fetchMessageList(position, batchSize));
       state ??= syncState;
+      this.countTotal = total;
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
       allNewMessages.addAll(newMessages);
-    }
+      position += batchSize;
+    } while (position < this.countTotal);
     if (state) {
       this.account.syncState.set("Email", state);
     }
@@ -101,7 +104,7 @@ export class JMAPFolder extends Folder {
     }
   }
 
-  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
+  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string, total: number }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPEMailHeaders>;
     let lock = await this.account.stateLock.lock();
@@ -119,6 +122,7 @@ export class JMAPFolder extends Folder {
             ],
             position: start,
             limit: limit,
+            calculateTotal: true,
           },
           "list",
         ], [
@@ -132,12 +136,13 @@ export class JMAPFolder extends Folder {
           },
           "emails",
         ],
-      ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
+      ]);
       listResponse = response["emails"];
 
       return {
         ...this.parseMessageList(listResponse.list),
         syncState: listResponse.state,
+        total: sanitize.integer((response["list"] as TJMAPQueryResponse).total, this.countTotal),
       };
     } finally {
       lock.release();
