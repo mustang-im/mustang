@@ -20,7 +20,7 @@
         {#if !collapsedTabs.has(tab.label)}
           {#each groupLabels(tab) as groupLabel}
             <hbox class="tree-row group-row" role="treeitem" aria-selected="false">
-              <CheckBox label={groupLabel} checked={!hiddenGroups.has(RibbonCustomization.groupKey(tab.label, groupLabel))}
+              <CheckBox label={groupLabel} checked={!hiddenGroups.has(tab.label + "/" + groupLabel)}
                 disabled={hiddenTabs.has(tab.label)}
                 onChange={checked => setGroupShown(tab.label, groupLabel, checked)} />
             </hbox>
@@ -36,7 +36,8 @@
 
 <script lang="ts">
   import type { RibbonModel, RibbonTabModel } from "./RibbonGroup";
-  import { RibbonCustomization } from "./RibbonCustomization";
+  import { RibbonCustomization, type RibbonHiddenParts } from "./RibbonCustomization";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
   import CheckBox from "../Form/CheckBox.svelte";
@@ -49,9 +50,9 @@
   const dispatch = createEventDispatcher<{ close: void }>();
 
   const tabs = ribbon.tabs;
-  let initial = RibbonCustomization.hiddenParts(ribbon.id);
-  let hiddenTabs = new Set(initial.tabs);
-  let hiddenGroups = new Set(initial.groups);
+  const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
+  let hiddenTabs = new Set(customization.value?.[ribbon.id]?.tabs ?? []);
+  let hiddenGroups = new Set(customization.value?.[ribbon.id]?.groups ?? []);
   let collapsedTabs = new Set<string>();
   let isReady = false;
 
@@ -87,7 +88,7 @@
   }
 
   function setGroupShown(tabLabel: string, groupLabel: string, shown: boolean) {
-    let key = RibbonCustomization.groupKey(tabLabel, groupLabel);
+    let key = tabLabel + "/" + groupLabel;
     if (shown) {
       hiddenGroups.delete(key);
     } else {
@@ -106,7 +107,7 @@
     if (!shownTabs.length && mainTabs.length) {
       hiddenTabs.delete(mainTabs[0].label);
     }
-    RibbonCustomization.save(ribbon.id, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
+    customization.value = RibbonCustomization.withHiddenParts(customization.value, ribbon.id, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
   }
 
   function onClose() {

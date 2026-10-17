@@ -40,7 +40,8 @@
 
 <script lang="ts">
   import { RibbonGroupModel, RibbonModel, RibbonTabModel, type RibbonItemInfo, type RibbonLayout } from "./RibbonGroup";
-  import { RibbonCustomization } from "./RibbonCustomization";
+  import type { RibbonHiddenParts } from "./RibbonCustomization";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import { showError } from "../../../frontend/Util/error";
   import LauncherIcon from "lucide-svelte/icons/arrow-down-right";
@@ -64,8 +65,8 @@
   $: group.label = label;
   $: $layoutSetting, layout.set(ribbon?.currentLayout ?? "classic");
   $: isInMoreMenu = $collapsed && $layout == "simplified";
-  const customization = RibbonCustomization.setting;
-  $: isHiddenByUser = RibbonCustomization.isGroupHidden(ribbon?.id, tab?.label, label, $customization.value);
+  const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
+  $: isHiddenByUser = ($customization.value?.[ribbon?.id]?.groups ?? []).includes(tab?.label + "/" + label);
 
   let groupEl: HTMLElement;
   let homeEl: HTMLElement;

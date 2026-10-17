@@ -69,7 +69,7 @@
   import TellMe from "./TellMe.svelte";
   import CustomizeRibbonDialog from "./CustomizeRibbonDialog.svelte";
   import ContextMenu from "../Menu/ContextMenu.svelte";
-  import { RibbonCustomization } from "./RibbonCustomization";
+  import type { RibbonHiddenParts } from "./RibbonCustomization";
   import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
   import { get } from "svelte/store";
   import type { QuickAccessPosition } from "../QuickAccess/QuickAccess";
@@ -87,11 +87,11 @@
   const layoutSetting = ribbon.layout;
   const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
   const qatPosition = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
-  const customization = RibbonCustomization.setting;
+  const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
   const isCustomizing = ribbon.isCustomizing;
   let contextMenu: ContextMenu;
 
-  $: shownTabs = $tabs.filter(tab => tab.isContextual || !RibbonCustomization.isTabHidden(ribbon.id, tab.label, $customization.value));
+  $: shownTabs = $tabs.filter(tab => tab.isContextual || !($customization.value?.[ribbon.id]?.tabs ?? []).includes(tab.label));
   $: if ($selectedTab && shownTabs.length && !shownTabs.includes($selectedTab)) {
     ribbon.selectTab(shownTabs[0]);
   }
