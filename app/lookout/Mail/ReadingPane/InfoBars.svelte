@@ -23,8 +23,16 @@
     <ForwardedIcon size={16} />
     <span>{$t`You forwarded this message.`}</span>
   </hbox>
+{:else if $message.isReplied && reply}
+  <button type="button" class="info-bar clickable" title={$t`Open your reply`}
+    on:click={() => catchErrors(() => openEMailMessage(reply))}>
+    <RepliedIcon size={16} />
+    <span>{reply.sent
+      ? $t`You replied to this message on ${MessageDates.fullDate(reply.sent)}.`
+      : $t`You replied to this message.`}</span>
+  </button>
 {:else if $message.isReplied}
-  <hbox class="info-bar">
+  <hbox class="info-bar" title={isSearching ? null : $t`Your reply was not found in your folders`}>
     <RepliedIcon size={16} />
     <span>{$t`You replied to this message.`}</span>
   </hbox>
@@ -55,6 +63,9 @@
   import { MessageActions } from "../MessageActions";
   import { MailView } from "../MailView";
   import { ExternalContent } from "./ExternalContent";
+  import { MessageDates } from "../MessageList/MessageDates";
+  import { MyReply } from "../../../logic/Mail/Store/MyReply";
+  import { openEMailMessage } from "../../../frontend/Mail/open";
   import { appName } from "../../../logic/build";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -66,7 +77,7 @@
   import ForwardedIcon from "lucide-svelte/icons/forward";
   import PicturesIcon from "lucide-svelte/icons/image-off";
   import PlainTextIcon from "lucide-svelte/icons/file-text";
-  import { catchErrors } from "../../../frontend/Util/error";
+  import { catchErrors, backgroundError } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
@@ -76,6 +87,30 @@
   let isPicturesMenuOpen = false;
   $: isDraft = $message && MessageActions.isDraft(message);
   $: isJunk = $message && MessageActions.isJunk([message]);
+
+  // <copied from="../../../frontend/Mail/Message/RepliedInfo.svelte">
+  let reply: EMail | null = null;
+  let isSearching = false;
+  $: isReplied = $message.isReplied;
+  $: catchErrors(() => findReply(message, isReplied), backgroundError);
+  async function findReply(original: EMail, isReplied: boolean) {
+    reply = null;
+    if (!isReplied) {
+      return;
+    }
+    isSearching = true;
+    try {
+      let found = await MyReply.find(original);
+      if (original == message) {
+        reply = found;
+      }
+    } finally {
+      if (original == message) {
+        isSearching = false;
+      }
+    }
+  }
+  // </copied>
 
   function onDownloadPictures() {
     MailView.contentRendering.value = DisplayMode.HTMLWithExternal;
