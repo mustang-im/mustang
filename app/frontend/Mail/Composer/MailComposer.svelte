@@ -2,7 +2,9 @@
   on:add-files={(event) => catchErrors(() => onFilesDrop(event))}
   on:inline-files={(event) => catchErrors(() => onFileInlineDrop(event))}
   allowInline={true}>
-  <vbox flex class="mail-composer-window">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <vbox flex class="mail-composer-window"
+    on:keydown|capture={event => catchErrors(() => onKey(event))}>
     <hbox class="window-title-bar">
       {#if appGlobal.isMobile}
         <hbox class="close buttons mobile">
@@ -194,6 +196,8 @@
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
   import { backgroundError, catchErrors, showUserError } from "../../Util/error";
+  import { ComposerKeyboard, ComposerKeyAction } from "./ComposerKeyboard";
+  import { Keyboard } from "../../Util/Keyboard";
   import CloseButton from "./CloseButton.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
@@ -368,6 +372,22 @@
         mailMustangApp.writeMail(mail);
       }
       throw ex;
+    }
+  }
+
+  async function onKey(event: KeyboardEvent) {
+    let action = ComposerKeyboard.actionFor(event);
+    if (!action) {
+      return;
+    }
+    Keyboard.consume(event);
+    if (action == ComposerKeyAction.Send) {
+      if (sendDisabledTooltip) {
+        throw new UserError(sendDisabledTooltip);
+      }
+      await onSend();
+    } else if (action == ComposerKeyAction.SaveDraft) {
+      await mail.compose.saveAsDraft();
     }
   }
 
