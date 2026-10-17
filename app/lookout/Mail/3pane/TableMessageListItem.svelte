@@ -96,7 +96,7 @@
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { fileSize } from "../../../frontend/Files/file";
   import { Column, ColumnInfo } from "../ViewSettings/ViewSettings";
-  import { ObservedItems } from "../../Shared/ObservedItems";
+  import { derived } from "svelte/store";
   import { inlineReplies } from "../Selected";
   import { MessageDates } from "../MessageList/MessageDates";
   import { TextHighlight } from "../MessageList/TextHighlight";
@@ -129,7 +129,8 @@
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
 
-  $: tags = ObservedItems.of(message.tags);
+  $: messageTags = message.tags;
+  $: tags = derived($messageTags.contents, () => messageTags.contents);
   $: to = message.to;
   /* <copied to="../Vertical/VerticalMessageListItem.svelte, MessageListPane.svelte"> */
   $: showsRecipient = [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(message.folder?.specialFolder);

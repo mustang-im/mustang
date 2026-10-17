@@ -133,7 +133,7 @@
   import { MessageActions } from "../MessageActions";
   import MessagePropertiesDialog from "./MessagePropertiesDialog.svelte";
   import { MessageDates } from "../MessageList/MessageDates";
-  import { ObservedItems } from "../../Shared/ObservedItems";
+  import { derived } from "svelte/store";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import FollowUpMenuItems from "./FollowUpMenuItems.svelte";
@@ -176,7 +176,8 @@
   $: to = message.to;
   $: cc = message.cc;
   $: bcc = message.bcc;
-  $: tags = ObservedItems.of(message.tags);
+  $: messageTags = message.tags;
+  $: tags = derived($messageTags.contents, () => messageTags.contents);
 
 
   let moreEl: HTMLButtonElement;

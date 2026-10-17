@@ -41,7 +41,7 @@
 
 <script lang="ts" context="module">
   import type { Tag, TaggableObject } from "../../../logic/Abstract/Tag";
-  import { writable } from "svelte/store";
+  import { derived, writable } from "svelte/store";
 
   export const openColorCategories = writable<TaggableObject[] | null>(null);
 </script>
@@ -51,7 +51,6 @@
   import { MessageBox } from "../Dialog/MessageBox";
   import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
   import { CategoryColors } from "../../Mail/Categories/CategoryColors";
-  import { ObservedItems } from "../ObservedItems";
   import TagAdd from "./TagAdd.svelte";
   import CategorySquare, { TagState } from "./CategorySquare.svelte";
   import Dialog from "../Dialog/Dialog.svelte";
@@ -69,7 +68,7 @@
   export let onChosen: (tags: Tag[]) => void = null;
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  const tags = ObservedItems.of(availableTags);
+  $: tags = derived($availableTags.contents, () => availableTags.contents);
   let choice = new CategoryChoice(items, chosen);
   let choiceVersion = 0;
   let selected: Tag = null;

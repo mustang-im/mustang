@@ -40,7 +40,6 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import { MessageGrouping } from "./MessageGrouping";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -128,7 +127,9 @@
   $: todayStart, grouping = new MessageGrouping<EMail>($settings.arrangeBy, !!$settings.reverseSort, !!$settings.showInGroups,
     listName, new Date(), !!$settings.showAsConversations,
     $settings.groupBy ?? null, !!$settings.groupReverse);
-  $: arrangedMessages = grouping.changesWithMessages ? ObservedItems.of(listMessages) : derived(listMessages, messages => messages.contents);
+  $: arrangedMessages = grouping.changesWithMessages
+    ? derived($listMessages.contents, () => listMessages.contents)
+    : derived(listMessages, messages => messages.contents);
   $: groups = grouping.arrange($arrangedMessages, listMessages instanceof EMailCollection);
 
   export function scrollToTop() {

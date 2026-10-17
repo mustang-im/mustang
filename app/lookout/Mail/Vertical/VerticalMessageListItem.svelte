@@ -125,7 +125,7 @@
   import { MessageDates } from "../MessageList/MessageDates";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { TextHighlight } from "../MessageList/TextHighlight";
-  import { ObservedItems } from "../../Shared/ObservedItems";
+  import { derived } from "svelte/store";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
@@ -159,7 +159,8 @@
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
 
-  $: tags = ObservedItems.of(message.tags);
+  $: messageTags = message.tags;
+  $: tags = derived($messageTags.contents, () => messageTags.contents);
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   /* <copied from="../3pane/TableMessageListItem.svelte"> */
   $: showsRecipient = [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(message.folder?.specialFolder);
