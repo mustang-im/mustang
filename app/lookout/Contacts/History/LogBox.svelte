@@ -1,5 +1,5 @@
 <button class="activity" class:unread={email && !$email.isRead}
-  title={tooltip} on:click={() => catchErrors(() => ContactActivities.open(entry))}>
+  title={tooltip} on:click={() => catchErrors(open)}>
   <hbox class="icon">
     {#if email}
       <svelte:component this={$email.isRead ? ReadIcon : UnreadIcon} size={16} />
@@ -46,28 +46,40 @@
   import { MessageDates } from "../../Mail/MessageList/MessageDates";
   import { fileSize } from "../../../frontend/Files/file";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { openEMailMessage } from "../../../frontend/Mail/open";
+  import { openEvent } from "../../../frontend/Calendar/open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import FileIcon from "lucide-svelte/icons/file";
   import MeetingIcon from "lucide-svelte/icons/calendar";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
-  export let entry: LogEntry;
+  export let message: LogEntry;
 
-  $: email = entry instanceof EMail ? entry : null;
-  $: file = entry instanceof File ? entry : null;
-  $: event = entry instanceof Event ? entry : null;
-  $: time = ContactActivities.timeOf(entry);
-  $: preview = entry instanceof EMail ? (entry.text ?? "").replace(/\s+/g, " ").trim().substring(0, 200) : "";
-  $: eventDate = entry instanceof Event && entry.startTime
-    ? entry.startTime.toLocaleString(getDateTimeLocale(), entry.allDay
+  $: email = message instanceof EMail ? message : null;
+  $: file = message instanceof File ? message : null;
+  $: event = message instanceof Event ? message : null;
+  $: time = ContactActivities.timeOf(message);
+  $: preview = message instanceof EMail ? (message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 200) : "";
+  $: eventDate = message instanceof Event && message.startTime
+    ? message.startTime.toLocaleString(getDateTimeLocale(), message.allDay
       ? { weekday: "short", year: "numeric", month: "numeric", day: "numeric" }
       : { weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" })
     : "";
-  $: tooltip = entry instanceof EMail ? `${entry.subject ?? ""}\n${MessageDates.fullDate(time)}`
-    : entry instanceof Event ? `${entry.title ?? ""}\n${eventDate}`
-    : entry instanceof File ? `${entry.name ?? ""}\n${MessageDates.fullDate(time)}`
+  $: tooltip = message instanceof EMail ? `${message.subject ?? ""}\n${MessageDates.fullDate(time)}`
+    : message instanceof Event ? `${message.title ?? ""}\n${eventDate}`
+    : message instanceof File ? `${message.name ?? ""}\n${MessageDates.fullDate(time)}`
     : "";
+
+  async function open() {
+    if (message instanceof EMail) {
+      await openEMailMessage(message);
+    } else if (message instanceof File) {
+      await message.openOSApp();
+    } else if (message instanceof Event) {
+      openEvent(message, true);
+    }
+  }
 </script>
 
 <style>

@@ -1,6 +1,6 @@
 <vbox class="activity-list">
   {#each shown as entry (entry)}
-    <LogBox {entry} />
+    <LogBox message={entry} />
   {:else}
     <hbox class="empty">{emptyText}</hbox>
   {/each}

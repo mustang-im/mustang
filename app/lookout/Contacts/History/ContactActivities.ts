@@ -3,8 +3,6 @@ import { EMail } from "../../../logic/Mail/EMail";
 import { Event } from "../../../logic/Calendar/Event";
 import { File } from "../../../logic/Files/File";
 import { searchLog, type LogEntry } from "../../../logic/Contacts/History/History";
-import { openEMailMessage } from "../../../frontend/Mail/open";
-import { openEvent } from "../../../frontend/Calendar/open";
 import type { Collection } from "svelte-collections";
 
 export enum ActivityKind {
@@ -63,15 +61,5 @@ export class ContactActivities {
       return entry.startTime ?? null;
     }
     return null;
-  }
-
-  static async open(entry: LogEntry) {
-    if (entry instanceof EMail) {
-      await openEMailMessage(entry);
-    } else if (entry instanceof File) {
-      await entry.openOSApp();
-    } else if (entry instanceof Event) {
-      openEvent(entry, true);
-    }
   }
 }
