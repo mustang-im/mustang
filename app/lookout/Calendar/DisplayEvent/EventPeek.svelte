@@ -53,6 +53,7 @@
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventLook } from "../Event/EventLook";
   import { CalendarActions } from "../CalendarActions";
+  import { openEvent } from "../../../frontend/Calendar/open";
   import { eventPeek, type EventPeek } from "../selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import Popup from "../../../frontend/Shared/Popup.svelte";
@@ -87,7 +88,7 @@
 
   function onOpen() {
     onClose();
-    catchErrors(() => CalendarActions.open(event));
+    catchErrors(() => openEvent(event, true));
   }
 
   function onDelete() {
@@ -96,7 +97,7 @@
   }
 
   function respond(response: InvitationResponseInMessage) {
-    catchErrors(() => CalendarActions.respond(event, response));
+    catchErrors(() => event.respondToInvitation(response));
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {

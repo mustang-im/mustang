@@ -107,6 +107,9 @@
   import { InvitationResponse } from "../../logic/Calendar/Invitation/InvitationStatus";
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
+  import { openEvent } from "../../frontend/Calendar/open";
+  import { openComposer } from "../../frontend/Mail/open";
+  import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
   import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
@@ -429,7 +432,7 @@
     case "open":
       if (event) {
         $eventPeek = null;
-        CalendarActions.open(event);
+        openEvent(event, true);
       }
       break;
     case "delete":
@@ -440,7 +443,7 @@
       break;
     case "forward":
       if (event && !event.isCancelled) {
-        await CalendarActions.forward(event);
+        openComposer(await OutgoingInvitation.forwardEventByMail(event));
       }
       break;
     case "escape":

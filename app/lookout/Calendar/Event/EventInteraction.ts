@@ -2,6 +2,7 @@ import type { Event } from "../../../logic/Calendar/Event";
 import { selectedEvent } from "../../../frontend/Calendar/selected";
 import { catchErrors } from "../../../frontend/Util/error";
 import { CalendarActions } from "../CalendarActions";
+import { openEvent } from "../../../frontend/Calendar/open";
 import { eventPeek, selectedSlots, type CalendarMenus } from "../selected";
 import type { EventDrag } from "../EventDrag";
 
@@ -32,7 +33,7 @@ export class EventInteraction {
     let onDoubleClick = (mouseEvent: MouseEvent) => {
       mouseEvent.stopPropagation();
       eventPeek.set(null);
-      catchErrors(() => CalendarActions.open(current.event));
+      catchErrors(() => openEvent(current.event, true));
     };
     let onContextMenu = (mouseEvent: MouseEvent) => {
       mouseEvent.preventDefault();
@@ -46,7 +47,7 @@ export class EventInteraction {
         keyEvent.preventDefault();
         keyEvent.stopPropagation();
         eventPeek.set(null);
-        catchErrors(() => CalendarActions.open(current.event));
+        catchErrors(() => openEvent(current.event, true));
       } else if (keyEvent.key == " ") {
         keyEvent.preventDefault();
         select();

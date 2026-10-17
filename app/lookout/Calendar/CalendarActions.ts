@@ -1,21 +1,14 @@
 import type { Event } from "../../logic/Calendar/Event";
 import type { Calendar } from "../../logic/Calendar/Calendar";
-import type { InvitationResponseInMessage } from "../../logic/Calendar/Invitation/InvitationStatus";
-import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
-import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
+import { selectedCalendar, selectedDate, selectedEvent, startDate } from "../../frontend/Calendar/selected";
 import { inlineTitle, selectedSlots, workWeekHours, type CalendarViewType, type SlotSelection } from "./selected";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { CalendarRange } from "./View/CalendarRange";
-import { CalendarGroups } from "./FolderPane/CalendarGroups";
 import { WorkingHours } from "./View/WorkingHours";
 import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
-import { openComposer } from "../../frontend/Mail/open";
-import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
-import { openApp } from "../../frontend/AppsBar/selectedApp";
-import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
 import { appName } from "../../logic/build";
 import { appGlobal } from "../../logic/app";
@@ -106,10 +99,6 @@ export class CalendarActions {
     }
   }
 
-  static open(event: Event) {
-    openEvent(event, true);
-  }
-
   static async changeTime(event: Event, start: Date, end: Date) {
     assert(event.isEditable, gt`You cannot change the time of a meeting that someone else organized`);
     if (event.isOutgoingMeeting && event.participants.length > 1 &&
@@ -129,15 +118,6 @@ export class CalendarActions {
       throw ex;
     }
     event.finishEditing();
-  }
-
-  static async respond(event: Event, response: InvitationResponseInMessage) {
-    await event.respondToInvitation(response);
-  }
-
-  static async forward(event: Event) {
-    let mail = await OutgoingInvitation.forwardEventByMail(event);
-    openComposer(mail);
   }
 
   static async cancelMeeting(event: Event) {
@@ -210,34 +190,6 @@ export class CalendarActions {
     } finally {
       CalendarActions.updatingCount.update(count => count - 1);
     }
-  }
-
-  static showOnly(calendar: Calendar) {
-    for (let listedCalendar of appGlobal.calendars.contents) {
-      shownCalendars.show(listedCalendar, listedCalendar == calendar);
-    }
-    selectedCalendar.set(calendar);
-  }
-
-  static move(calendar: Calendar, offset: number) {
-    let groups = new CalendarGroups(appGlobal.calendars.contents, CalendarGroups.order.value);
-    CalendarGroups.order.value = groups.orderAfterMove(calendar, offset);
-  }
-
-  static openAddressBook() {
-    openApp(contactsMustangApp, {});
-  }
-
-  static addCalendarAccount() {
-    SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar" });
-  }
-
-  static createBlankCalendar() {
-    SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar", localOnly: true });
-  }
-
-  static canDeleteCalendar(calendar: Calendar | null): boolean {
-    return !!calendar && (CalendarGroups.isShared(calendar) || !calendar.mainAccount);
   }
 
   static async deleteCalendar(calendar: Calendar): Promise<boolean> {

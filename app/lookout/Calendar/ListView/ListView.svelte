@@ -29,7 +29,7 @@
           <ListViewLine {event} {columns}
             isSelected={$selectedEvent == event}
             onSelect={() => select(event)}
-            onOpen={() => CalendarActions.open(event)}
+            onOpen={() => openEvent(event, true)}
             onContextMenu={mouseEvent => onContextMenu(mouseEvent, event)} />
         {/each}
       {/if}
@@ -44,7 +44,7 @@
   import { EventTable, EventTableColumn, EventTableGrouping } from "./EventTable";
   import { ObservedItems } from "../../Shared/ObservedItems";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { CalendarActions } from "../CalendarActions";
+  import { openEvent } from "../../../frontend/Calendar/open";
   import { kCalendarMenus, calendarSearchOptions, CalendarCurrentView, CalendarSearchScope, type CalendarMenus } from "../selected";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { selectedEvent } from "../../../frontend/Calendar/selected";

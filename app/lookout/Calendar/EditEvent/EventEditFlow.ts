@@ -9,6 +9,8 @@ import { openExternalURL } from "../../../logic/util/os-integration";
 import { RecurrencePattern } from "./RecurrencePattern";
 import { Reminder } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
+import { openComposer } from "../../../frontend/Mail/open";
+import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
 import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
@@ -368,7 +370,7 @@ export class EventEditFlow {
   }
 
   async respond(response: InvitationResponseInMessage) {
-    await CalendarActions.respond(this.event, response);
+    await this.event.respondToInvitation(response);
     this.close();
   }
 
@@ -382,7 +384,7 @@ export class EventEditFlow {
   }
 
   async forward() {
-    await CalendarActions.forward(this.event);
+    openComposer(await OutgoingInvitation.forwardEventByMail(this.event));
   }
 
   // <copied from="../../../frontend/Calendar/EditEvent/ParticipantsBox.svelte" onAddPerson()>

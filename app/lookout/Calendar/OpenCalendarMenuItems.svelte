@@ -5,13 +5,13 @@
   disabled={!sharingAccounts.length && $t`None of your accounts can open the calendars of colleagues`}
   onClick={() => $openSharedCalendar = { fromAddressBook: false }} />
 <MenuItem label={$t`Create New Blank Calendar…`} icon={NewCalendarIcon}
-  onClick={() => CalendarActions.createBlankCalendar()} />
+  onClick={() => SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar", localOnly: true })} />
 <MenuDivider />
 <MenuItem label={$t`New Calendar Account…`} icon={NewAccountIcon}
-  onClick={() => CalendarActions.addCalendarAccount()} />
+  onClick={() => SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar" })} />
 
 <script lang="ts">
-  import { CalendarActions } from "./CalendarActions";
+  import { SettingsDialogs } from "../Settings/SettingsDialogs";
   import { openSharedCalendar } from "./OpenCalendarDialog.svelte";
   import { appGlobal } from "../../logic/app";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";

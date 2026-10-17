@@ -1,21 +1,21 @@
 <ContextMenu bind:this={contextMenu}>
   {#if event}
     <MenuItem label={$t`Open`} icon={OpenIcon} shortCutInfo="Enter"
-      onClick={() => CalendarActions.open(event)} />
+      onClick={() => openEvent(event, true)} />
     {#if event.isIncomingMeeting && !event.isCancelled}
       <MenuDivider />
       {#each responses as response}
         <SubMenu label={response.label} icon={response.icon}>
           <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
             checked={event.myParticipation == response.value}
-            onClick={() => CalendarActions.respond(event, response.value)} />
+            onClick={() => event.respondToInvitation(response.value)} />
         </SubMenu>
       {/each}
     {/if}
     {#if !event.isCancelled}
       <MenuDivider />
       <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
-        onClick={() => CalendarActions.forward(event)} />
+        onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
     {/if}
     <MenuDivider />
     {#if event.isCancelled}
@@ -55,6 +55,9 @@
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { CalendarActions } from "../CalendarActions";
+  import { openEvent } from "../../../frontend/Calendar/open";
+  import { openComposer } from "../../../frontend/Mail/open";
+  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";

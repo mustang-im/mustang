@@ -16,13 +16,13 @@
         <hbox class="buttons">
           <ResponseButton label={$t`Accept`} icon={AcceptIcon} classes="accept"
             pressed={$event.myParticipation == InvitationResponse.Accept}
-            onClick={() => CalendarActions.respond(event, InvitationResponse.Accept)} />
+            onClick={() => event.respondToInvitation(InvitationResponse.Accept)} />
           <ResponseButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative"
             pressed={$event.myParticipation == InvitationResponse.Tentative}
-            onClick={() => CalendarActions.respond(event, InvitationResponse.Tentative)} />
+            onClick={() => event.respondToInvitation(InvitationResponse.Tentative)} />
           <ResponseButton label={$t`Decline`} icon={DeclineIcon} classes="decline"
             pressed={$event.myParticipation == InvitationResponse.Decline}
-            onClick={() => CalendarActions.respond(event, InvitationResponse.Decline)} />
+            onClick={() => event.respondToInvitation(InvitationResponse.Decline)} />
         </hbox>
       {/if}
     </vbox>

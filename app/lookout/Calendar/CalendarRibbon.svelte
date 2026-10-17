@@ -43,7 +43,7 @@
     <RibbonGroup label={$t`Find`}>
       <SearchPeopleBox onChoose={contact => ContactActions.show(contact)} />
       <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo="Ctrl+Shift+B" size="small"
-        onClick={() => CalendarActions.openAddressBook()} />
+        onClick={() => openApp(contactsMustangApp, {})} />
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`Send / Receive`}>
@@ -62,7 +62,7 @@
     <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Calendar`} shortLabel={$t`New`} icon={NewCalendarIcon}
         tooltip={$t`Create a new calendar on this computer`}
-        onClick={() => CalendarActions.createBlankCalendar()} />
+        onClick={() => SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar", localOnly: true })} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Calendar`} shortLabel={$t`Rename`} icon={RenameIcon}
@@ -162,6 +162,9 @@
 <script lang="ts">
   import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
+  import { openApp } from "../../frontend/AppsBar/selectedApp";
+  import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
+  import { CalendarGroups } from "./FolderPane/CalendarGroups";
   import { CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -249,7 +252,7 @@
   $: noCalendar = !$calendars.hasItems && $t`Please set up a calendar first`;
   $: noSelection = !$selectedCalendar && $t`Select a calendar first`;
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
-  $: canDelete = CalendarActions.canDeleteCalendar($selectedCalendar);
+  $: canDelete = !!$selectedCalendar && (CalendarGroups.isShared($selectedCalendar) || !$selectedCalendar.mainAccount);
   $: isShareable = canShare($selectedCalendar);
   let renamingCalendar: Calendar | null = null;
   let isViewSettingsOpen = false;

@@ -34,7 +34,7 @@
           <ColorPalette colors={CalendarColors.palette} bind:selected={color} label={$t`Color`} columns={15}
             onChoose={chosen => color = chosen} />
         </vbox>
-        {#if CalendarActions.canDeleteCalendar(calendar)}
+        {#if isShared || !calendar.mainAccount}
           <hbox class="divider" />
           <hbox class="delete-row">
             <span class="lo-secondary">{isShared

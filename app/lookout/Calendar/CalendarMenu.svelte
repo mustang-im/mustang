@@ -2,7 +2,7 @@
   {#if calendar}
     <MenuItem label={$t`Rename Calendar`} icon={RenameIcon}
       onClick={() => renamingCalendar = calendar} />
-    {#if CalendarActions.canDeleteCalendar(calendar)}
+    {#if CalendarGroups.isShared(calendar) || !calendar.mainAccount}
       <MenuItem label={$t`Delete Calendar`} icon={DeleteIcon}
         onClick={() => CalendarActions.deleteCalendar(calendar)} />
     {/if}
@@ -23,14 +23,14 @@
     <MenuItem label={$t`Overlay`} icon={OverlayIcon} checked={!$splitView.value} checkable
       onClick={toggleOverlay} />
     <MenuItem label={$t`Show Only This Calendar`} icon={ShowOnlyIcon}
-      onClick={() => CalendarActions.showOnly(calendar)} />
+      onClick={showOnly} />
     <MenuDivider />
     <MenuItem label={$t`Move Up`} icon={MoveUpIcon}
       disabled={!groups.canMove(calendar, -1)}
-      onClick={() => CalendarActions.move(calendar, -1)} />
+      onClick={() => { CalendarGroups.order.value = groups.orderAfterMove(calendar, -1); }} />
     <MenuItem label={$t`Move Down`} icon={MoveDownIcon}
       disabled={!groups.canMove(calendar, 1)}
-      onClick={() => CalendarActions.move(calendar, 1)} />
+      onClick={() => { CalendarGroups.order.value = groups.orderAfterMove(calendar, 1); }} />
     <MenuDivider />
     <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
       onClick={() => $openCalendarProperties = { calendar, tab: "general" }} />
@@ -44,6 +44,7 @@
   import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarGroups } from "./FolderPane/CalendarGroups";
+  import { selectedCalendar, shownCalendars } from "../../frontend/Calendar/selected";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { catchErrors } from "../../frontend/Util/error";
@@ -85,6 +86,13 @@
       account instanceof MailAccount && !account.isDependentAccount && account.canShareWithPersons();
   }
   // </copied>
+
+  function showOnly() {
+    for (let listedCalendar of appGlobal.calendars.contents) {
+      shownCalendars.show(listedCalendar, listedCalendar == calendar);
+    }
+    $selectedCalendar = calendar;
+  }
 
   export function openFor(event: MouseEvent, forCalendar: Calendar) {
     event.preventDefault();

@@ -4,7 +4,7 @@ import { Event } from "../../../logic/Calendar/Event";
 import { File } from "../../../logic/Files/File";
 import { searchLog, type LogEntry } from "../../../logic/Contacts/History/History";
 import { openEMailMessage } from "../../../frontend/Mail/open";
-import { CalendarActions } from "../../Calendar/CalendarActions";
+import { openEvent } from "../../../frontend/Calendar/open";
 import type { Collection } from "svelte-collections";
 
 export enum ActivityKind {
@@ -71,7 +71,7 @@ export class ContactActivities {
     } else if (entry instanceof File) {
       await entry.openOSApp();
     } else if (entry instanceof Event) {
-      CalendarActions.open(entry);
+      openEvent(entry, true);
     }
   }
 }
