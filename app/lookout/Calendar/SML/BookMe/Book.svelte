@@ -3,7 +3,7 @@
     <span class="intro">
       {isOrganizer ? $t`You proposed these meeting times.` : $t`Choose a time to book a meeting with ${organizerName}.`}
     </span>
-    <DisplayList options={ensureArray(bookMe.options)} duration={bookMe.duration} let:time>
+    <DisplayList {options} duration={bookMe.duration} let:time>
       <DialogButton label={$t`Book`} icon={BookIcon}
         disabled={isOrganizer ? $t`You proposed this time` : false}
         onClick={() => select(time)} />
@@ -58,15 +58,17 @@
   import SendIcon from "lucide-svelte/icons/send";
   import ConfirmedIcon from "lucide-svelte/icons/check-check";
   import { ensureArray } from "../../../../logic/util/util";
+  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 
   type BookingReaction = TSMLAction & { state?: TSMLBookMeState };
 
   export let sml: SMLData;
   export let myReaction: BookingReaction;
-  export let isOrganizer = false;
 
   $: bookMe = $sml.sml as TSMLBookMe;
+  $: options = new ArrayColl(ensureArray(bookMe.options));
+  $: isOrganizer = !!myReaction?.agent?.email && myReaction.agent.email == bookMe.organizer?.email;
   $: state = myReaction.state ?? bookMe.state;
   $: time = myReaction.object as any as Date;
   $: organizerName = bookMe.organizer?.name || bookMe.organizer?.email || "";

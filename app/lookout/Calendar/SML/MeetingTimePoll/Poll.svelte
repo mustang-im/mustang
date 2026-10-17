@@ -2,7 +2,7 @@
   <span class="intro">
     {isOrganizer ? $t`You proposed these times. Recipients vote for the times that suit them.` : $t`Vote for each time: is it OK for you?`}
   </span>
-  <DisplayList options={ensureArray(poll.options)} duration={poll.duration} let:time>
+  <DisplayList {options} duration={poll.duration} let:time>
     {@const preference = SMLTimeOptions.preference(votes, time)}
     <hbox class="vote-buttons" role="group" aria-label={$t`Your vote`}>
       {#each voteChoices as choice}
@@ -28,11 +28,11 @@
   import BadIcon from "lucide-svelte/icons/frown";
   import RejectIcon from "lucide-svelte/icons/ban";
   import { ensureArray } from "../../../../logic/util/util";
+  import { ArrayColl } from "svelte-collections";
   import { gt, t } from "../../../../l10n/l10n";
 
   export let sml: SMLData;
   export let myReaction: TSMLAction;
-  export let isOrganizer = false;
 
   const voteChoices = [
     { preference: TSMLMeetingTimePreference.Accept, label: gt`This time is OK for me`, icon: AcceptIcon },
@@ -42,6 +42,8 @@
   ];
 
   $: poll = $sml.sml as TSMLMeetingTimePoll;
+  $: options = new ArrayColl(ensureArray(poll.options));
+  $: isOrganizer = !!myReaction?.agent?.email && myReaction.agent.email == poll.organizer?.email;
   $: votes = myVotes(myReaction);
 
   function myVotes(reaction: TSMLAction): TSMLMeetingTimeVote[] {

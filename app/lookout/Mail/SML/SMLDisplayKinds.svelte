@@ -6,9 +6,9 @@
     {#if type == "SimplePoll"}
       <Poll {sml} {myReaction} />
     {:else if type == "MeetingTimePoll"}
-      <MeetingTimePoll {sml} {myReaction} {isOrganizer} />
+      <MeetingTimePoll {sml} {myReaction} />
     {:else if type == "BookMe"}
-      <Book {sml} {myReaction} {isOrganizer} />
+      <Book {sml} {myReaction} />
     {/if}
   </ActionCard>
 {/if}

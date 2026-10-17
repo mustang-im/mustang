@@ -5,7 +5,7 @@
       onChange={minutes => setDuration(minutes)} />
   </hbox>
   <span class="field-label">{$t`Proposed times`}</span>
-  <DisplayList options={poll.options} duration={poll.duration}
+  <DisplayList {options} duration={poll.duration}
     emptyText={$t`Add the times that you propose.`} let:time>
     <button type="button" class="remove" title={$t`Remove this time`} aria-label={$t`Remove this time`}
       on:click={() => removeTime(time)}>
@@ -35,11 +35,13 @@
   import DialogButton from "../../../Shared/Dialog/DialogButton.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import RemoveIcon from "lucide-svelte/icons/x";
+  import { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 
   export let sml: SMLData;
 
   $: poll = $sml.sml as TSMLTimePoll;
+  $: options = new ArrayColl(poll.options ?? []);
   let newTime = SMLTimeOptions.nextOption(($sml.sml as TSMLTimePoll).options ?? [], ($sml.sml as TSMLTimePoll).duration);
 
   $: durationOptions = durations(poll.duration).map(minutes => ({ value: minutes, label: TimeOptions.durationLabel(minutes) }));

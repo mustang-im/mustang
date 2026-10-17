@@ -25,15 +25,16 @@
   import { SMLTimeOptions } from "../../../Mail/SML/SMLTimeOptions";
   import { TimeOptions } from "../../EditEvent/TimeOptions";
   import { appGlobal } from "../../../../logic/app";
+  import type { Collection } from "svelte-collections";
   import ConflictIcon from "lucide-svelte/icons/triangle-alert";
   import { gt, t } from "../../../../l10n/l10n";
 
-  export let options: Date[];
+  export let options: Collection<Date>;
   export let duration: number;
   export let emptyText: string = null;
 
   let events = appGlobal.calendarEvents;
-  $: days = SMLTimeOptions.byDay(options ?? []);
+  $: days = SMLTimeOptions.byDay($options.contents);
 </script>
 
 <style>
