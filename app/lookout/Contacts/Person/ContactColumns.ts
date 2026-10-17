@@ -2,7 +2,6 @@ import type { Contact } from "../../../logic/Abstract/Contact";
 import { Person } from "../../../logic/Abstract/Person";
 import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
 import { ContactSlots } from "../PersonPage/ContactSlots";
-import { PreferredEntry } from "../PreferredEntry";
 import { ColumnOrder } from "../../Shared/ViewSettings/ColumnOrder";
 import { gt } from "../../../l10n/l10n";
 
@@ -290,15 +289,15 @@ export class ContactColumns {
     case ContactColumn.Department:
       return contact.department ?? "";
     case ContactColumn.EMail:
-      return PreferredEntry.valueOf(contact.emailAddresses) ?? "";
+      return contact.emailAddresses.sortBy(entry => entry.preference).first?.value || "";
     case ContactColumn.EMail2:
       return ContactSlots.emailSlots[1].valueIn(contact.emailAddresses);
     case ContactColumn.EMail3:
       return ContactSlots.emailSlots[2].valueIn(contact.emailAddresses);
     case ContactColumn.WebPage:
-      return PreferredEntry.valueOf(contact.urls) ?? "";
+      return contact.urls.sortBy(entry => entry.preference).first?.value || "";
     case ContactColumn.IMAddress:
-      return PreferredEntry.valueOf(contact.chatAccounts) ?? "";
+      return contact.chatAccounts.sortBy(entry => entry.preference).first?.value || "";
     case ContactColumn.Notes:
       return (contact.notes ?? "").replace(/\s+/g, " ").trim();
     }

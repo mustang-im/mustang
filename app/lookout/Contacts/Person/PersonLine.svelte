@@ -21,7 +21,6 @@
   import type { Contact } from "../../../logic/Abstract/Contact";
   import { Person, type ContactEntry } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
-  import { PreferredEntry } from "../PreferredEntry";
   import PersonPicture from "./PersonPicture.svelte";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
@@ -31,7 +30,7 @@
 
   $: asPerson = person instanceof Person ? person : null;
   $: emailAddresses = asPerson?.emailAddresses ?? new ArrayColl<ContactEntry>();
-  $: preferredEmail = PreferredEntry.valueOf($emailAddresses);
+  $: preferredEmail = $emailAddresses.sortBy(entry => entry.preference).first?.value || null;
   $: secondLine = asPerson
     ? preferredEmail || $asPerson.company || $asPerson.position
     : $t`Contact group`;

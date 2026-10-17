@@ -155,7 +155,6 @@
 <script lang="ts">
   import { ContactEntry, Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
-  import { PreferredEntry } from "../PreferredEntry";
   import { ContactSlots } from "./ContactSlots";
   import { ContactColumns } from "../Person/ContactColumns";
   import { newPerson } from "../../../frontend/Contacts/Person/Selected";
@@ -215,8 +214,8 @@
   $: urls = person.urls;
   $: streetAddresses = person.streetAddresses;
   $: hasEmailAddress = $emailAddresses.some(entry => !!entry.value);
-  $: preferredEmail = PreferredEntry.valueOf($emailAddresses);
-  $: preferredPhone = PreferredEntry.valueOf($phoneNumbers);
+  $: preferredEmail = $emailAddresses.sortBy(entry => entry.preference).first?.value || null;
+  $: preferredPhone = $phoneNumbers.sortBy(entry => entry.preference).first?.value || null;
 
   let emailSlot = ContactSlots.emailSlots[0];
   let phoneRows = ["business", "home", "business-fax", "mobile"].map(id => ContactSlots.phoneSlot(id));

@@ -143,7 +143,6 @@
   import type { Person, ContactEntry } from "../../../logic/Abstract/Person";
   import { ContactColumns } from "../Person/ContactColumns";
   import { ContactActions } from "../ContactActions";
-  import { PreferredEntry } from "../PreferredEntry";
   import { ActivityKind, ContactActivities } from "../History/ContactActivities";
   import ContactHistory from "../History/ContactHistory.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
@@ -185,7 +184,7 @@
   $: recentFiles = activities.of(ActivityKind.Files);
 
   $: jobLine = [$person.position, $person.department].filter(part => part).join(", ");
-  $: preferredPhone = PreferredEntry.valueOf($phoneNumbers);
+  $: preferredPhone = $phoneNumbers.sortBy(entry => entry.preference).first?.value || null;
   $: hasContactInfo = $emailAddresses.hasItems || $phoneNumbers.hasItems || $chatAccounts.hasItems ||
     $urls.hasItems || $streetAddresses.hasItems;
 

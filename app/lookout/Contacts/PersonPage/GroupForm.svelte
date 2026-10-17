@@ -50,7 +50,7 @@
             <PersonPicture person={item} size={20} />
             <span class="text">{item.name || ""}</span>
           </hbox>
-          <span class="cell text">{PreferredEntry.valueOf(item.emailAddresses) ?? ""}</span>
+          <span class="cell text">{item.emailAddresses.sortBy(entry => entry.preference).first?.value || ""}</span>
           <svelte:fragment slot="empty">{$t`Use Add Members to add people to this group.`}</svelte:fragment>
         </ListView>
       {/if}
@@ -85,7 +85,6 @@
   import PersonPicture from "../Person/PersonPicture.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import NewEMailContactDialog from "../NewEMailContactDialog.svelte";
-  import { PreferredEntry } from "../PreferredEntry";
   import { LetterIndex } from "../LetterIndex";
   import type { Person } from "../../../logic/Abstract/Person";
   import FormCard from "./FormCard.svelte";

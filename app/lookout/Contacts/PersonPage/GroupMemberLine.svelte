@@ -12,13 +12,12 @@
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
-  import { PreferredEntry } from "../PreferredEntry";
   import PersonPicture from "../Person/PersonPicture.svelte";
 
   export let person: Person;
 
   $: emailAddresses = person.emailAddresses;
-  $: preferredEmail = PreferredEntry.valueOf($emailAddresses);
+  $: preferredEmail = $emailAddresses.sortBy(entry => entry.preference).first?.value || null;
 </script>
 
 <style>

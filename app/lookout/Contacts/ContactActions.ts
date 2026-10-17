@@ -17,7 +17,6 @@ import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
 import { appName } from "../../logic/build";
 import { openExternalURL } from "../../logic/util/os-integration";
-import { PreferredEntry } from "./PreferredEntry";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
 import { URLPart } from "../../frontend/Util/util";
@@ -133,7 +132,7 @@ export class ContactActions {
   static recipientsOf(contacts: Iterable<Contact>): PersonUID[] {
     let recipients: PersonUID[] = [];
     for (let person of ContactActions.expandGroups(contacts)) {
-      let entry = PreferredEntry.of(person.emailAddresses);
+      let entry = person.emailAddresses.sortBy(address => address.preference).first ?? null;
       if (entry?.value && !recipients.some(recipient => recipient.emailAddress == entry.value)) {
         recipients.push(PersonUID.fromContactEntry(person, entry));
       }
