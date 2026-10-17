@@ -102,7 +102,7 @@
   import NormalViewIcon from "lucide-svelte/icons/layout-panel-left";
   import ReadingViewIcon from "lucide-svelte/icons/book-open";
   import { MailKeyAction, MailKeys } from "./MailKeys";
-  import { TitleBarSearch } from "../MainWindow/TitleBarSearch";
+  import { mailSearchInput } from "./Search/MailSearchBox.svelte";
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "./MessageActions";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
@@ -317,12 +317,12 @@
   function closeSearch() {
     MailSearch.close();
     isSearchFocused = false;
-    TitleBarSearch.input?.blur();
+    $mailSearchInput?.blur();
   }
 
   function onFocusChange() {
     setTimeout(() => {
-      let input = TitleBarSearch.input;
+      let input = $mailSearchInput;
       isSearchFocused = !!input && document.activeElement == input;
     }, 0);
   }
@@ -459,7 +459,7 @@
       return;
     }
     let target = event.target as HTMLElement;
-    let isInSearchBox = target == TitleBarSearch.input;
+    let isInSearchBox = target == $mailSearchInput;
     if (!pageEl?.contains(target) && target != document.body && !isInSearchBox) {
       return;
     }
@@ -492,13 +492,13 @@
       case MailKeyAction.UpdateFolder:
         return await MessageActions.getNewMail(folder);
       case MailKeyAction.Search:
-        return TitleBarSearch.input?.focus();
+        return $mailSearchInput?.focus();
       case MailKeyAction.ScopeCurrentFolder:
         MailSearch.update({ scope: SearchScope.CurrentFolder });
-        return TitleBarSearch.input?.focus();
+        return $mailSearchInput?.focus();
       case MailKeyAction.ScopeAllAccounts:
         MailSearch.update({ scope: SearchScope.AllAccounts });
-        return TitleBarSearch.input?.focus();
+        return $mailSearchInput?.focus();
       case MailKeyAction.AdvancedFind:
         MailSearch.isAdvancedSearchOpen.set(true);
         return;

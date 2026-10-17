@@ -1,7 +1,7 @@
 <svelte:window on:keydown|capture={onKeyDownCapture} />
 
 <vbox flex class="main-window desktop lookout-window" dir={rtl}>
-  <WindowHeader />
+  <WindowHeader bind:this={windowHeader} />
   <vbox flex class="below-title">
     <hbox flex class="window-body">
       <AppBar />
@@ -37,7 +37,6 @@
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { backstageState } from "../Settings/Backstage/BackstageState";
   import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
-  import { TitleBarSearch } from "./TitleBarSearch";
   import { RibbonModel } from "../Shared/Ribbon/RibbonGroup";
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "../Mail/MessageActions";
@@ -124,7 +123,7 @@
       case GlobalKeyAction.AddressBook:
         return MessageActions.openAddressBook();
       case GlobalKeyAction.Search:
-        return TitleBarSearch.input?.focus();
+        return windowHeader?.focusSearch();
       case GlobalKeyAction.TellMe:
         return openTellMe();
       case GlobalKeyAction.CollapseRibbon:
@@ -133,12 +132,14 @@
     }
   }
 
+  let windowHeader: WindowHeader;
+
   function openTellMe() {
     let tellMe = Array.from(document.querySelectorAll<HTMLButtonElement>(".tell-me-button")).find(button => button.offsetParent);
     if (tellMe) {
       tellMe.click();
     } else {
-      TitleBarSearch.input?.focus();
+      windowHeader?.focusSearch();
     }
   }
 </script>

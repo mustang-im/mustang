@@ -61,6 +61,12 @@
 </vbox>
 <svelte:window on:mousedown={onClickOutside} />
 
+<script lang="ts" context="module">
+  import { writable } from "svelte/store";
+
+  export const mailSearchInput = writable<HTMLInputElement | null>(null);
+</script>
+
 <script lang="ts">
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
@@ -78,6 +84,7 @@
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
   import { get } from "svelte/store";
+  import { onDestroy } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   const options = MailSearch.options;
@@ -87,6 +94,8 @@
 
   let boxEl: HTMLElement;
   let inputEl: HTMLInputElement;
+  $: $mailSearchInput = inputEl ?? null;
+  onDestroy(() => $mailSearchInput = null);
   let scopeButton: HTMLButtonElement;
   let isScopeOpen = false;
   let draft: AdvancedSearchDraft = null;

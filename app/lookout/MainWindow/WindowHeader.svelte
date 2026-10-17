@@ -10,7 +10,7 @@
     {#if isMail}
       <MailSearchBox />
     {:else}
-      <SearchField bind:searchTerm={$globalSearchTerm} placeholder={$t`Search`} />
+      <SearchField bind:searchTerm={$globalSearchTerm} placeholder={$t`Search`} bind:this={searchField} />
     {/if}
   </hbox>
   <hbox class="window-buttons">
@@ -39,7 +39,7 @@
   import { appGlobal } from "../../logic/app";
   import { appName, webMail } from "../../logic/build";
   import SearchField from "../../frontend/Shared/SearchField.svelte";
-  import MailSearchBox from "../Mail/Search/MailSearchBox.svelte";
+  import MailSearchBox, { mailSearchInput } from "../Mail/Search/MailSearchBox.svelte";
   import QuickAccessToolbar from "./QuickAccessToolbar.svelte";
   import { QuickAccessToolbar as QuickAccess } from "../Shared/QuickAccess/QuickAccess";
   import { MailQuickAccess } from "../Mail/MailQuickAccess";
@@ -55,6 +55,15 @@
   import { t } from "../../l10n/l10n";
 
   $: isMail = !!$selectedApp && ($selectedApp == mailMustangApp || mailMustangApp.subApps.includes($selectedApp));
+
+  let searchField: SearchField;
+  export function focusSearch() {
+    if (isMail) {
+      $mailSearchInput?.focus();
+    } else {
+      searchField?.focus();
+    }
+  }
   $: QuickAccess.commands.set(isMail ? MailQuickAccess.commands() : [MailQuickAccess.sendReceiveAll]);
 
   /* <copied from="../../frontend/MainWindow/WindowHeader.svelte"> */
