@@ -2,6 +2,7 @@ import { Account } from "../Abstract/Account";
 import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
+import { WorkHours } from "./WorkHours";
 import type { Participant } from "./Participant";
 import type { EMail } from "../Mail/EMail";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
@@ -16,7 +17,7 @@ import { RunOnce } from "../util/flow/RunOnce";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
-import { notifyChangedProperty } from "../util/Observable";
+import { notifyChangedObservable, notifyChangedProperty } from "../util/Observable";
 
 export class Calendar extends Account {
   readonly protocol: string = "calendar-local";
@@ -35,6 +36,11 @@ export class Calendar extends Account {
   /** @see `meetAccount` */
   @notifyChangedProperty
   protected meetAccountID: string;
+
+  /** When the owner of this calendar works.
+   * null, if we don't know, e.g. when the server doesn't tell for the calendar of another person. */
+  @notifyChangedObservable
+  workHours: WorkHours | null = new WorkHours();
 
   storage: CalendarStorage | null = null;
   syncState: string | null = null;
@@ -76,6 +82,11 @@ export class Calendar extends Account {
     await super.syncOnStartup();
     await this.listEvents();
     await this.startupDependentAccounts();
+    try {
+      await this.readWorkHoursFromServer();
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
   }
 
   /** Reads the events that we already have,
@@ -124,6 +135,51 @@ export class Calendar extends Account {
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     return [];
+  }
+
+  /** This calendar belongs to another person, who shares it with the user */
+  get isOtherPersonsCalendar(): boolean {
+    return false;
+  }
+
+  /** Whether the server stores the work hours of this calendar.
+   * Otherwise, `saveWorkHours()` saves them only on this computer. */
+  get canSaveWorkHoursOnServer(): boolean {
+    return false;
+  }
+
+  /** Otherwise, the server gets one time range for all work days */
+  get canSaveWorkHoursPerDayOnServer(): boolean {
+    return this.canSaveWorkHoursOnServer;
+  }
+
+  /** Updates `workHours` from the server, if the server has them */
+  async readWorkHoursFromServer(): Promise<void> {
+  }
+
+  /** Saves `workHours` locally, and on the server, if possible */
+  async saveWorkHours(): Promise<void> {
+    await this.save();
+    await this.saveWorkHoursToServer();
+  }
+
+  protected async saveWorkHoursToServer(): Promise<void> {
+  }
+
+  /** Takes the work hours that the server has.
+   * Saves locally, if they changed. */
+  protected async setWorkHoursFromServer(workHours: WorkHours | null): Promise<void> {
+    if (!workHours || !this.workHours) {
+      if (workHours == this.workHours) {
+        return;
+      }
+      this.workHours = workHours;
+    } else if (this.workHours.equals(workHours)) {
+      return;
+    } else {
+      this.workHours.copyFrom(workHours);
+    }
+    await this.save();
   }
 
   /** When organizing an event, send invitations to participants using this email address and account */
@@ -199,6 +255,12 @@ export class Calendar extends Account {
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.syncState = json.syncState;
+    if (json.workHours === null) {
+      this.workHours = null;
+    } else if (json.workHours) {
+      this.workHours ??= new WorkHours();
+      this.workHours.fromJSON(json.workHours);
+    }
 
     // On startup, the meet account might not be read yet, so we store the ID and resolve in the getter.
     this.meetAccountID = sanitize.alphanumdash(json.meetAccountID, null);
@@ -207,6 +269,7 @@ export class Calendar extends Account {
   toConfigJSON(): any {
     let json = super.toConfigJSON();
     json.syncState = this.syncState;
+    json.workHours = this.workHours?.toJSON() ?? null;
     return json;
   }
 }

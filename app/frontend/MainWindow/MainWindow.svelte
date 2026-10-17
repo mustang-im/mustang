@@ -9,42 +9,48 @@
   on:beforeunload={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
-<vbox flex class="main-window"
-  dir={rtl}
-  class:mobile={$appGlobal.isMobile}
-  class:desktop={!$appGlobal.isMobile}>
-  {#if !appGlobal.isMobile}
-    <WindowHeader selectedApp={$selectedApp} />
-  {/if}
-  <hbox flex>
+{#if frontend == "lookout"}
+  {#await import("../../lookout/MainWindow/MainWindow.svelte") then lookout}
+    <svelte:component this={lookout.default} />
+  {/await}
+{:else}
+  <vbox flex class="main-window"
+    dir={rtl}
+    class:mobile={$appGlobal.isMobile}
+    class:desktop={!$appGlobal.isMobile}>
     {#if !appGlobal.isMobile}
-      <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
+      <WindowHeader selectedApp={$selectedApp} />
     {/if}
-    <vbox flex>
-      <NotificationBar notifications={$notifications} />
-      {#if appGlobal.isMobile}
-        <Router primary={false} {history}>
-          <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
-            <vbox flex class="sidebar" slot="top">
-              <svelte:component this={sidebar} />
-            </vbox>
-            <AppContentRoutes slot="bottom" />
-          </SplitterHorizontal>
-          <NavigationM />
-        </Router>
-      {:else if $selectedApp}
-        <Router primary={false} {history}>
-          <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
-            <AppContentRoutes slot="left"/>
-            <vbox flex class="sidebar" slot="right">
-              <svelte:component this={sidebar} />
-            </vbox>
-          </Splitter>
-        </Router>
+    <hbox flex>
+      {#if !appGlobal.isMobile}
+        <AppBar bind:selectedApp={$selectedApp} showApps={mustangApps} />
       {/if}
-    </vbox>
-  </hbox>
-</vbox>
+      <vbox flex>
+        <NotificationBar notifications={$notifications} />
+        {#if appGlobal.isMobile}
+          <Router primary={false} {history}>
+            <SplitterHorizontal name="sidebar" initialBottomRatio={0.7} hasTop={!!sidebar}>
+              <vbox flex class="sidebar" slot="top">
+                <svelte:component this={sidebar} />
+              </vbox>
+              <AppContentRoutes slot="bottom" />
+            </SplitterHorizontal>
+            <NavigationM />
+          </Router>
+        {:else if $selectedApp}
+          <Router primary={false} {history}>
+            <Splitter name="sidebar" initialRightRatio={0.25} hasRight={!!sidebar}>
+              <AppContentRoutes slot="left"/>
+              <vbox flex class="sidebar" slot="right">
+                <svelte:component this={sidebar} />
+              </vbox>
+            </Splitter>
+          </Router>
+        {/if}
+      </vbox>
+    </hbox>
+  </vbox>
+{/if}
 <MeetBackground />
 <MailInBackground />
 <CalendarInBackground />
@@ -91,6 +97,9 @@
   // #if [MOBILE]
   import { SplashScreen } from '@capacitor/splash-screen';
   // #endif
+
+  const frontendSetting = getLocalStorage("appearance.frontend", "classic");
+  $: frontend = $frontendSetting.value;
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;

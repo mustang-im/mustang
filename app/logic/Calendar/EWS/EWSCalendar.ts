@@ -1,4 +1,6 @@
 import { ExchangeCalendar } from "./ExchangeCalendar";
+import { ExchangeWorkHours } from "./ExchangeWorkHours";
+import type { WorkHours } from "../WorkHours";
 import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -13,6 +15,7 @@ import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import { Lock } from "../../util/flow/Lock";
+import { k1DayMS } from "../../../frontend/Util/date";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -51,25 +54,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
-    let request = {
-      m$GetUserAvailabilityRequest: {
-        m$MailboxDataArray: {
-          t$MailboxData: participants.map(participant => ({
-            t$Email: {
-              t$Address: participant.emailAddress,
-            },
-            t$AttendeeType: "Required",
-          })),
-        },
-        t$FreeBusyViewOptions: {
-          t$TimeWindow: {
-            t$StartTime: from.toISOString(),
-            t$EndTime: to.toISOString(),
-          },
-          t$RequestedView: "FreeBusy",
-        },
-      },
-    };
+    let request = this.availabilityRequest(participants.map(participant => participant.emailAddress), from, to);
     let results = await this.account.callEWS(request);
     let availabilities = [];
     for (let [i, participant] of participants.entries()) {
@@ -89,6 +74,48 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       });
     }
     return availabilities;
+  }
+
+  protected availabilityRequest(emailAddresses: string[], from: Date, to: Date): any {
+    return {
+      m$GetUserAvailabilityRequest: {
+        m$MailboxDataArray: {
+          t$MailboxData: emailAddresses.map(emailAddress => ({
+            t$Email: {
+              t$Address: emailAddress,
+            },
+            t$AttendeeType: "Required",
+          })),
+        },
+        t$FreeBusyViewOptions: {
+          t$TimeWindow: {
+            t$StartTime: from.toISOString(),
+            t$EndTime: to.toISOString(),
+          },
+          t$RequestedView: "FreeBusy",
+        },
+      },
+    };
+  }
+
+  protected async fetchWorkHoursXML(): Promise<string | null> {
+    return await this.account.getUserConfigurationXMLText(ExchangeWorkHours.configurationName, ExchangeWorkHours.configurationFolder);
+  }
+
+  protected async saveWorkHoursXML(xml: string, isNew: boolean): Promise<void> {
+    await this.account.saveUserConfigurationXMLText(ExchangeWorkHours.configurationName, ExchangeWorkHours.configurationFolder, xml, isNew);
+  }
+
+  protected async fetchOtherPersonsWorkHours(): Promise<WorkHours | null> {
+    let from = new Date();
+    let to = new Date(from.getTime() + k1DayMS);
+    let results = await this.account.callEWS(this.availabilityRequest([this.username], from, to));
+    let result = results[0];
+    if (!result || result.ResponseMessage?.ResponseClass == "Error" || !result.FreeBusyView) {
+      return null;
+    }
+    let periods = ExchangeWorkHours.fromEWSAvailability(result.FreeBusyView.WorkingHours);
+    return periods ? ExchangeWorkHours.mergeToWorkHours(periods) : null;
   }
 
   protected async listEventsFromServer() {

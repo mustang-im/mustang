@@ -73,7 +73,11 @@
 
   let id: string = randomID();
 
-  function onToggle() {
+  function onToggle(event: MouseEvent) {
+    // The browser forwards a click on the label to the `<input>`, which would toggle a second time
+    if ((event.target as Element).closest("label")?.control) {
+      return;
+    }
     if (disabled) {
       return;
     }
