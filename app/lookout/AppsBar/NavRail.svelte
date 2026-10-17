@@ -1,6 +1,7 @@
 <vbox class="nav-rail" role="navigation" aria-label={$t`Apps`}>
   {#each railApps as app (app.id)}
     <NavRailButton {app} selected={isSelected(app, $selectedApp)} />
+    <NavRailSubApps mainApp={app} />
   {/each}
   <vbox flex class="spacer" />
   <NavRailButton app={settingsMustangApp} selected={isSelected(settingsMustangApp, $selectedApp)}
@@ -16,6 +17,7 @@
   import { settingsMustangApp } from "../../frontend/Settings/Window/SettingsMustangApp";
   import { SettingsDialogs } from "../Settings/SettingsDialogs";
   import NavRailButton from "./NavRailButton.svelte";
+  import NavRailSubApps from "./NavRailSubApps.svelte";
   import { t } from "../../l10n/l10n";
 
   $: railApps = sortRailApps($mustangApps.contents);

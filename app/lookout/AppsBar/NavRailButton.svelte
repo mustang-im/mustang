@@ -1,16 +1,14 @@
-<button class="nav-rail-button" class:selected
-  title={app.name}
-  aria-label={app.name}
+<button class="nav-rail-button" class:selected class:small
+  title={$title}
+  aria-label={$title}
   aria-current={selected ? "page" : undefined}
   on:click={() => catchErrors(onSelect)}>
   <hbox class="icon">
-    {#if railIcon}
-      <svelte:component this={railIcon} size="20" />
-    {:else}
-      <AppIcon icon={app.icon} size="20px" />
-    {/if}
+    <AppIcon icon={app.icon} size={small ? "16px" : "24px"} />
   </hbox>
-  <hbox class="label">{app.name}</hbox>
+  {#if !small}
+    <hbox class="label">{app.name}</hbox>
+  {/if}
 </button>
 
 <script lang="ts">
@@ -18,36 +16,13 @@
   import { openApp } from "../../frontend/AppsBar/selectedApp";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
   import { catchErrors } from "../../frontend/Util/error";
-  import MailIcon from "lucide-svelte/icons/mail";
-  import CalendarIcon from "lucide-svelte/icons/calendar-days";
-  import PeopleIcon from "lucide-svelte/icons/users";
-  import ChatIcon from "lucide-svelte/icons/message-square";
-  import MeetIcon from "lucide-svelte/icons/video";
-  import FilesIcon from "lucide-svelte/icons/folder";
-  import WebAppsIcon from "lucide-svelte/icons/layout-grid";
-  import TopicIcon from "lucide-svelte/icons/hash";
-  import SettingsIcon from "lucide-svelte/icons/settings";
 
   export let app: MustangApp;
   export let selected = false;
+  export let small = false;
   export let onClick: () => void = null;
 
-  $: railIcon = getRailIcon(app);
-
-  function getRailIcon(app: MustangApp) {
-    const icons = {
-      mail: MailIcon,
-      calendar: CalendarIcon,
-      contacts: PeopleIcon,
-      chat: ChatIcon,
-      meet: MeetIcon,
-      files: FilesIcon,
-      webapps: WebAppsIcon,
-      topic: TopicIcon,
-      settings: SettingsIcon,
-    };
-    return icons[app.id] ?? null;
-  }
+  $: title = app.title;
 
   function onSelect() {
     if (onClick) {
@@ -93,9 +68,23 @@
     border-radius: 2px;
     background-color: var(--lo-accent);
   }
+  .nav-rail-button.small {
+    width: 26px;
+    height: 26px;
+  }
+  .nav-rail-button.small.selected::before {
+    top: 7px;
+    bottom: 7px;
+  }
   .icon {
     align-items: center;
     justify-content: center;
+  }
+  .icon :global(.cls-1) {
+    stroke: currentColor;
+  }
+  .icon :global(.date-calendar-icon) {
+    fill: currentColor;
   }
   .label {
     max-width: 100%;
