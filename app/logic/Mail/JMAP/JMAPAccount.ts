@@ -510,7 +510,7 @@ export class JMAPAccount extends MailAccount {
     let recipientsAddrs = recipients.map(p => ({ email: p.emailAddress })).contents;
     let identityID = await this.findIdentityOnServer(email);
 
-    let sendResponse = await this.makeSingleCall("EmailSubmission/set", {
+    let responses = await this.makeCalls([["EmailSubmission/set", {
       accountId: this.accountID,
       create: {
         "sendMessage": {
@@ -527,16 +527,24 @@ export class JMAPAccount extends MailAccount {
           // Intentionally delete all other folders
           mailboxIds: {
             [sentFolder.id]: true,
-            [outboxFolder.id]: null,
           },
           ["keywords/$draft"]: null,
         }
       }
-    });
+    }]]);
+    let sendResponse = responses[0][1];
+    let moveToSentResponse = responses.find(response => response[0] == "Email/set")?.[1];
     let error = sendResponse["notCreated"] as any;
     if (error) {
       error = error["sendMessage"];
       throw new Error("Upload of message to server failed: " + (error?.description ?? "") + " " + (error?.properties?.join(", ") ?? ""));
+    }
+    if (moveToSentResponse) {
+      try {
+        checkChangeError(moveToSentResponse as TJMAPChangeResponse<any>);
+      } catch (ex) {
+        this.errorCallback(ex); // Not thrown: The email was sent, and the user should not send it again
+      }
     }
   }
 
