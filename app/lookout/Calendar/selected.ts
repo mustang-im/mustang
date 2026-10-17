@@ -6,6 +6,21 @@ import { ShownWorkHours } from "../../frontend/Calendar/ShownWorkHours";
 import { k1MinuteMS } from "../../frontend/Util/date";
 import { readable, writable } from "svelte/store";
 
+export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule" | "dual";
+
+export enum CalendarCurrentView {
+  Calendar = "calendar",
+  Preview = "preview",
+  List = "list",
+  Active = "active",
+}
+
+export enum CalendarFolderPane {
+  Normal = "normal",
+  Minimized = "minimized",
+  Off = "off",
+}
+
 export interface SlotSelection {
   start: Date;
   end: Date;

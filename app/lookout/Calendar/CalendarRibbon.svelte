@@ -110,8 +110,8 @@
       <ArrangeButtons {view} {isTable} onView={onView} />
       <RibbonMenuButton label={$t`Time Scale`} icon={TimeScaleIcon} size="small"
         disabled={view == "month" && $t`The time scale applies to the Day, Work Week, Week and Schedule views`}>
-        {#each CalendarSettings.timeScales as scale}
-          <MenuItem label={CalendarSettings.timeScaleLabel(scale)} checked={scale == timeScale}
+        {#each [60, 30, 15, 10, 6, 5] as scale}
+          <MenuItem label={timeScaleLabel(scale)} checked={scale == timeScale}
             onClick={() => onTimeScale(scale)} />
         {/each}
       </RibbonMenuButton>
@@ -162,7 +162,7 @@
 <script lang="ts">
   import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
-  import { CalendarCurrentView, CalendarFolderPane, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
+  import { CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { CalendarSharing } from "./Dialogs/CalendarSharing";
   import { SettingsDialogs } from "../Settings/SettingsDialogs";
@@ -238,8 +238,10 @@
     { id: CalendarCurrentView.List, label: $t`List`, icon: ListViewIcon, tooltip: $t`All appointments and meetings in a table` },
     { id: CalendarCurrentView.Active, label: $t`Active`, icon: ActiveViewIcon, tooltip: $t`Appointments and meetings that are still to come` },
   ];
-  const folderPane = CalendarSettings.folderPane;
-  const readingPane = CalendarSettings.readingPane;
+  const folderPane = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
+  const readingPane = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", ReadingPanePosition.Off);
+  const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);
+  const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isSimplified = $ribbonLayout.value == "simplified";
 
@@ -262,14 +264,26 @@
   }
 
   function onOverlay(overlay: boolean) {
-    CalendarSettings.splitView.value = !overlay;
+    splitViewSetting.value = !overlay;
   }
 
   function onTimeScale(minutes: number) {
-    CalendarSettings.timeScale.value = minutes;
+    timeScaleSetting.value = minutes;
   }
 
+  // <copied to="ViewSettings/OtherSettingsDialog.svelte">
+  function timeScaleLabel(minutes: number): string {
+    if (minutes == 60) {
+      return $t`60 minutes - Least space for details`;
+    }
+    if (minutes == 5) {
+      return $t`5 minutes - Most space for details`;
+    }
+    return $t`${minutes} minutes`;
+  }
+  // </copied>
+
   function onFolderPane(mode: CalendarFolderPane) {
-    CalendarSettings.folderPane.value = mode;
+    folderPane.value = mode;
   }
 </script>

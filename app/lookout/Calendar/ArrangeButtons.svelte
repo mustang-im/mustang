@@ -14,7 +14,7 @@
   checked={!isTable && view == "dual"} onChange={() => onView("dual")} />
 
 <script lang="ts">
-  import type { CalendarViewType } from "./CalendarSettings";
+  import type { CalendarViewType } from "./selected";
   import RibbonToggleButton from "../Shared/Ribbon/RibbonToggleButton.svelte";
   import DayIcon from "lucide-svelte/icons/calendar-1";
   import WorkWeekIcon from "lucide-svelte/icons/columns-4";

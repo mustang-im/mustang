@@ -5,9 +5,8 @@ import { Event } from "../../../logic/Calendar/Event";
 import { Participant } from "../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
-import { EventTable } from "../../Calendar/ListView/EventTable";
+import { EventTable, EventTableColumn, EventTableGrouping } from "../../Calendar/ListView/EventTable";
 import { CalendarSearch, CalendarSearchScope } from "../../Calendar/ListView/CalendarSearch";
-import { EventTableColumn, EventTableGrouping } from "../../Calendar/CalendarSettings";
 import { expect, test } from "vitest";
 
 function newEvent(title: string, day: number, location = ""): Event {

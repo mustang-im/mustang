@@ -1,7 +1,20 @@
 import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
 import { Frequency, ruleAsLabel } from "../../../logic/Calendar/RecurrenceRule";
-import { EventTableColumn, EventTableGrouping } from "../CalendarSettings";
 import { getDateTimeLocale, gt } from "../../../l10n/l10n";
+
+export enum EventTableColumn {
+  Subject = "subject",
+  Location = "location",
+  Start = "start",
+  End = "end",
+  Recurrence = "recurrence",
+  Calendar = "calendar",
+}
+
+export enum EventTableGrouping {
+  Recurrence = "recurrence",
+  None = "none",
+}
 
 export class EventTableGroup {
   readonly id: string;
@@ -16,6 +29,13 @@ export class EventTableGroup {
 }
 
 export class EventTable {
+  static readonly allColumns = [
+    EventTableColumn.Subject, EventTableColumn.Location, EventTableColumn.Start, EventTableColumn.End,
+    EventTableColumn.Recurrence, EventTableColumn.Calendar,
+  ];
+  static readonly defaultColumns = [
+    EventTableColumn.Subject, EventTableColumn.Location, EventTableColumn.Start, EventTableColumn.End, EventTableColumn.Recurrence,
+  ];
   sortColumn: EventTableColumn;
   ascending: boolean;
   grouping: EventTableGrouping;

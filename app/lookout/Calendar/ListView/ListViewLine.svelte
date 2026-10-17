@@ -30,7 +30,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventTable } from "./EventTable";
-  import { EventTableColumn } from "../CalendarSettings";
+  import { EventTableColumn } from "./EventTable";
   import { EventLook } from "../Event/EventLook";
   import AppointmentIcon from "lucide-svelte/icons/calendar";
   import RecurringIcon from "lucide-svelte/icons/repeat";

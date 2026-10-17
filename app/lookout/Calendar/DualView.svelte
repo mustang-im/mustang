@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
-  import { CalendarSettings } from "./CalendarSettings";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { CalendarRange } from "./View/CalendarRange";
   import { eventPeek } from "./selected";
   import { selectedDate } from "../../frontend/Calendar/selected";
@@ -55,7 +55,7 @@
   }
 
   function showOverlay() {
-    CalendarSettings.splitView.value = false;
+    getLocalStorage<boolean>("lookout.calendar.splitView", false).value = false;
   }
 </script>
 

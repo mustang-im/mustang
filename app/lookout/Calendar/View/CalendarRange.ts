@@ -1,4 +1,4 @@
-import type { CalendarViewType } from "../CalendarSettings";
+import type { CalendarViewType } from "../selected";
 import { getWeekStart, k1DayMS } from "../../../frontend/Util/date";
 
 export class CalendarRange {

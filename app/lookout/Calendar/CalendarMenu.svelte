@@ -63,7 +63,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import MoveUpIcon from "lucide-svelte/icons/arrow-up";
   import OverlayIcon from "lucide-svelte/icons/layers";
-  import { CalendarSettings } from "./CalendarSettings";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import MoveDownIcon from "lucide-svelte/icons/arrow-down";
   import { appGlobal } from "../../logic/app";
   import { t } from "../../l10n/l10n";
@@ -72,10 +72,10 @@
   let calendar: Calendar | null = null;
   let renamingCalendar: Calendar | null = null;
   let groups: CalendarGroups;
-  const splitView = CalendarSettings.splitView;
+  const splitView = getLocalStorage<boolean>("lookout.calendar.splitView", false);
 
   function toggleOverlay() {
-    CalendarSettings.splitView.value = !CalendarSettings.splitView.value;
+    splitView.value = !splitView.value;
   }
 
   export function openFor(event: MouseEvent, forCalendar: Calendar) {

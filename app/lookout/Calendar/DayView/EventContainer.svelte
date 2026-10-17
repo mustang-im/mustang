@@ -42,8 +42,8 @@
   import { EventLook } from "../Event/EventLook";
   import { EventInteraction } from "../Event/EventInteraction";
   import { EventDrag, type EventDragMode } from "../EventDrag";
-  import { now, kCalendarMenus, type CalendarMenus } from "../selected";
-  import { CalendarCurrentView, CalendarSettings } from "../CalendarSettings";
+  import { now, kCalendarMenus, CalendarCurrentView, type CalendarMenus } from "../selected";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import "../Event/EventLook.css";
@@ -55,7 +55,7 @@
   export let snapMinutes: number;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const currentView = CalendarSettings.currentView;
+  const currentView = getLocalStorage<CalendarCurrentView>("lookout.calendar.currentView", CalendarCurrentView.Calendar);
 
   $: event = item.event;
   $: calendar = $event.calendar;

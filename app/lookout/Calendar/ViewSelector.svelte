@@ -12,7 +12,7 @@
 </Menu>
 
 <script lang="ts">
-  import type { CalendarViewType } from "./CalendarSettings";
+  import type { CalendarViewType } from "./selected";
   import Menu from "../Shared/Menu/Menu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";

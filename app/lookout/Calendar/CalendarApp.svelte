@@ -94,14 +94,15 @@
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import { InvitationResponse } from "../../logic/Calendar/Invitation/InvitationStatus";
-  import { CalendarCurrentView, CalendarFolderPane, CalendarSettings, type CalendarViewType } from "./CalendarSettings";
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, type CalendarMenus, type SlotSelection } from "./selected";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, CalendarCurrentView, CalendarFolderPane, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
+  import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../frontend/Util/date";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../frontend/Util/error";
   import { statusBar } from "../MainWindow/StatusBar";
   import CalendarRibbon from "./CalendarRibbon.svelte";
@@ -136,19 +137,22 @@
   import { onDestroy, setContext } from "svelte";
   import { t } from "../../l10n/l10n";
 
-  let view = CalendarSettings.view.value;
-  let currentView = CalendarSettings.currentView.value;
-  let dayCount = CalendarSettings.dayCount.value;
-  const timeScaleSetting = CalendarSettings.timeScale;
-  const weekNumbersSetting = CalendarSettings.weekNumbers;
-  const showDeclinedSetting = CalendarSettings.showDeclined;
+  const viewSetting = getLocalStorage<CalendarViewType>("lookout.calendar.view", "workweek");
+  const currentViewSetting = getLocalStorage<CalendarCurrentView>("lookout.calendar.currentView", CalendarCurrentView.Calendar);
+  const dayCountSetting = getLocalStorage<number>("lookout.calendar.dayCount", 1);
+  let view = viewSetting.value;
+  let currentView = currentViewSetting.value;
+  let dayCount = dayCountSetting.value;
+  const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
+  const weekNumbersSetting = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
+  const showDeclinedSetting = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
   $: timeScale = $timeScaleSetting.value;
   $: showWeekNumbers = $weekNumbersSetting.value;
   $: showDeclined = $showDeclinedSetting.value;
-  const splitViewSetting = CalendarSettings.splitView;
-  const readingPaneSetting = CalendarSettings.readingPane;
+  const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);
+  const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", ReadingPanePosition.Off);
   $: splitView = $splitViewSetting.value;
-  const folderPaneSetting = CalendarSettings.folderPane;
+  const folderPaneSetting = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
   $: showFolderPane = ($folderPaneSetting.value ?? CalendarFolderPane.Normal) == CalendarFolderPane.Normal;
 
   let folderPaneHeight = 0;
@@ -219,14 +223,14 @@
       $startDate = $selectedDate;
     }
     view = newView;
-    CalendarSettings.view.value = newView;
+    viewSetting.value = newView;
     $eventPeek = null;
     showCalendar();
   }
 
   function setCurrentView(newView: CalendarCurrentView) {
     currentView = newView;
-    CalendarSettings.currentView.value = newView;
+    currentViewSetting.value = newView;
     $eventPeek = null;
     if (isSearch) {
       CalendarSearch.close();
@@ -242,25 +246,30 @@
   }
 
   function resetView() {
-    CalendarSettings.folderPane.value = CalendarFolderPane.Normal;
-    CalendarSettings.readingPane.value = ReadingPanePosition.Off;
+    const listSettings = [
+      getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start),
+      getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true),
+      getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence),
+      getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns),
+    ];
+    folderPaneSetting.value = CalendarFolderPane.Normal;
+    readingPaneSetting.value = ReadingPanePosition.Off;
     setCurrentView(CalendarCurrentView.Calendar);
     setView("workweek");
     setSplitView(false);
-    CalendarSettings.timeScale.value = CalendarSettings.timeScale.defaultValue;
-    CalendarSettings.listSortColumn.value = CalendarSettings.listSortColumn.defaultValue;
-    CalendarSettings.listSortAscending.value = CalendarSettings.listSortAscending.defaultValue;
-    CalendarSettings.listGrouping.value = CalendarSettings.listGrouping.defaultValue;
-    CalendarSettings.listColumns.value = CalendarSettings.listColumns.defaultValue;
+    timeScaleSetting.value = timeScaleSetting.defaultValue;
+    for (let setting of listSettings) {
+      setting.value = setting.defaultValue;
+    }
   }
 
   function setDayCount(days: number) {
     dayCount = days;
-    CalendarSettings.dayCount.value = days;
+    dayCountSetting.value = days;
   }
 
   function setSplitView(split: boolean) {
-    CalendarSettings.splitView.value = split;
+    splitViewSetting.value = split;
   }
 
   function goToToday() {
@@ -272,7 +281,7 @@
   function showNext7Days() {
     goToToday();
     view = "day";
-    CalendarSettings.view.value = "day";
+    viewSetting.value = "day";
     setDayCount(7);
   }
 
@@ -303,7 +312,7 @@
   function selectDays(first: Date, last: Date) {
     selectDay(first);
     view = "day";
-    CalendarSettings.view.value = "day";
+    viewSetting.value = "day";
     setDayCount(Math.round((last.getTime() - first.getTime()) / (24 * 60 * 60 * 1000)) + 1);
   }
 

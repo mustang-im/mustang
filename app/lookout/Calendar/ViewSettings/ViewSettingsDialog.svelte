@@ -4,13 +4,13 @@
     <div class="rows">
       <DialogButton label={$t`Columns…`} classes="settings-button" onClick={() => { open = "columns"; }}
         disabled={!isTable && tableOnly} />
-      <span class="summary" class:disabled={!isTable} title={draft.columnsSummary}>{draft.columnsSummary}</span>
+      <span class="summary" class:disabled={!isTable} title={columnsSummary}>{columnsSummary}</span>
       <DialogButton label={$t`Group By…`} classes="settings-button" onClick={() => { open = "group-by"; }}
         disabled={!isTable && tableOnly} />
-      <span class="summary" class:disabled={!isTable}>{draft.groupSummary}</span>
+      <span class="summary" class:disabled={!isTable}>{groupSummary}</span>
       <DialogButton label={$t`Sort…`} classes="settings-button" onClick={() => { open = "sort"; }}
         disabled={!isTable && tableOnly} />
-      <span class="summary" class:disabled={!isTable}>{draft.sortSummary}</span>
+      <span class="summary" class:disabled={!isTable}>{sortSummary}</span>
       <DialogButton label={$t`Other Settings…`} classes="settings-button" onClick={() => { open = "other"; }} />
       <span class="summary">{$t`Time scale, week numbers and declined meetings`}</span>
     </div>
@@ -20,23 +20,23 @@
   </svelte:fragment>
 </Dialog>
 {#if open == "columns"}
-  <ShowColumnsDialog columns={draft.columns} allColumns={CalendarViewDraft.allColumns} labelOf={EventTable.columnLabel}
+  <ShowColumnsDialog {columns} allColumns={EventTable.allColumns} labelOf={EventTable.columnLabel}
     requiredColumn={EventTableColumn.Subject} requiredReason={$t`The list needs the Subject column`}
-    onOK={columns => { draft.columns = columns; draft = draft; }} on:close={closeSub} />
+    onOK={chosen => columns = chosen} on:close={closeSub} />
 {:else if open == "group-by"}
-  <GroupByDialog {draft} onOK={changed => draft = changed} on:close={closeSub} />
+  <GroupByDialog bind:grouping on:close={closeSub} />
 {:else if open == "sort"}
-  <SortDialog columnOptions={CalendarViewDraft.allColumns.map(column => ({ value: column, label: EventTable.columnLabel(column) }))}
-    column={draft.sortColumn} ascending={draft.sortAscending}
-    onOK={(column, ascending) => { draft.sortColumn = column; draft.sortAscending = ascending; draft = draft; }} on:close={closeSub} />
+  <SortDialog columnOptions={EventTable.allColumns.map(column => ({ value: column, label: EventTable.columnLabel(column) }))}
+    column={sortColumn} ascending={sortAscending}
+    onOK={(column, ascending) => { sortColumn = column; sortAscending = ascending; }} on:close={closeSub} />
 {:else if open == "other"}
-  <OtherSettingsDialog {draft} onOK={changed => draft = changed} on:close={closeSub} />
+  <OtherSettingsDialog bind:timeScale bind:weekNumbers bind:showDeclined on:close={closeSub} />
 {/if}
 
 <script lang="ts">
-  import { CalendarViewDraft } from "./CalendarViewDraft";
-  import { CalendarCurrentView, CalendarSettings, EventTableColumn } from "../CalendarSettings";
-  import { EventTable } from "../ListView/EventTable";
+  import { CalendarCurrentView } from "../selected";
+  import { EventTable, EventTableColumn, EventTableGrouping } from "../ListView/EventTable";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -46,22 +46,52 @@
   import OtherSettingsDialog from "./OtherSettingsDialog.svelte";
   import { t } from "../../../l10n/l10n";
 
-  const currentView = CalendarSettings.currentView;
+  const currentView = getLocalStorage<CalendarCurrentView>("lookout.calendar.currentView", CalendarCurrentView.Calendar);
+  const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
+  const weekNumbersSetting = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
+  const showDeclinedSetting = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
+  const columnsSetting = getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns);
+  const sortColumnSetting = getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start);
+  const sortAscendingSetting = getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true);
+  const groupingSetting = getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence);
   $: isTable = $currentView.value == CalendarCurrentView.List || $currentView.value == CalendarCurrentView.Active;
-  let draft = CalendarViewDraft.fromSettings();
+
+  let timeScale = timeScaleSetting.value;
+  let weekNumbers = weekNumbersSetting.value;
+  let showDeclined = showDeclinedSetting.value;
+  let columns = [...columnsSetting.value];
+  let sortColumn = sortColumnSetting.value;
+  let sortAscending = sortAscendingSetting.value;
+  let grouping = groupingSetting.value;
   let open: "columns" | "group-by" | "sort" | "other" | null = null;
   $: tableOnly = $t`Available in the List and Active views`;
+  $: columnsSummary = columns.map(column => EventTable.columnLabel(column)).join(", ");
+  $: groupSummary = grouping == EventTableGrouping.Recurrence ? $t`Recurrence (ascending)` : $t`None`;
+  $: sortLabel = EventTable.columnLabel(sortColumn);
+  $: sortSummary = sortAscending ? $t`${sortLabel} (ascending)` : $t`${sortLabel} (descending)`;
 
   function closeSub() {
     open = null;
   }
 
   function reset() {
-    draft = CalendarViewDraft.defaults();
+    timeScale = timeScaleSetting.defaultValue;
+    weekNumbers = weekNumbersSetting.defaultValue;
+    showDeclined = showDeclinedSetting.defaultValue;
+    columns = [...columnsSetting.defaultValue];
+    sortColumn = sortColumnSetting.defaultValue;
+    sortAscending = sortAscendingSetting.defaultValue;
+    grouping = groupingSetting.defaultValue;
   }
 
   function save() {
-    draft.save();
+    timeScaleSetting.value = timeScale;
+    weekNumbersSetting.value = weekNumbers;
+    showDeclinedSetting.value = showDeclined;
+    columnsSetting.value = [...columns];
+    sortColumnSetting.value = sortColumn;
+    sortAscendingSetting.value = sortAscending;
+    groupingSetting.value = grouping;
   }
 </script>
 

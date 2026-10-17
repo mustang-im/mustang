@@ -3,41 +3,51 @@
     <GroupBox label={$t`Day and Week`}>
       <hbox class="field-row">
         <span>{$t`Time scale:`}</span>
-        <ComboBox options={timeScaleOptions} bind:value={timeScale} label={$t`Time scale`} width="260px" />
+        <ComboBox options={timeScaleOptions} bind:value={chosenTimeScale} label={$t`Time scale`} width="260px" />
       </hbox>
     </GroupBox>
     <GroupBox label={$t`Month and Date Navigator`}>
-      <CheckBox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={weekNumbers} />
+      <CheckBox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={chosenWeekNumbers} />
     </GroupBox>
     <GroupBox label={$t`Meetings`}>
-      <CheckBox label={$t`Show declined meetings`} bind:checked={showDeclined} />
+      <CheckBox label={$t`Show declined meetings`} bind:checked={chosenShowDeclined} />
     </GroupBox>
   </vbox>
 </Dialog>
 
 <script lang="ts">
-  import { CalendarViewDraft } from "./CalendarViewDraft";
-  import { CalendarSettings } from "../CalendarSettings";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let draft: CalendarViewDraft;
-  export let onOK: (draft: CalendarViewDraft) => void;
+  export let timeScale: number;
+  export let weekNumbers: boolean;
+  export let showDeclined: boolean;
 
-  let timeScale = draft.timeScale;
-  let weekNumbers = draft.weekNumbers;
-  let showDeclined = draft.showDeclined;
+  let chosenTimeScale = timeScale;
+  let chosenWeekNumbers = weekNumbers;
+  let chosenShowDeclined = showDeclined;
 
-  const timeScaleOptions = CalendarSettings.timeScales.map(minutes => ({ value: minutes, label: CalendarSettings.timeScaleLabel(minutes) }));
+  const timeScaleOptions = [60, 30, 15, 10, 6, 5].map(minutes => ({ value: minutes, label: timeScaleLabel(minutes) }));
+
+  // <copied from="../CalendarRibbon.svelte">
+  function timeScaleLabel(minutes: number): string {
+    if (minutes == 60) {
+      return $t`60 minutes - Least space for details`;
+    }
+    if (minutes == 5) {
+      return $t`5 minutes - Most space for details`;
+    }
+    return $t`${minutes} minutes`;
+  }
+  // </copied>
 
   function save() {
-    draft.timeScale = timeScale;
-    draft.weekNumbers = weekNumbers;
-    draft.showDeclined = showDeclined;
-    onOK(draft);
+    timeScale = chosenTimeScale;
+    weekNumbers = chosenWeekNumbers;
+    showDeclined = chosenShowDeclined;
   }
 </script>
 

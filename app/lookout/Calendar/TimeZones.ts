@@ -1,5 +1,5 @@
 import { HourLabel } from "./TimeGrid/HourLabel";
-import { CalendarSettings } from "./CalendarSettings";
+import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { WindowsToIANATimezone } from "../../logic/Calendar/ICal/WindowsTimezone";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { logError } from "../../frontend/Util/error";
@@ -117,31 +117,34 @@ export class TimeZoneRuler {
     return segments;
   }
 
-  static fromSettings(locale = getDateTimeLocale()): TimeZoneRuler[] {
+  static ofZones(label: string, extraZones: { shown: boolean, zone: string, label: string }[], locale = getDateTimeLocale()): TimeZoneRuler[] {
     let rulers: TimeZoneRuler[] = [];
-    let extraZones = [
-      { shown: CalendarSettings.thirdTimeZoneShown, zone: CalendarSettings.thirdTimeZone, label: CalendarSettings.thirdTimeZoneLabel },
-      { shown: CalendarSettings.secondTimeZoneShown, zone: CalendarSettings.secondTimeZone, label: CalendarSettings.secondTimeZoneLabel },
-    ];
     for (let extra of extraZones) {
-      if (!extra.shown.value || !extra.zone.value) {
+      if (!extra.shown || !extra.zone) {
         continue;
       }
       try {
-        rulers.push(new TimeZoneRuler(extra.zone.value, extra.label.value, locale));
+        rulers.push(new TimeZoneRuler(extra.zone, extra.label, locale));
       } catch (ex) {
         logError(ex);
       }
     }
-    rulers.push(new TimeZoneRuler(null, CalendarSettings.timeZoneLabel.value, locale));
+    rulers.push(new TimeZoneRuler(null, label, locale));
     return rulers;
   }
 
   static readonly rulers: Readable<TimeZoneRuler[]> = derived([
-    CalendarSettings.timeZoneLabel,
-    CalendarSettings.secondTimeZoneShown, CalendarSettings.secondTimeZoneLabel, CalendarSettings.secondTimeZone,
-    CalendarSettings.thirdTimeZoneShown, CalendarSettings.thirdTimeZoneLabel, CalendarSettings.thirdTimeZone,
-  ], () => TimeZoneRuler.fromSettings());
+    getLocalStorage<string>("lookout.calendar.timeZone.label", ""),
+    getLocalStorage<boolean>("lookout.calendar.timeZone2.shown", false),
+    getLocalStorage<string>("lookout.calendar.timeZone2.label", ""),
+    getLocalStorage<string>("lookout.calendar.timeZone2.zone", "Etc/UTC"),
+    getLocalStorage<boolean>("lookout.calendar.timeZone3.shown", false),
+    getLocalStorage<string>("lookout.calendar.timeZone3.label", ""),
+    getLocalStorage<string>("lookout.calendar.timeZone3.zone", "Etc/UTC"),
+  ], ([label, secondShown, secondLabel, secondZone, thirdShown, thirdLabel, thirdZone]) => TimeZoneRuler.ofZones(label.value, [
+    { shown: thirdShown.value, zone: thirdZone.value, label: thirdLabel.value },
+    { shown: secondShown.value, zone: secondZone.value, label: secondLabel.value },
+  ]));
 }
 
 export class TimeZoneChoice {

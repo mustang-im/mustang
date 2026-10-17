@@ -78,7 +78,6 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { appGlobal } from "../../../logic/app";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
-  import { CalendarSettings } from "../../Calendar/CalendarSettings";
   import { TimeZoneChoice, ZoneClock } from "../../Calendar/TimeZones";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
@@ -101,15 +100,15 @@
 
   const defaultDuration = getLocalStorage<number>("calendar.defaultEventLengthInMinutes", 60);
   const notifications = getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]);
-  const weekNumbers = CalendarSettings.weekNumbers;
-  const showDeclined = CalendarSettings.showDeclined;
-  const timeZoneLabel = CalendarSettings.timeZoneLabel;
-  const secondTimeZoneShown = CalendarSettings.secondTimeZoneShown;
-  const secondTimeZoneLabel = CalendarSettings.secondTimeZoneLabel;
-  const secondTimeZone = CalendarSettings.secondTimeZone;
-  const thirdTimeZoneShown = CalendarSettings.thirdTimeZoneShown;
-  const thirdTimeZoneLabel = CalendarSettings.thirdTimeZoneLabel;
-  const thirdTimeZone = CalendarSettings.thirdTimeZone;
+  const weekNumbers = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
+  const showDeclined = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
+  const timeZoneLabel = getLocalStorage<string>("lookout.calendar.timeZone.label", "");
+  const secondTimeZoneShown = getLocalStorage<boolean>("lookout.calendar.timeZone2.shown", false);
+  const secondTimeZoneLabel = getLocalStorage<string>("lookout.calendar.timeZone2.label", "");
+  const secondTimeZone = getLocalStorage<string>("lookout.calendar.timeZone2.zone", "Etc/UTC");
+  const thirdTimeZoneShown = getLocalStorage<boolean>("lookout.calendar.timeZone3.shown", false);
+  const thirdTimeZoneLabel = getLocalStorage<string>("lookout.calendar.timeZone3.label", "");
+  const thirdTimeZone = getLocalStorage<string>("lookout.calendar.timeZone3.zone", "Etc/UTC");
 
   const kZoneWidth = "420px";
   const systemZone = ZoneClock.systemZone;

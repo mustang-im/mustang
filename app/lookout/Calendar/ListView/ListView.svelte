@@ -41,9 +41,9 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { EventTable } from "./EventTable";
+  import { EventTable, EventTableColumn, EventTableGrouping } from "./EventTable";
   import { ObservedItems } from "../../Shared/ObservedItems";
-  import { CalendarSettings, EventTableColumn } from "../CalendarSettings";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { CalendarActions } from "../CalendarActions";
   import { kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
@@ -62,10 +62,10 @@
   export let showCalendarColumn = false;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const listColumns = CalendarSettings.listColumns;
-  const sortColumn = CalendarSettings.listSortColumn;
-  const sortAscending = CalendarSettings.listSortAscending;
-  const grouping = CalendarSettings.listGrouping;
+  const listColumns = getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns);
+  const sortColumn = getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start);
+  const sortAscending = getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true);
+  const grouping = getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence);
 
   let rowsEl: HTMLElement;
   let collapsed = new Set<string>();

@@ -4,8 +4,8 @@ import type { InvitationResponseInMessage } from "../../logic/Calendar/Invitatio
 import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
-import { inlineTitle, selectedSlots, workWeekHours, type SlotSelection } from "./selected";
-import { CalendarSettings } from "./CalendarSettings";
+import { inlineTitle, selectedSlots, workWeekHours, type CalendarViewType, type SlotSelection } from "./selected";
+import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { CalendarRange } from "./View/CalendarRange";
 import { CalendarGroups } from "./FolderPane/CalendarGroups";
 import { WorkingHours } from "./View/WorkingHours";
@@ -60,8 +60,8 @@ export class CalendarActions {
       CalendarActions.newEvent(calendar ?? slots.calendar, slots.start, slots.end, kind);
       return;
     }
-    let view = CalendarSettings.view.value;
-    let range = new CalendarRange(view, get(view == "dual" ? selectedDate : startDate), CalendarSettings.dayCount.value,
+    let view = getLocalStorage<CalendarViewType>("lookout.calendar.view", "workweek").value;
+    let range = new CalendarRange(view, get(view == "dual" ? selectedDate : startDate), getLocalStorage<number>("lookout.calendar.dayCount", 1).value,
       get(workWeekHours).workDays());
     let now = new Date();
     let start: Date;

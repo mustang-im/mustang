@@ -27,7 +27,7 @@
 {/if}
 
 <script lang="ts">
-  import type { CalendarViewType } from "./CalendarSettings";
+  import type { CalendarViewType } from "./selected";
   import { CalendarActions } from "./CalendarActions";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";

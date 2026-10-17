@@ -1,4 +1,4 @@
-import type { CalendarViewType } from "./CalendarSettings";
+import type { CalendarViewType } from "./selected";
 import { Keyboard } from "../Util/keyboard";
 
 export type CalendarCommand =
