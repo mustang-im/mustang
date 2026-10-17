@@ -39,7 +39,8 @@
     gap: 8px;
     min-width: 0;
     height: 32px;
-    padding: 0 12px;
+    padding-block: 0;
+    padding-inline-end: 12px;
     border: none;
     border-radius: var(--lo-radius-small);
     background: none;

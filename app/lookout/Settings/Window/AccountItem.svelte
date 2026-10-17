@@ -47,7 +47,10 @@
 <style>
   .entry.account {
     height: 30px;
-    padding-inline-start: 24px;
+    padding-inline-start: 12px;
+  }
+  :global(.accounts) .entry.account {
+    padding-inline-start: 36px;
   }
   .entry.account.open {
     font-weight: 600;

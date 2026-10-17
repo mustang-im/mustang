@@ -29,11 +29,14 @@
 </script>
 
 <style>
+  .settings-category {
+    padding-inline-start: 12px;
+  }
   .settings-category.sub {
     height: 28px;
-    padding-inline-start: 32px;
+    padding-inline-start: 36px;
   }
-  :global(.account-pages) .settings-category.sub {
-    padding-inline-start: 48px;
+  :global(.accounts .account-pages) .settings-category.sub {
+    padding-inline-start: 60px;
   }
 </style>

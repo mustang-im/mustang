@@ -34,7 +34,7 @@
   }
   .entry.add {
     height: 28px;
-    padding-inline-start: 24px;
+    padding-inline-start: 36px;
     color: var(--lo-accent-text);
     font-size: var(--lo-font-size-small);
   }
