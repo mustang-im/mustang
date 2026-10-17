@@ -64,7 +64,7 @@ export class JMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     const batchSize = 200;
-    let state: string;
+    let state = this.account.syncState.get("Email"); // Account-wide: A newer state would skip the changes in the other folders
     let allNewMessages = new ArrayColl<JMAPEMail>();
     for (let i = 0; i < this.countTotal; i += batchSize) {
       let { newMessages, syncState } = await retryOnTransientError(() =>
