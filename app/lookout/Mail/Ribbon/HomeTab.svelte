@@ -55,9 +55,12 @@
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Move`}>
-    <RibbonMenuButton label={$t`Move`} icon={MoveIcon} disabled={noSelection}>
-      <MoveMenuItems {messages} />
-    </RibbonMenuButton>
+    <RibbonButton label={$t`Move`} icon={MoveIcon} disabled={noSelection}
+      tooltip={$t`Move the selected messages to another folder`} shortCutInfo="Ctrl+Shift+V"
+      onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: false })} />
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" disabled={noSelection}
+      tooltip={$t`Copy the selected messages to another folder`} shortCutInfo="Ctrl+Shift+Y"
+      onClick={() => MailDialogs.open({ kind: "move-messages", messages, copy: true })} />
     <RibbonMenuButton label={$t`Rules`} icon={RulesIcon} size="small">
       <RulesMenuItems message={single} account={realAccount} />
     </RibbonMenuButton>
@@ -114,6 +117,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
   import { MessageActions } from "../MessageActions";
+  import { MailDialogs } from "../Dialogs/MailDialogs";
   import { SelectionState } from "../SelectionState";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -125,7 +129,6 @@
   import { SelectNames } from "../Composer/SelectNames";
   import type { Person } from "../../../logic/Abstract/Person";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import MoveMenuItems from "../Menu/MoveMenuItems.svelte";
   import JunkMenuItems from "../Menu/JunkMenuItems.svelte";
   import FollowUpMenuItems from "../Menu/FollowUpMenuItems.svelte";
   import RulesMenuItems from "../Menu/RulesMenuItems.svelte";
@@ -151,6 +154,7 @@
   import EditAsNewIcon from "lucide-svelte/icons/iteration-ccw";
   import NewToAllIcon from "lucide-svelte/icons/users-round";
   import MoveIcon from "lucide-svelte/icons/folder-input";
+  import CopyIcon from "lucide-svelte/icons/copy";
   import RulesIcon from "lucide-svelte/icons/list-filter";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
