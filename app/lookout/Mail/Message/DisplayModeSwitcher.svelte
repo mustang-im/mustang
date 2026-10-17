@@ -6,11 +6,11 @@
 
 <script lang="ts">
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import { gt } from "../../../l10n/l10n";
 
-  const contentRendering = MailView.contentRendering;
+  const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
 
   const displayModes = [
     { id: DisplayMode.HTML, label: gt`Display as HTML`, tooltip: gt`Show the message as the sender formatted it` },

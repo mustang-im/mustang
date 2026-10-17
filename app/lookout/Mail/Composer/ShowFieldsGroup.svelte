@@ -11,7 +11,7 @@
 </RibbonGroup>
 
 <script lang="ts">
-  import { ComposerSettings } from "./ComposerSettings";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import BccIcon from "lucide-svelte/icons/eye-off";
@@ -21,6 +21,6 @@
   export let canShowFrom = false;
   export let bccLocked = false;
 
-  const showBcc = ComposerSettings.showBcc;
-  const showFrom = ComposerSettings.showFrom;
+  const showBcc = getLocalStorage<boolean>("lookout.mail.compose.showBcc", false);
+  const showFrom = getLocalStorage<boolean>("lookout.mail.compose.showFrom", true);
 </script>

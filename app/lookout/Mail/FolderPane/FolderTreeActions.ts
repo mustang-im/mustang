@@ -4,7 +4,6 @@ import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { assert } from "../../../logic/util/util";
 import { selectedFolder } from "../../../frontend/Mail/Selected";
-import { MailView } from "../MailView";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { derived, get, readable, writable, type Readable } from "svelte/store";
@@ -88,7 +87,11 @@ export class FolderTreeActions {
   static async moveFolder(folder: Folder, target: Folder) {
     assert(FolderTreeActions.canMoveFolderInto(folder, target), gt`You cannot move the folder ${folder.name} into ${target.name}`);
     await target.moveFolderHere(folder);
-    MailView.setFolderExpanded(target, true);
+    // <copied from="../LeftPane/NewFolderDialog.svelte">
+    let expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
+    let targetID = target.account?.id + "/" + target.id;
+    expandedIDs.value = [...(expandedIDs.value ?? []).filter(id => id != targetID), targetID];
+    // </copied>
   }
 
   static startDrag(event: DragEvent, folder: Folder) {

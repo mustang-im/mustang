@@ -23,7 +23,7 @@
 
 <script lang="ts">
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderPicker from "./FolderPicker.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
@@ -42,7 +42,11 @@
       ? await parent.createSubFolder(name.trim())
       : await account.createToplevelFolder(name.trim());
     if (parent) {
-      MailView.setFolderExpanded(parent, true);
+      /* <copied to="../FolderPane/FolderTreeActions.ts"> */
+      let expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
+      let parentID = parent.account?.id + "/" + parent.id;
+      expandedIDs.value = [...(expandedIDs.value ?? []).filter(id => id != parentID), parentID];
+      /* </copied> */
     }
     if (onCreated) {
       onCreated(folder);

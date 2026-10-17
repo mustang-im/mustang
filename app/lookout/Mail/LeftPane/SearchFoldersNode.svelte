@@ -18,7 +18,7 @@
 
 <script lang="ts">
   import type { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import FolderNode from "./FolderNode.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import SearchFolderIcon from "lucide-svelte/icons/folder-search";
@@ -27,12 +27,18 @@
   export let folders: SavedSearchFolder[];
   export let nodeID: string;
 
-  const expandedIDs = MailView.expandedFolders;
-  $: isExpanded = MailView.isNodeExpanded(nodeID, $expandedIDs.value);
+  const expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
+  $: isExpanded = ($expandedIDs.value ?? []).includes(nodeID);
 
+  /* <copied from="FolderNode.svelte"> */
   function onToggle() {
-    MailView.setNodeExpanded(nodeID, !isExpanded);
+    let ids = ($expandedIDs.value ?? []).filter(existing => existing != nodeID);
+    if (!isExpanded) {
+      ids.push(nodeID);
+    }
+    $expandedIDs.value = ids;
   }
+  /* </copied> */
 </script>
 
 <style>

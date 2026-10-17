@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import FolderLine from "./FolderLine.svelte";
 
   export let folder: Folder;
@@ -16,10 +16,17 @@
 
   $: subFolders = folder.subFolders;
   $: sortedSubFolders = folder.subFolders.sortBy(subFolder => subFolder.orderPos);
-  const expandedIDs = MailView.expandedFolders;
-  $: isExpanded = !isFavorite && $expandedIDs && MailView.isFolderExpanded(folder);
+  const expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
+  $: nodeID = folder.account?.id + "/" + folder.id;
+  $: isExpanded = !isFavorite && ($expandedIDs.value ?? []).includes(nodeID);
 
+  /* <copied to="SearchFoldersNode.svelte"> */
   function onToggle() {
-    MailView.setFolderExpanded(folder, !isExpanded);
+    let ids = ($expandedIDs.value ?? []).filter(existing => existing != nodeID);
+    if (!isExpanded) {
+      ids.push(nodeID);
+    }
+    $expandedIDs.value = ids;
   }
+  /* </copied> */
 </script>

@@ -83,9 +83,9 @@
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`To-Do Bar`} icon={ToDoBarIcon}>
       <MenuItem label={$t`Calendar`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
-        onClick={() => MailView.setToDoBarPart(ToDoBarPart.Calendar, !$toDoBar.value?.includes(ToDoBarPart.Calendar))} />
+        onClick={() => setToDoBarPart(ToDoBarPart.Calendar, !$toDoBar.value?.includes(ToDoBarPart.Calendar))} />
       <MenuItem label={$t`People`} icon={PeopleIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.People)}
-        onClick={() => MailView.setToDoBarPart(ToDoBarPart.People, !$toDoBar.value?.includes(ToDoBarPart.People))} />
+        onClick={() => setToDoBarPart(ToDoBarPart.People, !$toDoBar.value?.includes(ToDoBarPart.People))} />
       <MenuDivider />
       <MenuItem label={$t`Off`} checked={!$toDoBar.value?.length}
         onClick={() => { $toDoBar.value = []; }} />
@@ -96,7 +96,8 @@
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { FolderPaneMode, MailView, ToDoBarPart } from "../MailView";
+  import { FolderPaneMode } from "../LeftPane/LeftPane.svelte";
+  import { ToDoBarPart } from "../ToDoBar/ToDoBar.svelte";
   import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { ApplyScope, MailViewSettings, ViewType } from "../ViewSettings/ViewSettings";
@@ -146,10 +147,10 @@
   export let onCollapseGroup: (collapsed: boolean) => void;
   export let onCollapseAll: (collapsed: boolean) => void;
 
-  const folderPane = MailView.folderPane;
+  const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
-  const showFavorites = MailView.showFavorites;
-  const toDoBar = MailView.toDoBar;
+  const showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
+  const toDoBar = getLocalStorage<ToDoBarPart[]>("lookout.mail.toDoBar", []);
   $: settings = MailViewSettings.store(folder);
   let conversationsChecked = false;
   $: conversationsChecked = !!$settings.showAsConversations;
@@ -183,6 +184,15 @@
     $openShowColumns = { folder };
   }
   /* </copied> */
+
+  function setToDoBarPart(part: ToDoBarPart, show: boolean) {
+    let parts = ($toDoBar.value ?? []).filter(existing => existing != part);
+    if (show) {
+      parts.push(part);
+      parts.sort((a, b) => Object.values(ToDoBarPart).indexOf(a) - Object.values(ToDoBarPart).indexOf(b));
+    }
+    $toDoBar.value = parts;
+  }
 
   function onResetView() {
     MailViewSettings.reset(folder);

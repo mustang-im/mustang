@@ -9,7 +9,7 @@
   <vbox flex class="scroll" role="tree" aria-label={$t`Folders`}>
     {#if $showFavorites.value}
       <SectionHeader id="favorites" label={$t`Favorites`} />
-      {#if !isCollapsed("favorites", $collapsedIDs)}
+      {#if !isCollapsed("favorites", $collapsedIDs.value)}
         {#each $favorites.each as folder (folder)}
           <FolderNode {folder} depth={0} isFavorite />
         {/each}
@@ -17,7 +17,7 @@
     {/if}
     {#if $separateAccountList.value}
       <SectionHeader id="accounts" label={$t`Accounts`} />
-      {#if !isCollapsed("accounts", $collapsedIDs)}
+      {#if !isCollapsed("accounts", $collapsedIDs.value)}
         <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
           {#each accountTrees as account (account.id)}
             <AccountListItem {account} selected={account == shownAccount} />
@@ -26,21 +26,21 @@
       {/if}
       {#if shownAccount}
         <SectionHeader id={shownAccount.id} account={shownAccount} />
-        {#if !isCollapsed(shownAccount.id, $collapsedIDs)}
+        {#if !isCollapsed(shownAccount.id, $collapsedIDs.value)}
           <FolderList account={shownAccount} />
         {/if}
       {/if}
     {:else}
       {#each accountTrees as account (account.id)}
         <SectionHeader id={account.id} {account} />
-        {#if !isCollapsed(account.id, $collapsedIDs)}
+        {#if !isCollapsed(account.id, $collapsedIDs.value)}
           <FolderList {account} />
         {/if}
       {/each}
     {/if}
     {#if allAccountSearches.length}
       <SectionHeader id="search-folders" label={$t`Search Folders`} />
-      {#if !isCollapsed("search-folders", $collapsedIDs)}
+      {#if !isCollapsed("search-folders", $collapsedIDs.value)}
         {#each allAccountSearches as folder (folder)}
           <FolderNode {folder} depth={0} />
         {/each}
@@ -49,13 +49,21 @@
   </vbox>
 </vbox>
 
+<script lang="ts" context="module">
+  export enum FolderPaneMode {
+    Normal = "normal",
+    Minimized = "minimized",
+    Off = "off",
+  }
+</script>
+
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
-  import { FolderPaneMode, MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import SectionHeader from "./SectionHeader.svelte";
   import FolderList from "./FolderList.svelte";
   import AccountListItem from "./AccountListItem.svelte";
@@ -63,13 +71,14 @@
   import MinimizeIcon from "lucide-svelte/icons/chevron-left";
   import { t } from "../../../l10n/l10n";
 
-  const showFavorites = MailView.showFavorites;
+  const showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
   const favorites = allAccountsAccount.specialFolders;
   const savedSearches = savedSearchFolders;
   $: allAccountSearches = $savedSearches.contents.filter(folder => !folder.search.account || !$accounts.contains(folder.search.account));
   const accounts = appGlobal.emailAccounts;
-  const collapsedIDs = MailView.collapsedSections;
-  const separateAccountList = MailView.separateAccountList;
+  const collapsedIDs = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
+  const separateAccountList = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
+  const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
 
   let shownAccount: MailAccount = null;
   $: shownAccount = accountToShow($selectedAccount, accountTrees);
@@ -91,12 +100,12 @@
     return ordered;
   }
 
-  function isCollapsed(id: string, _collapsedIDs: any): boolean {
-    return MailView.isSectionCollapsed(id);
+  function isCollapsed(id: string, collapsedIDs: string[]): boolean {
+    return (collapsedIDs ?? []).includes(id);
   }
 
   function onMinimize() {
-    MailView.folderPane.value = FolderPaneMode.Minimized;
+    $folderPane.value = FolderPaneMode.Minimized;
   }
 </script>
 

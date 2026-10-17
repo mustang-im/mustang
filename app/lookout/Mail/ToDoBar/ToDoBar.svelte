@@ -5,7 +5,7 @@
         <span>{$t`Calendar`}</span>
         <hbox flex />
         <button type="button" class="close" title={$t`Remove from the To-Do Bar`} aria-label={$t`Remove from the To-Do Bar`}
-          on:click={() => MailView.setToDoBarPart(ToDoBarPart.Calendar, false)}>
+          on:click={() => onClosePart(ToDoBarPart.Calendar)}>
           <CloseIcon size={14} />
         </button>
       </hbox>
@@ -39,7 +39,7 @@
         <span>{$t`People`}</span>
         <hbox flex />
         <button type="button" class="close" title={$t`Remove from the To-Do Bar`} aria-label={$t`Remove from the To-Do Bar`}
-          on:click={() => MailView.setToDoBarPart(ToDoBarPart.People, false)}>
+          on:click={() => onClosePart(ToDoBarPart.People)}>
           <CloseIcon size={14} />
         </button>
       </hbox>
@@ -56,6 +56,13 @@
   {/if}
 </vbox>
 
+<script lang="ts" context="module">
+  export enum ToDoBarPart {
+    Calendar = "calendar",
+    People = "people",
+  }
+</script>
+
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
@@ -66,13 +73,18 @@
   import { now } from "../../Calendar/selected";
   import DateNavigator from "../../Calendar/DateNavigator.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
-  import { MailView, ToDoBarPart } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { ToDoAgenda } from "./ToDoAgenda";
   import { ObservedItems } from "../../Shared/ObservedItems";
   import CloseIcon from "lucide-svelte/icons/x";
   import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
 
   export let parts: ToDoBarPart[];
+
+  const toDoBar = getLocalStorage<ToDoBarPart[]>("lookout.mail.toDoBar", []);
+  function onClosePart(part: ToDoBarPart) {
+    $toDoBar.value = ($toDoBar.value ?? []).filter(existing => existing != part);
+  }
 
   const events = ObservedItems.of(shownCalendarEvents);
   const persons = ObservedItems.of(appGlobal.persons);

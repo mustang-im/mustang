@@ -97,7 +97,8 @@
   import { getParams, globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../frontend/Util/error";
   import { statusBarContent, type StatusBarContent, type StatusBarView } from "../MainWindow/StatusBar.svelte";
-  import { MailView } from "./MailView";
+  import { FolderPaneMode } from "./LeftPane/LeftPane.svelte";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import NormalViewIcon from "lucide-svelte/icons/layout-panel-left";
   import ReadingViewIcon from "lucide-svelte/icons/book-open";
   import { MailKeyAction, MailKeys } from "./MailKeys";
@@ -149,7 +150,7 @@
   import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
 
-  const folderPane = MailView.folderPane;
+  const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   const searchOptions = MailSearch.options;
   const updatingFolders = MessageActions.updatingFolders;
   const accounts = appGlobal.emailAccounts;
@@ -377,13 +378,17 @@
   $: statusAccounts = MailSearch.isRealFolder($selectedFolder) ? [$selectedFolder.account] : $accounts.contents;
   $: accountStates = derived(statusAccounts, () => statusAccounts);
   $: statusItemsRight = statusRight($accountStates, $updatingFolders);
-  const ribbonCollapsed = MailView.ribbonCollapsed;
-  $: statusViews = viewButtons(MailView.isReadingView($folderPane.value, !!$ribbonCollapsed.value));
+  const ribbonCollapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
+  $: statusViews = viewButtons($folderPane.value == FolderPaneMode.Minimized && !!$ribbonCollapsed.value);
   function viewButtons(isReading: boolean): StatusBarView[] {
     return [
-      { label: $t`Normal`, icon: NormalViewIcon, isActive: !isReading, onClick: () => MailView.setReadingView(false) },
-      { label: $t`Reading`, icon: ReadingViewIcon, isActive: isReading, onClick: () => MailView.setReadingView(true) },
+      { label: $t`Normal`, icon: NormalViewIcon, isActive: !isReading, onClick: () => setReadingView(false) },
+      { label: $t`Reading`, icon: ReadingViewIcon, isActive: isReading, onClick: () => setReadingView(true) },
     ];
+  }
+  function setReadingView(isReading: boolean) {
+    $folderPane.value = isReading ? FolderPaneMode.Minimized : FolderPaneMode.Normal;
+    $ribbonCollapsed.value = isReading;
   }
   function statusRight(states: typeof statusAccounts, updating: Folder[]) {
     let items = [];

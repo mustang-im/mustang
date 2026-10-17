@@ -20,19 +20,20 @@
 </script>
 
 <script lang="ts">
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import { t } from "../../../l10n/l10n";
 
-  let current = MailView.readAfter.value;
+  const readAfter = getLocalStorage<number>("mail.read.after", 0);
+  let current = readAfter.value;
   let isMarkingRead = current >= 0;
   let delay = Math.max(current, 0);
   $: isValidDelay = Number.isInteger(delay) && delay >= 0 && delay <= 20;
 
   function onSave() {
-    MailView.readAfter.value = isMarkingRead ? delay : -1;
+    readAfter.value = isMarkingRead ? delay : -1;
   }
 </script>
 

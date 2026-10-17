@@ -9,10 +9,8 @@ import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
 import { SelectionState } from "./SelectionState";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
-import { MailView } from "./MailView";
 import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
 import { InlineReplies } from "./Composer/InlineReplies";
-import { ComposerSettings } from "./Composer/ComposerSettings";
 import { recentFolders } from "./RecentFolders";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
@@ -104,7 +102,7 @@ export class MessageActions {
   }
 
   static respondsInline(original: EMail): boolean {
-    return !ComposerSettings.repliesInNewWindow.value &&
+    return !getLocalStorage<boolean>("lookout.mail.compose.repliesInNewWindow", false).value &&
       getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right").value != "off" &&
       get(selectedApp) == mailMustangApp &&
       get(selectedMessage) == original &&
@@ -303,11 +301,11 @@ export class MessageActions {
   }
 
   static isViewingSource(): boolean {
-    return MailView.contentRendering.value == "source";
+    return getLocalStorage<string>("mail.contentRendering", "html").value == "source";
   }
 
   static toggleSource() {
-    MailView.contentRendering.value = MessageActions.isViewingSource() ? "html" : "source";
+    getLocalStorage<string>("mail.contentRendering", "html").value = MessageActions.isViewingSource() ? "html" : "source";
   }
 
   static senderPerson(message: EMail): Person | null {

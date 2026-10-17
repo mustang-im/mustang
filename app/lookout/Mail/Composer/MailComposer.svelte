@@ -148,7 +148,6 @@
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import type { ComposerCommands } from "./ComposerCommands";
-  import { ComposerSettings } from "./ComposerSettings";
   import { InlineReplies } from "./InlineReplies";
   import { MessageActions } from "../MessageActions";
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
@@ -159,7 +158,6 @@
   import { DraftContent } from "./DraftContent";
   import { EditorTool } from "../../Shared/Editor/EditorCommands";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
-  import { EditorSettings } from "../../Shared/Editor/EditorSettings";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
@@ -198,10 +196,10 @@
   let fromIdentity: MailIdentity;
   let identities = findAllIdentities();
   $: hasSeveralIdentities = $identities.length > 1 || !!fromIdentity?.isCatchAll;
-  const spellcheck = EditorSettings.spellcheck;
-  const showFromSetting = ComposerSettings.showFrom;
-  const sendFormat = ComposerSettings.sendFormat;
-  const showBccSetting = ComposerSettings.showBcc;
+  const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
+  const showFromSetting = getLocalStorage<boolean>("lookout.mail.compose.showFrom", true);
+  const sendFormat = getLocalStorage<string>("mail.send.format", "html");
+  const showBccSetting = getLocalStorage<boolean>("lookout.mail.compose.showBcc", false);
   let encryptionError: string | null = null;
   let showEmojis = false;
   let isSelectNamesOpen = false;

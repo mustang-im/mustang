@@ -71,7 +71,7 @@
 <script lang="ts">
   import type { ComposerCommands } from "./ComposerCommands";
   import { EditorChain, EditorTool } from "../../Shared/Editor/EditorCommands";
-  import { EditorSettings } from "../../Shared/Editor/EditorSettings";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { EditorClipboard } from "../../Shared/Editor/EditorClipboard";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -109,7 +109,7 @@
   export let commands: ComposerCommands;
   export let isInline = false;
 
-  const spellcheck = EditorSettings.spellcheck;
+  const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
   $: editor = commands.editor;
 
   function run(command: (chain: ChainedCommands) => ChainedCommands) {

@@ -94,9 +94,7 @@
 <script lang="ts">
   import type { Tag } from "../../../logic/Abstract/Tag";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { MailView } from "../../Mail/MailView";
   import type { ReadingPanePosition } from "../../Mail/3pane/3Pane.svelte";
-  import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
   import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
   import { CategoryColors } from "../../Mail/Categories/CategoryColors";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
@@ -123,24 +121,25 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { t } from "../../../l10n/l10n";
 
-  const formatSetting = ComposerSettings.sendFormat;
+  const formatSetting = getLocalStorage<string>("mail.send.format", "html");
   const spellcheckSetting = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
   const quoteSetting = getLocalStorage<string>("mail.send.quote", "below");
   const forwardSetting = getLocalStorage<string>("mail.send.forward", "inline");
-  const repliesInNewWindowSetting = ComposerSettings.repliesInNewWindow;
+  const repliesInNewWindowSetting = getLocalStorage<boolean>("lookout.mail.compose.repliesInNewWindow", false);
   const notificationsSetting = getLocalStorage<string[]>("notifications.mail", ["popup"]);
   const onlyFromContactsSetting = getLocalStorage<boolean>("notifications.mail.only.addressbook", true);
   const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
-  const separateAccountListSetting = MailView.separateAccountList;
+  const separateAccountListSetting = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
+  const readAfterSetting = getLocalStorage<number>("mail.read.after", 0);
 
-  let isMarkingRead = MailView.readAfter.value >= 0;
-  let delay = Math.max(MailView.readAfter.value, 0);
+  let isMarkingRead = readAfterSetting.value >= 0;
+  let delay = Math.max(readAfterSetting.value, 0);
 
   function onSaveReadAfter() {
     if (!Number.isInteger(delay) || delay < 0 || delay > 20) {
       return;
     }
-    MailView.readAfter.value = isMarkingRead ? delay : -1;
+    readAfterSetting.value = isMarkingRead ? delay : -1;
   }
 
   function onNotification(kind: string, isOn: boolean) {

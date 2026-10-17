@@ -51,13 +51,12 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { FolderPaneMode, MailView } from "../MailView";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
-  import LeftPane from "../LeftPane/LeftPane.svelte";
+  import LeftPane, { FolderPaneMode } from "../LeftPane/LeftPane.svelte";
   import FolderPaneMinimized from "../../Shared/FolderPaneMinimized.svelte";
   import MessageListPane from "./MessageListPane.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
-  import ToDoBar from "../ToDoBar/ToDoBar.svelte";
+  import ToDoBar, { type ToDoBarPart } from "../ToDoBar/ToDoBar.svelte";
   import Splitter from "../../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../../frontend/Shared/SplitterBidirectional.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
@@ -75,8 +74,8 @@
   export let listPane: MessageListPane = null;
 
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
-  const folderPane = MailView.folderPane;
-  const toDoBar = MailView.toDoBar;
+  const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
+  const toDoBar = getLocalStorage<ToDoBarPart[]>("lookout.mail.toDoBar", []);
   $: position = $readingPane.value;
 </script>
 

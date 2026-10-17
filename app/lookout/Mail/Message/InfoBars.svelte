@@ -43,7 +43,7 @@
     <span>{$contentRendering.value == DisplayMode.Source
       ? $t`You're viewing the source of this message.`
       : $t`This message is shown as plain text.`}</span>
-    <button class="link" on:click={() => MailView.contentRendering.value = DisplayMode.HTML}>{$t`Display as HTML`}</button>
+    <button class="link" on:click={() => { $contentRendering.value = DisplayMode.HTML; }}>{$t`Display as HTML`}</button>
   </hbox>
 {/if}
 {#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && ExternalContent.hasExternalContent($message.rawHTMLDangerous)}
@@ -61,7 +61,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MessageActions } from "../MessageActions";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { ExternalContent } from "../ReadingPane/ExternalContent";
   import { MessageDates } from "../MessageList/MessageDates";
   import { MyReply } from "../../../logic/Mail/Store/MyReply";
@@ -82,7 +82,7 @@
 
   export let message: EMail;
 
-  const contentRendering = MailView.contentRendering;
+  const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
   let picturesBar: HTMLButtonElement;
   let isPicturesMenuOpen = false;
   $: isDraft = $message && MessageActions.isDraft(message);
@@ -113,7 +113,7 @@
   // </copied>
 
   function onDownloadPictures() {
-    MailView.contentRendering.value = DisplayMode.HTMLWithExternal;
+    $contentRendering.value = DisplayMode.HTMLWithExternal;
   }
 </script>
 

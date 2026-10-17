@@ -44,7 +44,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { InlineReplies, type InlineReply } from "../Composer/InlineReplies";
   import MailComposer from "../Composer/MailComposer.svelte";
   import MessageHeader from "./MessageHeader.svelte";
@@ -63,7 +63,8 @@
   export let message: EMail | null;
   export let selectedCount = 0;
 
-  const readDelaySetting = MailView.readAfter;
+  const readDelaySetting = getLocalStorage<number>("mail.read.after", 0);
+  const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
   $: readDelay = $readDelaySetting.value;
   let shownMessage: EMail | null = null;
   $: if (message != shownMessage) {
@@ -112,8 +113,8 @@
 
   // <copied from="../../../frontend/Mail/Message/DisplayModeSwitcher.svelte">
   function onMessageChanged() {
-    if (shownMessage && MailView.contentRendering.value == DisplayMode.HTMLWithExternal) {
-      MailView.contentRendering.value = DisplayMode.HTML;
+    if (shownMessage && contentRendering.value == DisplayMode.HTMLWithExternal) {
+      contentRendering.value = DisplayMode.HTML;
     }
   }
   // </copied>

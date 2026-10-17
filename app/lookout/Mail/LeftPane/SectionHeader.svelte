@@ -1,6 +1,6 @@
 <hbox class="section-header">
   <CollapsibleHeader label={account ? $account.name : label} tooltip={account ? $account.emailAddress : tooltip} {collapsed} large={!!account}
-    onToggle={() => MailView.setSectionCollapsed(id, !collapsed)}
+    onToggle={() => setCollapsed(!collapsed)}
     on:contextmenu={onContextMenu}>
     {#if account && $account.fatalError}
       <span class="error" title={$account.fatalError.message}>
@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { MailView } from "../MailView";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import AccountMenu from "./AccountMenu.svelte";
   import ConnectButton from "./ConnectButton.svelte";
   import CollapsibleHeader from "../../Shared/CollapsibleHeader.svelte";
@@ -32,8 +32,16 @@
   export let tooltip: string = null;
   export let account: MailAccount = null;
 
-  const collapsedIDs = MailView.collapsedSections;
-  $: collapsed = $collapsedIDs && MailView.isSectionCollapsed(id);
+  const collapsedIDs = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
+  $: collapsed = ($collapsedIDs.value ?? []).includes(id);
+
+  function setCollapsed(isCollapsed: boolean) {
+    let ids = ($collapsedIDs.value ?? []).filter(existing => existing != id);
+    if (isCollapsed) {
+      ids.push(id);
+    }
+    $collapsedIDs.value = ids;
+  }
 
   let contextMenu: ContextMenu;
   function onContextMenu(event: MouseEvent) {
