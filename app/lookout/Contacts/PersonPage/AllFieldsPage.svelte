@@ -7,11 +7,11 @@
     columns={[{ label: $t`Name`, width: "minmax(0, 2fr)" }, { label: $t`Value`, width: "minmax(0, 3fr)" }]}
     let:item>
     <span class="cell">{item.name}</span>
-    {#if AllFields.isEditable(item)}
+    {#if item.kind != "address"}
       <input class="value-field" type="text" value={item.entry.value ?? ""} aria-label={item.name}
         on:input={event => { item.entry.value = event.currentTarget.value; }} />
     {:else}
-      <span class="cell lo-secondary" title={$t`Edit the address on the General page`}>{AllFields.valueText(item)}</span>
+      <span class="cell lo-secondary" title={$t`Edit the address on the General page`}>{ContactColumns.addressText(item.entry.value).replace(/\n/g, ", ")}</span>
     {/if}
     <span slot="empty">{fieldSet == "user-defined"
       ? $t`This contact has no user-defined fields. Click New… to add one.`
@@ -36,8 +36,9 @@
 {/if}
 
 <script lang="ts">
-  import type { Person } from "../../../logic/Abstract/Person";
+  import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
   import { AllFields, type FieldRow, type FieldSet } from "../Form/AllFields";
+  import { ContactColumns } from "../Person/ContactColumns";
   import ListView from "../../Shared/Form/ListView.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
@@ -68,7 +69,8 @@
   $: revision, rows = AllFields.rows(person, fieldSet);
 
   async function onAdd() {
-    let entry = AllFields.addUserField(person, newName);
+    let entry = new ContactEntry("", newName.trim());
+    person.custom.add(entry);
     newName = "";
     fieldSet = "user-defined";
     revision++;

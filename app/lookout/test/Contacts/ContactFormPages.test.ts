@@ -37,7 +37,4 @@ test("All Fields lists the entries of the chosen kind, user-defined fields by na
   expect(AllFields.rows(person, "email").map(row => row.entry.value)).toEqual(["fred@example.org", "fred@home.example"]);
   expect(AllFields.rows(person, "internet").map(row => row.name)).toEqual(["Web page"]);
   expect(AllFields.rows(person, "all")).toHaveLength(5);
-  let field = AllFields.addUserField(person, " Shoe size ");
-  expect(field.purpose).toBe("Shoe size");
-  expect(person.custom.contains(field)).toBe(true);
 });

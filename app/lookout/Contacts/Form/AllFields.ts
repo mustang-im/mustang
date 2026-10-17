@@ -1,5 +1,4 @@
-import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
-import { ContactColumns } from "../Person/ContactColumns";
+import type { ContactEntry, Person } from "../../../logic/Abstract/Person";
 import type { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 
@@ -65,21 +64,5 @@ export class AllFields {
       case "chat":
         return purpose || entry.protocol ? gt`IM address (${purpose || entry.protocol})` : gt`IM address`;
     }
-  }
-
-  static valueText(row: FieldRow): string {
-    return row.kind == "address"
-      ? ContactColumns.addressText(row.entry.value).replace(/\n/g, ", ")
-      : row.entry.value ?? "";
-  }
-
-  static isEditable(row: FieldRow): boolean {
-    return row.kind != "address";
-  }
-
-  static addUserField(person: Person, name: string): ContactEntry {
-    let entry = new ContactEntry("", name.trim());
-    person.custom.add(entry);
-    return entry;
   }
 }
