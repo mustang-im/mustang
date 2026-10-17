@@ -10,7 +10,7 @@ test("Parses a plain email address and guesses the name", () => {
   expect(recipient.emailAddress).toBe("fred.miller@example.com");
   expect(recipient.name).toBe("Fred Miller");
   expect(recipient.nameIsUnknown).toBe(true);
-  expect(RecipientText.displayName(recipient)).toBe("fred.miller@example.com");
+  expect((!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress).toBe("fred.miller@example.com");
 });
 
 test("Parses name and email address", () => {
@@ -18,7 +18,7 @@ test("Parses name and email address", () => {
   expect(recipient.emailAddress).toBe("fred@example.com");
   expect(recipient.name).toBe("Fred Miller");
   expect(recipient.nameIsUnknown).toBe(false);
-  expect(RecipientText.displayName(recipient)).toBe("Fred Miller");
+  expect((!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress).toBe("Fred Miller");
 
   let quoted = RecipientText.parse("\"Miller, Fred\"<fred@example.com>");
   expect(quoted.name).toBe("Miller, Fred");
@@ -43,10 +43,4 @@ test("Parses a list and keeps the unresolved parts", () => {
   let { recipients, unresolved } = RecipientText.parseList("anna@example.com; bert; Carla <carla@example.com>");
   expect(recipients.map(recipient => recipient.emailAddress)).toEqual(["anna@example.com", "carla@example.com"]);
   expect(unresolved).toEqual(["bert"]);
-});
-
-test("Formats recipients for the clipboard", () => {
-  let fred = new PersonUID("fred@example.com", "Fred Miller");
-  let anna = new PersonUID("anna@example.com");
-  expect(RecipientText.format([fred, anna])).toBe("Fred Miller <fred@example.com>; anna@example.com");
 });

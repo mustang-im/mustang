@@ -73,16 +73,4 @@ export class RecipientText {
     }
     return { recipients, unresolved };
   }
-
-  static displayName(recipient: PersonUID): string {
-    return (!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress;
-  }
-
-  static format(recipients: PersonUID[]): string {
-    return recipients
-      .map(recipient => recipient.name && recipient.name != recipient.emailAddress
-        ? `${recipient.name} <${recipient.emailAddress}>`
-        : recipient.emailAddress)
-      .join("; ");
-  }
 }

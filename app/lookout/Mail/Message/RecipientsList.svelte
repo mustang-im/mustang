@@ -3,7 +3,7 @@
     <span class="entry"><button type="button" class="name" title={recipient.emailAddress}
       on:click|stopPropagation={event => openMenu(recipient, event)}
       on:contextmenu|preventDefault|stopPropagation={event => openMenu(recipient, event)}
-      >{RecipientText.displayName(recipient)}</button>{#if withAddress && recipient.name && recipient.emailAddress}<span class="address">&lt;{recipient.emailAddress}&gt;</span>{/if}{#if index < shown.length - 1 || hiddenCount};{/if}</span>{" "}
+      >{displayName(recipient)}</button>{#if withAddress && recipient.name && recipient.emailAddress}<span class="address">&lt;{recipient.emailAddress}&gt;</span>{/if}{#if index < shown.length - 1 || hiddenCount};{/if}</span>{" "}
   {/each}
   {#if hiddenCount}
     <button type="button" class="more" on:click={() => { isExpanded = true; }}>{$t`+${hiddenCount} more`}</button>
@@ -11,7 +11,7 @@
 </span>
 <Menu bind:isMenuOpen anchor={menuAnchor} placement="bottom-start">
   <MenuItem label={$t`Send Email`} icon={SendIcon} onClick={() => MessageActions.writeMailTo(menuRecipient)} />
-  <MenuItem label={$t`Copy`} icon={CopyIcon} onClick={() => navigator.clipboard.writeText(RecipientText.format([menuRecipient]))} />
+  <MenuItem label={$t`Copy`} icon={CopyIcon} onClick={() => navigator.clipboard.writeText(clipboardText(menuRecipient))} />
   <MenuDivider />
   <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}
     icon={ContactIcon} onClick={() => openPersonFromOtherApp(menuRecipient.createPerson(appGlobal.personalAddressbook))} />
@@ -19,7 +19,6 @@
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { RecipientText } from "../Composer/RecipientText";
   import { MessageActions } from "../MessageActions";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -48,6 +47,18 @@
     menuAnchor = event.currentTarget as HTMLElement;
     isMenuOpen = true;
   }
+
+  /* <copied to="../Composer/MailAutocomplete.svelte"> */
+  function displayName(recipient: PersonUID): string {
+    return (!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress;
+  }
+
+  function clipboardText(recipient: PersonUID): string {
+    return recipient.name && recipient.name != recipient.emailAddress
+      ? `${recipient.name} <${recipient.emailAddress}>`
+      : recipient.emailAddress;
+  }
+  /* </copied> */
 </script>
 
 <style>

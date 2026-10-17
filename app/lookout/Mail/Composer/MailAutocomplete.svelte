@@ -8,9 +8,9 @@
       on:click|stopPropagation={() => onSelect(recipient)}
       on:contextmenu|preventDefault|stopPropagation={event => onRecipientMenu(event, recipient)}>
       {#if chips}
-        <PersonCircle name={RecipientText.displayName(recipient)}
+        <PersonCircle name={displayName(recipient)}
           picture={recipient.person?.picture} colorKey={recipient.emailAddress} size={20} />
-        <span class="name">{RecipientText.displayName(recipient)}</span>
+        <span class="name">{displayName(recipient)}</span>
         {#if !disabled}
           <button type="button" class="remove" tabindex={-1} title={$t`Remove`} aria-label={$t`Remove`}
             on:click|stopPropagation={() => remove(recipient)}>
@@ -18,7 +18,7 @@
           </button>
         {/if}
       {:else}
-        <span class="name">{RecipientText.displayName(recipient)}</span><span class="separator">;</span>
+        <span class="name">{displayName(recipient)}</span><span class="separator">;</span>
       {/if}
     </hbox>
   {/each}
@@ -259,13 +259,25 @@
   }
 
   async function onCopy(recipient: PersonUID) {
-    await navigator.clipboard.writeText(RecipientText.format([recipient]));
+    await navigator.clipboard.writeText(clipboardText(recipient));
   }
 
   async function onCut(recipient: PersonUID) {
     await onCopy(recipient);
     remove(recipient);
   }
+
+  /* <copied from="../Message/RecipientsList.svelte"> */
+  function displayName(recipient: PersonUID): string {
+    return (!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress;
+  }
+
+  function clipboardText(recipient: PersonUID): string {
+    return recipient.name && recipient.name != recipient.emailAddress
+      ? `${recipient.name} <${recipient.emailAddress}>`
+      : recipient.emailAddress;
+  }
+  /* </copied> */
 </script>
 
 <style>
