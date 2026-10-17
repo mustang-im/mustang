@@ -462,25 +462,3 @@ test("Cancel Meeting and Cancel Series ask before they send the cancellations", 
   expect(master.calendar.events.contains(master)).toBe(false);
   expect(onClosed).toHaveBeenCalledOnce();
 });
-
-test("Don't Host Online asks only for a saved meeting with attendees", async () => {
-  let event = newEvent();
-  event.isOnline = true;
-  event.onlineMeetingURL = "https://meet.example.com/planning";
-  let flow = new EventEditFlow(event, () => {});
-  await flow.setOffline();
-  expect(messageBox).not.toHaveBeenCalled();
-  expect(event.isOnline).toBe(false);
-
-  let meeting = newEvent();
-  meeting.dbID = 7; // saved
-  meeting.participants.add(new Participant("anna@example.com", "Anna", InvitationResponse.Accept));
-  meeting.isOnline = true;
-  meeting.onlineMeetingURL = "https://meet.example.com/planning";
-  meeting.startEditing();
-  messageBox.mockResolvedValueOnce(false);
-  await new EventEditFlow(meeting, () => {}).setOffline();
-  expect(messageBox).toHaveBeenCalledOnce();
-  expect(meeting.isOnline).toBe(true);
-  expect(meeting.onlineMeetingURL).toBe("https://meet.example.com/planning");
-});

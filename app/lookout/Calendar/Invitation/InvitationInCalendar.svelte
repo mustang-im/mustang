@@ -23,7 +23,7 @@
     {#if $event.isOnline && $event.onlineMeetingURL}
       <span class="row-label">{$t`Online meeting`}</span>
       <hbox class="value online">
-        <button class="join" on:click={() => catchErrors(() => flow.joinOnlineMeeting())}>
+        <button class="join" on:click={() => catchErrors(() => openExternalURL(event.onlineMeetingURL))}>
           <JoinIcon size={16} /> {$t`Join`}
         </button>
         <span class="url lo-secondary">{$event.onlineMeetingURL}</span>
@@ -31,7 +31,7 @@
     {/if}
   </grid>
   <vbox class="preview">
-    <EventInDayView {event} onShowInCalendar={() => flow.showInCalendar()} />
+    <EventInDayView {event} onShowInCalendar={showInCalendar} />
   </vbox>
   {#if $attachments.hasItems}
     <hbox class="attachments">
@@ -57,6 +57,8 @@
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
   import cssBody from "../../../frontend/Mail/Message/content-body.css?inline";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { openExternalURL } from "../../../logic/util/os-integration";
+  import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
   import JoinIcon from "lucide-svelte/icons/video";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
@@ -70,6 +72,16 @@
 
   // <copied from="../../../frontend/Calendar/Invitation/InvitationInCalendar.svelte">
   let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;
+  // </copied>
+
+  // <copied from="../EditEvent/EventFormRibbon.svelte">
+  function showInCalendar() {
+    let day = new Date(event.startTime);
+    flow.close();
+    $selectedEvent = event;
+    $selectedDate = day;
+    $startDate = day;
+  }
   // </copied>
 </script>
 

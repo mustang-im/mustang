@@ -94,6 +94,8 @@
   import type { Editor } from "@tiptap/core";
   import { onMount, tick } from "svelte";
   import { ArrayColl } from "svelte-collections";
+  import { openComposer } from "../../../frontend/Mail/open";
+  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import { gt, t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -290,7 +292,7 @@
     } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "d" && !event.parentEvent) {
       command = onDelete;
     } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "f" && flow.isSaved) {
-      command = () => flow.forward();
+      command = async () => openComposer(await OutgoingInvitation.forwardEventByMail(event));
     }
     if (!command) {
       return;

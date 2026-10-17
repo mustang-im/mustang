@@ -9,17 +9,17 @@
           <RibbonMenuButton label={$t`Accept`} icon={AcceptIcon} classes="accept">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Accept}
-              onClick={() => flow.respond(InvitationResponse.Accept)} />
+              onClick={() => respond(InvitationResponse.Accept)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Tentative}
-              onClick={() => flow.respond(InvitationResponse.Tentative)} />
+              onClick={() => respond(InvitationResponse.Tentative)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Decline`} icon={DeclineIcon} classes="decline">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Decline}
-              onClick={() => flow.respond(InvitationResponse.Decline)} />
+              onClick={() => respond(InvitationResponse.Decline)} />
           </RibbonMenuButton>
         {/if}
       </RibbonGroup>
@@ -36,18 +36,18 @@
             onClick={actions.onDelete} />
         {/if}
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
-          onClick={() => flow.forward()} />
+          onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
       <RibbonGroup label={$t`Calendar`}>
         <RibbonButton label={$t`Calendar…`} icon={CalendarIcon}
           tooltip={$t`Show this day in the calendar`}
-          onClick={() => flow.showInCalendar()} />
+          onClick={showInCalendar} />
       </RibbonGroup>
       {#if $event.isOnline}
         <RibbonGroup label={$t`Online Meeting`}>
           <RibbonButton label={$t`Join Online Meeting`} icon={JoinIcon}
             disabled={!$event.onlineMeetingURL && $t`This meeting has no link to an online meeting`}
-            onClick={() => flow.joinOnlineMeeting()} />
+            onClick={() => openExternalURL(event.onlineMeetingURL)} />
         </RibbonGroup>
       {/if}
     {:else}
@@ -78,13 +78,13 @@
         {/if}
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
           disabled={!flow.isSaved && (isMeeting ? $t`Send the meeting first` : $t`Save the appointment first`)}
-          onClick={() => flow.forward()} />
+          onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
       <RibbonGroup label={$t`Online Meeting`}>
         {#if $event.isOnline}
           <RibbonButton label={$t`Join Online Meeting`} icon={JoinIcon}
             disabled={!$event.onlineMeetingURL && $t`The link is created when you send the invitation`}
-            onClick={() => flow.joinOnlineMeeting()} />
+            onClick={() => openExternalURL(event.onlineMeetingURL)} />
           <RibbonButton label={$t`Don't Host Online`} icon={OfflineIcon}
             tooltip={$t`Remove the online meeting`}
             onClick={onOffline} />
@@ -197,7 +197,14 @@
   import type { Editor } from "@tiptap/core";
   import SignatureMenuItems from "../../Mail/Composer/SignatureMenuItems.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
-  import { EventEditFlow } from "./EventEditFlow";
+  import type { EventEditFlow } from "./EventEditFlow";
+  import type { InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import { openExternalURL } from "../../../logic/util/os-integration";
+  import { appGlobal } from "../../../logic/app";
+  import { openComposer } from "../../../frontend/Mail/open";
+  import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
+  import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
@@ -248,17 +255,43 @@
   $: reminderMinutes = $event && Reminder.minutesBefore(event);
   $: reminderLabel = Reminder.label(reminderMinutes);
   $: reminderChoices = Reminder.choices(reminderMinutes);
-  const meetAccounts = EventEditFlow.meetAccounts();
+  const meetAccounts = appGlobal.meetAccounts.filterObservable(account => account.canCreateURL);
 
   function onOnline(account: MeetAccount | null) {
-    flow.setOnlineWith(account);
+    event.createOnlineMeetingWithAccount = account;
+    // <copied from="../../../frontend/Calendar/EditEvent/EditEvent.svelte" expandOnlineMeeting()>
+    event.isOnline = true;
+    flow.inviteAttendees();
+    // </copied>
     event.notifyObservers();
   }
 
   async function onOffline() {
-    await flow.setOffline();
+    // <copied from="../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte">
+    if (event.participants.hasItems && !event.isNew && !await MessageBox.ask($t`Online Meeting`,
+        $t`Attendees who already have the meeting link might miss the meeting. Do you want to remove the online meeting?`)) {
+      return;
+    }
+    event.isOnline = false;
+    event.onlineMeetingURL = null;
+    // </copied>
     event.notifyObservers();
   }
+
+  async function respond(response: InvitationResponseInMessage) {
+    await event.respondToInvitation(response);
+    flow.close();
+  }
+
+  // <copied to="../Invitation/InvitationInCalendar.svelte">
+  function showInCalendar() {
+    let day = new Date(event.startTime);
+    flow.close();
+    $selectedEvent = event;
+    $selectedDate = day;
+    $startDate = day;
+  }
+  // </copied>
 </script>
 
 <style>
