@@ -2,35 +2,35 @@
   <RibbonTab label={$t`Home`}>
     <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Contact`} icon={NewContactIcon}
-        onClick={() => ContactActions.newContact($selectedAddressbook)}
+        onClick={() => ContactActions.newContact(selectedAddressbook)}
         shortCutInfo="Ctrl+N" />
       <RibbonButton label={$t`New Contact Group`} shortLabel={$t`New Group`} icon={NewGroupIcon}
-        onClick={() => ContactActions.newGroup($selectedAddressbook)}
+        onClick={() => ContactActions.newGroup(selectedAddressbook)}
         shortCutInfo="Ctrl+Shift+L" />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
         <MenuItem label={$t`Contact`} icon={NewContactIcon}
-          onClick={() => ContactActions.newContact($selectedAddressbook)} />
+          onClick={() => ContactActions.newContact(selectedAddressbook)} />
         <MenuItem label={$t`Contact Group`} icon={NewGroupIcon}
-          onClick={() => ContactActions.newGroup($selectedAddressbook)} />
+          onClick={() => ContactActions.newGroup(selectedAddressbook)} />
         <MenuDivider />
         <MenuItem label={$t`E-mail Message`} icon={MailIcon}
-          onClick={() => ContactActions.writeMail($selectedContacts.contents)} />
+          onClick={() => ContactActions.writeMail($selectedPersons.contents)} />
         <MenuItem label={$t`Meeting`} icon={MeetingIcon}
-          onClick={() => ContactActions.newMeeting($selectedContacts.contents)} />
+          onClick={() => ContactActions.newMeeting($selectedPersons.contents)} />
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Delete`}>
       <RibbonButton label={$t`Delete`} icon={DeleteIcon}
         onClick={onDelete}
-        disabled={!$selectedContacts.hasItems && $t`Select a contact first`}
+        disabled={!$selectedPersons.hasItems && $t`Select a contact first`}
         shortCutInfo="Del" />
     </RibbonGroup>
     <RibbonGroup label={$t`Communicate`}>
       <RibbonButton label={$t`Email`} icon={MailIcon}
-        onClick={() => ContactActions.writeMail($selectedContacts.contents)}
+        onClick={() => ContactActions.writeMail($selectedPersons.contents)}
         disabled={!hasEmailAddress && $t`Select a contact with an email address`} />
       <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
-        onClick={() => ContactActions.newMeeting($selectedContacts.contents)}
+        onClick={() => ContactActions.newMeeting($selectedPersons.contents)}
         disabled={!hasEmailAddress && $t`Select a contact with an email address`} />
       <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small"
         disabled={!selectedPerson && $t`Select a contact first`}>
@@ -49,13 +49,13 @@
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonMenuButton label={$t`Move`} icon={MoveIcon}
-        disabled={!$selectedContacts.hasItems && $t`Select a contact first`}>
+        disabled={!$selectedPersons.hasItems && $t`Select a contact first`}>
         {#each addressbookSections as section}
           <MenuLabel label={section.mainAccount?.name ?? $t`My Contacts`} />
           {#each section.addressbooks as addressbook (addressbook.id)}
             <MenuItem label={addressbook.name} icon={AddressbookIcon}
               disabled={selectionIsIn(addressbook)}
-              onClick={() => ContactActions.moveTo($selectedContacts.contents, addressbook)} />
+              onClick={() => ContactActions.moveTo($selectedPersons.contents, addressbook)} />
           {/each}
         {/each}
         <MenuDivider />
@@ -65,23 +65,23 @@
             {#each section.addressbooks as addressbook (addressbook.id)}
               <MenuItem label={addressbook.name} icon={AddressbookIcon}
                 disabled={selectionIsIn(addressbook)}
-                onClick={() => ContactActions.copyTo($selectedContacts.contents, addressbook)} />
+                onClick={() => ContactActions.copyTo($selectedPersons.contents, addressbook)} />
             {/each}
           {/each}
         </SubMenu>
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
-      <SearchPeopleBox onChoose={onShowContact} />
+      <SearchPeopleBox onChoose={showContact} />
       <RibbonButton label={$t`Search Contacts`} icon={SearchIcon} size="small"
-        onClick={onSearch} shortCutInfo="Ctrl+E" />
+        onClick={focusSearch} shortCutInfo="Ctrl+E" />
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`Send / Receive`}>
     <RibbonGroup label={$t`Send & Receive`}>
       <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update`} icon={SyncIcon}
-        onClick={() => ContactActions.sync($selectedAddressbook)}
-        disabled={!$selectedAddressbook?.canSync && $t`Select an address book on a server first`} />
+        onClick={() => ContactActions.sync(selectedAddressbook)}
+        disabled={!selectedAddressbook?.canSync && $t`Select an address book on a server first`} />
       <RibbonButton label={$t`Update All`} icon={SyncAllIcon}
         onClick={syncAll}
         disabled={!$addressbooks.some(addressbook => addressbook.canSync) && $t`None of your address books is on a server`} />
@@ -96,18 +96,18 @@
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename Folder`}
-        onClick={() => { renamingAddressbook = $selectedAddressbook; }}
+        onClick={() => { renamingAddressbook = selectedAddressbook; }}
         disabled={!isWritableAddressbook && $t`Select an address book first`} />
       <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Delete Folder`}
-        onClick={() => ContactActions.deleteFolder($selectedAddressbook)}
-        disabled={!ContactActions.canDeleteFolder($selectedAddressbook) && $t`Only address books that you added yourself can be removed here`} />
+        onClick={() => ContactActions.deleteFolder(selectedAddressbook)}
+        disabled={!ContactActions.canDeleteFolder(selectedAddressbook) && $t`Only address books that you added yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
       <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
         tooltip={$t`Folder Properties`}
-        onClick={() => { propertiesAddressbook = $selectedAddressbook; }}
-        disabled={!$selectedAddressbook && $t`Select an address book first`} />
+        onClick={() => { propertiesAddressbook = selectedAddressbook; }}
+        disabled={!selectedAddressbook && $t`Select an address book first`} />
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`View`}>
@@ -175,11 +175,13 @@
   import type { Contact } from "../../logic/Abstract/Contact";
   import { Person, type ContactEntry } from "../../logic/Abstract/Person";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedAddressbook } from "./Person/Selected";
+  import { contactSearchOptions } from "./Person/Selected";
+  import { ContactSearch } from "./ContactSearch";
+  import { contactSearchInput } from "./Search/ContactSearchBox.svelte";
   import { ContactActions } from "./ContactActions";
   import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-  import type { AddressbookSection } from "./AddressbookSections";
+  import { AddressbookSections } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
@@ -230,15 +232,12 @@
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  export let selectedContacts: ArrayColl<Contact>;
-  export let addressbookSections: AddressbookSection[];
-  export let isWritableAddressbook: boolean;
-  export let onDelete: () => Promise<void>;
-  export let onSearch: () => void;
-  export let onShowContact: (contact: Contact) => void;
-  export let resetView: () => void;
+  export let selectedAddressbook: Addressbook | null;
+  export let selectedPersons: ArrayColl<Contact>;
 
   const addressbooks = appGlobal.addressbooks;
+  $: addressbookSections = new AddressbookSections($addressbooks.contents).sections;
+  $: isWritableAddressbook = !!selectedAddressbook && $addressbooks.contains(selectedAddressbook);
   const view = getLocalStorage<ContactView>("lookout.contacts.view", ContactView.People);
   let renamingAddressbook: Addressbook | null = null;
   let propertiesAddressbook: Addressbook | null = null;
@@ -258,17 +257,50 @@
     { id: ContactView.List, label: $t`List`, icon: ListViewIcon, tooltip: $t`Contacts in a table` },
   ];
   $: isTableView = $view.value == ContactView.Phone || $view.value == ContactView.List;
-  $: hasEmailAddress = ContactActions.hasEmailAddress($selectedContacts.contents);
-  $: hasPersons = $selectedContacts.some(contact => contact instanceof Person);
-  $: selectedPerson = $selectedContacts.length == 1 && $selectedContacts.first instanceof Person ? $selectedContacts.first as Person : null;
+  $: hasEmailAddress = ContactActions.hasEmailAddress($selectedPersons.contents);
+  $: hasPersons = $selectedPersons.some(contact => contact instanceof Person);
+  $: selectedPerson = $selectedPersons.length == 1 && $selectedPersons.first instanceof Person ? $selectedPersons.first as Person : null;
   $: phoneNumbers = selectedPerson ? selectedPerson.phoneNumbers.contents : [] as ContactEntry[];
+
+  async function onDelete() {
+    await ContactActions.deleteContacts(selectedPersons.contents);
+  }
+
+  // <copied from="ContactsAppD.svelte">
+  function focusSearch() {
+    $contactSearchInput?.focus();
+    $contactSearchInput?.select();
+  }
+  // </copied>
+
+  // <copied from="ContactsAppD.svelte">
+  function closeSearch() {
+    $contactSearchOptions = ContactSearch.defaultOptions($contactSearchOptions.scope);
+  }
+  // </copied>
+
+  function showContact(contact: Contact) {
+    closeSearch();
+    ContactActions.show(contact);
+  }
+
+  function resetView() {
+    view.value = ContactView.People;
+    sort.value = sort.defaultValue;
+    for (let tableView of [ContactView.List, ContactView.Phone]) {
+      getLocalStorage<ContactColumn[]>(tableView == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(tableView)).value = ContactColumns.defaultColumns(tableView);
+      getLocalStorage<ContactSort | null>(tableView == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(tableView)).value = ContactColumns.defaultGroupBy(tableView);
+    }
+    folderPane.value = true;
+    readingPane.value = true;
+  }
 
   function setView(newView: ContactView) {
     view.value = newView;
   }
 
   function selectionIsIn(addressbook: Addressbook): boolean {
-    return selectedContacts.hasItems && selectedContacts.every(contact => contact.addressbook == addressbook);
+    return selectedPersons.hasItems && selectedPersons.every(contact => contact.addressbook == addressbook);
   }
 
   function arrangeBy(column: ContactColumn) {

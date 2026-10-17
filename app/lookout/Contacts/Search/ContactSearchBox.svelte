@@ -14,21 +14,25 @@
   {/if}
 </hbox>
 
+<script lang="ts" context="module">
+  import { writable } from "svelte/store";
+
+  export const contactSearchInput = writable<HTMLInputElement | null>(null);
+</script>
+
 <script lang="ts">
   import { ContactSearch } from "../ContactSearch";
   import { contactSearchOptions as options } from "../Person/Selected";
   import SearchIcon from "lucide-svelte/icons/search";
+  import { onDestroy } from "svelte";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
 
   export let placeholder: string;
 
   let inputEl: HTMLInputElement;
-
-  export function focus() {
-    inputEl?.focus();
-    inputEl?.select();
-  }
+  $: $contactSearchInput = inputEl ?? null;
+  onDestroy(() => $contactSearchInput = null);
 
   // <copied from="../ContactsAppD.svelte">
   function closeSearch() {

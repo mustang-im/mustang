@@ -1,6 +1,5 @@
 <vbox flex class="contacts-page" bind:this={pageEl}>
-  <ContactsRibbon {selectedContacts} {addressbookSections} {isWritableAddressbook}
-    onDelete={deleteSelected} onSearch={focusSearch} onShowContact={showContact} {resetView}>
+  <ContactsRibbon selectedAddressbook={$selectedAddressbook} selectedPersons={selectedContacts}>
     {#if isSearch}
       <ContactSearchTab hasSelectedAddressbook={!!$selectedAddressbook} />
     {/if}
@@ -15,7 +14,7 @@
           hasRight={showCardPane}>
           <vbox flex class="list-pane lo-card" class:single={!showCardPane} slot="left">
             <hbox class="search-bar">
-              <ContactSearchBox bind:this={searchBox} placeholder={searchPlaceholder} />
+              <ContactSearchBox placeholder={searchPlaceholder} />
             </hbox>
             {#if view == ContactView.People}
               <PersonsList persons={sortedContacts} bind:selected={currentContact} bind:selectedPersons={selectedContacts} {emptyText} />
@@ -63,7 +62,6 @@
   import { contactSearchOptions, ContactSearchScope } from "./Person/Selected";
   import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { LetterIndex } from "./LetterIndex";
-  import { AddressbookSections } from "./AddressbookSections";
   import { ObservedItems } from "../Shared/ObservedItems";
   import { appGlobal } from "../../logic/app";
   import { selectedPerson } from "../../frontend/Contacts/Person/Selected";
@@ -74,7 +72,7 @@
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import ContactsRibbon from "./ContactsRibbon.svelte";
   import ContactSearchTab from "./Search/ContactSearchTab.svelte";
-  import ContactSearchBox from "./Search/ContactSearchBox.svelte";
+  import ContactSearchBox, { contactSearchInput } from "./Search/ContactSearchBox.svelte";
   import AddressbookSelector from "./AddressbookSelector.svelte";
   import PersonsList from "./Person/PersonsList.svelte";
   import PersonsTable from "./Person/PersonsTable.svelte";
@@ -101,7 +99,6 @@
   $: view = Object.values(ContactView).includes($viewSetting.value) ? $viewSetting.value : ContactView.People;
   $: showCardPane = $readingPane.value != false && view == ContactView.People;
 
-  let searchBox: ContactSearchBox;
   let lastGlobalSearchTerm = $globalSearchTerm;
   $: takeGlobalSearchTerm($globalSearchTerm);
   function takeGlobalSearchTerm(term: string | null) {
@@ -112,9 +109,7 @@
     $contactSearchOptions = { ...$contactSearchOptions, term: term?.toLowerCase() || null };
   }
 
-  $: addressbookSections = new AddressbookSections($addressbooks.contents).sections;
   $: isDirectory = !!$selectedAddressbook && $searchOnlyAddressbooks.some(addressbook => addressbook == $selectedAddressbook);
-  $: isWritableAddressbook = !!$selectedAddressbook && $addressbooks.contains($selectedAddressbook);
   $: isSearch = !!$contactSearchOptions.term?.trim() || ContactSearch.hasRefiners($contactSearchOptions);
   $: isCurrentFolder = $contactSearchOptions.scope == ContactSearchScope.CurrentFolder && !!$selectedAddressbook;
   $: searchedAddressbooks = isCurrentFolder
@@ -190,31 +185,18 @@
     await ContactActions.deleteContacts(selectedContacts.contents);
   }
 
+  // <copied to="ContactsRibbon.svelte">
   function focusSearch() {
-    searchBox?.focus();
+    $contactSearchInput?.focus();
+    $contactSearchInput?.select();
   }
+  // </copied>
 
-  // <copied to="Search/ContactSearchBox.svelte, Search/ContactSearchTab.svelte">
+  // <copied to="Search/ContactSearchBox.svelte, Search/ContactSearchTab.svelte, ContactsRibbon.svelte">
   function closeSearch() {
     $contactSearchOptions = ContactSearch.defaultOptions($contactSearchOptions.scope);
   }
   // </copied>
-
-  function showContact(contact: Contact) {
-    closeSearch();
-    ContactActions.show(contact);
-  }
-
-  function resetView() {
-    viewSetting.value = ContactView.People;
-    sort.value = sort.defaultValue;
-    for (let tableView of [ContactView.List, ContactView.Phone]) {
-      getLocalStorage<ContactColumn[]>(tableView == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(tableView)).value = ContactColumns.defaultColumns(tableView);
-      getLocalStorage<ContactSort | null>(tableView == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(tableView)).value = ContactColumns.defaultGroupBy(tableView);
-    }
-    folderPane.value = true;
-    readingPane.value = true;
-  }
 
   let status: StatusBarContent;
   $: status = {
