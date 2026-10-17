@@ -57,7 +57,7 @@
 </script>
 
 <script lang="ts">
-  import { CalendarSharing } from "./Dialogs/CalendarSharing";
+  import { MailAccount } from "../../logic/Mail/MailAccount";
   import { CalendarColors } from "./FolderPane/CalendarColors";
   import { CalendarGroups } from "./FolderPane/CalendarGroups";
   import { CalendarActions } from "./CalendarActions";
@@ -81,7 +81,7 @@
 
   $: tabs = [
     { id: "general", label: $t`General` },
-    ...(CalendarSharing.canShare(calendar) ? [ { id: "permissions", label: $t`Permissions` } ] : []),
+    ...(canShare(calendar) ? [ { id: "permissions", label: $t`Permissions` } ] : []),
   ];
   $: if (!tabs.some(listed => listed.id == tab)) {
     tab = "general";
@@ -89,6 +89,14 @@
   $: isShared = CalendarGroups.isShared(calendar);
   $: location = calendar.mainAccount?.name ?? calendar.name;
   $: owner = isShared ? calendar.username : null;
+
+  // <copied to="CalendarMenu.svelte, CalendarRibbon.svelte">
+  function canShare(calendar: Calendar | null): boolean {
+    let account = calendar?.mainAccount;
+    return !!calendar?.sharePermissionLevels.length &&
+      account instanceof MailAccount && !account.isDependentAccount && account.canShareWithPersons();
+  }
+  // </copied>
 
   async function onOK() {
     let trimmed = name.trim();

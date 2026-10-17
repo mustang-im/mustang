@@ -35,10 +35,10 @@
     <RibbonGroup label={$t`Share`}>
       <RibbonButton label={$t`Share Calendar`} icon={ShareIcon}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
-        disabled={!canShare && $t`This calendar cannot be shared`} />
+        disabled={!isShareable && $t`This calendar cannot be shared`} />
       <RibbonButton label={$t`Calendar Permissions`} icon={PermissionsIcon}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
-        disabled={!canShare && $t`This calendar cannot be shared`} />
+        disabled={!isShareable && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
       <SearchPeopleBox onChoose={contact => ContactActions.show(contact)} />
@@ -82,11 +82,11 @@
       <RibbonButton label={$t`Share Calendar`} shortLabel={$t`Share`} icon={ShareIcon}
         tooltip={$t`Share Calendar`}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
-        disabled={!canShare && $t`This calendar cannot be shared`} />
+        disabled={!isShareable && $t`This calendar cannot be shared`} />
       <RibbonButton label={$t`Calendar Permissions`} shortLabel={$t`Permissions`} icon={PermissionsIcon}
         tooltip={$t`Calendar Permissions`}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
-        disabled={!canShare && $t`This calendar cannot be shared`} />
+        disabled={!isShareable && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
       <RibbonButton label={$t`Calendar Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
@@ -164,7 +164,7 @@
   import { CalendarActions } from "./CalendarActions";
   import { CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
   import { CalendarColors } from "./FolderPane/CalendarColors";
-  import { CalendarSharing } from "./Dialogs/CalendarSharing";
+  import { MailAccount } from "../../logic/Mail/MailAccount";
   import { SettingsDialogs } from "../Settings/SettingsDialogs";
   import { selectedCalendar } from "../../frontend/Calendar/selected";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -250,10 +250,18 @@
   $: noSelection = !$selectedCalendar && $t`Select a calendar first`;
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
   $: canDelete = CalendarActions.canDeleteCalendar($selectedCalendar);
-  $: canShare = CalendarSharing.canShare($selectedCalendar);
+  $: isShareable = canShare($selectedCalendar);
   let renamingCalendar: Calendar | null = null;
   let isViewSettingsOpen = false;
   $: overlayDisabled = view == "schedule" && $t`Overlay is available in the Day, Work Week, Week and Month views`;
+
+  // <copied from="CalendarPropertiesDialog.svelte">
+  function canShare(calendar: Calendar | null): boolean {
+    let account = calendar?.mainAccount;
+    return !!calendar?.sharePermissionLevels.length &&
+      account instanceof MailAccount && !account.isDependentAccount && account.canShareWithPersons();
+  }
+  // </copied>
 
   function onCalendarOptions() {
     SettingsDialogs.openOptions("calendar");

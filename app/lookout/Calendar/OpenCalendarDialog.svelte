@@ -40,6 +40,7 @@
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
   import { SharedCalendars } from "./Dialogs/SharedCalendars";
   import { selectedCalendar } from "../../frontend/Calendar/selected";
+  import { appGlobal } from "../../logic/app";
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
   import ComboBox from "../Shared/Form/ComboBox.svelte";
@@ -51,7 +52,7 @@
 
   export let fromAddressBook = false;
 
-  const accounts = SharedCalendars.accounts();
+  const accounts = appGlobal.emailAccounts.contents.filter(account => !account.isDependentAccount && account.canShareWithPersons());
   let account: MailAccount | null = accounts[0];
 
   let persons = new ArrayColl<PersonUID>();

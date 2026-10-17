@@ -62,7 +62,7 @@
   onMount(() => catchErrors(load));
   async function load() {
     try {
-      sharedWith = await CalendarSharing.sharedWith(calendar);
+      sharedWith = (await calendar.getSharedPersons()).contents;
     } finally {
       isLoading = false;
     }
@@ -80,7 +80,7 @@
     if (!await MessageBox.ask($t`Permissions`, $t`Do you want to stop sharing the calendar "${calendar.name}" with ${person.name || person.emailAddress}?`)) {
       return;
     }
-    await CalendarSharing.remove(calendar, person);
+    await calendar.deleteSharedPerson(person);
     sharedWith = sharedWith.filter(listed => listed != person);
   }
 </script>

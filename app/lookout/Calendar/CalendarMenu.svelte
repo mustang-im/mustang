@@ -6,7 +6,7 @@
       <MenuItem label={$t`Delete Calendar`} icon={DeleteIcon}
         onClick={() => CalendarActions.deleteCalendar(calendar)} />
     {/if}
-    {#if CalendarSharing.canShare(calendar)}
+    {#if canShare(calendar)}
       <MenuDivider />
       <SubMenu label={$t`Share`} icon={ShareIcon}>
         <MenuItem label={$t`Share Calendar`} icon={ShareIcon}
@@ -45,7 +45,7 @@
   import { CalendarActions } from "./CalendarActions";
   import { CalendarGroups } from "./FolderPane/CalendarGroups";
   import { CalendarColors } from "./FolderPane/CalendarColors";
-  import { CalendarSharing } from "./Dialogs/CalendarSharing";
+  import { MailAccount } from "../../logic/Mail/MailAccount";
   import { catchErrors } from "../../frontend/Util/error";
   import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
@@ -77,6 +77,14 @@
   function toggleOverlay() {
     splitView.value = !splitView.value;
   }
+
+  // <copied from="CalendarPropertiesDialog.svelte">
+  function canShare(calendar: Calendar | null): boolean {
+    let account = calendar?.mainAccount;
+    return !!calendar?.sharePermissionLevels.length &&
+      account instanceof MailAccount && !account.isDependentAccount && account.canShareWithPersons();
+  }
+  // </copied>
 
   export function openFor(event: MouseEvent, forCalendar: Calendar) {
     event.preventDefault();

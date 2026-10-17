@@ -39,7 +39,6 @@
   import { appGlobal } from "../../../logic/app";
   import { SettingsDialogs } from "../SettingsDialogs";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
-  import { SharedCalendars } from "../../Calendar/Dialogs/SharedCalendars";
   import OpenCalendarDialog from "../../Calendar/OpenCalendarDialog.svelte";
   import SharedFolderDialog from "../../Mail/LeftPane/SharedFolderDialog.svelte";
   import OpenCalendarIcon from "lucide-svelte/icons/calendar-search";
@@ -50,8 +49,7 @@
   const emailAccounts = appGlobal.emailAccounts;
   let isOpenCalendarOpen = false;
   let isSharedFolderOpen = false;
-  let sharingAccounts = SharedCalendars.accounts();
-  $: $emailAccounts, sharingAccounts = SharedCalendars.accounts();
+  $: sharingAccounts = $emailAccounts.contents.filter(account => !account.isDependentAccount && account.canShareWithPersons());
   $: mailAccount = $selectedAccount && $emailAccounts.contains($selectedAccount)
     ? $selectedAccount
     : $emailAccounts.first;

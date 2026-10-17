@@ -12,7 +12,6 @@
 
 <script lang="ts">
   import { CalendarActions } from "./CalendarActions";
-  import { SharedCalendars } from "./Dialogs/SharedCalendars";
   import { openSharedCalendar } from "./OpenCalendarDialog.svelte";
   import { appGlobal } from "../../logic/app";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
@@ -24,6 +23,5 @@
   import { t } from "../../l10n/l10n";
 
   const emailAccounts = appGlobal.emailAccounts;
-  $: $emailAccounts, sharingAccounts = SharedCalendars.accounts();
-  let sharingAccounts = SharedCalendars.accounts();
+  $: sharingAccounts = $emailAccounts.contents.filter(account => !account.isDependentAccount && account.canShareWithPersons());
 </script>
