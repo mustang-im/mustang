@@ -120,15 +120,20 @@
       case GlobalKeyAction.Search:
         return TitleBarSearch.input?.focus();
       case GlobalKeyAction.TellMe:
-        return (visibleTellMeInput() ?? TitleBarSearch.input)?.focus();
+        return openTellMe();
       case GlobalKeyAction.CollapseRibbon:
         RibbonModel.collapsedSetting.value = !RibbonModel.collapsedSetting.value;
         return;
     }
   }
 
-  function visibleTellMeInput(): HTMLInputElement | null {
-    return Array.from(document.querySelectorAll<HTMLInputElement>(".tell-me-input")).find(input => input.offsetParent) ?? null;
+  function openTellMe() {
+    let tellMe = Array.from(document.querySelectorAll<HTMLButtonElement>(".tell-me-button")).find(button => button.offsetParent);
+    if (tellMe) {
+      tellMe.click();
+    } else {
+      TitleBarSearch.input?.focus();
+    }
   }
 </script>
 

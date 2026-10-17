@@ -1,17 +1,25 @@
-<hbox class="tell-me" class:active={isActive} bind:this={fieldEl}>
-  <span class="bulb"><TellMeIcon size={16} /></span>
-  <input type="text" class="tell-me-input"
-    bind:value={searchTerm}
-    bind:this={inputEl}
-    placeholder={$t`Tell me what you want to do`}
+<hbox class="tell-me" class:expanded={isExpanded} class:active={isActive} bind:this={fieldEl}>
+  <button class="tell-me-button"
+    title={$t`Tell me what you want to do`}
     aria-label={$t`Tell me what you want to do`}
-    aria-haspopup="menu"
-    aria-expanded={isMenuOpen}
-    autocomplete="off" spellcheck="false"
-    on:focus={onFocus}
-    on:blur={onBlur}
-    on:input={onInput}
-    on:keydown={onKeyDown} />
+    aria-expanded={isExpanded}
+    on:click={onButton}>
+    <TellMeIcon size={16} />
+  </button>
+  {#if isExpanded}
+    <input type="text" class="tell-me-input"
+      bind:value={searchTerm}
+      bind:this={inputEl}
+      placeholder={$t`Tell me what you want to do`}
+      aria-label={$t`Tell me what you want to do`}
+      aria-haspopup="menu"
+      aria-expanded={isMenuOpen}
+      autocomplete="off" spellcheck="false"
+      on:focus={onFocus}
+      on:blur={onBlur}
+      on:input={onInput}
+      on:keydown={onKeyDown} />
+  {/if}
 </hbox>
 <Menu bind:isMenuOpen anchor={fieldEl} placement="bottom-start" autoFocus={false}
   onClose={onMenuClosed} bind:this={menu}>
@@ -54,6 +62,7 @@
   let menu: Menu;
   let searchTerm = "";
   let isMenuOpen = false;
+  let isExpanded = false;
   let isActive = false;
   let isSurveying = false;
   let entries: RibbonCommandEntry[] = [];
@@ -73,6 +82,12 @@
       isSurveying = false;
       ribbon.endSurvey();
     }
+  }
+
+  async function onButton() {
+    isExpanded = true;
+    await tick();
+    inputEl?.focus();
   }
 
   async function onFocus() {
@@ -108,8 +123,8 @@
       event.preventDefault();
       event.stopPropagation();
       searchTerm = "";
-      close();
       inputEl.blur();
+      close();
     } else if (event.key == "ArrowDown" && isMenuOpen) {
       event.preventDefault();
       menu?.focusFirstItem();
@@ -132,6 +147,10 @@
     isMenuOpen = false;
     isActive = false;
     endSurvey();
+    if (document.activeElement != inputEl) {
+      searchTerm = "";
+      isExpanded = false;
+    }
   }
 
   async function run(entry: RibbonCommandEntry) {
@@ -163,27 +182,42 @@
 
 <style>
   .tell-me {
-    flex: 0 1 240px;
+    flex: 0 0 auto;
     align-items: center;
-    gap: 6px;
-    min-width: 32px;
+    gap: 2px;
     height: 28px;
     margin-inline-end: 4px;
-    padding: 0 8px;
     border: 1px solid transparent;
     border-radius: var(--lo-radius-small);
     color: var(--lo-fg-secondary);
   }
-  .tell-me:hover {
+  .tell-me.expanded {
+    flex: 0 1 240px;
+    min-width: 120px;
+    padding-inline-end: 8px;
     border-color: var(--lo-border);
   }
   .tell-me.active {
     border-color: var(--lo-border-strong);
     background-color: var(--lo-input-bg);
   }
-  .bulb {
+  .tell-me-button {
     display: flex;
     flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: var(--lo-radius-small);
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  .tell-me:not(.expanded) .tell-me-button:hover {
+    background-color: var(--lo-hover-bg);
+    color: var(--lo-fg);
   }
   .tell-me-input {
     flex: 1;

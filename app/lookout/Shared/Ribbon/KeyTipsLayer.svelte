@@ -91,12 +91,12 @@
       disabled: false,
       activate: () => selectTab(tabEl),
     }));
-    let tellMe = ribbonEl.querySelector<HTMLInputElement>(".tell-me-input");
+    let tellMe = ribbonEl.querySelector<HTMLElement>(".tell-me-button");
     let tellMeTargets: Target[] = tellMe && isVisible(tellMe) ? [{
-      el: tellMe, label: labelOf(tellMe), centered: false, disabled: false,
+      el: tellMe, label: labelOf(tellMe), centered: true, disabled: false,
       activate: () => {
         exit();
-        tellMe.focus();
+        tellMe.click();
       },
     }] : [];
     let tabTips = KeyTips.assign(tabTargets.map(target => target.label), ["F", "Q"], true);
