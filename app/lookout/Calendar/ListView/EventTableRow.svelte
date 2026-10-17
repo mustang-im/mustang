@@ -21,7 +21,7 @@
       {:else if column == EventTableColumn.Recurrence}
         {EventTable.recurrenceLabel($event)}
       {:else if column == EventTableColumn.Calendar}
-        <span class="calendar-dot" />{$event.calendar?.name ?? ""}
+        <span class="calendar-dot" />{$calendar?.name ?? ""}
       {/if}
     </span>
   {/each}
@@ -44,7 +44,8 @@
   export let onOpen: () => void;
   export let onContextMenu: (mouseEvent: MouseEvent) => void;
 
-  $: look = new EventLook($event);
+  $: calendar = $event.calendar;
+  $: look = new EventLook($event, $calendar);
   $: icon = $event.recurrenceRule ? RecurringIcon : look.isMeeting ? MeetingIcon : AppointmentIcon;
 </script>
 

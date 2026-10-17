@@ -1,4 +1,5 @@
 import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
+import type { Calendar } from "../../../logic/Calendar/Calendar";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { k1DayMS, k1MinuteMS } from "../../../frontend/Util/date";
 import { gt } from "../../../l10n/l10n";
@@ -7,9 +8,11 @@ export type EventStatus = "busy" | "tentative" | "unanswered" | "declined" | "ca
 
 export class EventLook {
   readonly event: Event;
+  readonly calendar: Calendar | null;
 
-  constructor(event: Event) {
+  constructor(event: Event, calendar = event.calendar) {
     this.event = event;
+    this.calendar = calendar;
   }
 
   get status(): EventStatus {
@@ -39,7 +42,7 @@ export class EventLook {
   }
 
   get color(): string | null {
-    return this.event.color ?? this.event.calendar?.color ?? null;
+    return this.event.color ?? this.calendar?.color ?? null;
   }
 
   isPast(now: Date): boolean {

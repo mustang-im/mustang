@@ -4,7 +4,7 @@
     <hbox class="header">
       <hbox class="calendar-name" flex>
         <span class="dot" />
-        <span class="name">{$event.calendar?.name ?? ""}</span>
+        <span class="name">{$calendar?.name ?? ""}</span>
       </hbox>
       <button class="icon-button" title={$t`Open`} on:click={onOpen}>
         <OpenIcon size="16" />
@@ -73,7 +73,8 @@
   }
 
   $: event = peek.event;
-  $: look = new EventLook($event);
+  $: calendar = $event.calendar;
+  $: look = new EventLook($event, $calendar);
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;
   $: deleteLabel = $event.isCancelled ? $t`Remove from Calendar`
     : $event.isOutgoingMeeting ? $t`Cancel Meeting`

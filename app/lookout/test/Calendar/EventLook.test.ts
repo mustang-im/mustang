@@ -56,6 +56,11 @@ test("Event color comes before the calendar color", () => {
   expect(new EventLook(event).color).toBe("#123456");
   event.color = "#ABCDEF";
   expect(new EventLook(event).color).toBe("#ABCDEF");
+  event.color = null;
+  // The views pass the calendar they observe, so that its color changes reach them
+  let observed = { color: "#654321" } as any;
+  expect(new EventLook(event, observed).calendar).toBe(observed);
+  expect(new EventLook(event, observed).color).toBe("#654321");
 });
 
 test("Past events", () => {

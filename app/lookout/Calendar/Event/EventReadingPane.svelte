@@ -3,7 +3,7 @@
     <vbox class="header" style="--event-color: {look.color ?? "var(--lo-accent)"}">
       <hbox class="calendar-name">
         <span class="dot" />
-        <span>{$event.calendar?.name ?? ""}</span>
+        <span>{$calendar?.name ?? ""}</span>
       </hbox>
       <h2 class="title" class:muted={look.status == "declined" || look.status == "cancelled"}>{look.title}</h2>
       {#if $event.isCancelled}
@@ -61,7 +61,8 @@
 
   export let event: Event | null;
 
-  $: look = event ? new EventLook($event) : null;
+  $: calendar = $event?.calendar;
+  $: look = event ? new EventLook($event, $calendar) : null;
 
   // <copied from="../../../frontend/Calendar/Invitation/InvitationInCalendar.svelte">
   let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;

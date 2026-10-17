@@ -1,12 +1,12 @@
 <div class="calendar-tab" class:selected={$selectedCalendar == calendar}
-  style="grid-column: {firstColumn} / span {span}; --calendar-color: {calendar.color}">
+  style="grid-column: {firstColumn} / span {span}; --calendar-color: {$calendar.color}">
   {#if !isFirst}
     <button class="tab-button" title={$t`View in overlay mode`} on:click={onOverlay}>
       <OverlayIcon size="14" />
     </button>
   {/if}
-  <button class="name" title={calendar.name} on:click={() => $selectedCalendar = calendar}>
-    {calendar.name}
+  <button class="name" title={$calendar.name} on:click={() => $selectedCalendar = calendar}>
+    {$calendar.name}
   </button>
   <button class="tab-button" title={$t`Close calendar`} on:click={() => shownCalendars.show(calendar, false)}>
     <CloseIcon size="14" />

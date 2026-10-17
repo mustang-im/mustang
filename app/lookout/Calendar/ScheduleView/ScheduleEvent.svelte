@@ -40,7 +40,8 @@
   const now = CurrentTime.minute;
 
   $: event = item.event;
-  $: look = new EventLook($event);
+  $: calendar = $event.calendar;
+  $: look = new EventLook($event, $calendar);
   $: tooltip = look.tooltip(getDateTimeLocale());
 </script>
 

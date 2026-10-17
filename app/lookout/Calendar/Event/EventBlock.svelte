@@ -60,7 +60,8 @@
   const currentView = CalendarSettings.currentView;
 
   $: event = item.event;
-  $: look = new EventLook($event);
+  $: calendar = $event.calendar;
+  $: look = new EventLook($event, $calendar);
   $: tooltip = look.tooltip(getDateTimeLocale());
   $: top = item.startMinute * pxPerMinute;
   $: height = Math.max((item.endMinute - item.startMinute) * pxPerMinute - 1, 6);

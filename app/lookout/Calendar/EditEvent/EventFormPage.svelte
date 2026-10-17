@@ -11,8 +11,8 @@
         <span class="kind">– {kindLabel}</span>
       </h1>
       <hbox class="calendar-name lo-secondary" title={$t`Calendar`}>
-        <span class="dot" style:background-color={event.calendar?.color ?? "var(--lo-accent)"} />
-        {event.calendar?.name ?? ""}
+        <span class="dot" style:background-color={$calendar?.color ?? "var(--lo-accent)"} />
+        {$calendar?.name ?? ""}
       </hbox>
       <hbox flex />
       {#if showsEditor}
@@ -122,6 +122,7 @@
 
   $: participants = event.participants;
   $: parentEvent = $event.parentEvent;
+  $: calendar = $event.calendar;
   $: isMeeting = $participants.hasItems;
   $: isIncoming = $event.isIncomingMeeting;
   $: isSaved = $event && flow.isSaved;

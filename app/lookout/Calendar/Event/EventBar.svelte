@@ -49,7 +49,8 @@
   const menus = getContext<CalendarMenus>(kCalendarMenus);
   const now = CurrentTime.minute;
 
-  $: look = new EventLook($event);
+  $: calendar = $event.calendar;
+  $: look = new EventLook($event, $calendar);
   $: tooltip = look.tooltip(getDateTimeLocale());
   $: showStartTime = !$event.allDay && !continuesBefore;
 
