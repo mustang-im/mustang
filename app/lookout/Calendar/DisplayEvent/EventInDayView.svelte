@@ -12,9 +12,9 @@
   {#if allDayItems.length}
     <vbox class="all-day">
       {#each allDayItems as item}
-        <hbox class="lo-event status-{item.look.status}" class:current={item.isCurrent}
+        <hbox class="event status-{item.look.status}" class:current={item.isCurrent}
           style:--event-color={item.look.color ?? "var(--lo-accent)"} title={item.look.tooltip(locale)}>
-          <hbox class="lo-event-bar" />
+          <hbox class="bar" />
           <span class="title">{item.look.title}</span>
         </hbox>
       {/each}
@@ -32,12 +32,12 @@
           <hbox class="slot" style:height="{kHourHeight}px" />
         {/each}
         {#each timedItems as item}
-          <hbox class="lo-event status-{item.look.status}" class:current={item.isCurrent}
+          <hbox class="event status-{item.look.status}" class:current={item.isCurrent}
             style:--event-color={item.look.color ?? "var(--lo-accent)"}
             style:top="{item.top}px" style:height="{Math.max(item.height - 1, 14)}px"
             style:left="calc({item.lane} * 100% / {item.lanes})" style:width="calc(100% / {item.lanes} - 2px)"
             title={item.look.tooltip(locale)}>
-            <hbox class="lo-event-bar" />
+            <hbox class="bar" />
             <span class="title"><b>{item.look.title}</b>{item.event.location ? "; " + item.event.location : ""}</span>
           </hbox>
         {/each}
@@ -51,7 +51,6 @@
   import { appGlobal } from "../../../logic/app";
   import { DayPreviewLayout } from "./EventInDayView";
   import { HourLabel } from "../TimeGrid/HourLabel";
-  import "../Event/EventLook.css";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
@@ -104,12 +103,67 @@
   .open:hover {
     background-color: var(--lo-hover-bg);
   }
+  /* <copied from="EventContent.svelte"> */
+  .event {
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--lo-event-border);
+    border-radius: 4px;
+    background-color: color-mix(in srgb, var(--event-color) calc(var(--lo-event-fill) * var(--lo-event-fill-boost)), var(--lo-pane-bg));
+    color: var(--lo-fg);
+    font-size: var(--lo-font-size-small);
+    --lo-event-fill: 22%;
+    --lo-event-fill-boost: 1;
+    --lo-event-border: color-mix(in srgb, var(--event-color) 45%, transparent);
+    --lo-event-bar: var(--event-color);
+  }
+  @media (prefers-color-scheme: dark) {
+    .event {
+      --lo-event-fill-boost: 1.6;
+    }
+  }
+  .event:hover {
+    --lo-event-fill: 30%;
+  }
+  .bar {
+    flex: none;
+    width: 4px;
+    margin-block: -1px;
+    margin-inline-start: -1px;
+    background: var(--lo-event-bar);
+  }
+  .event.status-tentative,
+  .event.status-unanswered {
+    --lo-event-bar: repeating-linear-gradient(-45deg, var(--event-color) 0 2px, var(--lo-pane-bg) 2px 4px);
+  }
+  .event.status-unanswered {
+    background-color: var(--lo-pane-bg);
+    background-image: repeating-linear-gradient(-45deg,
+      transparent 0 6px,
+      color-mix(in srgb, var(--event-color) calc(var(--lo-event-fill) * var(--lo-event-fill-boost)), transparent) 6px 9px);
+    --lo-event-border: var(--event-color);
+  }
+  .event.status-declined,
+  .event.status-cancelled {
+    background-color: var(--lo-pane-bg);
+    background-image: none;
+    color: var(--lo-fg-secondary);
+    --lo-event-border: var(--lo-border-strong);
+    --lo-event-bar: transparent;
+  }
+  /* </copied> */
+  .event {
+    cursor: default;
+  }
   .all-day {
     gap: 2px;
     padding: 2px 4px 2px 56px;
     border-block-end: 1px solid var(--lo-divider);
   }
-  .all-day .lo-event {
+  .all-day .event {
     height: 20px;
     align-items: center;
   }
@@ -138,11 +192,11 @@
     flex-shrink: 0;
     border-block-end: 1px solid var(--lo-divider);
   }
-  .column .lo-event {
+  .column .event {
     position: absolute;
     margin-inline-start: 2px;
   }
-  .lo-event.current {
+  .event.current {
     outline: 2px solid var(--lo-fg);
     outline-offset: -1px;
     z-index: 1;

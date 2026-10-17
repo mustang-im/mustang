@@ -1,9 +1,8 @@
-<div class="schedule-event lo-event status-{look.status}"
-  class:past={look.isPast($now)}
+<div class="schedule-event"
   class:selected={$selectedEvent == event}
   class:continues-before={item.continuesBefore}
   class:continues-after={item.continuesAfter}
-  style="left: {item.startMinute * pxPerMinute}px; width: {Math.max((item.endMinute - item.startMinute) * pxPerMinute - 2, 6)}px; top: {top}px; height: {height}px; --event-color: {look.color ?? "var(--lo-accent)"}"
+  style="left: {item.startMinute * pxPerMinute}px; width: {Math.max((item.endMinute - item.startMinute) * pxPerMinute - 2, 6)}px; top: {top}px; height: {height}px"
   title={tooltip}
   role="button"
   tabindex="0"
@@ -15,14 +14,15 @@
   on:focus={select}
   on:pointerdown={onPointerDown}
   bind:this={element}>
-  <div class="lo-event-bar" />
-  <div class="content">
-    <span class="lo-event-title">{look.title}</span>
-    {#if $event.location}
-      <span class="location">{$event.location}</span>
-    {/if}
-    <EventIcons {look} />
-  </div>
+  <EventContent {event}>
+    <div class="content">
+      <span class="title">{look.title}</span>
+      {#if $event.location}
+        <span class="location">{$event.location}</span>
+      {/if}
+      <EventIcons {look} />
+    </div>
+  </EventContent>
 </div>
 
 <script lang="ts">
@@ -31,10 +31,10 @@
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { now, kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
+  import { kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
+  import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
-  import "../Event/EventLook.css";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import { getContext } from "svelte";
 
@@ -47,8 +47,7 @@
   let element: HTMLElement;
 
   $: event = item.event;
-  $: calendar = $event.calendar;
-  $: look = new EventLook($event, $calendar);
+  $: look = new EventLook($event);
   $: tooltip = look.tooltip(getDateTimeLocale());
 
   // <copied from="../DayView/EventContainer.svelte">, without dragging
@@ -99,9 +98,13 @@
 
 <style>
   .schedule-event {
+    display: flex;
     position: absolute;
     z-index: 2;
     align-items: stretch;
+    cursor: default;
+  }
+  .schedule-event > :global(.event) {
     /* "hidden" would make the event the scroll container of the sticky title */
     overflow: clip;
   }
@@ -109,11 +112,11 @@
   .schedule-event:focus-visible {
     z-index: 4;
   }
-  .schedule-event.continues-before {
+  .schedule-event.continues-before > :global(.event) {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
   }
-  .schedule-event.continues-after {
+  .schedule-event.continues-after > :global(.event) {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
@@ -127,7 +130,17 @@
     min-width: 0;
     padding: 0 4px 0 5px;
   }
-  .lo-event-title {
+  /* <copied from="../DayView/EventContainer.svelte"> */
+  .title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* </copied> */
+  .content .title {
     flex: 0 1 auto;
   }
   .location {

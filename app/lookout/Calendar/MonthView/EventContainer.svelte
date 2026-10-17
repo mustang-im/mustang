@@ -1,11 +1,8 @@
-<div class="event-bar lo-event status-{look.status} {variant}"
-  class:past={look.isPast($now)}
-  class:selected={$selectedEvent == event}
+<div class="event-bar {variant}"
   class:dragging={isDragging}
   class:continues-before={continuesBefore}
   class:continues-after={continuesAfter}
   class:timed={showStartTime}
-  style="--event-color: {look.color ?? "var(--lo-accent)"}"
   title={tooltip}
   role="button"
   tabindex="0"
@@ -20,20 +17,21 @@
   on:pointerup={onPointerUp}
   on:pointercancel={endDrag}
   bind:this={element}>
-  <div class="lo-event-bar" />
-  <div class="content">
-    {#if continuesBefore}
-      <ContinuesBeforeIcon size="12" class="continues" />
-    {/if}
-    {#if showStartTime}
-      <span class="time">{look.startTimeText(getDateTimeLocale())}</span>
-    {/if}
-    <span class="lo-event-title">{look.title}</span>
-    <EventIcons {look} />
-    {#if continuesAfter}
-      <ContinuesAfterIcon size="12" class="continues" />
-    {/if}
-  </div>
+  <EventContent {event}>
+    <div class="content">
+      {#if continuesBefore}
+        <ContinuesBeforeIcon size="12" class="continues" />
+      {/if}
+      {#if showStartTime}
+        <span class="time">{look.startTimeText(getDateTimeLocale())}</span>
+      {/if}
+      <span class="title">{look.title}</span>
+      <EventIcons {look} />
+      {#if continuesAfter}
+        <ContinuesAfterIcon size="12" class="continues" />
+      {/if}
+    </div>
+  </EventContent>
 </div>
 
 <script lang="ts">
@@ -43,12 +41,12 @@
   import { openEvent } from "../../../frontend/Calendar/open";
   import { catchErrors } from "../../../frontend/Util/error";
   import { EventDrag } from "../EventDrag";
-  import { now, kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
+  import { kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
+  import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import ContinuesBeforeIcon from "lucide-svelte/icons/chevron-left";
   import ContinuesAfterIcon from "lucide-svelte/icons/chevron-right";
-  import "../Event/EventLook.css";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import { getContext } from "svelte";
 
@@ -63,8 +61,7 @@
   let wasDragged = false;
   let isDragging = false;
 
-  $: calendar = $event.calendar;
-  $: look = new EventLook($event, $calendar);
+  $: look = new EventLook($event);
   $: tooltip = look.tooltip(getDateTimeLocale());
   $: showStartTime = !$event.allDay && !continuesBefore;
 
@@ -164,18 +161,20 @@
 
 <style>
   .event-bar {
+    display: flex;
     height: 20px;
     line-height: 18px;
+    cursor: default;
   }
-  .event-bar.continues-before {
+  .event-bar.continues-before > :global(.event) {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
   }
-  .event-bar.continues-after {
+  .event-bar.continues-after > :global(.event) {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
-  .continues-before > :global(.lo-event-bar) {
+  .continues-before > :global(.event > .bar) {
     display: none;
   }
   .content {
@@ -190,7 +189,17 @@
   .all-day:not(.timed) .content {
     justify-content: center;
   }
-  .all-day:not(.timed) .content :global(.lo-event-title) {
+  /* <copied from="../DayView/EventContainer.svelte"> */
+  .title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* </copied> */
+  .all-day:not(.timed) .content .title {
     flex: 0 1 auto;
   }
   .time {

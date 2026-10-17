@@ -1,10 +1,9 @@
-<div class="event-block lo-event status-{look.status}"
-  class:past={look.isPast($now)}
+<div class="event-block"
   class:selected={$selectedEvent == event}
   class:dragging={isDragging}
   class:continues-before={item.continuesBefore}
   class:continues-after={item.continuesAfter}
-  style="top: {top}px; height: {height}px; --lane: {item.lane}; --lanes: {item.lanes}; --event-color: {look.color ?? "var(--lo-accent)"}"
+  style="top: {top}px; height: {height}px; --lane: {item.lane}; --lanes: {item.lanes}"
   title={tooltip}
   role="button"
   tabindex="0"
@@ -19,32 +18,33 @@
   on:pointerup={onPointerUp}
   on:pointercancel={endDrag}
   bind:this={element}>
-  <div class="lo-event-bar" />
-  {#if $event.isEditable}
-    <div class="resize-handle" data-mode="resize-start" class:hidden={item.continuesBefore} />
-    <div class="resize-handle end" data-mode="resize-end" class:hidden={item.continuesAfter} />
-  {/if}
-  <div class="content">
-    <div class="title-line">
-      <span class="lo-event-title">{look.title}</span>
-      {#if look.canJoin($now)}
-        <a class="join" href={$event.onlineMeetingURL} target="_blank"
-          on:click|stopPropagation on:dblclick|stopPropagation>
-          {$t`Join`}
-        </a>
+  <EventContent {event}>
+    {#if $event.isEditable}
+      <div class="resize-handle" data-mode="resize-start" class:hidden={item.continuesBefore} />
+      <div class="resize-handle end" data-mode="resize-end" class:hidden={item.continuesAfter} />
+    {/if}
+    <div class="content">
+      <div class="title-line">
+        <span class="title">{look.title}</span>
+        {#if look.canJoin($now)}
+          <a class="join" href={$event.onlineMeetingURL} target="_blank"
+            on:click|stopPropagation on:dblclick|stopPropagation>
+            {$t`Join`}
+          </a>
+        {/if}
+        <EventIcons {look} />
+      </div>
+      {#if lines >= 2 && $event.location}
+        <div class="line">{$event.location}</div>
       {/if}
-      <EventIcons {look} />
+      {#if lines >= 3 && look.organizerName}
+        <div class="line">{look.organizerName}</div>
+      {/if}
+      {#if isPreview && notesLines > 0 && $event.hasDescription}
+        <div class="notes" style:-webkit-line-clamp={notesLines}>{$event.descriptionText}</div>
+      {/if}
     </div>
-    {#if lines >= 2 && $event.location}
-      <div class="line">{$event.location}</div>
-    {/if}
-    {#if lines >= 3 && look.organizerName}
-      <div class="line">{look.organizerName}</div>
-    {/if}
-    {#if isPreview && notesLines > 0 && $event.hasDescription}
-      <div class="notes" style:-webkit-line-clamp={notesLines}>{$event.descriptionText}</div>
-    {/if}
-  </div>
+  </EventContent>
 </div>
 
 <script lang="ts">
@@ -57,8 +57,8 @@
   import { now, kCalendarMenus, CalendarCurrentView, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
+  import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
-  import "../Event/EventLook.css";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
   import { getContext } from "svelte";
 
@@ -74,8 +74,7 @@
   const currentView = getLocalStorage<CalendarCurrentView>("lookout.calendar.currentView", CalendarCurrentView.Calendar);
 
   $: event = item.event;
-  $: calendar = $event.calendar;
-  $: look = new EventLook($event, $calendar);
+  $: look = new EventLook($event);
   $: tooltip = look.tooltip(getDateTimeLocale());
   $: top = item.startMinute * pxPerMinute;
   $: height = Math.max((item.endMinute - item.startMinute) * pxPerMinute - 1, 6);
@@ -187,29 +186,33 @@
 
 <style>
   .event-block {
+    display: flex;
     position: absolute;
     left: calc((100% - var(--click-margin)) * var(--lane) / var(--lanes));
     width: calc((100% - var(--click-margin)) / var(--lanes) - 1px);
     line-height: 15px;
     z-index: 2;
+    cursor: default;
   }
   .event-block.selected,
   .event-block:focus-visible {
     z-index: 3;
   }
-  .event-block.continues-before {
+  .event-block.continues-before > :global(.event) {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
   }
-  .event-block.continues-after {
+  .event-block.continues-after > :global(.event) {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
   .event-block:global(.dragging) {
     z-index: 5;
     opacity: 85%;
-    box-shadow: var(--lo-shadow-popup);
     cursor: grabbing;
+  }
+  .event-block:global(.dragging) > :global(.event) {
+    box-shadow: var(--lo-shadow-popup);
   }
   .resize-handle {
     position: absolute;
@@ -240,6 +243,16 @@
     gap: 4px;
     min-width: 0;
   }
+  /* <copied to="../MonthView/EventContainer.svelte, ../ScheduleView/ScheduleEvent.svelte"> */
+  .title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* </copied> */
   .line {
     white-space: nowrap;
     overflow: hidden;
