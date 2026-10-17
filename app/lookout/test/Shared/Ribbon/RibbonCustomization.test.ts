@@ -1,4 +1,4 @@
-import { RibbonCustomization } from "../../Shared/Ribbon/RibbonCustomization";
+import { RibbonCustomization } from "../../../Shared/Ribbon/RibbonCustomization";
 import { expect, test } from "vitest";
 
 test("Hidden tabs and groups are stored per ribbon", () => {

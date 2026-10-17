@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
 // app first, to resolve the import cycle around Abstract/Account.ts
-import "../../../logic/app";
-import { EMail } from "../../../logic/Mail/EMail";
-import { Event } from "../../../logic/Calendar/Event";
-import { File } from "../../../logic/Files/File";
-import { ActivityKind, ContactActivities } from "../../Contacts/History/ContactActivities";
+import "../../../../logic/app";
+import { EMail } from "../../../../logic/Mail/EMail";
+import { Event } from "../../../../logic/Calendar/Event";
+import { File } from "../../../../logic/Files/File";
+import { ActivityKind, ContactActivities } from "../../../Contacts/History/ContactActivities";
 import { expect, test } from "vitest";
 
 test("Activities are messages, files and meetings, each with its time", () => {

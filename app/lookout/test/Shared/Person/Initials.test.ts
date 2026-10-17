@@ -1,4 +1,4 @@
-import { Initials } from "../../Shared/Person/Initials";
+import { Initials } from "../../../Shared/Person/Initials";
 import { expect, test } from "vitest";
 
 test("Initials of first and last name", () => {

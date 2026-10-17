@@ -1,6 +1,6 @@
-import { SMLTimeOptions } from "../../Mail/SML/SMLTimeOptions";
-import { SMLData } from "../../../logic/Mail/SML/SMLData";
-import { TSMLMeetingTimePreference, type TSMLMeetingTimeVote } from "../../../logic/Mail/SML/TSML";
+import { SMLTimeOptions } from "../../../Mail/SML/SMLTimeOptions";
+import { SMLData } from "../../../../logic/Mail/SML/SMLData";
+import { TSMLMeetingTimePreference, type TSMLMeetingTimeVote } from "../../../../logic/Mail/SML/TSML";
 import { expect, test } from "vitest";
 
 const at = (day: number, hour: number, minute = 0) => new Date(2026, 9, day, hour, minute);

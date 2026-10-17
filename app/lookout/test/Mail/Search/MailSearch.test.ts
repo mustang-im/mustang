@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { MailSearch, SearchScope } from "../../Mail/Search/MailSearch";
-import { ReceivedRange, SizeRange } from "../../Mail/Search/SearchRanges";
+import { MailSearch, SearchScope } from "../../../Mail/Search/MailSearch";
+import { ReceivedRange, SizeRange } from "../../../Mail/Search/SearchRanges";
 import { expect, test } from "vitest";
 
 test("Any refiner starts a search, like in Outlook", () => {

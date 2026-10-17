@@ -1,4 +1,4 @@
-import { KeyTips } from "../../Shared/Ribbon/KeyTips";
+import { KeyTips } from "../../../Shared/Ribbon/KeyTips";
 import { expect, test } from "vitest";
 
 function isPrefixFree(tips: string[]): boolean {

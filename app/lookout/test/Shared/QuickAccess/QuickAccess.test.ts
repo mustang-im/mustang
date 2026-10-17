@@ -1,4 +1,4 @@
-import { QuickAccessToolbar, type QuickAccessCommand } from "../../Shared/QuickAccess/QuickAccess";
+import { QuickAccessToolbar, type QuickAccessCommand } from "../../../Shared/QuickAccess/QuickAccess";
 import { expect, test } from "vitest";
 
 function command(id: string, shownByDefault = false): QuickAccessCommand {

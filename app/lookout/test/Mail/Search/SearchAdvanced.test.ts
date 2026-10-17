@@ -1,11 +1,11 @@
 // @vitest-environment happy-dom
-import { MailSearch, SearchScope } from "../../Mail/Search/MailSearch";
-import { AdvancedSearchDraft, ReadStatus } from "../../Mail/Search/AdvancedSearchDraft";
-import { ReceivedRange, SizeRange } from "../../Mail/Search/SearchRanges";
-import { MailFilters, QuickFilter } from "../../Mail/MailFilters";
-import { searchOptions } from "../../Mail/Selected";
-import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
-import { quickSearch } from "../../../frontend/Mail/Selected";
+import { MailSearch, SearchScope } from "../../../Mail/Search/MailSearch";
+import { AdvancedSearchDraft, ReadStatus } from "../../../Mail/Search/AdvancedSearchDraft";
+import { ReceivedRange, SizeRange } from "../../../Mail/Search/SearchRanges";
+import { MailFilters, QuickFilter } from "../../../Mail/MailFilters";
+import { searchOptions } from "../../../Mail/Selected";
+import { globalSearchTerm } from "../../../../frontend/AppsBar/selectedApp";
+import { quickSearch } from "../../../../frontend/Mail/Selected";
 import { expect, test, beforeEach } from "vitest";
 import { get } from "svelte/store";
 

@@ -1,4 +1,4 @@
-import { RibbonCommands } from "../../Shared/Ribbon/RibbonCommands";
+import { RibbonCommands } from "../../../Shared/Ribbon/RibbonCommands";
 import { expect, test } from "vitest";
 
 const entries = [

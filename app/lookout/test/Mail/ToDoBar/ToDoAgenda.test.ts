@@ -1,4 +1,4 @@
-import { ToDoAgenda } from "../../Mail/ToDoBar/ToDoAgenda";
+import { ToDoAgenda } from "../../../Mail/ToDoBar/ToDoAgenda";
 import { expect, test } from "vitest";
 
 function event(start: Date, hours = 1, allDay = false) {

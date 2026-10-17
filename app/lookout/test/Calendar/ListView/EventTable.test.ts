@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
 // app first, to resolve the import cycle around Abstract/Account.ts
-import "../../../logic/app";
-import { Event } from "../../../logic/Calendar/Event";
-import { Participant } from "../../../logic/Calendar/Participant";
-import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
-import { EventTable, EventTableColumn, EventTableGrouping } from "../../Calendar/ListView/EventTable";
-import { CalendarSearch } from "../../Calendar/ListView/CalendarSearch";
+import "../../../../logic/app";
+import { Event } from "../../../../logic/Calendar/Event";
+import { Participant } from "../../../../logic/Calendar/Participant";
+import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
+import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
+import { EventTable, EventTableColumn, EventTableGrouping } from "../../../Calendar/ListView/EventTable";
+import { CalendarSearch } from "../../../Calendar/ListView/CalendarSearch";
 import { expect, test } from "vitest";
 
 function newEvent(title: string, day: number, location = ""): Event {
