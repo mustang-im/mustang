@@ -274,6 +274,7 @@
     }
     event.isOnline = false;
     event.onlineMeetingURL = null;
+    event.createOnlineMeetingWithAccount = null;
     // </copied>
     event.notifyObservers();
   }
