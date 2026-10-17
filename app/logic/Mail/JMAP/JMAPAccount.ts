@@ -3,6 +3,7 @@ import { JMAPFolder } from "./JMAPFolder";
 import { JMAPIdentity } from "./JMAPIdentity";
 import { JMAPSearchEMail } from "./JMAPSearchEMail";
 import type { EMail } from "../EMail";
+import type { JMAPEMail } from "./JMAPEMail";
 import { newAccountForProtocol } from "../AccountsList/MailAccounts";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
@@ -10,7 +11,7 @@ import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPUpload } from "./TJMAPGeneric";
-import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
+import type { TJMAPEMailHeaders, TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
 import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
 import { checkChangeError } from "./JMAPError";
@@ -46,6 +47,7 @@ export class JMAPAccount extends MailAccount {
   readonly stateLock = new Lock(); /** Protects syncState */
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  protected resyncRunOnce = new RunOnce<Map<JMAPFolder, ArrayColl<JMAPEMail>>>();
   protected pushAbort: AbortController | null = null;
   protected throttle = new Throttle(50, 1);
   logging = true;
@@ -462,6 +464,26 @@ export class JMAPAccount extends MailAccount {
         await this.storage.saveFolder(folder);
       }
     }
+  }
+
+  /** For when the server can't tell us the changes since our sync state:
+   * Compares the folders and all their emails with the server.
+   * @returns the new emails, per folder */
+  async resyncAllFolders(): Promise<Map<JMAPFolder, ArrayColl<JMAPEMail>>> {
+    return await this.resyncRunOnce.runOnce(async () => {
+      let current = await this.makeSingleCall("Email/get", {
+        accountId: this.accountID,
+        ids: [],
+      }) as TJMAPGetResponse<TJMAPEMailHeaders>;
+      await this.listFolders();
+      let newMessages = new Map<JMAPFolder, ArrayColl<JMAPEMail>>();
+      for (let folder of this.getAllFolders() as ArrayColl<JMAPFolder>) {
+        newMessages.set(folder, await folder.resyncMessages());
+      }
+      this.syncState.set("Email", current.state);
+      await this.save();
+      return newMessages;
+    });
   }
 
   async createToplevelFolder(name: string): Promise<JMAPFolder> {

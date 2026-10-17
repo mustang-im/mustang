@@ -88,17 +88,40 @@ export class JMAPFolder extends Folder {
     if (!this.account.syncState.has("Email")) {
       return await this.listAllMessages();
     }
+    return await this.fetchChangedMessagesForAllFolders();
+  }
 
-    try {
-      return await this.fetchChangedMessagesForAllFolders();
-    } catch (ex) {
-      if (ex.code == "cannotCalculateChanges") {
-        // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
-        this.account.syncState.delete("Email");
-        return await this.listAllMessages();
-      }
-      throw ex;
+  /** Compares all emails of this folder with the server, and removes those that are gone.
+   * @returns the new emails */
+  async resyncMessages(): Promise<ArrayColl<JMAPEMail>> {
+    await this.readFolder();
+    let newMessages = new ArrayColl<JMAPEMail>();
+    if (this.messages.isEmpty) {
+      return newMessages; // `listMessages()` will list it completely
     }
+    const batchSize = 200;
+    let onServer = new Set<string>();
+    for (let i = 0; i < this.countTotal; i += batchSize) {
+      let batch = await retryOnTransientError(() =>
+        this.fetchMessageList(i, batchSize));
+      for (let msg of batch.newMessages.concat(batch.updatedMessages)) {
+        onServer.add(msg.jmapID);
+      }
+      this.messages.addAll(batch.newMessages);
+      await this.saveNewMsgs(batch.newMessages);
+      await this.saveMsgUpdates(batch.updatedMessages);
+      newMessages.addAll(batch.newMessages);
+    }
+    let removed = this.messages.filterOnce(msg => msg.jmapID && !onServer.has(msg.jmapID));
+    for (let msg of removed) {
+      await msg.deleteMessageLocally();
+    }
+    await this.storage.saveFolderProperties(this);
+    return newMessages;
+  }
+
+  async fullResync(): Promise<void> {
+    await this.resyncMessages();
   }
 
   protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
@@ -150,6 +173,19 @@ export class JMAPFolder extends Folder {
    * @returns new messages of *this* folder
    */
   async fetchChangedMessagesForAllFolders(): Promise<ArrayColl<JMAPEMail>> {
+    try {
+      return await this.fetchChangesForAllFolders();
+    } catch (ex) {
+      if (ex.code != "cannotCalculateChanges") {
+        throw ex;
+      }
+      // Our sync state is too old <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+      let newMessages = await this.account.resyncAllFolders();
+      return newMessages.get(this) ?? new ArrayColl<JMAPEMail>();
+    }
+  }
+
+  protected async fetchChangesForAllFolders(): Promise<ArrayColl<JMAPEMail>> {
     assert(this.account.syncState.has("Email"), "No sync state");
     let lock = await this.account.stateLock.lock();
     try {
