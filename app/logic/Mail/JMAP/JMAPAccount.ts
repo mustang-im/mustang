@@ -543,6 +543,7 @@ export class JMAPAccount extends MailAccount {
     let sentFolder = email.folder ??
       this.getSpecialFolder(SpecialFolder.Sent);
 
+    email.isRead = true;
     await outboxFolder.addMessage(email);
 
     let recipients = new ArrayColl<PersonUID>();
