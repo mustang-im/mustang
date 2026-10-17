@@ -32,7 +32,6 @@
   import { Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
   import { ContactColumns } from "./ContactColumns";
-  import { ContactSelection } from "../Views/ContactSelection";
   import { ObservedItems } from "../../Shared/ObservedItems";
   import PersonMenu from "../PersonPage/PersonMenu.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
@@ -48,9 +47,19 @@
   $: shownContacts = ObservedItems.of(contacts);
   $: selectedContact = $selectedContacts.first ?? null;
 
+  // <copied from="BusinessCardView.svelte">
   function select(event: MouseEvent, contact: Contact) {
-    ContactSelection.click(event, contact, selectedContacts);
+    if (event.ctrlKey || event.metaKey) {
+      if (selectedContacts.contains(contact)) {
+        selectedContacts.remove(contact);
+      } else {
+        selectedContacts.add(contact);
+      }
+      return;
+    }
+    selectedContacts.replaceAll([contact]);
   }
+  // </copied>
 </script>
 
 <style>
