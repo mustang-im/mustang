@@ -148,11 +148,11 @@
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { ImportExportFlow, type ImportExportAction, type ExportFileType, type ImportProgram } from "./ImportExportFlow";
-  import { AccountLabels } from "../Accounts/AccountLabels";
+  import { AccountLabels } from "../Shared/AccountLabels";
   import { SettingsDialogs } from "../SettingsDialogs";
   import { appName } from "../../../logic/build";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
-  import ProgressBar from "../ProgressBar.svelte";
+  import ProgressBar from "../Shared/ProgressBar.svelte";
   import ProgramIcon from "lucide-svelte/icons/app-window";
   import { appGlobal } from "../../../logic/app";
   import { catchErrors } from "../../../frontend/Util/error";

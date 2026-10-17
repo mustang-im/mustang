@@ -61,7 +61,7 @@
 
 <script lang="ts">
   import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./Ribbon";
-  import { backstageState } from "../../Settings/BackstageState";
+  import { backstageState } from "../../Settings/Backstage/BackstageState";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
   import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";

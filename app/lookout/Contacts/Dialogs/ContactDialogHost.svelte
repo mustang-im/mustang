@@ -15,7 +15,7 @@
 <script lang="ts">
   import { ContactDialogs } from "./ContactDialogs";
   import AddressBookPropertiesDialog from "./AddressBookPropertiesDialog.svelte";
-  import RenameDialog from "../../Settings/Accounts/RenameDialog.svelte";
+  import RenameDialog from "../../Settings/Shared/RenameDialog.svelte";
   import ShowColumnsDialog from "../../Calendar/ViewSettings/ShowColumnsDialog.svelte";
   import ContactViewSettingsDialog from "../Views/ContactViewSettingsDialog.svelte";
   import { ContactColumn, ContactColumns } from "../Views/ContactColumns";

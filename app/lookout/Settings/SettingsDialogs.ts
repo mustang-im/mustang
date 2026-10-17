@@ -4,7 +4,7 @@ import type { Calendar } from "../../logic/Calendar/Calendar";
 import type { MailIdentity } from "../../logic/Mail/MailIdentity";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
 import type { ImportExportAction } from "./ImportExport/ImportExportFlow";
-import type { FolderAccountKind } from "./Accounts/NewFolderAccountFlow";
+import type { FolderAccountKind } from "../Setup/NewFolderAccountFlow";
 import { writable } from "svelte/store";
 
 export type OptionsCategory = "general" | "mail" | "calendar" | "people" | "language" | "advanced" | "trust-center";

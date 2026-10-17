@@ -12,7 +12,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { AccountLabels } from "../Accounts/AccountLabels";
+  import { AccountLabels } from "../Shared/AccountLabels";
   import { SettingsDialogs } from "../SettingsDialogs";
   import AccountIcon from "lucide-svelte/icons/mail";
 

@@ -14,7 +14,7 @@
   import { CalendarDialogs } from "./CalendarDialogs";
   import CalendarPropertiesDialog from "./CalendarPropertiesDialog.svelte";
   import OpenCalendarDialog from "./OpenCalendarDialog.svelte";
-  import RenameDialog from "../../Settings/Accounts/RenameDialog.svelte";
+  import RenameDialog from "../../Settings/Shared/RenameDialog.svelte";
   import { t } from "../../../l10n/l10n";
   import ViewSettingsDialog from "../ViewSettings/ViewSettingsDialog.svelte";
 

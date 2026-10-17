@@ -81,7 +81,7 @@
   import SettingsRoutes from "../../frontend/Settings/SettingsRoutes.svelte";
   // #if [!WEBMAIL]
   import SetupRoutes from "../../frontend/Setup/SetupRoutes.svelte";
-  import FirstRun from "../Settings/Accounts/FirstRun.svelte";
+  import FirstRun from "../Setup/FirstRun.svelte";
   // #endif
   import OAuth2EmbeddedBrowser from "../../frontend/Shared/Auth/OAuth2EmbeddedBrowser.svelte";
   import { getParams } from "../../frontend/AppsBar/selectedApp";

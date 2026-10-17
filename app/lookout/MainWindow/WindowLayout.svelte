@@ -35,7 +35,7 @@
   import { selectedApp, sidebarApp, history, openApp } from "../../frontend/AppsBar/selectedApp";
   import { notifications } from "../../frontend/MainWindow/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
-  import { backstageState } from "../Settings/BackstageState";
+  import { backstageState } from "../Settings/Backstage/BackstageState";
   import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
   import { TitleBarSearch } from "./TitleBarSearch";
   import { RibbonModel } from "../Shared/Ribbon/Ribbon";
@@ -51,7 +51,7 @@
   import StatusBar from "./StatusBar.svelte";
   import NavRail from "../AppsBar/NavRail.svelte";
   import AppContentRoutes from "../AppsBar/AppContentRoutes.svelte";
-  import Backstage from "../Settings/Backstage.svelte";
+  import Backstage from "../Settings/Backstage/Backstage.svelte";
   import SettingsDialogHost from "../Settings/SettingsDialogHost.svelte";
   import MessageBoxHost from "../Shared/Dialog/MessageBoxHost.svelte";
   import NotificationBar from "../../frontend/MainWindow/NotificationBar.svelte";

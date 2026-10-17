@@ -42,7 +42,7 @@
 <script lang="ts">
   import { selectedMessage } from "../../../frontend/Mail/Selected";
   import { MessageActions } from "../../Mail/MessageActions";
-  import { backstageState } from "../BackstageState";
+  import { backstageState } from "./BackstageState";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
   import PrintIcon from "lucide-svelte/icons/printer";

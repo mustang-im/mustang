@@ -1,6 +1,6 @@
 {#if $dialog?.kind == "options" || $dialog?.kind == "account-settings" || $dialog?.kind == "change-account"}
   {#key $dialog}
-    <OptionsDialog selection={OptionsNavigation.selectionFor($dialog)} on:close={onClose} />
+    <SettingsApp selection={OptionsNavigation.selectionFor($dialog)} on:close={onClose} />
   {/key}
 {:else if $dialog?.kind == "trust-center"}
   <TrustCenterDialog page={$dialog.page} identity={$dialog.identity} on:close={onClose} />
@@ -20,12 +20,12 @@
 
 <script lang="ts">
   import { SettingsDialogs } from "./SettingsDialogs";
-  import OptionsDialog from "./Options/OptionsDialog.svelte";
-  import TrustCenterDialog from "./Options/TrustCenterDialog.svelte";
-  import { OptionsNavigation } from "./Options/OptionsNavigation";
+  import SettingsApp from "./Window/SettingsApp.svelte";
+  import TrustCenterDialog from "./TrustCenter/TrustCenterDialog.svelte";
+  import { OptionsNavigation } from "./Window/OptionsNavigation";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
-  import AddAccountDialog from "./Accounts/AddAccountDialog.svelte";
-  import NewFolderAccountDialog from "./Accounts/NewFolderAccountDialog.svelte";
+  import AddAccountDialog from "../Setup/Mail/AddAccountDialog.svelte";
+  import NewFolderAccountDialog from "../Setup/NewFolderAccountDialog.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";
   import ContactDialogHost from "../Contacts/Dialogs/ContactDialogHost.svelte";
 

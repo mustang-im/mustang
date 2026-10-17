@@ -18,7 +18,7 @@
         <span class="lo-secondary">{$t`No email account is set up yet.`}</span>
       {/if}
       <h2>{$t`License`}</h2>
-      <LicenseSection />
+      <License />
       <h2>{$t`${appName} Theme`}</h2>
       <ComboBox options={themeOptions} value={$theme.value} label={$t`${appName} Theme`} width="240px"
         onChange={value => { $theme.value = value; }} />
@@ -43,7 +43,7 @@
         title={$t`About ${appName}`} description={$t`Learn more about ${appName}, its version and copyright.`}
         onClick={() => { isAboutOpen = true; }} />
       <h2>{$t`Open-Source Licenses`}</h2>
-      <OpenSourceSection />
+      <OpenSource />
     </vbox>
   </hbox>
 </vbox>
@@ -60,9 +60,9 @@
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
   import BackstageTile from "./BackstageTile.svelte";
-  import AboutDialog from "./AboutDialog.svelte";
-  import LicenseSection from "./LicenseSection.svelte";
-  import OpenSourceSection from "./OpenSourceSection.svelte";
+  import AboutDialog from "../About/AboutDialog.svelte";
+  import License from "../License/Page/License.svelte";
+  import OpenSource from "../About/OpenSource.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
   import logo from "../../../frontend/asset/icon/general/logo.svg?raw";
   import UpdateIcon from "lucide-svelte/icons/refresh-cw";
