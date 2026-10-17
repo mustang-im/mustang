@@ -37,11 +37,12 @@
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let settings: ViewSettings;
   export let readingPanePosition: ReadingPanePosition;
-  export let onOK: (changes: Partial<ViewSettings>, readingPane: ReadingPanePosition) => void;
+  const dispatch = createEventDispatcher<{ change: { changes: Partial<ViewSettings>, readingPane: ReadingPanePosition } }>();
 
   let showInGroups = settings.showInGroups;
   let tighterSpacing = settings.tighterSpacing;
@@ -59,7 +60,7 @@
   ];
 
   function save() {
-    onOK({ showInGroups, tighterSpacing, previewLines, useCompactLayout, compactLayoutChars }, readingPane);
+    dispatch("change", { changes: { showInGroups, tighterSpacing, previewLines, useCompactLayout, compactLayoutChars }, readingPane });
   }
 </script>
 

@@ -18,17 +18,18 @@
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let settings: ViewSettings;
-  export let onOK: (changes: Partial<ViewSettings>) => void;
+  const dispatch = createEventDispatcher<{ change: Partial<ViewSettings> }>();
 
   const fieldOptions: ComboOption<ArrangeBy>[] = ArrangeFields.all().map(option => ({ value: option.id, label: option.label }));
   let field: ArrangeBy = settings.arrangeBy;
   let isAscending = MessageGrouping.isDescendingByDefault(field) == !!settings.reverseSort;
 
   function save() {
-    onOK({
+    dispatch("change", {
       arrangeBy: field,
       reverseSort: MessageGrouping.isDescendingByDefault(field) == isAscending,
     });

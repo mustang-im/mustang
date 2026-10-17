@@ -19,16 +19,16 @@
   </svelte:fragment>
 </Dialog>
 {#if open == "columns"}
-  <ShowColumnsDialog columns={draft.columns} onOK={columns => draft = { ...draft, columns }} on:close={closeSub} />
+  <ShowColumnsDialog columns={draft.columns} on:change={event => draft = { ...draft, columns: event.detail }} on:close={closeSub} />
 {:else if open == "group-by"}
-  <GroupByDialog settings={draft} onOK={changes => draft = { ...draft, ...changes }} on:close={closeSub} />
+  <GroupByDialog settings={draft} on:change={event => draft = { ...draft, ...event.detail }} on:close={closeSub} />
 {:else if open == "sort"}
-  <SortDialog settings={draft} onOK={changes => draft = { ...draft, ...changes }} on:close={closeSub} />
+  <SortDialog settings={draft} on:change={event => draft = { ...draft, ...event.detail }} on:close={closeSub} />
 {:else if open == "filter"}
   <FilterDialog on:close={closeSub} />
 {:else if open == "other"}
   <OtherSettingsDialog settings={draft} readingPanePosition={readingPane}
-    onOK={(changes, position) => { draft = { ...draft, ...changes }; readingPane = position; }}
+    on:change={event => { draft = { ...draft, ...event.detail.changes }; readingPane = event.detail.readingPane; }}
     on:close={closeSub} />
 {/if}
 

@@ -1,4 +1,4 @@
-<Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => onOK(shown)} width="620px" on:close>
+<Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => { dispatch("change", shown); }} width="620px" on:close>
   <hbox class="columns-editor">
     <vbox flex class="list-box">
       <span class="list-label">{$t`Available columns:`}</span>
@@ -39,10 +39,11 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import ListView from "../../Shared/Form/ListView.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let columns: Column[];
-  export let onOK: (columns: Column[]) => void;
+  const dispatch = createEventDispatcher<{ change: Column[] }>();
 
   let shown = [...columns];
   if (!shown.includes(Column.Subject)) {

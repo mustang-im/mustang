@@ -23,10 +23,11 @@
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let settings: ViewSettings;
-  export let onOK: (changes: Partial<ViewSettings>) => void;
+  const dispatch = createEventDispatcher<{ change: Partial<ViewSettings> }>();
 
   const fieldOptions: ComboOption<ArrangeBy | null>[] = [
     { value: null, label: gt`(none)` },
@@ -38,11 +39,11 @@
 
   function save() {
     if (isAutomatic) {
-      onOK({ groupBy: null, groupReverse: false, showInGroups: true });
+      dispatch("change", { groupBy: null, groupReverse: false, showInGroups: true });
     } else if (!field) {
-      onOK({ groupBy: null, groupReverse: false, showInGroups: false });
+      dispatch("change", { groupBy: null, groupReverse: false, showInGroups: false });
     } else {
-      onOK({
+      dispatch("change", {
         groupBy: field,
         groupReverse: MessageGrouping.isDescendingByDefault(field) == isAscending,
         showInGroups: true,

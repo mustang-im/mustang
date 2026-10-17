@@ -76,7 +76,7 @@
 {/if}
 {#if $openShowColumns}
   <ShowColumnsDialog columns={MailViewSettings.of($openShowColumns.folder).columns}
-    onOK={columns => MailViewSettings.change($openShowColumns.folder, { columns })}
+    on:change={event => MailViewSettings.change($openShowColumns.folder, { columns: event.detail })}
     on:close={() => $openShowColumns = null} />
 {/if}
 {#if $openApplyView}
