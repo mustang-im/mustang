@@ -26,9 +26,9 @@
     <ContextMenu bind:this={contextMenu}>
       {#if !$qatHidden.value}
         <MenuItem label={$qatPosition.value == "below" ? $t`Show Quick Access Toolbar Above the Ribbon` : $t`Show Quick Access Toolbar Below the Ribbon`}
-          onClick={() => QuickAccessToolbar.setPosition($qatPosition.value == "below" ? "above" : "below")} />
+          onClick={() => { $qatPosition.value = $qatPosition.value == "below" ? "above" : "below"; }} />
       {:else}
-        <MenuItem label={$t`Show Quick Access Toolbar`} onClick={() => QuickAccessToolbar.setHidden(false)} />
+        <MenuItem label={$t`Show Quick Access Toolbar`} onClick={() => { $qatHidden.value = false; }} />
       {/if}
       <MenuDivider />
       <MenuItem label={$t`Customize the Ribbon…`} onClick={() => $isCustomizing = true} />
@@ -72,7 +72,8 @@
   import { RibbonCustomization } from "./RibbonCustomization";
   import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
   import { get } from "svelte/store";
-  import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
+  import type { QuickAccessPosition } from "../QuickAccess/QuickAccess";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { setContext, onMount, onDestroy, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -84,8 +85,8 @@
   const tabs = ribbon.tabs;
   const selectedTab = ribbon.selectedTab;
   const layoutSetting = ribbon.layout;
-  const qatHidden = QuickAccessToolbar.isHidden;
-  const qatPosition = QuickAccessToolbar.position;
+  const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
+  const qatPosition = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
   const customization = RibbonCustomization.setting;
   const isCustomizing = ribbon.isCustomizing;
   let contextMenu: ContextMenu;

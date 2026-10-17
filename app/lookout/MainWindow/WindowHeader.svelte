@@ -40,9 +40,18 @@
   import { appName, webMail } from "../../logic/build";
   import SearchField from "../../frontend/Shared/SearchField.svelte";
   import MailSearchBox, { mailSearchInput } from "../Mail/Search/MailSearchBox.svelte";
-  import QuickAccessToolbar from "./QuickAccessToolbar.svelte";
-  import { QuickAccessToolbar as QuickAccess } from "../Shared/QuickAccess/QuickAccess";
-  import { MailQuickAccess } from "../Mail/MailQuickAccess";
+  import QuickAccessToolbar, { quickAccessCommands } from "./QuickAccessToolbar.svelte";
+  import type { QuickAccessCommand } from "../Shared/QuickAccess/QuickAccess";
+  import type { EMail } from "../../logic/Mail/EMail";
+  import { selectedMessages } from "../../frontend/Mail/Selected";
+  import { MessageActions } from "../Mail/MessageActions";
+  import SendReceiveIcon from "lucide-svelte/icons/refresh-cw";
+  import ReplyIcon from "lucide-svelte/icons/reply";
+  import ReplyAllIcon from "lucide-svelte/icons/reply-all";
+  import ForwardIcon from "lucide-svelte/icons/forward";
+  import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import PrintIcon from "lucide-svelte/icons/printer";
+  import { derived, get, writable } from "svelte/store";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
   import logo from "../../frontend/asset/icon/general/logo.svg?raw";
   import MinimizeIcon from "lucide-svelte/icons/minus";
@@ -52,7 +61,7 @@
   import { getOSName } from "../../frontend/Util/util";
   import { catchErrors } from "../../frontend/Util/error";
   import { rtlLocales } from "../../l10n/list";
-  import { t } from "../../l10n/l10n";
+  import { gt, t } from "../../l10n/l10n";
 
   $: isMail = !!$selectedApp && ($selectedApp == mailMustangApp || mailMustangApp.subApps.includes($selectedApp));
 
@@ -64,7 +73,34 @@
       searchField?.focus();
     }
   }
-  $: QuickAccess.commands.set(isMail ? MailQuickAccess.commands() : [MailQuickAccess.sendReceiveAll]);
+
+  const sendReceiveAll: QuickAccessCommand = {
+    id: "sendReceiveAll",
+    label: gt`Send/Receive All Folders`,
+    icon: SendReceiveIcon,
+    shortCutInfo: "F9",
+    shownByDefault: true,
+    run: () => MessageActions.sendReceiveAll(),
+  };
+  $: selection = $selectedMessages;
+  const selectedArray = writable<EMail[]>([]);
+  $: $selectedArray = $selection?.contents ?? [];
+  const noSelection = derived(selectedArray, messages => !messages.length && gt`Select a message first`);
+  const noSingle = derived(selectedArray, messages => messages.length != 1 && gt`Select one message first`);
+  const mailCommands: QuickAccessCommand[] = [
+    sendReceiveAll,
+    { id: "mail.reply", label: gt`Reply`, icon: ReplyIcon, shortCutInfo: "Ctrl+R", disabled: noSingle,
+      run: () => MessageActions.reply(get(selectedArray)[0]) },
+    { id: "mail.replyAll", label: gt`Reply All`, icon: ReplyAllIcon, shortCutInfo: "Ctrl+Shift+R", disabled: noSingle,
+      run: () => MessageActions.replyAll(get(selectedArray)[0]) },
+    { id: "mail.forward", label: gt`Forward`, icon: ForwardIcon, shortCutInfo: "Ctrl+F", disabled: noSingle,
+      run: () => MessageActions.forward(get(selectedArray)[0]) },
+    { id: "mail.delete", label: gt`Delete`, icon: DeleteIcon, shortCutInfo: "Del", disabled: noSelection,
+      run: () => MessageActions.delete(get(selectedArray)) },
+    { id: "mail.print", label: gt`Print`, icon: PrintIcon, shortCutInfo: "Ctrl+P", disabled: noSingle,
+      run: () => MessageActions.print(get(selectedArray)[0]) },
+  ];
+  $: $quickAccessCommands = isMail ? mailCommands : [sendReceiveAll];
 
   /* <copied from="../../frontend/MainWindow/WindowHeader.svelte"> */
   const mac = (!webMail && getOSName() == "macintosh") ? true : false;

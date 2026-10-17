@@ -15,22 +15,30 @@
       <MenuLabel label={$t`Customize Quick Access Toolbar`} />
       {#each $commands as command (command.id)}
         <MenuItem label={command.label} checkable
-          checked={QuickAccessToolbar.isShown(command, $chosenIDs.value)}
-          onClick={() => QuickAccessToolbar.toggle(command, $commands)} />
+          checked={$chosenIDs.value ? $chosenIDs.value.includes(command.id) : !!command.shownByDefault}
+          onClick={() => { $chosenIDs.value = QuickAccessToolbar.toggled(command, $commands, $chosenIDs.value); }} />
       {/each}
       <MenuDivider />
       {#if placement == "above"}
-        <MenuItem label={$t`Show Below the Ribbon`} onClick={() => QuickAccessToolbar.setPosition("below")} />
+        <MenuItem label={$t`Show Below the Ribbon`} onClick={() => { $position.value = "below"; }} />
       {:else}
-        <MenuItem label={$t`Show Above the Ribbon`} onClick={() => QuickAccessToolbar.setPosition("above")} />
+        <MenuItem label={$t`Show Above the Ribbon`} onClick={() => { $position.value = "above"; }} />
       {/if}
-      <MenuItem label={$t`Hide Quick Access Toolbar`} onClick={() => QuickAccessToolbar.setHidden(true)} />
+      <MenuItem label={$t`Hide Quick Access Toolbar`} onClick={() => { $isHidden.value = true; }} />
     </Menu>
   </hbox>
 {/if}
 
+<script lang="ts" context="module">
+  import type { QuickAccessCommand } from "../Shared/QuickAccess/QuickAccess";
+  import { writable } from "svelte/store";
+
+  export const quickAccessCommands = writable<QuickAccessCommand[]>([]);
+</script>
+
 <script lang="ts">
   import { QuickAccessToolbar, type QuickAccessPosition } from "../Shared/QuickAccess/QuickAccess";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import QuickAccessButton from "./QuickAccessButton.svelte";
   import Menu from "../Shared/Menu/Menu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
@@ -41,10 +49,10 @@
 
   export let placement: QuickAccessPosition;
 
-  const position = QuickAccessToolbar.position;
-  const isHidden = QuickAccessToolbar.isHidden;
-  const chosenIDs = QuickAccessToolbar.chosenIDs;
-  const commands = QuickAccessToolbar.commands;
+  const position = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
+  const isHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
+  const chosenIDs = getLocalStorage<string[] | null>("lookout.qat.commands", null);
+  const commands = quickAccessCommands;
 
   let customizeEl: HTMLButtonElement;
   let isMenuOpen = false;

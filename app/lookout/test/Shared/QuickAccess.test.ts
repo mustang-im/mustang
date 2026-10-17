@@ -9,8 +9,6 @@ const commands = [command("sendReceiveAll", true), command("reply"), command("de
 
 test("Without a choice, the default commands are shown", () => {
   expect(QuickAccessToolbar.shown(commands, null).map(shown => shown.id)).toEqual(["sendReceiveAll"]);
-  expect(QuickAccessToolbar.isShown(commands[0], null)).toBe(true);
-  expect(QuickAccessToolbar.isShown(commands[1], null)).toBe(false);
 });
 
 test("Chosen commands are shown in the order the user added them, unknown IDs are skipped", () => {
