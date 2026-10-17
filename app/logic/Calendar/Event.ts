@@ -198,7 +198,7 @@ export class Event extends Observable {
   onlineMeetingURL: string;
   @notifyChangedProperty
   isOnline = false;
-  /** When saving, if this and `isOnline` are set and `onlineMeetingURL` is not,
+  /** When saving, if this is set and `onlineMeetingURL` is not,
    * then use this account to create an online meeting and
    * put the URL in `onlineMeetingURL` */
   @notifyChangedProperty
@@ -612,7 +612,7 @@ export class Event extends Observable {
   }
 
   async createOnlineMeeting() {
-    if (!this.isOnline || this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
+    if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
       return;
     }
     this.onlineMeetingURL = await this.createOnlineMeetingWithAccount.createMeetingURL();
