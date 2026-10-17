@@ -8,7 +8,13 @@
   role="button"
   tabindex="0"
   aria-label={tooltip}
-  use:EventInteraction.attach={{ event, menus }}>
+  on:click={onClick}
+  on:dblclick={onDoubleClick}
+  on:contextmenu={onContextMenu}
+  on:keydown={onKeyDown}
+  on:focus={select}
+  on:pointerdown={onPointerDown}
+  bind:this={element}>
   <div class="lo-event-bar" />
   <div class="content">
     <span class="lo-event-title">{look.title}</span>
@@ -22,8 +28,10 @@
 <script lang="ts">
   import type { ScheduleItem } from "./ScheduleLayout";
   import { EventLook } from "../Event/EventLook";
-  import { EventInteraction } from "../Event/EventInteraction";
-  import { now, kCalendarMenus, type CalendarMenus } from "../selected";
+  import { CalendarActions } from "../CalendarActions";
+  import { openEvent } from "../../../frontend/Calendar/open";
+  import { catchErrors } from "../../../frontend/Util/error";
+  import { now, kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import "../Event/EventLook.css";
@@ -36,11 +44,57 @@
   export let height: number;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
+  let element: HTMLElement;
 
   $: event = item.event;
   $: calendar = $event.calendar;
   $: look = new EventLook($event, $calendar);
   $: tooltip = look.tooltip(getDateTimeLocale());
+
+  // <copied from="../DayView/EventContainer.svelte">, without dragging
+  function select() {
+    $selectedEvent = event;
+    $selectedSlots = null;
+  }
+
+  function onClick(mouseEvent: MouseEvent) {
+    mouseEvent.stopPropagation();
+    select();
+    $eventPeek = { event, anchor: element };
+  }
+
+  function onDoubleClick(mouseEvent: MouseEvent) {
+    mouseEvent.stopPropagation();
+    $eventPeek = null;
+    catchErrors(() => openEvent(event, true));
+  }
+
+  function onContextMenu(mouseEvent: MouseEvent) {
+    mouseEvent.preventDefault();
+    mouseEvent.stopPropagation();
+    select();
+    $eventPeek = null;
+    menus.openEventMenu(mouseEvent, event);
+  }
+
+  function onKeyDown(keyEvent: KeyboardEvent) {
+    if (keyEvent.key == "Enter") {
+      keyEvent.preventDefault();
+      keyEvent.stopPropagation();
+      $eventPeek = null;
+      catchErrors(() => openEvent(event, true));
+    } else if (keyEvent.key == " ") {
+      keyEvent.preventDefault();
+      select();
+      $eventPeek = { event, anchor: element };
+    }
+  }
+
+  function onPointerDown(pointerEvent: PointerEvent) {
+    pointerEvent.stopPropagation();
+    CalendarActions.commitInlineTitle();
+  }
+  // </copied>
 </script>
 
 <style>

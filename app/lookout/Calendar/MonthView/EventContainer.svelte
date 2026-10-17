@@ -1,6 +1,7 @@
 <div class="event-bar lo-event status-{look.status} {variant}"
   class:past={look.isPast($now)}
   class:selected={$selectedEvent == event}
+  class:dragging={isDragging}
   class:continues-before={continuesBefore}
   class:continues-after={continuesAfter}
   class:timed={showStartTime}
@@ -9,7 +10,16 @@
   role="button"
   tabindex="0"
   aria-label={tooltip}
-  use:EventInteraction.attach={{ event, menus, startDrag }}>
+  on:click={onClick}
+  on:dblclick={onDoubleClick}
+  on:contextmenu={onContextMenu}
+  on:keydown={onKeyDown}
+  on:focus={select}
+  on:pointerdown={onPointerDown}
+  on:pointermove={onPointerMove}
+  on:pointerup={onPointerUp}
+  on:pointercancel={endDrag}
+  bind:this={element}>
   <div class="lo-event-bar" />
   <div class="content">
     {#if continuesBefore}
@@ -29,9 +39,11 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventLook } from "../Event/EventLook";
-  import { EventInteraction } from "../Event/EventInteraction";
+  import { CalendarActions } from "../CalendarActions";
+  import { openEvent } from "../../../frontend/Calendar/open";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { EventDrag } from "../EventDrag";
-  import { now, kCalendarMenus, type CalendarMenus } from "../selected";
+  import { now, kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import ContinuesBeforeIcon from "lucide-svelte/icons/chevron-left";
@@ -46,6 +58,10 @@
   export let continuesAfter = false;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
+  let element: HTMLElement;
+  let drag: EventDrag | null = null;
+  let wasDragged = false;
+  let isDragging = false;
 
   $: calendar = $event.calendar;
   $: look = new EventLook($event, $calendar);
@@ -55,6 +71,95 @@
   function startDrag(pointerEvent: PointerEvent): EventDrag | null {
     return event.isEditable ? new EventDrag(event, "move-days", pointerEvent) : null;
   }
+
+  // <copied from="../DayView/EventContainer.svelte">
+  function select() {
+    $selectedEvent = event;
+    $selectedSlots = null;
+  }
+
+  function onClick(mouseEvent: MouseEvent) {
+    mouseEvent.stopPropagation();
+    if (wasDragged) {
+      wasDragged = false;
+      return;
+    }
+    select();
+    $eventPeek = { event, anchor: element };
+  }
+
+  function onDoubleClick(mouseEvent: MouseEvent) {
+    mouseEvent.stopPropagation();
+    $eventPeek = null;
+    catchErrors(() => openEvent(event, true));
+  }
+
+  function onContextMenu(mouseEvent: MouseEvent) {
+    mouseEvent.preventDefault();
+    mouseEvent.stopPropagation();
+    select();
+    $eventPeek = null;
+    menus.openEventMenu(mouseEvent, event);
+  }
+
+  function onKeyDown(keyEvent: KeyboardEvent) {
+    if (keyEvent.key == "Enter") {
+      keyEvent.preventDefault();
+      keyEvent.stopPropagation();
+      $eventPeek = null;
+      catchErrors(() => openEvent(event, true));
+    } else if (keyEvent.key == " ") {
+      keyEvent.preventDefault();
+      select();
+      $eventPeek = { event, anchor: element };
+    }
+  }
+
+  function onPointerDown(pointerEvent: PointerEvent) {
+    pointerEvent.stopPropagation();
+    CalendarActions.commitInlineTitle();
+    wasDragged = false;
+    if (pointerEvent.button != 0) {
+      return;
+    }
+    drag = startDrag(pointerEvent);
+    if (drag) {
+      element.setPointerCapture(pointerEvent.pointerId);
+    }
+  }
+
+  function onPointerMove(pointerEvent: PointerEvent) {
+    if (!drag) {
+      return;
+    }
+    drag.move(pointerEvent);
+    if (drag.hasMoved) {
+      isDragging = true;
+      $eventPeek = null;
+      drag.preview(element);
+    }
+  }
+
+  function endDrag(): EventDrag | null {
+    let finishedDrag = drag;
+    drag = null;
+    finishedDrag?.endPreview(element);
+    isDragging = false;
+    return finishedDrag;
+  }
+
+  function onPointerUp() {
+    let finishedDrag = endDrag();
+    if (!finishedDrag?.hasMoved) {
+      return;
+    }
+    wasDragged = true;
+    if (finishedDrag.changesTime) {
+      let { start, end } = finishedDrag.newTimes();
+      catchErrors(() => CalendarActions.changeTime(event, start, end));
+    }
+  }
+  // </copied>
 </script>
 
 <style>
