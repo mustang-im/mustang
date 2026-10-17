@@ -99,6 +99,6 @@ export class ComposerEncryption {
   }
 
   static openTrustCenter(identity: MailIdentity) {
-    SettingsDialogs.openTrustCenter("email-security", identity);
+    SettingsDialogs.openTrustCenter(identity);
   }
 }

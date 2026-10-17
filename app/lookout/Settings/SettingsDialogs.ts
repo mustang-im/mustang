@@ -9,7 +9,6 @@ import { openApp, selectedApp } from "../../frontend/AppsBar/selectedApp";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { get, writable } from "svelte/store";
 
-export type TrustCenterPage = "email-security";
 export type ImportExportAction = "export" | "import-vcard" | "import-ical" | "import-program";
 
 export type SettingsDialog =
@@ -33,7 +32,7 @@ export class SettingsDialogs {
     SettingsDialogs.open({ kind: "account", account, categoryID });
   }
 
-  static openTrustCenter(page: TrustCenterPage = "email-security", identity: MailIdentity = null) {
+  static openTrustCenter(identity: MailIdentity = null) {
     selectedIdentity.set(identity);
     SettingsDialogs.openOptions("trust-center");
   }
