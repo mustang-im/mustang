@@ -12,7 +12,7 @@
     <div class="row" style="grid-template-columns: {columns}">
       {#each groups as group, g}
         {#each range.days as day, d}
-          <DayHeader {day} column={firstColumnOf(g) + d} calendar={group.calendar} isToday={CurrentTime.isToday(day, $now)} {onOpenDay} />
+          <DayHeader {day} column={firstColumnOf(g) + d} calendar={group.calendar} isToday={day.toDateString() == $now.toDateString()} {onOpenDay} />
         {/each}
       {/each}
     </div>
@@ -45,8 +45,8 @@
       {#each range.days as day, d}
         <DayColumn {day} column={firstColumnOf(g) + d} dayIndex={d} group={g} events={group.timed} calendar={group.calendar}
           workingHours={$groupWorkingHours[g]} {pxPerMinute} {timeScale}
-          isToday={CurrentTime.isToday(day, $now)}
-          showsPastTimeLine={showsToday && CurrentTime.isBeforeToday(day, $now)}
+          isToday={day.toDateString() == $now.toDateString()}
+          showsPastTimeLine={showsToday && day.getTime() < new Date($now).setHours(0, 0, 0, 0)}
           visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} onScrollToMinute={scrollToMinute} />
       {/each}
     {/each}
@@ -68,10 +68,9 @@
   import type { CalendarRange } from "../View/CalendarRange";
   import { TimeColumnLayout } from "../TimeGrid/TimeColumnLayout";
   import { EventLook } from "../Event/EventLook";
-  import { CurrentTime } from "../View/CurrentTime";
   import { WorkingHours } from "../View/WorkingHours";
   import { TimeZoneRuler } from "../TimeZones";
-  import { eventPeek } from "../selected";
+  import { now, eventPeek } from "../selected";
   import { selectedDate, shownWorkHours } from "../../../frontend/Calendar/selected";
   import DayHeader from "./DayHeader.svelte";
   import AllDayEvents from "./AllDayEvents.svelte";
@@ -91,7 +90,6 @@
 
   const kSlotHeight = 24;
   const kRulerWidth = 56;
-  const now = CurrentTime.minute;
   const rulerSettings = TimeZoneRuler.rulers;
   const shownWorkingHours = WorkingHours.ofAll(shownWorkHours);
 

@@ -52,9 +52,8 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { TimeColumnLayout } from "../TimeGrid/TimeColumnLayout";
   import type { WorkingHours } from "../View/WorkingHours";
-  import { CurrentTime } from "../View/CurrentTime";
   import { CalendarActions } from "../CalendarActions";
-  import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";
+  import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
@@ -82,7 +81,6 @@
   export let onScrollToMinute: (minute: number) => void;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const now = CurrentTime.minute;
 
   let columnEl: HTMLDivElement;
 

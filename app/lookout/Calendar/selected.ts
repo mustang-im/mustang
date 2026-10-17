@@ -3,7 +3,8 @@ import type { Calendar } from "../../logic/Calendar/Calendar";
 import { WorkingHours } from "./View/WorkingHours";
 import { shownCalendars } from "../../frontend/Calendar/selected";
 import { ShownWorkHours } from "../../frontend/Calendar/ShownWorkHours";
-import { writable } from "svelte/store";
+import { k1MinuteMS } from "../../frontend/Util/date";
+import { readable, writable } from "svelte/store";
 
 export interface SlotSelection {
   start: Date;
@@ -20,6 +21,19 @@ export interface EventPeek {
 export const selectedSlots = writable<SlotSelection | null>(null);
 export const eventPeek = writable<EventPeek | null>(null);
 export const inlineTitle = writable<string | null>(null);
+// <copied from="../../frontend/Calendar/CurrentTimeMarker.svelte">
+export const now = readable(new Date(), set => {
+  let timeout: ReturnType<typeof setTimeout>;
+  function update() {
+    let time = new Date();
+    timeout = setTimeout(update, k1MinuteMS - time.getSeconds() * 1000 - time.getMilliseconds());
+    time.setSeconds(0, 0);
+    set(time);
+  }
+  update();
+  return () => clearTimeout(timeout);
+});
+// </copied>
 export const workWeekHours = WorkingHours.ofAll(new ShownWorkHours(
   shownCalendars.filterObservable(calendar => !calendar.isOtherPersonsCalendar)));
 

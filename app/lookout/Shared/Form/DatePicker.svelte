@@ -17,7 +17,7 @@
       {#each week as day}
         <button class="day"
           class:other-month={!month.isInMonth(day)}
-          class:today={CurrentTime.isToday(day, $now)}
+          class:today={day.toDateString() == $now.toDateString()}
           class:selected={isSameDay(day, date)}
           disabled={isBefore(day, min)}
           title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
@@ -34,7 +34,7 @@
 
 <script lang="ts">
   import { DateNavigatorMonth } from "../../Calendar/FolderPane/DateNavigatorMonth";
-  import { CurrentTime } from "../../Calendar/View/CurrentTime";
+  import { now } from "../../Calendar/selected";
   import PreviousIcon from "lucide-svelte/icons/chevron-up";
   import NextIcon from "lucide-svelte/icons/chevron-down";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
@@ -44,7 +44,6 @@
   export let label: string;
   export let onPick: (day: Date) => void;
 
-  const now = CurrentTime.minute;
 
   let month = new DateNavigatorMonth(date ?? new Date());
 

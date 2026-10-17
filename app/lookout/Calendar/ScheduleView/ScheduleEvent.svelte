@@ -23,8 +23,7 @@
   import type { ScheduleItem } from "./ScheduleLayout";
   import { EventLook } from "../Event/EventLook";
   import { EventInteraction } from "../Event/EventInteraction";
-  import { CurrentTime } from "../View/CurrentTime";
-  import { kCalendarMenus, type CalendarMenus } from "../selected";
+  import { now, kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import "../Event/EventLook.css";
@@ -37,7 +36,6 @@
   export let height: number;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const now = CurrentTime.minute;
 
   $: event = item.event;
   $: calendar = $event.calendar;

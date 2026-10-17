@@ -42,8 +42,7 @@
   import { EventLook } from "../Event/EventLook";
   import { EventInteraction } from "../Event/EventInteraction";
   import { EventDrag, type EventDragMode } from "../EventDrag";
-  import { CurrentTime } from "../View/CurrentTime";
-  import { kCalendarMenus, type CalendarMenus } from "../selected";
+  import { now, kCalendarMenus, type CalendarMenus } from "../selected";
   import { CalendarCurrentView, CalendarSettings } from "../CalendarSettings";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
@@ -56,7 +55,6 @@
   export let snapMinutes: number;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const now = CurrentTime.minute;
   const currentView = CalendarSettings.currentView;
 
   $: event = item.event;

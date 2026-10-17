@@ -15,14 +15,12 @@
 
 <script lang="ts">
   import type { EventLook } from "../Event/EventLook";
-  import { CurrentTime } from "../View/CurrentTime";
+  import { now } from "../selected";
   import RecurringIcon from "lucide-svelte/icons/repeat";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import { t } from "../../../l10n/l10n";
 
   export let look: EventLook;
-
-  const now = CurrentTime.minute;
 </script>
 
 <style>

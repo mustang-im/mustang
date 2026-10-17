@@ -31,8 +31,7 @@
   import { EventLook } from "../Event/EventLook";
   import { EventInteraction } from "../Event/EventInteraction";
   import { EventDrag } from "../EventDrag";
-  import { CurrentTime } from "../View/CurrentTime";
-  import { kCalendarMenus, type CalendarMenus } from "../selected";
+  import { now, kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import ContinuesBeforeIcon from "lucide-svelte/icons/chevron-left";
@@ -47,7 +46,6 @@
   export let continuesAfter = false;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const now = CurrentTime.minute;
 
   $: calendar = $event.calendar;
   $: look = new EventLook($event, $calendar);

@@ -33,7 +33,7 @@
             {@const inRange = range.contains(day)}
             <button class="day"
               class:other-month={!shownMonth.isInMonth(day)}
-              class:today={CurrentTime.isToday(day, $now)}
+              class:today={day.toDateString() == $now.toDateString()}
               class:in-range={inRange}
               class:range-start={inRange && !range.contains(dayBefore(day))}
               class:range-end={inRange && !range.contains(dayAfter(day))}
@@ -65,7 +65,7 @@
 <script lang="ts">
   import type { CalendarRange } from "./View/CalendarRange";
   import { DateNavigatorMonth } from "./FolderPane/DateNavigatorMonth";
-  import { CurrentTime } from "./View/CurrentTime";
+  import { now } from "./selected";
   import { WeekNumber } from "../Util/date";
   import { shownCalendarEvents } from "../../frontend/Calendar/selected";
   import Menu from "../Shared/Menu/Menu.svelte";
@@ -82,7 +82,6 @@
   export let onSelectWeek: (firstDay: Date) => void;
   export let onSelectDays: (first: Date, last: Date) => void;
 
-  const now = CurrentTime.minute;
 
   let month = new DateNavigatorMonth(date);
   $: followDate(date);

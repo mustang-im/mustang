@@ -4,7 +4,7 @@
   {#each days as day, i}
     <div class="cell drop-day" style="grid-column: {i + 1}" data-day-index={weekIndex * 7 + i}
       class:other-month={!range.isInMonth(day)}
-      class:today={CurrentTime.isToday(day, $now)}
+      class:today={day.toDateString() == $now.toDateString()}
       class:selected={isSelected(day, $selectedSlots)}>
       <button class="add-button" title={$t`New appointment on this day`}
         on:click|stopPropagation={() => onAdd(day)} on:dblclick|stopPropagation>
@@ -18,7 +18,7 @@
     </div>
     <button class="day-number" style="grid-column: {i + 1}"
       class:other-month={!range.isInMonth(day)}
-      class:today={CurrentTime.isToday(day, $now)}
+      class:today={day.toDateString() == $now.toDateString()}
       class:first-of-month={day.getDate() == 1}
       title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
       on:click|stopPropagation={() => onOpenDay(day)}
@@ -49,10 +49,9 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { CalendarRange } from "../View/CalendarRange";
   import { MonthWeekLayout } from "../Month/MonthWeekLayout";
-  import { CurrentTime } from "../View/CurrentTime";
   import { CalendarActions } from "../CalendarActions";
   import { DayAtPoint } from "../View/DayAtPoint";
-  import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
+  import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
   import { selectedCalendar, selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
@@ -71,7 +70,6 @@
   export let onOpenDay: (day: Date) => void;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
-  const now = CurrentTime.minute;
   const kHeaderHeight = 24;
   const kLineHeight = 22;
 

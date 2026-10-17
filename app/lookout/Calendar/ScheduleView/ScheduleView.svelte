@@ -13,7 +13,7 @@
       {#each rulers as ruler, r}
         {#each ruler.dateSegments(range.days) as segment}
           <div class="date" class:primary={ruler.isPrimary}
-            class:today={ruler.isPrimary && CurrentTime.isToday(segment.time, $now)}
+            class:today={ruler.isPrimary && segment.time.toDateString() == $now.toDateString()}
             style="top: {r * kRulerHeight}px; left: {segment.startMinute * pxPerHour / 60}px; width: {(segment.endMinute - segment.startMinute) * pxPerHour / 60}px">
             <span class="date-label">{ruler.dateFormat.format(segment.time)}</span>
           </div>
@@ -42,9 +42,8 @@
   import type { CalendarRange } from "../View/CalendarRange";
   import { ScheduleLayout } from "./ScheduleLayout";
   import { TimeZoneRuler } from "../TimeZones";
-  import { CurrentTime } from "../View/CurrentTime";
   import { WorkingHours } from "../View/WorkingHours";
-  import { eventPeek } from "../selected";
+  import { now, eventPeek } from "../selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";
   import { t } from "../../../l10n/l10n";
@@ -56,7 +55,6 @@
 
   const kNameWidth = 160;
   const kSlotWidth = 56;
-  const now = CurrentTime.minute;
   const kRulerHeight = 52;
   const hours = Array.from({ length: 24 }, (_, hour) => hour);
   const rulerSettings = TimeZoneRuler.rulers;
