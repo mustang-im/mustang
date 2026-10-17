@@ -1,6 +1,7 @@
 import type { Event } from "../../logic/Calendar/Event";
 import type { Calendar } from "../../logic/Calendar/Calendar";
 import { ShownCalendars } from "./ShownCalendars";
+import { ShownWorkHours } from "./ShownWorkHours";
 import { appGlobal } from "../../logic/app";
 import { mergeColls, type Collection } from "svelte-collections";
 import { writable, type Writable } from "svelte/store";
@@ -14,6 +15,7 @@ export let startDate = writable(new Date());
 export type DateInterval = 0 | 1 | 2 | 5 | 7 | 31 | 28;
 
 export let shownCalendars = new ShownCalendars(appGlobal.calendars, selectedCalendar);
+export let shownWorkHours = new ShownWorkHours(shownCalendars);
 export let shownCalendarEvents: Collection<Event> =
   mergeColls(shownCalendars.map(cal => cal.eventsWithRecurrences)).sortBy(ev => ev.startTime);
 export let isCalendarListOpen = writable(false);
