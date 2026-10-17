@@ -483,19 +483,11 @@ export class JMAPFolder extends Folder {
         [`mailboxIds/${sourceFolderID}`]: action == "copy" ? true : null,
       };
     }
-    await this.account.makeSingleCall("Email/set", {
+    let response = await this.account.makeSingleCall("Email/set", {
       accountId: this.account.accountID,
       update: updates,
-    });
-
-    this.countTotal += messages.length;
-    let sourceFolder = messages.first.folder;
-    if (action == "move") {
-      sourceFolder.countTotal -= messages.length;
-      for (let sourceMsg of messages) {
-        await sourceMsg.deleteMessageLocally();
-      }
-    }
+    }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    checkChangeError(response);
 
     await this.listChangedMessages();
     // if move: listChangedMessages() checks all folders, so the source folder is automatically fetched as well.
