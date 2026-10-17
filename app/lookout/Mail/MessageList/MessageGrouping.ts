@@ -119,6 +119,11 @@ export class MessageGrouping<T extends ArrangeableMessage> {
     return this.groupBy ?? this.arrangeBy;
   }
 
+  get changesWithMessages(): boolean {
+    let changingFields = [ArrangeBy.Flag, ArrangeBy.Importance];
+    return changingFields.includes(this.arrangeBy) || changingFields.includes(this.groupBy);
+  }
+
   arrange(messages: T[], isSortedNewestFirst = false): MessageGroup<T>[] {
     let sorted = this.sort(messages, isSortedNewestFirst);
     let threads = this.asConversations ? MessageGrouping.threadsOf(sorted) : null;

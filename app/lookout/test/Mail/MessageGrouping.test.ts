@@ -127,6 +127,14 @@ test("Arrange by flag and importance: flagged / important first", () => {
   expect(byImportance.arrange([plain, flagged]).map(group => group.id)).toEqual(["importance-high", "importance-normal"]);
 });
 
+test("Arranging by flag or importance changes when a message changes", () => {
+  expect(new MessageGrouping<TestMessage>(ArrangeBy.Date, false, true, m => m.name, now).changesWithMessages).toBe(false);
+  expect(new MessageGrouping<TestMessage>(ArrangeBy.From, false, true, m => m.name, now, false, ArrangeBy.Size).changesWithMessages).toBe(false);
+  expect(new MessageGrouping<TestMessage>(ArrangeBy.Flag, false, true, m => m.name, now).changesWithMessages).toBe(true);
+  expect(new MessageGrouping<TestMessage>(ArrangeBy.Importance, false, false, m => m.name, now).changesWithMessages).toBe(true);
+  expect(new MessageGrouping<TestMessage>(ArrangeBy.Date, false, true, m => m.name, now, false, ArrangeBy.Flag).changesWithMessages).toBe(true);
+});
+
 test("Without groups: one group with all messages, sorted", () => {
   let a = msg(now, { baseSubject: "beta" });
   let b = msg(now, { baseSubject: "Alpha" });

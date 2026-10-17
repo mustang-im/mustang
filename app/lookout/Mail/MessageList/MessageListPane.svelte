@@ -144,6 +144,7 @@
   import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { MessageGrouping } from "./MessageGrouping";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import { ListName } from "./ListName";
   import { ArrangeFields, Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../View/ViewSettings";
   import { MailFilters, QuickFilter } from "../MailFilters";
@@ -170,6 +171,7 @@
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import type { ArrayColl, Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
   import { gt, t } from "../../../l10n/l10n";
 
   export let folder: Folder | null;
@@ -253,7 +255,8 @@
   $: todayStart, grouping = new MessageGrouping<EMail>($settings.arrangeBy, !!$settings.reverseSort, !!$settings.showInGroups,
     message => ListName.of(message), new Date(), !!$settings.showAsConversations,
     $settings.groupBy ?? null, !!$settings.groupReverse);
-  $: groups = grouping.arrange($listMessages.contents, listMessages instanceof EMailCollection);
+  $: arrangedMessages = grouping.changesWithMessages ? ObservedItems.of(listMessages) : derived(listMessages, messages => messages.contents);
+  $: groups = grouping.arrange($arrangedMessages, listMessages instanceof EMailCollection);
 
   $: hasFilter = $quickSearch && quickSearch.hasSearch();
   $: isUnreadOnly = $quickSearch.isRead === false;
