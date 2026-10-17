@@ -1,7 +1,7 @@
 <OptionsSection title={$t`Work time`}>
   <OptionsRow icon={WorkTimeIcon}>
     <grid class="work-time">
-      {#if $calendars.length > 1}
+      {#if !isCalendarFixed && $calendars.length > 1}
         <span class="first">{$t`Calendar:`}</span>
         <hbox class="wide">
           <ComboBox options={$calendars.contents.map(entry => ({ value: entry, label: entry.name }))}
@@ -55,6 +55,7 @@
 
   export let drafts: WorkHoursDrafts;
   export let calendar: Calendar = $selectedCalendar ?? appGlobal.calendars.first;
+  export let isCalendarFixed = false;
 
   const calendars = appGlobal.calendars;
   const times = new WorkTimeOptions();

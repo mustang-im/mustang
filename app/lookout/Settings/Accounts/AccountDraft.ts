@@ -53,6 +53,37 @@ export class ServerDraft {
     return this.authMethod != AuthMethod.None && this.authMethod != AuthMethod.OAuth2;
   }
 
+  get requiresAuthentication(): boolean {
+    return this.authMethod != AuthMethod.None;
+  }
+
+  set requiresAuthentication(required: boolean) {
+    if (required != this.requiresAuthentication) {
+      this.authMethod = required ? AuthMethod.Password : AuthMethod.None;
+    }
+  }
+
+  useDefaultPort() {
+    this.port = StandardPorts.portFor(this.protocol, this.tls) ?? this.port;
+  }
+
+  setTLS(tls: TLSSocketType) {
+    this.port = StandardPorts.afterTLSChange(this.protocol, tls, this.port);
+    this.tls = tls;
+  }
+
+  values(): object {
+    return {
+      hostname: this.hostname,
+      port: this.port,
+      tls: this.tls,
+      url: this.url,
+      username: this.username,
+      password: this.password,
+      authMethod: this.authMethod,
+    };
+  }
+
   apply() {
     let account = this.account;
     if (account instanceof TCPAccount && this.usesHostname) {
@@ -79,6 +110,7 @@ export class AccountDraft {
   emailAddress: string;
   readonly incoming: ServerDraft;
   readonly outgoing: ServerDraft | null;
+  protected readonly initialValues: string;
 
   constructor(account: Account) {
     this.account = account;
@@ -89,6 +121,21 @@ export class AccountDraft {
     this.outgoing = account instanceof MailAccount && account.outgoing
       ? new ServerDraft(account.outgoing)
       : null;
+    this.initialValues = JSON.stringify(this.values());
+  }
+
+  values(): object {
+    return {
+      name: this.name,
+      realname: this.realname,
+      emailAddress: this.emailAddress,
+      incoming: this.incoming.values(),
+      outgoing: this.outgoing?.values(),
+    };
+  }
+
+  get isChanged(): boolean {
+    return JSON.stringify(this.values()) != this.initialValues;
   }
 
   get isMailAccount(): boolean {

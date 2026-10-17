@@ -84,3 +84,41 @@ test("Standard ports follow the encryption, custom ports stay", () => {
   expect(StandardPorts.afterTLSChange("imap", TLSSocketType.STARTTLS, 1143)).toBe(1143);
   expect(StandardPorts.afterTLSChange("imap", TLSSocketType.TLS, null)).toBe(993);
 });
+
+test("The draft knows whether it was changed", () => {
+  let { account } = makeIMAPAccount();
+  let draft = new AccountDraft(account);
+  expect(draft.isChanged).toBe(false);
+  draft.outgoing.port = 2525;
+  expect(draft.isChanged).toBe(true);
+  draft.outgoing.port = 587;
+  expect(draft.isChanged).toBe(false);
+  draft.realname = "Fred Smith";
+  expect(draft.isChanged).toBe(true);
+});
+
+test("Outgoing authentication can be switched off and on again", () => {
+  let { account } = makeIMAPAccount();
+  let draft = new AccountDraft(account);
+  expect(draft.outgoing.requiresAuthentication).toBe(true);
+  draft.outgoing.requiresAuthentication = false;
+  expect(draft.outgoing.authMethod).toBe(AuthMethod.None);
+  draft.outgoing.requiresAuthentication = true;
+  expect(draft.outgoing.authMethod).toBe(AuthMethod.Password);
+  draft.outgoing.authMethod = AuthMethod.CRAMMD5;
+  draft.outgoing.requiresAuthentication = true;
+  expect(draft.outgoing.authMethod).toBe(AuthMethod.CRAMMD5);
+});
+
+test("Changing the encryption moves a standard port along, Use Defaults resets it", () => {
+  let { account } = makeIMAPAccount();
+  let draft = new AccountDraft(account);
+  draft.incoming.setTLS(TLSSocketType.STARTTLS);
+  expect(draft.incoming.tls).toBe(TLSSocketType.STARTTLS);
+  expect(draft.incoming.port).toBe(143);
+  draft.incoming.port = 1143;
+  draft.incoming.setTLS(TLSSocketType.TLS);
+  expect(draft.incoming.port).toBe(1143);
+  draft.incoming.useDefaultPort();
+  expect(draft.incoming.port).toBe(993);
+});

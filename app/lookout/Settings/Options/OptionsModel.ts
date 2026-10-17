@@ -1,5 +1,7 @@
 import { OptionValue } from "./OptionValue";
 import { WorkHoursDrafts } from "./WorkHoursDrafts";
+import { AccountDraft } from "../Accounts/AccountDraft";
+import type { Account } from "../../../logic/Abstract/Account";
 import { CalendarSettings } from "../../Calendar/CalendarSettings";
 import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
@@ -34,6 +36,7 @@ export class OptionsModel {
   readonly thirdTimeZoneLabel = this.add(OptionValue.plain(CalendarSettings.thirdTimeZoneLabel));
   readonly thirdTimeZone = this.add(OptionValue.plain(CalendarSettings.thirdTimeZone));
   readonly workHours = new WorkHoursDrafts();
+  protected readonly accountDrafts = new Map<Account, AccountDraft>();
   readonly showReminders = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "popup"));
   readonly reminderSound = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "sound"));
 
@@ -50,6 +53,23 @@ export class OptionsModel {
 
   isDefaultMailApp = false;
   makeDefaultMailApp = false;
+
+  accountDraftOf(account: Account): AccountDraft {
+    let draft = this.accountDrafts.get(account);
+    if (!draft) {
+      draft = new AccountDraft(account);
+      this.accountDrafts.set(account, draft);
+    }
+    return draft;
+  }
+
+  forgetAccount(account: Account) {
+    this.accountDrafts.delete(account);
+  }
+
+  get accountWithMissingField(): Account | null {
+    return [ ...this.accountDrafts.values() ].find(draft => draft.missingField)?.account ?? null;
+  }
 
   protected add<T, S>(option: OptionValue<T, S>): OptionValue<T, S> {
     this.options.push(option);
@@ -70,6 +90,11 @@ export class OptionsModel {
       option.save();
     }
     await this.workHours.save();
+    for (let draft of this.accountDrafts.values()) {
+      if (draft.isChanged) {
+        await draft.save();
+      }
+    }
     if (this.makeDefaultMailApp && !this.isDefaultMailApp) {
       this.isDefaultMailApp = !!await appGlobal.remoteApp.setAsDefaultApp("mailto");
     }

@@ -101,10 +101,22 @@
         {:else}
           <label for="manual-incoming">{$t`Incoming mail server:`}</label>
           <input id="manual-incoming" class="lo-text-field" bind:value={flow.draft.incoming.hostname} />
+          <label for="manual-incoming-port" class="indented">{$t`Port and encryption:`}</label>
+          <hbox class="port-row">
+            <input id="manual-incoming-port" class="lo-text-field port" type="number" min="1" max="65535" bind:value={flow.draft.incoming.port} />
+            <ComboBox options={tlsChoices} value={flow.draft.incoming.tls} label={$t`Encrypted connection of the incoming server`}
+              onChange={tls => { flow.draft.incoming.setTLS(tls); flow = flow; }} />
+          </hbox>
         {/if}
         {#if flow.draft.outgoing}
           <label for="manual-outgoing">{$t`Outgoing mail server (SMTP):`}</label>
           <input id="manual-outgoing" class="lo-text-field" bind:value={flow.draft.outgoing.hostname} />
+          <label for="manual-outgoing-port" class="indented">{$t`Port and encryption:`}</label>
+          <hbox class="port-row">
+            <input id="manual-outgoing-port" class="lo-text-field port" type="number" min="1" max="65535" bind:value={flow.draft.outgoing.port} />
+            <ComboBox options={tlsChoices} value={flow.draft.outgoing.tls} label={$t`Encrypted connection of the outgoing server`}
+              onChange={tls => { flow.draft.outgoing.setTLS(tls); flow = flow; }} />
+          </hbox>
         {/if}
         <span class="section">{$t`Logon Information`}</span>
         {#if flow.usesURL}
@@ -116,6 +128,20 @@
         {#if flow.draft.incoming.authMethod != AuthMethod.OAuth2}
           <label for="manual-password">{$t`Password:`}</label>
           <input id="manual-password" class="lo-text-field" type="password" bind:value={flow.draft.incoming.password} />
+        {/if}
+        {#if flow.draft.outgoing && !flow.usesURL}
+          <span />
+          <CheckBox label={$t`My outgoing server (SMTP) requires authentication`} bind:checked={flow.draft.outgoing.requiresAuthentication} />
+          {#if flow.draft.outgoing.requiresAuthentication}
+            <span class="indented">{$t`Log on using:`}</span>
+            <ComboBox options={outgoingAuthMethods} bind:value={flow.draft.outgoing.authMethod} label={$t`Log on using`} />
+            {#if flow.draft.outgoing.authMethod != AuthMethod.OAuth2}
+              <label for="manual-outgoing-username" class="indented">{$t`Outgoing user name:`}</label>
+              <input id="manual-outgoing-username" class="lo-text-field" bind:value={flow.draft.outgoing.username} />
+              <label for="manual-outgoing-password" class="indented">{$t`Outgoing password:`}</label>
+              <input id="manual-outgoing-password" class="lo-text-field" type="password" bind:value={flow.draft.outgoing.password} />
+            {/if}
+          {/if}
         {/if}
       </FormGrid>
     {:else if flow.step == AddAccountStep.Done}
@@ -136,9 +162,6 @@
     {/if}
   </vbox>
   <svelte:fragment slot="footer">
-    {#if flow.step == AddAccountStep.Manual && !flow.usesURL}
-      <DialogButton label={$t`More Settings…`} onClick={() => { isMoreSettingsOpen = true; }} />
-    {/if}
     <hbox flex />
     {#if flow.step == AddAccountStep.EMailAddress}
       <DialogButton label={$t`Connect`} primary onClick={connect}
@@ -160,9 +183,6 @@
   </svelte:fragment>
 </Dialog>
 
-{#if isMoreSettingsOpen && flow.draft}
-  <InternetEmailSettingsDialog draft={flow.draft} on:close={() => { isMoreSettingsOpen = false; }} />
-{/if}
 
 <script lang="ts">
   import { AddAccountFlow, AddAccountStep } from "./AddAccountFlow";
@@ -176,7 +196,7 @@
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import InternetEmailSettingsDialog from "./InternetEmailSettingsDialog.svelte";
+  import { TLSSocketType } from "../../../logic/Abstract/TCPAccount";
   import ProgressBar from "../ProgressBar.svelte";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
   import OAuth2EmbeddedBrowser from "../../../frontend/Shared/Auth/OAuth2EmbeddedBrowser.svelte";
@@ -206,8 +226,17 @@
     ...(flow.config?.protocol == "ews" ? [{ value: AuthMethod.NTLM, label: "NTLM" }] : []),
     { value: AuthMethod.OAuth2, label: $t`OAuth2 / MFA *=> Multi-factor authentication` },
   ];
+  $: tlsChoices = [
+    { value: TLSSocketType.Plain, label: $t`None` },
+    { value: TLSSocketType.TLS, label: "SSL/TLS" },
+    { value: TLSSocketType.STARTTLS, label: "STARTTLS" },
+  ];
+  $: outgoingAuthMethods = [
+    { value: AuthMethod.Password, label: $t`Password` },
+    { value: AuthMethod.OAuth2, label: $t`Sign-in page of the provider (OAuth2)` },
+    { value: AuthMethod.CRAMMD5, label: "CRAM-MD5" },
+  ];
   let showAdvanced = false;
-  let isMoreSettingsOpen = false;
 
   let hasThunderbird = false;
   onMount(() => {
@@ -421,6 +450,20 @@
     grid-column: 1 / -1;
     margin-block-start: 6px;
     font-weight: 600;
+  }
+  .indented {
+    padding-inline-start: 16px;
+  }
+  .port-row {
+    align-items: center;
+    gap: 8px;
+  }
+  .port-row :global(.lo-combobox) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  input.port {
+    width: 90px;
   }
   .instructions {
     margin: 0;
