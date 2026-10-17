@@ -78,7 +78,7 @@
 <Menu bind:isMenuOpen={isArrangeMenuOpen} anchor={arrangeEl} placement="bottom-end">
   {#if !isSearchResult}
     <MenuLabel label={$t`Filter`} />
-    <MenuItem label={$t`All Mail`} checked={!hasFilter} onClick={() => MailFilters.clear()} />
+    <MenuItem label={$t`All Mail`} checked={!hasFilter} onClick={clearFilter} />
     <MenuItem label={$t`Unread Mail`} checked={$quickSearch.isRead === false}
       onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
     <MenuItem label={$t`Flagged Mail`} checked={$quickSearch.isStarred}
@@ -90,7 +90,7 @@
   <ArrangeByMenuItems {folder} withLabel withSortOrder />
 </Menu>
 <Menu bind:isMenuOpen={isFilterMenuOpen} anchor={filterEl} placement="bottom-end">
-  <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={() => MailFilters.clear()} />
+  <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={clearFilter} />
   <MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={$quickSearch.isRead === false}
     onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
   <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={$quickSearch.isStarred}
@@ -104,9 +104,15 @@
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import { quickSearch } from "../../../frontend/Mail/Selected";
+  import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
+  import { catchErrors, showError } from "../../../frontend/Util/error";
   import { ArrangeFields, MailViewSettings } from "../ViewSettings/ViewSettings";
   import { MailFilters, QuickFilter } from "../MailFilters";
+  import { QuickFilterList } from "../QuickFilterList";
+  import { MailSearch } from "../Search/MailSearch";
+  import { searchOptions } from "../Selected";
   import ConnectButton from "./ConnectButton.svelte";
   import ArrangeByMenuItems from "../ViewSettings/ArrangeByMenuItems.svelte";
   import SortMenuItems from "../ViewSettings/SortMenuItems.svelte";
@@ -124,9 +130,12 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import type { ArrayColl, Collection } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 
   export let folder: Folder | null;
+  export let selectedMessages: ArrayColl<EMail>;
+  export let searchMessages: Collection<EMail> | null = null;
   export let isSearchResult = false;
 
   let arrangeEl: HTMLButtonElement;
@@ -145,11 +154,31 @@
   $: needsConnect = !!folderAccount && !$folderAccount.isLoggedIn;
   $: arrangeLabel = ArrangeFields.all().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
 
+  // <copied from="../../../frontend/Mail/LeftPane/FolderFooter.svelte">
+  $: quickSearch.folder = folder;
+  // </copied>
+  const quickFilterList = new QuickFilterList();
+  $: folderMessages = folder?.messages ?? null;
+  $: folder && $quickSearch && folderMessages && $folderMessages && $selectedMessages && catchErrors(startSearch, showError);
+  async function startSearch() {
+    searchMessages = await quickFilterList.filter(quickSearch, selectedMessages);
+  }
+
   $: hasFilter = $quickSearch && quickSearch.hasSearch();
   $: isUnreadOnly = $quickSearch.isRead === false;
   function setUnreadOnly(unreadOnly: boolean) {
     quickSearch.isRead = unreadOnly ? false : null;
   }
+
+  // <copied to="FilterMenuItems.svelte">
+  function clearFilter() {
+    quickSearch.reset();
+    if (MailFilters.isSearching()) {
+      $globalSearchTerm = null;
+      $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope };
+    }
+  }
+  // </copied>
 
   let isFolderSearchOpen = !!quickSearch.bodyText;
   $: showsFolderSearch = isFolderSearchOpen && !isSimplified && !isSearchResult;

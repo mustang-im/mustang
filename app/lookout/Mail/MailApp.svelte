@@ -18,6 +18,7 @@
     selectedFolder={$selectedFolder}
     bind:selectedMessage={$selectedMessage}
     selectedMessages={$selectedMessages}
+    bind:searchMessages
     isSearchResult={!!searchResults}
     onMoreResults={!isSearching && !!searchResults && searchResults.length > MailSearch.kLimit && !isShowingAllResults ? showAllResults : null}
     showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
@@ -96,7 +97,7 @@
   import { assert } from "../../logic/util/util";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages, quickSearch } from "../../frontend/Mail/Selected";
   import { getParams, globalSearchTerm, openApp } from "../../frontend/AppsBar/selectedApp";
-  import { catchErrors, showError } from "../../frontend/Util/error";
+  import { catchErrors } from "../../frontend/Util/error";
   import { statusBarContent, type StatusBarContent, type StatusBarView } from "../MainWindow/StatusBar.svelte";
   import { FolderPaneMode } from "./LeftPane/LeftPane.svelte";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
@@ -107,7 +108,6 @@
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "./MessageActions";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
-  import { QuickFilterList } from "./QuickFilterList";
   import { FolderTreeActions } from "./FolderPane/FolderTreeActions";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import HomeTab from "./Ribbon/HomeTab.svelte";
@@ -237,18 +237,10 @@
   }
   // </copied>
 
-  let filteredMessages: Collection<EMail> | null = null;
+  let searchMessages: Collection<EMail> | null = null;
   let folderMessages: Collection<EMail> | null = null;
   $: if ($selectedFolder?.messages != folderMessages) {
     folderMessages = $selectedFolder?.messages ?? null;
-  }
-  // <copied from="../../frontend/Mail/LeftPane/FolderFooter.svelte">
-  $: quickSearch.folder = $selectedFolder;
-  // </copied>
-  const quickFilterList = new QuickFilterList();
-  $: $selectedFolder && $quickSearch && $folderMessages && $selection && catchErrors(startQuickSearch, showError);
-  async function startQuickSearch() {
-    filteredMessages = await quickFilterList.filter(quickSearch, selection);
   }
   $: hasFilter = $quickSearch && quickSearch.hasSearch();
 
@@ -328,7 +320,7 @@
   }
 
   let listMessages: Collection<EMail> = new ArrayColl<EMail>();
-  $: updateListMessages(searchResults, hasFilter, filteredMessages, folderMessages);
+  $: updateListMessages(searchResults, hasFilter, searchMessages, folderMessages);
   function updateListMessages(results: Collection<EMail>, isFiltered: boolean, filtered: Collection<EMail>, all: Collection<EMail>) {
     let list = results ?? (isFiltered ? filtered : null) ?? all ?? new ArrayColl<EMail>();
     if (list != listMessages) {

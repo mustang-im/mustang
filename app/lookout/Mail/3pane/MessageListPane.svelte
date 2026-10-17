@@ -1,5 +1,5 @@
 <vbox flex class="message-list-pane lo-card" style:--message-columns={gridTemplate} bind:clientWidth={paneWidth}>
-  <FolderHeader {folder} {isSearchResult} />
+  <FolderHeader {folder} selectedMessages={selection} bind:searchMessages {isSearchResult} />
   {#if columns}
     <ColumnHeader {folder} settings={$settings} {columns} showsRecipients={showsRecipients}
       onResizing={(column, width) => onResizing(column, width)} />
@@ -55,6 +55,7 @@
   export let folder: Folder | null;
   export let listMessages: Collection<EMail>;
   export let selection: ArrayColl<EMail>;
+  export let searchMessages: Collection<EMail> | null = null;
   export let selectedMessage: EMail | null;
   export let isSearchResult = false;
   export let showFolder = false;

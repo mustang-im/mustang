@@ -21,6 +21,7 @@
               folder={selectedFolder}
               listMessages={messages}
               selection={selectedMessages}
+              bind:searchMessages
               bind:selectedMessage
               {isSearchResult}
               {onMoreResults}
@@ -80,6 +81,7 @@
   export let selectedFolder: Folder | null;
   export let selectedMessage: EMail | null;
   export let selectedMessages: ArrayColl<EMail>;
+  export let searchMessages: Collection<EMail> | null = null;
   export let isSearchResult = false;
   export let showFolder = false;
   export let highlight: string | null = null;

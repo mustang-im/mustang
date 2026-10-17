@@ -1,7 +1,7 @@
 import { quickSearch } from "../../frontend/Mail/Selected";
 import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
 import { MailSearch, SearchScope, type SearchOptions } from "./Search/MailSearch";
-import { isAdvancedSearchOpen, searchOptions } from "./Selected";
+import { searchOptions } from "./Selected";
 import { get } from "svelte/store";
 
 export enum QuickFilter {
@@ -56,10 +56,6 @@ export class MailFilters {
     }
   }
 
-  static hasFilter(): boolean {
-    return quickSearch.hasSearch() || MailFilters.isSearching();
-  }
-
   static searchInFolder(change: Partial<SearchOptions>) {
     if (MailFilters.isSearching()) {
       searchOptions.update(options => ({ ...options, ...change }));
@@ -73,20 +69,5 @@ export class MailFilters {
     quickSearch.reset();
     globalSearchTerm.set(null);
     searchOptions.set({ ...MailSearch.defaultOptions(), scope: SearchScope.CurrentFolder, ...carried, ...change });
-  }
-
-  static moreFilters() {
-    if (!MailFilters.isSearching()) {
-      MailFilters.searchInFolder({});
-    }
-    isAdvancedSearchOpen.set(true);
-  }
-
-  static clear() {
-    quickSearch.reset();
-    if (MailFilters.isSearching()) {
-      globalSearchTerm.set(null);
-      searchOptions.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope }));
-    }
   }
 }

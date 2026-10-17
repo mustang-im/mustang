@@ -20,11 +20,11 @@
     onClick={() => MailFilters.searchInFolder({ person: null, isOutgoing: isSentByMe ? null : true })} />
 </SubMenu>
 <MenuItem label={$t`More Filters…`} icon={MoreFiltersIcon}
-  onClick={() => MailFilters.moreFilters()} />
+  onClick={moreFilters} />
 {#if hasFilter}
   <MenuDivider />
   <MenuItem label={$t`Clear Filter`} icon={ClearIcon}
-    onClick={() => MailFilters.clear()} />
+    onClick={clearFilter} />
 {/if}
 
 <script lang="ts">
@@ -32,7 +32,8 @@
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { MailFilters, QuickFilter } from "../MailFilters";
-  import { searchOptions } from "../Selected";
+  import { MailSearch } from "../Search/MailSearch";
+  import { isAdvancedSearchOpen, searchOptions } from "../Selected";
   import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
@@ -49,13 +50,12 @@
   import ClearIcon from "lucide-svelte/icons/funnel-x";
   import { t } from "../../../l10n/l10n";
 
-  const searchTerm = globalSearchTerm;
   const tags = availableTags;
   // <copied from="../Ribbon/SearchTab.svelte">
   $: isSentTo = !!$searchOptions.person && $searchOptions.isOutgoing === true;
   $: isSentByMe = !$searchOptions.person && $searchOptions.isOutgoing === true;
   // </copied>
-  $: $quickSearch, $searchOptions, $searchTerm, updateStates();
+  $: $quickSearch, $searchOptions, $globalSearchTerm, updateStates();
   let isUnread = false;
   let hasAttachments = false;
   let isFlagged = false;
@@ -64,8 +64,25 @@
     isUnread = MailFilters.isActive(QuickFilter.Unread);
     hasAttachments = MailFilters.isActive(QuickFilter.Attachments);
     isFlagged = MailFilters.isActive(QuickFilter.Flagged);
-    hasFilter = MailFilters.hasFilter();
+    hasFilter = quickSearch.hasSearch() || MailFilters.isSearching();
   }
+
+  function moreFilters() {
+    if (!MailFilters.isSearching()) {
+      MailFilters.searchInFolder({});
+    }
+    $isAdvancedSearchOpen = true;
+  }
+
+  // <copied from="FolderHeader.svelte">
+  function clearFilter() {
+    quickSearch.reset();
+    if (MailFilters.isSearching()) {
+      $globalSearchTerm = null;
+      $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope };
+    }
+  }
+  // </copied>
 
   function onSentTo() {
     $openSearchPerson = {

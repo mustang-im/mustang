@@ -94,8 +94,4 @@ test("Date filters start a search in the current folder and take over the quick 
   expect(options.hasAttachment).toBe(true);
   expect(quickSearch.hasAttachment).toBeNull();
   expect(MailFilters.isSearching()).toBe(true);
-
-  MailFilters.clear();
-  expect(MailFilters.hasFilter()).toBe(false);
-  expect(get(globalSearchTerm)).toBeNull();
 });
