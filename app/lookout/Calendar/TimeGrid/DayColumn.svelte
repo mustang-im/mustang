@@ -240,13 +240,8 @@
   .off-hours {
     position: absolute;
     inset-inline: 0;
-    background-color: var(--lo-calendar-off-work-bg, color-mix(in srgb, black 4%, var(--lo-pane-bg)));
+    background-color: var(--lo-calendar-off-work-bg);
     pointer-events: none;
-  }
-  @media (prefers-color-scheme: dark) {
-    .off-hours {
-      background-color: var(--lo-calendar-off-work-bg, color-mix(in srgb, black 28%, var(--lo-pane-bg)));
-    }
   }
   .slot-selection {
     position: absolute;
