@@ -115,7 +115,6 @@
   import PersonsTableRow from "./PersonsTableRow.svelte";
   import ContactGroupRow from "./ContactGroupRow.svelte";
   import { ContactGrouping, type ContactGroupHeader, type ContactRow } from "../Views/ContactGrouping";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import GroupIcon from "lucide-svelte/icons/group";
   import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
   import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
@@ -142,6 +141,7 @@
   import AscendingIcon from "lucide-svelte/icons/chevron-up";
   import DescendingIcon from "lucide-svelte/icons/chevron-down";
   import { ArrayColl, type Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<Contact>;
@@ -159,7 +159,7 @@
   $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
   $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
   $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
-  $: listedContacts = ObservedItems.of(persons);
+  $: listedContacts = derived($persons.contents, () => persons.contents);
   let collapsed = new Set<string>();
   const rowItems = new ArrayColl<ContactRow>();
   $: rowItems.replaceAll(grouping ? grouping.rows($listedContacts, collapsed) : []);

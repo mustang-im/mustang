@@ -62,7 +62,6 @@
   import { contactSearchOptions, ContactSearchScope } from "./Person/Selected";
   import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { LetterIndex } from "./LetterIndex";
-  import { ObservedItems } from "../Shared/ObservedItems";
   import { appGlobal } from "../../logic/app";
   import { selectedPerson } from "../../frontend/Contacts/Person/Selected";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
@@ -84,7 +83,7 @@
   import NoSelectionIcon from "lucide-svelte/icons/contact-round";
   import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
   import { onDestroy } from "svelte";
-  import { get } from "svelte/store";
+  import { derived, get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
   let addressbooks = appGlobal.addressbooks;
@@ -118,19 +117,28 @@
   $: folderContacts = isDirectory
     ? new ArrayColl<Contact>()
     : $selectedAddressbook?.contacts ?? allContacts;
-  $: listedContacts = isSearch
-    ? ContactSearch.results(searchedAddressbooks, isCurrentFolder ? folderContacts : allContacts, $contactSearchOptions)
-    : folderContacts;
+  $: searchTerm = $contactSearchOptions.term?.trim();
+  $: listedContacts = !isSearch
+    ? folderContacts
+    : searchTerm
+      ? ContactSearch.search(searchedAddressbooks, searchTerm)
+      : isCurrentFolder ? folderContacts : allContacts;
+  $: refinedSearch = ContactSearch.hasRefiners($contactSearchOptions) ? $contactSearchOptions : null;
   $: compareContacts = view == ContactView.List || view == ContactView.Phone
     ? ContactColumns.compare($sort.value)
     : LetterIndex.compareByName;
-  $: sortedContacts = listedContacts.sort(compareContacts);
-  $: observedContacts = ObservedItems.of(sortedContacts);
-  $: sortAgainWhenChanged($observedContacts);
-  function sortAgainWhenChanged(contacts: Contact[]) {
-    if (contacts.some((contact, i) => i > 0 && compareContacts(contacts[i - 1], contact) > 0)) {
-      sortedContacts = listedContacts.sort(compareContacts);
+  $: contactsInOrder = derived($listedContacts.contents, () => listedContacts.contents
+    .filter(contact => !refinedSearch || ContactSearch.matchesRefiners(contact, refinedSearch))
+    .sort(compareContacts));
+  let sortedContacts = new ArrayColl<Contact>();
+  $: listedContacts, refinedSearch, compareContacts, sortedContacts = new ArrayColl<Contact>();
+  $: contactsInOrder && showInOrder(sortedContacts, $contactsInOrder);
+  function showInOrder(shown: ArrayColl<Contact>, contacts: Contact[]) {
+    if (contacts.length == shown.length && contacts.every((contact, i) => contact == shown.getIndex(i))) {
+      return;
     }
+    shown.clear();
+    shown.addAll(contacts);
   }
   $: shownAddressbook = $selectedAddressbook;
   $: searchPlaceholder = $shownAddressbook

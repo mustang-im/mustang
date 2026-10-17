@@ -36,10 +36,10 @@
   import { Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
   import { ContactColumns } from "./ContactColumns";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import PersonPicture from "./PersonPicture.svelte";
   import PersonMenu from "../PersonPage/PersonMenu.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<Contact>;
@@ -49,7 +49,7 @@
 
   let contextMenu: PersonMenu;
 
-  $: shownContacts = ObservedItems.of(persons);
+  $: shownContacts = derived($persons.contents, () => persons.contents);
   $: selected = $selectedPersons.first ?? null;
 
   // <copied to="CardView.svelte">

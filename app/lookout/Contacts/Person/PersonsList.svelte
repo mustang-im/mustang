@@ -28,12 +28,12 @@
 <script lang="ts">
   import type { Contact } from "../../../logic/Abstract/Contact";
   import { LetterIndex } from "../LetterIndex";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import { ContactActions } from "../ContactActions";
   import PersonLine from "./PersonLine.svelte";
   import PersonMenu from "../PersonPage/PersonMenu.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<Contact>;
@@ -45,7 +45,7 @@
   let scrollToItem: (contact: Contact) => void = null;
   let scrollToIndex: (index: number) => void = null;
 
-  $: observedContacts = ObservedItems.of(persons);
+  $: observedContacts = derived($persons.contents, () => persons.contents);
   $: letterIndex = new LetterIndex($observedContacts);
 
   function onInit(event: CustomEvent<{ scrollToIndex: (index: number) => void, scrollToItem: (contact: Contact) => void }>) {

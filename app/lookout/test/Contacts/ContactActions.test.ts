@@ -126,10 +126,10 @@ test("Search covers all given address books", () => {
 test("Search refiners keep persons with a phone number, an address or an email address", () => {
   let options = { ...ContactSearch.defaultOptions(ContactSearchScope.AllContactItems), hasPhoneNumber: true };
   expect(ContactSearch.hasRefiners(options)).toBe(true);
-  let withPhone = ContactSearch.results([addressbook], addressbook.contacts, options).contents.map(contact => contact.name);
+  let withPhone = addressbook.contacts.contents.filter(contact => ContactSearch.matchesRefiners(contact, options)).map(contact => contact.name);
   expect(withPhone).toEqual(["Carla Diaz"]);
   options = { ...options, hasPhoneNumber: false, hasEMailAddress: true };
-  let withEMail = ContactSearch.results([addressbook], addressbook.contacts, options).contents.map(contact => contact.name).sort();
+  let withEMail = addressbook.contacts.contents.filter(contact => ContactSearch.matchesRefiners(contact, options)).map(contact => contact.name).sort();
   expect(withEMail).toEqual(["Anna Schmidt", "Bert Meier"]);
   expect(ContactSearch.hasRefiners(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder))).toBe(false);
 });

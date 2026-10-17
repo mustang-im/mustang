@@ -29,15 +29,6 @@ export class ContactSearch {
     return mergeColls(results);
   }
 
-  static results(addressbooks: Addressbook[], allContacts: Collection<Contact>, options: ContactSearchOptions): Collection<Contact> {
-    let term = options.term?.trim();
-    let found = term ? ContactSearch.search(addressbooks, term) : allContacts;
-    if (!ContactSearch.hasRefiners(options)) {
-      return found;
-    }
-    return found.filterObservable(contact => ContactSearch.matchesRefiners(contact, options));
-  }
-
   static matchesRefiners(contact: Contact, options: ContactSearchOptions): boolean {
     if (!(contact instanceof Person)) {
       return false;
