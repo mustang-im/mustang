@@ -23,32 +23,6 @@
     <hbox flex class="spacer" />
     <slot name="tab-row-end" />
     <TellMe {ribbonEl} />
-    <hbox class="options" bind:this={optionsEl}>
-      <button class="options-button"
-        class:open={isOptionsOpen}
-        title={$t`Ribbon display options`}
-        aria-label={$t`Ribbon display options`}
-        aria-haspopup="menu"
-        on:click|stopPropagation={onToggleOptions}>
-        <OptionsIcon size="16" />
-      </button>
-    </hbox>
-    <Menu bind:isMenuOpen={isOptionsOpen} anchor={optionsEl} placement="bottom-end">
-      <MenuLabel label={$t`Ribbon layout`} />
-      <MenuItem label={$t`Classic ribbon`} checked={layout == "classic"}
-        onClick={() => ribbon.setLayout("classic")} />
-      <MenuItem label={$t`Simplified ribbon`} checked={layout == "simplified"}
-        onClick={() => ribbon.setLayout("simplified")} />
-      <MenuLabel label={$t`Show ribbon`} />
-      <MenuItem label={$t`Always show ribbon`} checked={!isCollapsed}
-        onClick={() => ribbon.setCollapsed(false)} />
-      <MenuItem label={$t`Show tabs only`} checked={isCollapsed}
-        onClick={() => ribbon.setCollapsed(true)} />
-      <MenuDivider />
-      <MenuItem label={$t`Show Quick Access Toolbar`} checkable checked={!$qatHidden.value}
-        onClick={() => QuickAccessToolbar.setHidden(!$qatHidden.value)} />
-      <MenuItem label={$t`Customize the Ribbon…`} onClick={() => { isCustomizing = true; }} />
-    </Menu>
     <ContextMenu bind:this={contextMenu}>
       {#if !$qatHidden.value}
         <MenuItem label={$qatPosition.value == "below" ? $t`Show Quick Access Toolbar Above the Ribbon` : $t`Show Quick Access Toolbar Below the Ribbon`}
@@ -57,7 +31,7 @@
         <MenuItem label={$t`Show Quick Access Toolbar`} onClick={() => QuickAccessToolbar.setHidden(false)} />
       {/if}
       <MenuDivider />
-      <MenuItem label={$t`Customize the Ribbon…`} onClick={() => { isCustomizing = true; }} />
+      <MenuItem label={$t`Customize the Ribbon…`} onClick={() => $isCustomizing = true} />
       <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} shortCutInfo="Ctrl+F1" onClick={onToggleCollapsed} />
     </ContextMenu>
   </hbox>
@@ -66,8 +40,8 @@
   </hbox>
   <QuickAccessToolbarView placement="below" />
   <KeyTipsLayer {ribbonEl} />
-  {#if isCustomizing}
-    <CustomizeRibbonDialog {ribbon} onClose={() => isCustomizing = false} />
+  {#if $isCustomizing}
+    <CustomizeRibbonDialog {ribbon} onClose={() => $isCustomizing = false} />
   {/if}
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">
@@ -88,9 +62,7 @@
 <script lang="ts">
   import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./Ribbon";
   import { backstageState } from "../../Settings/BackstageState";
-  import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";
-  import MenuLabel from "../Menu/MenuLabel.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
   import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";
   import KeyTipsLayer from "./KeyTipsLayer.svelte";
@@ -101,7 +73,6 @@
   import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
   import { get } from "svelte/store";
   import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
-  import OptionsIcon from "lucide-svelte/icons/chevron-down";
   import { setContext, onMount, onDestroy, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -116,7 +87,7 @@
   const qatHidden = QuickAccessToolbar.isHidden;
   const qatPosition = QuickAccessToolbar.position;
   const customization = RibbonCustomization.setting;
-  let isCustomizing = false;
+  const isCustomizing = ribbon.isCustomizing;
   let contextMenu: ContextMenu;
 
   $: shownTabs = $tabs.filter(tab => tab.isContextual || !RibbonCustomization.isTabHidden(ribbon.id, tab.label, $customization.value));
@@ -130,7 +101,6 @@
   $: isCollapsed = !!$collapsedSetting.value;
 
   let ribbonEl: HTMLElement;
-  let optionsEl: HTMLElement;
   let probeEl: HTMLElement;
 
   let probeObserver: ResizeObserver;
@@ -158,7 +128,6 @@
     }
     ribbon.setMetrics(metrics);
   }
-  let isOptionsOpen = false;
   let isTempOpen = false;
 
   function onFile() {
@@ -176,10 +145,6 @@
   function onToggleCollapsed() {
     isTempOpen = false;
     ribbon.setCollapsed(!isCollapsed);
-  }
-
-  function onToggleOptions() {
-    isOptionsOpen = !isOptionsOpen;
   }
 
   function onClickContent(event: MouseEvent) {
@@ -318,26 +283,6 @@
   }
   .collapsed:not(.temp-open) .tab.selected::after {
     display: none;
-  }
-  .options {
-    align-items: center;
-  }
-  .options-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    border-radius: var(--lo-radius-small);
-    background-color: transparent;
-    color: var(--lo-fg-secondary);
-  }
-  .options-button:hover,
-  .options-button.open {
-    background-color: var(--lo-hover-bg);
-    color: var(--lo-fg);
   }
 
   .ribbon-content {

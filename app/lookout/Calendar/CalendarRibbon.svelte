@@ -148,6 +148,7 @@
           onClick={() => { $readingPane.value = ReadingPanePosition.Off; }} />
       </RibbonMenuButton>
     </RibbonGroup>
+    <RibbonDisplayGroup />
   </RibbonTab>
   <slot />
 </Ribbon>
@@ -166,6 +167,7 @@
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Shared/Ribbon/RibbonGroup.svelte";
+  import RibbonDisplayGroup from "../Shared/Ribbon/RibbonDisplayGroup.svelte";
   import RibbonButton from "../Shared/Ribbon/RibbonButton.svelte";
   import RibbonToggleButton from "../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";

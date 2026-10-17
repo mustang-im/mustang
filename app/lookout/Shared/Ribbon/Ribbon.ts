@@ -33,6 +33,7 @@ export class RibbonModel {
   readonly collapsed = RibbonModel.collapsedSetting;
   readonly metrics: Writable<RibbonMetrics> = writable(null);
   readonly isSurveying: Writable<boolean> = writable(false);
+  readonly isCustomizing: Writable<boolean> = writable(false);
   protected surveys = 0;
 
   addTab(tab: RibbonTabModel) {
