@@ -145,7 +145,7 @@
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { MessageGrouping } from "./MessageGrouping";
   import { ObservedItems } from "../../Shared/ObservedItems";
-  import { ListName } from "../MessageList/ListName";
+  import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { ArrangeFields, Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
   import { MailFilters, QuickFilter } from "../MailFilters";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -249,10 +249,17 @@
     return indent + 4;
   }
 
+  /* <copied from="TableMessageListItem.svelte"> */
+  function listName(message: EMail): string {
+    let showsRecipient = [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(message.folder?.specialFolder);
+    return personDisplayName(showsRecipient ? message.contact : message.from) || message.from?.emailAddress || "";
+  }
+  /* </copied> */
+
   let grouping: MessageGrouping<EMail>;
   $: todayStart = new Date($now).setHours(0, 0, 0, 0);
   $: todayStart, grouping = new MessageGrouping<EMail>($settings.arrangeBy, !!$settings.reverseSort, !!$settings.showInGroups,
-    message => ListName.of(message), new Date(), !!$settings.showAsConversations,
+    listName, new Date(), !!$settings.showAsConversations,
     $settings.groupBy ?? null, !!$settings.groupReverse);
   $: arrangedMessages = grouping.changesWithMessages ? ObservedItems.of(listMessages) : derived(listMessages, messages => messages.contents);
   $: groups = grouping.arrange($arrangedMessages, listMessages instanceof EMailCollection);

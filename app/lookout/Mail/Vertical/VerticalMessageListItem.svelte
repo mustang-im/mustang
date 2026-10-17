@@ -123,7 +123,7 @@
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "../MessageList/MessageDates";
-  import { ListName } from "../MessageList/ListName";
+  import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { TextHighlight } from "../MessageList/TextHighlight";
   import { ObservedItems } from "../../Shared/ObservedItems";
   import ReadIcon from "lucide-svelte/icons/mail-open";
@@ -162,8 +162,11 @@
 
   $: tags = ObservedItems.of(message.tags);
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  $: senderName = $message && ListName.of(message);
-  $: senderTooltip = ListName.showsRecipient(message)
+  /* <copied from="../3pane/TableMessageListItem.svelte"> */
+  $: showsRecipient = [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(message.folder?.specialFolder);
+  $: senderName = $message && (personDisplayName(showsRecipient ? message.contact : message.from) || message.from?.emailAddress || "");
+  /* </copied> */
+  $: senderTooltip = showsRecipient
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
   $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;

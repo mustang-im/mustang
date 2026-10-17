@@ -46,7 +46,7 @@
     <button class="link" on:click={() => { $contentRendering.value = DisplayMode.HTML; }}>{$t`Display as HTML`}</button>
   </hbox>
 {/if}
-{#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && ExternalContent.hasExternalContent($message.rawHTMLDangerous)}
+{#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && hasExternalContent($message.rawHTMLDangerous)}
   <button type="button" class="info-bar clickable" bind:this={picturesBar}
     aria-haspopup="menu" on:click|stopPropagation={() => { isPicturesMenuOpen = !isPicturesMenuOpen; }}>
     <PicturesIcon size={16} />
@@ -62,7 +62,6 @@
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MessageActions } from "../MessageActions";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { ExternalContent } from "../ReadingPane/ExternalContent";
   import { MessageDates } from "../MessageList/MessageDates";
   import { MyReply } from "../../../logic/Mail/Store/MyReply";
   import { openEMailMessage } from "../../../frontend/Mail/open";
@@ -112,6 +111,14 @@
     }
   }
   // </copied>
+
+  function hasExternalContent(html: string | null | undefined): boolean {
+    if (!html) {
+      return false;
+    }
+    const kExternalReference = /<(img|image|video|audio|source|input|link|iframe|object|embed)\b[^>]*\s(src|srcset|href|poster|data)\s*=\s*["']?\s*(https?:)?\/\/|\sbackground\s*=\s*["']?\s*(https?:)?\/\/|url\(\s*["']?\s*(https?:)?\/\//i;
+    return kExternalReference.test(html);
+  }
 
   function onDownloadPictures() {
     $contentRendering.value = DisplayMode.HTMLWithExternal;

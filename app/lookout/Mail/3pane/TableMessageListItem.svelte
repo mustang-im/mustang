@@ -99,7 +99,6 @@
   import { ObservedItems } from "../../Shared/ObservedItems";
   import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "../MessageList/MessageDates";
-  import { ListName } from "../MessageList/ListName";
   import { TextHighlight } from "../MessageList/TextHighlight";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
@@ -133,8 +132,11 @@
 
   $: tags = ObservedItems.of(message.tags);
   $: to = message.to;
-  $: senderName = $message && ListName.of(message);
-  $: senderTooltip = ListName.showsRecipient(message)
+  /* <copied to="../Vertical/VerticalMessageListItem.svelte, MessageListPane.svelte"> */
+  $: showsRecipient = [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(message.folder?.specialFolder);
+  $: senderName = $message && (personDisplayName(showsRecipient ? message.contact : message.from) || message.from?.emailAddress || "");
+  /* </copied> */
+  $: senderTooltip = showsRecipient
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
   $: recipients = $to.contents.map(person => personDisplayName(person) || person.emailAddress).join("; ");
