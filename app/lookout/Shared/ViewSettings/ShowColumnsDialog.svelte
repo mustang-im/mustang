@@ -37,7 +37,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { ColumnOrder } from "../../Calendar/ViewSettings/ColumnOrder";
+  import { ColumnOrder } from "./ColumnOrder";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
   import ComboBox from "../Form/ComboBox.svelte";

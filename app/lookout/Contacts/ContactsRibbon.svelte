@@ -163,11 +163,11 @@
 {/if}
 {#if isShowColumnsOpen}
   <!-- <copied from="Person/PersonsTable.svelte"> -->
-  <ShowColumnsDialog columns={ContactColumns.shownColumns(ContactColumns.columnsSetting($view.value).value)}
+  <ShowColumnsDialog columns={ContactColumns.shownColumns($columnsSetting.value)}
     allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
     columnSets={ContactColumns.columnSets()}
-    onOK={columns => ContactColumns.setColumns($view.value, columns)} on:close={() => isShowColumnsOpen = false} />
+    onOK={columns => { $columnsSetting.value = ContactColumns.shownColumns(columns); }} on:close={() => isShowColumnsOpen = false} />
   <!-- </copied> -->
 {/if}
 
@@ -177,7 +177,8 @@
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { selectedAddressbook } from "./Person/Selected";
   import { ContactActions } from "./ContactActions";
-  import { ContactColumn, ContactColumns, ContactView } from "./Person/ContactColumns";
+  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import type { AddressbookSection } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
@@ -238,14 +239,15 @@
   export let resetView: () => void;
 
   const addressbooks = appGlobal.addressbooks;
-  const view = ContactColumns.view;
+  const view = getLocalStorage<ContactView>("lookout.contacts.view", ContactView.People);
   let renamingAddressbook: Addressbook | null = null;
   let propertiesAddressbook: Addressbook | null = null;
   let isViewSettingsOpen = false;
   let isShowColumnsOpen = false;
-  const sort = ContactColumns.sort;
-  const folderPane = ContactColumns.folderPane;
-  const readingPane = ContactColumns.readingPane;
+  const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
+  const folderPane = getLocalStorage<boolean>("lookout.contacts.folderPane", true);
+  const readingPane = getLocalStorage<boolean>("lookout.contacts.readingPane", true);
+  $: columnsSetting = getLocalStorage<ContactColumn[]>($view.value == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns($view.value));
   const arrangeColumns = [ContactColumn.FullName, ContactColumn.Company, ContactColumn.JobTitle, ContactColumn.EMail];
 
   $: contactViews = [
@@ -262,7 +264,7 @@
   $: phoneNumbers = selectedPerson ? selectedPerson.phoneNumbers.contents : [] as ContactEntry[];
 
   function setView(newView: ContactView) {
-    ContactColumns.view.value = newView;
+    view.value = newView;
   }
 
   function selectionIsIn(addressbook: Addressbook): boolean {
@@ -270,12 +272,12 @@
   }
 
   function arrangeBy(column: ContactColumn) {
-    ContactColumns.sort.value = { column, ascending: true };
+    sort.value = { column, ascending: true };
   }
 
   function reverseSort() {
-    let current = ContactColumns.sort.value;
-    ContactColumns.sort.value = { column: current.column, ascending: !current.ascending };
+    let current = sort.value;
+    sort.value = { column: current.column, ascending: !current.ascending };
   }
 
   async function syncAll() {

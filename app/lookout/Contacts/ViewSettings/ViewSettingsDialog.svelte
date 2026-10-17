@@ -1,38 +1,38 @@
 <Dialog title={view == ContactView.Phone ? $t`Advanced View Settings: Phone` : $t`Advanced View Settings: List`}
-  okLabel={$t`OK`} onOK={() => draft.save()} width="600px" on:close>
+  okLabel={$t`OK`} onOK={save} width="600px" on:close>
   <GroupBox label={$t`Description`}>
     <div class="rows">
       <DialogButton label={$t`Columns…`} classes="settings-button" onClick={() => { open = "columns"; }} />
-      <span class="summary" title={draft.columnsSummary}>{draft.columnsSummary}</span>
+      <span class="summary" title={columnsSummary}>{columnsSummary}</span>
       <DialogButton label={$t`Group By…`} classes="settings-button" onClick={() => { open = "group-by"; }} />
-      <span class="summary">{draft.groupBySummary}</span>
+      <span class="summary">{groupBySummary}</span>
       <DialogButton label={$t`Sort…`} classes="settings-button" onClick={() => { open = "sort"; }} />
-      <span class="summary">{draft.sortSummary}</span>
+      <span class="summary">{sortSummary}</span>
     </div>
   </GroupBox>
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`Reset Current View`} onClick={() => { draft = ContactViewDraft.defaults(view); }} />
+    <DialogButton label={$t`Reset Current View`} onClick={reset} />
   </svelte:fragment>
 </Dialog>
 {#if open == "columns"}
-  <ShowColumnsDialog columns={draft.columns} allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
+  <ShowColumnsDialog {columns} allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
     columnSets={ContactColumns.columnSets()}
-    onOK={columns => { draft.columns = columns; draft = draft; }} on:close={closeSub} />
+    onOK={chosen => columns = ContactColumns.shownColumns(chosen)} on:close={closeSub} />
 {:else if open == "group-by"}
   <SortDialog title={$t`Group By`} itemsLabel={$t`Group items by`}
     columnOptions={[ { value: kNoGrouping, label: $t`(none)` }, ...sortOptions ]}
-    column={draft.groupBy?.column ?? kNoGrouping} ascending={draft.groupBy?.ascending ?? true}
-    onOK={(column, ascending) => { draft.groupBy = column == kNoGrouping ? null : { column: column as ContactColumn, ascending }; draft = draft; }}
+    column={groupBy?.column ?? kNoGrouping} ascending={groupBy?.ascending ?? true}
+    onOK={(column, ascending) => { groupBy = column == kNoGrouping ? null : { column: column as ContactColumn, ascending }; }}
     on:close={closeSub} />
 {:else if open == "sort"}
-  <SortDialog columnOptions={sortOptions} column={draft.sort.column} ascending={draft.sort.ascending}
-    onOK={(column, ascending) => { draft.sort = { column, ascending }; draft = draft; }} on:close={closeSub} />
+  <SortDialog columnOptions={sortOptions} column={sort.column} ascending={sort.ascending}
+    onOK={(column, ascending) => { sort = { column, ascending }; }} on:close={closeSub} />
 {/if}
 
 <script lang="ts">
-  import { ContactColumn, ContactColumns, ContactView } from "../Person/ContactColumns";
-  import { ContactViewDraft } from "../Views/ContactViewDraft";
+  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "../Person/ContactColumns";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -42,14 +42,38 @@
 
   export let view: ContactView;
 
-  let draft = ContactViewDraft.fromSettings(view);
+  const columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
+  const sortSetting = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
+  const groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
+  let columns = ContactColumns.shownColumns(columnsSetting.value);
+  let sort = { ...sortSetting.value };
+  let groupBy = groupBySetting.value ? { ...groupBySetting.value } : null;
   let open: "columns" | "group-by" | "sort" | null = null;
   const kNoGrouping = "none";
   $: sortOptions = ContactColumns.columnSets().at(-1).columns
     .map(column => ({ value: column, label: ContactColumns.label(column) }));
 
+  $: columnsSummary = columns.map(column => ContactColumns.label(column)).join(", ");
+  $: sortLabel = ContactColumns.label(sort.column);
+  $: sortSummary = sort.ascending ? $t`${sortLabel} (ascending)` : $t`${sortLabel} (descending)`;
+  $: groupByLabel = groupBy ? ContactColumns.label(groupBy.column) : null;
+  $: groupBySummary = !groupBy ? $t`None`
+    : groupBy.ascending ? $t`${groupByLabel} (ascending)` : $t`${groupByLabel} (descending)`;
+
   function closeSub() {
     open = null;
+  }
+
+  function reset() {
+    columns = ContactColumns.shownColumns(ContactColumns.defaultColumns(view));
+    sort = { ...sortSetting.defaultValue };
+    groupBy = ContactColumns.defaultGroupBy(view);
+  }
+
+  function save() {
+    columnsSetting.value = ContactColumns.shownColumns(columns);
+    sortSetting.value = { ...sort };
+    groupBySetting.value = groupBy ? { ...groupBy } : null;
   }
 </script>
 

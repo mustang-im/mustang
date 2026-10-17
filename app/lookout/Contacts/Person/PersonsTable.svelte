@@ -90,7 +90,7 @@
   {#if headerColumn}
     <MenuItem label={$t`Remove This Column`} icon={RemoveIcon}
       disabled={headerColumn == ContactColumn.FullName && $t`The list needs the Full Name column`}
-      onClick={() => ContactColumns.removeColumn(view, headerColumn)} />
+      onClick={() => removeColumn(headerColumn)} />
   {/if}
   <MenuItem label={$t`Add Columns…`} icon={AddColumnsIcon} onClick={() => isShowColumnsOpen = true} />
   <MenuDivider />
@@ -98,11 +98,11 @@
 </ContextMenu>
 {#if isShowColumnsOpen}
   <!-- <copied to="../ContactsRibbon.svelte"> -->
-  <ShowColumnsDialog columns={ContactColumns.shownColumns(ContactColumns.columnsSetting(view).value)}
+  <ShowColumnsDialog columns={ContactColumns.shownColumns($columnsSetting.value)}
     allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
     columnSets={ContactColumns.columnSets()}
-    onOK={columns => ContactColumns.setColumns(view, columns)} on:close={() => isShowColumnsOpen = false} />
+    onOK={columns => { $columnsSetting.value = ContactColumns.shownColumns(columns); }} on:close={() => isShowColumnsOpen = false} />
   <!-- </copied> -->
 {/if}
 {#if isViewSettingsOpen}
@@ -131,7 +131,9 @@
   import ArrangeIcon from "lucide-svelte/icons/arrow-down-wide-narrow";
   import ReverseIcon from "lucide-svelte/icons/arrow-up-down";
   import FastList from "../../../frontend/Shared/FastList.svelte";
-  import { ContactColumn, ContactColumns, type ContactView } from "./ContactColumns";
+  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./ContactColumns";
+  import { ColumnOrder } from "../../Shared/ViewSettings/ColumnOrder";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import ShowColumnsDialog from "../../Shared/ViewSettings/ShowColumnsDialog.svelte";
   import ViewSettingsDialog from "../ViewSettings/ViewSettingsDialog.svelte";
   import RemoveIcon from "lucide-svelte/icons/x";
@@ -149,12 +151,13 @@
   export let columns: ContactColumn[];
   export let view: ContactView;
 
-  const sort = ContactColumns.sort;
+  const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
   let isShowColumnsOpen = false;
   let isViewSettingsOpen = false;
   $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
 
-  $: groupBySetting = ContactColumns.groupBySetting(view);
+  $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
+  $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
   $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
   $: listedContacts = ObservedItems.of(contacts);
   let collapsed = new Set<string>();
@@ -205,8 +208,14 @@
     $groupBySetting.value = $groupBySetting.value?.column == column ? null : { column, ascending: true };
   }
 
+  function removeColumn(column: ContactColumn) {
+    let order = new ColumnOrder(columnsSetting.value ?? [], ContactColumns.allColumns, ContactColumn.FullName);
+    order.remove(column);
+    columnsSetting.value = order.columns;
+  }
+
   function sortBy(column: ContactColumn) {
-    ContactColumns.sort.value = ContactColumns.toggledSort(ContactColumns.sort.value, column);
+    sort.value = ContactColumns.toggledSort(sort.value, column);
   }
 
   let draggedColumn: ContactColumn = null;
@@ -234,7 +243,9 @@
     if (draggedColumn && dropTarget) {
       let pos = columns.indexOf(column);
       let before = dropTarget.before ? column : columns[pos + 1] ?? null;
-      ContactColumns.moveColumn(view, draggedColumn, before);
+      let order = new ColumnOrder(columnsSetting.value ?? [], ContactColumns.allColumns, ContactColumn.FullName);
+      order.moveBefore(draggedColumn, before);
+      columnsSetting.value = order.columns;
     }
     draggedColumn = null;
     dropTarget = null;

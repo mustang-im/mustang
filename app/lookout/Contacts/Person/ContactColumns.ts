@@ -3,8 +3,7 @@ import { Person } from "../../../logic/Abstract/Person";
 import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
 import { ContactSlots } from "../PersonPage/ContactSlots";
 import { PreferredEntry } from "../PreferredEntry";
-import { ColumnOrder } from "../../Calendar/ViewSettings/ColumnOrder";
-import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+import { ColumnOrder } from "../../Shared/ViewSettings/ColumnOrder";
 import { gt } from "../../../l10n/l10n";
 
 export enum ContactColumn {
@@ -61,27 +60,8 @@ export interface ContactSort {
 }
 
 export class ContactColumns {
-  static readonly view = getLocalStorage<ContactView>("lookout.contacts.view", ContactView.People);
-  static readonly sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
-  static readonly folderPane = getLocalStorage<boolean>("lookout.contacts.folderPane", true);
-  static readonly readingPane = getLocalStorage<boolean>("lookout.contacts.readingPane", true);
-
-  static readonly listColumns = getLocalStorage<ContactColumn[]>("lookout.contacts.list.columns",
-    ContactColumns.defaultColumns(ContactView.List));
-  static readonly phoneColumns = getLocalStorage<ContactColumn[]>("lookout.contacts.phone.columns",
-    ContactColumns.defaultColumns(ContactView.Phone));
-
-  static readonly listGroupBy = getLocalStorage<ContactSort | null>("lookout.contacts.list.groupBy",
-    ContactColumns.defaultGroupBy(ContactView.List));
-  static readonly phoneGroupBy = getLocalStorage<ContactSort | null>("lookout.contacts.phone.groupBy",
-    ContactColumns.defaultGroupBy(ContactView.Phone));
-
   static defaultGroupBy(view: ContactView): ContactSort | null {
     return view == ContactView.List ? { column: ContactColumn.Company, ascending: true } : null;
-  }
-
-  static groupBySetting(view: ContactView) {
-    return view == ContactView.Phone ? ContactColumns.phoneGroupBy : ContactColumns.listGroupBy;
   }
 
   static defaultColumns(view: ContactView): ContactColumn[] {
@@ -97,28 +77,8 @@ export class ContactColumns {
     ];
   }
 
-  static columnsSetting(view: ContactView) {
-    return view == ContactView.Phone ? ContactColumns.phoneColumns : ContactColumns.listColumns;
-  }
-
   static shownColumns(stored: ContactColumn[]): ContactColumn[] {
     return new ColumnOrder(stored ?? [], ContactColumns.allColumns, ContactColumn.FullName).columns;
-  }
-
-  static setColumns(view: ContactView, columns: ContactColumn[]) {
-    ContactColumns.columnsSetting(view).value = ContactColumns.shownColumns(columns);
-  }
-
-  static removeColumn(view: ContactView, column: ContactColumn) {
-    let order = new ColumnOrder(ContactColumns.columnsSetting(view).value ?? [], ContactColumns.allColumns, ContactColumn.FullName);
-    order.remove(column);
-    ContactColumns.columnsSetting(view).value = order.columns;
-  }
-
-  static moveColumn(view: ContactView, column: ContactColumn, before: ContactColumn | null) {
-    let order = new ColumnOrder(ContactColumns.columnsSetting(view).value ?? [], ContactColumns.allColumns, ContactColumn.FullName);
-    order.moveBefore(column, before);
-    ContactColumns.columnsSetting(view).value = order.columns;
   }
 
   static get allColumns(): ContactColumn[] {

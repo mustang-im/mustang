@@ -60,7 +60,7 @@
   import { selectedAddressbook, selectedContact } from "./Person/Selected";
   import { ContactActions } from "./ContactActions";
   import { ContactSearch, ContactSearchScope } from "./ContactSearch";
-  import { ContactColumns, ContactView } from "./Person/ContactColumns";
+  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { LetterIndex } from "./LetterIndex";
   import { AddressbookSections } from "./AddressbookSections";
   import { ObservedItems } from "../Shared/ObservedItems";
@@ -68,6 +68,7 @@
   import { selectedPerson } from "../../frontend/Contacts/Person/Selected";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors } from "../../frontend/Util/error";
+  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { statusBarContent, type StatusBarContent } from "../MainWindow/StatusBar.svelte";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import ContactsRibbon from "./ContactsRibbon.svelte";
@@ -91,15 +92,15 @@
   let searchOnlyAddressbooks = appGlobal.searchOnlyAddressbooks;
   const allContacts = mergeColls(appGlobal.addressbooks.map(addressbook => addressbook.contacts)) as Collection<Contact>;
 
-  const viewSetting = ContactColumns.view;
-  const sort = ContactColumns.sort;
-  const folderPane = ContactColumns.folderPane;
-  const readingPane = ContactColumns.readingPane;
+  const viewSetting = getLocalStorage<ContactView>("lookout.contacts.view", ContactView.People);
+  const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
+  const folderPane = getLocalStorage<boolean>("lookout.contacts.folderPane", true);
+  const readingPane = getLocalStorage<boolean>("lookout.contacts.readingPane", true);
   const searchOptions = ContactSearch.options;
 
   $: view = Object.values(ContactView).includes($viewSetting.value) ? $viewSetting.value : ContactView.People;
   $: showCardPane = $readingPane.value != false && view == ContactView.People;
-  $: columnsSetting = ContactColumns.columnsSetting(view);
+  $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
 
   let searchBox: ContactSearchBox;
   let lastGlobalSearchTerm = $globalSearchTerm;
@@ -200,14 +201,14 @@
   }
 
   function resetView() {
-    ContactColumns.view.value = ContactView.People;
-    ContactColumns.sort.value = ContactColumns.sort.defaultValue;
-    ContactColumns.listColumns.value = ContactColumns.listColumns.defaultValue;
-    ContactColumns.phoneColumns.value = ContactColumns.phoneColumns.defaultValue;
-    ContactColumns.listGroupBy.value = ContactColumns.listGroupBy.defaultValue;
-    ContactColumns.phoneGroupBy.value = ContactColumns.phoneGroupBy.defaultValue;
-    ContactColumns.folderPane.value = true;
-    ContactColumns.readingPane.value = true;
+    viewSetting.value = ContactView.People;
+    sort.value = sort.defaultValue;
+    for (let tableView of [ContactView.List, ContactView.Phone]) {
+      getLocalStorage<ContactColumn[]>(tableView == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(tableView)).value = ContactColumns.defaultColumns(tableView);
+      getLocalStorage<ContactSort | null>(tableView == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(tableView)).value = ContactColumns.defaultGroupBy(tableView);
+    }
+    folderPane.value = true;
+    readingPane.value = true;
   }
 
   let status: StatusBarContent;
