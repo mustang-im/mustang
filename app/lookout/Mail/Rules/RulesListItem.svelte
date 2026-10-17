@@ -14,14 +14,13 @@
 <script lang="ts">
   import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
-  import { RuleDescription } from "./RuleDescription";
   import RuleActionIcons from "./RuleActionIcons.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
   export let onEdit: () => void;
 
-  $: isBroken = $rule && RuleDescription.isBroken(rule);
+  $: isBroken = $rule && ((!!rule.toFolderID && !rule.toFolder) || (!!rule.criteria.folderID && !rule.criteria.folder));
 </script>
 
 <style>

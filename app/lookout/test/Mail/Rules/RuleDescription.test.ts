@@ -8,8 +8,8 @@ import { RuleDescription } from "../../../Mail/Rules/RuleDescription";
 import { RuleItems } from "../../../Mail/Rules/RuleItems";
 import { expect, test } from "vitest";
 
-function texts(rule: FilterRuleAction): string[] {
-  return RuleDescription.texts(rule);
+function texts(rule: FilterRuleAction, checkedIDs?: Set<string>): string[] {
+  return RuleDescription.lines(rule, checkedIDs).map(line => line.parts.map(part => part.text).join(""));
 }
 
 test("When line by moment", () => {
@@ -34,8 +34,6 @@ test("Move from a person", () => {
     "from Music Discussion",
     "move it to the Music folder",
   ]);
-  expect(RuleDescription.hasAction(rule)).toBe(true);
-  expect(RuleDescription.isBroken(rule)).toBe(false);
 });
 
 test("Conditions and actions in Outlook order, Mustang extras last", () => {
@@ -86,16 +84,9 @@ test("Delete wins over move, permanent delete wins over delete", () => {
   expect(texts(rule).slice(1)).toEqual(["permanently delete it"]);
 });
 
-test("No action", () => {
-  let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
-  rule.criteria.bodyText = "x";
-  expect(RuleDescription.hasAction(rule)).toBe(false);
-});
-
 test("Missing target folder is broken", () => {
   let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
   rule.toFolderID = "gone";
-  expect(RuleDescription.isBroken(rule)).toBe(true);
   expect(texts(rule)).toContain("move it to the missing folder");
 });
 
@@ -114,7 +105,7 @@ test("Parts mark the value, or the placeholder while there is none", () => {
 
 test("Lines for checked items include those without a value yet", () => {
   let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
-  expect(RuleDescription.texts(rule, new Set(["from", "move"]))).toEqual([
+  expect(texts(rule, new Set(["from", "move"]))).toEqual([
     "Apply this rule after the message arrives",
     "from people or public group",
     "move it to the specified folder",

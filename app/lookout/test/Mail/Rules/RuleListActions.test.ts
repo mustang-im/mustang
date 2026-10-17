@@ -44,17 +44,6 @@ test("Moving beyond the ends does nothing", () => {
   expect(names()).toEqual(["first", "second", "third"]);
 });
 
-test("Can move up / down", () => {
-  let rules = account.filterRuleActions;
-  expect(RuleListActions.canMoveUp(rules, first)).toBe(false);
-  expect(RuleListActions.canMoveUp(rules, second)).toBe(true);
-  expect(RuleListActions.canMoveDown(rules, second)).toBe(true);
-  expect(RuleListActions.canMoveDown(rules, third)).toBe(false);
-  let unsaved = new FilterRuleAction(account);
-  expect(RuleListActions.canMoveUp(rules, unsaved)).toBe(false);
-  expect(RuleListActions.canMoveDown(rules, unsaved)).toBe(false);
-});
-
 test("Copy is inserted after the original", () => {
   second.criteria.bodyText = "invoice";
   let copy = RuleListActions.copy(account.filterRuleActions, second);

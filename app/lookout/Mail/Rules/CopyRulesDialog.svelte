@@ -11,12 +11,11 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
   import { RuleListActions } from "./RuleListActions";
-  import { RuleDescription } from "./RuleDescription";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { createEventDispatcher } from "svelte";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
   export let onCopy: (account: MailAccount) => void;
@@ -28,7 +27,7 @@
   function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
     return mailAccounts.map(account => ({
       value: account,
-      label: RuleDescription.inboxLabel(account),
+      label: `${account.inbox?.name || gt`Inbox`} [${account.emailAddress || account.name}]`,
       disabled: !!RuleListActions.cannotCopyTo(rule, account),
     }));
   }

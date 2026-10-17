@@ -5,15 +5,6 @@ import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
 export class RuleListActions {
-  static canMoveUp(rules: ArrayColl<FilterRuleAction>, rule: FilterRuleAction): boolean {
-    return rules.indexOf(rule) > 0;
-  }
-
-  static canMoveDown(rules: ArrayColl<FilterRuleAction>, rule: FilterRuleAction): boolean {
-    let index = rules.indexOf(rule);
-    return index >= 0 && index < rules.length - 1;
-  }
-
   static move(rules: ArrayColl<FilterRuleAction>, rule: FilterRuleAction, offset: number) {
     let index = rules.indexOf(rule);
     let newIndex = index + offset;

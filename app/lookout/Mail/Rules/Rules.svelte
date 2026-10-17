@@ -121,7 +121,7 @@
   import MoveDownIcon from "lucide-svelte/icons/arrow-down";
   import InfoIcon from "lucide-svelte/icons/info";
   import { createEventDispatcher } from "svelte";
-  import { t } from "../../../l10n/l10n";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
   const dispatch = createEventDispatcher<{ close: void }>();
@@ -129,7 +129,7 @@
   const accounts = appGlobal.emailAccounts;
 
   function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
-    return mailAccounts.map(mailAccount => ({ value: mailAccount, label: RuleDescription.inboxLabel(mailAccount) }));
+    return mailAccounts.map(mailAccount => ({ value: mailAccount, label: `${mailAccount.inbox?.name || gt`Inbox`} [${mailAccount.emailAddress || mailAccount.name}]` }));
   }
   if (!accounts.contains(account)) {
     account = accounts.first;
@@ -155,8 +155,8 @@
     selected = rules.first ?? null;
   }
   $: noSelection = $t`Select a rule first`;
-  $: canMoveUp = !!selected && $rules && RuleListActions.canMoveUp(rules, selected);
-  $: canMoveDown = !!selected && $rules && RuleListActions.canMoveDown(rules, selected);
+  $: canMoveUp = !!selected && $rules && rules.indexOf(selected) > 0;
+  $: canMoveDown = !!selected && $rules && rules.indexOf(selected) >= 0 && rules.indexOf(selected) < rules.length - 1;
   $: descriptionLines = selected && version >= 0 ? RuleDescription.lines(selected) : [];
 
   function workingList(mailAccount: MailAccount): RulesWorkingList {

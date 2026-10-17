@@ -18,7 +18,7 @@ test("New rule starts with the first template, Back is off", () => {
   expect(model.canGoBack).toBe(false);
   expect(model.template.id).toBe("move-from");
   expect([...model.checked]).toEqual(["from", "move"]);
-  expect(RuleDescription.texts(model.rule, model.checked)).toEqual([
+  expect(RuleDescription.lines(model.rule, model.checked).map(line => line.parts.map(part => part.text).join(""))).toEqual([
     "Apply this rule after the message arrives",
     "from people or public group",
     "move it to the specified folder",
@@ -136,7 +136,7 @@ test("Finish clears fields of unchecked items that the logic would still run", (
   let result = model.finish();
   expect(result.toFolderID).toBeFalsy();
   expect(result.deleteTrash).toBeNull();
-  expect(RuleDescription.texts(result).slice(1)).toEqual(["mark it as read"]);
+  expect(RuleDescription.lines(result).map(line => line.parts.map(part => part.text).join("")).slice(1)).toEqual(["mark it as read"]);
 });
 
 test("Name is suggested from the first condition, typed names stay", () => {

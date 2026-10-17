@@ -41,7 +41,7 @@ export class RuleWizardModel {
     this.page = this.pages[0];
     this.rule = RuleWizardModel.copyOf(rule);
     this.name = rule.name ?? "";
-    for (let item of RuleDescription.activeItems(this.rule)) {
+    for (let item of RuleItems.all().filter(item => item.isActive(this.rule))) {
       this.checked.add(item.id);
       this.shownIDs.add(item.id);
     }
@@ -184,7 +184,7 @@ export class RuleWizardModel {
     if (!this.hasActions) {
       return gt`Select at least one action`;
     }
-    if (RuleDescription.isBroken(this.rule)) {
+    if ((!!this.rule.toFolderID && !this.rule.toFolder) || (!!this.rule.criteria.folderID && !this.rule.criteria.folder)) {
       return gt`The folder of this rule does not exist anymore. Choose another folder.`;
     }
     if (this.page == RuleWizardPage.Finish && !this.name.trim()) {
