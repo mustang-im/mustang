@@ -16,7 +16,7 @@
             <AccountIdentity account={selection.account} draft={options.identitiesDraftOf(selection.account)} />
           {:else if selection.accountPage == "work-hours" && selection.account instanceof Calendar}
             <OptionsPage icon={CalendarIcon} description={$t`Set the days and hours when you work. The calendar shades the time outside of them.`}>
-              <CalendarWorkHours drafts={options.workHours} calendar={selection.account} isCalendarFixed />
+              <CalendarWorkHours account={selection.account} />
             </OptionsPage>
           {:else}
             <AccountGeneral account={selection.account} draft={options.accountDraftOf(selection.account)}
@@ -28,9 +28,9 @@
       {:else if selection.category == "mail"}
         <MailGeneral {options} />
       {:else if selection.category == "calendar"}
-        <CalendarGeneral {options} />
+        <CalendarGeneral />
       {:else if selection.category == "people"}
-        <ContactsGeneral {onOpenAccount} onAddAccount={() => onAddAccount("people")} />
+        <ContactsGeneral />
       {:else if selection.category == "language"}
         <GlobalLanguage {options} />
       {:else if selection.category == "advanced"}
