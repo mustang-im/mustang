@@ -2,7 +2,7 @@ import { KeyTips } from "../../../Shared/Ribbon/KeyTips";
 import { expect, test } from "vitest";
 
 function isPrefixFree(tips: string[]): boolean {
-  return tips.every((tip, i) => tips.every((other, j) => i == j || !other.startsWith(tip)));
+  return tips.every((tip, i) => tips.every((otherTip, j) => i == j || !otherTip.startsWith(tip)));
 }
 
 test("Tabs get single letters like Office, avoiding the reserved File key", () => {
