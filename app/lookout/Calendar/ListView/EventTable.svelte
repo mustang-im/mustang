@@ -42,6 +42,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventTable } from "./EventTable";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import { CalendarSettings, EventTableColumn } from "../CalendarSettings";
   import { CalendarActions } from "../CalendarActions";
   import { kCalendarMenus, type CalendarMenus } from "../Selected";
@@ -72,7 +73,8 @@
   $: table = new EventTable($sortColumn.value, $sortAscending.value, $grouping.value);
   $: columns = withCalendarColumn($listColumns.value, showCalendarColumn);
   $: gridColumns = "28px " + columns.map(columnWidth).join(" ");
-  $: groups = table.groups($events.contents);
+  $: listedEvents = ObservedItems.of(events);
+  $: groups = table.groups($listedEvents);
   $: shownEvents = groups.filter(group => !collapsed.has(group.id)).flatMap(group => group.events);
 
   function withCalendarColumn(listed: EventTableColumn[], showCalendar: boolean): EventTableColumn[] {
