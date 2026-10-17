@@ -58,14 +58,15 @@
   </hbox>
 </vbox>
 {#if isAdding}
-  <SelectNamesDialog title={$t`Add Users`} fields={[addField]}
-    onOK={onAdded} onCancel={() => { isAdding = false; }} />
+  <SelectNamesDialog title={$t`Add Users`} persons={addedPersons} label={$t`Add`}
+    on:ok={onAdded} on:close={() => { isAdding = false; }} />
 {/if}
 
 <script lang="ts">
   import { MailShareCombinedPermissions, MailShareIndividualPermissions as Right } from "../../../logic/Mail/Folder";
   import { FolderPermissions, type FolderPermission } from "../Dialogs/FolderProperties/FolderPermissions";
-  import { SelectNamesField } from "../Composer/SelectNames";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+  import { ArrayColl } from "svelte-collections";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
   import ListView from "../../Shared/Form/ListView.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -83,7 +84,7 @@
   let selected: FolderPermission = null;
   let isLoading = true;
   let isAdding = false;
-  let addField = new SelectNamesField($t`Add`);
+  let addedPersons = new ArrayColl<PersonUID>();
   let version = 0;
 
   $: levelOptions = permissions.account.sharePermissionLevels
@@ -117,15 +118,14 @@
   }
 
   function onAdded() {
-    isAdding = false;
-    for (let person of addField.picks.contents) {
+    for (let person of addedPersons.contents) {
       try {
         selected = permissions.add(person);
       } catch (ex) {
         showError(ex);
       }
     }
-    addField = new SelectNamesField($t`Add`);
+    addedPersons = new ArrayColl<PersonUID>();
     changed();
   }
 

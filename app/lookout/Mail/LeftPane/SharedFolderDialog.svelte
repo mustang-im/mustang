@@ -21,8 +21,8 @@
   {/if}
 </Dialog>
 {#if isPicking}
-  <SelectNamesDialog title={$t`Select Name`} fields={[nameField]}
-    onOK={onPicked} onCancel={() => { isPicking = false; }} />
+  <SelectNamesDialog title={$t`Select Name`} persons={picked} label={$t`Name`} single
+    on:ok={onPicked} on:close={() => { isPicking = false; }} />
 {/if}
 
 <script lang="ts" context="module">
@@ -35,7 +35,6 @@
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { SharedFolders, SharedFolderType } from "../Dialogs/SharedFolders";
-  import { SelectNamesField } from "../Composer/SelectNames";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
   import MailAutocomplete from "../Composer/MailAutocomplete.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
@@ -58,7 +57,7 @@
   let recipients = new ArrayColl<PersonUID>();
   let type = SharedFolderType.Inbox;
   let isPicking = false;
-  let nameField = new SelectNamesField(gt`Name`, [], true);
+  let picked = new ArrayColl<PersonUID>();
   let availableAccounts = new ArrayColl<PersonUID>();
 
   onMount(() => catchErrors(async () => {
@@ -66,9 +65,8 @@
   }));
 
   function onPicked() {
-    isPicking = false;
-    recipients.replaceAll(nameField.picks.contents.slice(0, 1));
-    nameField = new SelectNamesField(gt`Name`, [], true);
+    recipients.replaceAll(picked.contents.slice(0, 1));
+    picked = new ArrayColl<PersonUID>();
   }
 
   async function onOK() {

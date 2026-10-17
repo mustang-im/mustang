@@ -1,21 +1,19 @@
-<SelectNamesDialog title={$t`Rule Address`} fields={[field]} onOK={onPicked} onCancel={onClose} />
+<SelectNamesDialog title={$t`Rule Address`} persons={picks} label={$t`From`} single on:ok={onPicked} on:close={onClose} />
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { SelectNamesField } from "../Composer/SelectNames";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { ArrayColl } from "svelte-collections";
+  import { t } from "../../../l10n/l10n";
 
   export let person: Person | null;
   export let onOK: (person: Person | null) => void;
   export let onClose: () => void;
 
-  const field = new SelectNamesField(gt`From`, person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : [], true);
+  const picks = new ArrayColl<PersonUID>(person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : []);
 
   function onPicked() {
-    let pick = field.picks.first;
-    onOK(pick?.findPerson() ?? null);
-    onClose();
+    onOK(picks.first?.findPerson() ?? null);
   }
 </script>

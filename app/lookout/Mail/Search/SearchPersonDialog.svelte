@@ -1,4 +1,4 @@
-<SelectNamesDialog fields={[field]} {onOK} onCancel={onClose} />
+<SelectNamesDialog persons={picks} label={fieldLabel} single on:ok={onOK} on:close />
 
 <script lang="ts" context="module">
   import type { Person } from "../../../logic/Abstract/Person";
@@ -9,24 +9,17 @@
 
 <script lang="ts">
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { SelectNamesField } from "../Composer/SelectNames";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
-  import { createEventDispatcher } from "svelte";
+  import { ArrayColl } from "svelte-collections";
 
   export let fieldLabel: string;
   export let person: Person | null = null;
   export let onPick: (person: Person | null) => void;
 
-  const dispatch = createEventDispatcher<{ close: void }>();
-  const field = new SelectNamesField(fieldLabel, person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : [], true);
+  const picks = new ArrayColl<PersonUID>(person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : []);
 
   function onOK() {
-    let pick = field.picks.first;
+    let pick = picks.first;
     onPick(pick ? pick.findPerson() ?? null : null);
-    onClose();
-  }
-
-  function onClose() {
-    dispatch("close");
   }
 </script>
