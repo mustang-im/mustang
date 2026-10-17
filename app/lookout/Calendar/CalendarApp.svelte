@@ -148,7 +148,7 @@
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import type { Collection } from "svelte-collections";
   import { onDestroy, setContext } from "svelte";
-  import { get } from "svelte/store";
+  import { derived, get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
   const viewSetting = getLocalStorage<CalendarViewType>("lookout.calendar.view", "workweek");
@@ -205,7 +205,7 @@
     ? $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) }))
     : [{ calendar: null, events: visibleEvents }]) as CalendarColumnGroup[];
 
-  $: eventsInRange = visibleEvents.filterObservable(event => event.startTime < range.end && event.endTime > range.start);
+  $: eventsInRange = derived(visibleEvents, events => events.contents.filter(event => event.startTime < range.end && event.endTime > range.start));
 
   $: searchTerm = $globalSearchTerm?.trim() || null;
   $: isSearch = !!searchTerm;
