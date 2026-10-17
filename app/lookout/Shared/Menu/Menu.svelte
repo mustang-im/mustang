@@ -3,6 +3,8 @@
   <div class="lo-menu" role="menu" tabindex="-1"
     style:max-height={maxHeight}
     on:keydown={onKeyDown}
+    on:mousemove={event => $mouseInMenu = event}
+    on:mouseleave={() => $mouseInMenu = null}
     bind:this={menuEl}>
     <slot />
   </div>
@@ -12,6 +14,7 @@
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import type { Placement } from "@popperjs/core";
   import { getContext, setContext, tick } from "svelte";
+  import { writable } from "svelte/store";
 
   export let isMenuOpen = false;
   export let anchor: HTMLElement;
@@ -29,6 +32,10 @@
   }
   setContext("onMenuClose", closeMenu);
   setContext("lo-close-all-menus", getContext<() => void>("lo-close-all-menus") ?? closeMenu);
+
+  const mouseInMenu = writable<MouseEvent>(null);
+  setContext("lo-menu-mouse", mouseInMenu);
+  setContext("lo-open-submenu", writable<object>(null));
 
   let maxHeight: string = null;
   $: if (isMenuOpen) {
