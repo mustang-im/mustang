@@ -15,14 +15,14 @@
             <svelte:component this={collapsedTabs.has(tab.label) ? ExpandIcon : CollapseIcon} size={14} />
           </button>
           <Checkbox label={tab.label} checked={!hiddenTabs.has(tab.label)}
-            onChange={checked => setTabShown(tab.label, checked)} />
+            on:change={event => setTabShown(tab.label, event.detail)} />
         </hbox>
         {#if !collapsedTabs.has(tab.label)}
           {#each groupLabels(tab) as groupLabel}
             <hbox class="tree-row group-row" role="treeitem" aria-selected="false">
               <Checkbox label={groupLabel} checked={!hiddenGroups.has(tab.label + "/" + groupLabel)}
                 disabled={hiddenTabs.has(tab.label)}
-                onChange={checked => setGroupShown(tab.label, groupLabel, checked)} />
+                on:change={event => setGroupShown(tab.label, groupLabel, event.detail)} />
             </hbox>
           {/each}
         {/if}

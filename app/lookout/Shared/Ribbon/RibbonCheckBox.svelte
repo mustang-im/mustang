@@ -1,5 +1,5 @@
 <div class="ribbon-item fixed-width ribbon-checkbox look-{look}" data-size="small">
-  <Checkbox {label} bind:checked {disabled} {tooltip} {onChange} />
+  <Checkbox {label} bind:checked {disabled} {tooltip} on:change />
 </div>
 
 <script lang="ts">
@@ -10,7 +10,6 @@
 
   export let label: string;
   export let checked = false;
-  export let onChange: (checked: boolean) => void | Promise<void> = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
 

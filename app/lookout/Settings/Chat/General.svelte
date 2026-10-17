@@ -3,9 +3,9 @@
     <OptionsRow icon={ArrivalIcon}>
       <hbox>{$t`When new chat messages arrive:`}</hbox>
       <Checkbox label={$t`Play a sound`} checked={$notificationsSetting.value.includes("sound")}
-        onChange={checked => onNotification("sound", checked)} />
+        on:change={event => onNotification("sound", event.detail)} />
       <Checkbox label={$t`Display a Desktop Alert`} checked={$notificationsSetting.value.includes("popup")}
-        onChange={checked => onNotification("popup", checked)} />
+        on:change={event => onNotification("popup", event.detail)} />
     </OptionsRow>
   </OptionsSection>
 </OptionsPage>

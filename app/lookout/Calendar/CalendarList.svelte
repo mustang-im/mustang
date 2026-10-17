@@ -14,7 +14,7 @@
         indeterminate={someShown && !allShown}
         disabled={!group.calendars.length}
         tooltip={$t`Show all calendars of this group`}
-        onChange={checked => showGroup(group, checked)} />
+        on:change={event => showGroup(group, event.detail)} />
       <button class="group-label" on:click={() => toggleGroup(group.id)}>{group.label}</button>
     </hbox>
     {#if !collapsed.has(group.id)}

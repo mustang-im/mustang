@@ -6,7 +6,7 @@
         {#each kWeekdays as weekday}
           {@const day = $workHours.days[weekday]}
           <Checkbox label={weekdayName(weekday)} checked={day.isWorkDay} disabled={readOnly}
-            onChange={checked => onWorkDayChanged(weekday, checked)} />
+            on:change={event => onWorkDayChanged(weekday, event.detail)} />
           <TimeInput time={timeOf(day.startMinutes)} options={startTimes}
             label={$t`Start time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
             onChange={time => onStartChanged(weekday, time)} />

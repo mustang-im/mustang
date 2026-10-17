@@ -49,7 +49,7 @@
         {#each available as folder (folder.url)}
           <hbox class="folder">
             <Checkbox label={String(folder.displayName || folder.url)} checked={chosen.includes(folder)}
-              onChange={checked => toggle(folder, checked)} />
+              on:change={event => toggle(folder, event.detail)} />
           </hbox>
         {/each}
       </vbox>

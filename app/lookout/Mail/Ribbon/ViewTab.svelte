@@ -20,7 +20,7 @@
   <RibbonGroup label={$t`Messages`}>
     <RibbonCheckBox label={$t`Show as Conversations`}
       bind:checked={conversationsChecked}
-      onChange={onShowAsConversations} />
+      on:change={event => catchErrors(() => onShowAsConversations(event.detail))} />
     <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings`} icon={ConversationSettingsIcon} size="small"
       disabled={!$settings.showAsConversations && $t`Turn on Show as Conversations first`}>
       <MenuItem label={$t`Show Senders Above the Subject`} checked={$settings.showSendersAboveSubject} checkable
@@ -100,6 +100,7 @@
   import { ToDoBarPart } from "../ToDoBar/ToDoBar.svelte";
   import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { ApplyScope, MailViewSettings, ViewType } from "../ViewSettings/ViewSettings";
   import { openViewSettings } from "../ViewSettings/ViewSettingsDialog.svelte";
   import { openShowColumns } from "../ViewSettings/ShowColumnsDialog.svelte";

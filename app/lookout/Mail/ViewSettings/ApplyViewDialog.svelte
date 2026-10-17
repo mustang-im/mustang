@@ -10,7 +10,7 @@
             <Checkbox label={FolderTreeActions.displayName(entry.folder)}
               checked={checked.has(entry.folder)}
               disabled={entry.folder == folder}
-              onChange={isChecked => toggle(entry.folder, isChecked)} />
+              on:change={event => toggle(entry.folder, event.detail)} />
           </hbox>
         {/each}
       {/each}

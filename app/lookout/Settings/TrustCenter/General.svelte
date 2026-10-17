@@ -40,11 +40,11 @@
         </grid>
         <Checkbox label={$t`Encrypt contents and attachments for outgoing messages`}
           checked={encrypt} disabled={!isUsable && noKeyReason}
-          onChange={onEncrypt} />
+          on:change={event => catchErrors(() => onEncrypt(event.detail))} />
         <Checkbox label={$t`Add digital signature to outgoing messages`}
           checked={sign}
           disabled={!isUsable ? noKeyReason : encrypt && $t`Encrypted messages are always signed`}
-          onChange={onSign} />
+          on:change={event => catchErrors(() => onSign(event.detail))} />
       {:else}
         <span class="hint">{$t`Add an email account first.`}</span>
       {/if}
@@ -66,7 +66,7 @@
   <OptionsSection title={$t`Read as Plain Text`}>
     <OptionsRow icon={PlainTextIcon}>
       <Checkbox label={$t`Read all standard mail in plain text`} checked={$contentRenderingSetting.value == "plaintext"}
-        onChange={checked => { contentRenderingSetting.value = checked ? "plaintext" : "html"; }} />
+        on:change={event => { contentRenderingSetting.value = event.detail ? "plaintext" : "html"; }} />
     </OptionsRow>
   </OptionsSection>
 </OptionsPage>
@@ -92,6 +92,7 @@
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { getDateString } from "../../../frontend/Util/date";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { appGlobal } from "../../../logic/app";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";

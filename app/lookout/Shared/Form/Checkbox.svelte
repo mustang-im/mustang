@@ -4,7 +4,7 @@
     bind:indeterminate
     bind:this={inputEl}
     disabled={!!disabled}
-    on:change={onChanged} />
+    on:change={() => dispatch("change", checked)} />
   <span class="box" aria-hidden="true">
     {#if indeterminate}
       <MinusIcon size="12" />
@@ -20,26 +20,18 @@
 </label>
 
 <script lang="ts">
-  import { showError } from "../../../frontend/Util/error";
   import CheckIcon from "lucide-svelte/icons/check";
   import MinusIcon from "lucide-svelte/icons/minus";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher<{ change: boolean }>();
 
   export let checked = false;
   export let indeterminate = false;
   export let label: string = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
-  export let onChange: (checked: boolean) => void | Promise<void> = null;
   export let classes = "";
   export let inputEl: HTMLInputElement = null;
-
-  async function onChanged() {
-    try {
-      await onChange?.(checked);
-    } catch (ex) {
-      showError(ex);
-    }
-  }
 </script>
 
 <style>

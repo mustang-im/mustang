@@ -18,7 +18,7 @@
         onChange={time => editor.setStart(time)} />
     {/if}
     {#if !readOnly}
-      <Checkbox label={$t`All day`} checked={$event.allDay} onChange={onAllDayChanged} classes="all-day" />
+      <Checkbox label={$t`All day`} checked={$event.allDay} on:change={event => onAllDayChanged(event.detail)} classes="all-day" />
     {/if}
     {#if showTimezone}
       <hbox class="timezone lo-secondary" title={$t`Time zone of this event`}>

@@ -7,7 +7,7 @@
       {#each attachments as attachment (attachment)}
         <hbox class="row">
           <Checkbox label={attachment.filename} checked={chosen.includes(attachment)}
-            onChange={checked => toggle(attachment, checked)} />
+            on:change={event => toggle(attachment, event.detail)} />
         </hbox>
       {/each}
     </vbox>

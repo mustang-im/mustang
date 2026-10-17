@@ -45,7 +45,7 @@
                 <Checkbox label={weekdayLabel(weekday, "long")}
                   checked={weekday == startWeekday || pattern.weekdays.includes(weekday)}
                   disabled={weekday == startWeekday && $t`The day of the start date`}
-                  onChange={() => toggleWeekday(weekday)} />
+                  on:change={() => toggleWeekday(weekday)} />
               {/each}
             </grid>
           {:else if pattern.frequency == Frequency.Monthly}

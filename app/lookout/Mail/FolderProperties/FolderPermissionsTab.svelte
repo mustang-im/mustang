@@ -27,25 +27,25 @@
       <GroupBox label={$t`Read`} disabled={!canEditRights}>
         {#each [Right.Read] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
-            disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
+            disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
         {/each}
       </GroupBox>
       <GroupBox label={$t`Write`} disabled={!canEditRights}>
         {#each [Right.Create, Right.CreateSubfolders, Right.FlagChange] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
-            disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
+            disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
         {/each}
       </GroupBox>
       <GroupBox label={$t`Delete items`} disabled={!canEditRights}>
         {#each [Right.Delete] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
-            disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
+            disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
         {/each}
       </GroupBox>
       <GroupBox label={$t`Other`} disabled={!canEditRights}>
         {#each [Right.DeleteFolder] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
-            disabled={!canEditRights} onChange={granted => setRight(right, granted)} />
+            disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
         {/each}
       </GroupBox>
     </grid>

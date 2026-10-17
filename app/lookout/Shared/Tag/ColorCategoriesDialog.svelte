@@ -15,7 +15,7 @@
             <Checkbox checked={stateOf(item, choiceVersion) == TagState.All}
               indeterminate={stateOf(item, choiceVersion) == TagState.Some}
               tooltip={item.name}
-              onChange={() => toggle(item)} />
+              on:change={() => toggle(item)} />
             <CategorySquare tag={item} />
             <span class="name">{item.name}</span>
           </hbox>

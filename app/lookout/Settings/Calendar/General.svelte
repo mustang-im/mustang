@@ -65,9 +65,9 @@
   <OptionsSection title={$t`Reminders`}>
     <OptionsRow icon={RemindersIcon}>
       <Checkbox label={$t`Show reminders`} checked={$notifications.value.includes("popup")}
-        onChange={checked => setNotification("popup", checked)} />
+        on:change={event => setNotification("popup", event.detail)} />
       <Checkbox label={$t`Play reminder sound`} checked={$notifications.value.includes("sound")}
-        onChange={checked => setNotification("sound", checked)} />
+        on:change={event => setNotification("sound", event.detail)} />
     </OptionsRow>
   </OptionsSection>
 

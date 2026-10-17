@@ -24,7 +24,7 @@
           bind:value={$readingPaneSetting.value} label={$t`Reading Pane`} width="160px" />
       </hbox>
       <Checkbox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead}
-        onChange={checked => { isMarkingRead = checked; onSaveReadAfter(); }} />
+        on:change={onSaveReadAfter} />
       <hbox class="delay indented" class:disabled={!isMarkingRead}>
         <span>{$t`Wait`}</span>
         <SpinBox label={$t`Seconds`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead}
@@ -42,9 +42,9 @@
     <OptionsRow icon={ArrivalIcon}>
       <hbox>{$t`When new messages arrive:`}</hbox>
       <Checkbox label={$t`Play a sound`} checked={$notificationsSetting.value.includes("sound")}
-        onChange={checked => onNotification("sound", checked)} />
+        on:change={event => onNotification("sound", event.detail)} />
       <Checkbox label={$t`Display a Desktop Alert`} checked={$notificationsSetting.value.includes("popup")}
-        onChange={checked => onNotification("popup", checked)} />
+        on:change={event => onNotification("popup", event.detail)} />
       <Checkbox label={$t`Only for messages from people in my contacts`} bind:checked={$onlyFromContactsSetting.value}
         disabled={!$notificationsSetting.value.length} />
     </OptionsRow>

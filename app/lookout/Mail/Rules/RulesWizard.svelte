@@ -32,7 +32,7 @@
         aria-label={page == RuleWizardPage.Conditions ? $t`Conditions` : $t`Actions`}>
         {#each items as item (item.id)}
           <hbox class="row" class:selected={selectedItem == item}>
-            <Checkbox checked={model.isChecked(item)} onChange={checked => onCheck(item, checked)}>
+            <Checkbox checked={model.isChecked(item)} on:change={event => onCheck(item, event.detail)}>
               <span class="phrase">
                 {#each item.listParts() as part}
                   {#if part.isValue}<span class="link">{part.text}</span>{:else}{part.text}{/if}
