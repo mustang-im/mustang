@@ -182,6 +182,6 @@
   $: ruleAccount = search?.account ??
     (MailSearch.isRealFolder(folder) ? folder.account : MailSearch.isRealAccount(account) ? account : null);
   function onCreateRule() {
-    $openRulesFromSearch = { search, account: ruleAccount };
+    $openRulesFromSearch = search;
   }
 </script>

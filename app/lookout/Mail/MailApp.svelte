@@ -50,7 +50,7 @@
   <SavedSearchUI search={$openSaveSearch} on:close={() => $openSaveSearch = null} />
 {/if}
 {#if $openRulesFromSearch}
-  <RulesFromSearchUI search={$openRulesFromSearch.search} account={$openRulesFromSearch.account} on:close={() => $openRulesFromSearch = null} />
+  <RulesFromSearchUI search={$openRulesFromSearch} on:close={() => $openRulesFromSearch = null} />
 {/if}
 {#if $openAlwaysMove}
   <AlwaysMoveDialog message={$openAlwaysMove} on:close={() => $openAlwaysMove = null} />

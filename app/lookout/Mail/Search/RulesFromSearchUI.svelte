@@ -2,22 +2,24 @@
 
 <script lang="ts" context="module">
   import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { writable } from "svelte/store";
 
-  export const openRulesFromSearch = writable<{ search: SearchEMail, account: MailAccount } | null>(null);
+  export const openRulesFromSearch = writable<SearchEMail | null>(null);
 </script>
 
 <script lang="ts">
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
+  import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
+  import { MailSearch } from "./MailSearch";
   import { RuleWizardModel } from "../Rules/RuleWizardModel";
   import RulesWizard from "../Rules/RulesWizard.svelte";
   import { createEventDispatcher } from "svelte";
 
   export let search: SearchEMail;
-  export let account: MailAccount;
 
   const dispatch = createEventDispatcher<{ close: void }>();
+  const account = search.account ??
+    (MailSearch.isRealFolder($selectedFolder) ? $selectedFolder.account : MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : null);
   const criteria = new SearchEMail();
   criteria.copyFrom(search);
   const model = RuleWizardModel.forRule(new FilterRuleAction(account, criteria), true);
