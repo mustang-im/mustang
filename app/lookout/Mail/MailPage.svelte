@@ -17,7 +17,7 @@
   </Ribbon>
   <hbox flex class="panes">
     {#if $folderPane.value == FolderPaneMode.Minimized}
-      <FolderPaneMinimized name={$selectedFolder ? FolderTreeActions.displayName($selectedFolder) : ""}
+      <FolderPaneMinimized name={$shownFolder ? FolderTreeActions.displayName($shownFolder) : ""}
         onExpand={() => { folderPane.value = FolderPaneMode.Normal; }} />
     {/if}
     <Splitter name="lookout.mail.folderPane" initialRightRatio={5} leftMinWidth={180} rightMinWidth={480}
@@ -306,8 +306,9 @@
   const status = statusBar.addSection();
   onDestroy(() => status.remove());
   $: unreadStore = FolderTreeActions.countStore($selectedFolder, false);
-  $: status.left = statusLeft($listMessages, $unreadStore, hasFilter, searchResults, isSearching, $selectedArray, isShowingAllResults);
-  function statusLeft(messages: Collection<EMail>, unread: number, isFiltered: boolean, results: Collection<EMail> | null,
+  $: totalStore = FolderTreeActions.countStore($selectedFolder, true);
+  $: status.left = statusLeft($listMessages, $unreadStore, $totalStore, hasFilter, searchResults, isSearching, $selectedArray, isShowingAllResults);
+  function statusLeft(messages: Collection<EMail>, unread: number, total: number, isFiltered: boolean, results: Collection<EMail> | null,
       searching: boolean, selected: EMail[], _showingAll: boolean) {
     let items = [];
     if (results) {
@@ -320,7 +321,7 @@
       items.push({ label: $t`Filter applied`, icon: FilterIcon });
       items.push({ label: $t`Items: ${messages.length}` });
     } else {
-      items.push({ label: $t`Items: ${Math.max($selectedFolder?.countTotal ?? 0, messages.length)}` });
+      items.push({ label: $t`Items: ${Math.max(total, messages.length)}` });
       if (unread) {
         items.push({ label: $t`Unread: ${unread}` });
       }

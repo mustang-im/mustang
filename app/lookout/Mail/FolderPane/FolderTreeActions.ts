@@ -6,7 +6,7 @@ import { assert } from "../../../logic/util/util";
 import { selectedFolder } from "../../../frontend/Mail/Selected";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-import { derived, get, writable, type Readable } from "svelte/store";
+import { derived, get, readable, writable, type Readable } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
 
 export enum FolderCountMode {
@@ -55,9 +55,12 @@ export class FolderTreeActions {
   }
 
   static countStore(folder: Folder | null, total: boolean): Readable<number> {
-    let folders = folder ? FolderTreeActions.countedFolders(folder) : [];
-    return derived(folders, () => folders.reduce((sum, counted) =>
-      sum + ((total ? counted.countTotal : counted.countUnread) || 0), 0));
+    let countedList: Readable<Folder[]> = folder instanceof AllFolders && folder.folders
+      ? derived(folder.folders, folders => folders.contents)
+      : readable(folder ? [folder] : []);
+    return derived(countedList, (folders, set) =>
+      derived(folders, () => folders.reduce((sum, counted) =>
+        sum + ((total ? counted.countTotal : counted.countUnread) || 0), 0)).subscribe(set));
   }
 
   static isInside(folder: Folder, ancestor: Folder): boolean {
