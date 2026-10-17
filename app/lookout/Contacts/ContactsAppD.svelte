@@ -9,7 +9,7 @@
   <hbox flex class="panes">
     <Splitter name="lookout.contacts.addressbooks" initialRightRatio={5} leftMinWidth={200} rightMinWidth={480}
       hasLeft={$folderPane.value != false}>
-      <AddressbookSelector slot="left" {allContacts} />
+      <AddressbookSelector slot="left" bind:selectedAddressbook={$selectedAddressbook} />
       <hbox flex class="main" slot="right">
         <Splitter name="lookout.contacts.card" initialRightRatio={1.6} leftMinWidth={260} rightMinWidth={320}
           hasRight={showCardPane}>

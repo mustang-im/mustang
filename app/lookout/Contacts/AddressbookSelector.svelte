@@ -4,9 +4,9 @@
       label={$t`All contacts`}
       icon={AllContactsIcon}
       count={$allContacts.length}
-      isSelected={!$selectedAddressbook}
+      isSelected={!selectedAddressbook}
       indented={false}
-      onSelect={() => $selectedAddressbook = null} />
+      onSelect={() => selectedAddressbook = null} />
 
     {#each sections as section (section.mainAccount ?? section)}
       {@const sectionID = section.mainAccount?.id ?? "local"}
@@ -16,8 +16,8 @@
       {#if !collapsedSections.has(sectionID)}
         {#each section.addressbooks as addressbook (addressbook.id)}
           <AddressbookItem {addressbook}
-            isSelected={$selectedAddressbook == addressbook}
-            onSelect={() => $selectedAddressbook = addressbook} />
+            isSelected={selectedAddressbook == addressbook}
+            onSelect={() => selectedAddressbook = addressbook} />
         {/each}
       {/if}
     {/each}
@@ -30,8 +30,8 @@
         {#each $searchOnlyAddressbooks.each as addressbook (addressbook.id)}
           <AddressbookItem {addressbook}
             icon={DirectoryIcon}
-            isSelected={$selectedAddressbook == addressbook}
-            onSelect={() => $selectedAddressbook = addressbook} />
+            isSelected={selectedAddressbook == addressbook}
+            onSelect={() => selectedAddressbook = addressbook} />
         {/each}
       {/if}
     {/if}
@@ -40,7 +40,7 @@
 
 <script lang="ts">
   import type { Contact } from "../../logic/Abstract/Contact";
-  import { selectedAddressbook } from "./Person/Selected";
+  import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { AddressbookSections } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
   import AddressbookItem from "./AddressbookItem.svelte";
@@ -48,11 +48,12 @@
   import AllContactsIcon from "lucide-svelte/icons/contact-round";
   import DirectoryIcon from "lucide-svelte/icons/building-2";
   import CollapsibleHeader from "../Shared/CollapsibleHeader.svelte";
-  import type { Collection } from "svelte-collections";
+  import { mergeColls, type Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
 
-  export let allContacts: Collection<Contact>;
+  export let selectedAddressbook: Addressbook | null;
 
+  const allContacts = mergeColls(appGlobal.addressbooks.map(addressbook => addressbook.contacts)) as Collection<Contact>;
   let addressbooks = appGlobal.addressbooks;
   let searchOnlyAddressbooks = appGlobal.searchOnlyAddressbooks;
   $: sections = new AddressbookSections($addressbooks.contents).sections;
