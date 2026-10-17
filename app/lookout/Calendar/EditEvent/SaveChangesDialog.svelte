@@ -1,4 +1,4 @@
-<Dialog {title} okLabel={saveLabel} okDisabled={saveDisabled} onOK={onSave} width="520px" on:close={onCancel}>
+<Dialog {title} okLabel={saveLabel} okDisabled={saveDisabled} onOK={onSave} width="520px" on:close>
   <p class="question">{question}</p>
   <svelte:fragment slot="buttons-start">
     <DialogButton label={discardLabel} onClick={onDiscard} />
@@ -16,7 +16,6 @@
   export let saveDisabled: string | false = false;
   export let onSave: () => Promise<void>;
   export let onDiscard: () => void;
-  export let onCancel: () => void;
 </script>
 
 <style>

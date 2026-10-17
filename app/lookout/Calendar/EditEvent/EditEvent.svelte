@@ -51,14 +51,14 @@
     saveDisabled={flow.missingPropsReason ?? false}
     onSave={onSaveFromClose}
     onDiscard={onDiscard}
-    onCancel={() => showSaveChanges = false} />
+    on:close={() => showSaveChanges = false} />
 {/if}
 {#if attendeesPicks}
   <SelectNamesDialog title={$t`Select Attendees and Resources`} persons={attendeesPicks} label={$t`Required`}
     on:ok={() => flow.setAttendees(attendeesPicks.contents)} on:close={() => attendeesPicks = null} />
 {/if}
 {#if showSignatures}
-  <SignaturesDialog identity={event.calendar?.inviteAs} onDone={() => showSignatures = false} />
+  <SignaturesDialog identity={event.calendar?.inviteAs} on:close={() => showSignatures = false} />
 {/if}
 <EditorToolDialogs {editor} bind:openedTool />
 <FileSelector bind:this={fileSelector} />
