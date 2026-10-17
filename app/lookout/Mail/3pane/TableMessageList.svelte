@@ -32,7 +32,6 @@
             isThreadChild={row.isThreadChild}
             indent={threadIndent(row)}
             {highlight}
-            folderName={row.message.folder ? FolderTreeActions.displayName(row.message.folder) : null}
             on:toggleThread={() => toggleThread(row.message)}
             on:click={event => onClickMessage(row.message, event)}
             on:dblclick={() => catchErrors(() => MessageActions.openDraft(row.message))}
@@ -48,7 +47,7 @@
             isThreadChild={row.isThreadChild}
             indent={threadIndent(row)}
             {highlight}
-            folderName={showFolder && row.message.folder ? FolderTreeActions.displayName(row.message.folder) : null}
+            {showFolder}
             on:toggleThread={() => toggleThread(row.message)}
             on:click={event => onClickMessage(row.message, event)}
             on:dblclick={() => catchErrors(() => MessageActions.openDraft(row.message))}
@@ -68,7 +67,6 @@
   import { MessageRows, type MessageRow } from "./MessageRows";
   import { MessageMetadata } from "../MessageList/MessageMetadata";
   import { MessageActions } from "../MessageActions";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import { ViewType, type Column } from "../ViewSettings/ViewSettings";
   import { MessageGrouping } from "./MessageGrouping";
   import VerticalMessageListItem from "../Vertical/VerticalMessageListItem.svelte";

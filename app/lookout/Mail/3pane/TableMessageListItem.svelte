@@ -114,6 +114,7 @@
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
 
   export let message: EMail;
   export let columns: Column[];
@@ -124,11 +125,11 @@
   export let isThreadExpanded = false;
   export let isThreadChild = false;
   export let indent = 0;
-  export let folderName: string | null = null;
   export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
 
+  $: folderName = message.folder ? FolderTreeActions.displayName(message.folder) : null;
   $: messageTags = message.tags;
   $: tags = derived($messageTags.contents, () => messageTags.contents);
   $: to = message.to;

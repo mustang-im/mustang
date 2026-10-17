@@ -144,6 +144,7 @@
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
+  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
 
   export let message: EMail;
   export let isSelected = false;
@@ -154,7 +155,7 @@
   export let indent = 0;
   export let tighterSpacing = false;
   export let sendersAboveSubject = true;
-  export let folderName: string | null = null;
+  export let showFolder = false;
   export let highlight: string | null = null;
 
   const dispatch = createEventDispatcher<{ toggleThread: void }>();
@@ -169,6 +170,7 @@
   $: senderTooltip = showsRecipient
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
+  $: folderName = showFolder && message.folder ? FolderTreeActions.displayName(message.folder) : null;
   $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;
   $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
   $: hasInlineReply = $inlineReplies.some(reply => reply.original == message);
