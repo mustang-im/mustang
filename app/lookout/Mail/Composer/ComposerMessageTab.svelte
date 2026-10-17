@@ -70,7 +70,7 @@
 
 <script lang="ts">
   import type { ComposerCommands } from "./ComposerCommands";
-  import { EditorChain, EditorTool } from "../../Shared/Editor/EditorCommands";
+  import { EditorTool } from "../../Shared/Editor/EditorCommands";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { EditorClipboard } from "../../Shared/Editor/EditorClipboard";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
@@ -113,6 +113,6 @@
   $: editor = commands.editor;
 
   function run(command: (chain: ChainedCommands) => ChainedCommands) {
-    EditorChain.run(editor, command);
+    command(editor.chain().focus()).run();
   }
 </script>

@@ -1,6 +1,6 @@
 <vbox flex class="composer-page" class:inline={isInline} on:keydown|capture={onKeyDown}>
   {#if !isInline}
-    <ComposerRibbon {commands} bind:showEmojis />
+    <ComposerRibbon {commands} bind:showEmojis bind:openedTool />
   {/if}
   <vbox flex class="composer" class:lo-card={!isInline} on:keydown={onEscape}>
     <FileDropTarget
