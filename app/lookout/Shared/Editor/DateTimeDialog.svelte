@@ -1,4 +1,4 @@
-<Dialog title={$t`Date and Time`} on:close={onDone} width="400px" height="520px"
+<Dialog title={$t`Date and Time`} on:close={onClose} width="400px" height="520px"
   okLabel={$t`OK`} okDisabled={!selected && $t`Select a format`} onOK={onOK}>
   <vbox flex class="formats-box">
     <span class="caption">{$t`Available formats:`}</span>
@@ -14,10 +14,12 @@
   import Dialog from "../Dialog/Dialog.svelte";
   import ListView from "../Form/ListView.svelte";
   import type { Editor } from "@tiptap/core";
+  import { createEventDispatcher } from "svelte";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let editor: Editor;
-  export let onDone: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let formats = DateTimeFormats.list(new Date(), getDateTimeLocale());
   let selected = formats[0];
@@ -28,7 +30,11 @@
 
   function onDoubleClick() {
     onOK();
-    onDone();
+    onClose();
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

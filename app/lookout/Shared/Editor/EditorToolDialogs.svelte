@@ -1,13 +1,13 @@
 {#if editor && openedTool == EditorTool.Link}
-  <LinkDialog {editor} onDone={close} />
+  <LinkDialog {editor} on:close={close} />
 {:else if editor && openedTool == EditorTool.DateTime}
-  <DateTimeDialog {editor} onDone={close} />
+  <DateTimeDialog {editor} on:close={close} />
 {:else if editor && openedTool == EditorTool.Symbol}
-  <SymbolDialog {editor} onDone={close} />
+  <SymbolDialog {editor} on:close={close} />
 {:else if editor && openedTool == EditorTool.WordCount}
-  <WordCountDialog {editor} onDone={close} />
+  <WordCountDialog {editor} on:close={close} />
 {:else if editor && (openedTool == EditorTool.Find || openedTool == EditorTool.Replace)}
-  <FindReplaceDialog {editor} replaceMode={openedTool == EditorTool.Replace} onDone={close} />
+  <FindReplaceDialog {editor} replaceMode={openedTool == EditorTool.Replace} on:close={close} />
 {/if}
 
 <script lang="ts">

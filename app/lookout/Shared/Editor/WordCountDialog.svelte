@@ -1,4 +1,4 @@
-<Dialog title={$t`Word Count`} on:close={onDone} width="360px" cancelLabel={$t`Close`}>
+<Dialog title={$t`Word Count`} on:close={onClose} width="360px" cancelLabel={$t`Close`}>
   <vbox class="statistics">
     <hbox class="caption">{$t`Statistics:`}</hbox>
     <grid class="rows">
@@ -21,13 +21,19 @@
   import { TextStatistics } from "./TextStatistics";
   import Dialog from "../Dialog/Dialog.svelte";
   import type { Editor } from "@tiptap/core";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let editor: Editor;
-  export let onDone: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let statistics = TextStatistics.ofEditor(editor);
   let isSelection = !editor.state.selection.empty;
+
+  function onClose() {
+    dispatch("close");
+  }
 </script>
 
 <style>

@@ -1,4 +1,4 @@
-<Dialog title={$t`Find and Replace`} on:close={onDone} width="520px">
+<Dialog title={$t`Find and Replace`} on:close={onClose} width="520px">
   <DialogTabs tabs={[{ id: "find", label: $t`Find` }, { id: "replace", label: $t`Replace` }]}
     bind:selected={tab} />
   <grid class="fields">
@@ -25,7 +25,7 @@
       <DialogButton label={$t`Replace All`} disabled={!term} onClick={onReplaceAll} />
     {/if}
     <DialogButton label={$t`Find Next`} primary disabled={!term} onClick={onFindNext} />
-    <DialogButton label={$t`Cancel`} onClick={onDone} />
+    <DialogButton label={$t`Cancel`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 
@@ -37,12 +37,13 @@
   import TextField from "../Form/TextField.svelte";
   import CheckBox from "../Form/CheckBox.svelte";
   import type { Editor } from "@tiptap/core";
-  import { onDestroy } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let editor: Editor;
   export let replaceMode = false;
-  export let onDone: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let tab = replaceMode ? "replace" : "find";
   let { from, to } = editor.state.selection;
@@ -77,6 +78,10 @@
       event.preventDefault();
       onFindNext();
     }
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

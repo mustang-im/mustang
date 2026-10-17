@@ -138,12 +138,14 @@
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { kAllWeekdays, weekdayLabel } from "../../../frontend/Util/date";
+  import { createEventDispatcher } from "svelte";
   import { getDateTimeLocale, gt, plural, t } from "../../../l10n/l10n";
 
   export let event: Event;
   export let flow: EventEditFlow;
   export let timeEditor: EventTimeEditor;
-  export let onClose: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const series = flow.master;
   const seriesTimes = series == event ? timeEditor : new EventTimeEditor(series);
@@ -260,6 +262,10 @@
   function onRemove() {
     flow.removeRecurrence();
     onClose();
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

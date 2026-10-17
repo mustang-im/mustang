@@ -38,12 +38,12 @@
 </vbox>
 
 {#if showRecurrenceDialog}
-  <RecurrenceDialog {event} {flow} {timeEditor} onClose={onRecurrenceClosed} />
+  <RecurrenceDialog {event} {flow} {timeEditor} on:close={onRecurrenceClosed} />
 {/if}
 {#if seriesChoice}
   <SeriesChoiceDialog title={seriesChoice.title} okLabel={seriesChoice.okLabel}
     choices={seriesChoice.choices} onChoose={seriesChoice.onChoose}
-    onClose={() => seriesChoice = null} />
+    on:close={() => seriesChoice = null} />
 {/if}
 {#if showSaveChanges}
   <SaveChangesDialog title={kindLabel} question={saveChangesText.question}

@@ -51,10 +51,13 @@
   import WebIcon from "lucide-svelte/icons/globe";
   import EmailIcon from "lucide-svelte/icons/mail";
   import type { Editor } from "@tiptap/core";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let editor: Editor;
-  export let onDone: () => void;
+  export let onDone: () => void = null;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let isLink = editor.isActive("link");
   let hasSelection = !editor.state.selection.empty;
@@ -83,12 +86,17 @@
 
   function onRemove() {
     editor.chain().focus().extendMarkRange("link").unsetLink().run();
-    onDone();
+    close();
   }
 
   function onClose() {
     editor.commands.focus();
-    onDone();
+    close();
+  }
+
+  function close() {
+    onDone?.();
+    dispatch("close");
   }
 </script>
 

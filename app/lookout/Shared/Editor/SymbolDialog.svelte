@@ -1,4 +1,4 @@
-<Dialog title={$t`Symbol`} on:close={onDone} width="620px" height="560px">
+<Dialog title={$t`Symbol`} on:close={onClose} width="620px" height="560px">
   <DialogTabs tabs={[{ id: "symbols", label: $t`Symbols` }, { id: "special", label: $t`Special Characters` }]}
     bind:selected={tab} />
   {#if tab == "symbols"}
@@ -58,7 +58,7 @@
     <DialogButton label={$t`Insert`} primary
       disabled={!(tab == "symbols" ? selected : selectedSpecial) && $t`Select a symbol`}
       onClick={() => insert(tab == "symbols" ? selected : selectedSpecial)} />
-    <DialogButton label={hasInserted ? $t`Close` : $t`Cancel`} onClick={onDone} />
+    <DialogButton label={hasInserted ? $t`Close` : $t`Cancel`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 
@@ -69,10 +69,12 @@
   import DialogTabs from "../Dialog/DialogTabs.svelte";
   import ComboBox from "../Form/ComboBox.svelte";
   import type { Editor } from "@tiptap/core";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let editor: Editor;
-  export let onDone: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let tab = "symbols";
   let subsets = SymbolTable.subsets;
@@ -98,6 +100,10 @@
     editor.chain().focus().insertContent({ type: "text", text: character }).run();
     SymbolTable.used(character);
     hasInserted = true;
+  }
+
+  function onClose() {
+    dispatch("close");
   }
 </script>
 

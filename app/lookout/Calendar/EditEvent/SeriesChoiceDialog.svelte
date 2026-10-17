@@ -11,13 +11,15 @@
   import type { SeriesChoice } from "./EventEditFlow";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let title: string;
   export let okLabel: string;
   export let choices: SeriesChoice[];
   export let onChoose: (choice: SeriesChoice) => Promise<void>;
-  export let onClose: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   let choice: SeriesChoice = choices[0];
 
@@ -26,6 +28,10 @@
     following: gt`This and all following occurrences`,
     series: gt`The entire series`,
   };
+
+  function onClose() {
+    dispatch("close");
+  }
 </script>
 
 <style>
