@@ -119,7 +119,7 @@
   import { inlineRibbon, isAdvancedSearchOpen, searchOptions, updatingFolders } from "./Selected";
   import ThreePane from "./3pane/3Pane.svelte";
   import type TableMessageList from "./3pane/TableMessageList.svelte";
-  import MessagePrint from "./Message/MessagePrint.svelte";
+  import MessagePrint, { printMessage } from "./Message/MessagePrint.svelte";
   import MessageMovePopup, { openMoveMessages } from "./Message/MessageMovePopup.svelte";
   import NewFolderDialog, { openNewFolder } from "./LeftPane/NewFolderDialog.svelte";
   import MoveFolderDialog, { openMoveFolder } from "./LeftPane/MoveFolderDialog.svelte";
@@ -565,7 +565,8 @@
       case MailKeyAction.ForwardAsAttachment:
         return mailMustangApp.writeMail(await single.compose.forwardAsAttachment());
       case MailKeyAction.Print:
-        return await MessageActions.print(single);
+        $printMessage = single;
+        return;
     }
   }
 </script>

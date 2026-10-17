@@ -1,6 +1,6 @@
 {#if single}
   <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo="Ctrl+P"
-    onClick={() => MessageActions.print(single)} />
+    onClick={() => { $printMessage = single; }} />
   <MenuDivider />
   <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo="Ctrl+R"
     onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())} />
@@ -78,6 +78,7 @@
   import ArchiveIcon from "lucide-svelte/icons/archive";
   import JunkIcon from "lucide-svelte/icons/shield-x";
   import PrintIcon from "lucide-svelte/icons/printer";
+  import { printMessage } from "./MessagePrint.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";

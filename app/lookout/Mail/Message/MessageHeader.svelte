@@ -115,7 +115,7 @@
     <JunkMenuItems messages={[message]} />
   </SubMenu>
   <MenuDivider />
-  <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => MessageActions.print(message)} />
+  <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => { $printMessage = message; }} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon} onClick={() => MessageActions.saveAs(message)} />
   <SubMenu label={$t`View`} icon={SourceIcon}>
     <DisplayModeSwitcher />
@@ -161,6 +161,7 @@
   import JunkIcon from "lucide-svelte/icons/shield-x";
   import CategorizeIcon from "lucide-svelte/icons/tag";
   import PrintIcon from "lucide-svelte/icons/printer";
+  import { printMessage } from "./MessagePrint.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";

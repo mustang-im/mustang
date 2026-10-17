@@ -29,13 +29,7 @@ import { ArrayColl } from "svelte-collections";
 import { gt } from "../../l10n/l10n";
 import { get } from "svelte/store";
 
-export interface MessagePrinter {
-  print(message: EMail): Promise<void>;
-}
-
 export class MessageActions {
-  static printer: MessagePrinter | null = null;
-
   static accountForNewMail(folder: Folder | null): MailAccount {
     let account = folder?.account && appGlobal.emailAccounts.contains(folder.account)
       ? folder.account
@@ -216,11 +210,6 @@ export class MessageActions {
     let file = new File([content], filename, { type: "message/rfc822" });
     await saveBlobAsFile(file);
     // </copied>
-  }
-
-  static async print(message: EMail) {
-    assert(MessageActions.printer, gt`Printing is not available here`);
-    await MessageActions.printer.print(message);
   }
 
   static senderPerson(message: EMail): Person | null {

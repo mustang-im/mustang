@@ -41,7 +41,7 @@
 
 <script lang="ts">
   import { selectedMessage } from "../../../frontend/Mail/Selected";
-  import { MessageActions } from "../../Mail/MessageActions";
+  import { printMessage } from "../../Mail/Message/MessagePrint.svelte";
   import { isBackstageOpen } from "./selected";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
@@ -53,9 +53,9 @@
 
   $: message = $selectedMessage;
 
-  async function onPrint() {
+  function onPrint() {
     $isBackstageOpen = false;
-    await MessageActions.print(message);
+    $printMessage = message;
   }
 </script>
 

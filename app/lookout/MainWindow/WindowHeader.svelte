@@ -52,6 +52,7 @@
   import ForwardIcon from "lucide-svelte/icons/forward";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import PrintIcon from "lucide-svelte/icons/printer";
+  import { printMessage } from "../Mail/Message/MessagePrint.svelte";
   import { derived, get, writable } from "svelte/store";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
   import logo from "../../frontend/asset/icon/general/logo.svg?raw";
@@ -101,7 +102,7 @@
     { id: "mail.delete", label: gt`Delete`, icon: DeleteIcon, shortCutInfo: "Del", disabled: noSelection,
       run: async () => { await Promise.all(get(selectedArray).map(message => message.deleteMessage())); } },
     { id: "mail.print", label: gt`Print`, icon: PrintIcon, shortCutInfo: "Ctrl+P", disabled: noSingle,
-      run: () => MessageActions.print(get(selectedArray)[0]) },
+      run: () => { $printMessage = get(selectedArray)[0]; } },
   ];
   $: $quickAccessCommands = isMail ? mailCommands : [sendReceiveAll];
 

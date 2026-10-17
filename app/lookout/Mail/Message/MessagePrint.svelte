@@ -4,29 +4,32 @@
   </hbox>
 {/if}
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { MessageActions } from "../MessageActions";
+  import { writable } from "svelte/store";
+
+  export const printMessage = writable<EMail | null>(null);
+</script>
+
+<script lang="ts">
   import MessagePrint from "../../../frontend/Mail/Message/MessagePrint.svelte";
-  import { onDestroy, onMount, tick } from "svelte";
+  import { catchErrors } from "../../../frontend/Util/error";
+  import { onDestroy, tick } from "svelte";
 
   let message: EMail | null = null;
   let printE: MessagePrint;
 
+  $printMessage = null;
+  $: $printMessage && catchErrors(() => print($printMessage));
   async function print(toPrint: EMail) {
+    $printMessage = null;
     message = toPrint;
     await tick();
     await toPrint.loadBody();
     await printE.print();
   }
-
-  onMount(() => {
-    MessageActions.printer = { print };
-  });
   onDestroy(() => {
-    if (MessageActions.printer?.print == print) {
-      MessageActions.printer = null;
-    }
+    $printMessage = null;
   });
 </script>
 
