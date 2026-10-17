@@ -13,7 +13,7 @@
   </FormGrid>
 </Dialog>
 {#if isEditingCriteria}
-  <SearchFolderCriteriaDialog {search} onOK={() => { search = search; }} on:close={() => { isEditingCriteria = false; }} />
+  <SearchFolderCriteriaDialog {search} on:change={() => { search = search; }} on:close={() => { isEditingCriteria = false; }} />
 {/if}
 
 <script lang="ts" context="module">

@@ -15,8 +15,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let search: SearchEMail;
-  export let onOK: () => void;
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ change: void, close: void }>();
 
   let dialog: Dialog;
   let criteria = new SearchFolderCriteria(search);
@@ -28,7 +27,7 @@
 
   function onSubmit() {
     criteria.writeTo(search);
-    onOK();
+    dispatch("change");
   }
 
   function onClose() {
