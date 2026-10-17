@@ -46,7 +46,7 @@
   import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
   import { FolderPropertiesTab, openFolderProperties } from "../FolderProperties.svelte";
   import { openNewFolder } from "../LeftPane/NewFolderDialog.svelte";
   import { openMoveFolder } from "../LeftPane/MoveFolderDialog.svelte";

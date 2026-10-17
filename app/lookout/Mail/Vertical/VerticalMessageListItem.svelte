@@ -126,9 +126,9 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { inlineReplies } from "../Selected";
-  import { MessageDates } from "../MessageList/MessageDates";
+  import { MessageDates } from "../3pane/MessageDates";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
-  import { TextHighlight } from "../MessageList/TextHighlight";
+  import { TextHighlight } from "../3pane/TextHighlight";
   import { derived } from "svelte/store";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
@@ -152,7 +152,7 @@
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
 
   export let message: EMail;
   export let isSelected = false;

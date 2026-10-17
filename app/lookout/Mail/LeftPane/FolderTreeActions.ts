@@ -63,7 +63,7 @@ export class FolderTreeActions {
   static async moveFolder(folder: Folder, target: Folder) {
     assert(FolderTreeActions.canMoveFolderInto(folder, target), gt`You cannot move the folder ${folder.name} into ${target.name}`);
     await target.moveFolderHere(folder);
-    // <copied from="../LeftPane/NewFolderDialog.svelte">
+    // <copied from="NewFolderDialog.svelte">
     let expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
     let targetID = target.account?.id + "/" + target.id;
     expandedIDs.value = [...(expandedIDs.value ?? []).filter(id => id != targetID), targetID];

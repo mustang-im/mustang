@@ -108,7 +108,7 @@
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "./MessageActions";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
-  import { FolderTreeActions } from "./FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "./LeftPane/FolderTreeActions";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import HomeTab from "./Ribbon/HomeTab.svelte";
   import SendReceiveTab from "./Ribbon/SendReceiveTab.svelte";

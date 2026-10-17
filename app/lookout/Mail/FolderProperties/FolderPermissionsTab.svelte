@@ -64,7 +64,7 @@
 
 <script lang="ts">
   import { MailShareCombinedPermissions, MailShareIndividualPermissions as Right } from "../../../logic/Mail/Folder";
-  import { FolderPermissions, type FolderPermission } from "../Dialogs/FolderProperties/FolderPermissions";
+  import { FolderPermissions, type FolderPermission } from "./FolderPermissions";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { ArrayColl } from "svelte-collections";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";

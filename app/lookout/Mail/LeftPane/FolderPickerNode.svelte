@@ -18,7 +18,7 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "./FolderTreeActions";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
   import type { Collection } from "svelte-collections";
   import { createEventDispatcher } from "svelte";

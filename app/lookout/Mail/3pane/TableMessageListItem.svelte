@@ -102,8 +102,8 @@
   import { Column, ColumnInfo } from "../ViewSettings/ViewSettings";
   import { derived } from "svelte/store";
   import { inlineReplies } from "../Selected";
-  import { MessageDates } from "../MessageList/MessageDates";
-  import { TextHighlight } from "../MessageList/TextHighlight";
+  import { MessageDates } from "./MessageDates";
+  import { TextHighlight } from "./TextHighlight";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
@@ -122,7 +122,7 @@
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
 
   export let message: EMail;
   export let columns: Column[];

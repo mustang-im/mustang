@@ -50,7 +50,7 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "./FolderTreeActions";
   import { MessageActions } from "../MessageActions";
   import { openFolderProperties } from "../FolderProperties.svelte";
   import { openNewFolder } from "./NewFolderDialog.svelte";

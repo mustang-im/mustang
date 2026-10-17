@@ -12,7 +12,7 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import { ArrangeFields, MailViewSettings } from "./ViewSettings";
-  import { ViewCommands } from "../View/ViewCommands";
+  import { ViewCommands } from "./ViewCommands";
   import { MessageGrouping } from "../3pane/MessageGrouping";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";

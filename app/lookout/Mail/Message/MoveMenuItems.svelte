@@ -20,7 +20,7 @@
   import { recentFolders } from "../RecentFolders";
   import { MessageActions } from "../MessageActions";
   import { openMoveMessages } from "./MessageMovePopup.svelte";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";

@@ -31,7 +31,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "./FolderTreeActions";
   import AccountMenu from "./AccountMenu.svelte";
   import ConnectButton from "./ConnectButton.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";

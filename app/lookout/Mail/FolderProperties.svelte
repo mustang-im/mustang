@@ -27,8 +27,8 @@
 </script>
 
 <script lang="ts">
-  import { FolderCountMode, FolderTreeActions } from "./FolderPane/FolderTreeActions";
-  import { FolderPermissions } from "./Dialogs/FolderProperties/FolderPermissions";
+  import { FolderCountMode, FolderTreeActions } from "./LeftPane/FolderTreeActions";
+  import { FolderPermissions } from "./FolderProperties/FolderPermissions";
   import FolderGeneralTab from "./FolderProperties/FolderGeneralTab.svelte";
   import FolderPermissionsTab from "./FolderProperties/FolderPermissionsTab.svelte";
   import FolderSyncTab from "./FolderProperties/FolderSyncTab.svelte";

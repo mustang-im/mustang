@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
-import { RulesTestAccount } from "./Rules/RulesTestAccount";
-import { AllAccounts } from "../../../logic/Mail/Virtual/AllAccounts";
-import type { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
-import type { MailAccount } from "../../../logic/Mail/MailAccount";
-import { FolderTreeActions } from "../../Mail/FolderPane/FolderTreeActions";
+import { RulesTestAccount } from "../Rules/RulesTestAccount";
+import { AllAccounts } from "../../../../logic/Mail/Virtual/AllAccounts";
+import type { AllFolders } from "../../../../logic/Mail/Virtual/AllFolders";
+import type { MailAccount } from "../../../../logic/Mail/MailAccount";
+import { FolderTreeActions } from "../../../Mail/LeftPane/FolderTreeActions";
 import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
 import { expect, test } from "vitest";

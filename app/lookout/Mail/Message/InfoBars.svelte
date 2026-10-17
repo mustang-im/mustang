@@ -62,7 +62,7 @@
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MessageActions } from "../MessageActions";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { MessageDates } from "../MessageList/MessageDates";
+  import { MessageDates } from "../3pane/MessageDates";
   import { MyReply } from "../../../logic/Mail/Store/MyReply";
   import { openEMailMessage } from "../../../frontend/Mail/open";
   import { appName } from "../../../logic/build";

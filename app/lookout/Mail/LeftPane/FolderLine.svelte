@@ -62,7 +62,7 @@
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { onDragOverMail } from "../../../frontend/Mail/Message/drag";
   import { MessageActions } from "../MessageActions";
-  import { FolderCountMode, FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderCountMode, FolderTreeActions } from "./FolderTreeActions";
   import FolderMenu from "./FolderMenu.svelte";
   import ConnectButton from "./ConnectButton.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";

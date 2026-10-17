@@ -34,7 +34,7 @@
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { SharedFolders, SharedFolderType } from "../Dialogs/SharedFolders";
+  import { SharedFolders, SharedFolderType } from "./SharedFolders";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
   import MailAutocomplete from "../Composer/MailAutocomplete.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";

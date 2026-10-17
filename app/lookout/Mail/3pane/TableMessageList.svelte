@@ -81,7 +81,7 @@
   import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageRows, type MessageRow } from "./MessageRows";
-  import { MessageMetadata } from "../MessageList/MessageMetadata";
+  import { MessageMetadata } from "./MessageMetadata";
   import { MessageActions } from "../MessageActions";
   import { Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
   import { now } from "../../Calendar/selected";

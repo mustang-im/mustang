@@ -1,6 +1,6 @@
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { ArrangeBy } from "../3pane/MessageGrouping";
-import { MailViewSettings, type ViewSettings } from "../ViewSettings/ViewSettings";
+import { MailViewSettings, type ViewSettings } from "./ViewSettings";
 
 export class ViewCommands {
   static arrangeBy(folder: Folder | null, field: ArrangeBy) {

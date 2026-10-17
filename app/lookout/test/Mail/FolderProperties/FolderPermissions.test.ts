@@ -1,6 +1,6 @@
-import { FolderPermissions } from "../../Mail/Dialogs/FolderProperties/FolderPermissions";
-import { PersonUID } from "../../../logic/Abstract/PersonUID";
-import { MailShareCombinedPermissions as Level, MailShareIndividualPermissions as Right } from "../../../logic/Mail/Folder";
+import { FolderPermissions } from "../../../Mail/FolderProperties/FolderPermissions";
+import { PersonUID } from "../../../../logic/Abstract/PersonUID";
+import { MailShareCombinedPermissions as Level, MailShareIndividualPermissions as Right } from "../../../../logic/Mail/Folder";
 import { ArrayColl } from "svelte-collections";
 import { beforeEach, expect, test } from "vitest";
 

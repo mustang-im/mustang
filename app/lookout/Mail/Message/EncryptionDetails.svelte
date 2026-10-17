@@ -54,7 +54,7 @@
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { showError } from "../../../frontend/Util/error";
-  import { MessageSecurity } from "../ReadingPane/MessageSecurity";
+  import { MessageSecurity } from "./MessageSecurity";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";

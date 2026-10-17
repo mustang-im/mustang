@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { MessageDates } from "../../Mail/MessageList/MessageDates";
-import { getDateTimeLocale } from "../../../l10n/l10n";
+import { MessageDates } from "../../../Mail/3pane/MessageDates";
+import { getDateTimeLocale } from "../../../../l10n/l10n";
 import { expect, test } from "vitest";
 
 // Wednesday, 2026-10-14, 15:00 local time

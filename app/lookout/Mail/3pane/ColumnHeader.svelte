@@ -58,7 +58,7 @@
   import { Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
   import { openViewSettings } from "../ViewSettings/ViewSettingsDialog.svelte";
   import { openShowColumns } from "../ViewSettings/ShowColumnsDialog.svelte";
-  import { ViewCommands } from "../View/ViewCommands";
+  import { ViewCommands } from "../ViewSettings/ViewCommands";
   import { ArrangeBy, MessageGrouping } from "./MessageGrouping";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";

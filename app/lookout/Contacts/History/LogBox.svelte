@@ -43,7 +43,7 @@
   import { File } from "../../../logic/Files/File";
   import type { LogEntry } from "../../../logic/Contacts/History/History";
   import { ContactActivities } from "./ContactActivities";
-  import { MessageDates } from "../../Mail/MessageList/MessageDates";
+  import { MessageDates } from "../../Mail/3pane/MessageDates";
   import { fileSize } from "../../../frontend/Files/file";
   import { catchErrors } from "../../../frontend/Util/error";
   import { openEMailMessage } from "../../../frontend/Mail/open";

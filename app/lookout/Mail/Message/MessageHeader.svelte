@@ -132,7 +132,7 @@
   import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
   import MessagePropertiesDialog from "./MessagePropertiesDialog.svelte";
-  import { MessageDates } from "../MessageList/MessageDates";
+  import { MessageDates } from "../3pane/MessageDates";
   import { derived } from "svelte/store";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";

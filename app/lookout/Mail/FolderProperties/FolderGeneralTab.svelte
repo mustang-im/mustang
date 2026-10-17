@@ -24,7 +24,7 @@
 
 <script lang="ts">
   import { SpecialFolder, specialFolderNames, specialFolderOrder, type Folder } from "../../../logic/Mail/Folder";
-  import { FolderCountMode } from "../FolderPane/FolderTreeActions";
+  import { FolderCountMode } from "../LeftPane/FolderTreeActions";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";

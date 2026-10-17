@@ -69,7 +69,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
   import LeftPane, { FolderPaneMode } from "../LeftPane/LeftPane.svelte";
   import FolderPaneMinimized from "../../Shared/FolderPaneMinimized.svelte";
   import FolderHeader from "../LeftPane/FolderHeader.svelte";

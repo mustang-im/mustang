@@ -29,7 +29,7 @@
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
   import { MailViewSettings } from "./ViewSettings";
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import { t } from "../../../l10n/l10n";

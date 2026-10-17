@@ -42,7 +42,7 @@
       ? await parent.createSubFolder(name.trim())
       : await account.createToplevelFolder(name.trim());
     if (parent) {
-      /* <copied to="../FolderPane/FolderTreeActions.ts"> */
+      /* <copied to="FolderTreeActions.ts"> */
       let expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
       let parentID = parent.account?.id + "/" + parent.id;
       expandedIDs.value = [...(expandedIDs.value ?? []).filter(id => id != parentID), parentID];

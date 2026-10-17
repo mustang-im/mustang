@@ -1,10 +1,10 @@
-import type { Folder } from "../../../../logic/Mail/Folder";
-import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-import type { PersonUID } from "../../../../logic/Abstract/PersonUID";
-import { MailShareCombinedPermissions, MailShareIndividualPermissions } from "../../../../logic/Mail/Folder";
-import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../../logic/util/netUtil";
-import { assert } from "../../../../logic/util/util";
-import { gt } from "../../../../l10n/l10n";
+import type { Folder } from "../../../logic/Mail/Folder";
+import type { MailAccount } from "../../../logic/Mail/MailAccount";
+import type { PersonUID } from "../../../logic/Abstract/PersonUID";
+import { MailShareCombinedPermissions, MailShareIndividualPermissions } from "../../../logic/Mail/Folder";
+import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../../logic/util/netUtil";
+import { assert } from "../../../logic/util/util";
+import { gt } from "../../../l10n/l10n";
 
 export class FolderPermission {
   readonly person: PersonUID;

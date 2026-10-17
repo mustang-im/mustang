@@ -18,7 +18,7 @@
 </script>
 
 <script lang="ts">
-  import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
+  import { FolderTreeActions } from "./FolderTreeActions";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FolderPicker from "./FolderPicker.svelte";
   import { t } from "../../../l10n/l10n";

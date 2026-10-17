@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
-import { RulesTestAccount } from "./Rules/RulesTestAccount";
-import { SpecialFolder } from "../../../logic/Mail/Folder";
-import { FolderTreeActions } from "../../Mail/FolderPane/FolderTreeActions";
+import { RulesTestAccount } from "../Rules/RulesTestAccount";
+import { SpecialFolder } from "../../../../logic/Mail/Folder";
+import { FolderTreeActions } from "../../../Mail/LeftPane/FolderTreeActions";
 import { expect, test } from "vitest";
 
 test("A folder moves into another folder of the same account", async () => {

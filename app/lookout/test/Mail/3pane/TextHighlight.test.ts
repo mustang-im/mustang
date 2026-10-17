@@ -1,4 +1,4 @@
-import { TextHighlight } from "../../Mail/MessageList/TextHighlight";
+import { TextHighlight } from "../../../Mail/3pane/TextHighlight";
 import { expect, test } from "vitest";
 
 test("Marks every match, case-insensitive, and keeps the original case", () => {
