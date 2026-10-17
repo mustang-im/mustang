@@ -1,17 +1,17 @@
 <OptionsPage icon={GeneralIcon} description={$t`General options for working with ${appName}.`}>
   <OptionsSection title={$t`Personalize your copy of ${appName}`}>
-    <OptionsRow icon={ThemeIcon}>
-      <hbox class="field-row">
-        <label for="options-theme" class="field-label">{$t`Theme:`}</label>
-        <ComboBox options={[ { value: "system", label: $t`Use system setting` }, { value: "light", label: $t`Light` }, { value: "dark", label: $t`Dark` } ]}
-          bind:value={options.theme.value} label={$t`Theme`} width="200px" />
-      </hbox>
-    </OptionsRow>
     <OptionsRow icon={UserInterfaceIcon}>
       <hbox class="field-row">
         <label for="options-frontend" class="field-label">{$t`User interface:`}</label>
         <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Lookout` } ]}
           bind:value={options.frontend.value} label={$t`User interface`} width="200px" />
+      </hbox>
+    </OptionsRow>
+    <OptionsRow icon={ThemeIcon}>
+      <hbox class="field-row">
+        <label for="options-theme" class="field-label">{$t`Theme:`}</label>
+        <ComboBox options={[ { value: "system", label: $t`Use system setting` }, { value: "light", label: $t`Light` }, { value: "dark", label: $t`Dark` } ]}
+          bind:value={options.theme.value} label={$t`Theme`} width="200px" />
       </hbox>
     </OptionsRow>
   </OptionsSection>

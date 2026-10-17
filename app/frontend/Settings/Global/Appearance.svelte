@@ -4,13 +4,21 @@
       <hbox slot="header">{$t`User interface`}</hbox>
       <hbox class="frontend">
         <label>
-          <input type="radio" value="classic" bind:group={frontend} on:change={onSaveFrontend} />
+          <input type="radio" value="classic" bind:group={frontend} />
           {appName}
         </label>
         <label>
-          <input type="radio" value="lookout" bind:group={frontend} on:change={onSaveFrontend} />
+          <input type="radio" value="lookout" bind:group={frontend} />
           {$t`Lookout`}
         </label>
+        {#if frontend != $frontendSetting.value}
+          <Button
+            label={$t`Switch`}
+            icon={SwitchIcon}
+            onClick={onSaveFrontend}
+            classes="restart"
+            />
+        {/if}
       </hbox>
     </HeaderGroupBox>
   {/if}
@@ -74,6 +82,7 @@
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Button from "../../Shared/Button.svelte";
   import RestartIcon from "lucide-svelte/icons/rotate-ccw";
+  import SwitchIcon from "lucide-svelte/icons/arrow-left-right";
   import { catchErrors } from "../../Util/error";
 
   let frontendSetting = getLocalStorage("appearance.frontend", "classic");
