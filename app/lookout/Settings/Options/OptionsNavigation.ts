@@ -1,6 +1,7 @@
 import type { Account } from "../../../logic/Abstract/Account";
 import type { AccountPage, OptionsCategory, SettingsDialog } from "../SettingsDialogs";
 import { AccountDraft } from "../Accounts/AccountDraft";
+import { MailAccount } from "../../../logic/Mail/MailAccount";
 import { Calendar } from "../../../logic/Calendar/Calendar";
 import { Addressbook } from "../../../logic/Contacts/Addressbook";
 import { appGlobal } from "../../../logic/app";
@@ -50,6 +51,9 @@ export class OptionsNavigation {
     let pages: AccountPageEntry[] = [ { id: "general", label: gt`General` } ];
     if (OptionsNavigation.hasOwnServer(account)) {
       pages.push({ id: "server", label: gt`Server` });
+    }
+    if (account instanceof MailAccount) {
+      pages.push({ id: "identities", label: gt`Identities` });
     }
     if (account instanceof Calendar && account.workHours) {
       pages.push({ id: "work-hours", label: gt`Work hours` });

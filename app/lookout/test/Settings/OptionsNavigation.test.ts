@@ -18,9 +18,9 @@ function makeIMAPAccount(): IMAPAccount {
   return account;
 }
 
-test("A mail account with its own server has General and Server pages", () => {
+test("A mail account with its own server has General, Server and Identities pages", () => {
   let account = makeIMAPAccount();
-  expect(OptionsNavigation.pagesOf(account).map(page => page.id)).toEqual([ "general", "server" ]);
+  expect(OptionsNavigation.pagesOf(account).map(page => page.id)).toEqual([ "general", "server", "identities" ]);
   expect(OptionsNavigation.categoryOf(account)).toBe("mail");
 });
 

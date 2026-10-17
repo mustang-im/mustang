@@ -10,7 +10,7 @@ import { writable } from "svelte/store";
 export type OptionsCategory = "general" | "mail" | "calendar" | "people" | "language" | "advanced" | "trust-center";
 export type AccountSettingsTab = "email" | "calendars" | "addressbooks";
 export type ChangeAccountPage = "general" | "server";
-export type AccountPage = ChangeAccountPage | "work-hours";
+export type AccountPage = ChangeAccountPage | "identities" | "work-hours";
 export type TrustCenterPage = "email-security";
 
 export type SettingsDialog =

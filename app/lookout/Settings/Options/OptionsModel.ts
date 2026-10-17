@@ -1,6 +1,8 @@
 import { OptionValue } from "./OptionValue";
 import { WorkHoursDrafts } from "./WorkHoursDrafts";
 import { AccountDraft } from "../Accounts/AccountDraft";
+import { IdentitiesDraft } from "../Accounts/IdentitiesDraft";
+import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { Account } from "../../../logic/Abstract/Account";
 import { CalendarSettings } from "../../Calendar/CalendarSettings";
 import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
@@ -37,6 +39,7 @@ export class OptionsModel {
   readonly thirdTimeZone = this.add(OptionValue.plain(CalendarSettings.thirdTimeZone));
   readonly workHours = new WorkHoursDrafts();
   protected readonly accountDrafts = new Map<Account, AccountDraft>();
+  protected readonly identitiesDrafts = new Map<MailAccount, IdentitiesDraft>();
   readonly showReminders = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "popup"));
   readonly reminderSound = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "sound"));
 
@@ -63,12 +66,23 @@ export class OptionsModel {
     return draft;
   }
 
+  identitiesDraftOf(account: MailAccount): IdentitiesDraft {
+    let draft = this.identitiesDrafts.get(account);
+    if (!draft) {
+      draft = new IdentitiesDraft(account);
+      this.identitiesDrafts.set(account, draft);
+    }
+    return draft;
+  }
+
   forgetAccount(account: Account) {
     this.accountDrafts.delete(account);
+    this.identitiesDrafts.delete(account as MailAccount);
   }
 
   get accountWithMissingField(): Account | null {
-    return [ ...this.accountDrafts.values() ].find(draft => draft.missingField)?.account ?? null;
+    return [ ...this.accountDrafts.values(), ...this.identitiesDrafts.values() ]
+      .find(draft => draft.missingField)?.account ?? null;
   }
 
   protected add<T, S>(option: OptionValue<T, S>): OptionValue<T, S> {
@@ -91,6 +105,11 @@ export class OptionsModel {
     }
     await this.workHours.save();
     for (let draft of this.accountDrafts.values()) {
+      if (draft.isChanged) {
+        await draft.save();
+      }
+    }
+    for (let draft of this.identitiesDrafts.values()) {
       if (draft.isChanged) {
         await draft.save();
       }

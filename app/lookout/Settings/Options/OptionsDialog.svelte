@@ -12,6 +12,8 @@
         {#key selection.account}
           {#if selection.accountPage == "server"}
             <AccountServerPage account={selection.account} draft={options.accountDraftOf(selection.account)} />
+          {:else if selection.accountPage == "identities" && selection.account instanceof MailAccount}
+            <AccountIdentitiesPage account={selection.account} draft={options.identitiesDraftOf(selection.account)} />
           {:else if selection.accountPage == "work-hours" && selection.account instanceof Calendar}
             <OptionsPage icon={CalendarIcon} description={$t`Set the days and hours when you work. The calendar shades the time outside of them.`}>
               <WorkTime drafts={options.workHours} calendar={selection.account} isCalendarFixed />
@@ -61,6 +63,8 @@
   import WorkTime from "./WorkTime.svelte";
   import AccountGeneralPage from "./Accounts/AccountGeneralPage.svelte";
   import AccountServerPage from "./Accounts/AccountServerPage.svelte";
+  import AccountIdentitiesPage from "./Accounts/AccountIdentitiesPage.svelte";
+  import { MailAccount } from "../../../logic/Mail/MailAccount";
   import MailIcon from "lucide-svelte/icons/mail";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import AddressbookIcon from "lucide-svelte/icons/book-user";
