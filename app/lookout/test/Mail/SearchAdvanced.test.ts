@@ -48,15 +48,15 @@ test("From and To are one person with a direction", () => {
   let draft = new AdvancedSearchDraft(MailSearch.defaultOptions(), null, now);
   let nick = { name: "Nick" } as any;
   draft.setFrom(nick);
-  expect(draft.from).toBe(nick);
-  expect(draft.to).toBeNull();
+  expect(draft.person).toBe(nick);
+  expect(draft.isOutgoing).toBe(false);
   draft.setTo(nick);
-  expect(draft.from).toBeNull();
-  expect(draft.to).toBe(nick);
+  expect(draft.person).toBe(nick);
   expect(draft.toOptions().isOutgoing).toBe(true);
   // Removing the empty From field keeps the To person
   draft.setFrom(null);
-  expect(draft.to).toBe(nick);
+  expect(draft.person).toBe(nick);
+  expect(draft.isOutgoing).toBe(true);
   draft.setTo(null);
   expect(draft.toOptions().person).toBeNull();
   expect(draft.toOptions().isOutgoing).toBeNull();
@@ -67,7 +67,7 @@ test("Clear filters empties everything except the scope", () => {
   let draft = new AdvancedSearchDraft(options, "report", now);
   draft.clear();
   let result = draft.toOptions();
-  expect(draft.searchTerm).toBeNull();
+  expect(draft.keywords).toBe("");
   expect(result.scope).toBe(SearchScope.AllAccounts);
   expect(MailSearch.hasRefiners(result)).toBe(false);
 });

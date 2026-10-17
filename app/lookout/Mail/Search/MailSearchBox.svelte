@@ -55,7 +55,7 @@
   {/if}
   {#if $isAdvancedSearchOpen && draft}
     <vbox class="advanced-popup">
-      <SearchCriteria bind:draft account={$selectedAccount} folder={$selectedFolder} onSearch={onAdvancedSearch} />
+      <SearchCriteria bind:draft account={$selectedAccount} folder={$selectedFolder} on:search={onAdvancedSearch} />
     </vbox>
   {/if}
 </vbox>
@@ -171,7 +171,7 @@
 
   function onAdvancedSearch() {
     $searchOptions = draft.toOptions();
-    $globalSearchTerm = draft.searchTerm?.toLowerCase() ?? null;
+    $globalSearchTerm = draft.keywords.trim().toLowerCase() || null;
     closeAdvanced();
   }
 

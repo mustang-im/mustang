@@ -1,7 +1,4 @@
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-import type { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
-import { assert } from "../../../logic/util/util";
-import { gt } from "../../../l10n/l10n";
 import { MailSearch, type SearchOptions } from "./MailSearch";
 import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
 import { SizeRange, SizeRanges } from "./SearchRanges";
@@ -25,20 +22,16 @@ export class SearchFolderCriteria {
       flagged: !!search.isStarred,
       replied: !!search.isReplied,
       tags: search.tags.contents,
-      size: SearchFolderCriteria.sizeRangeOf(search.sizeMin, search.sizeMax),
+      size: SizeRanges.named.find(range => {
+        let bytes = SizeRanges.bytes(range);
+        return (bytes.min ?? null) == (search.sizeMin ?? null) && (bytes.max ?? null) == (search.sizeMax ?? null);
+      }) ?? SizeRange.Any,
     };
-  }
-
-  static sizeRangeOf(sizeMin: number | null, sizeMax: number | null): SizeRange {
-    return SizeRanges.named.find(range => {
-      let bytes = SizeRanges.bytes(range);
-      return (bytes.min ?? null) == (sizeMin ?? null) && (bytes.max ?? null) == (sizeMax ?? null);
-    }) ?? SizeRange.Any;
   }
 
   writeTo(search: SearchEMail) {
     let options = this.draft.toOptions();
-    search.bodyText = this.draft.searchTerm;
+    search.bodyText = this.draft.keywords.trim() || null;
     search.includesPerson = options.person;
     search.isOutgoing = options.isOutgoing;
     search.isRead = options.isRead;
@@ -51,15 +44,5 @@ export class SearchFolderCriteria {
       search.sizeMin = bytes.min;
       search.sizeMax = bytes.max;
     }
-  }
-}
-
-export class SearchFolderCustomizing {
-  static async save(folder: SavedSearchFolder, name: string, search: SearchEMail) {
-    assert(name.trim(), gt`Enter a name`);
-    folder.name = name.trim();
-    folder.search.copyFrom(search);
-    await folder.save();
-    await folder.listMessages();
   }
 }

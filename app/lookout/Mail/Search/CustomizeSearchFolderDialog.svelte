@@ -27,7 +27,6 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { appGlobal } from "../../../logic/app";
-  import { SearchFolderCriteria } from "./SearchFolderCriteria";
   import SearchFolderCriteriaDialog from "./SearchFolderCriteriaDialog.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -54,16 +53,15 @@
   $: summary = criteriaSummary(search);
 
   function criteriaSummary(_search: SearchEMail): string {
-    let draft = new SearchFolderCriteria(search).draft;
     let parts: string[] = [];
-    if (draft.keywords) {
-      parts.push(gt`containing ${draft.keywords}`);
+    if (search.bodyText) {
+      parts.push(gt`containing ${search.bodyText}`);
     }
-    if (draft.from) {
-      parts.push(gt`from ${draft.from.name}`);
+    if (search.includesPerson && search.isOutgoing !== true) {
+      parts.push(gt`from ${search.includesPerson.name}`);
     }
-    if (draft.to) {
-      parts.push(gt`to ${draft.to.name}`);
+    if (search.includesPerson && search.isOutgoing === true) {
+      parts.push(gt`to ${search.includesPerson.name}`);
     }
     if (search.isRead === false) {
       parts.push(gt`unread`);

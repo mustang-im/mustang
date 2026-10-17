@@ -49,19 +49,11 @@ export class AdvancedSearchDraft {
     this.endDate = this.shownEndDate = dates.end ? ReceivedRanges.startOfDay(dates.end) : null;
   }
 
-  get from(): Person | null {
-    return this.isOutgoing === true ? null : this.person;
-  }
-
-  get to(): Person | null {
-    return this.isOutgoing === true ? this.person : null;
-  }
-
   setFrom(person: Person | null) {
     if (person) {
       this.person = person;
       this.isOutgoing = false;
-    } else if (this.from) {
+    } else if (this.person && this.isOutgoing !== true) {
       this.person = null;
       this.isOutgoing = null;
     }
@@ -71,16 +63,10 @@ export class AdvancedSearchDraft {
     if (person) {
       this.person = person;
       this.isOutgoing = true;
-    } else if (this.to) {
+    } else if (this.person && this.isOutgoing === true) {
       this.person = null;
       this.isOutgoing = null;
     }
-  }
-
-  toggleTag(tag: Tag) {
-    this.tags = this.tags.includes(tag)
-      ? this.tags.filter(existing => existing != tag)
-      : [...this.tags, tag];
   }
 
   clear() {
@@ -114,20 +100,12 @@ export class AdvancedSearchDraft {
       size: this.size,
       threadID: this.threadID,
     };
-    if (!AdvancedSearchDraft.isSameDay(this.startDate, this.shownStartDate) ||
-        !AdvancedSearchDraft.isSameDay(this.endDate, this.shownEndDate)) {
+    if (ReceivedRanges.inputValue(this.startDate) != ReceivedRanges.inputValue(this.shownStartDate) ||
+        ReceivedRanges.inputValue(this.endDate) != ReceivedRanges.inputValue(this.shownEndDate)) {
       options.received = this.startDate || this.endDate ? ReceivedRange.Custom : ReceivedRange.Any;
       options.receivedStart = this.startDate;
       options.receivedEnd = this.endDate;
     }
     return options;
-  }
-
-  static isSameDay(first: Date | null, second: Date | null): boolean {
-    return ReceivedRanges.inputValue(first) == ReceivedRanges.inputValue(second);
-  }
-
-  get searchTerm(): string | null {
-    return this.keywords.trim() || null;
   }
 }

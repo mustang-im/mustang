@@ -1,10 +1,10 @@
 <vbox class="advanced-search">
   <grid class="fields">
-    {#if showScope}
+    {#if showAccount}
       <span class="label">{$t`Search In`}</span>
       <ComboBox label={$t`Search In`} options={scopeOptions} bind:value={draft.scope} width="100%" />
     {/if}
-    {#if showKeywords}
+    {#if showSearchTerm}
       <span class="label">{$t`Keywords`}</span>
       <TextField label={$t`Keywords`} bind:value={draft.keywords} classes="underlined"
         tooltip={$t`Words in the subject or the message text`}
@@ -12,10 +12,10 @@
     {/if}
     <span class="label">{$t`From`}</span>
     <hbox class="person-field underlined">
-      {#if draft.from}
+      {#if from}
         <hbox class="person-chip">
-          <PersonCircle name={draft.from.name} picture={draft.from.picture} size={20} />
-          <span class="name">{draft.from.name}</span>
+          <PersonCircle name={from.name} picture={from.picture} size={20} />
+          <span class="name">{from.name}</span>
           <button type="button" class="chip-remove" title={$t`Remove`} aria-label={$t`Remove`}
             on:click={() => { draft.setFrom(null); draft = draft; }}>
             <RemoveIcon size={12} />
@@ -30,10 +30,10 @@
     </hbox>
     <span class="label">{$t`To`}</span>
     <hbox class="person-field underlined">
-      {#if draft.to}
+      {#if to}
         <hbox class="person-chip">
-          <PersonCircle name={draft.to.name} picture={draft.to.picture} size={20} />
-          <span class="name">{draft.to.name}</span>
+          <PersonCircle name={to.name} picture={to.picture} size={20} />
+          <span class="name">{to.name}</span>
           <button type="button" class="chip-remove" title={$t`Remove`} aria-label={$t`Remove`}
             on:click={() => { draft.setTo(null); draft = draft; }}>
             <RemoveIcon size={12} />
@@ -69,7 +69,7 @@
         <ChevronIcon size={14} />
       </button>
       <Menu bind:isMenuOpen={isCategoriesOpen} anchor={categoriesButton} placement="bottom-start">
-        <CategoryMenuItems selected={draft.tags} keepOpen onToggle={tag => { draft.toggleTag(tag); draft = draft; }} />
+        <CategoryMenuItems selected={draft.tags} keepOpen onToggle={toggleTag} />
       </Menu>
     </hbox>
     <span class="label">{$t`Read status`}</span>
@@ -86,7 +86,7 @@
   {#if showButtons}
     <hbox class="buttons">
       <hbox flex />
-      <DialogButton label={searchLabel ?? $t`Search`} primary onClick={onSearch} />
+      <DialogButton label={$t`Search`} primary onClick={() => { dispatch("search"); }} />
       <DialogButton label={$t`Clear filters`} onClick={() => { draft.clear(); draft = draft; }} />
     </hbox>
   {/if}
@@ -94,7 +94,7 @@
 {#if picking}
   <SearchPersonDialog
     fieldLabel={picking == Direction.To ? $t`To` : $t`From`}
-    person={picking == Direction.To ? draft.to : draft.from}
+    person={picking == Direction.To ? to : from}
     onPick={onPicked}
     on:close={() => picking = null} />
 {/if}
@@ -103,6 +103,7 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Person } from "../../../logic/Abstract/Person";
+  import type { Tag } from "../../../logic/Abstract/Tag";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "./MailSearch";
   import { AdvancedSearchDraft, ReadStatus } from "./AdvancedSearchDraft";
@@ -121,17 +122,17 @@
   import AddressBookIcon from "lucide-svelte/icons/book-user";
   import RemoveIcon from "lucide-svelte/icons/x";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let draft: AdvancedSearchDraft;
   export let account: MailAccount | null = null;
   export let folder: Folder | null = null;
-  export let showScope = true;
-  export let showKeywords = true;
+  export let showAccount = true;
+  export let showSearchTerm = true;
   export let showButtons = true;
   export let showDates = true;
-  export let searchLabel: string = null;
-  export let onSearch: () => void;
+  const dispatch = createEventDispatcher<{ search: void }>();
 
   enum Direction {
     From = "from",
@@ -155,6 +156,8 @@
   let categoriesButton: HTMLButtonElement;
   let isCategoriesOpen = false;
   let picking: Direction | null = null;
+  $: from = draft.isOutgoing === true ? null : draft.person;
+  $: to = draft.isOutgoing === true ? draft.person : null;
 
   function onPicked(person: Person | null) {
     if (picking == Direction.To) {
@@ -165,10 +168,16 @@
     draft = draft;
   }
 
+  function toggleTag(tag: Tag) {
+    draft.tags = draft.tags.includes(tag)
+      ? draft.tags.filter(existing => existing != tag)
+      : [...draft.tags, tag];
+  }
+
   function onEnter(event: KeyboardEvent) {
     if (event.key == "Enter") {
       event.preventDefault();
-      onSearch();
+      dispatch("search");
     }
   }
 </script>

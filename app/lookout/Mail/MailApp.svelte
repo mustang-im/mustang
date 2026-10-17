@@ -67,7 +67,7 @@
 {#if $openCustomizeSearchFolder}
   <CustomizeSearchFolderDialog title={$t`Customize Search Folder`}
     name={$openCustomizeSearchFolder.name} search={$openCustomizeSearchFolder.search.clone()}
-    onOK={(name, search) => SearchFolderCustomizing.save($openCustomizeSearchFolder, name, search)}
+    onOK={saveSearchFolder}
     on:close={() => $openCustomizeSearchFolder = null} />
 {/if}
 {#if $openViewSettings}
@@ -93,6 +93,7 @@
   import type { SearchEMail } from "../../logic/Mail/Store/SearchEMail";
   import { appGlobal } from "../../logic/app";
   import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
+  import { assert } from "../../logic/util/util";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages, quickSearch } from "../../frontend/Mail/Selected";
   import { getParams, globalSearchTerm, openApp } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../frontend/Util/error";
@@ -133,7 +134,6 @@
   import SharedFolderDialog, { openSharedFolder } from "./LeftPane/SharedFolderDialog.svelte";
   import NewSearchFolderDialog, { openNewSearchFolder } from "./Search/NewSearchFolderDialog.svelte";
   import CustomizeSearchFolderDialog, { openCustomizeSearchFolder } from "./Search/CustomizeSearchFolderDialog.svelte";
-  import { SearchFolderCustomizing } from "./Search/SearchFolderCriteria";
   import ViewSettingsDialog, { openViewSettings } from "./ViewSettings/ViewSettingsDialog.svelte";
   import ShowColumnsDialog, { openShowColumns } from "./ViewSettings/ShowColumnsDialog.svelte";
   import ApplyViewDialog, { openApplyView } from "./ViewSettings/ApplyViewDialog.svelte";
@@ -148,7 +148,7 @@
   import { useLocation } from "svelte-navigator";
   import { onDestroy, tick } from "svelte";
   import debounce from "lodash/debounce";
-  import { t } from "../../l10n/l10n";
+  import { gt, t } from "../../l10n/l10n";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
   import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 
@@ -427,6 +427,15 @@
   // </copied>
 
   let isGoToFolderOpen = false;
+
+  async function saveSearchFolder(name: string, search: SearchEMail) {
+    let folder = $openCustomizeSearchFolder;
+    assert(name.trim(), gt`Enter a name`);
+    folder.name = name.trim();
+    folder.search.copyFrom(search);
+    await folder.save();
+    await folder.listMessages();
+  }
 
   function onScopeClosed() {
     $askedScope.onChoice(null);
