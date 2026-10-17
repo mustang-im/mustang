@@ -1,4 +1,4 @@
-<Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => onOK(order.columns)} width="660px" on:close>
+<Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => { dispatch("change", order.columns); }} width="660px" on:close>
   <vbox class="show-columns">
     {#if columnSets.length}
       <vbox class="column-set">
@@ -42,6 +42,7 @@
   import DialogButton from "../Dialog/DialogButton.svelte";
   import ComboBox from "../Form/ComboBox.svelte";
   import ListView from "../Form/ListView.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   type T = $$Generic;
@@ -51,7 +52,7 @@
   export let requiredColumn: T | null = null;
   export let requiredReason: string = null;
   export let columnSets: { label: string, columns: readonly T[] }[] = [];
-  export let onOK: (columns: T[]) => void;
+  const dispatch = createEventDispatcher<{ change: T[] }>();
 
   let order = new ColumnOrder<T>(columns, allColumns, requiredColumn);
   let columnSet = 0;

@@ -22,13 +22,13 @@
 {#if open == "columns"}
   <ShowColumnsDialog {columns} allColumns={EventTable.allColumns} labelOf={EventTable.columnLabel}
     requiredColumn={EventTableColumn.Subject} requiredReason={$t`The list needs the Subject column`}
-    onOK={chosen => columns = chosen} on:close={closeSub} />
+    on:change={event => columns = event.detail} on:close={closeSub} />
 {:else if open == "group-by"}
   <GroupByDialog bind:grouping on:close={closeSub} />
 {:else if open == "sort"}
   <SortDialog columnOptions={EventTable.allColumns.map(column => ({ value: column, label: EventTable.columnLabel(column) }))}
     column={sortColumn} ascending={sortAscending}
-    onOK={(column, ascending) => { sortColumn = column; sortAscending = ascending; }} on:close={closeSub} />
+    on:change={event => { sortColumn = event.detail.column; sortAscending = event.detail.ascending; }} on:close={closeSub} />
 {:else if open == "other"}
   <OtherSettingsDialog bind:timeScale bind:weekNumbers bind:showDeclined on:close={closeSub} />
 {/if}

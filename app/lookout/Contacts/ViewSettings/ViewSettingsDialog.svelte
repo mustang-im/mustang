@@ -18,16 +18,17 @@
   <ShowColumnsDialog {columns} allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
     columnSets={ContactColumns.columnSets()}
-    onOK={chosen => columns = ContactColumns.shownColumns(chosen)} on:close={closeSub} />
+    on:change={event => columns = ContactColumns.shownColumns(event.detail)} on:close={closeSub} />
 {:else if open == "group-by"}
   <SortDialog title={$t`Group By`} itemsLabel={$t`Group items by`}
     columnOptions={[ { value: kNoGrouping, label: $t`(none)` }, ...sortOptions ]}
     column={groupBy?.column ?? kNoGrouping} ascending={groupBy?.ascending ?? true}
-    onOK={(column, ascending) => { groupBy = column == kNoGrouping ? null : { column: column as ContactColumn, ascending }; }}
+    on:change={event => groupBy = event.detail.column == kNoGrouping ? null
+      : { column: event.detail.column as ContactColumn, ascending: event.detail.ascending }}
     on:close={closeSub} />
 {:else if open == "sort"}
   <SortDialog columnOptions={sortOptions} column={sort.column} ascending={sort.ascending}
-    onOK={(column, ascending) => { sort = { column, ascending }; }} on:close={closeSub} />
+    on:change={event => sort = event.detail} on:close={closeSub} />
 {/if}
 
 <script lang="ts">

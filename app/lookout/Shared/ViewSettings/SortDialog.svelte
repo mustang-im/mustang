@@ -1,4 +1,4 @@
-<Dialog title={title ?? $t`Sort`} okLabel={$t`OK`} onOK={() => onOK(sortColumn, sortAscending)} width="420px" on:close>
+<Dialog title={title ?? $t`Sort`} okLabel={$t`OK`} onOK={() => { dispatch("change", { column: sortColumn, ascending: sortAscending }); }} width="420px" on:close>
   <GroupBox label={itemsLabel ?? $t`Sort items by`}>
     <hbox class="sort-row">
       <ComboBox options={columnOptions} bind:value={sortColumn} label={itemsLabel ?? $t`Sort items by`} width="200px" />
@@ -16,15 +16,16 @@
   import GroupBox from "../Form/GroupBox.svelte";
   import ComboBox from "../Form/ComboBox.svelte";
   import Radio from "../Form/Radio.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   type T = $$Generic;
   export let columnOptions: ComboOption<T>[];
   export let column: T;
   export let ascending: boolean;
-  export let onOK: (column: T, ascending: boolean) => void;
   export let title: string = null;
   export let itemsLabel: string = null;
+  const dispatch = createEventDispatcher<{ change: { column: T, ascending: boolean } }>();
 
   let sortColumn = column;
   let sortAscending = ascending;

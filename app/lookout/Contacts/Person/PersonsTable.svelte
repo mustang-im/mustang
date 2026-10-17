@@ -102,7 +102,8 @@
     allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
     columnSets={ContactColumns.columnSets()}
-    onOK={columns => { $columnsSetting.value = ContactColumns.shownColumns(columns); }} on:close={() => isShowColumnsOpen = false} />
+    on:change={event => { $columnsSetting.value = ContactColumns.shownColumns(event.detail); }}
+    on:close={() => isShowColumnsOpen = false} />
   <!-- </copied> -->
 {/if}
 {#if isViewSettingsOpen}
