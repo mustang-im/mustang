@@ -4,7 +4,7 @@ import type { InvitationResponseInMessage } from "../../logic/Calendar/Invitatio
 import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
-import { inlineTitle, selectedSlots, type SlotSelection } from "./Selected";
+import { inlineTitle, selectedSlots, workWeekHours, type SlotSelection } from "./Selected";
 import { CalendarCurrentView, CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
 import { CalendarGroups } from "./FolderPane/CalendarGroups";
@@ -62,14 +62,15 @@ export class CalendarActions {
       CalendarActions.newEvent(calendar ?? slots.calendar, slots.start, slots.end, kind);
       return;
     }
-    let range = new CalendarRange(CalendarSettings.view.value, get(startDate), CalendarSettings.dayCount.value);
+    let range = new CalendarRange(CalendarSettings.view.value, get(startDate), CalendarSettings.dayCount.value,
+      get(workWeekHours).workDays());
     let now = new Date();
     let start: Date;
     if (!slots && range.contains(now)) {
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1);
     } else {
       let day = slots?.start ?? range.start;
-      start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WorkingHours.startHour);
+      start = WorkingHours.workStartOf(calendar ?? slots?.calendar ?? get(selectedCalendar), day);
     }
     CalendarActions.newEvent(calendar ?? slots?.calendar, start, null, kind);
   }

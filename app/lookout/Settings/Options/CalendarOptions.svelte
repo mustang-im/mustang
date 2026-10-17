@@ -1,4 +1,6 @@
 <OptionsPage icon={CalendarIcon} description={$t`Change the settings for calendars, meetings, and time zones.`}>
+  <WorkTime drafts={options.workHours} />
+
   <OptionsSection title={$t`Calendar options`}>
     <OptionsRow icon={DurationIcon}>
       <hbox class="field-row">
@@ -56,6 +58,7 @@
   import OptionsPage from "./OptionsPage.svelte";
   import OptionsSection from "./OptionsSection.svelte";
   import OptionsRow from "./OptionsRow.svelte";
+  import WorkTime from "./WorkTime.svelte";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import DurationIcon from "lucide-svelte/icons/calendar-clock";
   import DisplayIcon from "lucide-svelte/icons/calendar-days";

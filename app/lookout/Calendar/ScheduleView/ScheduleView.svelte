@@ -81,9 +81,11 @@
     if (!scrollEl) {
       return;
     }
-    let focusHour = showsNow ? Math.max($now.getHours() - 1, 0) : WorkingHours.startHour;
+    let focusMinute = showsNow
+      ? Math.max($now.getHours() - 1, 0) * 60
+      : WorkingHours.combined(rows.map(row => WorkingHours.ofCalendar(row.calendar))).firstWorkMinute(range.days);
     let dayIndex = showsNow ? Math.floor(nowMinute / ScheduleLayout.kMinutesPerDay) : 0;
-    scrollEl.scrollLeft = dayIndex * dayWidth + focusHour * pxPerHour;
+    scrollEl.scrollLeft = dayIndex * dayWidth + focusMinute * pxPerHour / 60;
   }
 </script>
 

@@ -6,17 +6,18 @@ export class CalendarRange {
   readonly days: Date[] = [];
   readonly month: Date;
 
-  constructor(view: CalendarViewType, date: Date, dayCount = 1) {
+  constructor(view: CalendarViewType, date: Date, dayCount = 1, workDays: boolean[] | null = null) {
     this.view = view;
     this.month = new Date(date.getFullYear(), date.getMonth(), 1);
     let first: Date;
     let count: number;
+    if (view == "workweek") {
+      this.days = CalendarRange.workWeek(date, workDays);
+      return;
+    }
     if (view == "day" || view == "schedule") {
       first = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       count = Math.min(Math.max(Math.round(dayCount), 1), 10);
-    } else if (view == "workweek") {
-      first = getWeekStart(date);
-      count = 5;
     } else if (view == "week") {
       first = getWeekStart(date);
       count = 7;
@@ -30,6 +31,14 @@ export class CalendarRange {
     for (let i = 0; i < count; i++) {
       this.days.push(new Date(first.getFullYear(), first.getMonth(), first.getDate() + i));
     }
+  }
+
+  protected static workWeek(date: Date, workDays: boolean[] | null): Date[] {
+    const kMondayToFriday = 5;
+    let first = getWeekStart(date);
+    let week = Array.from({ length: 7 }, (_, i) => new Date(first.getFullYear(), first.getMonth(), first.getDate() + i));
+    let shown = workDays ? week.filter(day => workDays[day.getDay()]) : [];
+    return shown.length ? shown : week.slice(0, kMondayToFriday);
   }
 
   get start(): Date {

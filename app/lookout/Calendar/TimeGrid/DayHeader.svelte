@@ -14,6 +14,7 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { CalendarActions } from "../CalendarActions";
   import { WorkingHours } from "../View/WorkingHours";
+  import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
@@ -27,7 +28,7 @@
   let width = 100;
 
   function onAdd() {
-    let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WorkingHours.startHour);
+    let start = WorkingHours.workStartOf(calendar ?? $selectedCalendar, day);
     catchErrors(() => CalendarActions.newEvent(calendar, start, null));
   }
 </script>

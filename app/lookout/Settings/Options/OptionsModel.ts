@@ -1,4 +1,5 @@
 import { OptionValue } from "./OptionValue";
+import { WorkHoursDrafts } from "./WorkHoursDrafts";
 import { CalendarSettings } from "../../Calendar/CalendarSettings";
 import { ComposerSettings } from "../../Mail/Composer/ComposerSettings";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
@@ -32,6 +33,7 @@ export class OptionsModel {
   readonly thirdTimeZoneShown = this.add(OptionValue.plain(CalendarSettings.thirdTimeZoneShown));
   readonly thirdTimeZoneLabel = this.add(OptionValue.plain(CalendarSettings.thirdTimeZoneLabel));
   readonly thirdTimeZone = this.add(OptionValue.plain(CalendarSettings.thirdTimeZone));
+  readonly workHours = new WorkHoursDrafts();
   readonly showReminders = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "popup"));
   readonly reminderSound = this.add(OptionValue.listMember(getLocalStorage<string[]>("notifications.calendar", ["popup", "sound"]), "sound"));
 
@@ -67,6 +69,7 @@ export class OptionsModel {
     for (let option of this.options) {
       option.save();
     }
+    await this.workHours.save();
     if (this.makeDefaultMailApp && !this.isDefaultMailApp) {
       this.isDefaultMailApp = !!await appGlobal.remoteApp.setAsDefaultApp("mailto");
     }

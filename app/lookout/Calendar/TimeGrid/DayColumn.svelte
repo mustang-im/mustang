@@ -29,12 +29,9 @@
       </button>
     {/if}
   </div>
-  {#if WorkingHours.isWorkDay(day)}
-    <div class="off-hours" style="top: 0; height: {WorkingHours.startHour * 60 * pxPerMinute}px" />
-    <div class="off-hours" style="top: {WorkingHours.endHour * 60 * pxPerMinute}px; bottom: 0" />
-  {:else}
-    <div class="off-hours" style="top: 0; bottom: 0" />
-  {/if}
+  {#each offWork as offWorkRange}
+    <div class="off-hours" style="top: {offWorkRange.from * pxPerMinute}px; height: {(offWorkRange.to - offWorkRange.from) * pxPerMinute}px" />
+  {/each}
   {#if selectionHere}
     <div class="slot-selection"
       style="top: {selectionStart * pxPerMinute}px; height: {(selectionEnd - selectionStart) * pxPerMinute}px">
@@ -54,7 +51,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { TimeColumnLayout } from "./TimeColumnLayout";
-  import { WorkingHours } from "../View/WorkingHours";
+  import type { WorkingHours } from "../View/WorkingHours";
   import { CurrentTime } from "../View/CurrentTime";
   import { CalendarActions } from "../CalendarActions";
   import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../Selected";
@@ -75,6 +72,7 @@
   export let group: number;
   export let events: Collection<Event>;
   export let calendar: Calendar | null;
+  export let workingHours: WorkingHours | null = null;
   export let pxPerMinute: number;
   export let timeScale: number;
   export let isToday = false;
@@ -95,6 +93,7 @@
     let dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
     dayEvents = events.filterObservable(event => event.startTime < dayEnd && event.endTime > dayStart);
   }
+  $: offWork = workingHours?.offWorkMinutes(day) ?? [];
   $: layout = derived([...$dayEvents.contents], eventsInDay =>
     new TimeColumnLayout(eventsInDay, day, timeScale).items);
 
@@ -241,12 +240,12 @@
   .off-hours {
     position: absolute;
     inset-inline: 0;
-    background-color: color-mix(in srgb, black 4%, var(--lo-pane-bg));
+    background-color: var(--lo-calendar-off-work-bg, color-mix(in srgb, black 4%, var(--lo-pane-bg)));
     pointer-events: none;
   }
   @media (prefers-color-scheme: dark) {
     .off-hours {
-      background-color: color-mix(in srgb, black 16%, var(--lo-pane-bg));
+      background-color: var(--lo-calendar-off-work-bg, color-mix(in srgb, black 28%, var(--lo-pane-bg)));
     }
   }
   .slot-selection {

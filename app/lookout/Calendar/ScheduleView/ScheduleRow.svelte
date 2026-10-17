@@ -12,12 +12,9 @@
     on:contextmenu={onContextMenu}
     bind:this={trackEl}>
     {#each days as day, d}
-      {#if WorkingHours.isWorkDay(day)}
-        <div class="off-hours" style="left: {d * dayWidth}px; width: {WorkingHours.startHour * pxPerHour}px" />
-        <div class="off-hours" style="left: {d * dayWidth + WorkingHours.endHour * pxPerHour}px; width: {(24 - WorkingHours.endHour) * pxPerHour}px" />
-      {:else}
-        <div class="off-hours" style="left: {d * dayWidth}px; width: {dayWidth}px" />
-      {/if}
+      {#each $workingHours.offWorkMinutes(day) as offWorkRange}
+        <div class="off-hours" style="left: {d * dayWidth + offWorkRange.from * pxPerMinute}px; width: {(offWorkRange.to - offWorkRange.from) * pxPerMinute}px" />
+      {/each}
       <div class="day-line" style="left: {d * dayWidth}px" />
     {/each}
     {#if selection}
@@ -60,6 +57,7 @@
 
   let trackEl: HTMLDivElement;
 
+  $: workingHours = WorkingHours.of(calendar);
   $: pxPerMinute = pxPerHour / 60;
   $: dayWidth = pxPerHour * 24;
   $: rangeStart = days[0];
@@ -191,8 +189,13 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    background-color: color-mix(in srgb, var(--lo-pane-alt-bg) 70%, transparent);
+    background-color: var(--lo-calendar-off-work-bg, color-mix(in srgb, black 4%, var(--lo-pane-bg)));
     pointer-events: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    .off-hours {
+      background-color: var(--lo-calendar-off-work-bg, color-mix(in srgb, black 28%, var(--lo-pane-bg)));
+    }
   }
   .day-line {
     position: absolute;

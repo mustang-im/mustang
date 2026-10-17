@@ -83,7 +83,7 @@
   import { CalendarRange } from "./View/CalendarRange";
   import { CalendarActions } from "./CalendarActions";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, inlineTitle, selectedSlots, kCalendarMenus, type CalendarMenus, type SlotSelection } from "./Selected";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, type CalendarMenus, type SlotSelection } from "./Selected";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../frontend/Util/date";
@@ -151,7 +151,7 @@
     $selectedCalendar = appGlobal.calendars.first;
   }
 
-  $: range = new CalendarRange(view, $startDate, view == "day" || view == "schedule" ? dayCount : 1);
+  $: range = new CalendarRange(view, $startDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
 
   function visible(events: Collection<Event>, showDeclined: boolean): Collection<Event> {
     return showDeclined

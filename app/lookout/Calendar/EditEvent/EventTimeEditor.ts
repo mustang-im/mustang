@@ -131,8 +131,7 @@ export class EventTimeEditor {
       this.setAllDay(false);
       return;
     }
-    let start = new Date(event.startTime);
-    start.setHours(WorkingHours.startHour, 0, 0, 0);
+    let start = WorkingHours.workStartOf(event.calendar, event.startTime);
     event.allDay = false;
     setNewEventTime(event, true, start);
   }

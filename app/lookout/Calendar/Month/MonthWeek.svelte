@@ -53,7 +53,7 @@
   import { CalendarActions } from "../CalendarActions";
   import { DayAtPoint } from "../View/DayAtPoint";
   import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../Selected";
-  import { selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
+  import { selectedCalendar, selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventBar from "../Event/EventBar.svelte";
   import InlineEventTitle from "../View/InlineEventTitle.svelte";
@@ -121,7 +121,7 @@
   }
 
   function onAdd(day: Date) {
-    let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WorkingHours.startHour);
+    let start = WorkingHours.workStartOf($selectedCalendar, day);
     catchErrors(() => CalendarActions.newEvent(null, start, null));
   }
 

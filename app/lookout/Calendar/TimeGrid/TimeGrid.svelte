@@ -44,7 +44,7 @@
       </div>
       {#each range.days as day, d}
         <DayColumn {day} column={firstColumnOf(g) + d} dayIndex={d} group={g} events={group.timed} calendar={group.calendar}
-          {pxPerMinute} {timeScale}
+          workingHours={$groupWorkingHours[g]} {pxPerMinute} {timeScale}
           isToday={CurrentTime.isToday(day, $now)}
           showsPastTimeLine={showsToday && CurrentTime.isBeforeToday(day, $now)}
           visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} onScrollToMinute={scrollToMinute} />
@@ -72,12 +72,14 @@
   import { WorkingHours } from "../View/WorkingHours";
   import { TimeZoneRuler } from "../View/TimeZones";
   import { eventPeek } from "../Selected";
+  import { shownWorkHours } from "../../../frontend/Calendar/selected";
   import DayHeader from "./DayHeader.svelte";
   import AllDayStrip from "./AllDayStrip.svelte";
   import DayColumn from "./DayColumn.svelte";
   import TimeRuler from "./TimeRuler.svelte";
   import { TextWidth } from "../../Shared/TextWidth";
   import CalendarTab from "./CalendarTab.svelte";
+  import { derived } from "svelte/store";
   import { onMount, tick } from "svelte";
 
   export let range: CalendarRange;
@@ -90,6 +92,7 @@
   const kRulerWidth = 56;
   const now = CurrentTime.minute;
   const rulerSettings = TimeZoneRuler.rulers;
+  const shownWorkingHours = WorkingHours.ofAll(shownWorkHours);
 
   let scrollEl: HTMLDivElement;
   let rulersEl: HTMLElement;
@@ -107,6 +110,9 @@
   $: columns = `${rulerWidths.reduce((sum, width) => sum + width, 0)}px ` +
     groups.map(() => `repeat(${range.days.length}, minmax(0, 1fr))`).join(" 8px ");
   $: slotStarts = Array.from({ length: TimeColumnLayout.kMinutesPerDay / timeScale }, (_, i) => i * timeScale);
+
+  $: groupWorkingHours = derived(groups.map(group =>
+    group.calendar ? WorkingHours.of(group.calendar) : shownWorkingHours), all => all);
 
   $: groupEvents = groups.map(group => {
     let inRange = group.events.filterObservable(event =>
@@ -155,7 +161,7 @@
   onMount(() => {
     let focusMinute = showsToday
       ? Math.max($now.getHours() - 1, 0) * 60
-      : WorkingHours.startHour * 60;
+      : WorkingHours.combined($groupWorkingHours).firstWorkMinute(range.days);
     scrollEl.scrollTop = focusMinute * pxPerMinute;
     topMinute = focusMinute;
   });
