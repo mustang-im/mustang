@@ -57,7 +57,7 @@
   import OnlineMeetingBox from "./OnlineMeetingBox.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
-  import { EditorSettings } from "../../Shared/Editor/EditorSettings";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import AttachmentsUI from "../../Mail/Message/AttachmentsUI.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -77,7 +77,7 @@
   export let onAddressBook: () => void;
 
   let attendeesField: ParticipantsBox;
-  const spellcheck = EditorSettings.spellcheck;
+  const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
 
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;

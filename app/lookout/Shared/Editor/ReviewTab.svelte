@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import { EditorTool, type EditorCommands } from "./EditorCommands";
-  import { EditorSettings } from "./EditorSettings";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonTab from "../Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../Ribbon/RibbonButton.svelte";
@@ -22,5 +22,5 @@
 
   export let commands: EditorCommands;
 
-  const spellcheck = EditorSettings.spellcheck;
+  const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
 </script>
