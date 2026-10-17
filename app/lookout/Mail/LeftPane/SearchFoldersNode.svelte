@@ -30,7 +30,7 @@
   const expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
   $: isExpanded = ($expandedIDs.value ?? []).includes(nodeID);
 
-  /* <copied from="FolderNode.svelte"> */
+  /* <copied from="FolderLine.svelte"> */
   function onToggle() {
     let ids = ($expandedIDs.value ?? []).filter(existing => existing != nodeID);
     if (!isExpanded) {

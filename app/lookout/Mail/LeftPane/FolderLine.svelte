@@ -19,7 +19,7 @@
   on:drop={onDrop}
   >
   <button class="expander" class:hidden={!hasChildren} tabindex="-1"
-    on:click|stopPropagation={() => dispatch("toggle")}
+    on:click|stopPropagation={onToggle}
     aria-label={isExpanded ? $t`Collapse` : $t`Expand`}>
     <ChevronIcon size={12} class="chevron {isExpanded ? 'expanded' : ''}" />
   </button>
@@ -60,16 +60,30 @@
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { createEventDispatcher } from "svelte";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder;
   export let depth = 0;
-  export let hasChildren = false;
-  export let isExpanded = false;
   export let isFavorite = false;
 
-  const dispatch = createEventDispatcher<{ toggle: void }>();
+  $: subFolders = folder.subFolders;
+  $: hasChildren = $subFolders.hasItems;
+  /* <copied to="FolderNode.svelte"> */
+  const expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
+  $: nodeID = folder.account?.id + "/" + folder.id;
+  $: isExpanded = !isFavorite && ($expandedIDs.value ?? []).includes(nodeID);
+  /* </copied> */
+
+  /* <copied to="SearchFoldersNode.svelte"> */
+  function onToggle() {
+    let ids = ($expandedIDs.value ?? []).filter(existing => existing != nodeID);
+    if (!isExpanded) {
+      ids.push(nodeID);
+    }
+    $expandedIDs.value = ids;
+  }
+  /* </copied> */
   const renaming = FolderTreeActions.renaming;
   const accounts = appGlobal.emailAccounts;
 
