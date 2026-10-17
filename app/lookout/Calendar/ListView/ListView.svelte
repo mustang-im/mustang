@@ -26,11 +26,7 @@
       {/if}
       {#if !collapsed.has(group.id)}
         {#each group.events as event (event.id)}
-          <ListViewLine {event} {columns}
-            isSelected={$selectedEvent == event}
-            onSelect={() => select(event)}
-            onOpen={() => openEvent(event, true)}
-            onContextMenu={mouseEvent => onContextMenu(mouseEvent, event)} />
+          <ListViewLine {event} {columns} on:click={() => rowsEl.focus()} />
         {/each}
       {/if}
     {:else}
@@ -43,8 +39,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./EventTable";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { openEvent } from "../../../frontend/Calendar/open";
-  import { kCalendarMenus, calendarSearchOptions, CalendarCurrentView, CalendarSearchScope, type CalendarMenus } from "../selected";
+  import { calendarSearchOptions, CalendarCurrentView, CalendarSearchScope } from "../selected";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import ListViewLine from "./ListViewLine.svelte";
@@ -53,13 +48,12 @@
   import SortDownIcon from "lucide-svelte/icons/chevron-down";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import type { Collection } from "svelte-collections";
-  import { getContext, tick } from "svelte";
+  import { tick } from "svelte";
   import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let events: Collection<Event>;
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
   const listColumns = getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns);
   const sortColumn = getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start);
   const sortAscending = getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true);
@@ -114,17 +108,6 @@
       collapsed.add(id);
     }
     collapsed = collapsed;
-  }
-
-  function select(event: Event) {
-    $selectedEvent = event;
-    rowsEl.focus();
-  }
-
-  function onContextMenu(mouseEvent: MouseEvent, event: Event) {
-    mouseEvent.preventDefault();
-    $selectedEvent = event;
-    menus.openEventMenu(mouseEvent, event);
   }
 
   async function onKeyDown(keyEvent: KeyboardEvent) {

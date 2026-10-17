@@ -2,6 +2,7 @@
 <div class="event-row" class:selected={isSelected} class:muted={look.status == "declined" || look.status == "cancelled"}
   role="row" aria-selected={isSelected}
   style="--event-color: {$event.color ?? $calendar?.color ?? "var(--lo-accent)"}"
+  on:click
   on:click={onSelect}
   on:dblclick={onOpen}
   on:contextmenu={onContextMenu}>
@@ -32,21 +33,38 @@
   import { EventTable } from "./EventTable";
   import { EventTableColumn } from "./EventTable";
   import { EventLook } from "../Event/EventLook";
+  import { kCalendarMenus, type CalendarMenus } from "../selected";
+  import { selectedEvent } from "../../../frontend/Calendar/selected";
+  import { openEvent } from "../../../frontend/Calendar/open";
   import AppointmentIcon from "lucide-svelte/icons/calendar";
   import RecurringIcon from "lucide-svelte/icons/repeat";
   import MeetingIcon from "lucide-svelte/icons/users-round";
+  import { getContext } from "svelte";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
   export let columns: EventTableColumn[];
-  export let isSelected: boolean;
-  export let onSelect: () => void;
-  export let onOpen: () => void;
-  export let onContextMenu: (mouseEvent: MouseEvent) => void;
 
+  const menus = getContext<CalendarMenus>(kCalendarMenus);
+
+  $: isSelected = $selectedEvent == event;
   $: calendar = $event.calendar;
   $: look = new EventLook($event);
   $: icon = $event.recurrenceRule ? RecurringIcon : $event.participants.hasItems ? MeetingIcon : AppointmentIcon;
+
+  function onSelect() {
+    $selectedEvent = event;
+  }
+
+  function onOpen() {
+    openEvent(event, true);
+  }
+
+  function onContextMenu(mouseEvent: MouseEvent) {
+    mouseEvent.preventDefault();
+    $selectedEvent = event;
+    menus.openEventMenu(mouseEvent, event);
+  }
 </script>
 
 <style>
