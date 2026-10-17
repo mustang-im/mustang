@@ -43,7 +43,7 @@
       </vbox>
     </hbox>
   {:else}
-    <span class="empty">{$t`This booking is in a state that Mustang doesn't know.`}</span>
+    <span class="empty">{$t`This booking is in a state that ${appName} doesn't know.`}</span>
   {/if}
 </vbox>
 
@@ -59,6 +59,7 @@
   import ConfirmedIcon from "lucide-svelte/icons/check-check";
   import { ensureArray } from "../../../../logic/util/util";
   import { ArrayColl } from "svelte-collections";
+  import { appName } from "../../../../logic/build";
   import { t } from "../../../../l10n/l10n";
 
   type BookingReaction = TSMLAction & { state?: TSMLBookMeState };

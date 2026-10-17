@@ -20,6 +20,7 @@
   import PollIcon from "lucide-svelte/icons/list-checks";
   import SchedulingPollIcon from "lucide-svelte/icons/calendar-clock";
   import BookingsIcon from "lucide-svelte/icons/calendar-check";
+  import { appName } from "../../../logic/build";
   import { gt, t } from "../../../l10n/l10n";
 
   export let commands: ComposerCommands;
@@ -57,7 +58,7 @@
       return true;
     }
     let create = await MessageBox.confirm(gt`Polls`,
-      gt`Polls and bookings need a free SML account for ${identity.emailAddress}. The SML server sends a confirmation message to this address, which Mustang processes automatically.` + "\n\n" +
+      gt`Polls and bookings need a free SML account for ${identity.emailAddress}. The SML server sends a confirmation message to this address, which ${appName} processes automatically.` + "\n\n" +
       gt`Do you want to create the account now?`,
       gt`Create Account`);
     if (!create) {
