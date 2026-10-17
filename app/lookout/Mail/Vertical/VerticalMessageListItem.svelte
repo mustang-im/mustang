@@ -59,7 +59,7 @@
       </button>
       <button class="action" tabindex="-1"
         title={$t`Delete`}
-        on:click|stopPropagation={() => catchErrors(() => MessageActions.delete([message]))}>
+        on:click|stopPropagation={() => catchErrors(() => message.deleteMessage())}>
         <DeleteIcon size={16} />
       </button>
     </hbox>
@@ -121,7 +121,6 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
-  import { MessageActions } from "../MessageActions";
   import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "../MessageList/MessageDates";
   import { ListName } from "../MessageList/ListName";
@@ -144,6 +143,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
 
   export let message: EMail;
   export let isSelected = false;
@@ -167,7 +167,7 @@
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
   $: folderTooltip = folderName ? $t`In folder ${folderName} of ${message.folder?.account?.name ?? ""}` : null;
-  $: isDraft = $message && MessageActions.isDraft(message);
+  $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
   $: hasInlineReply = $inlineReplies && InlineReplies.hasReply(message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
 </script>

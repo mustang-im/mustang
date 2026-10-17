@@ -35,12 +35,12 @@
     <vbox class="top-right">
       <hbox class="respond-group">
         <hbox class="button-group">
-          <button class="respond" on:click={() => catchErrors(() => MessageActions.reply(message))}
+          <button class="respond" on:click={() => catchErrors(() => MessageActions.respond(message, message.compose.replyToAuthor()))}
             title={$t`Reply`} aria-label={$t`Reply`}>
             <ReplyIcon size={18} />
           </button>
-          <button class="respond" on:click={() => catchErrors(() => MessageActions.replyAll(message))}
-            disabled={!MessageActions.canReplyAll($message)}
+          <button class="respond" on:click={() => catchErrors(() => MessageActions.respond(message, message.compose.replyAll()))}
+            disabled={!($message.allRecipients().length > 1 && !($message.bcc.hasItems && !$message.outgoing))}
             title={$t`Reply All`} aria-label={$t`Reply All`}>
             <ReplyAllIcon size={18} />
           </button>
@@ -85,25 +85,25 @@
   <EncryptionButtons {message} />
 </vbox>
 <Menu bind:isMenuOpen={isMoreOpen} anchor={moreEl} placement="bottom-end">
-  <MenuItem label={$t`Reply`} icon={ReplyIcon} onClick={() => MessageActions.reply(message)} />
+  <MenuItem label={$t`Reply`} icon={ReplyIcon} onClick={() => MessageActions.respond(message, message.compose.replyToAuthor())} />
   <MenuItem label={$t`Reply All`} icon={ReplyAllIcon}
-    disabled={!MessageActions.canReplyAll(message) && $t`There are no other recipients`}
-    onClick={() => MessageActions.replyAll(message)} />
+    disabled={!(message.allRecipients().length > 1 && !(message.bcc.hasItems && !message.outgoing)) && $t`There are no other recipients`}
+    onClick={() => MessageActions.respond(message, message.compose.replyAll())} />
   <MenuItem label={$t`Forward`} icon={ForwardIcon} onClick={event => MessageActions.forward(message, event as MouseEvent)} />
-  <MenuItem label={$t`Forward as Attachment`} icon={ForwardAttachmentIcon} onClick={() => MessageActions.forwardAsAttachment(message)} />
+  <MenuItem label={$t`Forward as Attachment`} icon={ForwardAttachmentIcon} onClick={async () => mailMustangApp.writeMail(await message.compose.forwardAsAttachment())} />
   <MenuItem label={$t`Redirect`} icon={RedirectIcon}
     tooltip={$t`Send this message to somebody else, who can reply to the original sender`}
-    onClick={() => MessageActions.redirect(message)} />
+    onClick={async () => mailMustangApp.writeMail(await message.compose.redirect())} />
   {#if $message.outgoing}
-    <MenuItem label={$t`Edit as New`} icon={EditAsNewIcon} onClick={() => MessageActions.editAsNew(message)} />
+    <MenuItem label={$t`Edit as New`} icon={EditAsNewIcon} onClick={async () => mailMustangApp.writeMail(await message.compose.editAsNew())} />
   {/if}
   <MenuItem label={$t`New Topic to All`} icon={NewToAllIcon}
     tooltip={$t`Send a new, unrelated message to all recipients`}
-    onClick={() => MessageActions.newToAll(message)} />
+    onClick={() => mailMustangApp.writeMail(message.compose.newToAll())} />
   <MenuDivider />
-  <MenuItem label={$t`Delete`} icon={DeleteIcon} onClick={() => MessageActions.delete([message])} />
+  <MenuItem label={$t`Delete`} icon={DeleteIcon} onClick={() => message.deleteMessage()} />
   <MenuItem label={$message.isRead ? $t`Mark as Unread` : $t`Mark as Read`} icon={$message.isRead ? UnreadIcon : ReadIcon}
-    onClick={() => MessageActions.markRead([message], !message.isRead)} />
+    onClick={() => message.markRead(!message.isRead)} />
   <SubMenu label={$t`Follow Up`} icon={FlagIcon}>
     <FollowUpMenuItems messages={[message]} />
   </SubMenu>
@@ -167,6 +167,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
 
   export let message: EMail;
 

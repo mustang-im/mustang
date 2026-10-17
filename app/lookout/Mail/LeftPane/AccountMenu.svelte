@@ -10,7 +10,7 @@
     onClick={() => { $openSharedFolder = account; }} />
 {/if}
 <MenuItem label={$t`Manage Rules & Alerts…`} icon={RulesIcon}
-  onClick={() => MessageActions.openRules(account)} />
+  onClick={() => goTo("/mail/rules", { account })} />
 <MenuDivider />
 <MenuItem label={$t`Account Properties…`} icon={SettingsIcon}
   onClick={() => SettingsDialogs.openAccount(account)} />
@@ -33,7 +33,6 @@
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { SettingsDialogs } from "../../Settings/SettingsDialogs";
   import { MessageBox } from "../../Shared/Dialog/MessageBox";
-  import { MessageActions } from "../MessageActions";
   import { openNewFolder } from "./NewFolderDialog.svelte";
   import { openSharedFolder } from "./SharedFolderDialog.svelte";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
@@ -49,6 +48,7 @@
   import CloseIcon from "lucide-svelte/icons/folder-x";
   import { appName } from "../../../logic/build";
   import { t } from "../../../l10n/l10n";
+  import { goTo } from "../../../frontend/AppsBar/selectedApp";
 
   export let account: MailAccount;
 

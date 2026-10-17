@@ -28,7 +28,7 @@
       title={$t`Rules and Alerts`}
       description={$t`Use Rules and Alerts to help organize your incoming email messages, and receive updates when items are added, changed, or removed.`}
       disabled={!account && $t`Add an email account first`}
-      onClick={() => MessageActions.openRules(account)} />
+      onClick={() => goTo("/mail/rules", { account })} />
   </vbox>
 </vbox>
 
@@ -37,7 +37,7 @@
   import { appGlobal } from "../../../logic/app";
   import { SettingsDialogs } from "../SettingsDialogs";
   import { backstageState } from "./BackstageState";
-  import { MessageActions } from "../../Mail/MessageActions";
+  import { goTo } from "../../../frontend/AppsBar/selectedApp";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import BackstageTile from "./BackstageTile.svelte";

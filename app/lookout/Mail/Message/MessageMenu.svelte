@@ -3,20 +3,20 @@
     onClick={() => MessageActions.print(single)} />
   <MenuDivider />
   <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo="Ctrl+R"
-    onClick={() => MessageActions.reply(single)} />
+    onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())} />
   <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo="Ctrl+Shift+R"
-    disabled={!MessageActions.canReplyAll(single) && $t`There are no other recipients`}
-    onClick={() => MessageActions.replyAll(single)} />
+    disabled={!(single.allRecipients().length > 1 && !(single.bcc.hasItems && !single.outgoing)) && $t`There are no other recipients`}
+    onClick={() => MessageActions.respond(single, single.compose.replyAll())} />
   <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
     onClick={event => MessageActions.forward(single, event as MouseEvent)} />
   <MenuDivider />
 {/if}
 {#if allRead}
   <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo="Ctrl+U"
-    onClick={() => MessageActions.markRead(messages, false)} />
+    onClick={async () => { await Promise.all(messages.map(message => message.markRead(false))); }} />
 {:else}
   <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo="Ctrl+Alt+U"
-    onClick={() => MessageActions.markRead(messages, true)} />
+    onClick={async () => { await Promise.all(messages.map(message => message.markRead(true))); }} />
 {/if}
 <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
   <CategorizeMenuItems {messages} />
@@ -41,15 +41,15 @@
   <JunkMenuItems {messages} />
 </SubMenu>
 <MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Del"
-  onClick={() => MessageActions.delete(messages)} />
+  onClick={async () => { await Promise.all(messages.map(message => message.deleteMessage())); }} />
 <MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo="Backspace"
   onClick={() => MessageActions.archive(messages)} />
 {#if single}
   <MenuDivider />
   <MenuItem label={$t`Save As…`} icon={SaveIcon}
     onClick={() => MessageActions.saveAs(single)} />
-  <MenuItem label={MessageActions.isViewingSource() ? $t`View Message` : $t`View Source`} icon={SourceIcon}
-    onClick={() => MessageActions.toggleSource()} />
+  <MenuItem label={$contentRendering.value == "source" ? $t`View Message` : $t`View Source`} icon={SourceIcon}
+    onClick={() => { $contentRendering.value = $contentRendering.value == "source" ? "html" : "source"; }} />
 {/if}
 
 <script lang="ts">
@@ -80,9 +80,12 @@
   import PrintIcon from "lucide-svelte/icons/printer";
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
 
   export let messages: EMail[];
+
+  const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
 
   $: single = messages.length == 1 ? messages[0] : null;
   $: allRead = messages.length > 0 && messages.every(message => message.isRead);

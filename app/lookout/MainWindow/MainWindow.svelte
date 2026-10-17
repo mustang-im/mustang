@@ -60,6 +60,9 @@
   import { Router } from "svelte-navigator";
   import type { RouterProps } from "svelte-navigator/types/Router";
   import { onDestroy, type Component, type Snippet } from "svelte";
+  import { createNewEvent } from "../../frontend/Calendar/event";
+  import { get } from "svelte/store";
+  import { selectedCalendar } from "../../frontend/Calendar/selected";
 
   /* <copied from="../../frontend/MainWindow/MainWindow.svelte"> */
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
@@ -111,9 +114,9 @@
       case GlobalKeyAction.People:
         return openApp(contactsMustangApp, contactsMustangApp.windowParams);
       case GlobalKeyAction.NewMail:
-        return MessageActions.newMail($selectedFolder);
+        return mailMustangApp.writeMail(MessageActions.accountForNewMail($selectedFolder).newEMailFrom());
       case GlobalKeyAction.NewAppointment:
-        return MessageActions.newAppointment();
+        return createNewEvent(get(selectedCalendar), new Date(), false);
       case GlobalKeyAction.NewMeeting:
         return MessageActions.newMeeting();
       case GlobalKeyAction.NewContact:
@@ -121,7 +124,7 @@
       case GlobalKeyAction.NewContactGroup:
         return ContactActions.newGroup(null);
       case GlobalKeyAction.AddressBook:
-        return MessageActions.openAddressBook();
+        return openApp(contactsMustangApp, {});
       case GlobalKeyAction.Search:
         return windowHeader?.focusSearch();
       case GlobalKeyAction.TellMe:

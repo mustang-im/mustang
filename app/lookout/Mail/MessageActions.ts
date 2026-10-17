@@ -44,22 +44,10 @@ export class MessageActions {
     return account;
   }
 
-  static newMail(folder: Folder | null) {
-    mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom());
-  }
-
   static writeMailTo(recipient: PersonUID) {
     let mail = MessageActions.accountForNewMail(get(selectedFolder)).newEMailFrom();
     mail.to.add(recipient);
     mailMustangApp.writeMail(mail);
-  }
-
-  static openContact(recipient: PersonUID) {
-    openPersonFromOtherApp(recipient.createPerson(appGlobal.personalAddressbook));
-  }
-
-  static newAppointment() {
-    createNewEvent(get(selectedCalendar), new Date(), false);
   }
 
   static newMeeting() {
@@ -78,18 +66,6 @@ export class MessageActions {
     // <copied from="../../frontend/AppsBar/AppMenuM/Apps/ContactsAppMenu.svelte">
     goTo(URLPart`/contacts/person/${person.id}/edit`, { person });
     // </copied>
-  }
-
-  static openAddressBook() {
-    openApp(contactsMustangApp, {});
-  }
-
-  static async reply(message: EMail) {
-    await MessageActions.respond(message, message.compose.replyToAuthor());
-  }
-
-  static async replyAll(message: EMail) {
-    await MessageActions.respond(message, message.compose.replyAll());
   }
 
   static async respond(original: EMail, draft: EMail) {
@@ -113,10 +89,6 @@ export class MessageActions {
     mailMustangApp.writeMail(draft);
   }
 
-  static canReplyAll(message: EMail): boolean {
-    return message.allRecipients().length > 1 && !(message.bcc.hasItems && !message.outgoing);
-  }
-
   static async forward(message: EMail, event?: MouseEvent | KeyboardEvent) {
     // <copied from="../../frontend/Mail/Message/MessageMenu.svelte">
     let setting = getLocalStorage("mail.send.forward", "inline").value;
@@ -131,38 +103,14 @@ export class MessageActions {
     await MessageActions.respond(message, forward);
   }
 
-  static async forwardAsAttachment(message: EMail) {
-    mailMustangApp.writeMail(await message.compose.forwardAsAttachment());
-  }
-
-  static async redirect(message: EMail) {
-    mailMustangApp.writeMail(await message.compose.redirect());
-  }
-
-  static async editAsNew(message: EMail) {
-    mailMustangApp.writeMail(await message.compose.editAsNew());
-  }
-
-  static newToAll(message: EMail) {
-    mailMustangApp.writeMail(message.compose.newToAll());
-  }
-
-  static isDraft(message: EMail): boolean {
-    return message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts;
-  }
-
   static async openDraft(message: EMail) {
-    if (!MessageActions.isDraft(message)) {
+    if (!(message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts)) {
       return;
     }
     // <copied from="../../frontend/Mail/Message/MessageToolbar.svelte" editDraft()>
     await message.loadMIME();
     mailMustangApp.writeMail(message);
     // </copied>
-  }
-
-  static async delete(messages: EMail[]) {
-    await Promise.all(messages.map(message => message.deleteMessage()));
   }
 
   static async deletePermanently(messages: EMail[]) {
@@ -187,26 +135,6 @@ export class MessageActions {
   static isJunk(messages: EMail[]): boolean {
     return messages.length > 0 && messages.every(message =>
       message.isSpam || message.folder?.specialFolder == SpecialFolder.Spam);
-  }
-
-  static async junk(messages: EMail[], isJunk: boolean) {
-    await Promise.all(messages.map(message => message.treatSpam(isJunk)));
-  }
-
-  static async markRead(messages: EMail[], read: boolean) {
-    await Promise.all(messages.map(message => message.markRead(read)));
-  }
-
-  static async toggleRead(messages: EMail[]) {
-    await MessageActions.markRead(messages, !messages.every(message => message.isRead));
-  }
-
-  static async flag(messages: EMail[], flagged: boolean) {
-    await Promise.all(messages.map(message => message.markStarred(flagged)));
-  }
-
-  static async toggleFlag(messages: EMail[]) {
-    await MessageActions.flag(messages, !messages.every(message => message.isStarred));
   }
 
   static async toggleTag(messages: EMail[], tag: Tag) {
@@ -280,10 +208,6 @@ export class MessageActions {
   }
   // </copied>
 
-  static isInFolder(messages: EMail[], folder: Folder): boolean {
-    return messages.length > 0 && messages.every(message => message.folder == folder);
-  }
-
   static async saveAs(message: EMail) {
     // <copied from="../../frontend/Mail/Message/MessageMenu.svelte">
     await message.loadMIME();
@@ -297,14 +221,6 @@ export class MessageActions {
   static async print(message: EMail) {
     assert(MessageActions.printer, gt`Printing is not available here`);
     await MessageActions.printer.print(message);
-  }
-
-  static isViewingSource(): boolean {
-    return getLocalStorage<string>("mail.contentRendering", "html").value == "source";
-  }
-
-  static toggleSource() {
-    getLocalStorage<string>("mail.contentRendering", "html").value = MessageActions.isViewingSource() ? "html" : "source";
   }
 
   static senderPerson(message: EMail): Person | null {
@@ -354,11 +270,4 @@ export class MessageActions {
     // </copied>
   }
 
-  static openRules(account: MailAccount) {
-    goTo("/mail/rules", { account });
-  }
-
-  static createRule(message: EMail) {
-    goTo("/mail/rules/create", { message });
-  }
 }

@@ -93,13 +93,13 @@
   const mailCommands: QuickAccessCommand[] = [
     sendReceiveAll,
     { id: "mail.reply", label: gt`Reply`, icon: ReplyIcon, shortCutInfo: "Ctrl+R", disabled: noSingle,
-      run: () => MessageActions.reply(get(selectedArray)[0]) },
+      run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyToAuthor()) },
     { id: "mail.replyAll", label: gt`Reply All`, icon: ReplyAllIcon, shortCutInfo: "Ctrl+Shift+R", disabled: noSingle,
-      run: () => MessageActions.replyAll(get(selectedArray)[0]) },
+      run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyAll()) },
     { id: "mail.forward", label: gt`Forward`, icon: ForwardIcon, shortCutInfo: "Ctrl+F", disabled: noSingle,
       run: () => MessageActions.forward(get(selectedArray)[0]) },
     { id: "mail.delete", label: gt`Delete`, icon: DeleteIcon, shortCutInfo: "Del", disabled: noSelection,
-      run: () => MessageActions.delete(get(selectedArray)) },
+      run: async () => { await Promise.all(get(selectedArray).map(message => message.deleteMessage())); } },
     { id: "mail.print", label: gt`Print`, icon: PrintIcon, shortCutInfo: "Ctrl+P", disabled: noSingle,
       run: () => MessageActions.print(get(selectedArray)[0]) },
   ];

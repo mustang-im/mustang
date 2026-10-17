@@ -1,7 +1,7 @@
 {#each recent as folder (folder)}
   <MenuItem label={FolderTreeActions.displayName(folder)}
     tooltip={$t`Move to ${folder.account?.name} / ${folder.fullPath}`}
-    disabled={MessageActions.isInFolder(messages, folder) && $t`The messages are already in this folder`}
+    disabled={(messages.length > 0 && messages.every(message => message.folder == folder)) && $t`The messages are already in this folder`}
     onClick={() => MessageActions.moveTo(messages, folder)}>
     <FolderIcon slot="icon" {folder} size="16px" />
   </MenuItem>

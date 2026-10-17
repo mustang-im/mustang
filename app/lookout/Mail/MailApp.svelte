@@ -94,7 +94,7 @@
   import { appGlobal } from "../../logic/app";
   import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages, quickSearch } from "../../frontend/Mail/Selected";
-  import { getParams, globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
+  import { getParams, globalSearchTerm, openApp } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../frontend/Util/error";
   import { statusBarContent, type StatusBarContent, type StatusBarView } from "../MainWindow/StatusBar.svelte";
   import { FolderPaneMode } from "./LeftPane/LeftPane.svelte";
@@ -149,6 +149,8 @@
   import { onDestroy, tick } from "svelte";
   import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
+  import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
+  import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   const searchOptions = MailSearch.options;
@@ -486,7 +488,7 @@
     let folder = $selectedFolder;
     switch (action) {
       case MailKeyAction.NewMail:
-        return MessageActions.newMail(folder);
+        return mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom());
       case MailKeyAction.SendReceiveAll:
         return await MessageActions.sendReceiveAll();
       case MailKeyAction.UpdateFolder:
@@ -516,7 +518,7 @@
         isGoToFolderOpen = true;
         return;
       case MailKeyAction.AddressBook:
-        return MessageActions.openAddressBook();
+        return openApp(contactsMustangApp, {});
       case MailKeyAction.NextMessage:
         return listPane?.selectRelative(1);
       case MailKeyAction.PreviousMessage:
@@ -527,21 +529,23 @@
     }
     switch (action) {
       case MailKeyAction.Delete:
-        return await MessageActions.delete(messages);
+        return await Promise.all(messages.map(message => message.deleteMessage()));
       case MailKeyAction.DeletePermanently:
         return await MessageActions.deletePermanently(messages);
       case MailKeyAction.Archive:
         return await MessageActions.archive(messages);
       case MailKeyAction.MarkRead:
-        return await MessageActions.markRead(messages, true);
+        return await Promise.all(messages.map(message => message.markRead(true)));
       case MailKeyAction.MarkUnread:
-        return await MessageActions.markRead(messages, false);
-      case MailKeyAction.ToggleFlag:
-        return await MessageActions.toggleFlag(messages);
+        return await Promise.all(messages.map(message => message.markRead(false)));
+      case MailKeyAction.ToggleFlag: {
+        let flagged = !messages.every(message => message.isStarred);
+        return await Promise.all(messages.map(message => message.markStarred(flagged)));
+      }
       case MailKeyAction.MarkJunk:
-        return await MessageActions.junk(messages, true);
+        return await Promise.all(messages.map(message => message.treatSpam(true)));
       case MailKeyAction.NotJunk:
-        return await MessageActions.junk(messages, false);
+        return await Promise.all(messages.map(message => message.treatSpam(false)));
       case MailKeyAction.MoveToFolder:
         $openMoveMessages = { messages, copy: false };
         return;
@@ -554,13 +558,13 @@
     }
     switch (action) {
       case MailKeyAction.Reply:
-        return MessageActions.reply(single);
+        return MessageActions.respond(single, single.compose.replyToAuthor());
       case MailKeyAction.ReplyAll:
-        return MessageActions.replyAll(single);
+        return MessageActions.respond(single, single.compose.replyAll());
       case MailKeyAction.Forward:
         return await MessageActions.forward(single, event);
       case MailKeyAction.ForwardAsAttachment:
-        return await MessageActions.forwardAsAttachment(single);
+        return mailMustangApp.writeMail(await single.compose.forwardAsAttachment());
       case MailKeyAction.Print:
         return await MessageActions.print(single);
     }

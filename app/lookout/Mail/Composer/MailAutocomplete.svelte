@@ -45,7 +45,7 @@
   <MenuItem label={$t`Remove`} icon={RemoveIcon} disabled={disabled} onClick={() => remove(menuRecipient)} />
   <MenuDivider />
   <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}
-    icon={ContactIcon} onClick={() => MessageActions.openContact(menuRecipient)} />
+    icon={ContactIcon} onClick={() => openPersonFromOtherApp(menuRecipient.createPerson(appGlobal.personalAddressbook))} />
 </ContextMenu>
 
 <script lang="ts">
@@ -54,7 +54,6 @@
   import { UserError } from "../../../logic/util/util";
   import { showError, backgroundError } from "../../../frontend/Util/error";
   import { RecipientText } from "./RecipientText";
-  import { MessageActions } from "../MessageActions";
   import AutocompleteList from "./AutocompleteList.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
@@ -66,6 +65,8 @@
   import ContactIcon from "lucide-svelte/icons/contact-round";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { appGlobal } from "../../../logic/app";
+  import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
 
   export let addresses: ArrayColl<PersonUID> = null;
   export let recipients: ArrayColl<PersonUID> = null;

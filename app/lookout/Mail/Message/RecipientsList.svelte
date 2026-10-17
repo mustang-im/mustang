@@ -14,7 +14,7 @@
   <MenuItem label={$t`Copy`} icon={CopyIcon} onClick={() => navigator.clipboard.writeText(RecipientText.format([menuRecipient]))} />
   <MenuDivider />
   <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}
-    icon={ContactIcon} onClick={() => MessageActions.openContact(menuRecipient)} />
+    icon={ContactIcon} onClick={() => openPersonFromOtherApp(menuRecipient.createPerson(appGlobal.personalAddressbook))} />
 </Menu>
 
 <script lang="ts">
@@ -29,6 +29,8 @@
   import ContactIcon from "lucide-svelte/icons/contact-round";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { appGlobal } from "../../../logic/app";
+  import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
 
   export let recipients: Collection<PersonUID>;
   export let withAddress = false;

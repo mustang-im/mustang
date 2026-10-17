@@ -97,7 +97,6 @@
   import { fileSize } from "../../../frontend/Files/file";
   import { Column, ColumnInfo } from "../ViewSettings/ViewSettings";
   import { ObservedItems } from "../../Shared/ObservedItems";
-  import { MessageActions } from "../MessageActions";
   import { InlineReplies } from "../Composer/InlineReplies";
   import { MessageDates } from "../MessageList/MessageDates";
   import { ListName } from "../MessageList/ListName";
@@ -115,6 +114,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
 
   export let message: EMail;
   export let columns: Column[];
@@ -138,7 +138,7 @@
     ? $t`To: ${senderName}`
     : $message.from?.emailAddress ?? "";
   $: recipients = $to.contents.map(person => personDisplayName(person) || person.emailAddress).join("; ");
-  $: isDraft = $message && MessageActions.isDraft(message);
+  $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
   $: hasInlineReply = $inlineReplies && InlineReplies.hasReply(message);
   $: preview = previewLines > 0 ? ($message.text ?? "").replace(/\s+/g, " ").trim().substring(0, 400) : "";
   $: stateIcon = isDraft ? DraftIcon

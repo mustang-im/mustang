@@ -9,7 +9,7 @@
   <hbox class="info-bar warning">
     <JunkIcon size={16} />
     <span>{$t`This message was marked as junk. Be careful with links and attachments in it.`}</span>
-    <button class="link" on:click={() => catchErrors(() => MessageActions.junk([message], false))}>{$t`It's not junk`}</button>
+    <button class="link" on:click={() => catchErrors(() => message.treatSpam(false))}>{$t`It's not junk`}</button>
   </hbox>
 {/if}
 {#if $message.isImportant}
@@ -79,13 +79,14 @@
   import PlainTextIcon from "lucide-svelte/icons/file-text";
   import { catchErrors, backgroundError } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
+  import { SpecialFolder } from "../../../logic/Mail/Folder";
 
   export let message: EMail;
 
   const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
   let picturesBar: HTMLButtonElement;
   let isPicturesMenuOpen = false;
-  $: isDraft = $message && MessageActions.isDraft(message);
+  $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
   $: isJunk = $message && MessageActions.isJunk([message]);
 
   // <copied from="../../../frontend/Mail/Message/RepliedInfo.svelte">

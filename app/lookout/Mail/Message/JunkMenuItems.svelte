@@ -1,12 +1,12 @@
 <MenuItem label={$t`Mark as Junk`} icon={JunkIcon} shortCutInfo="Ctrl+J"
   tooltip={$t`Move to the Junk folder, and train the junk filter`}
   disabled={allJunk && $t`The selected messages are already junk`}
-  onClick={() => MessageActions.junk(messages, true)} />
+  onClick={async () => { await Promise.all(messages.map(message => message.treatSpam(true))); }} />
 <MenuDivider />
 <MenuItem label={$t`Not Junk`} icon={NotJunkIcon} shortCutInfo="Ctrl+Alt+J"
   tooltip={$t`Move back to the Inbox, and train the junk filter`}
   disabled={!anyJunk && $t`The selected messages are not junk`}
-  onClick={() => MessageActions.junk(messages, false)} />
+  onClick={async () => { await Promise.all(messages.map(message => message.treatSpam(false))); }} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
