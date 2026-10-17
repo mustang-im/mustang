@@ -1,6 +1,6 @@
 <button type="button" class="field-button" bind:this={buttonEl} tabindex={-1}
   aria-haspopup="menu" aria-expanded={isMenuOpen}
-  on:click={() => isMenuOpen = !isMenuOpen}>
+  on:click|stopPropagation={() => isMenuOpen = !isMenuOpen}>
   {$t`From`} <ChevronDownIcon size={14} />
 </button>
 <hbox class="from-text">

@@ -40,7 +40,7 @@
 {/if}
 {#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && ExternalContent.hasExternalContent($message.rawHTMLDangerous)}
   <button type="button" class="info-bar clickable" bind:this={picturesBar}
-    aria-haspopup="menu" on:click={() => { isPicturesMenuOpen = !isPicturesMenuOpen; }}>
+    aria-haspopup="menu" on:click|stopPropagation={() => { isPicturesMenuOpen = !isPicturesMenuOpen; }}>
     <PicturesIcon size={16} />
     <span>{$t`Click here to download pictures. To help protect your privacy, ${appName} prevented automatic download of some pictures in this message.`}</span>
   </button>
