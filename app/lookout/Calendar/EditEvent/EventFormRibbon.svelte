@@ -148,7 +148,7 @@
     <RibbonTab label={trackingLabel} bind:isSelected={isTrackingSelected}>
       <RibbonGroup label={$t`Tracking`}>
         <RibbonButton label={$t`Copy Status to Clipboard`} icon={CopyIcon}
-          onClick={() => navigator.clipboard.writeText(EventFormInfo.trackingText(event))} />
+          onClick={copyTrackingStatus} />
       </RibbonGroup>
     </RibbonTab>
   {/if}
@@ -276,6 +276,15 @@
     event.onlineMeetingURL = null;
     // </copied>
     event.notifyObservers();
+  }
+
+  async function copyTrackingStatus() {
+    let lines = event.participants.contents.map(participant => [
+      participant.name || participant.emailAddress,
+      EventFormInfo.attendanceLabel(participant),
+      EventFormInfo.responseLabel(participant),
+    ].join("\t"));
+    await navigator.clipboard.writeText(lines.join("\n"));
   }
 
   async function respond(response: InvitationResponseInMessage) {

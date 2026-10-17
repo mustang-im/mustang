@@ -108,19 +108,12 @@ test("Info bar: in the past, and the series of an occurrence", () => {
   expect(messages[0].text).toContain("5 times");
 });
 
-test("When and tracking texts", () => {
+test("When text", () => {
   let event = newEvent();
   expect(plain(EventFormInfo.whenText(event, "en-US"))).toBe("Thursday, October 15, 2026, 10:00 – 10:30 AM");
   let allDay = newEvent(new Date(2026, 9, 15), 2 * 24 * 60);
   allDay.allDay = true;
   expect(plain(EventFormInfo.whenText(allDay, "en-US"))).toBe("Thursday, October 15 – Friday, October 16, 2026 (all day)");
-
-  organize(event, InvitationResponse.Accept, InvitationResponse.NoResponseReceived);
-  expect(EventFormInfo.trackingText(event).split("\n")).toEqual([
-    "Me\tMeeting Organizer\tNone",
-    "Person 0\tRequired Attendee\tAccepted",
-    "Person 1\tRequired Attendee\tNone",
-  ]);
 });
 
 test("Tracking table sorts by name, attendance and response", () => {

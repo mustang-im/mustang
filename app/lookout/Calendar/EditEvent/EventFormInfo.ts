@@ -120,14 +120,6 @@ export class EventFormInfo {
     return [...participants].sort((a, b) => key(a).localeCompare(key(b)) * direction);
   }
 
-  static trackingText(event: Event): string {
-    return event.participants.contents.map(participant => [
-      participant.name || participant.emailAddress,
-      EventFormInfo.attendanceLabel(participant),
-      EventFormInfo.responseLabel(participant),
-    ].join("\t")).join("\n");
-  }
-
   static myResponseText(response: InvitationResponse): string {
     switch (response) {
     case InvitationResponse.Accept:
