@@ -1,4 +1,4 @@
-import { TimeZoneChoice, TimeZoneRuler, ZoneClock } from "../../Calendar/View/TimeZones";
+import { TimeZoneChoice, TimeZoneRuler, ZoneClock } from "../../Calendar/TimeZones";
 import { HourLabel } from "../../Calendar/TimeGrid/HourLabel";
 import { expect, test } from "vitest";
 

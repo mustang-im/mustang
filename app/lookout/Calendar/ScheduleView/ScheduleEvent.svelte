@@ -24,9 +24,9 @@
   import { EventLook } from "../Event/EventLook";
   import { EventInteraction } from "../Event/EventInteraction";
   import { CurrentTime } from "../View/CurrentTime";
-  import { kCalendarMenus, type CalendarMenus } from "../Selected";
+  import { kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
-  import EventIcons from "../Event/EventIcons.svelte";
+  import EventIcons from "../DisplayEvent/EventIcons.svelte";
   import "../Event/EventLook.css";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import { getContext } from "svelte";

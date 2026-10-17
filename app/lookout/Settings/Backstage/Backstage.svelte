@@ -91,7 +91,7 @@
   import { ArrayColl } from "svelte-collections";
   import SaveAllAttachmentsDialog from "../../Mail/Message/SaveAllAttachmentsDialog.svelte";
   import { MessageActions } from "../../Mail/MessageActions";
-  import { selectedContact } from "../../Contacts/Selected";
+  import { selectedContact } from "../../Contacts/Person/Selected";
   import { Person } from "../../../logic/Abstract/Person";
   import { selectedMessage } from "../../../frontend/Mail/Selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";

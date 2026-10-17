@@ -40,9 +40,9 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
-  import ShowColumnsDialog from "./ShowColumnsDialog.svelte";
+  import ShowColumnsDialog from "../../Shared/ViewSettings/ShowColumnsDialog.svelte";
   import GroupByDialog from "./GroupByDialog.svelte";
-  import SortDialog from "./SortDialog.svelte";
+  import SortDialog from "../../Shared/ViewSettings/SortDialog.svelte";
   import OtherSettingsDialog from "./OtherSettingsDialog.svelte";
   import { t } from "../../../l10n/l10n";
 

@@ -25,7 +25,7 @@
 
 <script lang="ts">
   import { DateText } from "../../Calendar/EditEvent/DateText";
-  import DatePicker from "../../Calendar/EditEvent/DatePicker.svelte";
+  import DatePicker from "./DatePicker.svelte";
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import { showError } from "../../../frontend/Util/error";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";

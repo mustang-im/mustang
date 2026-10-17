@@ -4,7 +4,7 @@
 
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
-  import { selectedAddressbook } from "../../Contacts/Selected";
+  import { selectedAddressbook } from "../../Contacts/Person/Selected";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import ContactsImportExport from "./ImportExport.svelte";
   import PeopleIcon from "lucide-svelte/icons/users";

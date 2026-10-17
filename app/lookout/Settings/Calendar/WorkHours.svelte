@@ -7,11 +7,11 @@
           {@const day = $workHours.days[weekday]}
           <CheckBox label={weekdayName(weekday)} checked={day.isWorkDay} disabled={readOnly}
             onChange={checked => onWorkDayChanged(weekday, checked)} />
-          <TimeCombo time={timeOf(day.startMinutes)} options={startTimes}
+          <TimeInput time={timeOf(day.startMinutes)} options={startTimes}
             label={$t`Start time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
             onChange={time => onStartChanged(weekday, time)} />
           <span class="until" class:disabled={readOnly || !day.isWorkDay}>{$t`to`}</span>
-          <TimeCombo time={timeOf(day.endMinutes)} options={endTimes}
+          <TimeInput time={timeOf(day.endMinutes)} options={endTimes}
             label={$t`End time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
             onChange={time => onEndChanged(weekday, time)} />
         {/each}
@@ -43,12 +43,12 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { kMinutesPerDay } from "../../../logic/Calendar/WorkHours";
   import { TimeOptions } from "../../Calendar/EditEvent/TimeOptions";
-  import { TimeZoneChoice, ZoneClock } from "../../Calendar/View/TimeZones";
+  import { TimeZoneChoice, ZoneClock } from "../../Calendar/TimeZones";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import TimeCombo from "../../Calendar/EditEvent/TimeCombo.svelte";
+  import TimeInput from "../../Calendar/EditEvent/TimeInput.svelte";
   import WorkHoursIcon from "lucide-svelte/icons/briefcase-business";
   import { catchErrors } from "../../../frontend/Util/error";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";

@@ -13,7 +13,7 @@
             <AttachmentsUI attachments={shownMessage.attachments} />
           </hbox>
           {#if MailInvitation.isInvitationMail($shownMessage)}
-            <InvitationBar message={shownMessage} />
+            <InvitationInMail message={shownMessage} />
           {:else}
             {#if $shownMessage.sml}
               <vbox class="sml">
@@ -51,7 +51,7 @@
   import InfoBars from "./InfoBars.svelte";
   import AttachmentsUI from "./AttachmentsUI.svelte";
   import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
-  import InvitationBar from "../../Calendar/EditEvent/InvitationBar.svelte";
+  import InvitationInMail from "../../Calendar/Invitation/InvitationInMail.svelte";
   import { MailInvitation } from "../../Calendar/EditEvent/MailInvitation";
   import MessageBody from "../../../frontend/Mail/Message/MessageBody.svelte";
   import ReadIcon from "lucide-svelte/icons/mail-open";

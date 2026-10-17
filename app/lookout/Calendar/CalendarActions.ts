@@ -4,7 +4,7 @@ import type { InvitationResponseInMessage } from "../../logic/Calendar/Invitatio
 import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
-import { inlineTitle, selectedSlots, workWeekHours, type SlotSelection } from "./Selected";
+import { inlineTitle, selectedSlots, workWeekHours, type SlotSelection } from "./selected";
 import { CalendarCurrentView, CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
 import { CalendarGroups } from "./FolderPane/CalendarGroups";

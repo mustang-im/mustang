@@ -79,7 +79,7 @@
   import { appGlobal } from "../../../logic/app";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import { CalendarSettings } from "../../Calendar/CalendarSettings";
-  import { TimeZoneChoice, ZoneClock } from "../../Calendar/View/TimeZones";
+  import { TimeZoneChoice, ZoneClock } from "../../Calendar/TimeZones";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";

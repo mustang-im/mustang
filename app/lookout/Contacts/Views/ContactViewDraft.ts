@@ -1,4 +1,4 @@
-import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./ContactColumns";
+import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "../Person/ContactColumns";
 import { gt } from "../../../l10n/l10n";
 
 export class ContactViewDraft {

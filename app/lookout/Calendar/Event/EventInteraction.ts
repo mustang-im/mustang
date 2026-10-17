@@ -2,8 +2,8 @@ import type { Event } from "../../../logic/Calendar/Event";
 import { selectedEvent } from "../../../frontend/Calendar/selected";
 import { catchErrors } from "../../../frontend/Util/error";
 import { CalendarActions } from "../CalendarActions";
-import { eventPeek, selectedSlots, type CalendarMenus } from "../Selected";
-import type { EventDrag } from "../TimeGrid/EventDrag";
+import { eventPeek, selectedSlots, type CalendarMenus } from "../selected";
+import type { EventDrag } from "../EventDrag";
 
 export interface EventInteractionParams {
   event: Event;

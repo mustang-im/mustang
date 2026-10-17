@@ -9,16 +9,16 @@
     columnSets={ContactColumns.columnSets()}
     onOK={columns => $dialog?.kind == "show-columns" && ContactColumns.setColumns($dialog.view, columns)} on:close={onClose} />
 {:else if $dialog?.kind == "view-settings"}
-  <ContactViewSettingsDialog view={$dialog.view} on:close={onClose} />
+  <ViewSettingsDialog view={$dialog.view} on:close={onClose} />
 {/if}
 
 <script lang="ts">
   import { ContactDialogs } from "./ContactDialogs";
-  import AddressBookPropertiesDialog from "./AddressBookPropertiesDialog.svelte";
+  import AddressBookPropertiesDialog from "../AddressBookPropertiesDialog.svelte";
   import RenameDialog from "../../Settings/Shared/RenameDialog.svelte";
-  import ShowColumnsDialog from "../../Calendar/ViewSettings/ShowColumnsDialog.svelte";
-  import ContactViewSettingsDialog from "../Views/ContactViewSettingsDialog.svelte";
-  import { ContactColumn, ContactColumns } from "../Views/ContactColumns";
+  import ShowColumnsDialog from "../../Shared/ViewSettings/ShowColumnsDialog.svelte";
+  import ViewSettingsDialog from "../ViewSettings/ViewSettingsDialog.svelte";
+  import { ContactColumn, ContactColumns } from "../Person/ContactColumns";
   import { t } from "../../../l10n/l10n";
 
   const dialog = ContactDialogs.current;

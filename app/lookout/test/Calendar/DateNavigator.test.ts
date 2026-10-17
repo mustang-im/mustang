@@ -2,7 +2,7 @@
 import "../../../logic/app";
 import { Event } from "../../../logic/Calendar/Event";
 import { DateNavigatorMonth } from "../../Calendar/FolderPane/DateNavigatorMonth";
-import { WeekNumber } from "../../Calendar/View/WeekNumber";
+import { WeekNumber } from "../../Util/date";
 import { HourLabel } from "../../Calendar/TimeGrid/HourLabel";
 import { expect, test } from "vitest";
 

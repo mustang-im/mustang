@@ -118,7 +118,7 @@
 </script>
 
 <style>
-  /* <copied to="../../Calendar/EditEvent/InvitationBar.svelte"> */
+  /* <copied to="../../Calendar/Invitation/InvitationInMail.svelte"> */
   .info-bar {
     align-items: center;
     flex-shrink: 0;

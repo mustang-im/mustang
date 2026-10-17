@@ -64,8 +64,8 @@
   import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
   import { CalendarRange } from "../../Calendar/View/CalendarRange";
   import { CurrentTime } from "../../Calendar/View/CurrentTime";
-  import DateNavigator from "../../Calendar/FolderPane/DateNavigator.svelte";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import DateNavigator from "../../Calendar/DateNavigator.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import { MailView, ToDoBarPart } from "../MailView";
   import { ToDoAgenda } from "./ToDoAgenda";
   import { ObservedItems } from "../../Shared/ObservedItems";

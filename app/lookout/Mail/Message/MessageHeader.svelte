@@ -130,7 +130,7 @@
   import { MailDialogs } from "../Dialogs/MailDialogs";
   import { MessageDates } from "../MessageList/MessageDates";
   import { ObservedItems } from "../../Shared/ObservedItems";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import FollowUpMenuItems from "./FollowUpMenuItems.svelte";
   import JunkMenuItems from "./JunkMenuItems.svelte";

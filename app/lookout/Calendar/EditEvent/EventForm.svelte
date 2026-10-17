@@ -15,15 +15,15 @@
             {$t`Required`}
           </button>
           <hbox class="field attendees">
-            <AttendeesField {event} {flow} bind:this={attendeesField} autofocus={!!event.title && !flow.attendees.length} />
+            <ParticipantsBox {event} {flow} bind:this={attendeesField} autofocus={!!event.title && !flow.attendees.length} />
           </hbox>
         {/if}
-        <TimeRows {event} editor={timeEditor} {flow} {onRecurrence} />
+        <TimeBox {event} editor={timeEditor} {flow} {onRecurrence} />
         <label class="field-button" for="event-form-location">{$t`Location`}</label>
         <input id="event-form-location" class="field location" type="text" bind:value={event.location} />
         {#if $event.isOnline}
           <span class="row-label">{$t`Online meeting`}</span>
-          <OnlineMeetingRow {event} />
+          <OnlineMeetingBox {event} />
         {/if}
       </grid>
     </hbox>
@@ -52,9 +52,9 @@
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import InfoBar from "./InfoBar.svelte";
   import SendButton from "./SendButton.svelte";
-  import TimeRows from "./TimeRows.svelte";
-  import AttendeesField from "./AttendeesField.svelte";
-  import OnlineMeetingRow from "./OnlineMeetingRow.svelte";
+  import TimeBox from "./TimeBox.svelte";
+  import ParticipantsBox from "./ParticipantsBox.svelte";
+  import OnlineMeetingBox from "./OnlineMeetingBox.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
   import { EditorSettings } from "../../Shared/Editor/EditorSettings";
@@ -76,7 +76,7 @@
   export let onRecurrence: () => void;
   export let onAddressBook: () => void;
 
-  let attendeesField: AttendeesField;
+  let attendeesField: ParticipantsBox;
   const spellcheck = EditorSettings.spellcheck;
 
   $: participants = event.participants;

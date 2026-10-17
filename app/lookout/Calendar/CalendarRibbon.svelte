@@ -8,7 +8,7 @@
         onClick={() => CalendarActions.newEventAtSelection(null, "meeting")}
         disabled={noCalendar} />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon} disabled={noCalendar}>
-        <NewItemsMenuItems />
+        <NewEventMenu />
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Online Meeting`}>
@@ -173,12 +173,12 @@
   import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import ColorPalette from "../Shared/ColorPalette.svelte";
-  import ArrangeButtons from "./View/ArrangeButtons.svelte";
-  import SearchPeopleBox from "../Contacts/SearchPeopleBox.svelte";
+  import ArrangeButtons from "./ArrangeButtons.svelte";
+  import SearchPeopleBox from "../Contacts/Search/SearchPeopleBox.svelte";
   import { ContactActions } from "../Contacts/ContactActions";
-  import ChangeViewGallery from "./View/ChangeViewGallery.svelte";
-  import NewItemsMenuItems from "./FolderPane/NewItemsMenuItems.svelte";
-  import OpenCalendarMenuItems from "./FolderPane/OpenCalendarMenuItems.svelte";
+  import ChangeViewGallery from "../Shared/Ribbon/ChangeViewGallery.svelte";
+  import NewEventMenu from "./NewEventMenu.svelte";
+  import OpenCalendarMenuItems from "./OpenCalendarMenuItems.svelte";
   import ChangeViewIcon from "lucide-svelte/icons/layout-template";
   import CalendarViewIcon from "lucide-svelte/icons/calendar-days";
   import PreviewViewIcon from "lucide-svelte/icons/scan-text";

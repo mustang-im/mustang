@@ -6,9 +6,9 @@
     {#if kind == SMLKind.Poll}
       <Poll {sml} {myReaction} />
     {:else if kind == SMLKind.SchedulingPoll}
-      <SchedulingPollCard {sml} {myReaction} {isOrganizer} />
+      <MeetingTimePoll {sml} {myReaction} {isOrganizer} />
     {:else if kind == SMLKind.Bookings}
-      <BookingCard {sml} {myReaction} {isOrganizer} />
+      <Book {sml} {myReaction} {isOrganizer} />
     {/if}
   </ActionCard>
 {/if}
@@ -20,8 +20,8 @@
   import { SMLKind, SMLKinds } from "./SMLKinds";
   import ActionCard from "./ActionCard.svelte";
   import Poll from "./Poll.svelte";
-  import SchedulingPollCard from "./SchedulingPollCard.svelte";
-  import BookingCard from "./BookingCard.svelte";
+  import MeetingTimePoll from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
+  import Book from "../../Calendar/SML/BookMe/Book.svelte";
   import { getDateTimeLocale, gt } from "../../../l10n/l10n";
 
   export let sml: SMLData;

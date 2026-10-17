@@ -58,7 +58,7 @@
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import BackstageTile from "./BackstageTile.svelte";
   import AboutDialog from "../About/AboutDialog.svelte";
   import License from "../License/Page/License.svelte";

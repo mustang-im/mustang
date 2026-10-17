@@ -24,7 +24,7 @@
           <tr>
             <td>
               <hbox class="name">
-                <ResponseIcon response={participant.response} />
+                <ParticipantConfirmIcon response={participant.response} />
                 <span>{participant.name || participant.emailAddress}</span>
                 {#if participant.name && participant.emailAddress}
                   <span class="lo-secondary">{participant.emailAddress}</span>
@@ -44,7 +44,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { ObservedItems } from "../../Shared/ObservedItems";
   import { EventFormInfo, type TrackingColumn } from "./EventFormInfo";
-  import ResponseIcon from "./ResponseIcon.svelte";
+  import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
   import InfoIcon from "lucide-svelte/icons/info";
   import AscendingIcon from "lucide-svelte/icons/chevron-up";
   import DescendingIcon from "lucide-svelte/icons/chevron-down";

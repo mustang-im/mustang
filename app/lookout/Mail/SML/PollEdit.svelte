@@ -100,7 +100,7 @@
     flex-shrink: 0;
     width: 24px;
   }
-  /* <copied to="TimeOptionsEditor.svelte"> */
+  /* <copied to="../../Calendar/SML/Shared/PollEdit.svelte"> */
   .remove {
     display: flex;
     flex-shrink: 0;

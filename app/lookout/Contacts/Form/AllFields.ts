@@ -1,5 +1,5 @@
 import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
-import { ContactColumns } from "../Views/ContactColumns";
+import { ContactColumns } from "../Person/ContactColumns";
 import type { ArrayColl } from "svelte-collections";
 import { gt } from "../../../l10n/l10n";
 

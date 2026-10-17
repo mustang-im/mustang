@@ -4,10 +4,10 @@
     <GroupBox label={$t`Appointment time`}>
       <grid class="appointment-time">
         <span class="label">{$t`Start:`}</span>
-        <TimeCombo time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
+        <TimeInput time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
           onChange={time => setStartTime(time)} />
         <span class="label">{$t`End:`}</span>
-        <TimeCombo time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
+        <TimeInput time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
           onChange={time => setEndTime(time)} />
         <span class="label">{$t`Duration:`}</span>
         <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
@@ -130,7 +130,7 @@
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import TimeCombo from "./TimeCombo.svelte";
+  import TimeInput from "./TimeInput.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";

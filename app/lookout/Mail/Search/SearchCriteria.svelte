@@ -110,7 +110,7 @@
   import CategoryMenuItems from "./CategoryMenuItems.svelte";
   import CategorySquare from "../../Shared/Tag/CategorySquare.svelte";
   import SearchPersonDialog from "./SearchPersonDialog.svelte";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";

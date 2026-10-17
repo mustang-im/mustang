@@ -16,7 +16,7 @@
         {#if kind == SMLKind.Poll}
           <PollEdit {sml} />
         {:else}
-          <TimeOptionsEditor {sml} />
+          <TimePollEdit {sml} />
         {/if}
       </ActionCard>
     {/if}
@@ -30,7 +30,7 @@
   import ActionCard from "../SML/ActionCard.svelte";
   import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import PollEdit from "../SML/PollEdit.svelte";
-  import TimeOptionsEditor from "../SML/TimeOptionsEditor.svelte";
+  import TimePollEdit from "../../Calendar/SML/Shared/PollEdit.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import PreviewIcon from "lucide-svelte/icons/eye";
   import EditIcon from "lucide-svelte/icons/pencil";

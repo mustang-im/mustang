@@ -9,15 +9,15 @@
   {/key}
 </Route>
 <Route path="/">
-  <ContactsPage />
+  <ContactsAppD />
 </Route>
 
 <script lang="ts">
   import type { Group } from "../../logic/Abstract/Group";
   import { appGlobal } from "../../logic/app";
-  import ContactsPage from "./ContactsPage.svelte";
-  import ContactForm from "./ContactForm.svelte";
-  import GroupForm from "./GroupForm.svelte";
+  import ContactsAppD from "./ContactsAppD.svelte";
+  import ContactForm from "./PersonPage/ContactForm.svelte";
+  import GroupForm from "./PersonPage/GroupForm.svelte";
   import { getParams } from "../../frontend/AppsBar/selectedApp";
   import { requiredParam } from "../../frontend/Util/route";
   import { Route, useLocation } from "svelte-navigator";

@@ -2,11 +2,11 @@
   <EventFormRoute />
 </Route>
 <Route path="/">
-  <CalendarPage />
+  <CalendarApp />
 </Route>
 
 <script lang="ts">
-  import CalendarPage from "./CalendarPage.svelte";
+  import CalendarApp from "./CalendarApp.svelte";
   import EventFormRoute from "./EditEvent/EventFormRoute.svelte";
   import { Route } from "svelte-navigator";
 </script>

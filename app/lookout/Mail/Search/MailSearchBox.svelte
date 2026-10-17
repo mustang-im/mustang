@@ -70,7 +70,7 @@
   import { SelectNames } from "../Composer/SelectNames";
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import SearchIcon from "lucide-svelte/icons/search";

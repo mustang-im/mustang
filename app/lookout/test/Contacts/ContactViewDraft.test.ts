@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../logic/app";
-import { ContactColumn, ContactColumns, ContactView } from "../../Contacts/Views/ContactColumns";
+import { ContactColumn, ContactColumns, ContactView } from "../../Contacts/Person/ContactColumns";
 import { ContactViewDraft } from "../../Contacts/Views/ContactViewDraft";
 import { expect, test } from "vitest";
 

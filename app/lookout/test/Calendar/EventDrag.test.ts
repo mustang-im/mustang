@@ -2,7 +2,7 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../logic/app";
 import { Event } from "../../../logic/Calendar/Event";
-import { EventDrag, type EventDragMode } from "../../Calendar/TimeGrid/EventDrag";
+import { EventDrag, type EventDragMode } from "../../Calendar/EventDrag";
 import { beforeAll, expect, test } from "vitest";
 
 beforeAll(() => {

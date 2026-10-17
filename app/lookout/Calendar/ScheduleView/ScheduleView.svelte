@@ -38,13 +38,13 @@
 </div>
 
 <script lang="ts">
-  import type { CalendarColumnGroup } from "../TimeGrid/TimeGrid.svelte";
+  import type { CalendarColumnGroup } from "../DayView/DayViewGrid.svelte";
   import type { CalendarRange } from "../View/CalendarRange";
   import { ScheduleLayout } from "./ScheduleLayout";
-  import { TimeZoneRuler } from "../View/TimeZones";
+  import { TimeZoneRuler } from "../TimeZones";
   import { CurrentTime } from "../View/CurrentTime";
   import { WorkingHours } from "../View/WorkingHours";
-  import { eventPeek } from "../Selected";
+  import { eventPeek } from "../selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";
   import { t } from "../../../l10n/l10n";

@@ -56,7 +56,7 @@
   import { RecipientText } from "./RecipientText";
   import { MessageActions } from "../MessageActions";
   import AutocompleteList from "./AutocompleteList.svelte";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";

@@ -157,10 +157,10 @@
   import type { Contact } from "../../logic/Abstract/Contact";
   import { Person, type ContactEntry } from "../../logic/Abstract/Person";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedAddressbook } from "./Selected";
+  import { selectedAddressbook } from "./Person/Selected";
   import { ContactActions } from "./ContactActions";
   import { ContactDialogs } from "./Dialogs/ContactDialogs";
-  import { ContactColumn, ContactColumns, ContactView } from "./Views/ContactColumns";
+  import { ContactColumn, ContactColumns, ContactView } from "./Person/ContactColumns";
   import type { AddressbookSection } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
@@ -173,8 +173,8 @@
   import MenuLabel from "../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../Shared/Menu/SubMenu.svelte";
-  import ChangeViewGallery from "../Calendar/View/ChangeViewGallery.svelte";
-  import SearchPeopleBox from "./SearchPeopleBox.svelte";
+  import ChangeViewGallery from "../Shared/Ribbon/ChangeViewGallery.svelte";
+  import SearchPeopleBox from "./Search/SearchPeopleBox.svelte";
   import NewContactIcon from "lucide-svelte/icons/user-round-plus";
   import NewGroupIcon from "lucide-svelte/icons/users-round";
   import NewItemsIcon from "lucide-svelte/icons/file-plus-corner";

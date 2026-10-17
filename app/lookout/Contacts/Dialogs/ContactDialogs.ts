@@ -1,5 +1,5 @@
 import type { Addressbook } from "../../../logic/Contacts/Addressbook";
-import type { ContactView } from "../Views/ContactColumns";
+import type { ContactView } from "../Person/ContactColumns";
 import { writable } from "svelte/store";
 
 export type ContactDialog =

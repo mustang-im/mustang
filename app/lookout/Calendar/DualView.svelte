@@ -1,14 +1,14 @@
 <SplitterBidirectional horizontal={$appGlobal.isSmall} initialSecondRatio={1} firstMinPx={200} secondMinPx={200}>
   <vbox flex class="days" slot="first">
-    <CalendarHeader range={daysRange} onToday={goToToday} onStep={stepDays} />
-    <TimeGrid range={daysRange} {groups} {timeScale} enlargeSelectedDay={true}
+    <DateRange range={daysRange} onToday={goToToday} onStep={stepDays} />
+    <DayViewGrid range={daysRange} {groups} {timeScale} enlargeSelectedDay={true}
       onOpenDay={selectDay} onOverlay={showOverlay} />
   </vbox>
   <vbox flex class="month" slot="second">
-    <CalendarHeader range={monthRange} onStep={stepMonth}>
+    <DateRange range={monthRange} onStep={stepMonth}>
       <slot name="top-right" />
-    </CalendarHeader>
-    <MonthGrid range={monthRange} {events} {showWeekNumbers} onOpenDay={selectDay} />
+    </DateRange>
+    <MonthView range={monthRange} {events} {showWeekNumbers} onOpenDay={selectDay} />
   </vbox>
 </SplitterBidirectional>
 
@@ -16,13 +16,13 @@
   import type { Event } from "../../logic/Calendar/Event";
   import { CalendarSettings } from "./CalendarSettings";
   import { CalendarRange } from "./View/CalendarRange";
-  import { eventPeek } from "./Selected";
+  import { eventPeek } from "./selected";
   import { selectedDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../frontend/Util/date";
-  import CalendarHeader from "./View/CalendarHeader.svelte";
-  import TimeGrid, { type CalendarColumnGroup } from "./TimeGrid/TimeGrid.svelte";
-  import MonthGrid from "./Month/MonthGrid.svelte";
+  import DateRange from "./DateRange.svelte";
+  import DayViewGrid, { type CalendarColumnGroup } from "./DayView/DayViewGrid.svelte";
+  import MonthView from "./MonthView/MonthView.svelte";
   import SplitterBidirectional from "../../frontend/Shared/SplitterBidirectional.svelte";
   import type { Collection } from "svelte-collections";
 

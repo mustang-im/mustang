@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
+  import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import { t } from "../../../l10n/l10n";
   import { onMount } from "svelte";
 

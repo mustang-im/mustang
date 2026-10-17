@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { ContactGrouping, ContactGroupHeader } from "../../Contacts/Views/ContactGrouping";
-import { ContactColumn } from "../../Contacts/Views/ContactColumns";
+import { ContactColumn } from "../../Contacts/Person/ContactColumns";
 import { Person } from "../../../logic/Abstract/Person";
 import { expect, test } from "vitest";
 
