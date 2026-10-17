@@ -146,7 +146,7 @@
 {/if}
 {#if isAddressOpen}
   <CheckAddressDialog value={addressSlot.valueIn(streetAddresses)}
-    onSave={value => { addressSlot = addressSlot.setValueIn(streetAddresses, value, ContactSlots.addressSlots); }}
+    on:change={event => { addressSlot = addressSlot.setValueIn(streetAddresses, event.detail, ContactSlots.addressSlots); }}
     on:close={() => { isAddressOpen = false; }} />
 {/if}
 

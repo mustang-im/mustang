@@ -82,7 +82,8 @@
   <EventMenu bind:this={eventMenu} />
   <SlotMenu bind:this={slotMenu} onToday={goToToday} onNext7Days={showNext7Days} onView={setView} />
   {#if isGoToDateOpen}
-    <GoToDateDialog date={rangeDate} {view} onGoTo={goToDate} on:close={() => isGoToDateOpen = false} />
+    <GoToDateDialog date={rangeDate} {view}
+      on:choose={event => goToDate(event.detail.date, event.detail.view)} on:close={() => isGoToDateOpen = false} />
   {/if}
   {#if $openCalendarProperties}
     {#key $openCalendarProperties}

@@ -18,11 +18,12 @@
   import FormGrid from "../Shared/Form/FormGrid.svelte";
   import DateField from "../Shared/Form/DateField.svelte";
   import ComboBox from "../Shared/Form/ComboBox.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../l10n/l10n";
 
   export let date: Date;
   export let view: CalendarViewType;
-  export let onGoTo: (date: Date, view: CalendarViewType) => void;
+  const dispatch = createEventDispatcher<{ choose: { date: Date, view: CalendarViewType } }>();
 
   let selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -36,6 +37,6 @@
   ] as { value: CalendarViewType, label: string }[];
 
   function onOK() {
-    onGoTo(selectedDate, view);
+    dispatch("choose", { date: selectedDate, view });
   }
 </script>

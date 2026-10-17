@@ -21,10 +21,11 @@
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let value: string;
-  export let onSave: (value: string) => void;
+  const dispatch = createEventDispatcher<{ change: string }>();
 
   let address = parse(value);
   let street = address.street ?? "";
@@ -49,6 +50,6 @@
     address.state = state.trim() || null;
     address.postalCode = postalCode.trim() || null;
     address.country = country.trim() || null;
-    onSave(address.toString());
+    dispatch("change", address.toString());
   }
 </script>
