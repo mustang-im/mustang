@@ -21,7 +21,7 @@ Features that belong to Microsoft services and don't apply to Mustang are not li
 | Unread count on the taskbar or tray icon | Taskbar | Wiring the desktop backend's `setBadgeCount()` / `setTrayIcon()` to the unread counts |
 | Zoom slider | Status bar | A zoom / text scale setting that the frontend applies |
 | Notification center (bell) with a history of reminders and notifications | Title bar | *UI only*. Notifications exist, Lookout shows them as a bar. |
-| Customize Ribbon beyond showing and hiding: new tabs and groups, adding, moving and renaming commands, reordering, Import/Export of customizations; the Customize Ribbon and Quick Access Toolbar pages of the Options dialog | File > Options > Customize Ribbon | *UI only*, but it needs a command model: Lookout's ribbon commands are components with their own state and can't be placed elsewhere. Lookout's Customize the Ribbon (right-click the ribbon, or the ribbon display options) shows and hides tabs and groups. |
+| Customize Ribbon beyond showing and hiding: new tabs and groups, adding, moving and renaming commands, reordering, Import/Export of customizations; the Customize Ribbon and Quick Access Toolbar pages of the Options dialog | File > Options > Customize Ribbon | *UI only*, but it needs a command model: Lookout's ribbon commands are components with their own state and can't be placed elsewhere. Lookout's Customize the Ribbon (right-click the ribbon, or View > Ribbon > Customize Ribbon…) shows and hides tabs and groups. |
 
 ## Mail
 
@@ -46,7 +46,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Block Sender, Never Block Sender / Domain, Safe Senders, always download pictures from a sender, Report Phishing | Home tab > Junk; Report; Pictures InfoBar | Blocked and safe sender lists, ideally synced with the server; a reporting service. Lookout's Junk menu offers Mark as Junk / Not Junk, and "Download pictures" for the shown message. |
 | Quick Steps, Sweep | Home tab | Stored action macros; bulk actions by sender |
 | Rename categories, category shortcut keys, Quick Click | Categorize > All Categories | Renaming tags, which the servers store by name; a shortcut key per tag. Lookout's Color Categories dialog adds, deletes and recolors categories. |
-| "You replied to this message on *date*" with the date | Reading pane InfoBar | Reply and forward timestamps. Today there are only the booleans `isReplied` and `isForwarded`. |
+| "You forwarded this message on *date*" with the date | Reading pane InfoBar | A forward timestamp, or a way to find the forwarded copy, like `MyReply.find()` does for replies. Today there is only the boolean `isForwarded`. Lookout shows the date of the reply and opens it on click, when it finds the reply in the folders. |
 | "External" sender tag, "*X* on behalf of *Y*" | Reading pane header | The organization's domains per account; separate `sender` and `from` in `EMail` |
 | Profile card of the sender (organization, files, meetings) | Click on the sender | Directory lookups (GAL, Graph) |
 | Previews of Office and PDF attachments; Save All Attachments into one chosen folder | Attachment card | File previewers; saving several files into a folder that the user picks once. Lookout's Save All Attachments… asks for each file. |
@@ -83,7 +83,7 @@ New message, reply and forward, with the Message, Insert, Options and Format Tex
 | Sensitivity (Private, Confidential), Do Not Forward, sensitivity labels | Options tab; Message tab | A sensitivity header; rights management |
 | HTML / Plain Text / Rich Text per message | Format Text tab > Format | A per-message override of the `mail.send.format` setting in `CreateMIME` and the protocol senders; RTF / TNEF for Rich Text |
 | Several named signatures per account (New, Rename, Delete), "Choose default signature" for new messages and for replies / forwards, the own signature visible in the editor, Personal Stationery | Signature menu > Signatures… | Named signatures per `MailIdentity` with defaults for new mail and replies, inserted when composing. Today each identity has one `signatureHTML`, appended when sending. Lookout's Signature menu lists one signature per identity and inserts the others; Signatures… edits them. |
-| Font family, size, color, highlight, alignment, paragraph indent, line spacing | Message tab > Basic Text; Format Text tab | Editor extensions (`@tiptap/extension-text-style` is installed), and a sanitizer that keeps these styles |
+| Font family, color, highlight, alignment, paragraph indent, line spacing | Message tab > Basic Text; Format Text tab | Editor extensions (`@tiptap/extension-text-style` is installed), and a sanitizer that keeps these styles |
 | Tables, online pictures, shapes, icons, screenshots, Quick Parts, equations | Insert tab | Editor features. Lookout offers Attach File, Pictures, Link, Date & Time, Symbol, Horizontal Line and Emoji. |
 | Attach Item: a message, a business card, a calendar | Insert tab > Include | Attaching an `EMail` as `.eml`, a `Person` as vCard, a calendar range as iCalendar |
 | Choosing between ambiguous names in Check Names, the company directory in Check Names and Select Names | Message tab > Names; Select Names dialog | Address resolution against the server directory (GAL). Lookout's Check Names and Select Names search the local address books. |
@@ -91,6 +91,8 @@ New message, reply and forward, with the Message, Insert, Options and Format Tex
 | Outlook-style reply header (From / Sent / To / Subject block) | Reply body | A quote format option in `ComposeActions`. The logic writes "*name* wrote on *date*:" and a blockquote. |
 | MailTips (recipient is out of office, large audience, external recipients) | InfoBars in the composer | EWS `GetMailTips`, Graph mail tips |
 | Format Painter, Zoom, Thesaurus, Translate, Language, Accessibility checker | Message tab; Format Text tab; Review tab | Editor features (copying marks, a zoom factor), a thesaurus, a translation service, an accessibility checker |
+
+Font sizes are left out on purpose, not missing: the mail editor has no font size box and no font size keys (Ctrl+] / Ctrl+[, Ctrl+Shift+> / <), in both frontends.
 
 ## Rules
 
@@ -129,7 +131,7 @@ Date navigator, calendar list, Day / Work Week / Week / Month and split view.
 | Show As (Free, Working Elsewhere, Tentative, Busy, Out of Office), with its patterns on the event blocks | Event blocks; Appointment tab > Options; context menu | `Event.showAs`, mapped to EWS `LegacyFreeBusyStatus`, JMAP `freeBusyStatus`, iCalendar `TRANSP` / `X-MICROSOFT-CDO-BUSYSTATUS`. Lookout shows own events as Busy, and invitations by their response. |
 | Private appointments (lock icon) | Event blocks; Appointment tab > Tags | `Event.isPrivate` (EWS `Sensitivity`, iCalendar `CLASS`, JSCalendar `privacy`) |
 | Categories with colors on events | Event blocks; Categorize; Appointment tab > Tags | `Event.categories` and category colors per account. Only JMAP has `Event.color`, which Lookout uses like `frontend/`. |
-| Work hours, work days, first day of the week | File > Options > Calendar | Settings, or the server's `WorkingHours`. Lookout shades outside 8:00 to 17:00, Monday to Friday, and weeks start on Monday, like `frontend/`. |
+| First day of the week, first week of the year | File > Options > Calendar > Work time | A week start setting. `frontend/Util/date.ts getWeekStart()` always starts the week on Monday. The work hours and work days per weekday are built: Options > Calendar > *calendar* > Work hours, stored on the server where it can store them. |
 | Changing the calendar's own time zone; Swap Time Zones | File > Options > Calendar > Time zones | A display time zone other than the system's. `logic/` and Lookout compute days, all-day events and times in the time zone of the operating system (JS `Date`), as Outlook does with the Windows time zone. Lookout shows that zone in Options and adds the second and third time zone as rulers. |
 | Calendar groups | Home tab > Calendar Groups | Stored groups of calendars (EWS "Common Views") |
 | Create, rename, copy, move or delete a calendar on the server | Folder tab > New Calendar, Copy Calendar, Move Calendar; calendar context menu | Calendar folder management per protocol. Lookout's New Calendar and Create New Blank Calendar make a calendar on this computer; Rename Calendar renames only in this app; Delete Calendar removes shared calendars and the calendars that the user added. |
@@ -192,24 +194,29 @@ Address books, contact list, contact card, contact and contact group forms.
 | Linked contacts, duplicate merging | Profile card > Manage sources (new Outlook) | A duplicate finder (same email address or name). `Person.merge()` exists. |
 | Organization: manager, direct reports | Profile card (new Outlook) | Directory lookups (EWS, Graph) |
 | Mail merge, printing contacts | Home tab > Actions; File > Print | Printing in the desktop app; a mail merge generator |
-| Grouping in the List and Phone views; Map It | View tab > Arrangement, View Settings > Group By; contact form | *UI only*. Lookout has the People, Business Card, Card, Phone and List views, sorts by the column headers, and chooses, removes and reorders columns (Add Columns, View Settings > Columns, dragging a column header). |
+| Map It | Contact form > Addresses | A map link for an address (e.g. an OpenStreetMap search URL opened with `openExternalURL()`). `frontend/` has no map link either. |
 | "Display as" name of an email address, "This is the mailing address" | Contact form > General | A display name per email entry and a mailing address flag on `ContactEntry` |
 | Field types and formats for user-defined fields, the field chooser lists of Outlook (Frequently-used, Miscellaneous fields) | Contact form > All Fields > New… | Typed custom fields on `ContactEntry`. Lookout's All Fields page edits the existing entries and adds text fields. |
 | Search in subfolders, Categorized and other refiners | Search tab | Categories on contacts. Lookout refines by phone number, address and email address. |
 
 ## File backstage and Options
 
-Info, Open & Export, Save As, Print, Account Settings, Add Account and the Options dialog.
+Info, Open & Export, Save As, Print, the app page, Add Account and the Options dialog. Lookout's Options dialog is organized like the settings of `frontend/`: General, Mail, Calendar, People, Files and the other apps, each with its accounts and their pages (Account Settings), and Trust Center. The account setup is the setup dialog of `frontend/`.
 
 | Outlook feature | Where in Outlook | What the logic would need |
 |---|---|---|
 | Printer choice and status, Print Options (copies, page range, print attached files), Table Style, printing several selected messages | File > Print | A printer list and print options from the desktop backend (the webview's `print()` options); a table layout. Lookout prints the selected message in Memo Style through the system print dialog. |
-| Account Settings: Repair, Set as Default, Change Folder; Change Profile, Manage Profiles; the Data Files, RSS Feeds, SharePoint Lists and Published Calendars tabs | File > Info > Account Settings | Re-running the autoconfig for an existing account; a default account setting; profiles; RSS and SharePoint accounts; calendar publishing |
+| Account Settings: Repair, Set as Default, Change Folder; Change Profile, Manage Profiles; the Data Files, RSS Feeds, SharePoint Lists and Published Calendars tabs | File > Info > Account Settings (in Lookout: Options > Mail, Calendar or People > *account*) | Re-running the autoconfig for an existing account; a default account setting; profiles; RSS and SharePoint accounts; calendar publishing |
 | Internet calendar subscriptions (ICS / webcal URLs) | File > Account Settings > Internet Calendars > New… | Read-only ICS subscription calendars. Lookout's Calendars tab adds calendars on this computer and CalDAV calendars. |
 | "Remember password" off, Require logon using Secure Password Authentication (SPA), Mail to keep offline | Add Account > POP and IMAP Account Settings | Accounts without a stored password (asking at login); a sync window for offline mail |
-| Options pages People, Search, Accessibility and Add-ins, and Outlook options that Mustang has no setting for (e.g. Send / Receive groups, AutoArchive, Empty Deleted Items on exit, the reminder sound file) | File > Options | Settings and their implementation in the logic |
+| Options pages Search, Accessibility and Add-ins, and Outlook options that Mustang has no setting for (e.g. Send / Receive groups, AutoArchive, Empty Deleted Items on exit, the reminder sound file, the name order and File As order of contacts) | File > Options | Settings and their implementation in the logic |
 | Trust Center pages other than Email Security (Trusted Publishers, Privacy Options, Form-based Sign-in, Attachment Handling, Automatic Download, Macro Settings, Programmatic Access); in Email Security: clear text signed messages, S/MIME receipts, reading signed mail in plain text, script in folders, Publish to GAL, hash and encryption algorithms, security labels | File > Options > Trust Center | Settings for these in the logic (e.g. a global remote content setting, S/MIME receipt requests, algorithm choice); publishing certificates to the directory (EWS) |
 | Import from other programs and files: Outlook (.pst), Apple Mail, Windows Mail, CSV files; from Thunderbird also the local mail folders, calendars, message filters and saved passwords | File > Open & Export > Import/Export > Import from another program or file | Importers in `logic/Mail/Import/` (today only Thunderbird's account settings and address books). Lookout's wizard imports these two; each imported account asks for its password or sign-in. |
+
+Settings of `frontend/` that Lookout's Options dialog leaves out:
+- Appearance > Colors: they set CSS variables of `frontend/`, which Lookout's theme doesn't use, so they would change nothing. Lookout has the theme choice (light, dark, system), like Outlook's Office Theme.
+- About > Debug (only in development builds).
+- The picture of the account (`account.icon`) on the account's General page. Lookout shows the app's icon.
 
 ## Logic bugs found while building Lookout
 
