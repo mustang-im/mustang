@@ -1,6 +1,6 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../logic/app";
-import { Event, RecurrenceCase } from "../../../logic/Calendar/Event";
+import { Event } from "../../../logic/Calendar/Event";
 import { Participant } from "../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { EventLook } from "../../Calendar/Event/EventLook";
@@ -47,59 +47,6 @@ test("Declined and cancelled events get a prefix, the event title stays unchange
   expect(new EventLook(cancelled).title).toBe("Canceled: Design review");
   expect(cancelled.title).toBe("Design review");
   expect(new EventLook(newEvent()).title).toBe("Design review");
-});
-
-test("Event color comes before the calendar color", () => {
-  let event = newEvent();
-  expect(new EventLook(event).color).toBe(null);
-  event.calendar = { color: "#123456" } as any;
-  expect(new EventLook(event).color).toBe("#123456");
-  event.color = "#ABCDEF";
-  expect(new EventLook(event).color).toBe("#ABCDEF");
-  event.color = null;
-  // The views pass the calendar they observe, so that its color changes reach them
-  let observed = { color: "#654321" } as any;
-  expect(new EventLook(event, observed).calendar).toBe(observed);
-  expect(new EventLook(event, observed).color).toBe("#654321");
-});
-
-test("Past events", () => {
-  let look = new EventLook(newEvent());
-  expect(look.isPast(new Date(2026, 9, 15, 9, 30))).toBe(false);
-  expect(look.isPast(new Date(2026, 9, 15, 10))).toBe(true);
-  expect(look.isPast(new Date(2026, 9, 14))).toBe(false);
-});
-
-test("All-day events and events of 24 hours or more go to the all-day area", () => {
-  let allDay = newEvent(new Date(2026, 9, 15), new Date(2026, 9, 16));
-  allDay.allDay = true;
-  expect(new EventLook(allDay).isInAllDayArea).toBe(true);
-  expect(new EventLook(newEvent(new Date(2026, 9, 15, 14), new Date(2026, 9, 16, 14))).isInAllDayArea).toBe(true);
-  expect(new EventLook(newEvent(new Date(2026, 9, 15, 22), new Date(2026, 9, 16, 2))).isInAllDayArea).toBe(false);
-  expect(new EventLook(newEvent()).isInAllDayArea).toBe(false);
-});
-
-test("Recurrence icons", () => {
-  let event = newEvent();
-  expect(new EventLook(event).isRecurring).toBe(false);
-  event.recurrenceCase = RecurrenceCase.Instance;
-  expect(new EventLook(event).isRecurring).toBe(true);
-  event.recurrenceCase = RecurrenceCase.Exception;
-  expect(new EventLook(event).isRecurring).toBe(false);
-  expect(new EventLook(event).isException).toBe(true);
-});
-
-test("Join is offered from 15 minutes before the start until the end", () => {
-  let event = newEvent();
-  event.isOnline = true;
-  event.onlineMeetingURL = "https://meet.example.com/x";
-  let look = new EventLook(event);
-  expect(look.canJoin(new Date(2026, 9, 15, 8, 40))).toBe(false);
-  expect(look.canJoin(new Date(2026, 9, 15, 8, 45))).toBe(true);
-  expect(look.canJoin(new Date(2026, 9, 15, 9, 59))).toBe(true);
-  expect(look.canJoin(new Date(2026, 9, 15, 10))).toBe(false);
-  event.onlineMeetingURL = "";
-  expect(new EventLook(event).canJoin(new Date(2026, 9, 15, 9))).toBe(false);
 });
 
 test("Organizer only for incoming meetings", () => {

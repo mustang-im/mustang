@@ -23,10 +23,10 @@
         <ContinuesBeforeIcon size="12" class="continues" />
       {/if}
       {#if showStartTime}
-        <span class="time">{look.startTimeText(getDateTimeLocale())}</span>
+        <span class="time">{$event.startTime.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" })}</span>
       {/if}
       <span class="title">{look.title}</span>
-      <EventIcons {look} />
+      <EventIcons {event} />
       {#if continuesAfter}
         <ContinuesAfterIcon size="12" class="continues" />
       {/if}

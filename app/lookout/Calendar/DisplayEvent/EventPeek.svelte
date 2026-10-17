@@ -1,5 +1,5 @@
 <Popup bind:popupOpen popupAnchor={peek.anchor} placement="right-start" boundaryElSel=".calendar-page">
-  <vbox class="event-peek lo-card" style="--event-color: {look.color ?? "var(--lo-accent)"}"
+  <vbox class="event-peek lo-card" style="--event-color: {$event.color ?? $calendar?.color ?? "var(--lo-accent)"}"
     on:keydown={onKeyDown} role="dialog" aria-label={look.title} tabindex="-1">
     <hbox class="header">
       <hbox class="calendar-name" flex>
@@ -75,7 +75,7 @@
 
   $: event = peek.event;
   $: calendar = $event.calendar;
-  $: look = new EventLook($event, $calendar);
+  $: look = new EventLook($event);
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;
   $: deleteLabel = $event.isCancelled ? $t`Remove from Calendar`
     : $event.isOutgoingMeeting ? $t`Cancel Meeting`

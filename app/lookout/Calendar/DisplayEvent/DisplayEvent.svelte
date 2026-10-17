@@ -1,6 +1,6 @@
 <vbox flex class="event-reading-pane lo-card">
   {#if event}
-    <vbox class="header" style="--event-color: {look.color ?? "var(--lo-accent)"}">
+    <vbox class="header" style="--event-color: {$event.color ?? $calendar?.color ?? "var(--lo-accent)"}">
       <hbox class="calendar-name">
         <span class="dot" />
         <span>{$calendar?.name ?? ""}</span>
@@ -62,7 +62,7 @@
   export let event: Event | null;
 
   $: calendar = $event?.calendar;
-  $: look = event ? new EventLook($event, $calendar) : null;
+  $: look = event ? new EventLook($event) : null;
 
   // <copied from="../../../frontend/Calendar/Invitation/InvitationInCalendar.svelte">
   let headHTML = `<style>\n${cssBody}\n${cssContent}\n</style>`;

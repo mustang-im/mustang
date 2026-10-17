@@ -26,13 +26,13 @@
     <div class="content">
       <div class="title-line">
         <span class="title">{look.title}</span>
-        {#if look.canJoin($now)}
+        {#if canJoin}
           <a class="join" href={$event.onlineMeetingURL} target="_blank"
             on:click|stopPropagation on:dblclick|stopPropagation>
             {$t`Join`}
           </a>
         {/if}
-        <EventIcons {look} />
+        <EventIcons {event} />
       </div>
       {#if lines >= 2 && $event.location}
         <div class="line">{$event.location}</div>
@@ -56,6 +56,7 @@
   import { EventDrag, type EventDragMode } from "../EventDrag";
   import { now, kCalendarMenus, CalendarCurrentView, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import { k1MinuteMS } from "../../../frontend/Util/date";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
@@ -81,6 +82,12 @@
   $: lines = Math.floor((height - 4) / 15);
   $: isPreview = $currentView.value == CalendarCurrentView.Preview;
   $: notesLines = lines - 1 - ($event.location ? 1 : 0) - (look.organizerName ? 1 : 0);
+
+  // <copied from="../DisplayEvent/EventIcons.svelte">
+  const kJoinableBeforeStartMS = 15 * k1MinuteMS;
+  $: isOnlineMeeting = $event.isOnline && !!$event.onlineMeetingURL;
+  $: canJoin = isOnlineMeeting && $event.startTime.getTime() - kJoinableBeforeStartMS <= $now.getTime() && $now < $event.endTime;
+  // </copied>
 
   function startDrag(pointerEvent: PointerEvent): EventDrag | null {
     if (!event.isEditable) {

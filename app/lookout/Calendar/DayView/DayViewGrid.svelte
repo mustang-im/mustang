@@ -67,7 +67,6 @@
 <script lang="ts">
   import type { CalendarRange } from "../View/CalendarRange";
   import { TimeColumnLayout } from "./DayColumn";
-  import { EventLook } from "../Event/EventLook";
   import { WorkingHours } from "../View/WorkingHours";
   import { now, eventPeek, timeZoneRulers } from "../selected";
   import { selectedDate, shownWorkHours } from "../../../frontend/Calendar/selected";
@@ -77,6 +76,7 @@
   import TimeRuler from "./TimeRuler.svelte";
   import CalendarTab from "./CalendarTab.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import { k1DayMS } from "../../../frontend/Util/date";
   import { derived } from "svelte/store";
   import { onMount, tick } from "svelte";
 
@@ -119,10 +119,16 @@
       event.startTime < range.end && event.endTime > range.start);
     return {
       calendar: group.calendar,
-      allDay: inRange.filterObservable(event => new EventLook(event).isInAllDayArea),
-      timed: inRange.filterObservable(event => !new EventLook(event).isInAllDayArea),
+      allDay: inRange.filterObservable(event => isInAllDayArea(event)),
+      timed: inRange.filterObservable(event => !isInAllDayArea(event)),
     };
   });
+
+  // <copied to="../DisplayEvent/EventInDayView.ts">
+  function isInAllDayArea(event: Event): boolean {
+    return event.allDay || event.endTime.getTime() - event.startTime.getTime() >= k1DayMS;
+  }
+  // </copied>
 
   function textContextOf(element: Element): CanvasRenderingContext2D | null {
     let context = document.createElement("canvas").getContext("2d");

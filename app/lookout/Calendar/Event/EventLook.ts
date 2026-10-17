@@ -1,18 +1,14 @@
-import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
-import type { Calendar } from "../../../logic/Calendar/Calendar";
+import type { Event } from "../../../logic/Calendar/Event";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-import { k1DayMS, k1MinuteMS } from "../../../frontend/Util/date";
 import { gt } from "../../../l10n/l10n";
 
 export type EventStatus = "busy" | "tentative" | "unanswered" | "declined" | "cancelled";
 
 export class EventLook {
   readonly event: Event;
-  readonly calendar: Calendar | null;
 
-  constructor(event: Event, calendar = event.calendar) {
+  constructor(event: Event) {
     this.event = event;
-    this.calendar = calendar;
   }
 
   get status(): EventStatus {
@@ -41,41 +37,6 @@ export class EventLook {
     return title;
   }
 
-  get color(): string | null {
-    return this.event.color ?? this.calendar?.color ?? null;
-  }
-
-  isPast(now: Date): boolean {
-    return this.event.endTime <= now;
-  }
-
-  get isInAllDayArea(): boolean {
-    return this.event.allDay || this.event.endTime.getTime() - this.event.startTime.getTime() >= k1DayMS;
-  }
-
-  get isRecurring(): boolean {
-    return this.event.recurrenceCase == RecurrenceCase.Instance;
-  }
-
-  get isException(): boolean {
-    return this.event.recurrenceCase == RecurrenceCase.Exception;
-  }
-
-  get isMeeting(): boolean {
-    return this.event.participants.hasItems;
-  }
-
-  get isOnlineMeeting(): boolean {
-    return this.event.isOnline && !!this.event.onlineMeetingURL;
-  }
-
-  canJoin(now: Date): boolean {
-    const kJoinableBeforeStartMS = 15 * k1MinuteMS;
-    return this.isOnlineMeeting &&
-      this.event.startTime.getTime() - kJoinableBeforeStartMS <= now.getTime() &&
-      now < this.event.endTime;
-  }
-
   get organizerName(): string | null {
     if (!this.event.isIncomingMeeting) {
       return null;
@@ -98,10 +59,6 @@ export class EventLook {
       return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).formatRange(start, end);
     }
     return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).formatRange(start, end);
-  }
-
-  startTimeText(locale: string): string {
-    return this.event.startTime.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
   }
 
   tooltip(locale: string): string {

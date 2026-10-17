@@ -1,6 +1,7 @@
 import type { Event } from "../../../logic/Calendar/Event";
 import { TimeColumnLayout } from "../DayView/DayColumn";
 import { EventLook } from "../Event/EventLook";
+import { k1DayMS } from "../../../frontend/Util/date";
 
 export interface DayPreviewItem {
   event: Event;
@@ -70,9 +71,11 @@ export class DayPreviewLayout {
     const kMinDurationMinutes = 20;
     let timedEvents: Event[] = [];
     for (let dayEvent of events) {
-      let look = new EventLook(dayEvent);
-      if (look.isInAllDayArea) {
-        this.allDayItems.push({ event: dayEvent, look, isCurrent: this.isCurrent(dayEvent), lane: 0, lanes: 1, top: 0, height: 0 });
+      // <copied from="../DayView/DayViewGrid.svelte">
+      let isInAllDayArea = dayEvent.allDay || dayEvent.endTime.getTime() - dayEvent.startTime.getTime() >= k1DayMS;
+      // </copied>
+      if (isInAllDayArea) {
+        this.allDayItems.push({ event: dayEvent, look: new EventLook(dayEvent), isCurrent: this.isCurrent(dayEvent), lane: 0, lanes: 1, top: 0, height: 0 });
       } else {
         timedEvents.push(dayEvent);
       }

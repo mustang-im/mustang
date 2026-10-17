@@ -1,26 +1,33 @@
-{#if look.isOnlineMeeting && !look.canJoin($now)}
+{#if isOnlineMeeting && !canJoin}
   <span class="icon" title={$t`Online meeting`}>
     <OnlineMeetingIcon size="12" />
   </span>
 {/if}
-{#if look.isRecurring}
+{#if $event.recurrenceCase == RecurrenceCase.Instance}
   <span class="icon" title={$t`Recurring event`}>
     <RecurringIcon size="12" />
   </span>
-{:else if look.isException}
+{:else if $event.recurrenceCase == RecurrenceCase.Exception}
   <span class="icon exception" title={$t`Changed occurrence of a recurring event`}>
     <RecurringIcon size="12" />
   </span>
 {/if}
 
 <script lang="ts">
-  import type { EventLook } from "../Event/EventLook";
+  import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { now } from "../selected";
+  import { k1MinuteMS } from "../../../frontend/Util/date";
   import RecurringIcon from "lucide-svelte/icons/repeat";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import { t } from "../../../l10n/l10n";
 
-  export let look: EventLook;
+  export let event: Event;
+
+  // <copied to="../DayView/EventContainer.svelte">
+  const kJoinableBeforeStartMS = 15 * k1MinuteMS;
+  $: isOnlineMeeting = $event.isOnline && !!$event.onlineMeetingURL;
+  $: canJoin = isOnlineMeeting && $event.startTime.getTime() - kJoinableBeforeStartMS <= $now.getTime() && $now < $event.endTime;
+  // </copied>
 </script>
 
 <style>

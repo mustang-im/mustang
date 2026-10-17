@@ -20,7 +20,7 @@
       {#if $event.location}
         <span class="location">{$event.location}</span>
       {/if}
-      <EventIcons {look} />
+      <EventIcons {event} />
     </div>
   </EventContent>
 </div>

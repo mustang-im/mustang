@@ -1,7 +1,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="event-row" class:selected={isSelected} class:muted={look.status == "declined" || look.status == "cancelled"}
   role="row" aria-selected={isSelected}
-  style="--event-color: {look.color ?? "var(--lo-accent)"}"
+  style="--event-color: {$event.color ?? $calendar?.color ?? "var(--lo-accent)"}"
   on:click={onSelect}
   on:dblclick={onOpen}
   on:contextmenu={onContextMenu}>
@@ -45,8 +45,8 @@
   export let onContextMenu: (mouseEvent: MouseEvent) => void;
 
   $: calendar = $event.calendar;
-  $: look = new EventLook($event, $calendar);
-  $: icon = $event.recurrenceRule ? RecurringIcon : look.isMeeting ? MeetingIcon : AppointmentIcon;
+  $: look = new EventLook($event);
+  $: icon = $event.recurrenceRule ? RecurringIcon : $event.participants.hasItems ? MeetingIcon : AppointmentIcon;
 </script>
 
 <style>
