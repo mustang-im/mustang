@@ -13,7 +13,7 @@
           {#if selection.accountPage == "server"}
             <AccountServerPage account={selection.account} draft={options.accountDraftOf(selection.account)} />
           {:else if selection.accountPage == "work-hours" && selection.account instanceof Calendar}
-            <OptionsPage icon={CalendarIcon} description={$t`Work hours of ${selection.account.name}`}>
+            <OptionsPage icon={CalendarIcon} description={$t`Set the days and hours when you work. The calendar shades the time outside of them.`}>
               <WorkTime drafts={options.workHours} calendar={selection.account} isCalendarFixed />
             </OptionsPage>
           {:else}
