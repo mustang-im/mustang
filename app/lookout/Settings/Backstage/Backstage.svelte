@@ -31,12 +31,12 @@
         <hbox class="label">{$t`Print`}</hbox>
       </button>
     {:else if area == "calendar"}
-      <button class="nav-item" disabled={!$selectedCalendar} on:click={() => run(() => BackstageItem.saveCalendar($selectedCalendar))}>
+      <button class="nav-item" disabled={!$selectedCalendar} on:click={() => run(() => saveCalendar($selectedCalendar))}>
         <SaveAsIcon size="18" />
         <hbox class="label">{$t`Save Calendar`}</hbox>
       </button>
     {:else if area == "people"}
-      <button class="nav-item" disabled={!($selectedContact instanceof Person)} on:click={() => run(() => BackstageItem.saveContact($selectedContact))}>
+      <button class="nav-item" disabled={!($selectedContact instanceof Person)} on:click={() => run(() => saveContact($selectedContact as Person))}>
         <SaveAsIcon size="18" />
         <hbox class="label">{$t`Save As`}</hbox>
       </button>
@@ -80,7 +80,15 @@
   import OpenExportPage from "./OpenExportPage.svelte";
   import ProductAccountPage from "./ProductAccountPage.svelte";
   import PrintPage from "./PrintPage.svelte";
-  import { BackstageItem } from "./BackstageItem";
+  import type { MustangApp } from "../../../frontend/AppsBar/MustangApp";
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import { mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
+  import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
+  import { contactsMustangApp } from "../../../frontend/Contacts/ContactsMustangApp";
+  import { eventsToICalFile } from "../../../logic/Calendar/ICal/ICalGenerator";
+  import { personsToVCardFile } from "../../../logic/Contacts/VCard/VCard";
+  import { saveBlobAsFile } from "../../../frontend/Util/util";
+  import { ArrayColl } from "svelte-collections";
   import SaveAllAttachmentsDialog from "../../Mail/Attachments/SaveAllAttachmentsDialog.svelte";
   import { MessageActions } from "../../Mail/MessageActions";
   import { selectedContact } from "../../Contacts/Selected";
@@ -103,8 +111,33 @@
 
   let isSavingAttachments = false;
 
-  $: area = BackstageItem.areaOf($selectedApp);
-  $: attachments = area == "mail" ? BackstageItem.attachmentsOf($selectedMessage) : [];
+  $: area = areaOf($selectedApp);
+  $: attachments = area == "mail" ? $selectedMessage?.attachments.contents.filter(attachment => !attachment.hidden) ?? [] : [];
+
+  function areaOf(app: MustangApp | null): "mail" | "calendar" | "people" | null {
+    if (app == mailMustangApp || mailMustangApp.subApps.includes(app)) {
+      return "mail";
+    }
+    if (app == calendarMustangApp || calendarMustangApp.subApps.includes(app)) {
+      return "calendar";
+    }
+    if (app == contactsMustangApp || contactsMustangApp.subApps.includes(app)) {
+      return "people";
+    }
+    return null;
+  }
+
+  async function saveCalendar(calendar: Calendar) {
+    // <copied from="../../../frontend/Settings/Calendar/ImportExport.svelte">
+    let file = await eventsToICalFile(calendar.events, calendar.name);
+    await saveBlobAsFile(file);
+    // </copied>
+  }
+
+  async function saveContact(person: Person) {
+    let file = personsToVCardFile(new ArrayColl([person]), person.name || $t`Contact`);
+    await saveBlobAsFile(file);
+  }
 
   function run(action: () => Promise<void>) {
     action().catch(showError);

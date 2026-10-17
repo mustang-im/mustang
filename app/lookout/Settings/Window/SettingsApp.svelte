@@ -108,7 +108,7 @@
 
   function onAddAccount(category: OptionsCategory) {
     if (category == "mail") {
-      SettingsDialogs.open({ kind: "add-account" });
+      SettingsDialogs.openSetup("/setup/mail", { kind: "options", category: "mail" });
     } else {
       SettingsDialogs.open({ kind: "new-folder-account", folderKind: category == "calendar" ? "calendar" : "addressbook" });
     }

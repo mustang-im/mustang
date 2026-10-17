@@ -36,6 +36,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
   import { SettingsDialogs } from "../SettingsDialogs";
+  import { backstageState } from "./BackstageState";
   import { MessageActions } from "../../Mail/MessageActions";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -56,7 +57,8 @@
       : $emailAccounts.first;
 
   function onAddAccount() {
-    SettingsDialogs.open({ kind: "add-account" });
+    backstageState.close();
+    SettingsDialogs.openSetup("/setup/mail");
   }
 </script>
 

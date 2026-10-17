@@ -6,11 +6,7 @@
   <TrustCenterDialog page={$dialog.page} identity={$dialog.identity} on:close={onClose} />
 {:else if $dialog?.kind == "import-export"}
   {#key $dialog}
-    <ImportExportWizard preselected={$dialog.preselected} action={$dialog.action} firstRun={$dialog.firstRun} on:close={onClose} />
-  {/key}
-{:else if $dialog?.kind == "add-account"}
-  {#key $dialog}
-    <AddAccountDialog prepared={$dialog.prepared} firstRun={$dialog.firstRun} on:close={onClose} />
+    <ImportExportWizard preselected={$dialog.preselected} action={$dialog.action} on:close={onClose} />
   {/key}
 {:else if $dialog?.kind == "new-folder-account"}
   <NewFolderAccountDialog kind={$dialog.folderKind} localOnly={$dialog.localOnly} on:close={onClose} />
@@ -24,7 +20,6 @@
   import TrustCenterDialog from "./TrustCenter/TrustCenterDialog.svelte";
   import { OptionsNavigation } from "./Window/OptionsNavigation";
   import ImportExportWizard from "./ImportExport/ImportExportWizard.svelte";
-  import AddAccountDialog from "../Setup/Mail/AddAccountDialog.svelte";
   import NewFolderAccountDialog from "../Setup/NewFolderAccountDialog.svelte";
   import CalendarDialogHost from "../Calendar/Dialogs/CalendarDialogHost.svelte";
   import ContactDialogHost from "../Contacts/Dialogs/ContactDialogHost.svelte";

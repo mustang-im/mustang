@@ -40,16 +40,8 @@
     </vbox>
   </Route>
   // #if [!WEBMAIL]
-  <Route path="setup/initial">
-    <FirstRun />
-  </Route>
-  <Route path="setup/predefined">
-    <FirstRun account={params?.account} />
-  </Route>
   <Route path="setup/*">
-    <vbox flex class="frontend-page">
-      <SetupRoutes />
-    </vbox>
+    <SetupRoutes />
   </Route>
   // #endif
   <Route path="login/">
@@ -80,8 +72,7 @@
   import WebAppsRoutes from "../../frontend/WebApps/WebAppsRoutes.svelte";
   import SettingsRoutes from "../../frontend/Settings/SettingsRoutes.svelte";
   // #if [!WEBMAIL]
-  import SetupRoutes from "../../frontend/Setup/SetupRoutes.svelte";
-  import FirstRun from "../Setup/FirstRun.svelte";
+  import SetupRoutes from "../Setup/SetupRoutes.svelte";
   // #endif
   import OAuth2EmbeddedBrowser from "../../frontend/Shared/Auth/OAuth2EmbeddedBrowser.svelte";
   import { getParams } from "../../frontend/AppsBar/selectedApp";
