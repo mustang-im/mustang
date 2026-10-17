@@ -17,17 +17,23 @@
           <hbox flex class="part list" slot="first"
             class:top={position == "bottom"}
             class:single={position != "right" && position != "bottom"}>
-            <MessageListPane bind:this={listPane}
-              folder={selectedFolder}
-              listMessages={messages}
-              selection={selectedMessages}
-              bind:searchMessages
-              bind:selectedMessage
-              {isSearchResult}
-              {onMoreResults}
-              {showFolder}
-              {highlight}
-              {isLoading} />
+            <vbox flex class="message-list-pane lo-card">
+              <FolderHeader folder={selectedFolder} {selectedMessages} bind:searchMessages {isSearchResult} />
+              <TableMessageList bind:this={messageList}
+                {messages}
+                folder={selectedFolder}
+                {selectedMessages}
+                bind:selectedMessage
+                {showFolder}
+                {highlight}
+                {isLoading} />
+              {#if onMoreResults && $messages.hasItems}
+                <hbox class="more-results">
+                  <span>{$t`Showing recent results…`}</span>
+                  <button type="button" class="more-link" on:click={() => catchErrors(onMoreResults)}>{$t`More`}</button>
+                </hbox>
+              {/if}
+            </vbox>
           </hbox>
           <hbox flex class="part reading" slot="second"
             class:right={position == "right"}
@@ -66,12 +72,14 @@
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import LeftPane, { FolderPaneMode } from "../LeftPane/LeftPane.svelte";
   import FolderPaneMinimized from "../../Shared/FolderPaneMinimized.svelte";
-  import MessageListPane from "./MessageListPane.svelte";
+  import FolderHeader from "../LeftPane/FolderHeader.svelte";
+  import TableMessageList from "./TableMessageList.svelte";
   import MessageDisplay from "../Message/MessageDisplay.svelte";
   import ToDoBar, { type ToDoBarPart } from "../ToDoBar/ToDoBar.svelte";
   import Splitter from "../../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../../frontend/Shared/SplitterBidirectional.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+  import { catchErrors } from "../../../frontend/Util/error";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import MultipleIcon from "lucide-svelte/icons/mails";
   import { t } from "../../../l10n/l10n";
@@ -87,7 +95,7 @@
   export let highlight: string | null = null;
   export let isLoading = false;
   export let onMoreResults: () => Promise<void> = null;
-  export let listPane: MessageListPane = null;
+  export let messageList: TableMessageList = null;
 
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
@@ -138,6 +146,30 @@
     flex: 1 0 0;
   }
   /* </copied> */
+  .message-list-pane {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .more-results {
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--lo-divider);
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
+  }
+  .more-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--lo-accent-text);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
   .reading-pane-placeholder {
     min-width: 0;
     min-height: 0;

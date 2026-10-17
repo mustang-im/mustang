@@ -4,8 +4,8 @@
     <SendReceiveTab folder={$selectedFolder} />
     <FolderTab folder={$selectedFolder} account={$selectedAccount} />
     <ViewTab folder={$selectedFolder}
-      onCollapseGroup={collapsed => listPane?.setGroupOfSelectionCollapsed(collapsed)}
-      onCollapseAll={collapsed => listPane?.setAllGroupsCollapsed(collapsed)} />
+      onCollapseGroup={collapsed => messageList?.setGroupOfSelectionCollapsed(collapsed)}
+      onCollapseAll={collapsed => messageList?.setAllGroupsCollapsed(collapsed)} />
     {#if isSearchActive}
       <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} onClose={closeSearch} />
     {/if}
@@ -13,7 +13,7 @@
       <ComposerMessageTab commands={$inlineRibbon.commands} isInline />
     {/if}
   </Ribbon>
-  <ThreePane bind:listPane
+  <ThreePane bind:messageList
     messages={listMessages}
     selectedFolder={$selectedFolder}
     bind:selectedMessage={$selectedMessage}
@@ -118,7 +118,7 @@
   import ComposerMessageTab from "./Composer/ComposerMessageTab.svelte";
   import { inlineRibbon, isAdvancedSearchOpen, searchOptions, updatingFolders } from "./Selected";
   import ThreePane from "./3pane/3Pane.svelte";
-  import type MessageListPane from "./3pane/MessageListPane.svelte";
+  import type TableMessageList from "./3pane/TableMessageList.svelte";
   import MessagePrint from "./Message/MessagePrint.svelte";
   import MessageMovePopup, { openMoveMessages } from "./Message/MessageMovePopup.svelte";
   import NewFolderDialog, { openNewFolder } from "./LeftPane/NewFolderDialog.svelte";
@@ -156,7 +156,7 @@
   const accounts = appGlobal.emailAccounts;
 
   let pageEl: HTMLElement;
-  let listPane: MessageListPane;
+  let messageList: TableMessageList;
 
   if (!$selectedMessages) {
     $selectedMessages = new ArrayColl<EMail>();
@@ -211,7 +211,7 @@
     }
     shownFolder = folder;
     isAutoSelectPending = true;
-    listPane?.scrollToTop();
+    messageList?.scrollToTop();
     await loadFolder(folder);
   }
 
@@ -329,14 +329,14 @@
   }
 
   let isAutoSelectPending = true;
-  $: if (isAutoSelectPending && $listMessages?.hasItems && listPane) {
+  $: if (isAutoSelectPending && $listMessages?.hasItems && messageList) {
     catchErrors(autoSelectFirst);
   }
   async function autoSelectFirst() {
     isAutoSelectPending = false;
     await tick();
     if (!$selectedMessage) {
-      listPane?.selectRelative(0);
+      messageList?.selectRelative(0);
     }
   }
 
@@ -519,9 +519,9 @@
       case MailKeyAction.AddressBook:
         return openApp(contactsMustangApp, {});
       case MailKeyAction.NextMessage:
-        return listPane?.selectRelative(1);
+        return messageList?.selectRelative(1);
       case MailKeyAction.PreviousMessage:
-        return listPane?.selectRelative(-1);
+        return messageList?.selectRelative(-1);
     }
     if (!messages.length) {
       return;

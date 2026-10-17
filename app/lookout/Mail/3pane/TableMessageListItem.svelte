@@ -141,7 +141,7 @@
   $: messageTags = message.tags;
   $: tags = derived($messageTags.contents, () => messageTags.contents);
   $: to = message.to;
-  /* <copied to="../Vertical/VerticalMessageListItem.svelte, MessageListPane.svelte"> */
+  /* <copied to="../Vertical/VerticalMessageListItem.svelte, TableMessageList.svelte"> */
   $: showsRecipient = [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(message.folder?.specialFolder);
   $: senderName = $message && (personDisplayName(showsRecipient ? message.contact : message.from) || message.from?.emailAddress || "");
   /* </copied> */
