@@ -30,8 +30,4 @@ export class CategoryColors {
       { name: gt`Dark Cranberry`, color: "#8C2846" },
     ];
   }
-
-  static nameOf(color: string): string {
-    return CategoryColors.palette.find(entry => entry.color.toLowerCase() == color?.toLowerCase())?.name ?? gt`Custom`;
-  }
 }

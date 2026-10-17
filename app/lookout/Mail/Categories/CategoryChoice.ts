@@ -57,14 +57,4 @@ export class CategoryChoice {
     await saveTagsList();
     return tag;
   }
-
-  static async deleteCategory(tag: Tag) {
-    availableTags.remove(tag);
-    await saveTagsList();
-  }
-
-  static async setColor(tag: Tag, color: string) {
-    tag.color = color;
-    await saveTagsList();
-  }
 }

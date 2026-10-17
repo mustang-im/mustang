@@ -47,7 +47,7 @@
 </script>
 
 <script lang="ts">
-  import { availableTags } from "../../../logic/Abstract/Tag";
+  import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
   import { MessageBox } from "../Dialog/MessageBox";
   import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
   import { CategoryColors } from "../../Mail/Categories/CategoryColors";
@@ -92,7 +92,8 @@
   }
 
   async function onColor(color: string) {
-    await CategoryChoice.setColor(selected, color);
+    selected.color = color;
+    await saveTagsList();
     selected = selected;
   }
 
@@ -106,7 +107,8 @@
     if (!await MessageBox.ask(gt`Color Categories`, gt`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
-    await CategoryChoice.deleteCategory(selected);
+    availableTags.remove(selected);
+    await saveTagsList();
     selected = null;
   }
 

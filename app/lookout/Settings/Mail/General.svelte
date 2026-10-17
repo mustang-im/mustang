@@ -77,7 +77,7 @@
             <CategorySquare {tag} />
             <span class="category-name">{tag.name}</span>
             <ComboBox label={$t`Color of ${tag.name}`} options={colorOptions} value={tag.color}
-              onChange={color => CategoryChoice.setColor(tag, color)} width="160px" swatchColumns={5} />
+              onChange={async color => { tag.color = color; await saveTagsList(); }} width="160px" swatchColumns={5} />
             <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain" onClick={() => onDeleteCategory(tag)} />
           </hbox>
         {/each}
@@ -93,7 +93,7 @@
 
 <script lang="ts">
   import type { Tag } from "../../../logic/Abstract/Tag";
-  import { availableTags } from "../../../logic/Abstract/Tag";
+  import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
   import type { ReadingPanePosition } from "../../Mail/3pane/3Pane.svelte";
   import { CategoryChoice } from "../../Mail/Categories/CategoryChoice";
   import { CategoryColors } from "../../Mail/Categories/CategoryColors";
@@ -161,7 +161,8 @@
     if (!await MessageBox.ask($t`Categories`, $t`Are you sure that you want to delete the category ${tag.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
-    await CategoryChoice.deleteCategory(tag);
+    availableTags.remove(tag);
+    await saveTagsList();
   }
 </script>
 

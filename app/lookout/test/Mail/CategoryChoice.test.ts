@@ -74,9 +74,3 @@ test("New categories need a unique name and are saved", async () => {
   await expect(CategoryChoice.addCategory("project x", "#000000")).rejects.toThrow();
   await expect(CategoryChoice.addCategory("  ", "#000000")).rejects.toThrow();
 });
-
-test("Deleting a category removes it from the list", async () => {
-  await CategoryChoice.deleteCategory(green);
-  expect(availableTags.contains(green)).toBe(false);
-  expect(localStorage.getItem("tags")).not.toContain("Green category");
-});
