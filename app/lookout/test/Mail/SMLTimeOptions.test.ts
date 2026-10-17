@@ -1,5 +1,4 @@
 import { SMLTimeOptions } from "../../Mail/SML/SMLTimeOptions";
-import { SMLKind, SMLKinds } from "../../Mail/SML/SMLKinds";
 import { SMLData } from "../../../logic/Mail/SML/SMLData";
 import { TSMLMeetingTimePreference, type TSMLMeetingTimeVote } from "../../../logic/Mail/SML/TSML";
 import { expect, test } from "vitest";
@@ -50,13 +49,4 @@ test("Adding keeps the options sorted and unique, removing finds equal times", (
 test("The next proposed time follows the last option, else tomorrow at the next full hour", () => {
   expect(SMLTimeOptions.nextOption([at(20, 14), at(20, 9)], 30)).toEqual(at(20, 14, 30));
   expect(SMLTimeOptions.nextOption([], 60, at(20, 9, 41))).toEqual(at(21, 10));
-});
-
-test("SML kinds are recognized by their type", () => {
-  let sml = new SMLData();
-  sml.type = "MeetingTimePoll";
-  expect(SMLKinds.kindOf(sml)).toBe(SMLKind.SchedulingPoll);
-  sml.type = "IceCreamShop";
-  expect(SMLKinds.kindOf(sml)).toBeNull();
-  expect(SMLKinds.kindOf(null)).toBeNull();
 });

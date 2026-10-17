@@ -1,4 +1,4 @@
-{#if sml && kind}
+{#if sml && ["SimplePoll", "MeetingTimePoll", "BookMe"].includes(type)}
   <vbox class="sml-editor">
     {#if preview}
       <SMLDisplayKinds {sml} message={mail}>
@@ -8,12 +8,12 @@
         </svelte:fragment>
       </SMLDisplayKinds>
     {:else}
-      <ActionCard title={SMLKinds.label(kind)} subtitle={editSubtitle(kind)} icon={SMLKinds.icon(kind)}>
+      <ActionCard title={label(type)} subtitle={editSubtitle(type)} icon={icon(type)}>
         <svelte:fragment slot="actions">
           <DialogButton label={$t`Preview`} icon={PreviewIcon} classes="plain" onClick={() => { preview = true; }} />
           <DialogButton label={$t`Remove`} icon={RemoveIcon} classes="plain" onClick={onRemove} />
         </svelte:fragment>
-        {#if kind == SMLKind.Poll}
+        {#if type == "SimplePoll"}
           <PollEdit {sml} />
         {:else}
           <TimePollEdit {sml} />
@@ -26,7 +26,9 @@
 <script lang="ts">
   import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { SMLKind, SMLKinds } from "../SML/SMLKinds";
+  import PollIcon from "lucide-svelte/icons/list-checks";
+  import SchedulingPollIcon from "lucide-svelte/icons/calendar-clock";
+  import BookingsIcon from "lucide-svelte/icons/calendar-check";
   import ActionCard from "../SML/ActionCard.svelte";
   import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import PollEdit from "../SML/PollEdit.svelte";
@@ -42,13 +44,34 @@
   export let onRemove: () => void;
 
   let preview = false;
-  $: kind = SMLKinds.kindOf(sml);
+  $: type = sml?.type ?? sml?.sml?.["@type"];
 
-  function editSubtitle(kind: SMLKind): string {
-    switch (kind) {
-      case SMLKind.Poll: return gt`Recipients choose one of the options.`;
-      case SMLKind.SchedulingPoll: return gt`Recipients vote for the times that suit them.`;
-      case SMLKind.Bookings: return gt`Recipients book one of the times with you.`;
+  /* <copied to="PollsGroup.svelte"> */
+  function label(type: string): string {
+    switch (type) {
+      case "SimplePoll": return gt`Poll`;
+      case "MeetingTimePoll": return gt`Scheduling Poll`;
+      case "BookMe": return gt`Bookings`;
+      default: return "";
+    }
+  }
+  /* </copied> */
+
+  /* <copied from="../SML/SMLDisplayKinds.svelte"> */
+  function icon(type: string): ConstructorOfATypedSvelteComponent {
+    switch (type) {
+      case "MeetingTimePoll": return SchedulingPollIcon;
+      case "BookMe": return BookingsIcon;
+      default: return PollIcon;
+    }
+  }
+  /* </copied> */
+
+  function editSubtitle(type: string): string {
+    switch (type) {
+      case "SimplePoll": return gt`Recipients choose one of the options.`;
+      case "MeetingTimePoll": return gt`Recipients vote for the times that suit them.`;
+      case "BookMe": return gt`Recipients book one of the times with you.`;
       default: return null;
     }
   }

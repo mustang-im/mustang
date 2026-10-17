@@ -1,13 +1,13 @@
-{#if sml && kind}
-  <ActionCard title={title} subtitle={subtitle} icon={SMLKinds.icon(kind)}>
+{#if sml && isKnownType}
+  <ActionCard title={title} subtitle={subtitle} icon={icon(type)}>
     <svelte:fragment slot="actions">
       <slot name="actions" />
     </svelte:fragment>
-    {#if kind == SMLKind.Poll}
+    {#if type == "SimplePoll"}
       <Poll {sml} {myReaction} />
-    {:else if kind == SMLKind.SchedulingPoll}
+    {:else if type == "MeetingTimePoll"}
       <MeetingTimePoll {sml} {myReaction} {isOrganizer} />
-    {:else if kind == SMLKind.Bookings}
+    {:else if type == "BookMe"}
       <Book {sml} {myReaction} {isOrganizer} />
     {/if}
   </ActionCard>
@@ -17,7 +17,9 @@
   import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { TSMLRequest, TSMLSimplePoll, TSMLThing } from "../../../logic/Mail/SML/TSML";
-  import { SMLKind, SMLKinds } from "./SMLKinds";
+  import PollIcon from "lucide-svelte/icons/list-checks";
+  import SchedulingPollIcon from "lucide-svelte/icons/calendar-clock";
+  import BookingsIcon from "lucide-svelte/icons/calendar-check";
   import ActionCard from "./ActionCard.svelte";
   import Poll from "./Poll.svelte";
   import MeetingTimePoll from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
@@ -27,21 +29,32 @@
   export let sml: SMLData;
   export let message: EMail;
 
-  $: kind = SMLKinds.kindOf(sml);
+  $: type = sml?.type ?? sml?.sml?.["@type"];
+  $: isKnownType = ["SimplePoll", "MeetingTimePoll", "BookMe"].includes(type);
   $: request = $sml?.sml as TSMLRequest & Partial<TSMLSimplePoll<TSMLThing>>;
-  $: myReaction = kind ? sml.getMyReaction(message) : null;
+  $: myReaction = isKnownType ? sml.getMyReaction(message) : null;
   $: isOrganizer = !!myReaction?.agent?.email && myReaction.agent.email == request?.organizer?.email;
-  $: title = cardTitle(kind);
+  $: title = cardTitle(type);
   $: subtitle = cardSubtitle(request, isOrganizer);
 
-  function cardTitle(kind: SMLKind): string {
-    switch (kind) {
-      case SMLKind.Poll: return gt`Poll`;
-      case SMLKind.SchedulingPoll: return gt`Scheduling poll: Vote for the meeting time`;
-      case SMLKind.Bookings: return gt`Book a meeting`;
+  function cardTitle(type: string): string {
+    switch (type) {
+      case "SimplePoll": return gt`Poll`;
+      case "MeetingTimePoll": return gt`Scheduling poll: Vote for the meeting time`;
+      case "BookMe": return gt`Book a meeting`;
       default: return "";
     }
   }
+
+  /* <copied to="../Composer/SMLComposer.svelte, ../Composer/PollsGroup.svelte"> */
+  function icon(type: string): ConstructorOfATypedSvelteComponent {
+    switch (type) {
+      case "MeetingTimePoll": return SchedulingPollIcon;
+      case "BookMe": return BookingsIcon;
+      default: return PollIcon;
+    }
+  }
+  /* </copied> */
 
   function cardSubtitle(request: TSMLRequest & Partial<TSMLSimplePoll<TSMLThing>>, isOrganizer: boolean): string {
     let parts: string[] = [];
