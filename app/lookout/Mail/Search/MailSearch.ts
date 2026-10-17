@@ -8,12 +8,9 @@ import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { appGlobal } from "../../../logic/app";
-import { assert } from "../../../logic/util/util";
-import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
 import { ReceivedRange, ReceivedRanges, SizeRange, SizeRanges } from "./SearchRanges";
 import { gt } from "../../../l10n/l10n";
 import type { Collection } from "svelte-collections";
-import { get, writable } from "svelte/store";
 
 export enum SearchScope {
   AllAccounts = "all",
@@ -39,8 +36,6 @@ export interface SearchOptions {
 
 export class MailSearch {
   static readonly kLimit = 200;
-  static readonly options = writable<SearchOptions>(MailSearch.defaultOptions());
-  static readonly isAdvancedSearchOpen = writable(false);
 
   static defaultOptions(): SearchOptions {
     return {
@@ -60,22 +55,6 @@ export class MailSearch {
     };
   }
 
-  static current(): SearchOptions {
-    return get(MailSearch.options);
-  }
-
-  static reset() {
-    MailSearch.options.set(MailSearch.defaultOptions());
-  }
-
-  static update(change: Partial<SearchOptions>) {
-    MailSearch.options.update(options => ({ ...options, ...change }));
-  }
-
-  static hasCriteria(term: string | null, options: SearchOptions): boolean {
-    return !!term || MailSearch.hasRefiners(options);
-  }
-
   static hasRefiners(options: SearchOptions): boolean {
     return !!options.person ||
       options.isOutgoing != null ||
@@ -87,64 +66,6 @@ export class MailSearch {
       options.received != ReceivedRange.Any ||
       options.size != SizeRange.Any ||
       !!options.threadID;
-  }
-
-  static clearRefiners() {
-    MailSearch.options.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope }));
-  }
-
-  static close() {
-    globalSearchTerm.set(null);
-    MailSearch.clearRefiners();
-  }
-
-  static findRelated(change: Partial<SearchOptions>) {
-    globalSearchTerm.set(null);
-    MailSearch.options.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope, ...change }));
-  }
-
-  static isInConversation(message: EMail): boolean {
-    return !!(message.threadID ?? message.inReplyTo);
-  }
-
-  static async findConversation(message: EMail) {
-    // <copied from="../../../frontend/Mail/Thread/ThreadPane.svelte">
-    await message.findThread(message.folder.messages);
-    // </copied>
-    assert(message.threadID, gt`This message is not part of a conversation`);
-    MailSearch.findRelated({ threadID: message.threadID });
-  }
-
-  static toggleTag(options: SearchOptions, tag: Tag) {
-    MailSearch.update({
-      tags: options.tags.includes(tag)
-        ? options.tags.filter(existing => existing != tag)
-        : [...options.tags, tag],
-    });
-  }
-
-  static isFrom(options: SearchOptions): boolean {
-    return !!options.person && options.isOutgoing !== true;
-  }
-
-  static isSentTo(options: SearchOptions): boolean {
-    return !!options.person && options.isOutgoing === true;
-  }
-
-  static isSentByMe(options: SearchOptions): boolean {
-    return !options.person && options.isOutgoing === true;
-  }
-
-  static setFrom(person: Person | null) {
-    MailSearch.update(person ? { person, isOutgoing: false } : { person: null, isOutgoing: null });
-  }
-
-  static setSentTo(person: Person | null) {
-    MailSearch.update(person ? { person, isOutgoing: true } : { person: null, isOutgoing: null });
-  }
-
-  static setSentByMe(sentByMe: boolean) {
-    MailSearch.update({ person: null, isOutgoing: sentByMe ? true : null });
   }
 
   static isRealFolder(folder: Folder | null): boolean {
@@ -224,10 +145,6 @@ export class MailSearch {
     search.sizeMax = sizes.max;
     search.threadID = options.threadID;
     return search;
-  }
-
-  static isLimitReached(results: Collection<EMail> | null): boolean {
-    return !!results && results.length > MailSearch.kLimit;
   }
 
   static hasDates(search: SearchEMail): boolean {

@@ -3,21 +3,21 @@
 <MenuItem label={$t`Has Attachments`} icon={AttachmentIcon} checkable checked={hasAttachments}
   onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
 <SubMenu label={$t`This Week`} icon={ReceivedIcon}>
-  <ReceivedMenuItems selected={$options.received}
+  <ReceivedMenuItems selected={$searchOptions.received}
     onSelect={received => MailFilters.searchInFolder({ received, receivedStart: null, receivedEnd: null })} />
 </SubMenu>
 <SubMenu label={$t`Categorized`} icon={CategorizeIcon}
   disabled={!$tags.hasItems && $t`There are no categories yet`}>
-  <CategoryMenuItems selected={$options.tags}
-    onToggle={tag => MailFilters.searchInFolder({ tags: $options.tags.includes(tag) ? $options.tags.filter(existing => existing != tag) : [...$options.tags, tag] })} />
+  <CategoryMenuItems selected={$searchOptions.tags}
+    onToggle={tag => MailFilters.searchInFolder({ tags: $searchOptions.tags.includes(tag) ? $searchOptions.tags.filter(existing => existing != tag) : [...$searchOptions.tags, tag] })} />
 </SubMenu>
 <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={isFlagged}
   onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
 <SubMenu label={$t`Sent To`} icon={SentToIcon}>
-  <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={MailSearch.isSentTo($options)}
+  <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={isSentTo}
     onClick={onSentTo} />
-  <MenuItem label={$t`Sent by Me`} checkable checked={MailSearch.isSentByMe($options)}
-    onClick={() => MailFilters.searchInFolder({ person: null, isOutgoing: MailSearch.isSentByMe($options) ? null : true })} />
+  <MenuItem label={$t`Sent by Me`} checkable checked={isSentByMe}
+    onClick={() => MailFilters.searchInFolder({ person: null, isOutgoing: isSentByMe ? null : true })} />
 </SubMenu>
 <MenuItem label={$t`More Filters…`} icon={MoreFiltersIcon}
   onClick={() => MailFilters.moreFilters()} />
@@ -32,7 +32,7 @@
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { MailFilters, QuickFilter } from "../MailFilters";
-  import { MailSearch } from "../Search/MailSearch";
+  import { searchOptions } from "../Selected";
   import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
@@ -49,10 +49,13 @@
   import ClearIcon from "lucide-svelte/icons/funnel-x";
   import { t } from "../../../l10n/l10n";
 
-  const options = MailSearch.options;
   const searchTerm = globalSearchTerm;
   const tags = availableTags;
-  $: $quickSearch, $options, $searchTerm, updateStates();
+  // <copied from="../Ribbon/SearchTab.svelte">
+  $: isSentTo = !!$searchOptions.person && $searchOptions.isOutgoing === true;
+  $: isSentByMe = !$searchOptions.person && $searchOptions.isOutgoing === true;
+  // </copied>
+  $: $quickSearch, $searchOptions, $searchTerm, updateStates();
   let isUnread = false;
   let hasAttachments = false;
   let isFlagged = false;
@@ -67,7 +70,7 @@
   function onSentTo() {
     $openSearchPerson = {
       fieldLabel: $t`To`,
-      person: MailSearch.isSentTo($options) ? $options.person : null,
+      person: isSentTo ? $searchOptions.person : null,
       onPick: person => person && MailFilters.searchInFolder({ person, isOutgoing: true }),
     };
   }

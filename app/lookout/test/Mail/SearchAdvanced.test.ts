@@ -3,6 +3,7 @@ import { MailSearch, SearchScope } from "../../Mail/Search/MailSearch";
 import { AdvancedSearchDraft, ReadStatus } from "../../Mail/Search/AdvancedSearchDraft";
 import { ReceivedRange, SizeRange } from "../../Mail/Search/SearchRanges";
 import { MailFilters, QuickFilter } from "../../Mail/MailFilters";
+import { searchOptions } from "../../Mail/Selected";
 import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
 import { quickSearch } from "../../../frontend/Mail/Selected";
 import { expect, test, beforeEach } from "vitest";
@@ -11,7 +12,7 @@ import { get } from "svelte/store";
 const now = new Date(2026, 9, 15, 14, 30);
 
 beforeEach(() => {
-  MailSearch.reset();
+  searchOptions.set(MailSearch.defaultOptions());
   globalSearchTerm.set(null);
   quickSearch.reset();
 });
@@ -80,14 +81,14 @@ test("Quick filters filter the folder, or refine a running search", () => {
   globalSearchTerm.set("report");
   expect(MailFilters.isActive(QuickFilter.Unread)).toBe(false);
   MailFilters.toggle(QuickFilter.Flagged);
-  expect(MailSearch.current().flagged).toBe(true);
+  expect(get(searchOptions).flagged).toBe(true);
   expect(quickSearch.isStarred).toBeNull();
 });
 
 test("Date filters start a search in the current folder and take over the quick filters", () => {
   MailFilters.toggle(QuickFilter.Attachments);
   MailFilters.searchInFolder({ received: ReceivedRange.Yesterday });
-  let options = MailSearch.current();
+  let options = get(searchOptions);
   expect(options.scope).toBe(SearchScope.CurrentFolder);
   expect(options.received).toBe(ReceivedRange.Yesterday);
   expect(options.hasAttachment).toBe(true);

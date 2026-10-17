@@ -1,82 +1,82 @@
 <RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Refine`}>
     <RibbonToggleButton label={$t`From`} icon={FromIcon}
-      checked={MailSearch.isFrom($options)}
-      tooltip={MailSearch.isFrom($options) ? $t`From: ${$options.person.name}` : $t`Only messages from a person`}
-      onChange={checked => checked ? pickPerson($t`From`, person => MailSearch.setFrom(person)) : MailSearch.setFrom(null)} />
+      checked={isFrom}
+      tooltip={isFrom ? $t`From: ${$searchOptions.person.name}` : $t`Only messages from a person`}
+      onChange={checked => checked ? pickPerson($t`From`, person => setPerson(person, false)) : setPerson(null, false)} />
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
-      checked={$options.hasAttachment}
-      onChange={checked => MailSearch.update({ hasAttachment: checked })} />
+      checked={$searchOptions.hasAttachment}
+      onChange={checked => { $searchOptions = { ...$searchOptions, hasAttachment: checked }; }} />
     <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
       disabled={!$tags.hasItems && $t`There are no categories yet`}>
-      <CategoryMenuItems selected={$options.tags} onToggle={tag => MailSearch.toggleTag($options, tag)} />
+      <CategoryMenuItems selected={$searchOptions.tags} onToggle={toggleTag} />
     </RibbonMenuButton>
-    <RibbonMenuButton label={$options.received == ReceivedRange.Any || $options.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($options.received)}
+    <RibbonMenuButton label={$searchOptions.received == ReceivedRange.Any || $searchOptions.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($searchOptions.received)}
       icon={ReceivedIcon}
       tooltip={$t`Received`}>
-      <ReceivedMenuItems selected={$options.received}
-        onSelect={received => MailSearch.update({ received, receivedStart: null, receivedEnd: null })} />
+      <ReceivedMenuItems selected={$searchOptions.received}
+        onSelect={received => $searchOptions = { ...$searchOptions, received, receivedStart: null, receivedEnd: null }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`Sent To`} icon={SentToIcon} size="small"
-      tooltip={MailSearch.isSentTo($options) ? $t`Sent To: ${$options.person.name}` : $t`Sent To`}>
-      <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={MailSearch.isSentTo($options)}
-        onClick={() => pickPerson($t`To`, person => MailSearch.setSentTo(person))} />
-      <MenuItem label={$t`Sent by Me`} checkable checked={MailSearch.isSentByMe($options)}
-        onClick={() => MailSearch.setSentByMe(!MailSearch.isSentByMe($options))} />
+      tooltip={isSentTo ? $t`Sent To: ${$searchOptions.person.name}` : $t`Sent To`}>
+      <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={isSentTo}
+        onClick={() => pickPerson($t`To`, person => setPerson(person, true))} />
+      <MenuItem label={$t`Sent by Me`} checkable checked={isSentByMe}
+        onClick={() => $searchOptions = { ...$searchOptions, person: null, isOutgoing: isSentByMe ? null : true }} />
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Unread`} icon={UnreadIcon} size="small"
-      checked={$options.isRead === false}
-      onChange={checked => MailSearch.update({ isRead: checked ? false : null })} />
+      checked={$searchOptions.isRead === false}
+      onChange={checked => { $searchOptions = { ...$searchOptions, isRead: checked ? false : null }; }} />
     <RibbonToggleButton label={$t`Flagged`} icon={FlagIcon} size="small"
-      checked={$options.flagged}
-      onChange={checked => MailSearch.update({ flagged: checked })} />
+      checked={$searchOptions.flagged}
+      onChange={checked => { $searchOptions = { ...$searchOptions, flagged: checked }; }} />
     <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small"
       tooltip={$t`More refiners`}>
       <SubMenu label={$t`Received`}>
-        <ReceivedMenuItems selected={$options.received}
-          onSelect={received => MailSearch.update({ received, receivedStart: null, receivedEnd: null })} />
+        <ReceivedMenuItems selected={$searchOptions.received}
+          onSelect={received => $searchOptions = { ...$searchOptions, received, receivedStart: null, receivedEnd: null }} />
       </SubMenu>
       <SubMenu label={$t`Size`}>
-        <SizeMenuItems selected={$options.size} onSelect={size => MailSearch.update({ size })} />
+        <SizeMenuItems selected={$searchOptions.size} onSelect={size => $searchOptions = { ...$searchOptions, size }} />
       </SubMenu>
       <SubMenu label={$t`Read`}>
-        <MenuItem label={$t`Read`} checkable checked={$options.isRead === true}
-          onClick={() => MailSearch.update({ isRead: $options.isRead === true ? null : true })} />
-        <MenuItem label={$t`Unread`} checkable checked={$options.isRead === false}
-          onClick={() => MailSearch.update({ isRead: $options.isRead === false ? null : false })} />
+        <MenuItem label={$t`Read`} checkable checked={$searchOptions.isRead === true}
+          onClick={() => $searchOptions = { ...$searchOptions, isRead: $searchOptions.isRead === true ? null : true }} />
+        <MenuItem label={$t`Unread`} checkable checked={$searchOptions.isRead === false}
+          onClick={() => $searchOptions = { ...$searchOptions, isRead: $searchOptions.isRead === false ? null : false }} />
       </SubMenu>
-      <MenuItem label={$t`Replied`} checkable checked={$options.replied}
-        onClick={() => MailSearch.update({ replied: !$options.replied })} />
+      <MenuItem label={$t`Replied`} checkable checked={$searchOptions.replied}
+        onClick={() => $searchOptions = { ...$searchOptions, replied: !$searchOptions.replied }} />
       <MenuDivider />
       <MenuItem label={$t`Advanced Search…`} icon={AdvancedIcon}
-        onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
+        onClick={() => $isAdvancedSearchOpen = true} />
     </RibbonMenuButton>
-    {#if $options.threadID}
+    {#if $searchOptions.threadID}
       <RibbonToggleButton label={$t`This Conversation`} icon={ConversationIcon} size="small"
         checked={true}
         tooltip={$t`Only messages of the conversation that you chose with Find Related`}
-        onChange={checked => !checked && MailSearch.update({ threadID: null })} />
+        onChange={checked => { if (!checked) { $searchOptions = { ...$searchOptions, threadID: null }; } }} />
     {/if}
   </RibbonGroup>
   <RibbonGroup label={$t`Scope`}>
     <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.AllAccounts)} shortLabel={MailSearch.scopeShortLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
       checked={scope == SearchScope.AllAccounts} isRadio
-      onChange={() => MailSearch.update({ scope: SearchScope.AllAccounts })}
+      onChange={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts }; }}
       shortCutInfo="Ctrl+Alt+A" />
     <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentAccount)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
       checked={scope == SearchScope.CurrentAccount} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
-      onChange={() => MailSearch.update({ scope: SearchScope.CurrentAccount })} />
+      onChange={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentAccount }; }} />
     <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
       checked={scope == SearchScope.CurrentFolder} isRadio
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
-      onChange={() => MailSearch.update({ scope: SearchScope.CurrentFolder })}
+      onChange={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder }; }}
       shortCutInfo="Ctrl+Alt+K" />
   </RibbonGroup>
   <RibbonGroup label={$t`Options`}>
     <RibbonMenuButton label={$t`Search Tools`} shortLabel={$t`Tools *=> Search tools`} icon={SearchToolsIcon}>
       <MenuItem label={$t`Advanced Find…`} icon={AdvancedIcon} shortCutInfo="Ctrl+Shift+F"
-        onClick={() => MailSearch.isAdvancedSearchOpen.set(true)} />
+        onClick={() => $isAdvancedSearchOpen = true} />
     </RibbonMenuButton>
     <RibbonButton label={$t`Save as Search Folder`} shortLabel={$t`Save Search`} icon={SaveSearchIcon} size="small"
       tooltip={$t`Save this search as a Search Folder`}
@@ -99,7 +99,9 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
+  import type { Tag } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "../Search/MailSearch";
+  import { isAdvancedSearchOpen, searchOptions } from "../Selected";
   import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
   import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import { openSaveSearch } from "../Search/SavedSearchUI.svelte";
@@ -139,14 +141,33 @@
   export let search: SearchEMail | null = null;
   export let onClose: () => void;
 
-  const options = MailSearch.options;
   const tags = availableTags;
-  $: scope = MailSearch.effectiveScope($options, account, folder);
+  $: scope = MailSearch.effectiveScope($searchOptions, account, folder);
+  $: isFrom = !!$searchOptions.person && $searchOptions.isOutgoing !== true;
+  // <copied to="../LeftPane/FilterMenuItems.svelte">
+  $: isSentTo = !!$searchOptions.person && $searchOptions.isOutgoing === true;
+  $: isSentByMe = !$searchOptions.person && $searchOptions.isOutgoing === true;
+  // </copied>
 
   function pickPerson(fieldLabel: string, onPick: (person: Person) => void) {
-    $openSearchPerson = { fieldLabel, person: $options.person, onPick };
+    $openSearchPerson = { fieldLabel, person: $searchOptions.person, onPick };
     // The From toggle shows as pressed only once the person is picked
-    MailSearch.update({});
+    $searchOptions = { ...$searchOptions };
+  }
+
+  function setPerson(person: Person | null, isOutgoing: boolean) {
+    $searchOptions = person
+      ? { ...$searchOptions, person, isOutgoing }
+      : { ...$searchOptions, person: null, isOutgoing: null };
+  }
+
+  function toggleTag(tag: Tag) {
+    $searchOptions = {
+      ...$searchOptions,
+      tags: $searchOptions.tags.includes(tag)
+        ? $searchOptions.tags.filter(existing => existing != tag)
+        : [...$searchOptions.tags, tag],
+    };
   }
 
   $: saveDisabledReason = !search

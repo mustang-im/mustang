@@ -19,7 +19,7 @@
     bind:selectedMessage={$selectedMessage}
     selectedMessages={$selectedMessages}
     isSearchResult={!!searchResults}
-    onMoreResults={!isSearching && MailSearch.isLimitReached(searchResults) && !isShowingAllResults ? showAllResults : null}
+    onMoreResults={!isSearching && !!searchResults && searchResults.length > MailSearch.kLimit && !isShowingAllResults ? showAllResults : null}
     showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
     highlight={searchResults ? searchTerm : null}
     isLoading={isLoading || isSearching} />
@@ -115,7 +115,7 @@
   import ViewTab from "./Ribbon/ViewTab.svelte";
   import SearchTab from "./Ribbon/SearchTab.svelte";
   import ComposerMessageTab from "./Composer/ComposerMessageTab.svelte";
-  import { inlineRibbon, updatingFolders } from "./Selected";
+  import { inlineRibbon, isAdvancedSearchOpen, searchOptions, updatingFolders } from "./Selected";
   import ThreePane from "./3pane/3Pane.svelte";
   import type MessageListPane from "./3pane/MessageListPane.svelte";
   import MessagePrint from "./Message/MessagePrint.svelte";
@@ -153,7 +153,6 @@
   import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
-  const searchOptions = MailSearch.options;
   const accounts = appGlobal.emailAccounts;
 
   let pageEl: HTMLElement;
@@ -255,7 +254,7 @@
 
   $: searchTerm = $globalSearchTerm?.trim() || null;
   let isSearchFocused = false;
-  $: hasSearchCriteria = MailSearch.hasCriteria(searchTerm, $searchOptions);
+  $: hasSearchCriteria = !!searchTerm || MailSearch.hasRefiners($searchOptions);
   $: isSearchActive = hasSearchCriteria || isSearchFocused;
   let currentSearch: SearchEMail | null = null;
   let searchResults: Collection<EMail> | null = null;
@@ -264,7 +263,7 @@
   const startSearchDebounced = debounce(() => catchErrors(startSearch), 300);
   let lastCriteria: string = null;
   async function startSearch() {
-    if (!MailSearch.hasCriteria(searchTerm, $searchOptions)) {
+    if (!searchTerm && !MailSearch.hasRefiners($searchOptions)) {
       currentSearch = null;
       searchResults = null;
       lastCriteria = null;
@@ -315,7 +314,8 @@
   }
 
   function closeSearch() {
-    MailSearch.close();
+    $globalSearchTerm = null;
+    $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope };
     isSearchFocused = false;
     $mailSearchInput?.blur();
   }
@@ -357,7 +357,7 @@
     if (results) {
       items.push({ label: searching
         ? $t`Searching…`
-        : MailSearch.isLimitReached(results) && !isShowingAllResults
+        : results.length > MailSearch.kLimit && !isShowingAllResults
           ? $t`More than ${MailSearch.kLimit} results`
           : $t`Results: ${results.length}`, busy: searching });
     } else if (isFiltered) {
@@ -494,13 +494,13 @@
       case MailKeyAction.Search:
         return $mailSearchInput?.focus();
       case MailKeyAction.ScopeCurrentFolder:
-        MailSearch.update({ scope: SearchScope.CurrentFolder });
+        $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder };
         return $mailSearchInput?.focus();
       case MailKeyAction.ScopeAllAccounts:
-        MailSearch.update({ scope: SearchScope.AllAccounts });
+        $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts };
         return $mailSearchInput?.focus();
       case MailKeyAction.AdvancedFind:
-        MailSearch.isAdvancedSearchOpen.set(true);
+        $isAdvancedSearchOpen = true;
         return;
       case MailKeyAction.NewFolder:
         if (MailSearch.isRealFolder(folder)) {

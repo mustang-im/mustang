@@ -1,6 +1,7 @@
 import { quickSearch } from "../../frontend/Mail/Selected";
 import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
 import { MailSearch, SearchScope, type SearchOptions } from "./Search/MailSearch";
+import { isAdvancedSearchOpen, searchOptions } from "./Selected";
 import { get } from "svelte/store";
 
 export enum QuickFilter {
@@ -11,12 +12,12 @@ export enum QuickFilter {
 
 export class MailFilters {
   static isSearching(): boolean {
-    return MailSearch.hasCriteria(get(globalSearchTerm)?.trim() || null, MailSearch.current());
+    return !!get(globalSearchTerm)?.trim() || MailSearch.hasRefiners(get(searchOptions));
   }
 
   static isActive(filter: QuickFilter): boolean {
     if (MailFilters.isSearching()) {
-      let options = MailSearch.current();
+      let options = get(searchOptions);
       switch (filter) {
         case QuickFilter.Unread: return options.isRead === false;
         case QuickFilter.Flagged: return options.flagged;
@@ -35,11 +36,11 @@ export class MailFilters {
     if (MailFilters.isSearching()) {
       switch (filter) {
         case QuickFilter.Unread:
-          return MailSearch.update({ isRead: isActive ? null : false });
+          return searchOptions.update(options => ({ ...options, isRead: isActive ? null : false }));
         case QuickFilter.Flagged:
-          return MailSearch.update({ flagged: !isActive });
+          return searchOptions.update(options => ({ ...options, flagged: !isActive }));
         case QuickFilter.Attachments:
-          return MailSearch.update({ hasAttachment: !isActive });
+          return searchOptions.update(options => ({ ...options, hasAttachment: !isActive }));
       }
     }
     switch (filter) {
@@ -61,7 +62,7 @@ export class MailFilters {
 
   static searchInFolder(change: Partial<SearchOptions>) {
     if (MailFilters.isSearching()) {
-      MailSearch.update(change);
+      searchOptions.update(options => ({ ...options, ...change }));
       return;
     }
     let carried: Partial<SearchOptions> = {
@@ -70,20 +71,22 @@ export class MailFilters {
       hasAttachment: quickSearch.hasAttachment === true,
     };
     quickSearch.reset();
-    MailSearch.findRelated({ scope: SearchScope.CurrentFolder, ...carried, ...change });
+    globalSearchTerm.set(null);
+    searchOptions.set({ ...MailSearch.defaultOptions(), scope: SearchScope.CurrentFolder, ...carried, ...change });
   }
 
   static moreFilters() {
     if (!MailFilters.isSearching()) {
       MailFilters.searchInFolder({});
     }
-    MailSearch.isAdvancedSearchOpen.set(true);
+    isAdvancedSearchOpen.set(true);
   }
 
   static clear() {
     quickSearch.reset();
     if (MailFilters.isSearching()) {
-      MailSearch.close();
+      globalSearchTerm.set(null);
+      searchOptions.update(options => ({ ...MailSearch.defaultOptions(), scope: options.scope }));
     }
   }
 }

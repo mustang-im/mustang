@@ -21,11 +21,11 @@
         <ClearIcon size={16} />
       </button>
     {/if}
-    <button type="button" class="icon-button advanced" class:open={$isAdvancedOpen}
+    <button type="button" class="icon-button advanced" class:open={$isAdvancedSearchOpen}
       title={$t`Advanced Search - Narrow your search with options like sender, date, scope and attachments`}
-      aria-label={$t`Advanced Search`} aria-expanded={$isAdvancedOpen}
-      on:click={() => $isAdvancedOpen ? closeAdvanced() : openAdvanced()}>
-      <svelte:component this={$isAdvancedOpen ? ChevronUpIcon : ChevronIcon} size={16} />
+      aria-label={$t`Advanced Search`} aria-expanded={$isAdvancedSearchOpen}
+      on:click={() => $isAdvancedSearchOpen ? closeAdvanced() : openAdvanced()}>
+      <svelte:component this={$isAdvancedSearchOpen ? ChevronUpIcon : ChevronIcon} size={16} />
     </button>
   </hbox>
   <Menu bind:isMenuOpen={isScopeOpen} anchor={scopeButton} placement="bottom-start">
@@ -33,10 +33,10 @@
       <MenuItem label={MailSearch.scopeLabel(option)}
         checkable checked={option == scope}
         disabled={!MailSearch.isScopeAvailable(option, $selectedAccount, $selectedFolder) && $t`Select a folder of an account first`}
-        onClick={() => MailSearch.update({ scope: option })} />
+        onClick={() => $searchOptions = { ...$searchOptions, scope: option }} />
     {/each}
   </Menu>
-  {#if suggestions.length && !$isAdvancedOpen}
+  {#if suggestions.length && !$isAdvancedSearchOpen}
     <vbox class="suggestions" role="listbox" aria-label={$t`Suggestions`}>
       <hbox class="suggestions-header">{$t`People`}</hbox>
       {#each suggestions as person, index (person)}
@@ -53,7 +53,7 @@
       {/each}
     </vbox>
   {/if}
-  {#if $isAdvancedOpen && draft}
+  {#if $isAdvancedSearchOpen && draft}
     <vbox class="advanced-popup">
       <SearchCriteria bind:draft account={$selectedAccount} folder={$selectedFolder} onSearch={onAdvancedSearch} />
     </vbox>
@@ -71,6 +71,7 @@
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { MailSearch, SearchScope } from "./MailSearch";
+  import { isAdvancedSearchOpen, searchOptions } from "../Selected";
   import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
   import SearchCriteria from "./SearchCriteria.svelte";
   import { SelectNames } from "../Composer/SelectNames";
@@ -87,10 +88,8 @@
   import { onDestroy } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  const options = MailSearch.options;
-  const isAdvancedOpen = MailSearch.isAdvancedSearchOpen;
   const scopes = [SearchScope.AllAccounts, SearchScope.CurrentAccount, SearchScope.CurrentFolder];
-  $: scope = MailSearch.effectiveScope($options, $selectedAccount, $selectedFolder);
+  $: scope = MailSearch.effectiveScope($searchOptions, $selectedAccount, $selectedFolder);
 
   let boxEl: HTMLElement;
   let inputEl: HTMLInputElement;
@@ -123,7 +122,7 @@
     typed = "";
     $globalSearchTerm = null;
     isInputFocused = false;
-    MailSearch.update({ person, isOutgoing: null });
+    $searchOptions = { ...$searchOptions, person, isOutgoing: null };
   }
 
   function onClear() {
@@ -150,34 +149,34 @@
       isInputFocused = false;
       return;
     }
-    if (event.key == "Escape" && $isAdvancedOpen) {
+    if (event.key == "Escape" && $isAdvancedSearchOpen) {
       event.preventDefault();
       event.stopPropagation();
       closeAdvanced();
     }
   }
 
-  $: updateDraft($isAdvancedOpen);
+  $: updateDraft($isAdvancedSearchOpen);
   function updateDraft(isOpen: boolean) {
-    draft = isOpen ? draft ?? new AdvancedSearchDraft(MailSearch.current(), get(globalSearchTerm)) : null;
+    draft = isOpen ? draft ?? new AdvancedSearchDraft(get(searchOptions), get(globalSearchTerm)) : null;
   }
 
   function openAdvanced() {
-    $isAdvancedOpen = true;
+    $isAdvancedSearchOpen = true;
   }
 
   function closeAdvanced() {
-    $isAdvancedOpen = false;
+    $isAdvancedSearchOpen = false;
   }
 
   function onAdvancedSearch() {
-    MailSearch.options.set(draft.toOptions());
+    $searchOptions = draft.toOptions();
     $globalSearchTerm = draft.searchTerm?.toLowerCase() ?? null;
     closeAdvanced();
   }
 
   function onClickOutside(event: MouseEvent) {
-    if (!$isAdvancedOpen) {
+    if (!$isAdvancedSearchOpen) {
       return;
     }
     let target = event.target as HTMLElement;
