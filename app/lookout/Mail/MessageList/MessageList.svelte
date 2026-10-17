@@ -68,6 +68,7 @@
   import { MessageRows, type MessageRow } from "./MessageRows";
   import { MessageMetadata } from "./MessageMetadata";
   import { MessageActions } from "../MessageActions";
+  import { SelectionState } from "../SelectionState";
   import { FolderTreeActions } from "../FolderPane/FolderTreeActions";
   import { ViewType, type Column } from "../View/ViewSettings";
   import { MessageGrouping } from "./MessageGrouping";
@@ -387,7 +388,9 @@
     if (!gone.length) {
       return;
     }
-    let replacement = rows.messages[Math.min(lastPosition, rows.messages.length - 1)] ?? null;
+    let replacement = gone.some(message => SelectionState.isRemovedFromFolder(message))
+      ? rows.messages[Math.min(lastPosition, rows.messages.length - 1)] ?? null
+      : null;
     if (replacement) {
       select([replacement], replacement);
     } else {

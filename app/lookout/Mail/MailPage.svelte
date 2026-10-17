@@ -70,6 +70,7 @@
   import { MessageActions } from "./MessageActions";
   import { MailDialogs } from "./Dialogs/MailDialogs";
   import { MailSearch, SearchScope } from "./Search/MailSearch";
+  import { QuickFilterList } from "./QuickFilterList";
   import { FolderTreeActions } from "./FolderPane/FolderTreeActions";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import HomeTab from "./Ribbon/HomeTab.svelte";
@@ -201,11 +202,12 @@
   }
   // <copied from="../../frontend/Mail/LeftPane/FolderFooter.svelte">
   $: quickSearch.folder = $selectedFolder;
-  $: $selectedFolder && $quickSearch && $folderMessages && catchErrors(startQuickSearch, showError);
-  async function startQuickSearch() {
-    filteredMessages = await quickSearch.startSearch();
-  }
   // </copied>
+  const quickFilterList = new QuickFilterList();
+  $: $selectedFolder && $quickSearch && $folderMessages && $selection && catchErrors(startQuickSearch, showError);
+  async function startQuickSearch() {
+    filteredMessages = await quickFilterList.filter(quickSearch, selection);
+  }
   $: hasFilter = $quickSearch && quickSearch.hasSearch();
 
   $: searchTerm = $globalSearchTerm?.trim() || null;

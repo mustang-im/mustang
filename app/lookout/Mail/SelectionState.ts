@@ -5,6 +5,10 @@ export interface SelectableMessage {
   tags: { contains(tag: any): boolean };
 }
 
+export interface FolderMessage {
+  folder: { messages: { contains(message: any): boolean } } | null;
+}
+
 export enum TagState {
   None = "none",
   Some = "some",
@@ -30,6 +34,10 @@ export class SelectionState {
 
   static allSpam(messages: SelectableMessage[]): boolean {
     return messages.length > 0 && messages.every(message => message.isSpam);
+  }
+
+  static isRemovedFromFolder(message: FolderMessage): boolean {
+    return !message.folder?.messages.contains(message);
   }
 
   static tagState(messages: SelectableMessage[], tag: any): TagState {
