@@ -1,6 +1,6 @@
-import type { Event } from "../../../logic/Calendar/Event";
-import type { TSMLMeetingTimeVote, TSMLMeetingTimePreference } from "../../../logic/Mail/SML/TSML";
-import { getDateTimeLocale } from "../../../l10n/l10n";
+import type { Event } from "../../../../logic/Calendar/Event";
+import type { TSMLMeetingTimeVote, TSMLMeetingTimePreference } from "../../../../logic/Mail/SML/TSML";
+import { getDateTimeLocale } from "../../../../l10n/l10n";
 
 export interface TimeOptionDay {
   day: Date;

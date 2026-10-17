@@ -50,7 +50,7 @@
 <script lang="ts">
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
   import { TSMLBookMeState, type TSMLAction, type TSMLBookMe } from "../../../../logic/Mail/SML/TSML";
-  import { SMLTimeOptions } from "../../../Mail/SML/SMLTimeOptions";
+  import { SMLTimeOptions } from "../Shared/SMLTimeOptions";
   import { TimeOptions } from "../../EditEvent/TimeOptions";
   import DisplayList from "../Shared/DisplayList.svelte";
   import DialogButton from "../../../Shared/Dialog/DialogButton.svelte";

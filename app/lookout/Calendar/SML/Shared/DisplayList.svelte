@@ -22,7 +22,7 @@
 </vbox>
 
 <script lang="ts">
-  import { SMLTimeOptions } from "../../../Mail/SML/SMLTimeOptions";
+  import { SMLTimeOptions } from "./SMLTimeOptions";
   import { TimeOptions } from "../../EditEvent/TimeOptions";
   import { appGlobal } from "../../../../logic/app";
   import type { Collection } from "svelte-collections";

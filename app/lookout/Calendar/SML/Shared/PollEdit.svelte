@@ -26,7 +26,7 @@
 <script lang="ts">
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
   import type { TSMLTimePoll } from "../../../../logic/Mail/SML/TSML";
-  import { SMLTimeOptions } from "../../../Mail/SML/SMLTimeOptions";
+  import { SMLTimeOptions } from "./SMLTimeOptions";
   import DisplayList from "./DisplayList.svelte";
   import { TimeOptions } from "../../EditEvent/TimeOptions";
   import TimeInput from "../../EditEvent/TimeInput.svelte";

@@ -21,7 +21,7 @@
 <script lang="ts">
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
   import { TSMLMeetingTimePreference, type TSMLAction, type TSMLMeetingTimePoll, type TSMLMeetingTimeVote } from "../../../../logic/Mail/SML/TSML";
-  import { SMLTimeOptions } from "../../../Mail/SML/SMLTimeOptions";
+  import { SMLTimeOptions } from "../Shared/SMLTimeOptions";
   import DisplayList from "../Shared/DisplayList.svelte";
   import AcceptIcon from "lucide-svelte/icons/check";
   import MaybeIcon from "lucide-svelte/icons/badge-question-mark";
