@@ -2,24 +2,9 @@ import type { Contact } from "../../logic/Abstract/Contact";
 import { Person } from "../../logic/Abstract/Person";
 import type { Addressbook } from "../../logic/Contacts/Addressbook";
 import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
-import { writable } from "svelte/store";
-
-export enum ContactSearchScope {
-  CurrentFolder = "current",
-  AllContactItems = "all",
-}
-
-export interface ContactSearchOptions {
-  term: string | null;
-  scope: ContactSearchScope;
-  hasPhoneNumber: boolean;
-  hasAddress: boolean;
-  hasEMailAddress: boolean;
-}
+import { ContactSearchScope, type ContactSearchOptions } from "./Person/Selected";
 
 export class ContactSearch {
-  static readonly options = writable<ContactSearchOptions>(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder));
-
   static defaultOptions(scope: ContactSearchScope): ContactSearchOptions {
     return {
       term: null,
@@ -28,18 +13,6 @@ export class ContactSearch {
       hasAddress: false,
       hasEMailAddress: false,
     };
-  }
-
-  static update(change: Partial<ContactSearchOptions>) {
-    ContactSearch.options.update(options => ({ ...options, ...change }));
-  }
-
-  static close() {
-    ContactSearch.options.update(options => ContactSearch.defaultOptions(options.scope));
-  }
-
-  static isActive(options: ContactSearchOptions): boolean {
-    return !!options.term?.trim() || options.hasPhoneNumber || options.hasAddress || options.hasEMailAddress;
   }
 
   static hasRefiners(options: ContactSearchOptions): boolean {

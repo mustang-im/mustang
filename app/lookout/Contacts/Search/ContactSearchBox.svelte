@@ -4,11 +4,11 @@
     value={$options.term ?? ""}
     {placeholder}
     aria-label={placeholder}
-    on:input={event => ContactSearch.update({ term: event.currentTarget.value || null })}
+    on:input={event => $options = { ...$options, term: event.currentTarget.value || null }}
     on:keydown={onKeyDown} />
   {#if $options.term}
     <button class="clear" title={$t`Close Search`} aria-label={$t`Close Search`}
-      on:click={() => ContactSearch.close()}>
+      on:click={closeSearch}>
       <CloseIcon size="14" />
     </button>
   {/if}
@@ -16,13 +16,13 @@
 
 <script lang="ts">
   import { ContactSearch } from "../ContactSearch";
+  import { contactSearchOptions as options } from "../Person/Selected";
   import SearchIcon from "lucide-svelte/icons/search";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
 
   export let placeholder: string;
 
-  const options = ContactSearch.options;
   let inputEl: HTMLInputElement;
 
   export function focus() {
@@ -30,10 +30,16 @@
     inputEl?.select();
   }
 
+  // <copied from="../ContactsAppD.svelte">
+  function closeSearch() {
+    $options = ContactSearch.defaultOptions($options.scope);
+  }
+  // </copied>
+
   function onKeyDown(event: KeyboardEvent) {
     if (event.key == "Escape") {
       event.preventDefault();
-      ContactSearch.close();
+      closeSearch();
     }
   }
 </script>

@@ -59,7 +59,8 @@
   import { Group } from "../../logic/Abstract/Group";
   import { selectedAddressbook, selectedContact } from "./Person/Selected";
   import { ContactActions } from "./ContactActions";
-  import { ContactSearch, ContactSearchScope } from "./ContactSearch";
+  import { ContactSearch } from "./ContactSearch";
+  import { contactSearchOptions, ContactSearchScope } from "./Person/Selected";
   import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { LetterIndex } from "./LetterIndex";
   import { AddressbookSections } from "./AddressbookSections";
@@ -96,7 +97,6 @@
   const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
   const folderPane = getLocalStorage<boolean>("lookout.contacts.folderPane", true);
   const readingPane = getLocalStorage<boolean>("lookout.contacts.readingPane", true);
-  const searchOptions = ContactSearch.options;
 
   $: view = Object.values(ContactView).includes($viewSetting.value) ? $viewSetting.value : ContactView.People;
   $: showCardPane = $readingPane.value != false && view == ContactView.People;
@@ -110,14 +110,14 @@
       return;
     }
     lastGlobalSearchTerm = term;
-    ContactSearch.update({ term: term?.toLowerCase() || null });
+    $contactSearchOptions = { ...$contactSearchOptions, term: term?.toLowerCase() || null };
   }
 
   $: addressbookSections = new AddressbookSections($addressbooks.contents).sections;
   $: isDirectory = !!$selectedAddressbook && $searchOnlyAddressbooks.some(addressbook => addressbook == $selectedAddressbook);
   $: isWritableAddressbook = !!$selectedAddressbook && $addressbooks.contains($selectedAddressbook);
-  $: isSearch = ContactSearch.isActive($searchOptions);
-  $: isCurrentFolder = $searchOptions.scope == ContactSearchScope.CurrentFolder && !!$selectedAddressbook;
+  $: isSearch = !!$contactSearchOptions.term?.trim() || ContactSearch.hasRefiners($contactSearchOptions);
+  $: isCurrentFolder = $contactSearchOptions.scope == ContactSearchScope.CurrentFolder && !!$selectedAddressbook;
   $: searchedAddressbooks = isCurrentFolder
     ? [ $selectedAddressbook ]
     : [ ...$addressbooks.contents, ...$searchOnlyAddressbooks.contents ];
@@ -125,7 +125,7 @@
     ? new ArrayColl<Contact>()
     : $selectedAddressbook?.contacts ?? allContacts;
   $: listedContacts = isSearch
-    ? ContactSearch.results(searchedAddressbooks, isCurrentFolder ? folderContacts : allContacts, $searchOptions)
+    ? ContactSearch.results(searchedAddressbooks, isCurrentFolder ? folderContacts : allContacts, $contactSearchOptions)
     : folderContacts;
   $: compareContacts = view == ContactView.List || view == ContactView.Phone
     ? ContactColumns.compare($sort.value)
@@ -195,8 +195,14 @@
     searchBox?.focus();
   }
 
+  // <copied to="Search/ContactSearchBox.svelte, Search/ContactSearchTab.svelte">
+  function closeSearch() {
+    $contactSearchOptions = ContactSearch.defaultOptions($contactSearchOptions.scope);
+  }
+  // </copied>
+
   function showContact(contact: Contact) {
-    ContactSearch.close();
+    closeSearch();
     ContactActions.show(contact);
   }
 
@@ -241,7 +247,7 @@
       catchErrors(deleteSelected);
     } else if (event.key == "Escape" && !isTextField && isSearch) {
       event.preventDefault();
-      ContactSearch.close();
+      closeSearch();
     } else if (event.ctrlKey && !event.altKey && event.key.toLowerCase() == "n" && !event.shiftKey ||
         event.ctrlKey && !event.altKey && event.key.toLowerCase() == "c" && event.shiftKey) {
       event.preventDefault();

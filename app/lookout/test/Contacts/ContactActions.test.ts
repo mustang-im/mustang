@@ -6,7 +6,8 @@ import { Addressbook, SearchOnlyAddressbook } from "../../../logic/Contacts/Addr
 import { ContactEntry, Person } from "../../../logic/Abstract/Person";
 import { Group } from "../../../logic/Abstract/Group";
 import { ContactActions } from "../../Contacts/ContactActions";
-import { ContactSearch, ContactSearchScope } from "../../Contacts/ContactSearch";
+import { ContactSearch } from "../../Contacts/ContactSearch";
+import { ContactSearchScope } from "../../Contacts/Person/Selected";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { beforeEach, expect, test, vi } from "vitest";
 
@@ -124,13 +125,13 @@ test("Search covers all given address books", () => {
 
 test("Search refiners keep persons with a phone number, an address or an email address", () => {
   let options = { ...ContactSearch.defaultOptions(ContactSearchScope.AllContactItems), hasPhoneNumber: true };
-  expect(ContactSearch.isActive(options)).toBe(true);
+  expect(ContactSearch.hasRefiners(options)).toBe(true);
   let withPhone = ContactSearch.results([addressbook], addressbook.contacts, options).contents.map(contact => contact.name);
   expect(withPhone).toEqual(["Carla Diaz"]);
   options = { ...options, hasPhoneNumber: false, hasEMailAddress: true };
   let withEMail = ContactSearch.results([addressbook], addressbook.contacts, options).contents.map(contact => contact.name).sort();
   expect(withEMail).toEqual(["Anna Schmidt", "Bert Meier"]);
-  expect(ContactSearch.isActive(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder))).toBe(false);
+  expect(ContactSearch.hasRefiners(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder))).toBe(false);
 });
 
 test("Contact from the Same Company copies the company and the business numbers and addresses", () => {
