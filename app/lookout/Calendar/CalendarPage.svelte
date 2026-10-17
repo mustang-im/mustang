@@ -10,7 +10,7 @@
   </CalendarRibbon>
   <hbox flex class="panes">
     {#if $folderPaneSetting.value == CalendarFolderPane.Minimized}
-      <FolderPaneMinimized name={$selectedCalendar?.name ?? $t`Calendar`}
+      <FolderPaneMinimized name={$currentCalendar?.name ?? $t`Calendar`}
         onExpand={() => { folderPaneSetting.value = CalendarFolderPane.Normal; }} />
     {/if}
     <Splitter name="lookout.calendar.folderPane" hasLeft={showFolderPane}
@@ -150,6 +150,7 @@
   $: if (!$selectedCalendar) {
     $selectedCalendar = appGlobal.calendars.first;
   }
+  $: currentCalendar = $selectedCalendar;
 
   $: range = new CalendarRange(view, $startDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
 
