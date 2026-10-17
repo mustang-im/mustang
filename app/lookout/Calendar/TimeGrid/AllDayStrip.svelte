@@ -1,6 +1,6 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="all-day-strip"
-  style="grid-column: {firstColumn} / span {days.length}; --days: {days.length}; --lanes: {Math.max($layout.lanes, 1)}"
+  style="grid-column: {firstColumn} / span {days.length}; --lanes: {Math.max($layout.lanes, 1)}"
   on:dblclick={onDoubleClick}
   on:contextmenu={onContextMenu}
   on:click={onClick}
@@ -89,7 +89,7 @@
 <style>
   .all-day-strip {
     display: grid;
-    grid-template-columns: repeat(var(--days), minmax(0, 1fr));
+    grid-template-columns: subgrid;
     grid-template-rows: repeat(var(--lanes), 22px);
     grid-row: 1;
     min-height: 24px;

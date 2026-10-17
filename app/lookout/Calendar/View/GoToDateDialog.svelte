@@ -32,6 +32,7 @@
     { value: "week", label: $t`Week Calendar` },
     { value: "month", label: $t`Month Calendar` },
     { value: "schedule", label: $t`Schedule View` },
+    { value: "dual", label: $t`Day/Month` },
   ] as { value: CalendarViewType, label: string }[];
 
   function onOK() {

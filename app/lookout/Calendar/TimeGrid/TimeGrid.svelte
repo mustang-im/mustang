@@ -72,7 +72,7 @@
   import { WorkingHours } from "../View/WorkingHours";
   import { TimeZoneRuler } from "../View/TimeZones";
   import { eventPeek } from "../Selected";
-  import { shownWorkHours } from "../../../frontend/Calendar/selected";
+  import { selectedDate, shownWorkHours } from "../../../frontend/Calendar/selected";
   import DayHeader from "./DayHeader.svelte";
   import AllDayStrip from "./AllDayStrip.svelte";
   import DayColumn from "./DayColumn.svelte";
@@ -85,6 +85,7 @@
   export let range: CalendarRange;
   export let groups: CalendarColumnGroup[];
   export let timeScale: number;
+  export let enlargeSelectedDay = false;
   export let onOpenDay: (day: Date) => void;
   export let onOverlay: () => void;
 
@@ -107,8 +108,10 @@
   $: rulerLabels = rulers.map(ruler => ruler.hourLabels(range.days[0]));
   $: textWidth = rulersEl ? new TextWidth(rulersEl) : null;
   $: rulerWidths = rulers.map((ruler, r) => rulerWidth(textWidth, rulerLabels[r], showsZoneLabels ? ruler.shownLabel(range.days[0]) : ""));
+  $: dayColumns = range.days.map(day =>
+    enlargeSelectedDay && day.toDateString() == $selectedDate?.toDateString() ? "minmax(0, 3fr)" : "minmax(0, 1fr)").join(" ");
   $: columns = `${rulerWidths.reduce((sum, width) => sum + width, 0)}px ` +
-    groups.map(() => `repeat(${range.days.length}, minmax(0, 1fr))`).join(" 8px ");
+    groups.map(() => dayColumns).join(" 8px ");
   $: slotStarts = Array.from({ length: TimeColumnLayout.kMinutesPerDay / timeScale }, (_, i) => i * timeScale);
 
   $: groupWorkingHours = derived(groups.map(group =>

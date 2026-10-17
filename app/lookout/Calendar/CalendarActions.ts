@@ -3,7 +3,7 @@ import type { Calendar } from "../../logic/Calendar/Calendar";
 import type { InvitationResponseInMessage } from "../../logic/Calendar/Invitation/InvitationStatus";
 import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
-import { selectedCalendar, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
+import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, startDate } from "../../frontend/Calendar/selected";
 import { inlineTitle, selectedSlots, workWeekHours, type SlotSelection } from "./Selected";
 import { CalendarCurrentView, CalendarSettings } from "./CalendarSettings";
 import { CalendarRange } from "./View/CalendarRange";
@@ -62,7 +62,8 @@ export class CalendarActions {
       CalendarActions.newEvent(calendar ?? slots.calendar, slots.start, slots.end, kind);
       return;
     }
-    let range = new CalendarRange(CalendarSettings.view.value, get(startDate), CalendarSettings.dayCount.value,
+    let view = CalendarSettings.view.value;
+    let range = new CalendarRange(view, get(view == "dual" ? selectedDate : startDate), CalendarSettings.dayCount.value,
       get(workWeekHours).workDays());
     let now = new Date();
     let start: Date;

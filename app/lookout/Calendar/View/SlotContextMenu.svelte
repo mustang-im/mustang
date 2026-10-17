@@ -18,6 +18,7 @@
   <MenuItem label={$t`Week`} icon={WeekIcon} shortCutInfo="Ctrl+Alt+3" onClick={() => onView("week")} />
   <MenuItem label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4" onClick={() => onView("month")} />
   <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5" onClick={() => onView("schedule")} />
+  <MenuItem label={$t`Day/Month`} icon={DualIcon} onClick={() => onView("dual")} />
   <MenuDivider />
   <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => CalendarActions.openViewSettings()} />
 </ContextMenu>
@@ -40,6 +41,7 @@
   import WeekIcon from "lucide-svelte/icons/calendar-range";
   import MonthIcon from "lucide-svelte/icons/calendar-days";
   import ScheduleIcon from "lucide-svelte/icons/chart-gantt";
+  import DualIcon from "lucide-svelte/icons/columns-2";
   import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import { t } from "../../../l10n/l10n";
 

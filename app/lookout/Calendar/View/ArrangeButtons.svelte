@@ -9,6 +9,9 @@
 <RibbonToggleButton label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5" isRadio
   tooltip={$t`Show the calendars in rows, with the time running from left to right`}
   checked={!isTable && view == "schedule"} onChange={() => onView("schedule")} />
+<RibbonToggleButton label={$t`Day/Month`} icon={DualIcon} isRadio
+  tooltip={$t`Show the selected day and the next day on the left, and the month on the right`}
+  checked={!isTable && view == "dual"} onChange={() => onView("dual")} />
 
 <script lang="ts">
   import type { CalendarViewType } from "../CalendarSettings";
@@ -18,6 +21,7 @@
   import WeekIcon from "lucide-svelte/icons/calendar-range";
   import MonthIcon from "lucide-svelte/icons/calendar-days";
   import ScheduleIcon from "lucide-svelte/icons/chart-gantt";
+  import DualIcon from "lucide-svelte/icons/columns-2";
   import { t } from "../../../l10n/l10n";
 
   export let view: CalendarViewType;

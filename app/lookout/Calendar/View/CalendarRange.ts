@@ -18,6 +18,9 @@ export class CalendarRange {
     if (view == "day" || view == "schedule") {
       first = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       count = Math.min(Math.max(Math.round(dayCount), 1), 10);
+    } else if (view == "dual") {
+      first = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      count = 2;
     } else if (view == "week") {
       first = getWeekStart(date);
       count = 7;
@@ -86,7 +89,9 @@ export class CalendarRange {
     if (view == "month") {
       return new Date(date.getFullYear(), date.getMonth() + direction, 1);
     }
-    let days = view == "day" || view == "schedule" ? new CalendarRange(view, date, dayCount).days.length : 7;
+    let days = view == "day" || view == "schedule" ? new CalendarRange(view, date, dayCount).days.length
+      : view == "dual" ? 1
+      : 7;
     return new Date(date.getFullYear(), date.getMonth(), date.getDate() + direction * days);
   }
 }

@@ -28,8 +28,14 @@
             {#if tableEvents}
               <EventTable events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
                 showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
+            {:else if view == "dual"}
+              <DualView bind:start={$startDate} events={visibleEvents} {groups} {timeScale} {showWeekNumbers}>
+                <ViewSelector slot="top-right" {view} onView={setView} />
+              </DualView>
             {:else}
-              <CalendarHeader {range} {view} onToday={goToToday} onStep={step} onView={setView} />
+              <CalendarHeader {range} onToday={goToToday} onStep={step}>
+                <ViewSelector {view} onView={setView} />
+              </CalendarHeader>
               <vbox flex class="grid-area">
                 {#if view == "month" && isSplit}
                   <hbox flex class="month-split">
@@ -65,7 +71,7 @@
   <EventContextMenu bind:this={eventMenu} />
   <SlotContextMenu bind:this={slotMenu} onToday={goToToday} onNext7Days={showNext7Days} onView={setView} />
   {#if isGoToDateOpen}
-    <GoToDateDialog date={$startDate} {view} onGoTo={goToDate} on:close={() => isGoToDateOpen = false} />
+    <GoToDateDialog date={rangeDate} {view} onGoTo={goToDate} on:close={() => isGoToDateOpen = false} />
   {/if}
   {#if $eventPeek}
     {#key $eventPeek}
@@ -94,6 +100,8 @@
   import CalendarList from "./FolderPane/CalendarList.svelte";
   import FolderPaneMinimized from "../Shared/FolderPaneMinimized.svelte";
   import CalendarHeader from "./View/CalendarHeader.svelte";
+  import ViewSelector from "./ViewSelector.svelte";
+  import DualView from "./DualView.svelte";
   import TimeGrid, { type CalendarColumnGroup } from "./TimeGrid/TimeGrid.svelte";
   import MonthGrid from "./Month/MonthGrid.svelte";
   import CalendarTab from "./TimeGrid/CalendarTab.svelte";
@@ -152,7 +160,8 @@
   }
   $: currentCalendar = $selectedCalendar;
 
-  $: range = new CalendarRange(view, $startDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
+  $: rangeDate = view == "dual" ? $selectedDate : $startDate;
+  $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
 
   function visible(events: Collection<Event>, showDeclined: boolean): Collection<Event> {
     return showDeclined
@@ -192,6 +201,11 @@
   function setView(newView: CalendarViewType) {
     if (newView == "day" || newView == "schedule") {
       setDayCount(1);
+    }
+    if (newView == "dual" && !range.contains($selectedDate)) {
+      $selectedDate = $startDate;
+    } else if (view == "dual" && newView != "dual" && newView != "month") {
+      $startDate = $selectedDate;
     }
     view = newView;
     CalendarSettings.view.value = newView;
@@ -253,7 +267,15 @@
 
   function step(direction: number) {
     $eventPeek = null;
-    $startDate = CalendarRange.step(view, $startDate, dayCount, direction);
+    setRangeDate(CalendarRange.step(view, rangeDate, dayCount, direction));
+  }
+
+  function setRangeDate(date: Date) {
+    if (view == "dual") {
+      $selectedDate = date;
+    } else {
+      $startDate = date;
+    }
   }
 
   function selectDay(day: Date) {
@@ -328,8 +350,7 @@
       setView(command.view);
       break;
     case "day-count":
-      view = "day";
-      CalendarSettings.view.value = "day";
+      setView("day");
       setDayCount(command.days);
       break;
     case "go-to-date":
@@ -339,7 +360,7 @@
       goToToday();
       break;
     case "step-days":
-      $startDate = new Date($startDate.getFullYear(), $startDate.getMonth(), $startDate.getDate() + command.days);
+      setRangeDate(new Date(rangeDate.getFullYear(), rangeDate.getMonth(), rangeDate.getDate() + command.days));
       break;
     case "step-months":
       $startDate = new Date($startDate.getFullYear(), $startDate.getMonth() + command.months, 1);

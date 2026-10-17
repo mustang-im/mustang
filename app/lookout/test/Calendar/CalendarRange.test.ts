@@ -105,3 +105,17 @@ test("Start and end of the week, Monday to Sunday", () => {
   expect(CalendarRange.weekEdge(new Date(2026, 9, 18, 9), false)).toEqual(new Date(2026, 9, 12));
   expect(CalendarRange.weekEdge(new Date(2026, 10, 1), true)).toEqual(new Date(2026, 10, 1));
 });
+
+test("Day/Month shows the selected day and the next day, also across the month end", () => {
+  let range = new CalendarRange("dual", kThursday, 5);
+  expect(days(range)).toEqual(["10/15", "10/16"]);
+  expect(range.start).toEqual(new Date(2026, 9, 15));
+  expect(range.end).toEqual(new Date(2026, 9, 17));
+  expect(days(new CalendarRange("dual", new Date(2026, 9, 31)))).toEqual(["10/31", "11/1"]);
+  expect(range.title("en-US")).toMatch(/^October 15\s–\s16, 2026$/);
+});
+
+test("Day/Month steps one day, like the classic dual view", () => {
+  expect(CalendarRange.step("dual", kThursday, 1, 1)).toEqual(new Date(2026, 9, 16));
+  expect(CalendarRange.step("dual", new Date(2026, 10, 1), 1, -1)).toEqual(new Date(2026, 9, 31));
+});

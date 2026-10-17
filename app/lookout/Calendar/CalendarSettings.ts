@@ -2,7 +2,7 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { ReadingPanePosition } from "../Mail/MailView";
 import { gt } from "../../l10n/l10n";
 
-export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule";
+export type CalendarViewType = "day" | "workweek" | "week" | "month" | "schedule" | "dual";
 
 export enum CalendarCurrentView {
   Calendar = "calendar",
