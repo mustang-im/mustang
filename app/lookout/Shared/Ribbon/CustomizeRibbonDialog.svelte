@@ -35,7 +35,7 @@
 </Dialog>
 
 <script lang="ts">
-  import type { RibbonModel, RibbonTabModel } from "./Ribbon";
+  import type { RibbonModel, RibbonTabModel } from "./RibbonGroup";
   import { RibbonCustomization } from "./RibbonCustomization";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";

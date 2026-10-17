@@ -55,7 +55,7 @@
   {/if}
   {#if $isAdvancedOpen && draft}
     <vbox class="advanced-popup">
-      <AdvancedSearchPanel bind:draft account={$selectedAccount} folder={$selectedFolder} onSearch={onAdvancedSearch} />
+      <SearchCriteria bind:draft account={$selectedAccount} folder={$selectedFolder} onSearch={onAdvancedSearch} />
     </vbox>
   {/if}
 </vbox>
@@ -66,7 +66,7 @@
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { MailSearch, SearchScope } from "./MailSearch";
   import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
-  import AdvancedSearchPanel from "./AdvancedSearchPanel.svelte";
+  import SearchCriteria from "./SearchCriteria.svelte";
   import { SelectNames } from "../Composer/SelectNames";
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";

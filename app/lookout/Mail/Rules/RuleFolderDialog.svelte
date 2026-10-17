@@ -24,8 +24,8 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
-  import FolderPicker from "../Dialogs/FolderPicker.svelte";
-  import NewFolderDialog from "../Dialogs/NewFolderDialog.svelte";
+  import FolderPicker from "../LeftPane/FolderPicker.svelte";
+  import NewFolderDialog from "../LeftPane/NewFolderDialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import { t } from "../../../l10n/l10n";
 

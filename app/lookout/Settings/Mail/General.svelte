@@ -106,7 +106,7 @@
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import CategorySquare from "../../Mail/Categories/CategorySquare.svelte";
+  import CategorySquare from "../../Shared/Tag/CategorySquare.svelte";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";

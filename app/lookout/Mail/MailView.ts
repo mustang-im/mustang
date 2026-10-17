@@ -1,5 +1,5 @@
 import type { Folder } from "../../logic/Mail/Folder";
-import { MailViewSettings } from "./View/ViewSettings";
+import { MailViewSettings } from "./ViewSettings/ViewSettings";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 
 export enum ReadingPanePosition {

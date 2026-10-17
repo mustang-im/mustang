@@ -1,0 +1,49 @@
+<Dialog title={$t`Sort`} okLabel={$t`OK`} onOK={save} width="440px" on:close>
+  <GroupBox label={$t`Sort items by`}>
+    <hbox class="field-row">
+      <ComboBox label={$t`Sort items by`} options={fieldOptions} bind:value={field} width="100%" />
+      <vbox class="order">
+        <Radio label={$t`Ascending`} bind:group={isAscending} value={true} />
+        <Radio label={$t`Descending`} bind:group={isAscending} value={false} />
+      </vbox>
+    </hbox>
+  </GroupBox>
+</Dialog>
+
+<script lang="ts">
+  import { ArrangeFields, type ViewSettings } from "./ViewSettings";
+  import { type ArrangeBy, MessageGrouping } from "../3pane/MessageGrouping";
+  import Dialog from "../../Shared/Dialog/Dialog.svelte";
+  import GroupBox from "../../Shared/Form/GroupBox.svelte";
+  import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import Radio from "../../Shared/Form/Radio.svelte";
+  import type { ComboOption } from "../../Shared/Form/ComboOption";
+  import { t } from "../../../l10n/l10n";
+
+  export let settings: ViewSettings;
+  export let onOK: (changes: Partial<ViewSettings>) => void;
+
+  const fieldOptions: ComboOption<ArrangeBy>[] = ArrangeFields.all().map(option => ({ value: option.id, label: option.label }));
+  let field: ArrangeBy = settings.arrangeBy;
+  let isAscending = MessageGrouping.isDescendingByDefault(field) == !!settings.reverseSort;
+
+  function save() {
+    onOK({
+      arrangeBy: field,
+      reverseSort: MessageGrouping.isDescendingByDefault(field) == isAscending,
+    });
+  }
+</script>
+
+<style>
+  .field-row {
+    align-items: center;
+    gap: 16px;
+  }
+  .field-row > :global(.lo-combobox) {
+    flex: 1 1 auto;
+  }
+  .order {
+    flex: 0 0 auto;
+  }
+</style>

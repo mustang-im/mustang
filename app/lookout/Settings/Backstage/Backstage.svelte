@@ -89,7 +89,7 @@
   import { personsToVCardFile } from "../../../logic/Contacts/VCard/VCard";
   import { saveBlobAsFile } from "../../../frontend/Util/util";
   import { ArrayColl } from "svelte-collections";
-  import SaveAllAttachmentsDialog from "../../Mail/Attachments/SaveAllAttachmentsDialog.svelte";
+  import SaveAllAttachmentsDialog from "../../Mail/Message/SaveAllAttachmentsDialog.svelte";
   import { MessageActions } from "../../Mail/MessageActions";
   import { selectedContact } from "../../Contacts/Selected";
   import { Person } from "../../../logic/Abstract/Person";

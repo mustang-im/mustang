@@ -44,7 +44,7 @@
 </Menu>
 
 <script lang="ts">
-  import { RibbonModel } from "./Ribbon";
+  import { RibbonModel } from "./RibbonGroup";
   import { RibbonCommands, type RibbonCommandEntry } from "./RibbonCommands";
   import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";

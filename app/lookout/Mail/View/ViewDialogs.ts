@@ -1,5 +1,5 @@
 import type { Folder } from "../../../logic/Mail/Folder";
-import { ApplyScope } from "./ViewSettings";
+import { ApplyScope } from "../ViewSettings/ViewSettings";
 import { writable } from "svelte/store";
 
 export type ViewDialog =

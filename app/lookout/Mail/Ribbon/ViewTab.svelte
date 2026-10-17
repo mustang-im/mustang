@@ -97,11 +97,11 @@
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
   import { FolderPaneMode, MailView, ReadingPanePosition, ToDoBarPart } from "../MailView";
-  import { ApplyScope, MailViewSettings, ViewType } from "../View/ViewSettings";
+  import { ApplyScope, MailViewSettings, ViewType } from "../ViewSettings/ViewSettings";
   import { ViewCommands } from "../View/ViewCommands";
   import { ViewDialogs } from "../View/ViewDialogs";
   import { MailDialogs } from "../Dialogs/MailDialogs";
-  import ArrangeByMenuItems from "../View/ArrangeByMenuItems.svelte";
+  import ArrangeByMenuItems from "../ViewSettings/ArrangeByMenuItems.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonDisplayGroup from "../../Shared/Ribbon/RibbonDisplayGroup.svelte";

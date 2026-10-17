@@ -27,7 +27,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={() => tab.closeMoreMenu()} />
 
 <script lang="ts">
-  import { RibbonModel, RibbonTabModel, type RibbonGroupModel } from "./Ribbon";
+  import { RibbonModel, RibbonTabModel, type RibbonGroupModel } from "./RibbonGroup";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
   import { getContext, setContext, onDestroy } from "svelte";

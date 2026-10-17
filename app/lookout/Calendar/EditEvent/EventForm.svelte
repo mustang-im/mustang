@@ -29,7 +29,7 @@
     </hbox>
     {#if $attachments.hasItems}
       <hbox class="attachments">
-        <AttachmentList {attachments} isComposing />
+        <AttachmentsUI {attachments} isComposing />
       </hbox>
     {/if}
     <hbox flex class="body-row">
@@ -58,7 +58,7 @@
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
   import { EditorSettings } from "../../Shared/Editor/EditorSettings";
-  import AttachmentList from "../../Mail/Attachments/AttachmentList.svelte";
+  import AttachmentsUI from "../../Mail/Message/AttachmentsUI.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
   import type { Editor } from "@tiptap/core";

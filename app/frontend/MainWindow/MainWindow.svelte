@@ -10,7 +10,7 @@
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
 {#if frontend == "lookout"}
-  {#await import("../../lookout/MainWindow/WindowLayout.svelte") then lookout}
+  {#await import("../../lookout/MainWindow/MainWindow.svelte") then lookout}
     <svelte:component this={lookout.default} />
   {/await}
 {:else}

@@ -1,4 +1,4 @@
-import { Keyboard } from "../Shared/Keyboard";
+import { Keyboard } from "../Util/keyboard";
 
 export enum GlobalKeyAction {
   Mail = "mail",

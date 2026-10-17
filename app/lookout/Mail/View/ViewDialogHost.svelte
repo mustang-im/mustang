@@ -12,11 +12,11 @@
 
 <script lang="ts">
   import { ViewDialogs } from "./ViewDialogs";
-  import { MailViewSettings } from "./ViewSettings";
-  import ViewSettingsDialog from "./ViewSettingsDialog.svelte";
-  import ShowColumnsDialog from "./ShowColumnsDialog.svelte";
-  import ApplyViewDialog from "./ApplyViewDialog.svelte";
-  import ApplyScopeDialog from "./ApplyScopeDialog.svelte";
+  import { MailViewSettings } from "../ViewSettings/ViewSettings";
+  import ViewSettingsDialog from "../ViewSettings/ViewSettingsDialog.svelte";
+  import ShowColumnsDialog from "../ViewSettings/ShowColumnsDialog.svelte";
+  import ApplyViewDialog from "../ViewSettings/ApplyViewDialog.svelte";
+  import ApplyScopeDialog from "../ViewSettings/ApplyScopeDialog.svelte";
   import { onDestroy } from "svelte";
 
   const dialog = ViewDialogs.current;

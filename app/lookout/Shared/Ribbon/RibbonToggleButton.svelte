@@ -6,7 +6,7 @@
 
 <script lang="ts">
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
-  import type { RibbonItemSize } from "./Ribbon";
+  import type { RibbonItemSize } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
 
   export let label: string;

@@ -3,7 +3,7 @@
   <div class="intro">{$t`Share this calendar with people in your organization. Choose how much access each person gets.`}</div>
   <hbox class="add-row">
     <hbox class="person-field">
-      <AddressField recipients={newPersons} label={$t`Name or email address`} chips />
+      <MailAutocomplete recipients={newPersons} label={$t`Name or email address`} chips />
     </hbox>
     <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: CalendarSharing.levelLabel(permission) }))}
       bind:value={level} label={$t`Permission Level`} width="210px" />
@@ -46,7 +46,7 @@
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import PersonCircle from "../../Shared/Person/PersonCircle.svelte";
-  import AddressField from "../../Mail/Composer/AddressField.svelte";
+  import MailAutocomplete from "../../Mail/Composer/MailAutocomplete.svelte";
   import RemoveIcon from "lucide-svelte/icons/trash-2";
   import { ArrayColl } from "svelte-collections";
   import { onMount } from "svelte";

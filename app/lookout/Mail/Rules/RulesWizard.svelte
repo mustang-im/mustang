@@ -80,7 +80,7 @@
   import CheckBox from "../../Shared/Form/CheckBox.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
-  import RuleValuePicker from "./Pickers/RuleValuePicker.svelte";
+  import RuleValuePicker from "./RuleValuePicker.svelte";
   import RuleMessageBox from "./RuleMessageBox.svelte";
   import MoveIcon from "lucide-svelte/icons/folder-input";
   import FlagIcon from "lucide-svelte/icons/flag";

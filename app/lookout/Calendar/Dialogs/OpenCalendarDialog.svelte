@@ -17,7 +17,7 @@
       <DialogButton label={$t`Name…`} tooltip={$t`Choose the person from the address book`}
         onClick={onPick} />
       <hbox class="person-field">
-        <AddressField recipients={persons} label={$t`Name`} />
+        <MailAutocomplete recipients={persons} label={$t`Name`} />
       </hbox>
     </hbox>
     <div class="hint lo-secondary">{$t`Type the name or email address of a colleague who shared their calendar with you.`}</div>
@@ -38,7 +38,7 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import AddressField from "../../Mail/Composer/AddressField.svelte";
+  import MailAutocomplete from "../../Mail/Composer/MailAutocomplete.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, tick } from "svelte";

@@ -29,7 +29,7 @@
 </button>
 
 <script lang="ts">
-  import { RibbonGroupModel, RibbonLabel, type RibbonItemLook, type RibbonItemSize } from "./Ribbon";
+  import { RibbonGroupModel, RibbonLabel, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
   import LoadingIcon from "lucide-svelte/icons/loader-circle";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";

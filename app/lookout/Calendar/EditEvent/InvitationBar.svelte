@@ -146,7 +146,7 @@
     gap: 8px;
     margin: 0 20px 8px 20px;
   }
-  /* <copied from="../../Mail/ReadingPane/InfoBars.svelte"> */
+  /* <copied from="../../Mail/Message/InfoBars.svelte"> */
   .info-bar {
     align-items: center;
     flex-shrink: 0;

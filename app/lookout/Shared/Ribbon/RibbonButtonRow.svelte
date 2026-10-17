@@ -3,7 +3,7 @@
 </div>
 
 <script lang="ts">
-  import { RibbonGroupModel, type RibbonItemLook } from "./Ribbon";
+  import { RibbonGroupModel, type RibbonItemLook } from "./RibbonGroup";
   import { getContext, setContext } from "svelte";
 
   export let label: string;

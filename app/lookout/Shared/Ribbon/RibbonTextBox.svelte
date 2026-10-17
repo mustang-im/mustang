@@ -28,7 +28,7 @@
 
 <script lang="ts">
   import Menu from "../Menu/Menu.svelte";
-  import { RibbonGroupModel, type RibbonItemLook } from "./Ribbon";
+  import { RibbonGroupModel, type RibbonItemLook } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { getContext } from "svelte";

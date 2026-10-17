@@ -2,9 +2,9 @@
   <MailComposer mail={params?.mail ?? $selectedFolder?.newEMail() ?? ($selectedAccount ?? appGlobal.emailAccounts.first).newEMailFrom()} />
 </Route>
 <Route path="/*">
-  <MailPage />
+  <MailApp />
   <Route path="rules">
-    <RulesDialog account={params?.account ?? $selectedAccount ?? appGlobal.emailAccounts.first} onClose={goBack} />
+    <Rules account={params?.account ?? $selectedAccount ?? appGlobal.emailAccounts.first} onClose={goBack} />
   </Route>
   <Route path="rules/create">
     {#if params?.message}
@@ -18,9 +18,9 @@
   import { selectedAccount, selectedFolder } from "../../frontend/Mail/Selected";
   import { getParams, goBack } from "../../frontend/AppsBar/selectedApp";
   import MailComposer from "./Composer/MailComposer.svelte";
-  import RulesDialog from "./Rules/RulesDialog.svelte";
+  import Rules from "./Rules/Rules.svelte";
   import CreateRuleDialog from "./Rules/CreateRuleDialog.svelte";
-  import MailPage from "./MailPage.svelte";
+  import MailApp from "./MailApp.svelte";
   import { Route, useLocation } from "svelte-navigator";
 
   $: location = useLocation();

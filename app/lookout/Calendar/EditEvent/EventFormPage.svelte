@@ -89,7 +89,7 @@
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { Keyboard } from "../../Shared/Keyboard";
+  import { Keyboard } from "../../Util/keyboard";
   import CloseIcon from "lucide-svelte/icons/x";
   import type { Editor } from "@tiptap/core";
   import { onMount, tick } from "svelte";

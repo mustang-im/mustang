@@ -18,7 +18,7 @@
 </RibbonGroup>
 
 <script lang="ts">
-  import { RibbonModel } from "./Ribbon";
+  import { RibbonModel } from "./RibbonGroup";
   import { QuickAccessToolbar } from "../QuickAccess/QuickAccess";
   import RibbonGroup from "./RibbonGroup.svelte";
   import RibbonButton from "./RibbonButton.svelte";

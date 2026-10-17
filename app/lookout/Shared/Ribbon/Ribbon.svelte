@@ -60,11 +60,11 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} />
 
 <script lang="ts">
-  import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./Ribbon";
+  import { RibbonModel, type RibbonTabModel, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
   import { backstageState } from "../../Settings/Backstage/BackstageState";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
-  import QuickAccessToolbarView from "../QuickAccess/QuickAccessToolbar.svelte";
+  import QuickAccessToolbarView from "../../MainWindow/QuickAccessToolbar.svelte";
   import KeyTipsLayer from "./KeyTipsLayer.svelte";
   import TellMe from "./TellMe.svelte";
   import CustomizeRibbonDialog from "./CustomizeRibbonDialog.svelte";

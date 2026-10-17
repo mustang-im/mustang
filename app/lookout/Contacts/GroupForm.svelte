@@ -73,7 +73,7 @@
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
   import { ContactActions } from "./ContactActions";
   import { catchErrors } from "../../frontend/Util/error";
-  import { Keyboard } from "../Shared/Keyboard";
+  import { Keyboard } from "../Util/keyboard";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Shared/Ribbon/RibbonGroup.svelte";

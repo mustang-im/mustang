@@ -61,7 +61,7 @@
       <DialogButton label={field.label + " ->"} onClick={() => onAdd(field)}
         disabled={$selectedItems.isEmpty && $t`Select a name first`} />
       <hbox class="pick-field">
-        <AddressField recipients={field.picks} label={field.label} />
+        <MailAutocomplete recipients={field.picks} label={field.label} />
       </hbox>
     {/each}
   </grid>
@@ -81,7 +81,7 @@
   import { SelectNames, SelectNamesField } from "./SelectNames";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import AddressField from "./AddressField.svelte";
+  import MailAutocomplete from "./MailAutocomplete.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import UserIcon from "lucide-svelte/icons/user-round";
   import GoIcon from "lucide-svelte/icons/arrow-right";
@@ -191,7 +191,7 @@
     border-radius: var(--lo-radius-small);
     overflow-x: auto;
   }
-  /* <copied to="../Rules/RulesDialog.svelte"> */
+  /* <copied to="../Rules/Rules.svelte"> */
   .list :global(.fast-list .header > *) {
     padding: 4px 8px;
     border-block-end: 1px solid var(--lo-divider);

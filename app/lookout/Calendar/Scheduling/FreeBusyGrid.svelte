@@ -39,7 +39,7 @@
       {/each}
       {#if !readOnly}
         <hbox class="row add" bind:this={addRowEl}>
-          <AddressField recipients={newAttendees} label={$t`Add required attendee`}
+          <MailAutocomplete recipients={newAttendees} label={$t`Add required attendee`}
             placeholder={$t`Add required attendee`} onAdd={onAddAttendee} />
         </hbox>
       {/if}
@@ -119,7 +119,7 @@
   import ResponseIcon from "../EditEvent/ResponseIcon.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import AddressField from "../../Mail/Composer/AddressField.svelte";
+  import MailAutocomplete from "../../Mail/Composer/MailAutocomplete.svelte";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { ArrayColl } from "svelte-collections";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";

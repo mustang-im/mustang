@@ -35,7 +35,7 @@
   </vbox>
   {#if $attachments.hasItems}
     <hbox class="attachments">
-      <AttachmentList {attachments} />
+      <AttachmentsUI {attachments} />
     </hbox>
   {/if}
   <vbox flex class="body">
@@ -52,7 +52,7 @@
   import InfoBar from "./InfoBar.svelte";
   import AttendeeList from "./AttendeeList.svelte";
   import DayPreview from "./DayPreview.svelte";
-  import AttachmentList from "../../Mail/Attachments/AttachmentList.svelte";
+  import AttachmentsUI from "../../Mail/Message/AttachmentsUI.svelte";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
   import cssBody from "../../../frontend/Mail/Message/content-body.css?inline";

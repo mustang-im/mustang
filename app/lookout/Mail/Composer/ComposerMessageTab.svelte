@@ -59,7 +59,7 @@
   </RibbonGroup>
   {#if isInline}
     <ShowFieldsGroup canShowFrom={commands.canShowFrom} bccLocked={commands.bccLocked} />
-    <EncryptGroup mail={commands.mail} identity={commands.identity} />
+    <EncryptionButtons mail={commands.mail} identity={commands.identity} />
   {/if}
   <RibbonGroup label={$t`Editor`}>
     <RibbonToggleButton label={$t`Spelling`} icon={SpellingIcon}
@@ -82,7 +82,7 @@
   import RibbonButtonRow from "../../Shared/Ribbon/RibbonButtonRow.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
   import ShowFieldsGroup from "./ShowFieldsGroup.svelte";
-  import EncryptGroup from "./EncryptGroup.svelte";
+  import EncryptionButtons from "./EncryptionButtons.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import BoldIcon from "lucide-svelte/icons/bold";
   import ItalicIcon from "lucide-svelte/icons/italic";

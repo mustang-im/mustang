@@ -13,7 +13,7 @@
 <script lang="ts">
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import Menu from "../Menu/Menu.svelte";
-  import type { RibbonItemSize } from "./Ribbon";
+  import type { RibbonItemSize } from "./RibbonGroup";
 
   export let label: string;
   export let shortLabel: string = null;

@@ -38,7 +38,7 @@
   import { selectedAccount } from "../../../frontend/Mail/Selected";
   import { CalendarActions } from "../../Calendar/CalendarActions";
   import { SharedCalendars } from "../../Calendar/Dialogs/SharedCalendars";
-  import SharedFolderDialog from "../../Mail/Dialogs/SharedFolderDialog.svelte";
+  import SharedFolderDialog from "../../Mail/LeftPane/SharedFolderDialog.svelte";
   import OpenCalendarIcon from "lucide-svelte/icons/calendar-search";
   import ImportExportIcon from "lucide-svelte/icons/arrow-left-right";
   import SharedFolderIcon from "lucide-svelte/icons/folder-symlink";

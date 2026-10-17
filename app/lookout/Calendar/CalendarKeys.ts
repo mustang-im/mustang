@@ -1,5 +1,5 @@
 import type { CalendarViewType } from "./CalendarSettings";
-import { Keyboard } from "../Shared/Keyboard";
+import { Keyboard } from "../Util/keyboard";
 
 export type CalendarCommand =
   { command: "new-appointment" } |

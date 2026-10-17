@@ -4,7 +4,7 @@
 
 <script lang="ts">
   import CheckBox from "../Form/CheckBox.svelte";
-  import { RibbonGroupModel, type RibbonItemLook } from "./Ribbon";
+  import { RibbonGroupModel, type RibbonItemLook } from "./RibbonGroup";
   import { getContext } from "svelte";
 
   export let label: string;

@@ -39,7 +39,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closePopup} />
 
 <script lang="ts">
-  import { RibbonGroupModel, RibbonModel, RibbonTabModel, type RibbonItemInfo, type RibbonLayout } from "./Ribbon";
+  import { RibbonGroupModel, RibbonModel, RibbonTabModel, type RibbonItemInfo, type RibbonLayout } from "./RibbonGroup";
   import { RibbonCustomization } from "./RibbonCustomization";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import { showError } from "../../../frontend/Util/error";

@@ -21,7 +21,7 @@
 <script lang="ts">
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import Menu from "../Menu/Menu.svelte";
-  import { RibbonGroupModel, type RibbonItemLook, type RibbonItemSize } from "./Ribbon";
+  import { RibbonGroupModel, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
   import { getContext } from "svelte";
 

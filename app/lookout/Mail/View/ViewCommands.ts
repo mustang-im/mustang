@@ -1,6 +1,6 @@
 import type { Folder } from "../../../logic/Mail/Folder";
-import { ArrangeBy } from "../MessageList/MessageGrouping";
-import { ApplyScope, Column, MailViewSettings, ViewType, type ViewSettings } from "./ViewSettings";
+import { ArrangeBy } from "../3pane/MessageGrouping";
+import { ApplyScope, Column, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
 import { ViewDialogs } from "./ViewDialogs";
 import { gt } from "../../../l10n/l10n";
 

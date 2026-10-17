@@ -163,7 +163,7 @@
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../frontend/Util/error";
   import { appGlobal } from "../../logic/app";
-  import type { RibbonLayout } from "../Shared/Ribbon/Ribbon";
+  import type { RibbonLayout } from "../Shared/Ribbon/RibbonGroup";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../Shared/Ribbon/RibbonGroup.svelte";

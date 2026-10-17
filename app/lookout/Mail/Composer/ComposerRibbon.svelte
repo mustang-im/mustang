@@ -12,7 +12,7 @@
   </InsertTab>
   <RibbonTab label={$t`Options`}>
     <ShowFieldsGroup canShowFrom={commands.canShowFrom} bccLocked={commands.bccLocked} />
-    <EncryptGroup mail={commands.mail} identity={commands.identity} />
+    <EncryptionButtons mail={commands.mail} identity={commands.identity} />
   </RibbonTab>
   <FormatTextTab {commands} />
   <ReviewTab {commands} />
@@ -28,7 +28,7 @@
   import ReviewTab from "../../Shared/Editor/ReviewTab.svelte";
   import ComposerMessageTab from "./ComposerMessageTab.svelte";
   import ShowFieldsGroup from "./ShowFieldsGroup.svelte";
-  import EncryptGroup from "./EncryptGroup.svelte";
+  import EncryptionButtons from "./EncryptionButtons.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
   import PollsGroup from "./PollsGroup.svelte";
   import SignatureIcon from "lucide-svelte/icons/pen-line";

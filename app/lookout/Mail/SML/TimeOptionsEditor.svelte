@@ -95,7 +95,7 @@
     color: var(--lo-fg-secondary);
     font-size: var(--lo-font-size-small);
   }
-  /* <copied from="PollEditor.svelte"> */
+  /* <copied from="PollEdit.svelte"> */
   .remove {
     display: flex;
     flex-shrink: 0;

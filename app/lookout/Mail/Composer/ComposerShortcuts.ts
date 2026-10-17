@@ -1,5 +1,5 @@
 import type { ShortcutKey } from "../../Shared/Editor/EditorShortcuts";
-import { Keyboard } from "../../Shared/Keyboard";
+import { Keyboard } from "../../Util/keyboard";
 
 export enum ComposerCommand {
   Send = "send",

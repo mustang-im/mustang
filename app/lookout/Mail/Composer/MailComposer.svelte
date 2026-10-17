@@ -44,7 +44,7 @@
         </button>
         <grid class="fields">
           {#if showFromRow}
-            <FromField bind:selectedIdentity={fromIdentity}
+            <IdentitySelector bind:selectedIdentity={fromIdentity}
               bind:fromAddress={mail.from.emailAddress}
               bind:fromName={mail.from.name} />
           {/if}
@@ -53,7 +53,7 @@
             {$t`To`}
           </button>
           <hbox class="field">
-            <AddressField recipients={mail.to} label={$t`To`} chips={isChips} tabindex={1}
+            <MailAutocomplete recipients={mail.to} label={$t`To`} chips={isChips} tabindex={1}
               autofocus={autofocus && mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
           </hbox>
           <button class="field-button" on:click={() => openSelectNames(RecipientField.Cc)} tabindex={-1}
@@ -61,7 +61,7 @@
             {$t`Cc`}
           </button>
           <hbox class="field">
-            <AddressField recipients={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
+            <MailAutocomplete recipients={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
               onAdd={onRecipientAdded} bind:this={ccField} />
           </hbox>
           {#if showBCC}
@@ -70,7 +70,7 @@
               {$t`Bcc`}
             </button>
             <hbox class="field">
-              <AddressField recipients={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
+              <MailAutocomplete recipients={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
                 onAdd={onRecipientAdded} bind:this={bccField} />
             </hbox>
           {/if}
@@ -91,10 +91,10 @@
           {/if}
         </hbox>
       {/if}
-      <EncryptionInfoBar {mail} identity={fromIdentity} bind:encryptionError />
+      <EncryptionDetails {mail} identity={fromIdentity} bind:encryptionError />
       {#if hasAttachments}
         <hbox class="attachments">
-          <AttachmentList attachments={mail.attachments} isComposing />
+          <AttachmentsUI attachments={mail.attachments} isComposing />
         </hbox>
       {/if}
       <hbox flex class="body">
@@ -102,7 +102,7 @@
           {#if loading}
             <hbox class="loading"><Spinner size="32px" /></hbox>
           {/if}
-          <SMLEditor {mail} {sml} onRemove={() => setSML(null)} />
+          <SMLComposer {mail} {sml} onRemove={() => setSML(null)} />
           <vbox flex class="editor" spellcheck={$spellcheck.value}>
             <!-- The html in the mail passed in MUST already be sanitized HTML.
             Using `rawHTMLDangerous` avoids that we're sanitizing on every keypress. -->
@@ -146,7 +146,7 @@
   import { insertImage } from "../../../frontend/Shared/Editor/InsertImage";
   import { WriteMailMustangApp, mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import type { RibbonLayout } from "../../Shared/Ribbon/Ribbon";
+  import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import type { ComposerCommands } from "./ComposerCommands";
   import { ComposerSettings } from "./ComposerSettings";
   import { InlineReplies } from "./InlineReplies";
@@ -154,7 +154,7 @@
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
   import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
-  import { Keyboard } from "../../Shared/Keyboard";
+  import { Keyboard } from "../../Util/keyboard";
   import { ComposerEncryption } from "./ComposerEncryption";
   import { DraftContent } from "./DraftContent";
   import { RecipientField, SelectNames } from "./SelectNames";
@@ -169,12 +169,12 @@
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
-  import AddressField from "./AddressField.svelte";
-  import FromField from "./FromField.svelte";
-  import EncryptionInfoBar from "./EncryptionInfoBar.svelte";
-  import SMLEditor from "../SML/SMLEditor.svelte";
+  import MailAutocomplete from "./MailAutocomplete.svelte";
+  import IdentitySelector from "./IdentitySelector.svelte";
+  import EncryptionDetails from "./EncryptionDetails.svelte";
+  import SMLComposer from "./SMLComposer.svelte";
   import type { SMLData } from "../../../logic/Mail/SML/SMLData";
-  import AttachmentList from "../Attachments/AttachmentList.svelte";
+  import AttachmentsUI from "../Message/AttachmentsUI.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
@@ -212,9 +212,9 @@
   let openedTool: EditorTool | null = null;
   let ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isChips = $ribbonLayout.value == "simplified";
-  let toField: AddressField;
-  let ccField: AddressField;
-  let bccField: AddressField;
+  let toField: MailAutocomplete;
+  let ccField: MailAutocomplete;
+  let bccField: MailAutocomplete;
 
   // <copied from="../../../frontend/Mail/Composer/MailComposer.svelte">
   // HACK to reload the HTMLEditor to force it to load the new text

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { RibbonModel } from "../../Shared/Ribbon/Ribbon";
+  import { RibbonModel } from "../../Shared/Ribbon/RibbonGroup";
   import { getContext } from "svelte";
 
   export let selectedLabel: string = null;
