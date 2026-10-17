@@ -3,6 +3,10 @@
     {#if isSimplified}
       <span class="list-title" title={listTitle}>{listTitle}</span>
       <hbox flex />
+      {#if needsConnect}
+        <ConnectButton account={folderAccount} withLabel />
+        <hbox flex />
+      {/if}
       {#if !isSearchResult}
         <button class="header-button" class:active={hasFilter} bind:this={filterEl}
           on:click|stopPropagation={() => isFilterMenuOpen = !isFilterMenuOpen}
@@ -59,6 +63,10 @@
     {/if}
     {#if !isSimplified}
     {#if !showsFolderSearch}
+      <hbox flex />
+    {/if}
+    {#if needsConnect && !isSearchResult}
+      <ConnectButton account={folderAccount} withLabel />
       <hbox flex />
     {/if}
     <button class="arrange" bind:this={arrangeEl} on:click|stopPropagation={() => isArrangeMenuOpen = !isArrangeMenuOpen}
@@ -143,6 +151,7 @@
   import { CurrentTime } from "../../Calendar/View/CurrentTime";
   import MessageList from "./MessageList.svelte";
   import ColumnHeader from "./ColumnHeader.svelte";
+  import ConnectButton from "../ConnectButton.svelte";
   import ArrangeByMenuItems from "../View/ArrangeByMenuItems.svelte";
   import SortMenuItems from "../View/SortMenuItems.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
@@ -189,6 +198,8 @@
   $: listTitle = isSearchResult ? $t`Results` : $folder?.name ?? "";
 
   $: settings = MailViewSettings.store(folder);
+  $: folderAccount = folder?.account;
+  $: needsConnect = !!folderAccount && !$folderAccount.isLoggedIn;
   $: arrangeLabel = ArrangeFields.all().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
   $: showsRecipients = !!folder && [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(folder.specialFolder);
 

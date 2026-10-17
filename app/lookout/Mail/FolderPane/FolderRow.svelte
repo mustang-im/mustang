@@ -36,19 +36,23 @@
   {#if count > 0}
     <span class="count" class:total={showsTotal}>{showsTotal ? `[${count}]` : count}</span>
   {/if}
+  {#if isInbox && account && !$account.isLoggedIn}
+    <ConnectButton {account} />
+  {/if}
 </div>
 <ContextMenu bind:this={contextMenu}>
   <FolderContextMenu {folder} />
 </ContextMenu>
 
 <script lang="ts">
-  import type { Folder } from "../../../logic/Mail/Folder";
+  import { SpecialFolder, type Folder } from "../../../logic/Mail/Folder";
   import { appGlobal } from "../../../logic/app";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { onDragOverMail } from "../../../frontend/Mail/Message/drag";
   import { MessageActions } from "../MessageActions";
   import { FolderTreeActions } from "./FolderTreeActions";
   import FolderContextMenu from "./FolderContextMenu.svelte";
+  import ConnectButton from "../ConnectButton.svelte";
   import FolderIcon from "../../../frontend/Mail/LeftPane/FolderIcon.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
@@ -67,6 +71,8 @@
   const accounts = appGlobal.emailAccounts;
 
   $: name = $folder && FolderTreeActions.displayName(folder);
+  $: account = folder.account;
+  $: isInbox = !isFavorite && folder.specialFolder == SpecialFolder.Inbox;
   $: isVirtual = FolderTreeActions.isVirtual(folder);
   const countModes = FolderTreeActions.countModes;
   $: showsTotal = FolderTreeActions.showsTotalCount(folder, $countModes.value);

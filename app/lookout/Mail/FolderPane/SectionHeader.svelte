@@ -1,12 +1,17 @@
-<CollapsibleHeader label={account ? $account.name : label} tooltip={account ? $account.emailAddress : tooltip} {collapsed} large={!!account}
-  onToggle={() => MailView.setSectionCollapsed(id, !collapsed)}
-  on:contextmenu={onContextMenu}>
-  {#if account && $account.fatalError}
-    <span class="error" title={$account.fatalError.message}>
-      <ErrorIcon size={14} />
-    </span>
+<hbox class="section-header">
+  <CollapsibleHeader label={account ? $account.name : label} tooltip={account ? $account.emailAddress : tooltip} {collapsed} large={!!account}
+    onToggle={() => MailView.setSectionCollapsed(id, !collapsed)}
+    on:contextmenu={onContextMenu}>
+    {#if account && $account.fatalError}
+      <span class="error" title={$account.fatalError.message}>
+        <ErrorIcon size={14} />
+      </span>
+    {/if}
+  </CollapsibleHeader>
+  {#if account && !$account.isLoggedIn}
+    <ConnectButton {account} />
   {/if}
-</CollapsibleHeader>
+</hbox>
 {#if account}
   <ContextMenu bind:this={contextMenu}>
     <AccountContextMenu {account} />
@@ -17,6 +22,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { MailView } from "../MailView";
   import AccountContextMenu from "./AccountContextMenu.svelte";
+  import ConnectButton from "../ConnectButton.svelte";
   import CollapsibleHeader from "../../Shared/CollapsibleHeader.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import ErrorIcon from "lucide-svelte/icons/circle-alert";
@@ -40,6 +46,18 @@
 </script>
 
 <style>
+  .section-header {
+    align-items: end;
+    flex-shrink: 0;
+  }
+  .section-header > :global(.collapsible-header) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .section-header > :global(button.connect) {
+    height: 28px;
+    margin-inline-start: 2px;
+  }
   .error {
     display: flex;
     flex-shrink: 0;

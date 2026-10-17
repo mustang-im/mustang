@@ -1,3 +1,9 @@
+{#if needsConnect}
+  <MenuItem label={$t`Connect`} icon={ConnectIcon}
+    tooltip={$t`Log in to this account`}
+    onClick={() => account.loginAndStartup(true)} />
+  <MenuDivider />
+{/if}
 {#if isSearchFolder}
   <MenuItem label={$t`Customize This Search Folder…`} icon={CustomizeIcon}
     onClick={() => MailDialogs.open({ kind: "customize-search-folder", folder: searchFolder })} />
@@ -55,6 +61,7 @@
   import DeleteAllIcon from "lucide-svelte/icons/trash-2";
   import PropertiesIcon from "lucide-svelte/icons/folder-cog";
   import CustomizeIcon from "lucide-svelte/icons/folder-search";
+  import ConnectIcon from "lucide-svelte/icons/plug";
   import { t } from "../../../l10n/l10n";
 
   export let folder: Folder;
@@ -63,4 +70,6 @@
   $: searchFolder = folder instanceof SavedSearchFolder ? folder : null;
   $: isSearchFolder = !!searchFolder;
   $: messages = folder.messages;
+  $: account = isVirtual ? null : folder.account;
+  $: needsConnect = !!account && !$account.isLoggedIn;
 </script>
