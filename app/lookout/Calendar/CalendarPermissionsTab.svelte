@@ -3,7 +3,7 @@
   <div class="intro">{$t`Share this calendar with people in your organization. Choose how much access each person gets.`}</div>
   <hbox class="add-row">
     <hbox class="person-field">
-      <MailAutocomplete recipients={newPersons} label={$t`Name or email address`} chips />
+      <MailAutocomplete addresses={newPersons} label={$t`Name or email address`} chips />
     </hbox>
     <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: CalendarSharing.levelLabel(permission) }))}
       bind:value={level} label={$t`Permission Level`} width="210px" />

@@ -1,4 +1,4 @@
-<RibbonTab label={$t`Search`}>
+<RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Scope`}>
     <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon} isRadio
       checked={$options.scope == ContactSearchScope.CurrentFolder}

@@ -140,12 +140,12 @@
           onClick={() => onFolderPane(CalendarFolderPane.Off)} />
       </RibbonMenuButton>
       <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}>
-        <MenuItem label={$t`Right`} checked={$readingPane.value == ReadingPanePosition.Right}
-          onClick={() => { $readingPane.value = ReadingPanePosition.Right; }} />
-        <MenuItem label={$t`Bottom`} checked={$readingPane.value == ReadingPanePosition.Bottom}
-          onClick={() => { $readingPane.value = ReadingPanePosition.Bottom; }} />
-        <MenuItem label={$t`Off`} checked={$readingPane.value == ReadingPanePosition.Off}
-          onClick={() => { $readingPane.value = ReadingPanePosition.Off; }} />
+        <MenuItem label={$t`Right`} checked={$readingPane.value == "right"}
+          onClick={() => { $readingPane.value = "right"; }} />
+        <MenuItem label={$t`Bottom`} checked={$readingPane.value == "bottom"}
+          onClick={() => { $readingPane.value = "bottom"; }} />
+        <MenuItem label={$t`Off`} checked={$readingPane.value == "off"}
+          onClick={() => { $readingPane.value = "off"; }} />
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonDisplayGroup />
@@ -217,7 +217,7 @@
   import TimeScaleIcon from "lucide-svelte/icons/ruler";
   import FolderPaneIcon from "lucide-svelte/icons/panel-left";
   import ReadingPaneIcon from "lucide-svelte/icons/panel-right";
-  import { ReadingPanePosition } from "../Mail/MailView";
+  import type { ReadingPanePosition } from "../Mail/3pane/3Pane.svelte";
   import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import { t } from "../../l10n/l10n";
 
@@ -239,7 +239,7 @@
     { id: CalendarCurrentView.Active, label: $t`Active`, icon: ActiveViewIcon, tooltip: $t`Appointments and meetings that are still to come` },
   ];
   const folderPane = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
-  const readingPane = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", ReadingPanePosition.Off);
+  const readingPane = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", "off");
   const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);
   const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");

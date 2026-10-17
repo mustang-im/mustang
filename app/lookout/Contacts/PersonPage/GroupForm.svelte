@@ -58,9 +58,9 @@
   </FormCard>
 </vbox>
 
-{#if selectMembersField}
-  <SelectNamesDialog title={$t`Select Members: Contacts`} fields={[ selectMembersField ]}
-    onOK={onMembersPicked} onCancel={() => { selectMembersField = null; }} />
+{#if memberPicks}
+  <SelectNamesDialog title={$t`Select Members: Contacts`} persons={memberPicks} label={$t`Members`}
+    on:ok={onMembersPicked} on:close={() => { memberPicks = null; }} />
 {/if}
 {#if isNewContactOpen}
   <NewEMailContactDialog onAdd={addNewContact} on:close={() => { isNewContactOpen = false; }} />
@@ -84,7 +84,6 @@
   import ListView from "../../Shared/Form/ListView.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
-  import { SelectNamesField } from "../../Mail/Composer/SelectNames";
   import NewEMailContactDialog from "../NewEMailContactDialog.svelte";
   import { PreferredEntry } from "../PreferredEntry";
   import { LetterIndex } from "../LetterIndex";
@@ -103,6 +102,7 @@
   import RemoveIcon from "lucide-svelte/icons/user-round-minus";
   import { UserError } from "../../../logic/util/util";
   import { onMount, tick } from "svelte";
+  import { ArrayColl } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 
   export let group: Group;
@@ -110,7 +110,7 @@
   let nameInput: HTMLInputElement;
   let page: "members" | "notes" = "members";
   let selectedMember: Person = null;
-  let selectMembersField: SelectNamesField = null;
+  let memberPicks: ArrayColl<PersonUID> = null;
   let isNewContactOpen = false;
 
   $: members = group.participants;
@@ -136,12 +136,12 @@
   }
 
   function openSelectMembers() {
-    selectMembersField = new SelectNamesField(gt`Members`);
+    memberPicks = new ArrayColl<PersonUID>();
   }
 
   function onMembersPicked() {
-    let picks = selectMembersField.picks.contents;
-    selectMembersField = null;
+    let picks = memberPicks.contents;
+    memberPicks = null;
     for (let pick of picks) {
       addMember(pick);
     }

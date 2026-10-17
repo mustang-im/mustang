@@ -17,7 +17,7 @@
       <DialogButton label={$t`Name…`} tooltip={$t`Choose the person from the address book`}
         onClick={onPick} />
       <hbox class="person-field">
-        <MailAutocomplete recipients={persons} label={$t`Name`} />
+        <MailAutocomplete addresses={persons} label={$t`Name`} />
       </hbox>
     </hbox>
     <div class="hint lo-secondary">{$t`Type the name or email address of a colleague who shared their calendar with you.`}</div>
@@ -25,8 +25,8 @@
 </Dialog>
 
 {#if isPicking}
-  <SelectNamesDialog title={$t`Select Name: Calendar`} fields={[ pickField ]}
-    onOK={onPicked} onCancel={onPickCancelled} />
+  <SelectNamesDialog title={$t`Select Name: Calendar`} persons={picks} label={$t`Calendar`} single
+    on:ok={onPicked} on:close={onPickClosed} />
 {/if}
 
 <script lang="ts" context="module">
@@ -40,7 +40,6 @@
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
   import { SharedCalendars } from "./Dialogs/SharedCalendars";
   import { selectedCalendar } from "../../frontend/Calendar/selected";
-  import { SelectNamesField } from "../Mail/Composer/SelectNames";
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
   import ComboBox from "../Shared/Form/ComboBox.svelte";
@@ -56,7 +55,8 @@
   let account: MailAccount | null = accounts[0];
 
   let persons = new ArrayColl<PersonUID>();
-  let pickField = new SelectNamesField($t`Calendar`, [], true);
+  let picks = new ArrayColl<PersonUID>();
+  let isPickConfirmed = false;
   let isPicking = fromAddressBook;
   let dialog: Dialog;
   const dispatch = createEventDispatcher<{ close: void }>();
@@ -66,9 +66,9 @@
   }
 
   async function onPicked() {
-    persons.replaceAll(pickField.picks.contents);
-    pickField = new SelectNamesField($t`Calendar`, [], true);
-    isPicking = false;
+    isPickConfirmed = true;
+    persons.replaceAll(picks.contents);
+    picks.clear();
     if (fromAddressBook && persons.hasItems) {
       fromAddressBook = false;
       await tick();
@@ -76,11 +76,12 @@
     }
   }
 
-  function onPickCancelled() {
+  function onPickClosed() {
     isPicking = false;
-    if (fromAddressBook) {
+    if (fromAddressBook && !isPickConfirmed) {
       dispatch("close");
     }
+    isPickConfirmed = false;
   }
 
   async function onOK() {

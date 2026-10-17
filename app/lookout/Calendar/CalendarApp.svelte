@@ -5,7 +5,6 @@
     onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
     {#if isSearch}
       <CalendarSearchTab organizers={searchOrganizers} hasSelectedCalendar={!!$selectedCalendar} />
-      <RibbonTabSelector label={$t`Search`} />
     {/if}
   </CalendarRibbon>
   <hbox flex class="panes">
@@ -22,48 +21,62 @@
         <CalendarList />
       </vbox>
       <hbox flex class="main-area" slot="right">
-        <ReadingPaneLayout position={$readingPaneSetting.value ?? ReadingPanePosition.Off}
-          name="lookout.calendar.readingPane" readingRatio={0.6}>
-          <vbox flex class="main lo-card" slot="list">
-            {#if tableEvents}
-              <ListView events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
-                showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
-            {:else if view == "dual"}
-              <DualView bind:start={$startDate} events={visibleEvents} {groups} {timeScale} {showWeekNumbers}>
-                <ViewSelector slot="top-right" {view} onView={setView} />
-              </DualView>
-            {:else}
-              <DateRange {range} onToday={goToToday} onStep={step}>
-                <ViewSelector {view} onView={setView} />
-              </DateRange>
-              <vbox flex class="grid-area">
-                {#if view == "month" && isSplit}
-                  <hbox flex class="month-split">
-                    {#each groups as group, g (group.calendar.id)}
-                      <vbox flex class="month-column">
-                        <div class="month-tab">
-                          <CalendarTab calendar={group.calendar} firstColumn={1} span={1}
-                            isFirst={g == 0} onOverlay={() => setSplitView(false)} />
-                        </div>
-                        <MonthView {range} events={group.events} {showWeekNumbers} onOpenDay={openDay} />
-                      </vbox>
-                    {/each}
-                  </hbox>
-                {:else if view == "month"}
-                  <MonthView {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
-                {:else if view == "schedule"}
-                  <ScheduleView {range} rows={scheduleRows} {timeScale} />
+        <hbox flex class="reading-pane-layout">
+          <SplitterBidirectional horizontal={readingPane == "bottom"}
+            hasSecond={readingPane == "right" || readingPane == "bottom"}
+            name={readingPane == "bottom" ? "lookout.calendar.readingPane.bottom" : "lookout.calendar.readingPane.right"}
+            initialSecondRatio={readingPane == "bottom" ? 1.4 : 0.6}
+            firstMinPx={readingPane == "bottom" ? 160 : 300}
+            secondMinPx={readingPane == "bottom" ? 200 : 320}>
+            <hbox flex class="part list" slot="first"
+              class:top={readingPane == "bottom"}
+              class:single={readingPane != "right" && readingPane != "bottom"}>
+              <vbox flex class="main lo-card">
+                {#if tableEvents}
+                  <ListView events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
+                    showCalendarColumn={isSearch && $searchOptions.scope == CalendarSearchScope.AllCalendarItems} />
+                {:else if view == "dual"}
+                  <DualView bind:start={$startDate} events={visibleEvents} {groups} {timeScale} {showWeekNumbers}>
+                    <ViewSelector slot="top-right" {view} onView={setView} />
+                  </DualView>
                 {:else}
-                  <DayViewGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
-                {/if}
-                {#if view != "schedule"}
-                  <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+                  <DateRange {range} onToday={goToToday} onStep={step}>
+                    <ViewSelector {view} onView={setView} />
+                  </DateRange>
+                  <vbox flex class="grid-area">
+                    {#if view == "month" && isSplit}
+                      <hbox flex class="month-split">
+                        {#each groups as group, g (group.calendar.id)}
+                          <vbox flex class="month-column">
+                            <div class="month-tab">
+                              <CalendarTab calendar={group.calendar} firstColumn={1} span={1}
+                                isFirst={g == 0} onOverlay={() => setSplitView(false)} />
+                            </div>
+                            <MonthView {range} events={group.events} {showWeekNumbers} onOpenDay={openDay} />
+                          </vbox>
+                        {/each}
+                      </hbox>
+                    {:else if view == "month"}
+                      <MonthView {range} events={visibleEvents} {showWeekNumbers} onOpenDay={openDay} />
+                    {:else if view == "schedule"}
+                      <ScheduleView {range} rows={scheduleRows} {timeScale} />
+                    {:else}
+                      <DayViewGrid {range} {groups} {timeScale} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
+                    {/if}
+                    {#if view != "schedule"}
+                      <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+                    {/if}
+                  </vbox>
                 {/if}
               </vbox>
-            {/if}
-          </vbox>
-          <DisplayEvent slot="reading" event={$selectedEvent} />
-        </ReadingPaneLayout>
+            </hbox>
+            <hbox flex class="part reading" slot="second"
+              class:right={readingPane == "right"}
+              class:bottom={readingPane == "bottom"}>
+              <DisplayEvent event={$selectedEvent} />
+            </hbox>
+          </SplitterBidirectional>
+        </hbox>
       </hbox>
     </Splitter>
   </hbox>
@@ -104,7 +117,7 @@
   import { getToday } from "../../frontend/Util/date";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../frontend/Util/error";
-  import { statusBar } from "../MainWindow/StatusBar";
+  import { statusBarContent, type StatusBarContent } from "../MainWindow/StatusBar.svelte";
   import CalendarRibbon from "./CalendarRibbon.svelte";
   import DateNavigator from "./DateNavigator.svelte";
   import CalendarList from "./CalendarList.svelte";
@@ -119,8 +132,7 @@
   import EventMenu from "./DisplayEvent/EventMenu.svelte";
   import EventPeek from "./DisplayEvent/EventPeek.svelte";
   import DisplayEvent from "./DisplayEvent/DisplayEvent.svelte";
-  import ReadingPaneLayout from "../Mail/ReadingPaneLayout.svelte";
-  import { ReadingPanePosition } from "../Mail/MailView";
+  import type { ReadingPanePosition } from "../Mail/3pane/3Pane.svelte";
   import SlotMenu from "./SlotMenu.svelte";
   import GoToDateDialog from "./GoToDateDialog.svelte";
   import CalendarPropertiesDialog, { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
@@ -128,13 +140,14 @@
   import AdjacentEventTabs from "./AdjacentEventTabs.svelte";
   import ListView from "./ListView/ListView.svelte";
   import CalendarSearchTab from "./ListView/CalendarSearchTab.svelte";
-  import RibbonTabSelector from "../Mail/Ribbon/RibbonTabSelector.svelte";
   import { EventLists } from "./ListView/EventLists";
   import { CalendarSearch, CalendarSearchScope } from "./ListView/CalendarSearch";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
+  import SplitterBidirectional from "../../frontend/Shared/SplitterBidirectional.svelte";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import type { Collection } from "svelte-collections";
   import { onDestroy, setContext } from "svelte";
+  import { get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
   const viewSetting = getLocalStorage<CalendarViewType>("lookout.calendar.view", "workweek");
@@ -150,7 +163,8 @@
   $: showWeekNumbers = $weekNumbersSetting.value;
   $: showDeclined = $showDeclinedSetting.value;
   const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);
-  const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", ReadingPanePosition.Off);
+  const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", "off");
+  $: readingPane = $readingPaneSetting.value ?? "off";
   $: splitView = $splitViewSetting.value;
   const folderPaneSetting = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
   $: showFolderPane = ($folderPaneSetting.value ?? CalendarFolderPane.Normal) == CalendarFolderPane.Normal;
@@ -207,11 +221,21 @@
   $: tableLabel = isSearch ? $t`Search results` : currentView == CalendarCurrentView.Active ? $t`Active appointments` : $t`All appointments`;
   $: tableEmptyText = isSearch ? $t`We didn't find anything to show here.` : $t`There are no items to show in this view.`;
 
-  const status = statusBar.addSection();
-  onDestroy(() => status.remove());
   const updatingCount = CalendarActions.updatingCount;
-  $: status.left = [ { label: $t`Items: ${tableEvents ? $tableEvents.length : $eventsInRange.length}` } ];
-  $: status.right = $updatingCount ? [ { label: $t`Updating calendars…`, busy: true } ] : [];
+  let status: StatusBarContent;
+  $: status = {
+    left: [ { label: $t`Items: ${tableEvents ? $tableEvents.length : $eventsInRange.length}` } ],
+    right: $updatingCount ? [ { label: $t`Updating calendars…`, busy: true } ] : [],
+    views: [],
+  };
+  // <copied from="../Mail/MailApp.svelte">
+  $: $statusBarContent = status;
+  onDestroy(() => {
+    if (get(statusBarContent) == status) {
+      statusBarContent.set(null);
+    }
+  });
+  // </copied>
 
   function setView(newView: CalendarViewType) {
     if (newView == "day" || newView == "schedule") {
@@ -253,7 +277,7 @@
       getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns),
     ];
     folderPaneSetting.value = CalendarFolderPane.Normal;
-    readingPaneSetting.value = ReadingPanePosition.Off;
+    readingPaneSetting.value = "off";
     setCurrentView(CalendarCurrentView.Calendar);
     setView("workweek");
     setSplitView(false);
@@ -464,4 +488,38 @@
     min-height: 0;
     overflow: hidden;
   }
+  /* <copied from="../Mail/3pane/3Pane.svelte"> */
+  .reading-pane-layout {
+    min-width: 0;
+    min-height: 0;
+  }
+  .reading-pane-layout > :global(.splitter) {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+  .part {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    box-sizing: border-box;
+  }
+  .list {
+    padding: 0 4px 8px 0;
+  }
+  .list.single {
+    padding-inline-end: 8px;
+  }
+  .list.top {
+    padding: 0 8px 4px 0;
+  }
+  .reading.right {
+    padding: 0 8px 8px 4px;
+  }
+  .reading.bottom {
+    padding: 4px 8px 8px 0;
+  }
+  .part :global(> *) {
+    flex: 1 0 0;
+  }
+  /* </copied> */
 </style>

@@ -2,7 +2,7 @@
   {#key ribbonKey}
     <EventFormRibbon {event} {flow} {editorCommands} {actions} {saveDisabled} {canSchedule}
       {schedulingLabel} {trackingLabel}
-      bind:showEmojis bind:selectedLabel />
+      bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
   {/key}
   <vbox flex class="form-card lo-card">
     <hbox class="title-row">
@@ -53,9 +53,9 @@
     onDiscard={onDiscard}
     onCancel={() => showSaveChanges = false} />
 {/if}
-{#if attendeesField}
-  <SelectNamesDialog title={$t`Select Attendees and Resources`} fields={[attendeesField]}
-    onOK={onAttendeesPicked} onCancel={() => attendeesField = null} />
+{#if attendeesPicks}
+  <SelectNamesDialog title={$t`Select Attendees and Resources`} persons={attendeesPicks} label={$t`Required`}
+    on:ok={() => flow.setAttendees(attendeesPicks.contents)} on:close={() => attendeesPicks = null} />
 {/if}
 {#if showSignatures}
   <SignaturesDialog identity={event.calendar?.inviteAs} onDone={() => showSignatures = false} />
@@ -65,6 +65,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
+  import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { UserError } from "../../../logic/util/util";
   import { EventEditFlow, type SeriesChoice } from "./EventEditFlow";
@@ -80,7 +81,6 @@
   import SchedulingAssistant from "./SchedulingAssistant.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import SignaturesDialog from "../../Mail/Composer/SignaturesDialog.svelte";
-  import { SelectNamesField } from "../../Mail/Composer/SelectNames";
   import { FreeBusy } from "../Scheduling/FreeBusy";
   import { EditorTool, type EditorCommands } from "../../Shared/Editor/EditorCommands";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
@@ -93,6 +93,7 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import type { Editor } from "@tiptap/core";
   import { onMount, tick } from "svelte";
+  import { ArrayColl } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -110,7 +111,8 @@
   let openedTool: EditorTool | null = null;
   let showEmojis = false;
   let showSignatures = false;
-  let selectedLabel: string = null;
+  let isSchedulingSelected = false;
+  let isTrackingSelected = false;
   let showRecurrenceDialog = false;
   let showSaveChanges = false;
   let seriesChoice: {
@@ -130,8 +132,9 @@
   $: ribbonKey = `${isMeeting}-${isSent}-${isIncoming}-${canSchedule}`;
   $: isMeeting && !isIncoming && checkScheduling();
   $: kindLabel = $event && $participants && EventFormInfo.tabLabel(event);
-  $: showScheduling = canSchedule && isMeeting && !isIncoming && selectedLabel == schedulingLabel;
-  $: showTracking = isSent && selectedLabel == trackingLabel;
+  $: ribbonKey, isSchedulingSelected = isTrackingSelected = false;
+  $: showScheduling = canSchedule && isMeeting && !isIncoming && isSchedulingSelected;
+  $: showTracking = isSent && isTrackingSelected;
   $: showsEditor = !isIncoming && !showScheduling && !showTracking;
   $: $event, $participants, $parentEvent, $shownCalendarEvents, updateState(editor);
   $: sendLabel = isSaved ? $t`Send Update` : $t`Send`;
@@ -247,14 +250,9 @@
     form?.focusAttendees();
   }
 
-  let attendeesField: SelectNamesField = null;
+  let attendeesPicks: ArrayColl<PersonUID> = null;
   function openAddressBook() {
-    attendeesField = new SelectNamesField(gt`Required`, flow.attendees);
-  }
-
-  function onAttendeesPicked() {
-    flow.setAttendees(attendeesField.picks.contents);
-    attendeesField = null;
+    attendeesPicks = new ArrayColl<PersonUID>(flow.attendees);
   }
 
   function openRecurrence() {
@@ -283,7 +281,7 @@
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
-    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice || attendeesField || openedTool || showSignatures) {
+    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice || attendeesPicks || openedTool || showSignatures) {
       return;
     }
     let key = keyEvent.key.toLowerCase();

@@ -1,5 +1,4 @@
 <Ribbon>
-  <RibbonTabWatcher bind:selectedLabel />
   <RibbonTab label={tabLabel}>
     {#if isIncoming}
       <RibbonGroup label={$t`Respond`}>
@@ -133,7 +132,7 @@
   </RibbonTab>
 
   {#if canSchedule && isMeeting && !isIncoming}
-    <RibbonTab label={schedulingLabel}>
+    <RibbonTab label={schedulingLabel} bind:isSelected={isSchedulingSelected}>
       <RibbonGroup label={$t`Scheduling`}>
         <RibbonButton label={$t`Refresh Availability`} icon={RefreshIcon}
           onClick={actions.onRefreshAvailability} />
@@ -146,7 +145,7 @@
     </RibbonTab>
   {/if}
   {#if isSent}
-    <RibbonTab label={trackingLabel}>
+    <RibbonTab label={trackingLabel} bind:isSelected={isTrackingSelected}>
       <RibbonGroup label={$t`Tracking`}>
         <RibbonButton label={$t`Copy Status to Clipboard`} icon={CopyIcon}
           onClick={() => navigator.clipboard.writeText(EventFormInfo.trackingText(event))} />
@@ -191,7 +190,6 @@
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
-  import RibbonTabWatcher from "./RibbonTabWatcher.svelte";
   import InsertTab from "../../Shared/Editor/InsertTab.svelte";
   import FormatTextTab from "../../Shared/Editor/FormatTextTab.svelte";
   import ReviewTab from "../../Shared/Editor/ReviewTab.svelte";
@@ -235,7 +233,8 @@
   export let canSchedule = false;
   export let schedulingLabel: string;
   export let trackingLabel: string;
-  export let selectedLabel: string = null;
+  export let isSchedulingSelected = false;
+  export let isTrackingSelected = false;
 
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;

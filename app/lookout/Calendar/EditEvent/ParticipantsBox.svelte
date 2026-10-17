@@ -1,5 +1,5 @@
 <hbox class="attendees-field" class:read-only={readOnly}>
-  <MailAutocomplete {recipients} label={$t`Required`} chips={$ribbonLayout.value == "simplified"}
+  <MailAutocomplete addresses={recipients} label={$t`Required`} chips={$ribbonLayout.value == "simplified"}
     disabled={readOnly} {autofocus} bind:this={addressField} />
 </hbox>
 

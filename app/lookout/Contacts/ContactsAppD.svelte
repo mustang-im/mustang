@@ -3,7 +3,6 @@
     onDelete={deleteSelected} onSearch={focusSearch} onShowContact={showContact} {resetView}>
     {#if isSearch}
       <ContactSearchTab hasSelectedAddressbook={!!$selectedAddressbook} />
-      <RibbonTabSelector label={$t`Search`} />
     {/if}
   </ContactsRibbon>
 
@@ -69,9 +68,8 @@
   import { selectedPerson } from "../../frontend/Contacts/Person/Selected";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import { catchErrors } from "../../frontend/Util/error";
-  import { statusBar } from "../MainWindow/StatusBar";
+  import { statusBarContent, type StatusBarContent } from "../MainWindow/StatusBar.svelte";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
-  import RibbonTabSelector from "../Mail/Ribbon/RibbonTabSelector.svelte";
   import ContactsRibbon from "./ContactsRibbon.svelte";
   import ContactSearchTab from "./Search/ContactSearchTab.svelte";
   import ContactSearchBox from "./Search/ContactSearchBox.svelte";
@@ -86,6 +84,7 @@
   import NoSelectionIcon from "lucide-svelte/icons/contact-round";
   import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
   import { onDestroy } from "svelte";
+  import { get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
   let addressbooks = appGlobal.addressbooks;
@@ -211,12 +210,23 @@
     ContactColumns.readingPane.value = true;
   }
 
-  const status = statusBar.addSection();
-  onDestroy(() => status.remove());
-  $: status.left = [
-    { label: $t`Items: ${$sortedContacts.length}` },
-    ...($selectedContacts.length > 1 ? [{ label: $t`Selected: ${$selectedContacts.length}` }] : []),
-  ];
+  let status: StatusBarContent;
+  $: status = {
+    left: [
+      { label: $t`Items: ${$sortedContacts.length}` },
+      ...($selectedContacts.length > 1 ? [{ label: $t`Selected: ${$selectedContacts.length}` }] : []),
+    ],
+    right: [],
+    views: [],
+  };
+  // <copied from="../Mail/MailApp.svelte">
+  $: $statusBarContent = status;
+  onDestroy(() => {
+    if (get(statusBarContent) == status) {
+      statusBarContent.set(null);
+    }
+  });
+  // </copied>
 
   let pageEl: HTMLElement;
   function onKeyDown(event: KeyboardEvent) {

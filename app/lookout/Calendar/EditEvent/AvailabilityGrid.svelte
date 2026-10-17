@@ -39,7 +39,7 @@
       {/each}
       {#if !readOnly}
         <hbox class="row add" bind:this={addRowEl}>
-          <MailAutocomplete recipients={newAttendees} label={$t`Add required attendee`}
+          <MailAutocomplete addresses={newAttendees} label={$t`Add required attendee`}
             placeholder={$t`Add required attendee`} onAdd={onAddAttendee} />
         </hbox>
       {/if}
