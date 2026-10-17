@@ -45,7 +45,8 @@
   import { ObservedItems } from "../../Shared/ObservedItems";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { CalendarActions } from "../CalendarActions";
-  import { kCalendarMenus, type CalendarMenus } from "../selected";
+  import { kCalendarMenus, calendarSearchOptions, CalendarCurrentView, CalendarSearchScope, type CalendarMenus } from "../selected";
+  import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import ListViewLine from "./ListViewLine.svelte";
   import CalendarIcon from "lucide-svelte/icons/calendar";
@@ -57,15 +58,18 @@
   import { t } from "../../../l10n/l10n";
 
   export let events: Collection<Event>;
-  export let label: string;
-  export let emptyText: string;
-  export let showCalendarColumn = false;
 
   const menus = getContext<CalendarMenus>(kCalendarMenus);
   const listColumns = getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns);
   const sortColumn = getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start);
   const sortAscending = getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true);
   const grouping = getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence);
+
+  const currentView = getLocalStorage<CalendarCurrentView>("lookout.calendar.currentView", CalendarCurrentView.Calendar);
+  $: isSearch = !!$globalSearchTerm?.trim();
+  $: label = isSearch ? $t`Search results` : $currentView.value == CalendarCurrentView.Active ? $t`Active appointments` : $t`All appointments`;
+  $: emptyText = isSearch ? $t`We didn't find anything to show here.` : $t`There are no items to show in this view.`;
+  $: showCalendarColumn = isSearch && $calendarSearchOptions.scope == CalendarSearchScope.AllCalendarItems;
 
   let rowsEl: HTMLElement;
   let collapsed = new Set<string>();

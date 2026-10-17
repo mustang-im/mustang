@@ -1,16 +1,15 @@
 <MenuItem label={$t`Appointment`} icon={NewAppointmentIcon}
-  onClick={() => CalendarActions.newEventAtSelection(calendar)} />
+  onClick={() => CalendarActions.newEventAtSelection(null)} />
 <MenuItem label={$t`Meeting`} icon={NewMeetingIcon}
-  onClick={() => CalendarActions.newEventAtSelection(calendar, "meeting")} />
+  onClick={() => CalendarActions.newEventAtSelection(null, "meeting")} />
 <MenuItem label={$t`All Day Event`} icon={AllDayIcon}
-  onClick={() => CalendarActions.newEventAtSelection(calendar, "all-day")} />
+  onClick={() => CalendarActions.newEventAtSelection(null, "all-day")} />
 <MenuItem label={$t`Recurring Appointment`} icon={RecurringIcon}
-  onClick={() => CalendarActions.newEventAtSelection(calendar, "recurring")} />
+  onClick={() => CalendarActions.newEventAtSelection(null, "recurring")} />
 <MenuItem label={$t`Recurring Meeting`} icon={RecurringMeetingIcon}
-  onClick={() => CalendarActions.newEventAtSelection(calendar, "recurring-meeting")} />
+  onClick={() => CalendarActions.newEventAtSelection(null, "recurring-meeting")} />
 
 <script lang="ts">
-  import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
@@ -19,6 +18,4 @@
   import RecurringIcon from "lucide-svelte/icons/repeat";
   import RecurringMeetingIcon from "lucide-svelte/icons/calendar-sync";
   import { t } from "../../l10n/l10n";
-
-  export let calendar: Calendar | null = null;
 </script>

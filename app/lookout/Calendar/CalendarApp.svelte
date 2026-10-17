@@ -32,8 +32,7 @@
               class:single={readingPane != "right" && readingPane != "bottom"}>
               <vbox flex class="main lo-card">
                 {#if tableEvents}
-                  <ListView events={tableEvents} label={tableLabel} emptyText={tableEmptyText}
-                    showCalendarColumn={isSearch && $calendarSearchOptions.scope == CalendarSearchScope.AllCalendarItems} />
+                  <ListView events={tableEvents} />
                 {:else if view == "dual"}
                   <DualView bind:start={$startDate} events={visibleEvents} {groups}>
                     <ViewSelector slot="top-right" {view} onView={setView} />
@@ -215,8 +214,6 @@
     : currentView == CalendarCurrentView.Active ? listedEvents.filterObservable(event => event.isUpcoming())
     : null;
   $: tableEvents = searchResults ?? listEvents;
-  $: tableLabel = isSearch ? $t`Search results` : currentView == CalendarCurrentView.Active ? $t`Active appointments` : $t`All appointments`;
-  $: tableEmptyText = isSearch ? $t`We didn't find anything to show here.` : $t`There are no items to show in this view.`;
 
   const updatingCount = CalendarActions.updatingCount;
   let status: StatusBarContent;
