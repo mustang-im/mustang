@@ -1,13 +1,7 @@
-import type { EMail } from "../../../logic/Mail/EMail";
-import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
 import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
 import { gt } from "../../../l10n/l10n";
 
 export class MessageSecurity {
-  static isSigned(message: EMail, signingKey: PublicKey | null): boolean {
-    return !!message.signedByKeyID && !!signingKey && signingKey.trustLevel != TrustLevel.Distrusted;
-  }
-
   static title(isSigned: boolean, isEncrypted: boolean): string {
     // <copied from="../../../frontend/Mail/Message/EncryptionDetails.svelte">
     return isSigned && isEncrypted
@@ -41,11 +35,5 @@ export class MessageSecurity {
       default:
         return gt`Not checked`;
     }
-  }
-
-  static trustChoices(signingKey: PublicKey): TrustLevel[] {
-    // <copied from="../../../frontend/Contacts/PersonPage/EncryptionKey.svelte" acceptance>
-    return [TrustLevel.Personal, signingKey.caName ? TrustLevel.ThirdParty : TrustLevel.Sender, TrustLevel.Distrusted];
-    // </copied>
   }
 }

@@ -1,52 +1,59 @@
-<Dialog title={$t`Message Security Properties`} cancelLabel={$t`Close`} width="560px" on:close>
-  <vbox class="security">
-    <FormGrid columns="max-content minmax(0, 1fr)">
-      <span class="lo-form-label">{$t`Subject:`}</span>
-      <span class="value">{$message.subject ?? ""}</span>
-    </FormGrid>
-    <span>{$t`Messages may contain encryption and digital signature layers. Each digital signature layer may contain multiple signatures.`}</span>
-    <span class="caption">{$t`Security Layers`}</span>
-    <ListView items={layers} bind:selected={selectedLayer} label={$t`Security Layers`} height="96px" let:item>
-      <hbox class="layer">
-        <svelte:component this={item.icon} size={16} />
-        <span>{item.label}</span>
-      </hbox>
-    </ListView>
-    <span class="caption">{$t`Description:`}</span>
-    <div class="description">
-      <div class="description-title">{MessageSecurity.title(isSigned, isEncrypted)}</div>
-      <div>{MessageSecurity.description(isSigned, isEncrypted, !!mySigningKey, fromName)}</div>
-    </div>
-    {#if signingKey && !mySigningKey}
-      <GroupBox label={$t`Signing key`}>
-        <FormGrid columns="max-content minmax(0, 1fr)">
-          <span class="lo-form-label">{$t`Signer:`}</span>
-          <span class="value">{$signingKey.name ?? fromName}</span>
-          <span class="lo-form-label">{$t`System:`}</span>
-          <span class="value">{signingKey.system}</span>
-          <span class="lo-form-label">{$t`Fingerprint:`}</span>
-          <span class="value fingerprint">{signingKey.fingerprintDisplay}</span>
-          <span class="lo-form-label">{$t`Valid from:`}</span>
-          <span class="value">{signingKey.created ? getDateString(signingKey.created) : "–"}</span>
-          <span class="lo-form-label">{$t`Valid to:`}</span>
-          <span class="value">{signingKey.expires ? getDateString(signingKey.expires) : "–"}</span>
-        </FormGrid>
-      </GroupBox>
-      <GroupBox label={$t`Edit Trust`}>
-        {#each MessageSecurity.trustChoices(signingKey) as level}
-          <Radio label={MessageSecurity.trustLabel(level, signingKey.caName, fromName)}
-            bind:group={signingKey.trustLevel} value={level}
-            onChange={onTrustChanged} />
-        {/each}
-      </GroupBox>
-    {/if}
-  </vbox>
-</Dialog>
+{#if isExpanded}
+  <Dialog title={$t`Message Security Properties`} cancelLabel={$t`Close`} width="560px" on:close={() => { isExpanded = false; }}>
+    <vbox class="security">
+      <FormGrid columns="max-content minmax(0, 1fr)">
+        <span class="lo-form-label">{$t`Subject:`}</span>
+        <span class="value">{$message.subject ?? ""}</span>
+      </FormGrid>
+      <span>{$t`Messages may contain encryption and digital signature layers. Each digital signature layer may contain multiple signatures.`}</span>
+      <span class="caption">{$t`Security Layers`}</span>
+      <ListView items={layers} bind:selected={selectedLayer} label={$t`Security Layers`} height="96px" let:item>
+        <hbox class="layer">
+          <svelte:component this={item.icon} size={16} />
+          <span>{item.label}</span>
+        </hbox>
+      </ListView>
+      <span class="caption">{$t`Description:`}</span>
+      <div class="description">
+        <div class="description-title">{MessageSecurity.title(isSigned, isEncrypted)}</div>
+        <div>{MessageSecurity.description(isSigned, isEncrypted, !!mySigningKey, fromName)}</div>
+      </div>
+      {#if signingKey && !mySigningKey}
+        <GroupBox label={$t`Signing key`}>
+          <FormGrid columns="max-content minmax(0, 1fr)">
+            <span class="lo-form-label">{$t`Signer:`}</span>
+            <span class="value">{$signingKey.name ?? fromName}</span>
+            <span class="lo-form-label">{$t`System:`}</span>
+            <span class="value">{signingKey.system}</span>
+            <span class="lo-form-label">{$t`Fingerprint:`}</span>
+            <span class="value fingerprint">{signingKey.fingerprintDisplay}</span>
+            <span class="lo-form-label">{$t`Valid from:`}</span>
+            <span class="value">{signingKey.created ? getDateString(signingKey.created) : "–"}</span>
+            <span class="lo-form-label">{$t`Valid to:`}</span>
+            <span class="value">{signingKey.expires ? getDateString(signingKey.expires) : "–"}</span>
+          </FormGrid>
+        </GroupBox>
+        <GroupBox label={$t`Edit Trust`}>
+          <!-- <copied from="../../../frontend/Contacts/PersonPage/EncryptionKey.svelte" acceptance> -->
+          {#each [TrustLevel.Personal, signingKey.caName ? TrustLevel.ThirdParty : TrustLevel.Sender, TrustLevel.Distrusted] as level}
+            <Radio label={MessageSecurity.trustLabel(level, signingKey.caName, fromName)}
+              bind:group={signingKey.trustLevel} value={level}
+              onChange={onTrustChanged} />
+          {/each}
+          <!-- </copied> -->
+        </GroupBox>
+      {/if}
+    </vbox>
+  </Dialog>
+{/if}
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { findIdentityForEMailAddress } from "../../../logic/Mail/MailIdentity";
+  import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
+  import { showError } from "../../../frontend/Util/error";
   import { MessageSecurity } from "../ReadingPane/MessageSecurity";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
@@ -60,9 +67,17 @@
   import { gt, t } from "../../../l10n/l10n";
 
   export let message: EMail;
-  export let signingKey: PublicKey | null;
+  export let isExpanded = false;
 
-  $: isSigned = MessageSecurity.isSigned(message, signingKey);
+  let signingKey: PublicKey = null;
+  /* <copied from="../../../frontend/Mail/Message/EncryptionButtons.svelte"> */
+  $: getPublicKeyByKeyID($message.signedByKeyID, message)
+    .then(key => signingKey = key)
+    .catch(showError);
+  /* </copied> */
+  /* <copied from="EncryptionButtons.svelte"> */
+  $: isSigned = $message && !!message.signedByKeyID && !!signingKey && signingKey.trustLevel != TrustLevel.Distrusted;
+  /* </copied> */
   $: isEncrypted = !!$message.wasEncrypted;
   // <copied from="../../../frontend/Mail/Message/EncryptionDetails.svelte">
   $: identity = $message.outgoing ? findIdentityForEMailAddress($message.from?.emailAddress) : null;

@@ -8,19 +8,15 @@
         {$t`Encrypted, but not signed`}
       {/if}
     </span>
-    <button class="link" on:click={() => { isDetailsOpen = true; }}>{$t`Details…`}</button>
+    <button class="link" on:click={() => { isExpanded = true; }}>{$t`Details…`}</button>
   </hbox>
-{/if}
-{#if isDetailsOpen}
-  <EncryptionDetails {message} {signingKey} on:close={() => { isDetailsOpen = false; }} />
 {/if}
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { MessageSecurity } from "../ReadingPane/MessageSecurity";
-  import EncryptionDetails from "./EncryptionDetails.svelte";
+  import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
@@ -28,15 +24,17 @@
   import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
+  export let isExpanded = false;
 
   let signingKey: PublicKey = null;
-  let isDetailsOpen = false;
   // <copied from="../../../frontend/Mail/Message/EncryptionButtons.svelte">
   $: getPublicKeyByKeyID($message.signedByKeyID, message)
     .then(key => signingKey = key)
     .catch(showError);
   // </copied>
-  $: isSigned = $message && MessageSecurity.isSigned(message, signingKey);
+  /* <copied to="EncryptionDetails.svelte"> */
+  $: isSigned = $message && !!message.signedByKeyID && !!signingKey && signingKey.trustLevel != TrustLevel.Distrusted;
+  /* </copied> */
   $: isEncrypted = !!$message.wasEncrypted;
 </script>
 

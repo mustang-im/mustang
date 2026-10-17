@@ -82,8 +82,9 @@
     {/await}
     <!-- </copied> -->
   {/if}
-  <EncryptionButtons {message} />
+  <EncryptionButtons {message} bind:isExpanded={isEncryptionExpanded} />
 </vbox>
+<EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
 <Menu bind:isMenuOpen={isMoreOpen} anchor={moreEl} placement="bottom-end">
   <MenuItem label={$t`Reply`} icon={ReplyIcon} onClick={() => MessageActions.respond(message, message.compose.replyToAuthor())} />
   <MenuItem label={$t`Reply All`} icon={ReplyAllIcon}
@@ -141,6 +142,7 @@
   import DisplayModeSwitcher from "./DisplayModeSwitcher.svelte";
   import RecipientsList from "./RecipientsList.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
+  import EncryptionDetails from "./EncryptionDetails.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
@@ -180,6 +182,7 @@
   let moreEl: HTMLButtonElement;
   let isMoreOpen = false;
   let isPropertiesOpen = false;
+  let isEncryptionExpanded = false;
 </script>
 
 <style>
