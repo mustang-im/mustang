@@ -113,7 +113,6 @@
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "../Scheduling/FreeBusy";
   import { Timeline } from "./AvailabilityGrid";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import { EventEditFlow } from "./EventEditFlow";
   import type { EventTimeEditor } from "./EventTimeEditor";
   import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
@@ -128,6 +127,7 @@
   import ZoomIcon from "lucide-svelte/icons/zoom-in";
   import ChevronIcon from "lucide-svelte/icons/chevron-up";
   import { onMount, tick } from "svelte";
+  import { derived } from "svelte/store";
   import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -155,7 +155,7 @@
   let lastStartTime = event.startTime.getTime();
 
   $: participants = event.participants;
-  $: shownParticipants = ObservedItems.of(event.participants);
+  $: shownParticipants = derived($participants.contents, () => participants.contents);
   let newAttendees = new ArrayColl<PersonUID>();
 
   function onAddAttendee(person: PersonUID) {

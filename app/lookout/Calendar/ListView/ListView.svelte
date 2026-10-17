@@ -42,7 +42,6 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./EventTable";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { kCalendarMenus, calendarSearchOptions, CalendarCurrentView, CalendarSearchScope, type CalendarMenus } from "../selected";
@@ -55,6 +54,7 @@
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import type { Collection } from "svelte-collections";
   import { getContext, tick } from "svelte";
+  import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let events: Collection<Event>;
@@ -77,7 +77,7 @@
   $: table = new EventTable($sortColumn.value, $sortAscending.value, $grouping.value);
   $: columns = withCalendarColumn($listColumns.value, showCalendarColumn);
   $: gridColumns = "28px " + columns.map(columnWidth).join(" ");
-  $: listedEvents = ObservedItems.of(events);
+  $: listedEvents = derived($events.contents, () => events.contents);
   $: groups = table.groups($listedEvents);
   $: shownEvents = groups.filter(group => !collapsed.has(group.id)).flatMap(group => group.events);
 

@@ -12,12 +12,13 @@
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventFormInfo } from "../EditEvent/EventFormInfo";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import ParticipantConfirmIcon from "../EditEvent/ParticipantConfirmIcon.svelte";
+  import { derived } from "svelte/store";
 
   export let event: Event;
 
-  $: participants = ObservedItems.of(event.participants);
+  $: eventParticipants = event.participants;
+  $: participants = derived($eventParticipants.contents, () => eventParticipants.contents);
   $: attendees = $participants.filter(participant => participant.response != InvitationResponse.Organizer);
 
   function tooltip(participant: Participant): string {

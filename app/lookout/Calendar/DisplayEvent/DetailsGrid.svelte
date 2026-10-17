@@ -42,7 +42,6 @@
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { EventFormInfo } from "../EditEvent/EventFormInfo";
   import { EventTable } from "../ListView/EventTable";
-  import { ObservedItems } from "../../Shared/ObservedItems";
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { catchErrors } from "../../../frontend/Util/error";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
@@ -51,6 +50,7 @@
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import AttendeesIcon from "lucide-svelte/icons/users-round";
+  import { derived } from "svelte/store";
   import { getDateTimeLocale, gPlural, t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -58,7 +58,8 @@
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;
   $: when = EventFormInfo.whenText($event, getDateTimeLocale());
   $: recurrence = isRecurring || $event.recurrenceRule ? EventTable.recurrenceLabel($event.parentEvent ?? $event) : "";
-  $: participants = ObservedItems.of(event.participants);
+  $: eventParticipants = event.participants;
+  $: participants = derived($eventParticipants.contents, () => eventParticipants.contents);
   $: organizer = $participants.length ? $event.organizer : null;
   $: attendeeSummary = $participants.length ? summarizeResponses() : "";
 
