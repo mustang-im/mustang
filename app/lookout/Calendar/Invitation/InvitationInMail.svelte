@@ -43,7 +43,7 @@
         <ResponseButton label={$t`Remove from Calendar`} icon={RemoveIcon}
           onClick={onRemove} />
       </hbox>
-    {:else if invitation.canRespond}
+    {:else if canRespond}
       <hbox class="respond" role="group" aria-label={$t`Respond`}>
         <ResponseButton label={$t`Accept`} icon={AcceptIcon} classes="accept"
           pressed={response == InvitationResponse.Accept}
@@ -72,8 +72,8 @@
         </hbox>
       {/if}
     </grid>
-    {#if invitation.kind != "reply"}
-      <EventInDayView event={$event} onShowInCalendar={() => invitation.showInCalendar()} />
+    {#if kind != "reply"}
+      <EventInDayView event={$event} onShowInCalendar={showInCalendar} />
     {/if}
   {/if}
 </vbox>
@@ -84,6 +84,10 @@
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { appGlobal } from "../../../logic/app";
   import { MailInvitation } from "../EditEvent/MailInvitation";
+  import { CalendarActions } from "../CalendarActions";
+  import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
+  import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
+  import { openApp } from "../../../frontend/AppsBar/selectedApp";
   import { EventFormInfo } from "../EditEvent/EventFormInfo";
   import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
   import ResponseButton from "./ResponseButton.svelte";
@@ -104,15 +108,19 @@
 
   const calendarEvents = appGlobal.calendarEvents;
 
-  $: invitation = $message && new MailInvitation(message);
-  $: event = invitation.event ?? message.event;
-  $: response = invitation.myResponse;
-  $: calEvent = $calendarEvents && invitation.calEvent();
+  $: calendar = $message && message.event ? MailInvitation.findCalendar(message) : null;
+  $: incoming = calendar?.getIncomingInvitationForEMail(message) ?? null;
+  $: kind = $message && MailInvitation.kindOf(message);
+  $: event = $message && message.event;
+  let response: InvitationResponse;
+  $: response = incoming?.myParticipation ?? InvitationResponse.NoResponseReceived;
+  $: canRespond = kind == "invitation" && !!incoming && response != InvitationResponse.Organizer;
+  $: calEvent = $calendarEvents && (incoming?.calEvent() ?? null);
   $: hasCalEvent = !!calEvent;
-  $: isCancelled = invitation.kind == "cancellation" || !!calEvent?.isCancelled;
-  $: statusText = response && invitation.statusText();
+  $: isCancelled = kind == "cancellation" || !!calEvent?.isCancelled;
+  $: statusText = response && MailInvitation.statusText(message, incoming, response, calEvent);
   $: when = $event ? EventFormInfo.whenText($event, getDateTimeLocale()) : "";
-  $: conflict = invitation.kind == "invitation" && !isCancelled && $event && response != InvitationResponse.Decline
+  $: conflict = kind == "invitation" && !isCancelled && $event && response != InvitationResponse.Decline
     ? EventFormInfo.conflict(calEvent ?? $event, $calendarEvents.filter(dayEvent => !dayEvent.isSameUID($event)))
     : null;
 
@@ -125,14 +133,25 @@
   // </copied>
 
   async function onRespond(newResponse: InvitationResponseInMessage) {
-    await invitation.respond(newResponse);
-    response = invitation.myResponse;
-    invitation = invitation;
+    await incoming.respondToInvitationFromMail(newResponse);
+    response = newResponse;
   }
 
   async function onRemove() {
-    await invitation.removeFromCalendar();
-    invitation = invitation;
+    let eventInCalendar = incoming?.calEvent();
+    if (eventInCalendar) {
+      await CalendarActions.deleteOccurrence(eventInCalendar);
+    }
+    incoming = incoming;
+  }
+
+  function showInCalendar() {
+    let eventInCalendar = incoming?.calEvent() ?? null;
+    let day = new Date((eventInCalendar ?? event).startTime);
+    $selectedEvent = eventInCalendar;
+    $selectedDate = day;
+    $startDate = day;
+    openApp(calendarMustangApp, {});
   }
 
   async function onJoin() {
