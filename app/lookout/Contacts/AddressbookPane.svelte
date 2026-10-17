@@ -10,7 +10,7 @@
 
     {#each sections as section (section.mainAccount ?? section)}
       {@const sectionID = section.mainAccount?.id ?? "local"}
-      <CollapsibleHeader label={section.mainAccount?.name ?? $t`My Contacts`}
+      <AddressbookSectionHeader account={section.mainAccount}
         collapsed={collapsedSections.has(sectionID)}
         onToggle={() => toggleSection(sectionID)} />
       {#if !collapsedSections.has(sectionID)}
@@ -44,6 +44,7 @@
   import { AddressbookSections } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
   import AddressbookItem from "./AddressbookItem.svelte";
+  import AddressbookSectionHeader from "./AddressbookSectionHeader.svelte";
   import AllContactsIcon from "lucide-svelte/icons/contact-round";
   import DirectoryIcon from "lucide-svelte/icons/building-2";
   import CollapsibleHeader from "../Shared/CollapsibleHeader.svelte";

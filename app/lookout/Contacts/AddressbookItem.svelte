@@ -3,7 +3,7 @@
   class:indented
   on:click={onSelect}
   on:contextmenu={onContextMenu}
-  title={addressbook?.name ?? label}
+  title={addressbook ? $addressbook.name : label}
   aria-current={isSelected}>
   <svelte:component this={icon} size={16} class="icon" />
   <span class="name">{addressbook ? $addressbook.name : label}</span>

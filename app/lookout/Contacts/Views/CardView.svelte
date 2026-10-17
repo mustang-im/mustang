@@ -1,5 +1,5 @@
 <div class="address-cards" role="listbox" aria-label={$t`Cards`} aria-multiselectable="true">
-  {#each $contacts.each as contact (contact.id)}
+  {#each $shownContacts as contact (contact.id)}
     {@const person = contact instanceof Person ? contact : null}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="address-card" role="option" tabindex="-1"
@@ -33,6 +33,7 @@
   import { ContactActions } from "../ContactActions";
   import { ContactColumns } from "./ContactColumns";
   import { ContactSelection } from "./ContactSelection";
+  import { ObservedItems } from "../../Shared/ObservedItems";
   import ContactContextMenu from "../ContactContextMenu.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
@@ -44,6 +45,7 @@
 
   let contextMenu: ContactContextMenu;
 
+  $: shownContacts = ObservedItems.of(contacts);
   $: selectedContact = $selectedContacts.first ?? null;
 
   function select(event: MouseEvent, contact: Contact) {

@@ -129,8 +129,9 @@
   $: sortedContacts = view == ContactView.List || view == ContactView.Phone
     ? listedContacts.sort(ContactColumns.compare($sort.value))
     : listedContacts.sort(LetterIndex.compareByName);
-  $: searchPlaceholder = $selectedAddressbook
-    ? $t`Search ${$selectedAddressbook.name}`
+  $: shownAddressbook = $selectedAddressbook;
+  $: searchPlaceholder = $shownAddressbook
+    ? $t`Search ${$shownAddressbook.name}`
     : $t`Search All Contacts`;
   $: emptyText = isSearch
     ? $t`We didn't find anything to show here.`
