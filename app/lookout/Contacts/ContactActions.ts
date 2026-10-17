@@ -13,7 +13,6 @@ import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { newPerson, selectedPerson } from "../../frontend/Contacts/Person/Selected";
 import { selectedAddressbook, selectedContact } from "./Person/Selected";
-import { SettingsDialogs } from "../Settings/SettingsDialogs";
 import { MessageBox } from "../Shared/Dialog/MessageBox";
 import { appName } from "../../logic/build";
 import { openExternalURL } from "../../logic/util/os-integration";
@@ -166,18 +165,10 @@ export class ContactActions {
     openEvent(event, true);
   }
 
-  static async moveTo(contacts: Iterable<Contact>, addressbook: Addressbook) {
-    await Promise.all([...contacts].map(contact => contact.moveToAddressbook(addressbook)));
-  }
-
   static async copyTo(contacts: Iterable<Contact>, addressbook: Addressbook) {
     await Promise.all([...contacts]
       .filter(contact => contact instanceof Person && contact.addressbook != addressbook)
       .map(person => (person as Person).copyToAddressbook(addressbook)));
-  }
-
-  static async copyToClipboard(person: Person) {
-    await navigator.clipboard.writeText(person.toPlaintext());
   }
 
   static show(contact: Contact) {
@@ -189,14 +180,6 @@ export class ContactActions {
 
   static async call(phoneNumber: string) {
     await openExternalURL("tel:" + phoneNumber.replace(/[^+\d]/g, ""));
-  }
-
-  static newFolder() {
-    SettingsDialogs.open({ kind: "new-folder-account", folderKind: "addressbook", localOnly: true });
-  }
-
-  static canDeleteFolder(addressbook: Addressbook | null): boolean {
-    return !!addressbook && appGlobal.addressbooks.contains(addressbook) && !addressbook.mainAccount;
   }
 
   static async deleteFolder(addressbook: Addressbook) {

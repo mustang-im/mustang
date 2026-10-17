@@ -12,7 +12,7 @@
       label={$t`Copy`}
       tooltip={$t`Copy the contact information to the clipboard`}
       icon={CopyIcon}
-      onClick={() => ContactActions.copyToClipboard(person)} />
+      onClick={() => navigator.clipboard.writeText(person.toPlaintext())} />
   {/if}
   <MenuItem
     label={$t`E-mail Message`}
@@ -44,7 +44,7 @@
       {#each section.addressbooks as addressbook (addressbook.id)}
         <MenuItem label={addressbook.name} icon={AddressbookIcon}
           disabled={isIn(addressbook)}
-          onClick={() => ContactActions.moveTo(contacts, addressbook)} />
+          onClick={() => Promise.all(contacts.map(contact => contact.moveToAddressbook(addressbook)))} />
       {/each}
     {/each}
     {#if person}

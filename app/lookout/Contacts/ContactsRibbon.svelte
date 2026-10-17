@@ -55,7 +55,7 @@
           {#each section.addressbooks as addressbook (addressbook.id)}
             <MenuItem label={addressbook.name} icon={AddressbookIcon}
               disabled={selectionIsIn(addressbook)}
-              onClick={() => ContactActions.moveTo($selectedPersons.contents, addressbook)} />
+              onClick={() => Promise.all($selectedPersons.contents.map(contact => contact.moveToAddressbook(addressbook)))} />
           {/each}
         {/each}
         <MenuDivider />
@@ -91,7 +91,7 @@
     <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Folder`} icon={NewFolderIcon}
         tooltip={$t`Create a new address book on this computer`}
-        onClick={() => ContactActions.newFolder()} />
+        onClick={() => SettingsDialogs.open({ kind: "new-folder-account", folderKind: "addressbook", localOnly: true })} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon}
@@ -101,7 +101,7 @@
       <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Delete Folder`}
         onClick={() => ContactActions.deleteFolder(selectedAddressbook)}
-        disabled={!ContactActions.canDeleteFolder(selectedAddressbook) && $t`Only address books that you added yourself can be removed here`} />
+        disabled={!(selectedAddressbook && $addressbooks.contains(selectedAddressbook) && !selectedAddressbook.mainAccount) && $t`Only address books that you added yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Properties`}>
       <RibbonButton label={$t`Folder Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
@@ -179,6 +179,7 @@
   import { ContactSearch } from "./ContactSearch";
   import { contactSearchInput } from "./Search/ContactSearchBox.svelte";
   import { ContactActions } from "./ContactActions";
+  import { SettingsDialogs } from "../Settings/SettingsDialogs";
   import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { AddressbookSections } from "./AddressbookSections";

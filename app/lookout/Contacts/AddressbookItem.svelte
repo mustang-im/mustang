@@ -18,7 +18,7 @@
       <MenuItem label={$t`Rename Folder`} icon={RenameIcon}
         onClick={() => isRenaming = true} />
     {/if}
-    {#if ContactActions.canDeleteFolder(addressbook)}
+    {#if $addressbooks.contains(addressbook) && !addressbook.mainAccount}
       <MenuItem label={$t`Delete Folder`} icon={DeleteIcon}
         onClick={() => ContactActions.deleteFolder(addressbook)} />
     {/if}
@@ -63,6 +63,7 @@
   export let onSelect: () => void;
 
   let contextMenu: ContextMenu;
+  const addressbooks = appGlobal.addressbooks;
   let isRenaming = false;
   let isPropertiesOpen = false;
 
