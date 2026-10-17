@@ -9,7 +9,7 @@ import { openExternalURL } from "../../../logic/util/os-integration";
 import { RecurrencePattern } from "./RecurrencePattern";
 import { Reminder } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
-import { CalendarQuestions } from "../CalendarQuestions";
+import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
 import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
 import { goBack } from "../../../frontend/AppsBar/selectedApp";
@@ -139,12 +139,14 @@ export class EventEditFlow {
     let event = this.event;
     let master = event.parentEvent || event;
     if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
-      if (!await CalendarQuestions.removeRecurrence()) {
+      if (!await MessageBox.confirm(gt`Remove Recurrence`,
+          gt`The appointment will no longer repeat, and all other occurrences of the series will be deleted. Is this OK?`)) {
         return false;
       }
     } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
         !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
-      if (!await CalendarQuestions.changeRecurrence()) {
+      if (!await MessageBox.confirm(gt`Recurrence`,
+          gt`Any exceptions associated with this recurring appointment will be lost. Is this OK?`)) {
         return false;
       }
     }
@@ -321,7 +323,13 @@ export class EventEditFlow {
   }
 
   async deleteAll() {
-    if (!await CalendarQuestions.deleteSeries(this.event)) {
+    // <copied from="../CalendarActions.ts">
+    let event = this.event;
+    let isConfirmed = await MessageBox.ask(gt`Delete Series`, event.isIncomingMeeting
+      ? gt`Do you want to delete all occurrences of the recurring meeting "${event.title ?? ""}"?`
+      : gt`Do you want to delete all occurrences of the recurring appointment "${event.title ?? ""}"?`);
+    // </copied>
+    if (!isConfirmed) {
       return;
     }
     await this.master.deleteIt();
@@ -334,14 +342,25 @@ export class EventEditFlow {
   }
 
   async cancelMeeting() {
-    if (!await CalendarQuestions.cancelMeeting(this.event)) {
+    // <copied from="../CalendarActions.ts">
+    let event = this.event;
+    let isConfirmed = await MessageBox.ask(gt`Cancel Meeting`, event.parentEvent
+      ? gt`Do you want to cancel this occurrence of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`
+      : gt`Do you want to cancel the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`);
+    // </copied>
+    if (!isConfirmed) {
       return;
     }
     await this.deleteIt();
   }
 
   async cancelMeetingSeries() {
-    if (!await CalendarQuestions.cancelSeries(this.event)) {
+    // <copied from="../CalendarActions.ts">
+    let event = this.event;
+    let isConfirmed = await MessageBox.ask(gt`Cancel Series`,
+      gt`Do you want to cancel all occurrences of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`);
+    // </copied>
+    if (!isConfirmed) {
       return;
     }
     await this.master.deleteIt();
@@ -427,7 +446,8 @@ export class EventEditFlow {
   // <copied from="../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte">
   async setOffline() {
     let event = this.event;
-    if (event.participants.hasItems && !event.isNew && !await CalendarQuestions.removeOnlineMeeting()) {
+    if (event.participants.hasItems && !event.isNew && !await MessageBox.ask(gt`Online Meeting`,
+        gt`Attendees who already have the meeting link might miss the meeting. Do you want to remove the online meeting?`)) {
       return;
     }
     event.isOnline = false;
