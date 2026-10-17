@@ -1,8 +1,8 @@
 <OptionsSection title={$t`Work hours`}>
   <OptionsRow icon={WorkHoursIcon}>
-    <slot name="calendar" />
-    {#if workHours}
-      <grid class="days">
+    <grid class="days">
+      <slot name="calendar" />
+      {#if workHours}
         {#each kWeekdays as weekday}
           {@const day = $workHours.days[weekday]}
           <CheckBox label={weekdayName(weekday)} checked={day.isWorkDay} disabled={readOnly}
@@ -21,8 +21,8 @@
             width="100%" disabled={readOnly}
             onChange={onTimezoneChanged} />
         </hbox>
-      </grid>
-    {/if}
+      {/if}
+    </grid>
     <span class="note">
       {#if readOnly && workHours}
         {$t`These are the work hours of ${$account.name}, as the server tells them.`}

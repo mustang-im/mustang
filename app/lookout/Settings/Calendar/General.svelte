@@ -4,8 +4,8 @@
       <CalendarWorkHours account={calendar}>
         <svelte:fragment slot="calendar">
           {#if $calendars.length > 1}
-            <hbox class="field-row">
-              <span class="field-label">{$t`Calendar:`}</span>
+            <span>{$t`Calendar:`}</span>
+            <hbox class="calendar-chooser">
               <ComboBox options={$calendars.contents.map(entry => ({ value: entry, label: entry.name }))}
                 bind:value={calendar} label={$t`Calendar`} width="280px" />
             </hbox>
@@ -135,6 +135,9 @@
 </script>
 
 <style>
+  .calendar-chooser {
+    grid-column: 2 / -1;
+  }
   .time-zone {
     grid-template-columns: max-content max-content;
     align-items: center;
