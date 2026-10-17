@@ -10,7 +10,7 @@
     <OptionsRow icon={UserInterfaceIcon}>
       <hbox class="field-row">
         <label for="options-frontend" class="field-label">{$t`User interface:`}</label>
-        <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Outlook-like (Lookout)` } ]}
+        <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Lookout` } ]}
           bind:value={options.frontend.value} label={$t`User interface`} width="200px" />
       </hbox>
     </OptionsRow>

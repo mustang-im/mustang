@@ -9,7 +9,7 @@
         </label>
         <label>
           <input type="radio" value="lookout" bind:group={frontend} />
-          {$t`Outlook-like (Lookout)`}
+          {$t`Lookout`}
         </label>
         {#if frontend != $frontendSetting.value}
           <Button
