@@ -60,6 +60,7 @@ accountSettings.add(new AccSetting(Account, "acc-sub", gt`Sub-Accounts`, Account
 
 const globalSettings = new SettingsCategory("global", gt`General`, GlobalAppearance, true);
 globalSettings.subCategories.addAll([
+  new SettingsCategory("language", gt`Language`, GlobalLanguage),
   new SettingsCategory("global-workspaces", gt`Workspaces`, GlobalWorkspaces),
 ]);
 settingsCategories.add(globalSettings);
@@ -145,5 +146,4 @@ accountSettings.add(new AccSetting(M3Account, "m3-server", gt`Server`, AccountUR
 accountSettings.add(new AccSetting(SIPAccount, "sip", gt`Details`, SIP, true));
 // #endif
 
-settingsCategories.add(new SettingsCategory("language", gt`Language`, GlobalLanguage, true));
 settingsCategories.add(new SettingsCategory("trust-center", gt`Trust Center`, TrustCenterGeneral, true));
