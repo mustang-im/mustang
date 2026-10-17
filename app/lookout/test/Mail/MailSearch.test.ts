@@ -86,11 +86,11 @@ test("A message is in a conversation when it has a thread or replies to a messag
   expect(MailSearch.isInConversation({ threadID: null, inReplyTo: "<root@example.com>" } as any)).toBe(true);
 });
 
-test("Scopes have Outlook's names", () => {
-  expect(MailSearch.scopeLabel(SearchScope.AllAccounts)).toBe("All Mailboxes");
-  expect(MailSearch.scopeLabel(SearchScope.CurrentAccount)).toBe("Current Mailbox");
+test("Scopes are named after accounts and folders", () => {
+  expect(MailSearch.scopeLabel(SearchScope.AllAccounts)).toBe("All Accounts");
+  expect(MailSearch.scopeLabel(SearchScope.CurrentAccount)).toBe("Current Account");
   expect(MailSearch.scopeLabel(SearchScope.CurrentFolder)).toBe("Current Folder");
   expect(MailSearch.scopeShortLabel(SearchScope.AllAccounts)).toBe("All");
-  expect(MailSearch.scopeShortLabel(SearchScope.CurrentAccount)).toBe("Mailbox");
+  expect(MailSearch.scopeShortLabel(SearchScope.CurrentAccount)).toBe("Account");
   expect(MailSearch.scopeShortLabel(SearchScope.CurrentFolder)).toBe("Folder");
 });

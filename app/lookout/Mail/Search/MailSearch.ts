@@ -177,16 +177,16 @@ export class MailSearch {
 
   static scopeLabel(scope: SearchScope): string {
     switch (scope) {
-      case SearchScope.AllAccounts: return gt`All Mailboxes`;
-      case SearchScope.CurrentAccount: return gt`Current Mailbox`;
+      case SearchScope.AllAccounts: return gt`All Accounts`;
+      case SearchScope.CurrentAccount: return gt`Current Account`;
       case SearchScope.CurrentFolder: return gt`Current Folder`;
     }
   }
 
   static scopeShortLabel(scope: SearchScope): string {
     switch (scope) {
-      case SearchScope.AllAccounts: return gt`All *=> All mailboxes`;
-      case SearchScope.CurrentAccount: return gt`Mailbox *=> Current mailbox`;
+      case SearchScope.AllAccounts: return gt`All *=> All accounts`;
+      case SearchScope.CurrentAccount: return gt`Account *=> Current account`;
       case SearchScope.CurrentFolder: return gt`Folder *=> Current folder`;
     }
   }

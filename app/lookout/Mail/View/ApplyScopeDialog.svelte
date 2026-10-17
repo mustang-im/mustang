@@ -5,7 +5,7 @@
   </hbox>
   <svelte:fragment slot="footer">
     <hbox flex />
-    <DialogButton label={$t`All Mailboxes`} primary onClick={() => choose(ApplyScope.AllFolders)} />
+    <DialogButton label={$t`All Folders`} primary onClick={() => choose(ApplyScope.AllFolders)} />
     <DialogButton label={$t`This Folder`} onClick={() => choose(ApplyScope.ThisFolder)} />
     <DialogButton label={$t`Cancel`} onClick={() => { dispatch("close"); }} />
   </svelte:fragment>
