@@ -49,6 +49,7 @@ export class JMAPAccount extends MailAccount {
   protected startupRunOnce = new RunOnce();
   protected readonly requestSemaphore = new Semaphore(4);
   protected pushAbort: AbortController | null = null;
+  protected isDisconnected = false;
   protected throttle = new Throttle(50, 1);
   logging = true;
 
@@ -66,6 +67,7 @@ export class JMAPAccount extends MailAccount {
 
   async login(interactive: boolean): Promise<void> {
     await this.loginRunOnce.runOnce(async () => {
+      this.isDisconnected = false;
       await super.login(interactive);
       if (this.isDependentAccount) {
         return; // `super.login()` logged in the main account, which starts us up
@@ -78,6 +80,28 @@ export class JMAPAccount extends MailAccount {
       await this.loginOAuth2(interactive);
       await this.getSession();
     });
+  }
+
+  /** After `disconnect()`, e.g. a logout, only an explicit `login()` logs in again,
+   * not the work that is still running.
+   * @throws LoginError after `disconnect()` */
+  async ensureLoggedIn(): Promise<void> {
+    if (this.isDisconnected) {
+      throw new LoginError(null, gt`Please login`);
+    }
+    if (this.isDependentAccount) {
+      await (this.mainAccount as JMAPAccount).ensureLoggedIn();
+      return;
+    }
+    if (this.isLoggedIn) {
+      return;
+    }
+    if (this.session) {
+      await this.oAuth2.login(false);
+    }
+    if (!this.isLoggedIn) {
+      await this.login(false);
+    }
   }
 
   async syncOnStartup() {
@@ -251,14 +275,7 @@ export class JMAPAccount extends MailAccount {
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
-    if (!this.isLoggedIn) {
-      if (this.session) {
-        await this.oAuth2.login(false);
-      }
-      if (!this.isLoggedIn) {
-        await this.login(false);
-      }
-    }
+    await this.ensureLoggedIn();
     let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
     if (this.haveContacts) {
       using.push("urn:ietf:params:jmap:contacts");
@@ -514,6 +531,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async disconnect(): Promise<void> {
+    this.isDisconnected = true;
     this.stopPolling();
     this.pushAbort?.abort();
     this.session = null;
