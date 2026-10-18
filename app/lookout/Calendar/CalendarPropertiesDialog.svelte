@@ -31,8 +31,7 @@
         <hbox class="divider" />
         <vbox class="color-group">
           <span class="label">{$t`Color:`}</span>
-          <ColorPalette colors={CalendarColors.palette} bind:selected={color} label={$t`Color`} columns={15}
-            onChoose={chosen => color = chosen} />
+          <ColorPalette colors={CalendarColors.palette} bind:selected={color} label={$t`Color`} columns={15} />
         </vbox>
         {#if isShared || !calendar.mainAccount}
           <hbox class="divider" />

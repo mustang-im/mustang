@@ -40,7 +40,7 @@
       {#if !readOnly}
         <hbox class="row add" bind:this={addRowEl}>
           <MailAutocomplete addresses={newAttendees} label={$t`Add required attendee`}
-            placeholder={$t`Add required attendee`} onAdd={onAddAttendee} />
+            placeholder={$t`Add required attendee`} on:add={event => onAddAttendee(event.detail)} />
         </hbox>
       {/if}
     </vbox>
