@@ -91,7 +91,7 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon}
-      onClick={onClose} shortCutInfo="Esc" />
+      onClick={() => { dispatch("close"); }} shortCutInfo="Esc" />
   </RibbonGroup>
 </RibbonTab>
 
@@ -136,11 +136,13 @@
   import CreateRuleIcon from "lucide-svelte/icons/list-plus";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
 
   export let account: MailAccount | null = null;
   export let folder: Folder | null = null;
   export let search: SearchEMail | null = null;
-  export let onClose: () => void;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const tags = availableTags;
   $: scope = MailSearch.effectiveScope($searchOptions, account, folder);

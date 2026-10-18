@@ -7,7 +7,7 @@
       onCollapseGroup={collapsed => messageList?.setGroupOfSelectionCollapsed(collapsed)}
       onCollapseAll={collapsed => messageList?.setAllGroupsCollapsed(collapsed)} />
     {#if isSearchActive}
-      <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} onClose={closeSearch} />
+      <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} on:close={closeSearch} />
     {/if}
     {#if $inlineRibbon}
       <ComposerMessageTab mail={$inlineRibbon.draft} editor={$inlineRibbon.editor} isInline />
