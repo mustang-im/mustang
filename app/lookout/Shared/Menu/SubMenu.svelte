@@ -5,7 +5,7 @@
   {#if !disabled}
     <div class="submenu-layer" use:moveOutOfParentMenu>
       <Menu bind:isMenuOpen={isOpen} anchor={anchorEl} placement="right-start" isSubMenu
-        onClose={() => itemEl?.focus()}>
+        on:close={() => itemEl?.focus()}>
         <div class="submenu-content" on:click|capture={onClickInside} bind:this={contentEl}>
           <slot />
         </div>

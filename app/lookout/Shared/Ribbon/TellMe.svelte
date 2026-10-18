@@ -22,7 +22,7 @@
   {/if}
 </hbox>
 <Menu bind:isMenuOpen anchor={fieldEl} placement="bottom-start" autoFocus={false}
-  onClose={onMenuClosed} bind:this={menu}>
+  on:close={onMenuClosed} bind:this={menu}>
   <MenuLabel label={$t`Actions`} />
   {#each results as result (result)}
     <MenuItem label={result.label} disabled={result.disabled}

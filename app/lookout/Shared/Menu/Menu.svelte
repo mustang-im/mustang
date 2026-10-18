@@ -13,7 +13,7 @@
 <script lang="ts">
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import type { Placement } from "@popperjs/core";
-  import { getContext, setContext, tick } from "svelte";
+  import { createEventDispatcher, getContext, setContext, tick } from "svelte";
   import { writable } from "svelte/store";
 
   export let isMenuOpen = false;
@@ -24,11 +24,13 @@
   export let autoFocus = true;
   export let onClose: () => void = null;
 
+  const dispatch = createEventDispatcher<{ close: void }>();
   let menuEl: HTMLElement;
 
   function closeMenu() {
     isMenuOpen = false;
     onClose?.();
+    dispatch("close");
   }
   setContext("onMenuClose", closeMenu);
   setContext("lo-close-all-menus", getContext<() => void>("lo-close-all-menus") ?? closeMenu);

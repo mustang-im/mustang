@@ -19,7 +19,7 @@
       <ChevronDownIcon size="12" />
     </button>
     <Menu bind:isMenuOpen={isListOpen} anchor={wrapperEl} placement="bottom-start" autoFocus={false}
-      onClose={() => inputEl?.focus()}
+      on:close={() => inputEl?.focus()}
       bind:this={menu}>
       <slot name="list" />
     </Menu>
