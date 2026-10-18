@@ -11,7 +11,7 @@ import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbo
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPUpload } from "./TJMAPGeneric";
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
-import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
+import type { TJMAPBusyPeriod, TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
 import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
 import { checkChangeError, JMAPCommandError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
@@ -206,6 +206,9 @@ export class JMAPAccount extends MailAccount {
   get haveSharing(): boolean {
     return this.hasCapability("urn:ietf:params:jmap:principals");
   }
+  get haveAvailability(): boolean {
+    return this.hasCapability("urn:ietf:params:jmap:principals:availability");
+  }
   /** One below what the server allows, so that the mail the user clicks on still gets through.
    * @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxConcurrentRequests` */
   get maxParallelRequests(): number {
@@ -283,7 +286,8 @@ export class JMAPAccount extends MailAccount {
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
     await this.ensureLoggedIn();
     const kOurCapabilities = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission",
-      "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars", "urn:ietf:params:jmap:principals"];
+      "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars", "urn:ietf:params:jmap:principals",
+      "urn:ietf:params:jmap:principals:availability"];
     let using = kOurCapabilities.filter(capability => this.hasCapability(capability));
     let requestJSON: TJMAPAPIRequest = {
       using: using,
@@ -1180,6 +1184,21 @@ export class JMAPAccount extends MailAccount {
     }
     // </compat>
     return matching ?? null;
+  }
+
+  /** When the principal is busy, in the calendars that we may see the free/busy times of */
+  async getBusyTimes(principalID: string, from: Date, to: Date): Promise<{ from: Date, to: Date }[]> {
+    let response = await this.makeSingleCall("Principal/getAvailability", {
+      accountId: this.principalsAccountID,
+      id: principalID,
+      utcStart: from.toISOString().substring(0, 19) + "Z",
+      utcEnd: to.toISOString().substring(0, 19) + "Z",
+      showDetails: false,
+    }) as { list: TJMAPBusyPeriod[] };
+    return response.list.map(busy => ({
+      from: sanitize.date(busy.utcStart),
+      to: sanitize.date(busy.utcEnd),
+    }));
   }
 
   async getPrincipals(principalIDs: string[]): Promise<ArrayColl<PersonUID>> {
