@@ -849,6 +849,8 @@ export class JMAPAccount extends MailAccount {
   /** Opens the WebSocket for API calls and push, if we use it, and keeps it open.
    * If it fails, we use HTTP and EventSource in this session. */
   protected async connectWebSocket(): Promise<void> {
+    this.webSocket?.close(); // A login while connected, e.g. after the OAuth2 token expired during sleep
+    this.webSocket = null;
     if (!this.webSocketURL) {
       return;
     }

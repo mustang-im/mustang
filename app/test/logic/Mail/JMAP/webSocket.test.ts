@@ -395,6 +395,19 @@ test("After a logout and login, only the new connection stays open", { timeout: 
   expect(sockets.filter(socket => socket.readyState == 1)).toEqual([afterLogin]);
 });
 
+test("A login while connected keeps only the new connection open", { timeout: 30000 }, async () => {
+  let account = newAccount();
+  await connect(account);
+  await account.startPushListener();
+
+  let afterLogin = await connect(account); // e.g. after the OAuth2 token expired during sleep
+  await account.startPushListener();
+  await new Promise(resolve => setTimeout(resolve, 12000)); // the old reconnect loop wakes up
+
+  expect(sockets.filter(socket => socket.readyState == 1)).toEqual([afterLogin]);
+  expect(afterLogin.pushEnables().length).toBeGreaterThan(0);
+});
+
 test("When the WebSocket keeps failing, but HTTP works, we use HTTP and EventSource", async () => {
   vi.useFakeTimers();
   try {
