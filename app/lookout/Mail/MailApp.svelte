@@ -4,8 +4,8 @@
     <SendReceiveTab folder={$selectedFolder} />
     <FolderTab folder={$selectedFolder} account={$selectedAccount} />
     <ViewTab folder={$selectedFolder}
-      onCollapseGroup={collapsed => messageList?.setGroupOfSelectionCollapsed(collapsed)}
-      onCollapseAll={collapsed => messageList?.setAllGroupsCollapsed(collapsed)} />
+      on:collapsegroup={event => messageList?.setGroupOfSelectionCollapsed(event.detail)}
+      on:collapseall={event => messageList?.setAllGroupsCollapsed(event.detail)} />
     {#if isSearchActive}
       <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} on:close={closeSearch} />
     {/if}
@@ -22,7 +22,8 @@
     selectedMessages={$selectedMessages}
     bind:searchMessages
     isSearchResult={!!searchResults}
-    onMoreResults={!isSearching && !!searchResults && searchResults.length > MailSearch.kLimit && !isShowingAllResults ? showAllResults : null}
+    hasMoreResults={!isSearching && !!searchResults && searchResults.length > MailSearch.kLimit && !isShowingAllResults}
+    on:moreresults={() => catchErrors(showAllResults)}
     showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
     highlight={searchResults ? searchTerm : null}
     isLoading={isLoading || isSearching} />

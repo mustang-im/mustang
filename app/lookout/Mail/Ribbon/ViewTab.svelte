@@ -49,11 +49,11 @@
       onClick={onAddColumns} />
     <RibbonMenuButton label={$t`Expand/Collapse`} icon={ExpandCollapseIcon} size="small"
       disabled={!$settings.showInGroups && $t`Turn on Show in Groups first`}>
-      <MenuItem label={$t`Collapse This Group`} icon={CollapseIcon} onClick={() => onCollapseGroup(true)} />
-      <MenuItem label={$t`Expand This Group`} icon={ExpandIcon} onClick={() => onCollapseGroup(false)} />
+      <MenuItem label={$t`Collapse This Group`} icon={CollapseIcon} onClick={() => { dispatch("collapsegroup", true); }} />
+      <MenuItem label={$t`Expand This Group`} icon={ExpandIcon} onClick={() => { dispatch("collapsegroup", false); }} />
       <MenuDivider />
-      <MenuItem label={$t`Collapse All Groups`} icon={CollapseAllIcon} onClick={() => onCollapseAll(true)} />
-      <MenuItem label={$t`Expand All Groups`} icon={ExpandAllIcon} onClick={() => onCollapseAll(false)} />
+      <MenuItem label={$t`Collapse All Groups`} icon={CollapseAllIcon} onClick={() => { dispatch("collapseall", true); }} />
+      <MenuItem label={$t`Expand All Groups`} icon={ExpandAllIcon} onClick={() => { dispatch("collapseall", false); }} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Layout`}>
@@ -143,10 +143,11 @@
   import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
   import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
   import { gt, t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
 
   export let folder: Folder | null;
-  export let onCollapseGroup: (collapsed: boolean) => void;
-  export let onCollapseAll: (collapsed: boolean) => void;
+
+  const dispatch = createEventDispatcher<{ collapsegroup: boolean, collapseall: boolean }>();
 
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");

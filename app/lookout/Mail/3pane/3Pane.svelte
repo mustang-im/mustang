@@ -27,10 +27,10 @@
                 {showFolder}
                 {highlight}
                 {isLoading} />
-              {#if onMoreResults && $messages.hasItems}
+              {#if hasMoreResults && $messages.hasItems}
                 <hbox class="more-results">
                   <span>{$t`Showing recent results…`}</span>
-                  <button type="button" class="more-link" on:click={() => catchErrors(onMoreResults)}>{$t`More`}</button>
+                  <button type="button" class="more-link" on:click={() => dispatch("moreresults")}>{$t`More`}</button>
                 </hbox>
               {/if}
             </vbox>
@@ -80,11 +80,11 @@
   import Splitter from "../../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../../frontend/Shared/SplitterBidirectional.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { catchErrors } from "../../../frontend/Util/error";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import MultipleIcon from "lucide-svelte/icons/mails";
   import { t } from "../../../l10n/l10n";
   import type { ArrayColl, Collection } from "svelte-collections";
+  import { createEventDispatcher } from "svelte";
 
   export let accounts: Collection<MailAccount>;
   export let messages: Collection<EMail>;
@@ -97,8 +97,10 @@
   export let showFolder = false;
   export let highlight: string | null = null;
   export let isLoading = false;
-  export let onMoreResults: () => Promise<void> = null;
+  export let hasMoreResults = false;
   export let messageList: TableMessageList = null;
+
+  const dispatch = createEventDispatcher<{ moreresults: void }>();
 
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
