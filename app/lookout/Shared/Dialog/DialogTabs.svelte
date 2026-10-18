@@ -11,17 +11,18 @@
 </hbox>
 
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
 
   export let tabs: { id: string, label: string, disabled?: boolean }[];
   export let selected: string = tabs[0]?.id;
-  export let onSelect: (id: string) => void = null;
+
+  const dispatch = createEventDispatcher<{ select: string }>();
 
   let tabsEl: HTMLElement;
 
   function select(id: string) {
     selected = id;
-    onSelect?.(id);
+    dispatch("select", id);
   }
 
   function onKeyDown(event: KeyboardEvent) {

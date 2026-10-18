@@ -95,7 +95,7 @@
   <SearchPersonDialog
     fieldLabel={picking == Direction.To ? $t`To` : $t`From`}
     person={picking == Direction.To ? to : from}
-    onPick={onPicked}
+    on:pick={event => onPicked(event.detail)}
     on:close={() => picking = null} />
 {/if}
 

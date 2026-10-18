@@ -58,7 +58,7 @@
   <AlwaysMoveDialog message={$openAlwaysMove} on:close={() => $openAlwaysMove = null} />
 {/if}
 {#if $openSearchPerson}
-  <SearchPersonDialog fieldLabel={$openSearchPerson.fieldLabel} person={$openSearchPerson.person} onPick={$openSearchPerson.onPick}
+  <SearchPersonDialog fieldLabel={$openSearchPerson.fieldLabel} person={$openSearchPerson.person} on:pick={event => $openSearchPerson.onPick(event.detail)}
     on:close={() => $openSearchPerson = null} />
 {/if}
 {#if $openSharedFolder}

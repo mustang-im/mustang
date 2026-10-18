@@ -37,7 +37,7 @@
 </Dialog>
 {#if choosing == SearchFolderTemplateID.Person}
   <SearchPersonDialog fieldLabel={$t`From`} person={values.person}
-    onPick={person => { values.person = person; }} on:close={closeChooser} />
+    on:pick={event => { values.person = event.detail; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Categorized}
   <ColorCategoriesDialog isChooseMode chosen={values.tags}
     on:choose={event => { values.tags = event.detail; }} on:close={closeChooser} />

@@ -11,15 +11,17 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
   import { ArrayColl } from "svelte-collections";
+  import { createEventDispatcher } from "svelte";
 
   export let fieldLabel: string;
   export let person: Person | null = null;
-  export let onPick: (person: Person | null) => void;
+
+  const dispatch = createEventDispatcher<{ pick: Person | null }>();
 
   const picks = new ArrayColl<PersonUID>(person?.emailAddresses.hasItems ? [PersonUID.fromPerson(person)] : []);
 
   function onOK() {
     let pick = picks.first;
-    onPick(pick ? pick.findPerson() ?? null : null);
+    dispatch("pick", pick ? pick.findPerson() ?? null : null);
   }
 </script>
