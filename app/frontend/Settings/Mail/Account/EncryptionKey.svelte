@@ -305,7 +305,7 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { getDateString, getDateTimeString } from "../../../Util/date";
+  import { getDateString, getDateTimeString } from "../../../../logic/util/date";
   import { assert } from "../../../../logic/util/util";
   import { gt, t } from "../../../../l10n/l10n";
 

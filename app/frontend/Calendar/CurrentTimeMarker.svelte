@@ -3,7 +3,7 @@
 {/if}
 
 <script lang="ts" context="module">
-  import { k1MinuteMS } from "../Util/date";
+  import { k1MinuteMS } from "../../logic/util/date";
   import { readable } from "svelte/store";
 
   const now = readable(new Date(), set => {

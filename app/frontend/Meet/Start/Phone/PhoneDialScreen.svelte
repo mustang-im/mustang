@@ -141,7 +141,7 @@
   import VideoConfIcon from "lucide-svelte/icons/video";
   import BackspaceIcon from "lucide-svelte/icons/delete";
   import { onKeyEnter } from "../../../Util/util";
-  import { getTimeString } from "../../../Util/date";
+  import { getTimeString } from "../../../../logic/util/date";
   import { catchErrors, logError } from "../../../Util/error";
   import { assert, sleep } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";

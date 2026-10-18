@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import { Event } from "../../../../logic/Calendar/Event";
-  import { getToday } from "../../../Util/date";
+  import { getToday } from "../../../../logic/util/date";
   import { appGlobal } from "../../../../logic/app";
   import DayViewGrid from "../../DayView/DayViewGrid.svelte";
   import EventProposal from "./EventProposal.svelte";

@@ -19,7 +19,7 @@ import { owaCreateExclusionRequest, owaCreateMultipleExclusionsRequest, owaGetEv
 import { getEmailAddressOrX400 } from "../../Mail/EWS/EWSEMail";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { Provider } from "../../Auth/OAuth2URLs";
-import { k1MinuteMS } from "../../../frontend/Util/date";
+import { k1MinuteMS } from "../../util/date";
 import { ArrayColl } from "svelte-collections";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, base64ToUint8Array, ensureArray } from "../../util/util";

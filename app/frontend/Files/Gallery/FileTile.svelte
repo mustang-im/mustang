@@ -26,7 +26,7 @@
   import { selectedFile } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
-  import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeString } from "../../../logic/util/date";
   import { catchErrors } from "../../Util/error";
 
   export let file: File;

@@ -19,7 +19,7 @@
   import Clickable from "../../Shared/Clickable.svelte";
   import CurrentTimeMarker from "../CurrentTimeMarker.svelte";
   import { WeekRowLayout } from "./WeekRow";
-  import { k1HourMS } from "../../Util/date";
+  import { k1HourMS } from "../../../logic/util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import { createEventDispatcher } from "svelte";
   const dispatchEvent = createEventDispatcher<{ celldblclick: { start: Date, mouseEvent: MouseEvent } }>();
