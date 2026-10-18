@@ -33,11 +33,12 @@
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let identity: MailIdentity;
   export let identities: MailIdentity[];
-  export let onChanged: (identity: MailIdentity) => void;
+  const dispatch = createEventDispatcher<{ change: MailIdentity }>();
 
   let type: "openpgp" | "smime" = "openpgp";
   let request = CertificateRequest.forIdentity(identity);
@@ -53,12 +54,12 @@
     if (type == "smime") {
       request.validate();
       let key = await DigitalIDs.createSMIME(identity);
-      onChanged(identity);
+      dispatch("change", identity);
       await request.save(key);
       return;
     }
     await DigitalIDs.createOpenPGP(identity);
-    onChanged(identity);
+    dispatch("change", identity);
   }
 </script>
 

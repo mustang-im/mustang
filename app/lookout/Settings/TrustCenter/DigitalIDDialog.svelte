@@ -62,11 +62,12 @@
   import Radio from "../../Shared/Form/Radio.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
+  import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let identity: MailIdentity;
   export let identities: MailIdentity[];
-  export let onChanged: (identity: MailIdentity) => void;
+  const dispatch = createEventDispatcher<{ change: MailIdentity }>();
 
   let mode: "import" | "export" = "import";
   let fileSelector: FileSelector;
@@ -103,7 +104,7 @@
   async function onOK() {
     if (mode == "import") {
       await DigitalIDs.importFile(identity, file, passphrase, name);
-      onChanged(identity);
+      dispatch("change", identity);
       return;
     }
     await DigitalIDs.exportFile(identity, exportKey, withPrivateKey);
@@ -111,7 +112,7 @@
         await MessageBox.confirm(gt`Delete Digital ID`, gt`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${DigitalIDs.nameOf(exportKey)} from this computer?`)) {
       await DigitalIDs.remove(identity, exportKey);
     }
-    onChanged(identity);
+    dispatch("change", identity);
   }
 </script>
 

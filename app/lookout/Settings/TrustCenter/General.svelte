@@ -72,11 +72,11 @@
 </OptionsPage>
 
 {#if isImportExportOpen && identity}
-  <DigitalIDDialog {identity} {identities} onChanged={onKeysChanged}
+  <DigitalIDDialog {identity} {identities} on:change={event => onKeysChanged(event.detail)}
     on:close={() => { isImportExportOpen = false; }} />
 {/if}
 {#if isGetOpen && identity}
-  <GetDigitalIDDialog {identity} {identities} onChanged={onKeysChanged}
+  <GetDigitalIDDialog {identity} {identities} on:change={event => onKeysChanged(event.detail)}
     on:close={() => { isGetOpen = false; }} />
 {/if}
 {#if isRequestOpen && key instanceof SMIMEPrivateKey}
