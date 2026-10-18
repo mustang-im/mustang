@@ -1,6 +1,5 @@
 import { EMail } from "./EMail";
 import type { MailAccount } from "./MailAccount";
-import type { TreeItem } from "../../frontend/Shared/FastTree";
 import { EMailCollection } from "./Store/EMailCollection";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { ArrayColl, Collection } from 'svelte-collections';
@@ -8,7 +7,7 @@ import { Lock } from "../util/flow/Lock";
 import { assert, AbstractFunction } from "../util/util";
 import { gt } from "../../l10n/l10n";
 
-export class Folder extends Observable implements TreeItem<Folder> {
+export class Folder extends Observable {
   /** IMAP: folder path */
   id: string;
   dbID: number | string;
