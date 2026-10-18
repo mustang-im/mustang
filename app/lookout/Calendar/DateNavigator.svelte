@@ -26,7 +26,7 @@
       {#each shownMonth.shownWeeks(i == 0, i == months.length - 1) as week}
         {#if showWeekNumbers}
           <button class="week-number" title={$t`Show this week`}
-            on:click={() => selectWeek(firstDay(week))}>{getWeekNumber(firstDay(week))}</button>
+            on:click={() => dispatch("selectweek", firstDay(week))}>{getWeekNumber(firstDay(week))}</button>
         {/if}
         {#each week as day}
           {#if day}
@@ -43,7 +43,7 @@
               data-nav-day={day.getTime()}
               on:mousedown={event => onDragStart(event, day)}
               on:mouseenter={() => onDragOver(day)}
-              on:click={() => selectDay(day)}>
+              on:click={() => dispatch("selectday", day)}>
               <span class="number">{day.getDate()}</span>
             </button>
           {:else}
@@ -79,9 +79,6 @@
   export let date: Date;
   export let showWeekNumbers = false;
   export let monthCount = 1;
-  export let onSelectDay: (day: Date) => void = null;
-  export let onSelectWeek: (firstDay: Date) => void = null;
-  export let onSelectDays: (first: Date, last: Date) => void = null;
 
   const dispatch = createEventDispatcher<{ selectday: Date, selectweek: Date, selectdays: { first: Date, last: Date } }>();
 
@@ -135,20 +132,9 @@
       let first = dragStart < dragEnd ? dragStart : dragEnd;
       let last = dragStart < dragEnd ? dragEnd : dragStart;
       dispatch("selectdays", { first, last });
-      onSelectDays?.(first, last);
     }
     dragStart = null;
     dragEnd = null;
-  }
-
-  function selectDay(day: Date) {
-    dispatch("selectday", day);
-    onSelectDay?.(day);
-  }
-
-  function selectWeek(first: Date) {
-    dispatch("selectweek", first);
-    onSelectWeek?.(first);
   }
 
   function isDragged(day: Date, start: Date, end: Date): boolean {
