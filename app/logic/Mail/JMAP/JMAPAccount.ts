@@ -27,6 +27,7 @@ import { Lock } from "../../util/flow/Lock";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
+import { Timeout } from "../../util/flow/Timeout";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -695,14 +696,16 @@ export class JMAPAccount extends MailAccount {
     if (this.haveSharing) {
       types.push("ShareNotification");
     }
+    const kPingSeconds = 60;
     url = url
       .replace("{accountId}", this.accountID)
       .replace("{types}", types.join(","))
-      .replace("{ping}", "500")
+      .replace("{ping}", String(kPingSeconds))
       .replace("{closeafter}", "no");
     let reconnectThrottle = new Throttle(1, 10);
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
+      let watchdog: Timeout | null = null;
       try {
         this.pushAbort = new AbortController();
         let stream = await fetch(url, {
@@ -715,8 +718,21 @@ export class JMAPAccount extends MailAccount {
           reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
           throw new HTTPError(stream);
         }
+        // A dead connection, e.g. after sleep or a network change, doesn't always end the stream
+        let pingSeconds = kPingSeconds;
+        let connection = this.pushAbort;
+        let noPing = () => connection.abort(new DOMException("Push connection: The server stopped sending pings", "TimeoutError"));
+        watchdog = new Timeout(2 * pingSeconds, noPing);
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
         for await (let event of eventStream) {
+          watchdog.fulfilled();
+          if (event.name == "ping") {
+            try {
+              pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 3600, pingSeconds);
+            } catch (ex) {
+              console.error(ex);
+            }
+          }
           if (event.name == "state") {
             try {
               let json = JSON.parse(event.data);
@@ -739,6 +755,7 @@ export class JMAPAccount extends MailAccount {
               console.error(ex);
             }
           }
+          watchdog = new Timeout(2 * pingSeconds, noPing);
         }
       } catch (ex) {
         if (ex.name == "AbortError") { // disconnect()
@@ -754,6 +771,8 @@ export class JMAPAccount extends MailAccount {
         } else {
           throw ex;
         }
+      } finally {
+        watchdog?.fulfilled();
       }
     }
   }

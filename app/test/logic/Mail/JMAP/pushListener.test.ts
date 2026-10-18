@@ -27,6 +27,20 @@ function closedConnection(): any {
   };
 }
 
+/** A connection that sends one ping and then nothing anymore, like a connection that died
+ * without the TCP connection being closed. It ends only when the client aborts it. */
+function silentConnection(pingIntervalSec: number): (signal: AbortSignal) => any {
+  return (signal: AbortSignal) => ({
+    ok: true,
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(`event: ping\ndata: {"interval":${pingIntervalSec}}\n\n`));
+        signal.addEventListener("abort", () => controller.error(signal.reason));
+      },
+    }),
+  });
+}
+
 function rejectedConnection(status: number, statusText: string, retryAfterSec?: number): any {
   return {
     ok: false,
@@ -39,12 +53,12 @@ function rejectedConnection(status: number, statusText: string, retryAfterSec?: 
 /** Answers the event source connections with `responses`, in order, then logs the account out */
 function serve(account: JMAPAccount, responses: any[]): () => number {
   let attempts = 0;
-  globalThis.fetch = (async () => {
+  globalThis.fetch = (async (url: string, options: RequestInit) => {
     let response = responses[attempts++];
     if (attempts >= responses.length) {
       account.session = null; // `isLoggedIn` false, so the loop ends after this connection
     }
-    return response;
+    return typeof response == "function" ? response(options.signal) : response;
   }) as any;
   return () => attempts;
 }
@@ -65,4 +79,13 @@ test("A push connection that the server refuses outright is reported", async () 
   await expect(account.startPushListener()).rejects.toThrow("403");
 
   expect(attempts()).toBe(1);
+});
+
+test("A push connection that stopped sending pings is opened again", { timeout: kTimeoutSec * 1000 }, async () => {
+  let account = newAccount();
+  let attempts = serve(account, [silentConnection(1), closedConnection()]);
+
+  await account.startPushListener();
+
+  expect(attempts()).toBe(2);
 });
