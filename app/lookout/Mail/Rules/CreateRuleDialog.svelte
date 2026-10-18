@@ -2,7 +2,7 @@
   <RulesWizard rule={wizardRule} on:finish={event => catchErrors(() => onWizardFinish(event.detail))} on:close={onClose} />
 {:else if createdRule}
   <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created.`}
-    onAnswer={onClose} />
+    on:answer={onClose} />
 {:else}
   <Dialog title={$t`Create Rule`} on:close={onClose} width="540px">
     <GroupBox label={$t`When I get email with all of the selected conditions`} classes="rule-box">

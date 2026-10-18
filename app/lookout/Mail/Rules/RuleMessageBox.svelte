@@ -1,4 +1,4 @@
-<Dialog {title} width="420px" on:close={() => onAnswer(false)}>
+<Dialog {title} width="420px" on:close={() => dispatch("answer", false)}>
   <hbox class="message-box">
     <hbox class="icon" class:question={isQuestion}>
       {#if isQuestion}
@@ -11,10 +11,10 @@
   </hbox>
   <svelte:fragment slot="footer">
     {#if isQuestion}
-      <DialogButton label={$t`Yes`} primary onClick={() => onAnswer(true)} />
-      <DialogButton label={$t`No`} onClick={() => onAnswer(false)} />
+      <DialogButton label={$t`Yes`} primary onClick={() => { dispatch("answer", true); }} />
+      <DialogButton label={$t`No`} onClick={() => { dispatch("answer", false); }} />
     {:else}
-      <DialogButton label={$t`OK`} primary onClick={() => onAnswer(true)} />
+      <DialogButton label={$t`OK`} primary onClick={() => { dispatch("answer", true); }} />
     {/if}
   </svelte:fragment>
 </Dialog>
@@ -25,11 +25,13 @@
   import QuestionIcon from "lucide-svelte/icons/circle-help";
   import InfoIcon from "lucide-svelte/icons/info";
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
 
   export let title: string;
   export let message: string;
   export let isQuestion = false;
-  export let onAnswer: (yes: boolean) => void;
+
+  const dispatch = createEventDispatcher<{ answer: boolean }>();
 </script>
 
 <style>

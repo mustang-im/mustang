@@ -78,7 +78,7 @@
 {#if deleting}
   <RuleMessageBox title={$t`Rules and Alerts`} isQuestion
     message={$t`Do you want to delete the rule "${deleting.name}"?`}
-    onAnswer={onDeleteAnswer} />
+    on:answer={event => onDeleteAnswer(event.detail)} />
 {/if}
 
 <script lang="ts">

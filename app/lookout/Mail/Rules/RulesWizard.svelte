@@ -67,7 +67,7 @@
   <RuleValuePicker rule={model.rule} item={pickerItem} on:change={onPickerChange} on:close={onPickerClose} />
 {/if}
 {#if question}
-  <RuleMessageBox title={$t`Rules Wizard`} message={question.text} isQuestion onAnswer={question.answer} />
+  <RuleMessageBox title={$t`Rules Wizard`} message={question.text} isQuestion on:answer={event => question.answer(event.detail)} />
 {/if}
 
 <script lang="ts">
