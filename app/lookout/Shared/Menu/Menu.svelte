@@ -36,6 +36,9 @@
   const mouseInMenu = writable<MouseEvent>(null);
   setContext("lo-menu-mouse", mouseInMenu);
   setContext("lo-open-submenu", writable<object>(null));
+  $: if (!isMenuOpen) {
+    $mouseInMenu = null;
+  }
 
   let maxHeight: string = null;
   $: if (isMenuOpen) {
