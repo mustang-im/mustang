@@ -58,7 +58,6 @@
 
   function onAddPerson(person: PersonUID) {
     let participant = new Participant(person.emailAddress, person.name, InvitationResponse.Unknown);
-    participant.nameIsUnknown = person.nameIsUnknown;
     participant.person = person.findPerson(); // GAL entry is in no cached address book
     event.participants.add(participant);
     participant.person?.fetchEncryptionKeys()
