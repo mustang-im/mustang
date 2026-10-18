@@ -17,7 +17,6 @@ Features that belong to Microsoft services and don't apply to Mustang are not li
 | Sync summary ("All folders are up to date", "Synchronizing *folder*", "Connected to Microsoft Exchange") | Status bar | An aggregated sync state per account: in progress, last sync time, errors. Lookout shows the syncs that it started itself, and the connection state. |
 | Storage quota bar ("*x* GB free"), Mailbox Cleanup | File > Info; status bar | Quota queries (IMAP QUOTA, EWS, Graph) on `MailAccount` |
 | Account manager in the title bar: profile picture, sign out, switch account | Title bar | Pictures for all account types; a logout API for every account type |
-| Import / Export of PST files, Open Outlook Data File | File > Open & Export | A PST / OST reader and writer |
 | Unread count on the taskbar or tray icon | Taskbar | Wiring the desktop backend's `setBadgeCount()` / `setTrayIcon()` to the unread counts |
 | Zoom slider | Status bar | A zoom / text scale setting that the frontend applies |
 | Notification center (bell) with a history of reminders and notifications | Title bar | *UI only*. Notifications exist, Lookout shows them as a bar. |
@@ -213,6 +212,7 @@ Info, Open & Export, Save As, Print, the app page, Add Account and the Options d
 | Trust Center pages other than Email Security (Trusted Publishers, Privacy Options, Form-based Sign-in, Attachment Handling, Automatic Download, Macro Settings, Programmatic Access); in Email Security: clear text signed messages, S/MIME receipts, reading signed mail in plain text, script in folders, Publish to GAL, hash and encryption algorithms, security labels | File > Options > Trust Center | Settings for these in the logic (e.g. a global remote content setting, S/MIME receipt requests, algorithm choice); publishing certificates to the directory (EWS) |
 | Import from other programs and files: Outlook (.pst), Apple Mail, Windows Mail, CSV files; from Thunderbird also the local mail folders, calendars, message filters and saved passwords | File > Open & Export > Import > Import from another program or file | Importers in `logic/Mail/Import/` (today only Thunderbird's account settings and address books). Lookout's wizard imports these two; each imported account asks for its password or sign-in. |
 | Export of mail folders (Outlook Data File .pst, CSV, with subfolders) and CSV export of calendars and contacts | File > Open & Export > Export | Exporters: a folder's messages as mbox or a ZIP of `.eml` files; a CSV writer with field mapping. Lookout exports calendars as iCalendar (.ics), address books as vCard (.vcf) and topics as HTML or Markdown, like `frontend/`. |
+| Open Outlook Data File (.pst, .ost) | File > Open & Export > Open Outlook Data File | A PST / OST reader. With a writer, it would also give the .pst export above. |
 
 Settings of `frontend/` that Lookout's Options dialog leaves out:
 - Appearance > Colors: they set CSS variables of `frontend/`, which Lookout's theme doesn't use, so they would change nothing. Lookout has the theme choice (light, dark, system), like Outlook's Office Theme.
