@@ -4,7 +4,7 @@ import { mailMustangApp } from "./MailMustangApp";
 import { goTo, openApp } from "../AppsBar/selectedApp";
 import { appGlobal } from "../../logic/app";
 import type { EMail } from "../../logic/Mail/EMail";
-import { URLPart } from "../Util/util";
+import { URLPart } from "../../logic/util/blob";
 import { assert } from "../../logic/util/util";
 import { tick } from "svelte";
 

@@ -11,7 +11,8 @@ import { owaDownloadMsgsRequest } from "./Request/OWAFolderRequests";
 import { owaGetEventsRequest } from "../../Calendar/OWA/Request/OWAEventRequests";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
-import { base64ToUint8Array, assert, ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { base64ToUint8Array } from "../../util/blob";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import type { ArrayColl } from "svelte-collections";
 

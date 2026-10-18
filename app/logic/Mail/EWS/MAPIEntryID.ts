@@ -1,4 +1,4 @@
-import { base64ToUint8Array, uint8ArrayToHex } from "../../util/util";
+import { base64ToUint8Array, uint8ArrayToHex } from "../../util/blob";
 
 export class MAPIEntryID {
   readonly bytes: Uint8Array;

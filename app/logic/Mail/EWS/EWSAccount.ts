@@ -34,7 +34,8 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, base64ToUint8Array, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { base64ToUint8Array } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 

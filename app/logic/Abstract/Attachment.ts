@@ -7,7 +7,8 @@ import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
 import { RunOnce } from "../util/flow/RunOnce";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { blobToBase64, UserError, type URLString, fileExtensionForMIMEType, assert } from "../util/util";
+import { UserError, type URLString, fileExtensionForMIMEType, assert } from "../util/util";
+import { blobToBase64 } from "../util/blob";
 import { gt } from "../../l10n/l10n";
 import type { ArrayColl, Collection } from "svelte-collections";
 

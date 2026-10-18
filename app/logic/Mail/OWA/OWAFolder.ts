@@ -18,7 +18,8 @@ import {
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { CreateMIME } from "../SMTP/CreateMIME";
-import { base64ToUint8Array, blobToBase64, ensureArray } from "../../util/util";
+import { ensureArray } from "../../util/util";
+import { base64ToUint8Array, blobToBase64 } from "../../util/blob";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, Collection } from "svelte-collections";
 

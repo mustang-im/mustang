@@ -5,7 +5,8 @@ import type { ActiveSyncAddressbook } from './ActiveSyncAddressbook';
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { addCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { blobToBase64, dataURLToBlob, ensureArray } from "../../util/util";
+import { ensureArray } from "../../util/util";
+import { blobToBase64, dataURLToBlob } from "../../util/blob";
 import { parseOneAddress, type ParsedMailbox } from "email-addresses";
 
 export class ActiveSyncPerson extends ExchangePerson {

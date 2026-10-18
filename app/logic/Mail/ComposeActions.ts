@@ -13,7 +13,8 @@ import { fileExtensionForMIMEType } from "../Files/FileType/MIMETypes";
 import { escapeAttr, escapeHTML } from "../Files/FileType/htmlHelper";
 import { backgroundError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { UserError, assert, dataURLToBlob, type URLString, ensureArray } from "../util/util";
+import { UserError, assert, type URLString, ensureArray } from "../util/util";
+import { dataURLToBlob } from "../util/blob";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 

@@ -23,7 +23,7 @@
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
   import { goTo } from "../../AppsBar/selectedApp";
-  import { URLPart } from "../../Util/util";
+  import { URLPart } from "../../../logic/util/blob";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import AccountItem from "./AccountItem.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";

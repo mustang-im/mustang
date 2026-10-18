@@ -1,5 +1,6 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { blobToDataURL, type URLString } from "../../logic/util/util";
+import type { URLString } from "../../logic/util/util";
+import { blobToDataURL } from "../../logic/util/blob";
 
 /** Returns what `onEnter` returns, so that an async `onEnter` can be awaited,
  * e.g. by the `catchErrors()` around the call. */
@@ -86,42 +87,6 @@ export async function stringToDataURL(mimetype: string, content: string): Promis
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(new Blob([bytes], { type: mimetype + ";charset=utf-8" }));
   });
-}
-
-export function stringFromDataURL(dataURL: URLString, mimetype: string): string | null {
-  if (!dataURL || typeof (dataURL) != "string" ||
-      dataURL.substring(0, "data:".length + mimetype.length).toLowerCase() != "data:text/html") {
-    return null;
-  }
-  // There might be `;charset=utf-8` in-between
-  let comma = dataURL.indexOf(",");
-  if (comma < 1) {
-    return null;
-  }
-  let htmlEncoded = dataURL.substring(comma + 1);
-  if (!htmlEncoded) {
-    return null;
-  }
-  return decodeURIComponent(htmlEncoded);
-}
-
-/** Use as tagged template string:
- * let id = "bar/buu";
- * let name = "Fred Flintstone";
- * URLPart`https://foo/?id=${id}&name=${name}`
- * -> "https://foo/?id=bar%2Fbuu&name=Fred%20Flintstone"
- *
- * Warning: Do *not* escape parts that you want to keep literally in the URL.
- * let baseURL = "https://foo/api"; // ":" and "/" would be escaped
- * let pathname = "com/sub"; // "/" would be escaped
- * URLPart`${baseURL}/${pathname}` // Wrong
- * -> "https%3A%2F%2Ffoo%2Fapi/com%2Fsub"
- */
-export function URLPart(literals: TemplateStringsArray, ...values: any[]) {
-  return literals.map((literal: string, i: number) => {
-    let value = values[i] == undefined ? "" : encodeURIComponent(values[i]);
-    return literal + value;
-  }).join("");
 }
 
 /**
