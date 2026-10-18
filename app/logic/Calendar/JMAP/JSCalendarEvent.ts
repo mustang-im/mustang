@@ -293,6 +293,18 @@ export class JSCalendarEvent {
     }
 
     jmap.color = event.color;
+
+    if (event.parentEvent) {
+      // `jmap` is the override of this occurrence, a PatchObject.
+      // The organizer is that of the series, and must not be patched.
+      delete jmap.organizerCalendarAddress;
+      // The whole properties that we wrote replace patches inside them, e.g. `participants/<id>/participationStatus`
+      for (let path in jmap) {
+        if (path.includes("/") && path.split("/")[0] in jmap) {
+          delete jmap[path];
+        }
+      }
+    }
   }
 
   /** When the alert fires. null, if there is none, or we don't know the trigger. */
@@ -350,6 +362,30 @@ export class JSCalendarEvent {
     }
     let options = event.timezone ? { timeZone: event.timezone } : undefined;
     return date.toLocaleString("lt", options).replace(" ", "T");
+  }
+
+  /** The occurrence of a series, from the series and the override of this occurrence.
+   * The override is a PatchObject: its keys are JSON pointers, e.g. `participants/<id>/participationStatus`.
+   * <https://www.ietf.org/archive/id/draft-ietf-calext-jscalendarbis-22.html#name-patchobject> */
+  static applyOverride(series: TJMAPCalendarEvent, recurrenceID: string, override: TJMAPCalendarEvent): TJMAPCalendarEvent {
+    let occurrence = structuredClone(series);
+    delete occurrence.recurrenceRule;
+    delete occurrence.recurrenceOverrides;
+    occurrence.start = recurrenceID;
+    for (let [path, value] of Object.entries(override)) {
+      let keys = path.split("/").map(key => key.replaceAll("~1", "/").replaceAll("~0", "~"));
+      let last = keys.pop();
+      let parent = keys.reduce((object, key) => object?.[key], occurrence as Record<string, any>);
+      if (!parent) {
+        continue; // invalid patch
+      }
+      if (value === null) {
+        delete parent[last];
+      } else {
+        parent[last] = value;
+      }
+    }
+    return occurrence;
   }
 }
 

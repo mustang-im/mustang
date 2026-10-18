@@ -1,0 +1,111 @@
+// app first, to resolve the import cycle around Abstract/Account.ts
+import { appGlobal } from "../../../../logic/app";
+import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
+import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
+import { JSCalendarEvent } from "../../../../logic/Calendar/JMAP/JSCalendarEvent";
+import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
+import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
+import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
+import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+import { applyPatch } from "./applyPatch";
+import { afterEach, beforeAll, expect, test } from "vitest";
+
+const kMe = "me@example.com";
+const kOrganizer = "organizer@example.com";
+
+beforeAll(() => {
+  appGlobal.remoteApp ??= {
+    kyCreate: () => { throw new Error("The test should not talk to a real server"); },
+  } as any;
+});
+
+afterEach(() => {
+  appGlobal.emailAccounts.clear();
+});
+
+/** A weekly meeting that I organize, in which an attendee declined one occurrence,
+ * which also takes place in another room. Servers that store JSCalendar natively
+ * write such overrides as patches into the properties (draft-ietf-jmap-calendars §5.9.1). */
+function series(): TJMAPCalendarEvent {
+  return {
+    "@type": "Event",
+    id: "x",
+    uid: "8b2f4c1e-weekly",
+    title: "Team meeting",
+    start: "2026-11-02T10:00:00",
+    timeZone: "Europe/Berlin",
+    duration: "PT1H",
+    recurrenceRule: { "@type": "RecurrenceRule", frequency: "weekly", count: 6 },
+    locations: { l1: { "@type": "Location", name: "Room A" } },
+    organizerCalendarAddress: "mailto:" + kMe,
+    participants: {
+      meID: { "@type": "Participant", calendarAddress: "mailto:" + kMe, roles: { owner: true }, participationStatus: "accepted" },
+      tomID: { "@type": "Participant", calendarAddress: "mailto:tom@example.com", name: "Tom", participationStatus: "accepted" },
+    },
+    recurrenceOverrides: {
+      "2026-11-09T10:00:00": {
+        "participants/tomID/participationStatus": "declined",
+        "locations/l1/name": "Room B",
+      },
+    },
+    calendarIds: { b: true },
+    isDraft: false,
+    isOrigin: true,
+  } as any as TJMAPCalendarEvent;
+}
+
+async function setup() {
+  let account = new JMAPAccount();
+  account.accountID = "u";
+  let identity = new MailIdentity(account);
+  identity.emailAddress = kMe;
+  account.identities.add(identity);
+  appGlobal.emailAccounts.add(account);
+  let calendar = new JMAPCalendar();
+  calendar.initFromMainAccount(account);
+  calendar.jmapID = "b";
+  calendar.storage = new DummyCalendarStorage();
+  calendar.errorCallback = ex => { throw ex; };
+  account.makeCombinedCall = async () => ({
+    list: { accountId: "u", queryState: "s1", canCalculateChanges: true, position: 0, ids: ["x"] },
+    events: { accountId: "u", state: "s1", list: [series()], notFound: [] },
+  });
+  let sent: Record<string, any>[] = [];
+  account.makeSingleCall = async (method: string, args: Record<string, any>) => {
+    sent.push(args);
+    return { updated: { x: null } };
+  };
+  await (calendar as any).listAllEvents();
+  let master = calendar.events.find(event => !event.parentEvent);
+  return { master, sent };
+}
+
+test("A patch inside a property of an occurrence is applied", async () => {
+  let { master } = await setup();
+
+  let occurrence = master.exceptions.first;
+  expect(occurrence.startTime.toISOString()).toBe("2026-11-09T09:00:00.000Z");
+  expect(occurrence.location).toBe("Room B");
+  expect(occurrence.participants.find(p => p.emailAddress == "tom@example.com").response).toBe(InvitationResponse.Decline);
+  // The series stays as it is
+  expect(master.location).toBe("Room A");
+  expect(master.participants.find(p => p.emailAddress == "tom@example.com").response).toBe(InvitationResponse.Accept);
+});
+
+test("A changed occurrence is a valid patch", async () => {
+  let { master, sent } = await setup();
+
+  let occurrence = master.exceptions.first;
+  occurrence.title = "Team meeting, in room B";
+  await occurrence.save();
+
+  let stored = applyPatch(series(), sent[0].update.x);
+  let override = stored.recurrenceOverrides["2026-11-09T10:00:00"];
+  // No property and also a patch inside it, and no organizer (draft-ietf-calext-jscalendarbis §1.5.9, §3.3.4)
+  expect(Object.keys(override).filter(path => path.includes("/"))).toEqual([]);
+  expect(override).not.toHaveProperty("organizerCalendarAddress");
+  let read = JSCalendarEvent.applyOverride(stored, "2026-11-09T10:00:00", override);
+  expect(read.title).toBe("Team meeting, in room B");
+  expect(Object.values(read.locations).map(location => location.name)).toEqual(["Room B"]);
+  expect(Object.values(read.participants).find(p => p.calendarAddress == "mailto:tom@example.com").participationStatus).toBe("declined");
+});
