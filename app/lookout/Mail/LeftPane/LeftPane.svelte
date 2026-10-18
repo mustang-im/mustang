@@ -7,23 +7,33 @@
     </button>
   </hbox>
   <vbox flex class="scroll" role="tree" aria-label={$t`Folders`}>
-    {#if $showFavorites.value}
-      <SectionHeader id="favorites" label={$t`Favorites`} />
-      {#if !isCollapsed("favorites", $collapsedIDs.value)}
+    {#if $separateAccountList.value}
+      <SectionHeader id="accounts" label={$t`Accounts`} />
+      {#if !isCollapsed("accounts", $collapsedIDs.value)}
+        <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
+          {#if $showFavorites.value}
+            <FolderGroupListItem label={$t`Favorites`} icon={FavoritesIcon}
+              selected={shownEntry == FolderGroup.Favorites} on:click={() => onSelectGroup(FolderGroup.Favorites)} />
+          {/if}
+          {#if allAccountSearches.length}
+            <FolderGroupListItem label={$t`Search Folders`} icon={SearchFolderIcon}
+              selected={shownEntry == FolderGroup.SearchFolders} on:click={() => onSelectGroup(FolderGroup.SearchFolders)} />
+          {/if}
+          {#each accountTrees as account (account.id)}
+            <AccountListItem {account} selected={account == shownEntry} on:click={() => onSelectAccount(account)} />
+          {/each}
+        </vbox>
+      {/if}
+    {/if}
+    {#if $showFavorites.value && (!$separateAccountList.value || shownEntry == FolderGroup.Favorites)}
+      <SectionHeader id={FolderGroup.Favorites} label={$t`Favorites`} />
+      {#if !isCollapsed(FolderGroup.Favorites, $collapsedIDs.value)}
         {#each $favorites.each as folder (folder)}
           <FolderNode {folder} depth={0} isFavorite bind:selectedFolder />
         {/each}
       {/if}
     {/if}
     {#if $separateAccountList.value}
-      <SectionHeader id="accounts" label={$t`Accounts`} />
-      {#if !isCollapsed("accounts", $collapsedIDs.value)}
-        <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
-          {#each accountTrees as account (account.id)}
-            <AccountListItem {account} selected={account == shownAccount} on:click={() => onSelectAccount(account)} />
-          {/each}
-        </vbox>
-      {/if}
       {#if shownAccount}
         <SectionHeader id={shownAccount.id} account={shownAccount} />
         {#if !isCollapsed(shownAccount.id, $collapsedIDs.value)}
@@ -38,9 +48,9 @@
         {/if}
       {/each}
     {/if}
-    {#if allAccountSearches.length}
-      <SectionHeader id="search-folders" label={$t`Search Folders`} />
-      {#if !isCollapsed("search-folders", $collapsedIDs.value)}
+    {#if allAccountSearches.length && (!$separateAccountList.value || shownEntry == FolderGroup.SearchFolders)}
+      <SectionHeader id={FolderGroup.SearchFolders} label={$t`Search Folders`} />
+      {#if !isCollapsed(FolderGroup.SearchFolders, $collapsedIDs.value)}
         {#each allAccountSearches as folder (folder)}
           <FolderNode {folder} depth={0} bind:selectedFolder />
         {/each}
@@ -55,19 +65,27 @@
     Minimized = "minimized",
     Off = "off",
   }
+
+  enum FolderGroup {
+    Favorites = "favorites",
+    SearchFolders = "search-folders",
+  }
 </script>
 
 <script lang="ts">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
-  import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
+  import { savedSearchFolders, type SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import SectionHeader from "./SectionHeader.svelte";
   import FolderList from "./FolderList.svelte";
   import AccountListItem from "./AccountListItem.svelte";
+  import FolderGroupListItem from "./FolderGroupListItem.svelte";
   import FolderNode from "./FolderNode.svelte";
   import MinimizeIcon from "lucide-svelte/icons/chevron-left";
+  import FavoritesIcon from "lucide-svelte/icons/star";
+  import SearchFolderIcon from "lucide-svelte/icons/folder-search";
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
 
@@ -83,15 +101,6 @@
   const separateAccountList = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
 
-  let shownAccount: MailAccount = null;
-  $: shownAccount = accountToShow(selectedAccount, accountTrees);
-  function accountToShow(selected: MailAccount, all: MailAccount[]): MailAccount {
-    if (all.includes(selected)) {
-      return selected;
-    }
-    return all.includes(shownAccount) ? shownAccount : all[0] ?? null;
-  }
-
   $: accountTrees = mainAccountsFirst($accounts.contents);
   function mainAccountsFirst(all: MailAccount[]): MailAccount[] {
     let ordered: MailAccount[] = [];
@@ -103,10 +112,35 @@
     return ordered;
   }
 
+  $: entries = [
+    ...($showFavorites.value ? [FolderGroup.Favorites] : []),
+    ...(allAccountSearches.length ? [FolderGroup.SearchFolders] : []),
+    ...accountTrees,
+  ];
+  let shownEntry: MailAccount | FolderGroup = null;
+  $: shownEntry = entryToShow(selectedFolder, selectedAccount, entries);
+  function entryToShow(folder: Folder, account: MailAccount, all: (MailAccount | FolderGroup)[]): MailAccount | FolderGroup {
+    let entry = $favorites.contains(folder) ? FolderGroup.Favorites
+      : allAccountSearches.includes(folder as SavedSearchFolder) ? FolderGroup.SearchFolders
+      : account;
+    if (all.includes(entry)) {
+      return entry;
+    }
+    return all.includes(shownEntry) ? shownEntry : accountTrees[0] ?? all[0] ?? null;
+  }
+  $: shownAccount = shownEntry instanceof MailAccount ? shownEntry : null;
+
   function onSelectAccount(account: MailAccount) {
     selectedAccount = account;
     if (selectedFolder?.account != account) {
       selectedFolder = account.inbox ?? null;
+    }
+  }
+
+  function onSelectGroup(group: FolderGroup) {
+    let folders: Folder[] = group == FolderGroup.Favorites ? $favorites.contents : allAccountSearches;
+    if (!folders.includes(selectedFolder)) {
+      selectedFolder = folders[0] ?? null;
     }
   }
 

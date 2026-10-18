@@ -52,6 +52,7 @@
 </script>
 
 <style>
+  /* <copied to="FolderGroupListItem.svelte"> */
   .account-row {
     display: flex;
     flex-direction: row;
@@ -64,9 +65,6 @@
     color: var(--lo-fg);
     cursor: pointer;
     user-select: none;
-  }
-  .account-row.dependent {
-    padding-inline-start: 24px;
   }
   .account-row:hover {
     background-color: var(--lo-hover-bg);
@@ -101,6 +99,10 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+  /* </copied> */
+  .account-row.dependent {
+    padding-inline-start: 24px;
   }
   .error {
     display: flex;
