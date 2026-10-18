@@ -1,7 +1,7 @@
 <vbox flex class="table-message-list" style:--message-columns={gridTemplate} bind:clientWidth={paneWidth}>
   {#if columns}
     <ColumnHeader {folder} settings={$settings} {columns} showsRecipients={showsRecipients}
-      onResizing={(column, width) => onResizing(column, width)} />
+      bind:liveWidths />
   {/if}
   {#if $messages.hasItems}
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -131,14 +131,6 @@
   }
 
   let liveWidths: Partial<Record<Column, number>> = {};
-  function onResizing(column: Column, width: number | null) {
-    if (width == null) {
-      delete liveWidths[column];
-    } else {
-      liveWidths[column] = width;
-    }
-    liveWidths = liveWidths;
-  }
   $: gridTemplate = columns ? columns.map(column => columnWidth(column, $settings, liveWidths)).join(" ") : null;
   function columnWidth(column: Column, view: ViewSettings, live: Partial<Record<Column, number>>): string {
     if (ColumnInfo.of(column)?.isFlexible) {

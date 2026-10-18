@@ -79,7 +79,7 @@
   export let settings: ViewSettings;
   export let columns: Column[];
   export let showsRecipients = false;
-  export let onResizing: (column: Column, width: number | null) => void;
+  export let liveWidths: Partial<Record<Column, number>> = {};
 
   $: isAscending = MessageGrouping.isDescendingByDefault(settings.arrangeBy) == !!settings.reverseSort;
 
@@ -142,12 +142,14 @@
     function onMove(moveEvent: MouseEvent) {
       let delta = (moveEvent.clientX - startX) * (isRTL ? -1 : 1);
       width = Math.max(kMinWidth, startWidth + delta);
-      onResizing(column, width);
+      liveWidths[column] = width;
+      liveWidths = liveWidths;
     }
     function onUp() {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
-      onResizing(column, null);
+      delete liveWidths[column];
+      liveWidths = liveWidths;
       MailViewSettings.change(folder, { columnWidths: { ...MailViewSettings.of(folder).columnWidths, [column]: Math.round(width) } });
     }
     window.addEventListener("mousemove", onMove);
