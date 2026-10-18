@@ -294,6 +294,34 @@ test("When the connection drops, waiting requests fail, the next use HTTP, and w
   expect(httpRequests.length).toBe(1);
 });
 
+test("When the session changed, e.g. another user shared an account with us, we use a new connection", async () => {
+  // Stalwart keeps the access rights of a connection from when it was opened
+  let account = newAccount();
+  let socket = await connect(account);
+  socket.autoAnswer = false;
+  let httpRequests = stubHTTP(account);
+  let waiting = account.makeSingleCall("Core/echo", { n: 1 });
+  await waitFor(() => socket.heldBack.size == 1);
+  account.httpGet = async () => ({ // Stalwart's session after a share: new state, new account
+    ...account.session,
+    state: "bc428cdb",
+    accounts: { ...account.session.accounts, p: { accountCapabilities: { "urn:ietf:params:jmap:mail": {} } } },
+    downloadUrl: "https://example.com/jmap/download/{accountId}/{blobId}/{name}?accept={type}",
+    uploadUrl: "https://example.com/jmap/upload/{accountId}/",
+  });
+
+  await account.getSession();
+
+  expect(await account.makeSingleCall("Core/echo", { n: 2 })).toEqual({ overHTTP: true });
+  expect(socket.readyState).toBe(1); // The request sent before still gets its answer
+  socket.answer([...socket.heldBack.keys()][0]);
+  expect(await waiting).toEqual({ n: 1 });
+  await waitFor(() => sockets.length == 2 && sockets[1].readyState == 1);
+  expect(socket.readyState).toBe(3);
+  expect(await account.makeSingleCall("Core/echo", { n: 3 })).toEqual({ n: 3 });
+  expect(httpRequests.length).toBe(1);
+});
+
 test("Push: we ask for our data types, and a change syncs that type", async () => {
   let account = newAccount();
   let synced: string[][] = [];

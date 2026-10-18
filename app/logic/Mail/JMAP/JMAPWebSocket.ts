@@ -24,12 +24,16 @@ export class JMAPWebSocket {
   protected readonly parallelRequests: Semaphore;
   protected stateChanges = Promise.resolve();
   protected heartbeat: ReturnType<typeof setInterval> | null = null;
+  /** Stalwart keeps the access rights of a connection from when it was opened,
+   * so an account shared with us later is only available over a new connection. */
+  readonly sessionState: string;
   /** The backend adds the `Authorization` header by URL, so the handshakes must not overlap */
   protected static handshakeLock = new Lock();
 
   constructor(protected readonly account: JMAPAccount, readonly url: string) {
     let maxRequests = sanitize.integer(account.session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, 4);
     this.parallelRequests = new Semaphore(Math.max(1, maxRequests));
+    this.sessionState = account.session.state;
     this.closed = new Promise(resolve => this.onClosed = resolve);
   }
 
@@ -134,6 +138,18 @@ export class JMAPWebSocket {
       dataTypes: dataTypes,
       pushState: pushState,
     });
+  }
+
+  /** Closes the connection, once the requests sent over it have their answers */
+  async closeWhenIdle() {
+    let locks = [];
+    for (let i = 0; i < this.parallelRequests.maxParallel; i++) {
+      locks.push(await this.parallelRequests.lock());
+    }
+    this.close();
+    for (let lock of locks) {
+      lock.release();
+    }
   }
 
   close() {

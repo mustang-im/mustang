@@ -196,6 +196,10 @@ export class JMAPAccount extends MailAccount {
     if (maxConcurrentRequests > 0) {
       this.requestSemaphore.maxParallel = maxConcurrentRequests;
     }
+    if (this.webSocket?.isOpen && this.webSocket.sessionState != session.state) {
+      this.webSocket.closeWhenIdle()
+        .catch(this.errorCallback);
+    }
   }
 
   /** An account shared with us may offer less than our own, e.g. a calendar, but no mail.
@@ -355,7 +359,7 @@ export class JMAPAccount extends MailAccount {
       return await (this.mainAccount as JMAPAccount).sendRequest(request);
     }
     let webSocket = this.webSocket;
-    if (this.callsOverWebSocket && webSocket?.isOpen) {
+    if (this.callsOverWebSocket && webSocket?.isOpen && webSocket.sessionState == this.session.state) {
       try {
         let response = await webSocket.request(request);
         if (response) {
