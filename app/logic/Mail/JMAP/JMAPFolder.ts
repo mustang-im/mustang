@@ -127,6 +127,7 @@ export class JMAPFolder extends Folder {
               path: "/ids",
               resultOf: "list",
             },
+            properties: JMAPEMail.listProperties,
           },
           "emails",
         ],
@@ -169,6 +170,7 @@ export class JMAPFolder extends Folder {
               name: "Email/changes",
               path: "/created",
             },
+            properties: JMAPEMail.listProperties,
           },
           "added",
         ], [
@@ -179,6 +181,7 @@ export class JMAPFolder extends Folder {
               name: "Email/changes",
               path: "/updated",
             },
+            properties: JMAPEMail.listProperties,
           },
           "changed",
         ],
