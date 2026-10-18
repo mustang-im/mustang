@@ -29,7 +29,9 @@ function newAccount(refuse: string[] = []) {
         ...(refuse.length ? { notUpdated: Object.fromEntries(refuse.map(id => [id, { type: "forbidden", description: "You are not allowed to remove messages from this mailbox." }])) } : {}),
       };
     } else if (method == "Email/query") {
-      result = { accountId: "e", queryState: "spm", canCalculateChanges: true, position: 0, ids: [], total: 0 };
+      let queried = account.rootFolders.find(folder => folder.id == args.filter?.inMailbox);
+      // The server has as many emails in the folder as we count
+      result = { accountId: "e", queryState: "spm", canCalculateChanges: true, position: 0, ids: [], total: queried?.countTotal ?? 0 };
     } else {
       result = { accountId: "e", state: "spm", list: [], notFound: [] };
     }
