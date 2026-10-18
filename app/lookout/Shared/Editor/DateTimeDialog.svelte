@@ -2,7 +2,7 @@
   okLabel={$t`OK`} okDisabled={!selected && $t`Select a format`} onOK={onOK}>
   <vbox flex class="formats-box">
     <span class="caption">{$t`Available formats:`}</span>
-    <ListView items={formats} bind:selected onOpen={onDoubleClick}
+    <ListView items={formats} bind:selected on:open={() => catchErrors(onDoubleClick)}
       label={$t`Available formats:`} height="100%" let:item>
       <span>{item}</span>
     </ListView>
@@ -14,6 +14,7 @@
   import Dialog from "../Dialog/Dialog.svelte";
   import ListView from "../Form/ListView.svelte";
   import type { Editor } from "@tiptap/core";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 

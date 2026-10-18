@@ -28,9 +28,10 @@
 <script lang="ts">
   import type { ListViewColumn } from "./ListViewColumn";
   import { showError } from "../../../frontend/Util/error";
-  import { tick } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
 
   type T = $$Generic;
+  const dispatch = createEventDispatcher<{ select: T, open: T }>();
   export let items: T[] = [];
   export let columns: ListViewColumn[] = [];
   export let selected: T = null;
@@ -48,11 +49,13 @@
   async function select(item: T) {
     selected = item;
     onSelect?.(item);
+    dispatch("select", item);
     await tick();
     rowsEl?.querySelector(".row.selected")?.scrollIntoView({ block: "nearest" });
   }
 
   async function open(item: T) {
+    dispatch("open", item);
     try {
       await onOpen?.(item);
     } catch (ex) {
@@ -61,7 +64,7 @@
   }
 
   async function onKeyDown(event: KeyboardEvent) {
-    if (event.key == "Enter" && selected && onOpen) {
+    if (event.key == "Enter" && selected) {
       event.preventDefault();
       event.stopPropagation();
       await open(selected);

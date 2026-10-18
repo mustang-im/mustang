@@ -5,7 +5,7 @@
     <vbox flex class="list">
       <ListView items={sortedKeys} bind:selected label={$t`Certificates`} height="240px"
         columns={[{ label: $t`Name` }, { label: $t`Type`, width: "90px" }, { label: $t`Valid to`, width: "110px" }, { label: $t`Status`, width: "110px" }]}
-        onOpen={() => { isPropertiesOpen = true; }}
+        on:open={() => { isPropertiesOpen = true; }}
         let:item>
         <span class="cell">{nameOf(item)}</span>
         <span class="cell">{item.system}</span>

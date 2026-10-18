@@ -11,7 +11,7 @@
       <vbox class="list">
         <span class="list-label">{$t`Available columns:`}</span>
         <ListView items={available} bind:selected={availableSelected} label={$t`Available columns`}
-          onOpen={add} height="240px" let:item>
+          on:open={event => add(event.detail)} height="240px" let:item>
           <span>{labelOf(item)}</span>
         </ListView>
       </vbox>
@@ -24,7 +24,7 @@
       <vbox class="list">
         <span class="list-label">{$t`Show these columns in this order:`}</span>
         <ListView items={order.columns} bind:selected={shownSelected} label={$t`Shown columns`}
-          onOpen={() => remove()} height="240px" let:item>
+          on:open={() => remove()} height="240px" let:item>
           <span>{labelOf(item)}</span>
         </ListView>
         <hbox class="order-buttons">

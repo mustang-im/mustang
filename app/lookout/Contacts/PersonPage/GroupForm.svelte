@@ -45,7 +45,7 @@
       {:else}
         <ListView items={sortedMembers} columns={memberColumns} bind:selected={selectedMember}
           label={$t`Members`} height="auto" classes="members"
-          onOpen={member => ContactActions.edit(member)} let:item>
+          on:open={event => catchErrors(() => ContactActions.edit(event.detail))} let:item>
           <hbox class="cell name">
             <PersonPicture person={item} size={20} />
             <span class="text">{item.name || ""}</span>
