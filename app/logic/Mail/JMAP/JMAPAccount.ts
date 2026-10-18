@@ -876,7 +876,7 @@ export class JMAPAccount extends MailAccount {
     let notifications = (response["new"] as TJMAPGetResponse<TJMAPShareNotification>).list;
     this.syncState.set("ShareNotification", changes.newState);
     await this.save();
-    if (!notifications.length) {
+    if (!notifications.length && !changes.hasMoreChanges) {
       return;
     }
 
@@ -889,6 +889,9 @@ export class JMAPAccount extends MailAccount {
         continue; // Access revoked, our own account, one that we cannot address, or already set up
       }
       await this.addSharedFolders(new PersonUID(ownerEMail, sanitize.nonemptystring(shared.name)), "msgfolderroot");
+    }
+    if (changes.hasMoreChanges) {
+      await this.addNewlySharedAccounts();
     }
   }
 
