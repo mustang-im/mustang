@@ -473,10 +473,9 @@ export class JMAPFolder extends Folder {
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<JMAPEMail>) {
     let targetFolderID = this.id;
     let batchSize = this.account.maxObjectsInSet;
-    let allMessages = messages.contents;
-    for (let i = 0; i < allMessages.length; i += batchSize) {
+    for (let i = 0; i < messages.length; i += batchSize) {
       let updates: Record<string, Record<string, boolean>> = {};
-      for (let msg of allMessages.slice(i, i + batchSize)) {
+      for (let msg of messages.getIndexRange(i, batchSize)) {
         let id = msg.jmapID;
         let sourceFolderID = msg.folder.id;
         updates[id] = {
