@@ -56,6 +56,7 @@
           placeholder={$t`Enter contact name`}
           onAddPerson={personUID => callPerson(personUID.findPerson())}
           skipPersonFunc={personUID => !personUID.findPerson()?.phoneNumbers.hasItems}
+          askForName={false}
           />
       </hbox>
       <hbox flex />

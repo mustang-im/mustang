@@ -184,14 +184,29 @@ test("The name typed before the email address was finished stays", () => {
   expect(nameInput().value).toEqual(kRealName);
 });
 
-test("Guesses the name again, after the user cleared the email address", () => {
-  type(emailInput(), "fred@");
+test("Guesses the name of the next person again, after the user edited the name", async () => {
+  type(emailInput(), "anna@example.com");
   pressKey(emailInput(), "Tab");
-  type(nameInput(), kRealName);
-  type(emailInput(), "");
-  type(emailInput(), kEMailAddress);
+  type(nameInput(), "Anna Berg");
+  pressKey(nameInput(), "Enter");
+  await settle();
 
+  type(emailInput(), kEMailAddress);
   expect(nameInput().value).toEqual(kGuessedName);
+});
+
+test("TAB keeps the cursor where the user left it in a name that they edited", async () => {
+  type(emailInput(), kEMailAddress);
+  pressKey(emailInput(), "Tab");
+  await settle();
+  type(nameInput(), kRealName);
+  nameInput().setSelectionRange(3, 3);
+  emailInput().focus();
+
+  pressKey(emailInput(), "Tab");
+  await settle();
+  expect(document.activeElement).toBe(nameInput());
+  expect(nameInput().selectionStart).toEqual(3);
 });
 
 test("Clicking outside adds the person, without taking the focus", async () => {
@@ -261,6 +276,21 @@ test("A known person: Shows the name from the address book in the name field, an
   expect(added[0].name).toEqual(kRealName);
   expect(await savedPersons(appGlobal.personalAddressbook)).toEqual("");
   expect(await savedPersons(appGlobal.collectedAddressbook)).toEqual("");
+});
+
+test("After adding a known person, the list of the earlier search stays closed", async () => {
+  addKnownPerson();
+  type(emailInput(), kEMailAddress);
+  await settle(200); // `delay` of the autocomplete, then the search
+  expect(document.body.querySelector(".autocomplete-list-item")).not.toBeNull();
+  pressKey(emailInput(), "Tab");
+  await settle();
+  pressKey(nameInput(), "Enter");
+  await settle(200);
+
+  expect(added).toHaveLength(1);
+  expect(document.activeElement).toBe(emailInput());
+  expect(document.body.querySelector(".autocomplete-list").classList.contains("hidden")).toBe(true);
 });
 
 test("Clicking outside while a search result is shown adds that person", async () => {

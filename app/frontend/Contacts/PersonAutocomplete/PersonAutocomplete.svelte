@@ -90,7 +90,7 @@
   export let autofocus = false;
   export let typedText: string = ""; /* in/out */
   export let onAddPerson: (person: PersonUID) => void | Promise<void>;
-  export let askForName = false;
+  export let askForName = true;
 
   async function search(inputStr: string) {
     try {
@@ -108,6 +108,7 @@
       return;
     }
     typedText = "";
+    isNameEdited = false;
     await onAddPerson(person);
 
     // Clear, to allow user to enter the next person
@@ -118,7 +119,7 @@
     }
   }
 
-  function onCreate(text: string): PersonUID {
+  async function onCreate(text: string) {
     // email address is substring, e.g. "Fred <fred@example.com>"
     if (!text.includes("@")) {
       throw new UserError($t`Need email address`);
@@ -126,9 +127,8 @@
 
     if (hasNameField) {
       sanitize.emailAddress(text.trim());
-      focusName()
-        .catch(showError);
-      return undefined;
+      await focusName();
+      return;
     }
 
     // Parse typed text into name and email address
@@ -147,9 +147,7 @@
     sanitize.emailAddress(emailAddress);
 
     let personUID = new PersonUID(emailAddress, name);
-    addPerson(personUID) // must return the UID synchronously
-      .catch(showError);
-    return personUID;
+    await addPerson(personUID);
   }
 
   /** Clicking outside the field should add the person, same as pressing ENTER.
@@ -178,6 +176,9 @@
 
   export function focus() {
     inputEl?.focus();
+    // The autocomplete component opens its list on focus, even with the results
+    // of the previous text, and closes it only on ESC
+    inputEl?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
   }
 
   let name = "";
@@ -187,9 +188,7 @@
   let addressbook: Addressbook = appGlobal.collectedAddressbook;
   $: isEMailAddressTyped = typedText?.includes("@") && !typedText.includes("<");
   $: hasNameField = askForName && isEMailAddressTyped;
-  $: if (!hasNameField) isNameEdited = false;
   $: typedText, onTypedTextChanged();
-
   function onTypedTextChanged() {
     knownPerson = null;
     if (hasNameField && !isNameEdited) {
@@ -214,7 +213,10 @@
 
   async function focusName() {
     nameInputEl.focus();
-    await tick(); // `onNameFocus()` may change the name
+    if (isNameEdited) {
+      return;
+    }
+    await tick(); // `onNameFocus()` may change the name, and writing it into the field moves the cursor to the end
     nameInputEl.setSelectionRange(0, 0);
   }
 
@@ -228,9 +230,8 @@
   }
 
   async function onAddNewPerson() {
-    let adding = addNewPerson();
-    focus(); // without waiting for the save, which may go to a server
-    await adding;
+    focus();
+    await addNewPerson();
   }
 
   async function addNewPerson() {
