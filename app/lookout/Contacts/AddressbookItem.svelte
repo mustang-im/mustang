@@ -1,7 +1,7 @@
 <button class="addressbook-item"
   class:selected={isSelected}
   class:indented
-  on:click={onSelect}
+  on:click
   on:contextmenu={onContextMenu}
   title={addressbook ? $addressbook.name : label}
   aria-current={isSelected}>
@@ -60,7 +60,6 @@
   export let count: number = null;
   export let isSelected = false;
   export let indented = true;
-  export let onSelect: () => void;
 
   let contextMenu: ContextMenu;
   const addressbooks = appGlobal.addressbooks;

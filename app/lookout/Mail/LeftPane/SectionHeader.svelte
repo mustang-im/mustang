@@ -1,6 +1,6 @@
 <hbox class="section-header">
   <CollapsibleHeader label={account ? $account.name : label} tooltip={account ? $account.emailAddress : tooltip} {collapsed} large={!!account}
-    onToggle={() => setCollapsed(!collapsed)}
+    on:click={() => setCollapsed(!collapsed)}
     on:contextmenu={onContextMenu}>
     {#if account && $account.fatalError}
       <span class="error" title={$account.fatalError.message}>

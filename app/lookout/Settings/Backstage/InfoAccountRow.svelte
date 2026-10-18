@@ -1,5 +1,5 @@
 <button class="account-row" class:selected={isSelected} role="option" aria-selected={isSelected}
-  on:click={() => onSelect(account)}
+  on:click
   on:dblclick={() => SettingsDialogs.openAccount(account)}>
   <hbox class="account-icon"><AccountIcon size={24} strokeWidth={1.5} /></hbox>
   <vbox flex class="account-names">
@@ -18,7 +18,6 @@
 
   export let account: MailAccount;
   export let isSelected = false;
-  export let onSelect: (account: MailAccount) => void;
 </script>
 
 <style>

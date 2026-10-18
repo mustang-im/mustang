@@ -1,6 +1,6 @@
 <button class="collapsible-header"
   class:large
-  on:click={onToggle}
+  on:click
   on:contextmenu
   aria-expanded={!collapsed}
   title={tooltip ?? label}>
@@ -16,7 +16,6 @@
   export let tooltip: string = null;
   export let collapsed = false;
   export let large = false;
-  export let onToggle: () => void;
 </script>
 
 <style>

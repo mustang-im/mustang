@@ -1,4 +1,4 @@
-<CollapsibleHeader label={account ? $account.name : $t`My Contacts`} {collapsed} {onToggle} />
+<CollapsibleHeader label={account ? $account.name : $t`My Contacts`} {collapsed} on:click />
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
@@ -7,5 +7,4 @@
 
   export let account: Account | null;
   export let collapsed: boolean;
-  export let onToggle: () => void;
 </script>

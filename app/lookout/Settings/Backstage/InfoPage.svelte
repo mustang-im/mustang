@@ -3,7 +3,7 @@
 
   <vbox class="account-list" role="listbox" aria-label={$t`Email accounts`}>
     {#each $emailAccounts.each as mailAccount (mailAccount.id)}
-      <InfoAccountRow account={mailAccount} isSelected={mailAccount == account} onSelect={selected => chosenAccount = selected} />
+      <InfoAccountRow account={mailAccount} isSelected={mailAccount == account} on:click={() => chosenAccount = mailAccount} />
     {:else}
       <span class="lo-secondary empty">{$t`No email account`}</span>
     {/each}

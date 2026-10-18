@@ -22,7 +22,7 @@
         <CalendarListItem {calendar}
           isShown={$shownCalendars.contains(calendar)}
           isSelected={$selectedCalendar == calendar}
-          onContextMenu={(event) => contextMenu.openFor(event, calendar)} />
+          on:contextmenu={event => contextMenu.openFor(event, calendar)} />
       {/each}
     {/if}
   {/each}

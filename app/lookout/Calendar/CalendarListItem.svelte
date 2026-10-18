@@ -1,6 +1,6 @@
 <hbox class="calendar-item" class:selected={isSelected}
   style="--calendar-color: {$calendar.color}"
-  on:contextmenu={onContextMenu}>
+  on:contextmenu>
   <label class="checkbox" title={isShown ? $t`Hide this calendar` : $t`Show this calendar`}>
     <input type="checkbox" checked={isShown}
       on:change={event => shownCalendars.show(calendar, event.currentTarget.checked)} />
@@ -24,7 +24,6 @@
   export let calendar: Calendar;
   export let isShown: boolean;
   export let isSelected: boolean;
-  export let onContextMenu: (event: MouseEvent) => void;
 </script>
 
 <style>

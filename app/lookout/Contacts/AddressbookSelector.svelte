@@ -6,18 +6,18 @@
       count={$allContacts.length}
       isSelected={!selectedAddressbook}
       indented={false}
-      onSelect={() => selectedAddressbook = null} />
+      on:click={() => selectedAddressbook = null} />
 
     {#each sections as section (section.mainAccount ?? section)}
       {@const sectionID = section.mainAccount?.id ?? "local"}
       <AddressbookSectionHeader account={section.mainAccount}
         collapsed={collapsedSections.has(sectionID)}
-        onToggle={() => toggleSection(sectionID)} />
+        on:click={() => toggleSection(sectionID)} />
       {#if !collapsedSections.has(sectionID)}
         {#each section.addressbooks as addressbook (addressbook.id)}
           <AddressbookItem {addressbook}
             isSelected={selectedAddressbook == addressbook}
-            onSelect={() => selectedAddressbook = addressbook} />
+            on:click={() => selectedAddressbook = addressbook} />
         {/each}
       {/if}
     {/each}
@@ -25,13 +25,13 @@
     {#if $searchOnlyAddressbooks.hasItems}
       <CollapsibleHeader label={$t`Directory`}
         collapsed={collapsedSections.has("directory")}
-        onToggle={() => toggleSection("directory")} />
+        on:click={() => toggleSection("directory")} />
       {#if !collapsedSections.has("directory")}
         {#each $searchOnlyAddressbooks.each as addressbook (addressbook.id)}
           <AddressbookItem {addressbook}
             icon={DirectoryIcon}
             isSelected={selectedAddressbook == addressbook}
-            onSelect={() => selectedAddressbook = addressbook} />
+            on:click={() => selectedAddressbook = addressbook} />
         {/each}
       {/if}
     {/if}
