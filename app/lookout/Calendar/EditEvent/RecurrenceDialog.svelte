@@ -27,7 +27,7 @@
             <hbox class="line">
               <Radio label={$t`Every`} name="daily" value="interval" bind:group={pattern.dailyMode} />
               <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval`}
-                onChange={() => { pattern.dailyMode = "interval"; }} />
+                on:change={() => { pattern.dailyMode = "interval"; }} />
               {$plural(pattern.interval, { one: "day", other: "days" })}
             </hbox>
             <hbox class="line">
@@ -53,7 +53,7 @@
               <Radio label={$t`Day ${rangeStart.getDate()} of every *=> as in: Day 15 of every 2 months`}
                 name="monthly" value="day" bind:group={pattern.monthlyMode} />
               <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`}
-                onChange={() => { pattern.monthlyMode = "day"; }} />
+                on:change={() => { pattern.monthlyMode = "day"; }} />
               {$plural(pattern.interval, { one: "month", other: "months" })}
             </hbox>
             <hbox class="line">
@@ -105,7 +105,7 @@
           <hbox class="line">
             <Radio label={$t`End after:`} name="end" value="count" bind:group={pattern.end} classes="end-label" />
             <SpinBox bind:value={pattern.count} min={1} max={999} width="64px" label={$t`Number of occurrences`}
-              onChange={() => { pattern.end = "count"; }} />
+              on:change={() => { pattern.end = "count"; }} />
             {$plural(pattern.count, { one: "occurrence", other: "occurrences" })}
           </hbox>
           <hbox class="line">

@@ -28,7 +28,7 @@
       <hbox class="delay indented" class:disabled={!isMarkingRead}>
         <span>{$t`Wait`}</span>
         <SpinBox label={$t`Seconds`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead}
-          onChange={seconds => { delay = seconds; onSaveReadAfter(); }} />
+          on:change={onSaveReadAfter} />
         <span>{$t`seconds before marking item as read`}</span>
       </hbox>
     </OptionsRow>

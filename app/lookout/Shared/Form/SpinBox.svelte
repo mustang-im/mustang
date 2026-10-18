@@ -23,9 +23,10 @@
 </span>
 
 <script lang="ts">
-  import { showError } from "../../../frontend/Util/error";
   import ChevronUpIcon from "lucide-svelte/icons/chevron-up";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher<{ change: number }>();
 
   export let value: number = 0;
   export let min = -Infinity;
@@ -36,37 +37,32 @@
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
   export let width = "80px";
-  export let onChange: (value: number) => void | Promise<void> = null;
   export let classes = "";
   export let inputEl: HTMLInputElement = null;
 
-  async function setValue(newValue: number) {
+  function setValue(newValue: number) {
     newValue = Math.min(max, Math.max(min, newValue));
     if (newValue == value) {
       inputEl.value = String(value ?? "");
       return;
     }
     value = newValue;
-    try {
-      await onChange?.(value);
-    } catch (ex) {
-      showError(ex);
-    }
+    dispatch("change", value);
   }
 
-  async function step(direction: number) {
-    await setValue((value ?? 0) + direction * stepSize);
+  function step(direction: number) {
+    setValue((value ?? 0) + direction * stepSize);
   }
 
-  async function onTyped() {
+  function onTyped() {
     let typed = parseFloat(inputEl.value.replace(",", "."));
-    await setValue(isNaN(typed) ? value : typed);
+    setValue(isNaN(typed) ? value : typed);
   }
 
-  async function onKeyDown(event: KeyboardEvent) {
+  function onKeyDown(event: KeyboardEvent) {
     if (event.key == "ArrowUp" || event.key == "ArrowDown") {
       event.preventDefault();
-      await step(event.key == "ArrowUp" ? 1 : -1);
+      step(event.key == "ArrowUp" ? 1 : -1);
     }
   }
 </script>
