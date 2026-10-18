@@ -58,7 +58,23 @@ test("An update does not send the UID or the id", async () => {
 
   expect(sent[0].update.cardID).not.toHaveProperty("uid");
   expect(sent[0].update.cardID).not.toHaveProperty("id");
-  expect(sent[0].update.cardID.name.full).toBe("Jane Doe-Smith");
+  expect(sent[0].update.cardID["name/full"]).toBe("Jane Doe-Smith");
+});
+
+test("An update sends only what changed, so that changes made on other devices stay", async () => {
+  let { addressbook, sent } = setup();
+  let person = addressbook.newPerson();
+  person.fromJMAP(serverCard());
+  addressbook.persons.add(person);
+
+  person.emailAddresses.first.value = "jane.doe@example.com";
+  await person.saveToServer();
+
+  let patch = sent[0].update.cardID;
+  expect(patch["emails/0/address"]).toBe("jane.doe@example.com");
+  expect(patch).not.toHaveProperty("emails");
+  expect(patch).not.toHaveProperty("name");
+  expect(patch).not.toHaveProperty("name/full");
 });
 
 test("A new contact sends its UID", async () => {
