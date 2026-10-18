@@ -1,3 +1,4 @@
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export function assert(test: boolean | object | string | number | null | undefined, errorMessage: string): asserts test {
   if (!test) {
@@ -35,6 +36,13 @@ export function ensureArray<Type>(val: Type[] | Type): Type[] {
 export function booleanHasValue(value: boolean | null | undefined): value is boolean {
   return value === true || value === false;
 }
+
+// <copied from="../../frontend/Util/LocalStorage.ts">
+/** HACK: Assumes that `getLocalStorage()` in the frontend saves the value there, in this format. */
+export function getUserPreference<T>(key: string, defaultValue?: T): T {
+  return JSON.parse(sanitize.nonemptystring(localStorage.getItem(key), null)) ?? defaultValue;
+}
+// </copied>
 
 export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
