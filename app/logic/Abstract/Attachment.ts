@@ -3,7 +3,6 @@ import { checkExecutableFile, executableMessage, ExecutableKind } from "../Files
 import { EMail } from "../Mail/EMail";
 import { appGlobal } from "../app";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { saveBlobAsFile } from "../../frontend/Util/util";
 import { openOSAppForFile } from "../util/os-integration";
 import { RunOnce } from "../util/flow/RunOnce";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -121,6 +120,11 @@ export class Attachment extends Observable {
     await this.message.loadAttachments?.();
   }
 
+  async getContent(): Promise<File> {
+    await this.load();
+    return this.content;
+  }
+
   async readLocalFile() {
     assert(this.filepathLocal, "Need local file first");
     let array = await appGlobal.remoteApp.readFile(this.filepathLocal);
@@ -159,10 +163,6 @@ export class Attachment extends Observable {
    * where this file is, and select this file. */
   async openOSFolder() {
     await appGlobal.remoteApp.showFileInFolder(this.filepathLocal);
-  }
-  async saveFile() {
-    await this.load();
-    await saveBlobAsFile(this.content);
   }
   async deleteFile() {
     await this.storageRunOnce.runOnce(async () => {
