@@ -75,7 +75,6 @@
   export let disabled = false;
   export let autofocus = false;
   export let tabindex: number = null;
-  export let onAdd: (recipient: PersonUID) => void = null;
   export let placeholder: string = null;
 
   const dispatch = createEventDispatcher<{ add: PersonUID }>();
@@ -131,7 +130,6 @@
       return;
     }
     addresses.add(recipient);
-    onAdd?.(recipient);
     dispatch("add", recipient);
   }
 

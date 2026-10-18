@@ -22,14 +22,12 @@
   export let boundaryElSel = "body";
   export let isSubMenu = false;
   export let autoFocus = true;
-  export let onClose: () => void = null;
 
   const dispatch = createEventDispatcher<{ close: void }>();
   let menuEl: HTMLElement;
 
   function closeMenu() {
     isMenuOpen = false;
-    onClose?.();
     dispatch("close");
   }
   setContext("onMenuClose", closeMenu);

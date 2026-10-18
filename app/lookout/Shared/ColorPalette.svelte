@@ -20,7 +20,6 @@
   export let selected: string | null = null;
   export let label: string;
   export let columns = 5;
-  export let onChoose: (color: string) => void = null;
 
   const dispatch = createEventDispatcher<{ select: string }>();
   const closeMenu = getContext<() => void>("onMenuClose");
@@ -32,7 +31,6 @@
   function choose(color: string) {
     selected = color;
     closeMenu?.();
-    onChoose?.(color);
     dispatch("select", color);
   }
 </script>
