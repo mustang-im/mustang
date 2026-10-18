@@ -10,9 +10,9 @@
         </button>
       </hbox>
       <DateNavigator range={new CalendarRange("day", selectedDay)} date={selectedDay}
-        onSelectDay={day => { selectedDay = day; }}
-        onSelectWeek={first => { selectedDay = first; }}
-        onSelectDays={first => { selectedDay = first; }} />
+        on:selectday={event => { selectedDay = event.detail; }}
+        on:selectweek={event => { selectedDay = event.detail; }}
+        on:selectdays={event => { selectedDay = event.detail.first; }} />
       <vbox class="agenda">
         {#each agenda as agendaDay (agendaDay.day.getTime())}
           <span class="day-header">{dayLabel(agendaDay.day, $now)}</span>
