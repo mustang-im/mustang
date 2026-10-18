@@ -258,7 +258,7 @@ export class JSContact {
     if (fields.every(([field]) => (streetAddress[field] || null) == shown[field])) {
       return;
     }
-    let old = JSContact.toStreetAddress({ components: address.components });
+    let old = address.components?.length ? shown : new StreetAddress();
     for (let [field, kinds] of fields) {
       if ((streetAddress[field] || null) != old[field]) {
         JSContact.setAddressComponents(address, kinds, streetAddress[field]);
