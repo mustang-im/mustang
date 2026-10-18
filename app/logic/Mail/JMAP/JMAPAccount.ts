@@ -702,30 +702,35 @@ export class JMAPAccount extends MailAccount {
       .replace("{types}", types.join(","))
       .replace("{ping}", String(kPingSeconds))
       .replace("{closeafter}", "no");
+    this.pushAbort?.abort(); // e.g. after a new login, while the old listener still waits on a connection that died
+    let listener = this.pushAbort = new AbortController();
     let reconnectThrottle = new Throttle(1, 10);
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
+      let connection = new AbortController();
+      let pingSeconds = kPingSeconds;
       let watchdog: Timeout | null = null;
+      // A dead connection, e.g. after sleep or a network change, doesn't always end the stream,
+      // and a half-open VPN tunnel may accept a new connection, but never answer
+      let expectAnswer = () => {
+        watchdog?.fulfilled();
+        watchdog = new Timeout(2 * pingSeconds, () => connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError")));
+      };
       try {
-        this.pushAbort = new AbortController();
+        expectAnswer();
         let stream = await fetch(url, {
           headers: {
             Authorization: this.authorizationHeader(),
           },
-          signal: this.pushAbort.signal,
+          signal: AbortSignal.any([listener.signal, connection.signal]),
         });
         if (!stream.ok) {
           reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
           throw new HTTPError(stream);
         }
-        // A dead connection, e.g. after sleep or a network change, doesn't always end the stream
-        let pingSeconds = kPingSeconds;
-        let connection = this.pushAbort;
-        let noPing = () => connection.abort(new DOMException("Push connection: The server stopped sending pings", "TimeoutError"));
-        watchdog = new Timeout(2 * pingSeconds, noPing);
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
         for await (let event of eventStream) {
-          watchdog.fulfilled();
+          watchdog?.fulfilled();
           if (event.name == "ping") {
             try {
               pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 3600, pingSeconds);
@@ -755,10 +760,10 @@ export class JMAPAccount extends MailAccount {
               console.error(ex);
             }
           }
-          watchdog = new Timeout(2 * pingSeconds, noPing);
+          expectAnswer();
         }
       } catch (ex) {
-        if (ex.name == "AbortError") { // disconnect()
+        if (ex.name == "AbortError") { // disconnect(), or a newer listener took over
           return;
         }
         if (isTransientError(ex)) {

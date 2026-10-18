@@ -1,7 +1,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import type { TJMAPSession } from "../../../../logic/Mail/JMAP/TJMAPGeneric";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 
 appGlobal.remoteApp ??= { kyCreate: () => null } as any;
 
@@ -39,6 +39,13 @@ function silentConnection(pingIntervalSec: number): (signal: AbortSignal) => any
       },
     }),
   });
+}
+
+/** A connection that the network accepts, but nothing ever answers, e.g. a VPN tunnel
+ * that isn't up yet. Ends only when the client aborts it. */
+function unansweredConnection(): (signal: AbortSignal) => Promise<any> {
+  return (signal: AbortSignal) => new Promise((resolve, reject) =>
+    signal.addEventListener("abort", () => reject(signal.reason)));
 }
 
 function rejectedConnection(status: number, statusText: string, retryAfterSec?: number): any {
@@ -86,6 +93,37 @@ test("A push connection that stopped sending pings is opened again", { timeout: 
   let attempts = serve(account, [silentConnection(1), closedConnection()]);
 
   await account.startPushListener();
+
+  expect(attempts()).toBe(2);
+});
+
+test("A connection that is never answered is opened again", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  try {
+    let account = newAccount();
+    let attempts = serve(account, [unansweredConnection(), closedConnection()]);
+
+    let listening = account.startPushListener();
+    await vi.advanceTimersByTimeAsync(3 * 60 * 1000);
+    await listening;
+
+    expect(attempts()).toBe(2);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("Starting push again ends the listener that is still waiting on a dead connection", async () => {
+  let account = newAccount();
+  let attempts = serve(account, [silentConnection(60), closedConnection()]);
+
+  let oldListener = account.startPushListener();
+  while (attempts() < 1) {
+    await new Promise(resolve => setTimeout(resolve, 1));
+  }
+  let newListener = account.startPushListener(); // e.g. `loginAndStartup()` after the OAuth2 token expired during sleep
+  await oldListener;
+  await newListener;
 
   expect(attempts()).toBe(2);
 });
