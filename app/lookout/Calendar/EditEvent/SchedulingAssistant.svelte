@@ -5,7 +5,7 @@
       <TimeBox {event} editor={timeEditor} {flow} showSummary={false} />
     </grid>
   </hbox>
-  <AvailabilityGrid {event} {timeEditor} bind:this={grid} />
+  <AvailabilityGrid {event} {timeEditor} />
 </vbox>
 
 <script lang="ts">
@@ -22,12 +22,6 @@
   export let sendLabel: string;
   export let sendDisabled: string | false = false;
   export let onSend: () => Promise<void>;
-
-  let grid: AvailabilityGrid;
-
-  export function focusAddAttendee() {
-    grid?.focusAddAttendee();
-  }
 </script>
 
 <style>

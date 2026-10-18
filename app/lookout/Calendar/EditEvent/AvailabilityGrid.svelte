@@ -38,7 +38,7 @@
         </hbox>
       {/each}
       {#if !readOnly}
-        <hbox class="row add" bind:this={addRowEl}>
+        <hbox class="row add">
           <MailAutocomplete addresses={newAttendees} label={$t`Add required attendee`}
             placeholder={$t`Add required attendee`} on:add={event => onAddAttendee(event.detail)} />
         </hbox>
@@ -156,7 +156,6 @@
   let errorText: string | null = null;
   let scrollEl: HTMLElement;
   let rowsEl: HTMLElement;
-  let addRowEl: HTMLElement;
   let loadCount = 0;
   let lastStartTime = event.startTime.getTime();
 
@@ -225,10 +224,6 @@
   $: if ($refreshAvailabilityOf == event) {
     $refreshAvailabilityOf = null;
     load();
-  }
-
-  export function focusAddAttendee() {
-    addRowEl?.querySelector("input")?.focus();
   }
 
   function stepDay(days: number) {
