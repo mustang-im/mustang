@@ -41,7 +41,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedCalendar, type DateInterval } from "../selected";
+  import { getCalendarSelection, type DateInterval } from "../selected";
   import { kRowsPerHour } from "./DayColumn";
   import { appGlobal } from "../../../logic/app";
   import TimeLabel from "./TimeLabel.svelte";
@@ -52,6 +52,8 @@
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
+
+  const { selectedCalendar } = getCalendarSelection();
 
   export let start: Date;
   export let events: Collection<Event>;

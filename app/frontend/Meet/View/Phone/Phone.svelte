@@ -20,13 +20,15 @@
   import type { MeetingParticipant } from "../../../../logic/Meet/Participant";
   import type { VideoConfMeeting } from "../../../../logic/Meet/VideoConfMeeting";
   import { PhoneCall } from "../../../../logic/Meet/PhoneCall";
-  import { showDialPad } from "../../uiState";
+  import { getMeetUIState } from "../../uiState";
   import ContactHistory from "../../../Contacts/History/ContactHistory.svelte";
   import Splitter from "../../../Shared/Splitter.svelte";
   import Scroll from "../../../Shared/Scroll.svelte";
   import DialPad from "./DialPad.svelte";
   import { catchErrors } from "../../../Util/error";
   import { assert } from "../../../../logic/util/util";
+
+  const { showDialPad } = getMeetUIState();
 
   export let showParticipant: MeetingParticipant;
   export let meeting: VideoConfMeeting;

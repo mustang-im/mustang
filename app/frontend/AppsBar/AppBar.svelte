@@ -24,7 +24,7 @@
 
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
-  import { openApp, showDemoToggle } from "./selectedApp";
+  import { getNavigation, showDemoToggle } from "./selectedApp";
   import AppButton from "./AppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
   import SubAppsList from "./SubAppsList.svelte";
@@ -32,6 +32,8 @@
   import DemoBarMiddle from "./DemoBarMiddle.svelte";
   import { catchErrors } from "../Util/error";
   import type { Collection } from "svelte-collections";
+
+  const { openApp } = getNavigation();
 
   /* in/out */
   export let selectedApp: MustangApp;

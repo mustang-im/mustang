@@ -24,12 +24,14 @@
 </hbox>
 
 <script lang="ts">
-  import { goTo, globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import CalendarIcon from "../CalendarIcon.svelte";
   import { t } from "../../../l10n/l10n";
+
+  const { goTo, globalSearchTerm } = getNavigation();
 
   function goToCalendar() {
     $globalSearchTerm = null;

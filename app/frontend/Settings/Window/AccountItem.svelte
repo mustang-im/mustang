@@ -13,10 +13,14 @@
   import type { Account } from "../../../logic/Abstract/Account";
   import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { accountSettings, type SettingsCategory } from "../SettingsCategory";
-  import { selectedCategory, selectedAccount } from "./selected";
+  import { getSettingsSelection } from "./selected";
   import { getSettingsCategoryForAccount, openSettingsCategoryForAccount } from "./CategoriesUtils";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedCategory, selectedAccount } = getSettingsSelection();
+  const appWindow = AppWindow.current();
 
   /** in */
   export let account: Account;
@@ -35,7 +39,7 @@
   }
 
   function onSelect() {
-    openSettingsCategoryForAccount(account);
+    openSettingsCategoryForAccount(account, appWindow);
   }
 </script>
 

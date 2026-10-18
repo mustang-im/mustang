@@ -42,12 +42,14 @@
   import { Account } from "../../../logic/Abstract/Account";
   import { settingsCategories, type SettingsCategory } from "../SettingsCategory";
   import { settingsMustangApp } from "../Window/SettingsMustangApp";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { URLPart } from "../../Util/util";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import InboxIcon from "lucide-svelte/icons/inbox";
+
+  const { goTo } = getNavigation();
 
   export let account: Account;
   export let category: SettingsCategory;

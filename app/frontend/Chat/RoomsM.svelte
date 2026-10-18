@@ -9,13 +9,18 @@
 <script lang="ts">
   import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { openChatRoomFromOtherApp } from "./open";
-  import { selectedAccount } from "./selected";
-  import { selectedWorkspace } from "../MainWindow/Selected";
+  import { getChatSelection } from "./selected";
+  import { getWorkspaceSelection } from "../MainWindow/Selected";
   import { appGlobal } from "../../logic/app";
   import Header from "./Header.svelte";
   import RoomList from "./RoomList.svelte";
   import RoomsBarM from "./RoomsBarM.svelte";
   import { mergeColls } from "svelte-collections";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { selectedAccount } = getChatSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const appWindow = AppWindow.current();
 
   export let doSearch = false;
 
@@ -24,7 +29,7 @@
 
   let selectedRoom: ChatRoom;
 
-  $: selectedRoom && openChatRoomFromOtherApp(selectedRoom);
+  $: selectedRoom && openChatRoomFromOtherApp(selectedRoom, appWindow);
 </script>
 
 <style>

@@ -21,19 +21,23 @@
       icon={AddToCalendarIcon}
       iconSize="22px"
       padding="6px"
-      onClick={() => createNewEvent($selectedCalendar, $selectedDate, false)}
+      onClick={() => createNewEvent($selectedCalendar, $selectedDate, appWindow, false)}
       />
   {/if}
 </hbox>
 
 <script lang="ts">
   import { createNewEvent } from "./event";
-  import { selectedCalendar, selectedDate, shownCalendars } from "./selected";
+  import { getCalendarSelection } from "./selected";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import NewEventMenuItem from "./NewEventMenuItem.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import AddToCalendarIcon from "lucide-svelte/icons/plus";
   import { t } from "../../l10n/l10n";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { selectedCalendar, selectedDate, shownCalendars } = getCalendarSelection();
+  const appWindow = AppWindow.current();
 
   $: haveMultipleCalendars = $shownCalendars.length > 1;
   let isMenuOpen = false;

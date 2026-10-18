@@ -13,11 +13,13 @@
 
 <script lang="ts">
   import { getSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import Button from "../../Shared/Button.svelte";
   import PlusIcon from "lucide-svelte/icons/plus";
   import { t } from "../../../l10n/l10n";
   import { filesMustangApp } from "../FilesMustangApp";
+
+  const { goTo } = getNavigation();
 
   function onSetupAccount() {
     let category = getSettingsCategoryForApp(filesMustangApp);

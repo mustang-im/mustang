@@ -63,7 +63,7 @@
   import { makeManualConfig } from "../../../logic/Mail/AutoConfig/manualConfig";
   import { AuthMethod } from "../../../logic/Abstract/Account";
   import { getOAuth2BuiltIn } from "../../../logic/Auth/OAuth2Util";
-  import { openApp, selectedApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import { Cancelled } from "../../../logic/util/flow/Abortable";
@@ -85,6 +85,8 @@
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { gt, t } from "../../../l10n/l10n";
   import type { ArrayColl } from "svelte-collections";
+
+  const { openApp, selectedApp } = getNavigation();
 
   let emailAddress: string;
   let password: string;

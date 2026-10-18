@@ -132,7 +132,9 @@
   import { getUILocale, t } from "../../../l10n/l10n";
   import Button from "../../Shared/Button.svelte";
   import GroupBox from "./GroupBox.svelte";
-  import { goBack } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
+
+  const { goBack } = getNavigation();
 
   export let person: Person;
   /** in/out */

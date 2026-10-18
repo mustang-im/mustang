@@ -33,7 +33,7 @@
 </vbox>
 
 <script lang="ts">
-  import { isCalendarListOpen, selectedCalendar, selectedEvent, shownCalendarEvents, startDate, type DateInterval } from "./selected";
+  import { getCalendarSelection, type DateInterval } from "./selected";
   import { appGlobal } from "../../logic/app";
   import CalendarList from "./CalendarList.svelte";
   import MainView from "./MainView.svelte";
@@ -43,6 +43,8 @@
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import { getLocalStorage } from "../Util/LocalStorage";
+
+  const { isCalendarListOpen, selectedCalendar, selectedEvent, shownCalendarEvents, startDate } = getCalendarSelection();
 
   $: if (!$selectedCalendar) { $selectedCalendar = appGlobal.calendars.first; }
 

@@ -1,6 +1,7 @@
 import type { PageParams } from "./selectedApp";
 import { Observable, notifyChangedProperty } from "../../logic/util/Observable";
 import type { URLString } from "../../logic/util/util";
+import type { AppWindow } from "../MainWindow/AppWindow";
 import { ArrayColl, Collection } from "svelte-collections";
 import { derived, type Readable } from "svelte/store";
 
@@ -21,6 +22,9 @@ export class MustangApp extends Observable {
    * This shows when *another* app is active.
    * This is *not* the sidebar of an app while the app itself is open. */
   sidebar: ConstructorOfATypedSvelteComponent | null;
+
+  /** For sub-apps: The main window in which it shows. null = in all main windows */
+  appWindow: AppWindow | null = null;
 
   /** Whether `sidebar` should be open or not */
   @notifyChangedProperty

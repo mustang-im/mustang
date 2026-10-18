@@ -11,12 +11,16 @@
 
 <script lang="ts">
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
-  import { selectedApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { openSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
   import { meetMustangApp } from "../../Meet/MeetMustangApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedApp } = getNavigation();
+  const appWindow = AppWindow.current();
 
   let config: MeetAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
@@ -33,7 +37,7 @@
     if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
       $selectedApp.onBack();
     } else {
-      openSettingsCategoryForApp(meetMustangApp);
+      openSettingsCategoryForApp(meetMustangApp, appWindow);
     }
   }
 </script>

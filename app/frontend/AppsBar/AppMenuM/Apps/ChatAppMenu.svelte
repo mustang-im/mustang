@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import { chatMustangApp } from "../../../Chat/ChatMustangApp";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
   import { appGlobal } from "../../../../logic/app";
   import AccountButton from "../AccountButton.svelte";
   import AppButton from "../AppButton.svelte";
@@ -25,4 +25,6 @@
   import PencilIcon from "lucide-svelte/icons/pencil";
   import AccountIcon from "lucide-svelte/icons/message-square";
   import { URLPart } from "../../../Util/util";
+
+  const { selectedPerson } = getContactsSelection();
 </script>

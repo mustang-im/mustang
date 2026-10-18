@@ -14,7 +14,7 @@
           <Button
             label={subAccount.name}
             icon={getAccountIcon(subAccount)}
-            onClick={() => openSettingsCategoryForAccount(subAccount)}
+            onClick={() => openSettingsCategoryForAccount(subAccount, appWindow)}
             plain={true}
             />
           <hbox class="type font-small">
@@ -76,6 +76,9 @@
   import RefreshIcon from "lucide-svelte/icons/refresh-cw";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: Account;
 

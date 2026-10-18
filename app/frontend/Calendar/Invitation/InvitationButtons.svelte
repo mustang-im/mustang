@@ -93,6 +93,9 @@
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { NotReached } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
   export let invitation: IncomingInvitation | Event;
@@ -133,7 +136,7 @@
     } else {
       throw new NotReached();
     }
-    openEvent(calEvent);
+    openEvent(calEvent, appWindow);
   }
 
   async function onForward() {
@@ -143,7 +146,7 @@
     } else if (invitation instanceof Event) {
       mail = await OutgoingInvitation.forwardEventByMail(invitation);
     }
-    openComposer(mail);
+    openComposer(mail, appWindow);
   }
 </script>
 

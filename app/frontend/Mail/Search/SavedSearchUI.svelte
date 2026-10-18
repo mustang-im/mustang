@@ -12,12 +12,14 @@
 <script lang="ts">
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
-  import { selectedAccount, selectedFolder } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import Button from "../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import { createEventDispatcher } from 'svelte';
   import { t } from "../../../l10n/l10n";
+
+  const { selectedAccount, selectedFolder } = getMailSelection();
   const dispatchEvent = createEventDispatcher();
 
   /** in */

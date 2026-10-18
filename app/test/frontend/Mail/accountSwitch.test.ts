@@ -4,11 +4,14 @@ import { appGlobal } from "../../../logic/app";
 import { MailAccount } from "../../../logic/Mail/MailAccount";
 import { Folder, SpecialFolder } from "../../../logic/Mail/Folder";
 import { DummyMailStorage } from "../../../logic/Mail/Store/DummyMailStorage";
-import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
+import { getMailSelection } from "../../../frontend/Mail/Selected";
 import MailApp from "../../../frontend/Mail/MailApp.svelte";
 import { flushSync, mount } from "svelte";
 import { get } from "svelte/store";
 import { beforeAll, expect, test } from "vitest";
+import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+
+const { selectedAccount, selectedFolder } = getMailSelection(AppWindow.main);
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {

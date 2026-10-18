@@ -21,8 +21,8 @@
 
 <script lang="ts">
   import { settingsCategories } from "../SettingsCategory";
-  import { globalSearchTerm, mustangApps, openApp } from "../../AppsBar/selectedApp";
-  import { selectedCategory } from "./selected";
+  import { getNavigation, mustangApps } from "../../AppsBar/selectedApp";
+  import { getSettingsSelection } from "./selected";
   import { openSettingsCategory } from "./CategoriesUtils";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import SettingsCategoriesPane from "./CategoriesPane.svelte";
@@ -32,6 +32,11 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { globalSearchTerm, openApp } = getNavigation();
+  const { selectedCategory } = getSettingsSelection();
+  const appWindow = AppWindow.current();
 
   let categories = settingsCategories.filterObservable(cat => !cat.forApp || mustangApps.includes(cat.forApp));
 
@@ -39,12 +44,12 @@
   function onSearch(searchTerm: string) {
     for (let cat of categories) {
       if (cat.searchMatchesDirect(searchTerm)) {
-        openSettingsCategory(cat);
+        openSettingsCategory(cat, appWindow);
         return;
       }
       for (let subCat of cat.subCategories) {
         if (subCat.searchMatchesDirect(searchTerm)) {
-          openSettingsCategory(subCat);
+          openSettingsCategory(subCat, appWindow);
           return;
         }
       }

@@ -10,12 +10,15 @@
 <script lang="ts">
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import type { Person } from "../../logic/Abstract/Person";
-  import { newPerson, selectedPerson } from "./Person/Selected";
+  import { getContactsSelection } from "./Person/Selected";
   import { appGlobal } from "../../logic/app";
-  import { selectedWorkspace } from "../MainWindow/Selected";
+  import { getWorkspaceSelection } from "../MainWindow/Selected";
   import AccountDropDown from "../Shared/AccountDropDown.svelte";
   import AddressbookIcon from "lucide-svelte/icons/book-user";
   import { catchErrors } from "../Util/error";
+
+  const { newPerson, selectedPerson } = getContactsSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
 
   export let person: Person;
   export let withLabel = false;

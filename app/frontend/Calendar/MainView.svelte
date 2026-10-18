@@ -38,12 +38,14 @@
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
   import type { DateInterval } from "./selected";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import WeekView from "./DayView/WeekView.svelte";
   import MonthView from "./MonthView/MonthView.svelte";
   import DualView from "./DualView.svelte";
   import ListViewWithSearch from "./ListView/ListViewWithSearch.svelte";
   import type { Collection } from "svelte-collections";
+
+  const { globalSearchTerm } = getNavigation();
 
   export let start: Date;
   export let events: Collection<Event>;

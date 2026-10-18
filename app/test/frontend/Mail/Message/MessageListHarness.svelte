@@ -12,11 +12,13 @@
 
 <script lang="ts">
   import type { EMail } from "../../../../logic/Mail/EMail";
-  import { selectedMessage, selectedMessages } from "../../../../frontend/Mail/Selected";
+  import { getMailSelection } from "../../../../frontend/Mail/Selected";
   import TableMessageList from "../../../../frontend/Mail/3pane/TableMessageList.svelte";
   import VerticalMessageList from "../../../../frontend/Mail/Vertical/VerticalMessageList.svelte";
   import type { Collection } from "svelte-collections";
   import type { Readable } from "svelte/store";
+
+  const { selectedMessage, selectedMessages } = getMailSelection();
 
   export let messages: Collection<EMail>;
   export let view: Readable<string>;

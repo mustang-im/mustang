@@ -46,10 +46,10 @@
 
 <script lang="ts">
   import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { selectedMessage } from "../Selected";
-  import { selectedWorkspace } from "../../MainWindow/Selected";
+  import { getMailSelection } from "../Selected";
+  import { getWorkspaceSelection } from "../../MainWindow/Selected";
   import SearchCriteria from "./SearchCriteria.svelte";
   import SavedSearchUI from "./SavedSearchUI.svelte";
   import RulesFromSearchUI from "./RulesFromSearchUI.svelte";
@@ -63,6 +63,10 @@
   import debounce from "lodash/debounce";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount } from 'svelte';
+
+  const { globalSearchTerm } = getNavigation();
+  const { selectedMessage } = getMailSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
   const dispatchEvent = createEventDispatcher<{ clear: void }>();
 
   /** The search result

@@ -34,8 +34,8 @@
   import { Directory } from "../../../logic/Files/Directory";
   import type { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { newSearchFile } from "../../../logic/Files/Store/setStorage";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
-  import { selectedFile } from "../selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
+  import { getFilesSelection } from "../selected";
   import SearchCriteria from "./SearchCriteria.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
@@ -46,6 +46,9 @@
   import debounce from "lodash/debounce";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount } from 'svelte';
+
+  const { globalSearchTerm } = getNavigation();
+  const { selectedFile } = getFilesSelection();
   const dispatchEvent = createEventDispatcher<{ clear: void }>();
 
   /** The search result

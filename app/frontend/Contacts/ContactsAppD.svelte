@@ -17,9 +17,9 @@
   import { Person } from "../../logic/Abstract/Person";
   import type { PersonOrGroup } from "./Person/PersonOrGroup";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedPerson } from "./Person/Selected";
-  import { selectedWorkspace } from "../MainWindow/Selected";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { getContactsSelection } from "./Person/Selected";
+  import { getWorkspaceSelection } from "../MainWindow/Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "./Person/PersonsList.svelte";
   import PersonDetails from "./PersonPage/PersonDetails.svelte";
@@ -28,6 +28,10 @@
   import Scroll from "../Shared/Scroll.svelte";
   import Splitter from "../Shared/Splitter.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
+
+  const { selectedPerson } = getContactsSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const { globalSearchTerm } = getNavigation();
 
   let selectedAddressbook: Addressbook | null = null; /** null = show all */
 

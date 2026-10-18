@@ -93,6 +93,9 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import { ArrayColl, type Collection } from "svelte-collections";
   import { gt, t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount;
   let sharedWith: Collection<Account> = new ArrayColl<Account>();
@@ -109,7 +112,7 @@
   }
 
   async function onDelete(otherAccount: Account) {
-    let confirmed = confirm($t`Are you sure that you want to delete the account ${otherAccount.name} and all related data from ${appName}?`);
+    let confirmed = appWindow.window.confirm($t`Are you sure that you want to delete the account ${otherAccount.name} and all related data from ${appName}?`);
     if (!confirmed) {
       return;
     }

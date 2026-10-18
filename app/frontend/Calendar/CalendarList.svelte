@@ -17,7 +17,7 @@
           icon={AddIcon}
           classes="small"
           border={false}
-          onClick={() => createNewEvent(calendar, $selectedDate, false)}
+          onClick={() => createNewEvent(calendar, $selectedDate, appWindow, false)}
           />
       </hbox>
     {/each}
@@ -25,7 +25,7 @@
 </vbox>
 
 <script lang="ts">
-  import { selectedDate, shownCalendars } from "./selected";
+  import { getCalendarSelection } from "./selected";
   import { createNewEvent } from "./event";
   import { appGlobal } from "../../logic/app";
   import ShowCalendarsButton from "./ShowCalendarsButton.svelte";
@@ -33,6 +33,10 @@
   import Checkbox from "../Shared/Checkbox.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import { t } from "../../l10n/l10n";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { selectedDate, shownCalendars } = getCalendarSelection();
+  const appWindow = AppWindow.current();
 
   let calendars = appGlobal.calendars;
 </script>

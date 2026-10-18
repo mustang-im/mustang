@@ -8,10 +8,12 @@
 </hbox>
 
 <script lang="ts">
-  import { isCalendarListOpen } from "./selected";
+  import { getCalendarSelection } from "./selected";
   import { appGlobal } from "../../logic/app";
   import ShowCalendarsButton from "./ShowCalendarsButton.svelte";
   import NewEventButton from "./NewEventButton.svelte";
+
+  const { isCalendarListOpen } = getCalendarSelection();
 
   let calendars = appGlobal.calendars;
 </script>

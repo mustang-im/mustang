@@ -4,11 +4,14 @@
 
 <script lang="ts">
   import { MeetingState } from "../../logic/Meet/VideoConfMeeting";
-  import { openApp, selectedApp, mustangApps } from "../AppsBar/selectedApp";
+  import { getNavigation, mustangApps } from "../AppsBar/selectedApp";
+  import { AppWindow } from "../MainWindow/AppWindow";
   import { meetMustangApp } from "./MeetMustangApp";
   import { PhoneAccount } from "../../logic/Meet/PhoneAccount";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
+
+  const { openApp, selectedApp } = getNavigation();
 
   // HACK: Why are some ended meetings not removed? See `VideoConfMeeting.hangup()`
   $: meetings = appGlobal.meetings.filterObservable(m => m.state != MeetingState.Ended);
@@ -37,6 +40,11 @@
     }
     event.stopPropagation();
     let meeting = await acc.openMeetingURL(url);
+    let fromWindow: AppWindow = (event as any).appWindow ?? AppWindow.main;
+    let { openApp, bringAppToFront } = getNavigation(fromWindow);
     openApp(meetMustangApp, { meeting });
+    if (fromWindow.mainWindow != fromWindow) {
+      bringAppToFront();
+    }
   }
 </script>

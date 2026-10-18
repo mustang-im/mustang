@@ -10,7 +10,7 @@
 </Route>
 
 <script lang="ts">
-  import { selectedTopic } from "./selected";
+  import { getTopicSelection } from "./selected";
   import { appGlobal } from "../../logic/app";
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
@@ -18,6 +18,8 @@
   import TopicGraph from "./Graph/TopicGraphPane.svelte";
   import TopicPage from "./Page/TopicPage.svelte";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedTopic } = getTopicSelection();
 
   $: location = useLocation();
   $: params = getParams($location?.state);

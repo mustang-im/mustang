@@ -52,6 +52,9 @@
   import { t } from "../../../l10n/l10n";
   import { catchErrors } from "../../Util/error";
   import { onMount } from "svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let event: Event;
 
@@ -66,7 +69,7 @@
   }
 
   async function onCopyMeetingURL() {
-    await navigator.clipboard.writeText(event.onlineMeetingURL);
+    await appWindow.window.navigator.clipboard.writeText(event.onlineMeetingURL);
   }
 
   async function onOpenMeetingURL() {
@@ -80,7 +83,7 @@
   }
 
   function onRemove() {
-    if (event.participants.hasItems && !event.isNew && !confirm($t`Changing the meeting URL might cause some participants to miss the meeting. Are you sure?`)) {
+    if (event.participants.hasItems && !event.isNew && !appWindow.window.confirm($t`Changing the meeting URL might cause some participants to miss the meeting. Are you sure?`)) {
       return;
     }
     event.isOnline = false;

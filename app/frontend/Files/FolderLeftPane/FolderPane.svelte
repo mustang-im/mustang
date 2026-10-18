@@ -16,7 +16,7 @@
   import { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
   import { myHarddrive } from "../../../logic/Files/Harddrive/HarddriveAccount";
-  import { selectedFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import AccountList from "./AccountList.svelte";
   import FolderList from "./FolderList.svelte";
@@ -25,6 +25,8 @@
   import { FilesView } from "../LeftPane/PaneViewSwitcher.svelte";
   import { ArrayColl, Collection } from 'svelte-collections';
   import { catchErrors } from "../../Util/error";
+
+  const { selectedFile } = getFilesSelection();
 
   /** The list of files and folders to show on the right pane
    * in/out only */

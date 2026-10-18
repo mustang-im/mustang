@@ -45,8 +45,10 @@
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import HistoryIcon from "lucide-svelte/icons/history";
   import PlusIcon from "lucide-svelte/icons/plus";
-  import { goTo, openApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
+
+  const { goTo, openApp } = getNavigation();
 
   export let selectedAccount: MeetAccount;
 

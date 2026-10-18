@@ -14,15 +14,18 @@
 <script lang="ts">
   import { meetMustangApp } from "../../../Meet/MeetMustangApp";
   import { startAdHocMeeting, callSelected } from "../../../Meet/Start/start";
-  import { goTo, openApp } from "../../selectedApp";
+  import { getNavigation } from "../../selectedApp";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
   import BasicButton from "../BasicButton.svelte";
   import HistoryIcon from "lucide-svelte/icons/history";
   import PersonIcon from "lucide-svelte/icons/user";
   import PlusIcon from "lucide-svelte/icons/plus";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
   import { Person } from "../../../../logic/Abstract/Person";
+
+  const { goTo, openApp } = getNavigation();
+  const { selectedPerson } = getContactsSelection();
 
   async function onCreateMeeting() {
     let meeting = await startAdHocMeeting();

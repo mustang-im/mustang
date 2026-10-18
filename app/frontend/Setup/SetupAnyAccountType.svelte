@@ -33,13 +33,15 @@
 <script lang="ts">
   import { SetupMustangApp } from "./SetupMustangApp";
   import { mailMustangApp } from "../Mail/MailMustangApp";
-  import { goTo, openApp } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import ExpanderButton from "../Shared/ExpanderButton.svelte";
   import Header from "./Shared/Header.svelte";
   import Button from "../Shared/Button.svelte";
   import { catchErrors } from "../Util/error";
   import { t } from "../../l10n/l10n";
+
+  const { goTo, openApp } = getNavigation();
 
   export let onContinue: () => void = null;
 

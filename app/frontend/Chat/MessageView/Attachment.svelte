@@ -60,6 +60,9 @@
   import Clickable from "../../Shared/Clickable.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let attachment: Attachment;
 
@@ -73,7 +76,7 @@
       return; // not downloaded yet
     }
     if (canOpenFileInternally(attachment.mimeType)) {
-      await openFileInternallyFromFile(attachment.content);
+      await openFileInternallyFromFile(attachment.content, appWindow);
     } else {
       await attachment.saveFile(); // offer to save the blob to disk
     }

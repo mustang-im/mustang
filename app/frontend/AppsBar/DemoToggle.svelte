@@ -8,15 +8,21 @@
 <script lang="ts">
   import { isDemo } from "./demo";
   import { loadDemoMustangApps, loadMustangApps } from "./loadMustangApps";
-  import { selectedPerson } from "../Contacts/Person/Selected";
-  import { selectedCalendar, selectedEvent } from "../Calendar/selected";
-  import { selectedAccount as selectedChatAccount } from "../Chat/selected";
-  import { selectedAccount as selectedMailAccount, selectedFolder as selectedMailFolder, selectedMessage as selectedEMail } from "../Mail/Selected";
-  import { selectedAccount as selectedFilesAccount, selectedFolder as selectedFileFolder, selectedFile, selectedFiles } from "../Files/selected";
+  import { getContactsSelection } from "../Contacts/Person/Selected";
+  import { getCalendarSelection } from "../Calendar/selected";
+  import { getChatSelection } from "../Chat/selected";
+  import { getMailSelection } from "../Mail/Selected";
+  import { getFilesSelection } from "../Files/selected";
   import AppButton from "./AppButton.svelte";
   import DemoIcon from "lucide-svelte/icons/sparkles";
   import { catchErrors } from "../Util/error";
   import { t } from "../../l10n/l10n";
+
+  const { selectedPerson } = getContactsSelection();
+  const { selectedCalendar, selectedEvent } = getCalendarSelection();
+  const { selectedAccount: selectedChatAccount } = getChatSelection();
+  const { selectedAccount: selectedMailAccount, selectedFolder: selectedMailFolder, selectedMessage: selectedEMail } = getMailSelection();
+  const { selectedAccount: selectedFilesAccount, selectedFolder: selectedFileFolder, selectedFile, selectedFiles } = getFilesSelection();
 
   async function onToggle() {
     const { testDataOn, testDataOff } = await import("../../logic/testData");

@@ -3,7 +3,7 @@
 <hbox flex class="message-with-thread" class:mobile={$appGlobal.isMobile}>
   <!--<ThreadPane {message} horizontal={$appGlobal.isMobile} />-->
   <vbox flex class="message-display"
-    on:keydown={event => catchErrors(() => onKeyOnList(event))}
+    on:keydown={event => catchErrors(() => onKeyOnList(event, appWindow))}
     tabindex={0}
     >
     <MessageHeader bind:message />
@@ -32,6 +32,9 @@
   import Paper from "../../Shared/Paper.svelte";
   import ThreadPane from "../Thread/ThreadPane.svelte";
   import { catchErrors } from "../../Util/error";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 </script>

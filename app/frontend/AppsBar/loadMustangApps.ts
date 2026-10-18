@@ -11,7 +11,8 @@ import { topicMustangApp } from "../Topic/TopicMustangApp";
 import { webAppsMustangApp } from "../WebApps/WebAppsMustangApp";
 // #endif
 import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
-import { mustangApps, selectedApp, showDemoToggle } from "./selectedApp";
+import { mustangApps, getNavigation, showDemoToggle } from "./selectedApp";
+import { AppWindow } from "../MainWindow/AppWindow";
 import { MustangApp } from "./MustangApp";
 import { appGlobal } from "../../logic/app";
 import { getConfigDir } from "../../logic/util/backend-wrapper";
@@ -41,7 +42,7 @@ export function loadMustangApps() {
 
   if (false && !production) {
     loadDemoMustangApps();
-    selectedApp.set(mailMustangApp);
+    getNavigation(AppWindow.main).selectedApp.set(mailMustangApp);
     return;
   }
   // Once finished, add apps here, and remove loadDemoMustangApps() */

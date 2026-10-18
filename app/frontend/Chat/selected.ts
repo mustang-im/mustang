@@ -2,9 +2,18 @@ import type { ChatAccount } from "../../logic/Chat/ChatAccount";
 import type { ChatRoom } from "../../logic/Chat/ChatRoom";
 import type { ChatMessage } from "../../logic/Chat/ChatMessage";
 import type { Editor } from '@tiptap/core';
+import { AppWindow } from "../MainWindow/AppWindow";
 import { writable, type Writable } from "svelte/store";
 
-export let selectedAccount: Writable<ChatAccount> = writable(null);
-export let selectedRoom: Writable<ChatRoom> = writable(null);
-export let selectedDraft: Writable<ChatMessage> = writable(null);
-export let selectedEditor: Writable<Editor> = writable(null);
+export function getChatSelection(appWindow = AppWindow.current()) {
+  return appWindow.uiState(createChatSelection);
+}
+
+function createChatSelection() {
+  return {
+    selectedAccount: writable(null) as Writable<ChatAccount>,
+    selectedRoom: writable(null) as Writable<ChatRoom>,
+    selectedDraft: writable(null) as Writable<ChatMessage>,
+    selectedEditor: writable(null) as Writable<Editor>,
+  };
+}

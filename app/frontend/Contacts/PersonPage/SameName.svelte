@@ -53,6 +53,9 @@
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let person: Person;
   export let isEditing = false;
@@ -79,7 +82,7 @@
   }
 
   async function merge(other: Person) {
-    if (!confirm($t`Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?`)) {
+    if (!appWindow.window.confirm($t`Do you want to merge the 2 contacts, i.e. copy the data from the other contact into this contact, and delete the other contact?`)) {
       return;
     }
     await person.merge(other);

@@ -20,8 +20,8 @@
 
 <script lang="ts">
   import { contactsMustangApp } from "../../../Contacts/ContactsMustangApp";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
-  import { goTo } from "../../selectedApp";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
+  import { getNavigation } from "../../selectedApp";
   import { appGlobal } from "../../../../logic/app";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
@@ -33,6 +33,9 @@
   import HistoryIcon from "lucide-svelte/icons/history";
   import { URLPart } from "../../../Util/util";
   import { assert } from "../../../../logic/util/util";
+
+  const { selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
 
   function onCreatePerson() {
     let addressbook = appGlobal.addressbooks.first; // TODO selectedAddressbook?

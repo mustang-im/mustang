@@ -9,12 +9,15 @@ import { findOrCreatePersonUID } from "../../../../logic/Abstract/PersonUID";
 import { getTagByName } from "../../../../logic/Abstract/Tag";
 import { sleep } from "../../../../logic/util/util";
 import { waitFor } from "../../../logic/util/waitFor";
-import { selectedMessage } from "../../../../frontend/Mail/Selected";
+import { getMailSelection } from "../../../../frontend/Mail/Selected";
 import MessageMovePopup from "../../../../frontend/Mail/Message/MessageMovePopup.svelte";
 import { flushSync, mount } from "svelte";
 import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
 import { beforeAll, expect, test } from "vitest";
+import { AppWindow } from "../../../../frontend/MainWindow/AppWindow";
+
+const { selectedMessage } = getMailSelection(AppWindow.main);
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {

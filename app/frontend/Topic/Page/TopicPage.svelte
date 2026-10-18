@@ -79,6 +79,9 @@
   import { DOMSerializer } from "@tiptap/pm/model";
   import debounce from "lodash/debounce";
   import { mount, unmount } from "svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let topic: Topic;
 
@@ -195,7 +198,7 @@
 
   async function onDelete() {
     if (topic.content.hasItems) {
-      let ok = confirm(gt`Do you want to delete topic ${topic.name}, including the page and all its contents?`);
+      let ok = appWindow.window.confirm(gt`Do you want to delete topic ${topic.name}, including the page and all its contents?`);
       if (!ok) {
         return;
       }

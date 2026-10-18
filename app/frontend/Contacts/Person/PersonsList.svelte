@@ -21,7 +21,7 @@
 <script lang="ts">
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "./PersonOrGroup";
-  import { selectedPerson } from "./Selected";
+  import { getContactsSelection } from "./Selected";
   import { appGlobal } from "../../../logic/app";
   import { ArrayColl, type Collection } from "svelte-collections";
   import PersonLine from "./PersonLine.svelte";
@@ -29,6 +29,8 @@
   import FastList from "../../Shared/FastList.svelte";
   import { t } from "../../../l10n/l10n";
   import { mergeColls } from "svelte-collections";
+
+  const { selectedPerson } = getContactsSelection();
 
   export let persons: Collection<PersonOrGroup>;
   export let selected: PersonOrGroup = $selectedPerson;

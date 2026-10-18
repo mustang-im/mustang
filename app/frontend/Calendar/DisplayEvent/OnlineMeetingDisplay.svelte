@@ -31,6 +31,9 @@
   import { getBaseDomainFromURL } from "../../../logic/util/netUtil";
   import type { URLString } from "../../../logic/util/util";
   import { t, gt } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let event: Event;
 
@@ -59,7 +62,7 @@
   }
 
   async function onCopyMeetingURL() {
-    await navigator.clipboard.writeText(event.onlineMeetingURL);
+    await appWindow.window.navigator.clipboard.writeText(event.onlineMeetingURL);
   }
 </script>
 

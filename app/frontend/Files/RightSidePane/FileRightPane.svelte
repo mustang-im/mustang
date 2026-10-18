@@ -20,12 +20,12 @@
           />
       </vbox>
     {:else if canPreview}
-      <Clickable onDoubleClick={() => openPreview(file)}>
+      <Clickable onDoubleClick={() => openPreview(file, appWindow)}>
         <Thumbnail {file} size={200} preview />
       </Clickable>
       <hbox class="open-preview buttons">
         <RoundButton
-          onClick={() => openPreview(file)}
+          onClick={() => openPreview(file, appWindow)}
           icon={OpenPreviewIcon}
           />
       </hbox>
@@ -42,7 +42,7 @@
         <FileIcon ext={$file.ext} localFilePath={$file.path} size={20} slot="icon" />
       </Button>
       <RoundButton
-        onClick={() => openFileInCloudApp(file)}
+        onClick={() => openFileInCloudApp(file, appWindow)}
         icon={OpenCloudIcon}
         label={$t`Open with a cloud app on the web`}
         disabled={cloudAppDisabledReason}
@@ -69,7 +69,7 @@
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
   import { canShowPreview, fileSize, openFileInCloudApp, openPreview } from "../file";
-  import { isRightSidebarExpanded, viewFile, fileViewer } from "../selected";
+  import { getFilesSelection } from "../selected";
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
   import Rename from "./Rename.svelte";
   import ActionToolbar from "./ActionToolbar.svelte";
@@ -87,6 +87,10 @@
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import Clickable from "../../Shared/Clickable.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { isRightSidebarExpanded, viewFile, fileViewer } = getFilesSelection();
+  const appWindow = AppWindow.current();
 
   export let file: File;
 

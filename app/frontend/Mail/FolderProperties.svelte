@@ -23,7 +23,7 @@
 <script lang="ts">
   import type { Folder } from "../../logic/Mail/Folder";
   import { SavedSearchFolder } from "../../logic/Mail/Virtual/SavedSearchFolder";
-  import { selectedFolder } from "./Selected";
+  import { getMailSelection } from "./Selected";
   import FolderGeneral from "../Settings/Mail/Account/FolderGeneral.svelte";
   import FolderActions from "../Settings/Mail/Account/FolderActions.svelte";
   import HeaderGroupBox from "../Shared/HeaderGroupBox.svelte";
@@ -32,6 +32,10 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { selectedFolder } = getMailSelection();
+  const appWindow = AppWindow.current();
   const dispatchEvent = createEventDispatcher<{ createFolder: void }>();
 
   export let folder: Folder;
@@ -42,7 +46,7 @@
 
   async function onDelete() {
     if (!(folder instanceof SavedSearchFolder)) {
-      let confirmed = confirm($t`Are you sure that you want to the delete folder ${folder.name} and all messages in it? This will also delete it on the server.`);
+      let confirmed = appWindow.window.confirm($t`Are you sure that you want to the delete folder ${folder.name} and all messages in it? This will also delete it on the server.`);
       if (!confirmed) {
         return;
       }

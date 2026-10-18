@@ -92,7 +92,7 @@
   import { PersonUID, kDummyPerson } from "../../../logic/Abstract/PersonUID";
   import { Person } from "../../../logic/Abstract/Person";
   import type { PersonOrGroup } from "../../Contacts/Person/PersonOrGroup";
-  import { selectedPerson } from "../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../Contacts/Person/Selected";
   import type { Tag } from "../../../logic/Abstract/Tag";
   import { appGlobal } from "../../../logic/app";
   import MessageToolbar from "./MessageToolbar.svelte";
@@ -111,6 +111,8 @@
   import { getDateTimeString } from "../../Util/date";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
   import { onDestroy } from "svelte";
+
+  const { selectedPerson } = getContactsSelection();
 
   export let message: EMail;
 

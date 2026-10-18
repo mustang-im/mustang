@@ -19,13 +19,15 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { saveAndInitConfig } from "../../../logic/Mail/AutoConfig/saveConfig";
-  import { openApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import LoginPage from "./LoginPage.svelte";
   import CheckConfig from "./CheckConfig.svelte";
   import Footer from "../Shared/Footer.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+
+  const { openApp } = getNavigation();
 
   export let account: MailAccount;
 

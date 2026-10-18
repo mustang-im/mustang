@@ -15,6 +15,9 @@
   import { openPersonFromOtherApp } from "../../Contacts/open";
   import ParticipantConfirmIcon from "../EditEvent/ParticipantConfirmIcon.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let participant: Participant;
 
@@ -23,7 +26,7 @@
     if (!person) {
       return;
     }
-    openPersonFromOtherApp(person);
+    openPersonFromOtherApp(person, appWindow);
   }
 </script>
 

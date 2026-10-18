@@ -20,8 +20,8 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { type Folder } from "../../../logic/Mail/Folder";
-  import { selectedWorkspace } from "../../MainWindow/Selected";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getWorkspaceSelection } from "../../MainWindow/Selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import AccountSelectorRound from "../../Shared/AccountSelectorRound.svelte";
   import FolderList from "./FolderList.svelte";
   import AccountsBarM from "./AccountsBarM.svelte";
@@ -31,6 +31,9 @@
   import { sleep, assert } from "../../../logic/util/util";
   import type { ArrayColl, Collection } from 'svelte-collections';
   import { t } from "../../../l10n/l10n";
+
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const { goTo } = getNavigation();
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */

@@ -95,6 +95,9 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/save";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount;
 
@@ -113,7 +116,7 @@
   }
 
   async function onDelete() {
-    if (rule.name && !confirm($t`Do you want to delete the rule '${rule.name}'?`)) {
+    if (rule.name && !appWindow.window.confirm($t`Do you want to delete the rule '${rule.name}'?`)) {
       return;
     }
 

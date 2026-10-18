@@ -12,6 +12,9 @@
   import { fileSize } from "../../Files/file";
   import { openFileFromOtherApp } from "../../Files/open";
   import Clickable from "../../Shared/Clickable.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let file: File;
 
@@ -20,7 +23,7 @@
   }
 
   async function onOpenPreview() {
-    openFileFromOtherApp(file);
+    openFileFromOtherApp(file, appWindow);
   }
 </script>
 

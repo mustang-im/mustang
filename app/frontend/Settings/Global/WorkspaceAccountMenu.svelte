@@ -32,7 +32,7 @@
   import { Account } from "../../../logic/Abstract/Account";
   import { openSettingsCategoryForAccount } from "../Window/CategoriesUtils";
   import { appGlobal } from "../../../logic/app";
-  import { changedWorkspace, selectedWorkspace } from "../../MainWindow/Selected";
+  import { getWorkspaceSelection, changedWorkspace } from "../../MainWindow/Selected";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
@@ -40,6 +40,10 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import DotsIcon from "lucide-svelte/icons/ellipsis";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const appWindow = AppWindow.current();
 
   export let account: Account;
   export let workspace: Workspace;
@@ -47,7 +51,7 @@
   let workspaces = appGlobal.workspaces;
 
   function onOpenAccount() {
-    openSettingsCategoryForAccount(account);
+    openSettingsCategoryForAccount(account, appWindow);
   }
   async function onMove(otherWorkspace: Workspace) {
     account.workspace = otherWorkspace;

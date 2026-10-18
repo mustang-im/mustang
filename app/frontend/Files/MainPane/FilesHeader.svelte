@@ -62,7 +62,7 @@
 
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
-  import { selectedFolder } from "../selected";
+  import { getFilesSelection } from "../selected";
   import RightViewSwitcher from "./MainViewSwitcher.svelte";
   import FileSelector from "../../Mail/Composer/Attachments/FileSelector.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -73,6 +73,8 @@
   import BackIcon from "lucide-svelte/icons/chevron-left";
   import SubIcon from "lucide-svelte/icons/chevron-right";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedFolder } = getFilesSelection();
 
   export let dir: Directory;
 
