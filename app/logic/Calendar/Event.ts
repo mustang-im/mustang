@@ -6,7 +6,7 @@ import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
-import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
+import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";

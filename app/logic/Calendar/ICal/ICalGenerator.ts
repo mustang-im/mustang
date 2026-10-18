@@ -1,7 +1,7 @@
 import type { Event } from "../Event";
 import { InvitationResponse, ParticipationStatus, type iCalMethod } from "../Invitation/InvitationStatus";
 import { VTimezone } from "./VTimezone";
-import { myTimezone } from "../../../frontend/Util/date";
+import { myTimezone } from "../../util/date";
 import { appName } from "../../build";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";

@@ -6,7 +6,7 @@ import { SystemNotification, NotificationKinds } from "../Shared/SystemNotificat
 import { getComputerOn } from "../../logic/util/backend-wrapper";
 import { getLocalStorage } from "../Util/LocalStorage";
 import { catchErrors, backgroundError } from "../Util/error";
-import { k1HourMS } from "../Util/date";
+import { k1HourMS } from "../../logic/util/date";
 import CalendarIcon from '../asset/icon/appBar/calendar.svg?raw';
 import { Debounce } from "../../logic/util/flow/Debounce";
 import { sleep } from "../../logic/util/util";

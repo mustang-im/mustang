@@ -24,7 +24,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { selectedEvent } from "../selected";
   import { openEvent } from "../open";
-  import { getDurationString } from "../../Util/date";
+  import { getDurationString } from "../../../logic/util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;

@@ -7,7 +7,7 @@ import type { ActiveSyncCalendar } from "./ActiveSyncCalendar";
 import { ActiveSyncOutgoingInvitation } from "./ActiveSyncOutgoingInvitation";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { ContentDisposition } from "../../Abstract/Attachment";
-import { k1MinuteMS } from "../../../frontend/Util/date";
+import { k1MinuteMS } from "../../util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, base64ToUint8Array, ensureArray } from "../../util/util";
 import type { ArrayColl } from "svelte-collections";

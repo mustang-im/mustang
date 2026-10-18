@@ -38,7 +38,7 @@
   import EventProposal from "../SML/Shared/EventProposal.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import CalendarIcon from "lucide-svelte/icons/calendar";
-  import { getFormattedDateString } from "../../Util/date";
+  import { getFormattedDateString } from "../../../logic/util/date";
   import { t } from "../../../l10n/l10n";
   import { ArrayColl } from "svelte-collections";
 

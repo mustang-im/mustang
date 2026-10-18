@@ -8,7 +8,7 @@ import { parseMIMEDirectSubparts, parseHeaderParameters, toCRLF } from "../MIME"
 import { MailIdentity, findIdentityForEMailAddress } from "../../MailIdentity";
 import type { PersonUID } from "../../../Abstract/PersonUID";
 import type { Attachment } from "../../../Abstract/Attachment";
-import { k1HourMS } from "../../../../frontend/Util/date";
+import { k1HourMS } from "../../../util/date";
 import { UserError, assert } from "../../../util/util";
 import { gt } from "../../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";

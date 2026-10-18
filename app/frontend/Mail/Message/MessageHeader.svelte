@@ -108,7 +108,7 @@
   import RemoveIcon from "lucide-svelte/icons/x";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { catchErrors, backgroundError } from "../../Util/error";
-  import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeString } from "../../../logic/util/date";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
   import { onDestroy } from "svelte";
 

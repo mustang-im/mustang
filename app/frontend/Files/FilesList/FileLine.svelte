@@ -28,7 +28,7 @@
   import { File } from "../../../logic/Files/File";
   import { openFileInDefaultApp, fileSize } from "../file";
   import { selectedFile } from "../selected";
-  import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeString } from "../../../logic/util/date";
   import Clickable from "../../Shared/Clickable.svelte";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
 

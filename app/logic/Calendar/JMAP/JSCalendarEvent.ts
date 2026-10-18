@@ -3,7 +3,7 @@ import type { TJMAPCalendarEvent, TJSCalendarAlert, TJSCalendarRecurrenceRule, T
 import { Frequency, RecurrenceRule, type RecurrenceInit } from "../RecurrenceRule";
 import { InvitationResponse } from "../Invitation/InvitationStatus";
 import { Participant } from "../Participant";
-import { k1DayS, k1HourS, k1MinuteS } from "../../../frontend/Util/date";
+import { k1DayS, k1HourS, k1MinuteS } from "../../util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotImplemented, assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";

@@ -8,7 +8,7 @@
   import Button from "../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
-  import { getWeekStart } from "../Util/date";
+  import { getWeekStart } from "../../logic/util/date";
   import { getDateTimeLocale, t } from "../../l10n/l10n";
 
   export let date = new Date(); /* in/out */

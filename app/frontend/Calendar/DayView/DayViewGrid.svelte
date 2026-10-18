@@ -48,7 +48,7 @@
   import DayColumn from "./DayColumn.svelte";
   import AllDayEvents from "./AllDayEvents.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { getToday, getWeekStart } from "../../Util/date";
+  import { getToday, getWeekStart } from "../../../logic/util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
