@@ -26,14 +26,14 @@
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { layoutDayRow } from "../../../frontend/Calendar/MonthView/WeekRow";
   import { CalendarActions } from "../CalendarActions";
-  import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
+  import { selectedSlots, eventPeek, type SlotSelection } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "../MonthView/EventContainer.svelte";
   import InlineEventTitle from "../InlineEventTitle.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
-  import { getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let days: Date[];
   export let firstColumn: number;
@@ -41,7 +41,7 @@
   export let calendar: Calendar | null;
   export let group: number;
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
 
   let stripEl: HTMLDivElement;
 
@@ -95,7 +95,7 @@
   function onContextMenu(mouseEvent: MouseEvent) {
     mouseEvent.preventDefault();
     selectDay(dayAt(mouseEvent.clientX));
-    menus.openSlotMenu(mouseEvent, $selectedSlots);
+    dispatch("slotmenu", { slots: $selectedSlots, mouseEvent });
   }
 </script>
 

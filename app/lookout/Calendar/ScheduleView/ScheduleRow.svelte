@@ -35,13 +35,13 @@
   import { ScheduleLayout } from "./ScheduleLayout";
   import { WorkingHours } from "../WorkingHours";
   import { CalendarActions } from "../CalendarActions";
-  import { selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";
+  import { selectedSlots, eventPeek, type SlotSelection } from "../selected";
   import { selectedCalendar, selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import ScheduleEvent from "./ScheduleEvent.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
-  import { getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let calendar: Calendar;
   export let events: Collection<Event>;
@@ -53,7 +53,7 @@
 
   const kLaneHeight = 26;
   const kRowPadding = 4;
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
 
   let trackEl: HTMLDivElement;
 
@@ -134,7 +134,7 @@
     }
     $selectedEvent = null;
     $eventPeek = null;
-    menus.openSlotMenu(mouseEvent, $selectedSlots);
+    dispatch("slotmenu", { slots: $selectedSlots, mouseEvent });
   }
 </script>
 

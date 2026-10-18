@@ -14,7 +14,7 @@
       {#if showWeekNumbers}
         <div class="week-number" title={$t`Week ${getWeekNumber(week[0])}`}>{getWeekNumber(week[0])}</div>
       {/if}
-      <WeekRow days={week} {weekIndex} {range} events={inRange} {onOpenDay} />
+      <WeekRow days={week} {weekIndex} {range} events={inRange} {onOpenDay} on:slotmenu />
     </hbox>
   {/each}
 </vbox>

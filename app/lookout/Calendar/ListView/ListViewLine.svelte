@@ -28,24 +28,28 @@
   {/each}
 </div>
 
+<ContextMenu bind:this={contextMenu}>
+  <EventMenu {event} />
+</ContextMenu>
+
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { EventTable } from "./EventTable";
   import { EventTableColumn } from "./EventTable";
   import { EventLook } from "../DisplayEvent/EventLook";
-  import { kCalendarMenus, type CalendarMenus } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { openEvent } from "../../../frontend/Calendar/open";
   import AppointmentIcon from "lucide-svelte/icons/calendar";
   import RecurringIcon from "lucide-svelte/icons/repeat";
   import MeetingIcon from "lucide-svelte/icons/users-round";
-  import { getContext } from "svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
+  import EventMenu from "../DisplayEvent/EventMenu.svelte";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
   export let columns: EventTableColumn[];
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  let contextMenu: ContextMenu;
 
   $: isSelected = $selectedEvent == event;
   $: calendar = $event.calendar;
@@ -63,7 +67,7 @@
   function onContextMenu(mouseEvent: MouseEvent) {
     mouseEvent.preventDefault();
     $selectedEvent = event;
-    menus.openEventMenu(mouseEvent, event);
+    contextMenu.onContextMenu(mouseEvent);
   }
 </script>
 

@@ -31,7 +31,7 @@
   {#each rows as row (row.calendar.id)}
     <ScheduleRow calendar={row.calendar} events={row.events} days={range.days} {pxPerHour} {timeScale}
       nowMinute={showsNow ? nowMinute : null}
-      isSelected={$selectedCalendar == row.calendar} />
+      isSelected={$selectedCalendar == row.calendar} on:slotmenu />
   {:else}
     <div class="empty">{$t`Select a calendar in the folder pane to show it here.`}</div>
   {/each}

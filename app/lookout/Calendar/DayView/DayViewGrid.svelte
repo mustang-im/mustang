@@ -26,7 +26,7 @@
         </hbox>
       {/if}
       {#each groupEvents as group, g}
-        <AllDayEvents days={range.days} firstColumn={firstColumnOf(g)} events={group.allDay} calendar={group.calendar} group={g} />
+        <AllDayEvents days={range.days} firstColumn={firstColumnOf(g)} events={group.allDay} calendar={group.calendar} group={g} on:slotmenu />
       {/each}
     </div>
   </div>
@@ -47,7 +47,7 @@
           workingHours={$groupWorkingHours[g]} {pxPerMinute} {timeScale}
           isToday={day.toDateString() == $now.toDateString()}
           showsPastTimeLine={showsToday && day.getTime() < new Date($now).setHours(0, 0, 0, 0)}
-          visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} onScrollToMinute={scrollToMinute} />
+          visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} onScrollToMinute={scrollToMinute} on:slotmenu />
       {/each}
     {/each}
   </div>

@@ -2,13 +2,13 @@
   <vbox flex class="days" slot="first">
     <DateRange bind:date={$selectedDate} range={daysRange} />
     <DayViewGrid range={daysRange} {groups} enlargeSelectedDay={true}
-      onOpenDay={selectDay} onOverlay={showOverlay} />
+      onOpenDay={selectDay} onOverlay={showOverlay} on:slotmenu />
   </vbox>
   <vbox flex class="month" slot="second">
     <DateRange bind:date={start} range={monthRange} showToday={false}>
       <slot name="top-right" />
     </DateRange>
-    <MonthView range={monthRange} {events} onOpenDay={selectDay} />
+    <MonthView range={monthRange} {events} onOpenDay={selectDay} on:slotmenu />
   </vbox>
 </SplitterBidirectional>
 

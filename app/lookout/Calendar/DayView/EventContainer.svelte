@@ -45,6 +45,11 @@
       {/if}
     </div>
   </EventContent>
+  <div class="context-menu" use:moveOutOfGrid>
+    <ContextMenu bind:this={contextMenu}>
+      <EventMenu {event} />
+    </ContextMenu>
+  </div>
 </div>
 
 <script lang="ts">
@@ -54,20 +59,21 @@
   import { openEvent } from "../../../frontend/Calendar/open";
   import { catchErrors } from "../../../frontend/Util/error";
   import { EventDrag, type EventDragMode } from "../EventDrag";
-  import { now, kCalendarMenus, CalendarCurrentView, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
+  import { now, CalendarCurrentView, eventPeek, selectedSlots } from "../selected";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { k1MinuteMS } from "../../../frontend/Util/date";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
+  import EventMenu from "../DisplayEvent/EventMenu.svelte";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
-  import { getContext } from "svelte";
 
   export let item: TimedEventItem;
   export let pxPerMinute: number;
   export let snapMinutes: number;
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  let contextMenu: ContextMenu;
   let element: HTMLElement;
   let drag: EventDrag | null = null;
   let wasDragged = false;
@@ -128,7 +134,7 @@
     mouseEvent.stopPropagation();
     select();
     $eventPeek = null;
-    menus.openEventMenu(mouseEvent, event);
+    contextMenu.onContextMenu(mouseEvent);
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
@@ -189,9 +195,24 @@
     }
   }
   // </copied>
+
+  // <copied from="../../Shared/Menu/SubMenu.svelte">
+  function moveOutOfGrid(node: HTMLElement) {
+    let target = node.closest(".lookout-window") ?? document.body;
+    target.appendChild(node);
+    return {
+      destroy() {
+        node.remove();
+      },
+    };
+  }
+  // </copied>
 </script>
 
 <style>
+  .context-menu {
+    display: contents;
+  }
   .event-block {
     display: flex;
     position: absolute;

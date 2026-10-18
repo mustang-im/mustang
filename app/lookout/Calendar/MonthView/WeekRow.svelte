@@ -50,7 +50,7 @@
   import type { CalendarRange } from "../CalendarRange";
   import { WeekRowLayout } from "./WeekRow";
   import { CalendarActions } from "../CalendarActions";
-  import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus, type SlotSelection } from "../selected";
+  import { now, selectedSlots, eventPeek, type SlotSelection } from "../selected";
   import { selectedCalendar, selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
@@ -59,7 +59,7 @@
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
-  import { getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let days: Date[];
@@ -68,7 +68,7 @@
   export let events: Collection<Event>;
   export let onOpenDay: (day: Date) => void;
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
   const kHeaderHeight = 24;
   const kLineHeight = 22;
 
@@ -142,7 +142,7 @@
     if (!isSelected(day, $selectedSlots)) {
       selectDay(day);
     }
-    menus.openSlotMenu(mouseEvent, $selectedSlots);
+    dispatch("slotmenu", { slots: $selectedSlots, mouseEvent });
   }
 </script>
 

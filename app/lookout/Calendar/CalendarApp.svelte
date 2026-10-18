@@ -32,7 +32,7 @@
                 {#if tableEvents}
                   <ListView events={tableEvents} />
                 {:else if view == "dual"}
-                  <DualView bind:start={$startDate} events={visibleEvents} {groups}>
+                  <DualView bind:start={$startDate} events={visibleEvents} {groups} on:slotmenu={openSlotMenu}>
                     <ViewSelector slot="top-right" bind:view bind:dayCount />
                   </DualView>
                 {:else}
@@ -48,16 +48,16 @@
                               <CalendarTab calendar={group.calendar} firstColumn={1} span={1}
                                 isFirst={g == 0} onOverlay={() => setSplitView(false)} />
                             </div>
-                            <MonthView {range} events={group.events} onOpenDay={openDay} />
+                            <MonthView {range} events={group.events} onOpenDay={openDay} on:slotmenu={openSlotMenu} />
                           </vbox>
                         {/each}
                       </hbox>
                     {:else if view == "month"}
-                      <MonthView {range} events={visibleEvents} onOpenDay={openDay} />
+                      <MonthView {range} events={visibleEvents} onOpenDay={openDay} on:slotmenu={openSlotMenu} />
                     {:else if view == "schedule"}
-                      <ScheduleView {range} rows={scheduleRows} />
+                      <ScheduleView {range} rows={scheduleRows} on:slotmenu={openSlotMenu} />
                     {:else}
-                      <DayViewGrid {range} {groups} onOpenDay={openDay} onOverlay={() => setSplitView(false)} />
+                      <DayViewGrid {range} {groups} onOpenDay={openDay} onOverlay={() => setSplitView(false)} on:slotmenu={openSlotMenu} />
                     {/if}
                     {#if view != "schedule"}
                       <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
@@ -77,7 +77,6 @@
     </Splitter>
   </hbox>
 
-  <EventMenu bind:this={eventMenu} />
   <SlotMenu bind:this={slotMenu} bind:view bind:dayCount />
   {#if $isGoToDateOpen}
     <GoToDateDialog date={rangeDate} {view}
@@ -110,7 +109,7 @@
   import { openComposer } from "../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarViewType, type SlotSelection } from "./selected";
   import { EventTable } from "./ListView/EventTable";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
@@ -129,7 +128,6 @@
   import MonthView from "./MonthView/MonthView.svelte";
   import CalendarTab from "./DayView/CalendarTab.svelte";
   import ScheduleView from "./ScheduleView/ScheduleView.svelte";
-  import EventMenu from "./DisplayEvent/EventMenu.svelte";
   import EventPeek from "./DisplayEvent/EventPeek.svelte";
   import DisplayEvent from "./DisplayEvent/DisplayEvent.svelte";
   import type { ReadingPanePosition } from "../Mail/3pane/3Pane.svelte";
@@ -146,7 +144,7 @@
   import SplitterBidirectional from "../../frontend/Shared/SplitterBidirectional.svelte";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import type { Collection } from "svelte-collections";
-  import { onDestroy, setContext } from "svelte";
+  import { onDestroy } from "svelte";
   import { derived, get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
@@ -171,18 +169,8 @@
   $: showFolderPane = ($folderPaneSetting.value ?? CalendarFolderPane.Normal) == CalendarFolderPane.Normal;
 
   let folderPaneHeight = 0;
-  let eventMenu: EventMenu;
   let slotMenu: SlotMenu;
   let pageEl: HTMLElement;
-
-  setContext<CalendarMenus>(kCalendarMenus, {
-    openEventMenu(mouseEvent: MouseEvent, event: Event) {
-      eventMenu.openFor(mouseEvent, event);
-    },
-    openSlotMenu(mouseEvent: MouseEvent, slots: SlotSelection) {
-      slotMenu.openFor(mouseEvent);
-    },
-  });
 
   $: if (!$selectedCalendar) {
     $selectedCalendar = appGlobal.calendars.first;
@@ -343,6 +331,10 @@
   function goToEvent(event: Event) {
     selectDay(event.startTime);
     $selectedEvent = event;
+  }
+
+  function openSlotMenu(event: CustomEvent<{ slots: SlotSelection, mouseEvent: MouseEvent }>) {
+    slotMenu.openFor(event.detail.mouseEvent);
   }
 
   function openGoToDate() {

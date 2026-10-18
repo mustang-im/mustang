@@ -23,6 +23,11 @@
       <EventIcons {event} />
     </div>
   </EventContent>
+  <div class="context-menu" use:moveOutOfGrid>
+    <ContextMenu bind:this={contextMenu}>
+      <EventMenu {event} />
+    </ContextMenu>
+  </div>
 </div>
 
 <script lang="ts">
@@ -31,19 +36,20 @@
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { kCalendarMenus, eventPeek, selectedSlots, type CalendarMenus } from "../selected";
+  import { eventPeek, selectedSlots } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";
+  import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
+  import EventMenu from "../DisplayEvent/EventMenu.svelte";
   import { getDateTimeLocale } from "../../../l10n/l10n";
-  import { getContext } from "svelte";
 
   export let item: ScheduleItem;
   export let pxPerMinute: number;
   export let top: number;
   export let height: number;
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  let contextMenu: ContextMenu;
   let element: HTMLElement;
 
   $: event = item.event;
@@ -73,7 +79,7 @@
     mouseEvent.stopPropagation();
     select();
     $eventPeek = null;
-    menus.openEventMenu(mouseEvent, event);
+    contextMenu.onContextMenu(mouseEvent);
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
@@ -94,9 +100,24 @@
     CalendarActions.commitInlineTitle();
   }
   // </copied>
+
+  // <copied from="../../Shared/Menu/SubMenu.svelte">
+  function moveOutOfGrid(node: HTMLElement) {
+    let target = node.closest(".lookout-window") ?? document.body;
+    target.appendChild(node);
+    return {
+      destroy() {
+        node.remove();
+      },
+    };
+  }
+  // </copied>
 </script>
 
 <style>
+  .context-menu {
+    display: contents;
+  }
   .schedule-event {
     display: flex;
     position: absolute;

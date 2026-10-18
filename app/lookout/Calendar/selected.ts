@@ -82,12 +82,6 @@ export const now = readable(new Date(), set => {
 export const workWeekHours = WorkingHours.ofAll(new ShownWorkHours(
   shownCalendars.filterObservable(calendar => !calendar.isOtherPersonsCalendar)));
 
-export interface CalendarMenus {
-  openEventMenu(mouseEvent: MouseEvent, event: Event): void;
-  openSlotMenu(mouseEvent: MouseEvent, slots: SlotSelection): void;
-}
-export const kCalendarMenus = "lookout-calendar-menus";
-
 export const timeZoneRulers: Readable<TimeZoneRuler[]> = derived([
   getLocalStorage<string>("lookout.calendar.timeZone.label", ""),
   getLocalStorage<boolean>("lookout.calendar.timeZone2.shown", false),

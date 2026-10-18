@@ -53,7 +53,7 @@
   import { TimeColumnLayout } from "./DayColumn";
   import type { WorkingHours } from "../WorkingHours";
   import { CalendarActions } from "../CalendarActions";
-  import { now, selectedSlots, eventPeek, kCalendarMenus, type CalendarMenus } from "../selected";
+  import { now, selectedSlots, eventPeek, type SlotSelection } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
@@ -63,7 +63,7 @@
   import { t } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
-  import { getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let day: Date;
   export let column: number;
@@ -80,7 +80,7 @@
   export let visibleToMinute = TimeColumnLayout.kMinutesPerDay;
   export let onScrollToMinute: (minute: number) => void;
 
-  const menus = getContext<CalendarMenus>(kCalendarMenus);
+  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
 
   let columnEl: HTMLDivElement;
 
@@ -177,7 +177,7 @@
     }
     $selectedEvent = null;
     $eventPeek = null;
-    menus.openSlotMenu(mouseEvent, $selectedSlots);
+    dispatch("slotmenu", { slots: $selectedSlots, mouseEvent });
   }
 </script>
 
