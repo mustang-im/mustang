@@ -32,6 +32,23 @@ export class JMAPEvent extends Event {
     this.isOrigin = sanitize.boolean(jmap.isOrigin, true);
     this.jmapID = sanitize.alphanumdash(jmap.id);
     this.original = jmap;
+    this.removeUndoneOverrides();
+  }
+
+  /** Removes the exceptions and exclusions that are no longer on the server.
+   * The others are updated by `updateRecurrenceOverrides()`. */
+  protected removeUndoneOverrides() {
+    let overrides = new Map<number, TJMAPCalendarEvent>();
+    for (let [recurrenceID, override] of Object.entries(this.original.recurrenceOverrides ?? {})) {
+      overrides.set(JSCalendarEvent.toDate(recurrenceID, this.original).getTime(), override);
+    }
+    this.exclusions.removeAll(this.exclusions.filterOnce(exclusion => !overrides.get(exclusion.getTime())?.excluded));
+    let undone = this.exceptions.filterOnce(exception => !overrides.has(exception.recurrenceStartTime.getTime()));
+    this.exceptions.removeAll(undone);
+    this.calendar.events.removeAll(undone);
+    for (let exception of undone) {
+      this.calendar.storage.deleteEvent(exception).catch(this.calendar.errorCallback);
+    }
   }
 
   updateRecurrenceOverrides(exceptions: ArrayColl<Event>) {
