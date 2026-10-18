@@ -871,24 +871,52 @@ export class JMAPAccount extends MailAccount {
     return webSocket;
   }
 
-  /** Reconnects, when the connection closed, as long as we're logged in */
+  /** Reconnects, when the connection closed, as long as we're logged in.
+   * If the WebSocket keeps failing, but HTTP works, e.g. because a proxy
+   * blocks WebSockets, we use HTTP and EventSource for the rest of the session. */
   protected async keepWebSocketOpen(webSocket: JMAPWebSocket): Promise<void> {
+    const kFailuresBeforeHTTP = 5;
     let reconnectThrottle = new Throttle(1, 10);
+    let failures = 0;
     while (true) {
       await webSocket.closed;
       await waitUntilOnline(); // Computer sleep drops the network
       await reconnectThrottle.throttle();
-      if (!this.isLoggedIn) {
-        return;
+      if (!this.isLoggedIn || this.webSocket != webSocket) {
+        return; // `disconnect()`, or `login()` opened another connection
       }
       try {
         webSocket = await this.openWebSocket();
       } catch (ex) {
+        webSocket = this.webSocket;
         if (ex.name == "AbortError") { // disconnect()
           return;
         }
         console.log(this.name + ": JMAP WebSocket: Reconnecting failed:", ex?.message ?? ex);
+        if (++failures < kFailuresBeforeHTTP) {
+          continue;
+        }
+        try {
+          await this.httpPost(this.session.apiUrl, {
+            using: ["urn:ietf:params:jmap:core"],
+            methodCalls: [["Core/echo", {}, "c1"]],
+          });
+        } catch (ex) {
+          if (ex instanceof LoginError) {
+            throw ex;
+          }
+          continue; // The network is down
+        }
+        console.log(this.name + ": JMAP WebSocket keeps failing, but HTTP works, so using HTTP and EventSource");
+        this.webSocket = null;
+        if (this.webSocketPushTypes) {
+          this.webSocketPushTypes = null;
+          this.startPushListener()
+            .catch(this.errorCallback);
+        }
+        return;
       }
+      failures = 0;
     }
   }
 

@@ -2,7 +2,8 @@ import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPWebSocket } from "../../../../logic/Mail/JMAP/JMAPWebSocket";
 import { JMAPRequestError } from "../../../../logic/Mail/JMAP/JMAPError";
-import { AuthMethod } from "../../../../logic/Abstract/Account";
+import { AuthMethod, ConnectError, LoginError } from "../../../../logic/Abstract/Account";
+import { ComputerOn } from "../../../../logic/util/backend-wrapper";
 import type { TJMAPSession } from "../../../../logic/Mail/JMAP/TJMAPGeneric";
 import { waitFor } from "../../util/waitFor";
 import { ArrayColl } from "svelte-collections";
@@ -20,6 +21,12 @@ let sockets: FakeServerSocket[] = [];
 let accounts: JMAPAccount[] = [];
 /** The next socket fails to open */
 let refuseNextSocket = false;
+/** All new sockets fail to open */
+let refuseSockets = false;
+/** Like the desktop `powerMonitor` suspend and resume */
+const computerOn = new ComputerOn();
+/** `online` and `offline` of the browser window */
+const windowEvents = new EventTarget();
 
 /** Plays the server side of the platform `WebSocket` */
 class FakeServerSocket {
@@ -41,7 +48,7 @@ class FakeServerSocket {
   constructor(readonly url: string, readonly protocols: string[]) {
     this.authorization = authorizations.get(url);
     sockets.push(this);
-    let refuse = refuseNextSocket;
+    let refuse = refuseNextSocket || refuseSockets;
     refuseNextSocket = false;
     setTimeout(() => {
       if (refuse) {
@@ -101,6 +108,8 @@ class FakeServerSocket {
 
 beforeAll(() => {
   globalThis.WebSocket = FakeServerSocket as any;
+  globalThis.addEventListener = windowEvents.addEventListener.bind(windowEvents);
+  globalThis.removeEventListener = windowEvents.removeEventListener.bind(windowEvents);
   Object.defineProperty(globalThis.navigator, "onLine", { value: true, configurable: true });
 });
 
@@ -112,6 +121,7 @@ afterEach(async () => {
   sockets = [];
   authorizations.clear();
   refuseNextSocket = false;
+  refuseSockets = false;
 });
 
 function newAccount(webSocketCapability: any = { url: kWebSocketURL, supportsPush: true }, maxConcurrentRequests = 4, username = "fred@example.com"): JMAPAccount {
@@ -120,6 +130,7 @@ function newAccount(webSocketCapability: any = { url: kWebSocketURL, supportsPus
     setWebSocketAuthorization: async (url: string, authorization: string | null) => {
       authorization ? authorizations.set(url, authorization) : authorizations.delete(url);
     },
+    computerOn: computerOn,
   } as any;
   let account = new JMAPAccount();
   account.name = "Test";
@@ -320,6 +331,149 @@ test("When the session changed, e.g. another user shared an account with us, we 
   expect(socket.readyState).toBe(3);
   expect(await account.makeSingleCall("Core/echo", { n: 3 })).toEqual({ n: 3 });
   expect(httpRequests.length).toBe(1);
+});
+
+test("After the computer woke up, we don't wait for the dead connection, and open a new one", async () => {
+  let account = newAccount();
+  let socket = await connect(account);
+  socket.autoAnswer = false; // The connection died during sleep, without being closed
+  let waiting = account.makeSingleCall("Core/echo", { beforeSleep: true });
+  await waitFor(() => socket.heldBack.size == 1);
+
+  computerOn.isSleeping = true;
+  computerOn.isSleeping = false;
+
+  await expect(waiting).rejects.toThrow("woke up");
+  expect(socket.readyState).toBeGreaterThanOrEqual(2);
+  await waitFor(() => sockets.length == 2 && sockets[1].readyState == 1);
+  expect(await account.makeSingleCall("Core/echo", { afterSleep: true })).toEqual({ afterSleep: true });
+});
+
+test("When the network came back, we open a new connection", async () => {
+  let account = newAccount();
+  let socket = await connect(account);
+
+  windowEvents.dispatchEvent(new Event("online"));
+
+  expect(socket.readyState).toBeGreaterThanOrEqual(2);
+  await waitFor(() => sockets.length == 2 && sockets[1].readyState == 1);
+  expect(await account.makeSingleCall("Core/echo", { n: 1 })).toEqual({ n: 1 });
+});
+
+test("When the timers stood still, because the computer slept, we close the connection", async () => {
+  vi.useFakeTimers();
+  try {
+    let account = newAccount();
+    let webSocket = new JMAPWebSocket(account, kWebSocketURL);
+    let connecting = webSocket.connect("Basic Zm9vOmJhcg==");
+    await vi.advanceTimersByTimeAsync(10);
+    await connecting;
+    await vi.advanceTimersByTimeAsync(60 * 1000);
+    expect(webSocket.isOpen).toBe(true);
+
+    vi.setSystemTime(Date.now() + 15 * 60 * 1000); // The clock goes on during sleep, the timers don't
+    await vi.advanceTimersByTimeAsync(30 * 1000);
+
+    expect(webSocket.isOpen).toBe(false);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("After a logout and login, only the new connection stays open", { timeout: 30000 }, async () => {
+  let account = newAccount();
+  let first = await connect(account);
+  let session = account.session;
+  first.drop(); // the first reconnect comes at once, the next only after 10 s
+  await waitFor(() => sockets.length == 2 && sockets[1].readyState == 1);
+
+  await account.disconnect();
+  account.session = session;
+  let afterLogin = await connect(account);
+  await new Promise(resolve => setTimeout(resolve, 12000)); // the old reconnect loop wakes up
+
+  expect(sockets.filter(socket => socket.readyState == 1)).toEqual([afterLogin]);
+});
+
+test("When the WebSocket keeps failing, but HTTP works, we use HTTP and EventSource", async () => {
+  vi.useFakeTimers();
+  try {
+    let account = newAccount();
+    let connecting = connect(account);
+    await vi.advanceTimersByTimeAsync(10);
+    let socket = await connecting;
+    await account.startPushListener();
+    let httpRequests = stubHTTP(account);
+    let eventSourceURLs = stubEventSource();
+
+    refuseSockets = true; // e.g. a proxy that doesn't let WebSockets through
+    socket.drop();
+    await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+
+    expect(sockets.length).toBe(1 + 5);
+    expect(eventSourceURLs.length).toBe(1);
+    expect(await account.makeSingleCall("Core/echo", {})).toEqual({ overHTTP: true });
+    expect(httpRequests.length).toBe(2); // the check whether HTTP works, and our call
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("While the network is down, we keep trying the WebSocket, and use it again when the network is back", async () => {
+  vi.useFakeTimers();
+  try {
+    let account = newAccount();
+    let connecting = connect(account);
+    await vi.advanceTimersByTimeAsync(10);
+    let socket = await connecting;
+    await account.startPushListener();
+    account.httpPost = async () => {
+      throw new ConnectError(null, "Network is down");
+    };
+    let eventSourceURLs = stubEventSource();
+
+    refuseSockets = true;
+    socket.drop();
+    await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+    let attempts = sockets.length - 1;
+    refuseSockets = false;
+    await vi.advanceTimersByTimeAsync(15 * 1000);
+
+    expect(attempts).toBeGreaterThan(5);
+    expect(attempts).toBeLessThanOrEqual(61); // no busy loop: `Throttle(1, 10)` lets 2 through every 10 s
+    expect(eventSourceURLs).toEqual([]);
+    expect(sockets.at(-1).readyState).toBe(1);
+    expect(sockets.at(-1).pushEnables().length).toBe(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("When the login fails over HTTP, we stop reconnecting, and report it", async () => {
+  vi.useFakeTimers();
+  try {
+    let account = newAccount();
+    let errors: Error[] = [];
+    account.errorCallback = ex => errors.push(ex);
+    let connecting = connect(account);
+    await vi.advanceTimersByTimeAsync(10);
+    let socket = await connecting;
+    account.httpPost = async () => {
+      throw new LoginError(null, "Wrong password");
+    };
+
+    refuseSockets = true;
+    socket.drop();
+    await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+    let attempts = sockets.length;
+    await vi.advanceTimersByTimeAsync(2 * 60 * 1000);
+
+    expect(errors.length).toBe(1);
+    expect(errors[0]).toBeInstanceOf(LoginError);
+    expect(sockets.length).toBe(attempts);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test("Push: we ask for our data types, and a change syncs that type", async () => {

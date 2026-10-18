@@ -3,6 +3,7 @@ import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPSta
 import { JMAPRequestError } from "./JMAPError";
 import { ConnectError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
+import { getComputerOn } from "../../util/backend-wrapper";
 import { Lock } from "../../util/flow/Lock";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { Timeout } from "../../util/flow/Timeout";
@@ -24,6 +25,7 @@ export class JMAPWebSocket {
   protected readonly parallelRequests: Semaphore;
   protected stateChanges = Promise.resolve();
   protected heartbeat: ReturnType<typeof setInterval> | null = null;
+  protected stopWatchingWakeUp: () => void = () => {};
   /** Stalwart keeps the access rights of a connection from when it was opened,
    * so an account shared with us later is only available over a new connection. */
   readonly sessionState: string;
@@ -78,7 +80,7 @@ export class JMAPWebSocket {
       };
       socket.onmessage = event => this.onMessage(event.data);
       socket.onerror = () => {
-        this.error ??= new ConnectError(null, `JMAP WebSocket: Connection to <${this.url}> failed`);
+        this.error ??= new ConnectError(null, `JMAP WebSocket: Connection to <${this.url}> ${this.isOpen ? "broke" : "failed"}`);
       };
       socket.onclose = event => this.onClose(event.code);
       let timeout = new Timeout(kConnectTimeoutSec, () =>
@@ -88,11 +90,15 @@ export class JMAPWebSocket {
       if (ex) {
         throw ex;
       }
+    } catch (ex) {
+      this.closeBroken(ex);
+      throw ex;
     } finally {
       await appGlobal.remoteApp.setWebSocketAuthorization(this.url, null);
       lock.release();
     }
     this.startHeartbeat();
+    this.watchWakeUp();
   }
 
   /** Sends a JMAP API request and waits for its response
@@ -217,6 +223,7 @@ export class JMAPWebSocket {
     }
     this.state = "closed";
     clearInterval(this.heartbeat);
+    this.stopWatchingWakeUp();
     let ex = this.closeError(code);
     this.opened(ex);
     for (let pending of this.pending.values()) {
@@ -236,14 +243,46 @@ export class JMAPWebSocket {
     return new ConnectError(null, `JMAP WebSocket: Server closed the connection` + (code ? ` with code ${code}` : ""));
   }
 
-  /** Finds a dead connection, e.g. after the computer slept */
+  /** Finds a dead connection. Also notices when the timers stood still, because the computer slept. */
   protected startHeartbeat() {
-    const kHeartbeatIntervalSec = 5 * 60;
+    const kTickSec = 30;
+    const kHeartbeatSec = 5 * 60;
+    let lastTick = Date.now();
+    let lastHeartbeat = lastTick;
     this.heartbeat = setInterval(() => {
-      this.request({
-        using: ["urn:ietf:params:jmap:core"],
-        methodCalls: [["Core/echo", {}, "heartbeat"]],
-      }).catch(ex => console.log(this.account.name + ": JMAP WebSocket heartbeat failed:", ex?.message ?? ex));
-    }, kHeartbeatIntervalSec * 1000);
+      let now = Date.now();
+      let slept = now - lastTick > 3 * kTickSec * 1000;
+      lastTick = now;
+      if (slept) {
+        this.closeBroken(new ConnectError(null, "JMAP WebSocket: The computer slept"));
+      } else if (now - lastHeartbeat >= kHeartbeatSec * 1000) {
+        lastHeartbeat = now;
+        this.request({
+          using: ["urn:ietf:params:jmap:core"],
+          methodCalls: [["Core/echo", {}, "heartbeat"]],
+        }).catch(ex => console.log(this.account.name + ": JMAP WebSocket heartbeat failed:", ex?.message ?? ex));
+      }
+    }, kTickSec * 1000);
+  }
+
+  /** After sleep or a network change, the connection is most likely dead,
+   * but the WebSocket would notice that only many minutes later.
+   * Until we reconnected, our requests go over HTTP. */
+  protected watchWakeUp() {
+    let renew = (reason: string) => this.closeBroken(new ConnectError(null, "JMAP WebSocket: " + reason));
+    let onOnline = () => renew("The network changed");
+    globalThis.addEventListener?.("online", onOnline);
+    let computerOn = getComputerOn();
+    let wasSleeping = false;
+    let unsubscribe = computerOn?.subscribe(() => {
+      if (wasSleeping && !computerOn.isSleeping) {
+        renew("The computer woke up");
+      }
+      wasSleeping = computerOn.isSleeping;
+    });
+    this.stopWatchingWakeUp = () => {
+      globalThis.removeEventListener?.("online", onOnline);
+      unsubscribe?.();
+    };
   }
 }
