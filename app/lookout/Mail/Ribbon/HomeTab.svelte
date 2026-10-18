@@ -83,8 +83,8 @@
         width="150px"
         bind:value={peopleSearch}
         bind:isListOpen={isPeopleListOpen}
-        onInput={() => { isPeopleListOpen = !!peopleMatches.length; }}
-        onEnter={openFirstPerson}>
+        on:input={() => { isPeopleListOpen = !!peopleMatches.length; }}
+        on:enter={openFirstPerson}>
         <svelte:fragment slot="list">
           {#each peopleMatches as person (person)}
             <MenuItem label={person.name || person.emailAddresses.first?.value} icon={ContactIcon}

@@ -12,7 +12,7 @@
     aria-label={label}
     disabled={!!disabled}
     on:keydown={onKeyDown}
-    on:input={onInputChanged} />
+    on:input={() => dispatch("input", value)} />
   {#if $$slots.list}
     <button class="dropdown menu-trigger" tabindex="-1" aria-label={label} disabled={!!disabled}
       on:click|stopPropagation={onToggleList}>
@@ -29,10 +29,10 @@
 <script lang="ts">
   import Menu from "../Menu/Menu.svelte";
   import { RibbonGroupLayout, type RibbonGroupLook, type RibbonItemLook } from "./RibbonGroup";
-  import { showError } from "../../../frontend/Util/error";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
-  import { getContext } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
   import { readable, type Readable } from "svelte/store";
+  const dispatch = createEventDispatcher<{ input: string, enter: string }>();
 
   export let label: string;
   export let value = "";
@@ -42,8 +42,6 @@
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
   export let isListOpen = false;
-  export let onEnter: (value: string) => void | Promise<void> = null;
-  export let onInput: (value: string) => void = null;
   export let inputEl: HTMLInputElement = null;
 
   const groupLook = getContext<Readable<RibbonGroupLook>>("ribbonGroupLook") ?? readable<RibbonGroupLook>({ layout: "classic", stage: 0, collapsed: false });
@@ -58,10 +56,6 @@
     inputEl?.focus();
   }
 
-  function onInputChanged() {
-    onInput?.(value);
-  }
-
   async function onKeyDown(event: KeyboardEvent) {
     if (event.key == "ArrowDown" && $$slots.list) {
       event.preventDefault();
@@ -73,11 +67,7 @@
     } else if (event.key == "Enter" && !event.isComposing) {
       event.preventDefault();
       isListOpen = false;
-      try {
-        await onEnter?.(value);
-      } catch (ex) {
-        showError(ex);
-      }
+      dispatch("enter", value);
     }
   }
 </script>

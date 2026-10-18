@@ -1,6 +1,6 @@
 <RibbonTextBox label={$t`Search People`} placeholder={$t`Search People`} icon={PersonIcon}
   bind:value bind:isListOpen width="180px"
-  onInput={onTyped} onEnter={onEnter}>
+  on:input={event => onTyped(event.detail)} on:enter={onEnter}>
   <svelte:fragment slot="list">
     {#each matches as contact (contact.id)}
       <MenuItem label={contact.name} tooltip={ContactColumns.value(ContactColumn.EMail, contact)}
