@@ -203,11 +203,11 @@ export class JMAPFolder extends Folder {
         let changedThisFolder = changedByFolder.get(folder.id);
         if (!(addedThisFolder || changedThisFolder ||
               removed.hasItems ||
-              changes.destroyed?.length && [SpecialFolder.Trash, SpecialFolder.Spam].includes(folder.specialFolder))) {
+              changes.destroyed?.length && (folder.messages.hasItems || [SpecialFolder.Trash, SpecialFolder.Spam].includes(folder.specialFolder)))) {
           continue;
         }
         /** To avoid reading all messages of all folders, we handle
-         * - permanent deletes only from Trash / Spam (`DeleteStrategy.MoveToTrash`)
+         * - permanent deletes only from folders that we already read, and Trash / Spam (`DeleteStrategy.MoveToTrash`)
          * - moves only from folders that we already read
          * - new messages only in folders that we already listed
          * This is a tradeoff. */
