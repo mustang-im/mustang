@@ -24,7 +24,7 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
-import { Semaphore, type Locked } from "../../util/flow/Semaphore";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
@@ -45,10 +45,9 @@ export class JMAPAccount extends MailAccount {
   pollIntervalMinutes = 10;
   syncState = new MapColl<TJMAPObjectType, string>(); /** JMAP state is account-global. Use stateLock. */
   readonly stateLock = new Lock(); /** Protects syncState */
-  /** Stalwart counts downloads and uploads towards `maxConcurrentRequests`, too */
-  protected readonly requestSemaphore = new Semaphore(1);
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  protected readonly requestSemaphore = new Semaphore(4);
   protected pushAbort: AbortController | null = null;
   protected throttle = new Throttle(50, 1);
   logging = true;
@@ -154,6 +153,10 @@ export class JMAPAccount extends MailAccount {
     assert(mailAccount, "JMAP Session: Account not found");
 
     this.session = session;
+    let maxConcurrentRequests = sanitize.integer(session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
+    if (maxConcurrentRequests > 0) {
+      this.requestSemaphore.maxParallel = maxConcurrentRequests;
+    }
   }
 
   /** An account shared with us may offer less than our own, e.g. a calendar, but no mail.
@@ -178,14 +181,11 @@ export class JMAPAccount extends MailAccount {
   get haveSharing(): boolean {
     return this.hasCapability("urn:ietf:params:jmap:principals");
   }
-  /** @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxConcurrentRequests` */
-  get maxConcurrentRequests(): number {
-    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
-    return serverMax ? Math.max(1, Math.min(serverMax, 31)) : 6;
-  }
-  /** One below what the server allows, so that the mail the user clicks on still gets through. */
+  /** One below what the server allows, so that the mail the user clicks on still gets through.
+   * @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxConcurrentRequests` */
   get maxParallelRequests(): number {
-    return Math.max(1, this.maxConcurrentRequests - 1);
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
+    return serverMax ? Math.max(1, Math.min(serverMax - 1, 30)) : 5;
   }
   // <compat for="Cyrus">
   // Cyrus announces its core extension always, even when its non-standard extensions are off.
@@ -364,9 +364,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async httpGet(url: string, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpGet(url, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
-    let lock = await this.lockRequestSlot();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.get(url);
     } catch (ex) {
@@ -377,9 +380,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPost(url, sendJSON);
+    }
     let ky = await this.ky();
     await this.throttle.throttle();
-    let lock = await this.lockRequestSlot();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { json: sendJSON });
     } catch (ex) {
@@ -390,9 +396,12 @@ export class JMAPAccount extends MailAccount {
   }
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPostBinary(url, body, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
-    let lock = await this.lockRequestSlot();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { body: body });
     } catch (ex) {
@@ -400,14 +409,6 @@ export class JMAPAccount extends MailAccount {
     } finally {
       lock.release();
     }
-  }
-
-  protected async lockRequestSlot(): Promise<Locked> {
-    if (this.isDependentAccount) {
-      return await (this.mainAccount as JMAPAccount).lockRequestSlot();
-    }
-    this.requestSemaphore.maxParallel = this.maxConcurrentRequests;
-    return await this.requestSemaphore.lock();
   }
 
   /** @throws an appropriate exception (always throws) */
