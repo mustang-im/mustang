@@ -139,7 +139,7 @@
   import AddToCalendarIcon from "lucide-svelte/icons/calendar-plus";
   import PhoneCallIcon from "lucide-svelte/icons/phone";
   import VideoConfIcon from "lucide-svelte/icons/video";
-  import { catchErrors, logError } from "../../Util/error";
+  import { catchErrors, logErrorToServer } from "../../Util/error";
   import { onKeyEnter } from "../../Util/util";
   import { assert, sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
@@ -182,7 +182,7 @@
 
   function showError(ex: Error) {
     errorMsg = ex.message ?? ex + "";
-    logError(ex);
+    logErrorToServer(ex);
   }
 
   $selectedApp = meetMustangApp;

@@ -5,7 +5,7 @@ import { Calendar } from "../../../../logic/Calendar/Calendar";
 import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { selectedEvent } from "../../../../frontend/Calendar/selected";
-import { notifications } from "../../../../frontend/MainWindow/Notification";
+import { notifications } from "../../../../logic/util/Notification";
 import { getWeekStart } from "../../../../logic/util/date";
 import AvailabilityGrid from "../../../../frontend/Calendar/EditEvent/AvailabilityGrid.svelte";
 import { ArrayColl } from "svelte-collections";

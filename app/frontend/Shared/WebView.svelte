@@ -28,7 +28,7 @@
   // #endif
   import { stringToBlobURL } from "../Util/util";
   import type { URLString } from "../../logic/util/util";
-  import { backgroundError, catchErrors, showError } from "../Util/error";
+  import { minorError, catchErrors, showError } from "../Util/error";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { openExternalURL } from "../../logic/util/os-integration";
@@ -130,7 +130,7 @@
         await addLinkListener();
         // #endif
       } catch (ex) {
-        backgroundError(ex);
+        minorError(ex);
       }
     }, { once: true });
 

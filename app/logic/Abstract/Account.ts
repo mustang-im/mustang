@@ -4,7 +4,7 @@ import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { RunOnce } from "../util/flow/RunOnce";
-import { logError } from "../../frontend/Util/error";
+import { logErrorToServer, internalError } from "../util/error";
 import { SpecificError, assert } from "../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 
@@ -50,6 +50,8 @@ export class Account extends Observable {
   fatalError: Error | null = null;
   /** Non-fatal errors, including when processing a single email */
   readonly errors = new ArrayColl<Error>();
+  /** @see `dataError()` */
+  readonly dataErrors = new ArrayColl<Error>();
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
    * e.g. errors while processing server messages. */
@@ -60,6 +62,13 @@ export class Account extends Observable {
     super();
     this.id = findFreeAccountID();
     this.color = unusedAccountColor();
+  }
+
+  /** The data of one item of this account is bad, e.g. one email that we could not read.
+   * Call it in the `catch` within a loop, so that the loop continues with the other items. */
+  dataError(ex: Error) {
+    this.dataErrors.add(ex);
+    this.errorCallback(ex);
   }
 
   /**
@@ -240,7 +249,7 @@ export class Account extends Observable {
     try {
       await this.logout();
     } catch (ex) {
-      logError(ex); // e.g. server unreachable
+      logErrorToServer(ex); // e.g. server unreachable
     }
     for (let dependent of this.dependentAccounts()) {
       await dependent.deleteIt();
@@ -335,11 +344,11 @@ export function setMainAccounts(): void {
         if (main) {
           account.mainAccount = main;
         } else {
-          logError(new Error(`Account ${account.name} (${account.protocol}) lost its main account: Account ID ${mainID} did not load`));
+          internalError(new Error(`Account ${account.name} (${account.protocol}) lost its main account: Account ID ${mainID} did not load`));
         }
       }
     } catch (ex) {
-      logError(ex);
+      internalError(ex);
     }
   }
 }

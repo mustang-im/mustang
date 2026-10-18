@@ -12,7 +12,7 @@ import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChanged
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { randomID, AbstractFunction, assert } from "../util/util";
-import { backgroundError } from "../../frontend/Util/error";
+import { dataError } from "../util/error";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -39,7 +39,7 @@ export class Event extends Observable {
         return this._text = convertHTMLToText(this._rawHTML);
       }
     } catch (ex) {
-      backgroundError(ex);
+      dataError(ex);
     }
     return "";
   }
@@ -82,7 +82,7 @@ export class Event extends Observable {
         return this._sanitizedHTML = convertTextToHTML(this._text);
       }
     } catch (ex) {
-      backgroundError(ex);
+      dataError(ex);
     }
     return "";
   }

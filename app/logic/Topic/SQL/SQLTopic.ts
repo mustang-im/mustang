@@ -3,7 +3,6 @@ import { setRootTopic } from "../TopicAccounts";
 import { Topic, type ValueProperty } from "../Topic";
 import { Paragraph } from "../PageContent";
 import { getDatabase } from "./SQLDatabase";
-import { backgroundError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
@@ -86,7 +85,7 @@ export class SQLTopic {
           c.rawHTMLDangerous = sanitize.string(content.html, "");
         }
       } catch (ex) {
-        backgroundError(ex);
+        topic.account.dataError(ex);
       }
     }
   }

@@ -11,7 +11,7 @@ import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { importAutoCryptKeys } from "./Encryption/PGP/AutoCrypt";
 import { fileExtensionForMIMEType } from "../Files/FileType/MIMETypes";
 import { escapeAttr, escapeHTML } from "../Files/FileType/htmlHelper";
-import { backgroundError } from "../../frontend/Util/error";
+import { minorError } from "../util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { UserError, assert, type URLString, ensureArray } from "../util/util";
 import { dataURLToBlob } from "../util/blob";
@@ -375,11 +375,11 @@ export class ComposeActions {
     this.email.folder = previousFolder;
     let sendData = this.email.extraData.get(SendData.extraDataName) as SendData;
     sendData?.replyTo?.markReplied()
-      .catch(backgroundError);
+      .catch(minorError);
     sendData?.forwarded?.markForwarded()
-      .catch(backgroundError);
+      .catch(minorError);
     this.deleteDrafts(previousDrafts)
-      .catch(backgroundError);
+      .catch(minorError);
   }
 
   async saveAsDraft(): Promise<void> {
