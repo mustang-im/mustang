@@ -134,8 +134,9 @@
   }
 
   // The parent menu clips its content, and the popup positioning would then flip the submenu to the left
+  /* <copied to="ContextMenu.svelte"> */
   function moveOutOfParentMenu(node: HTMLElement) {
-    let target = node.closest(".lookout-window") ?? document.body;
+    let target = node.closest("dialog") ?? node.closest(".lookout-window") ?? document.body;
     target.appendChild(node);
     return {
       destroy() {
@@ -143,6 +144,7 @@
       },
     };
   }
+  /* </copied> */
 
   onDestroy(onClosed);
 </script>
