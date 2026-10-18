@@ -52,6 +52,9 @@ export class JMAPAccount extends MailAccount {
   protected isDisconnected = false;
   protected throttle = new Throttle(50, 1);
   logging = true;
+  /** Sends that broke off, so that we don't know whether the server sent the email.
+   * Message-ID → JMAP ID of the copy that we uploaded to send. */
+  protected readonly unconfirmedSends = new Map<string, string>();
 
   constructor() {
     super();
@@ -542,8 +545,12 @@ export class JMAPAccount extends MailAccount {
       this.getSpecialFolder(SpecialFolder.Drafts);
     let sentFolder = email.folder ??
       this.getSpecialFolder(SpecialFolder.Sent);
+    if (await this.wasSentAlready(email)) {
+      return;
+    }
 
     await outboxFolder.addMessage(email);
+    this.unconfirmedSends.set(email.messageID, email.pID as string);
 
     let recipients = new ArrayColl<PersonUID>();
     recipients.addAll(email.to);
@@ -574,6 +581,7 @@ export class JMAPAccount extends MailAccount {
         }
       }
     }]]);
+    this.unconfirmedSends.delete(email.messageID);
     let sendResponse = responses[0][1];
     let moveToSentResponse = responses.find(response => response[0] == "Email/set")?.[1];
     let error = sendResponse["notCreated"] as any;
@@ -608,6 +616,36 @@ export class JMAPAccount extends MailAccount {
     // </compat>
     assert(identity, gt`The server does not allow sending from this email address`);
     return identity.pID;
+  }
+
+  /** Before we send an email again, whose last `send()` broke off: Did the server send it then?
+   * If not, deletes the copy that it uploaded for that. */
+  protected async wasSentAlready(email: EMail): Promise<boolean> {
+    let uploadedID = this.unconfirmedSends.get(email.messageID);
+    if (!uploadedID) {
+      return false;
+    }
+    let query = await this.makeSingleCall("EmailSubmission/query", {
+      accountId: this.accountID,
+      filter: {
+        emailIds: [uploadedID],
+      },
+    });
+    if (query.ids?.length) {
+      this.unconfirmedSends.delete(email.messageID);
+      return true;
+    }
+    let response = await this.makeSingleCall("Email/set", {
+      accountId: this.accountID,
+      destroy: [uploadedID],
+    }) as TJMAPChangeResponse<any>;
+    this.unconfirmedSends.delete(email.messageID);
+    try {
+      checkChangeError(response);
+    } catch (ex) {
+      this.errorCallback(ex);
+    }
+    return false;
   }
 
   /** Creates, updates or removes our local identities, to match the server.
