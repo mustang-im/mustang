@@ -671,6 +671,9 @@ export class JMAPAccount extends MailAccount {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
     }
+    if (type == "Calendar") {
+      await this.listCalendars();
+    }
     if (type == "CalendarEvent") {
       let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
       await calendars.first?.fetchChangedEventsForAllCalendars();
@@ -690,7 +693,7 @@ export class JMAPAccount extends MailAccount {
       types.push("ContactCard");
     }
     if (this.haveCalendar) {
-      types.push("CalendarEvent");
+      types.push("Calendar", "CalendarEvent");
     }
     if (this.haveSharing) {
       types.push("ShareNotification");
@@ -784,9 +787,12 @@ export class JMAPAccount extends MailAccount {
       accountId: this.accountID,
     });
     if (!response) {
+      await this.updateCalendars([]);
       return; // Another user's account, and they did not share their calendars with us
     }
     let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
+    await this.updateCalendars(listResponse.list);
+    this.syncState.set("Calendar", listResponse.state);
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
         this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.jmapID == jmap.id).hasItems) {
@@ -797,6 +803,21 @@ export class JMAPAccount extends MailAccount {
       cal.fromJMAP(jmap)
       appGlobal.calendars.add(cal);
       await cal.save();
+    }
+  }
+
+  /** Takes over changes of our calendars, e.g. a new name, and removes
+   * those that were deleted on the server or are no longer shared with us. */
+  protected async updateCalendars(calendars: TJMAPCalendar[]) {
+    let ourCalendars = this.dependentAccounts().contents.filter(account => account instanceof JMAPCalendar) as JMAPCalendar[];
+    for (let calendar of ourCalendars) {
+      let jmap = calendars.find(json => json.id == calendar.jmapID);
+      if (jmap) {
+        calendar.fromJMAP(jmap);
+        await calendar.save();
+      } else {
+        await calendar.deleteIt();
+      }
     }
   }
 
