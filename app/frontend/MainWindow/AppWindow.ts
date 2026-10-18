@@ -1,7 +1,6 @@
 import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
 import { catchErrors } from "../Util/error";
-import appCSS from "../app.css?inline";
 import { ArrayColl } from "svelte-collections";
 import { getContext, mount, unmount, type Component } from "svelte";
 
@@ -102,10 +101,7 @@ export class AppWindow {
     doc.open();
     doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title></title></head><body><vbox id="app"></vbox></body></html>`);
     doc.close();
-    // Svelte adds the CSS of the components to the document they show in
-    let globalCSS = doc.createElement("style");
-    globalCSS.textContent = appCSS;
-    doc.head.append(globalCSS);
+    let styleMirror = this.mirrorStyles();
     // `document.open()` above removed all event listeners of the window
     this.listenToLinks();
 
@@ -120,10 +116,61 @@ export class AppWindow {
     this.window.addEventListener("pagehide", () => {
       AppWindow.main.window.removeEventListener("pagehide", closeWithMain);
       AppWindow.opened.remove(this);
+      styleMirror.disconnect();
       // A reload would load the whole app in this window
       this.close();
       unmount(instance);
     }, { once: true });
+  }
+
+  /** Copies the stylesheets of the main window, now and when they change */
+  protected mirrorStyles(): MutationObserver {
+    let mainHead = AppWindow.main.window.document.head;
+    let doc = this.window.document;
+    let copies = new Map<Node, HTMLElement>();
+    let copyStyle = (node: Node) => {
+      let isStylesheet = node.nodeName == "STYLE" ||
+        node.nodeName == "LINK" && (node as HTMLLinkElement).rel == "stylesheet";
+      if (!isStylesheet) {
+        return;
+      }
+      let copy = doc.importNode(node, true) as HTMLElement;
+      if (node.nodeName == "LINK") {
+        (copy as HTMLLinkElement).href = (node as HTMLLinkElement).href;
+      }
+      let next = node.nextSibling;
+      while (next && !copies.has(next)) {
+        next = next.nextSibling;
+      }
+      doc.head.insertBefore(copy, copies.get(next) ?? null);
+      copies.set(node, copy);
+    };
+    for (let node of mainHead.childNodes) {
+      copyStyle(node);
+    }
+
+    let observer = new MutationObserver(mutations => {
+      for (let mutation of mutations) {
+        if (mutation.target == mainHead) {
+          for (let node of mutation.removedNodes) {
+            copies.get(node)?.remove();
+            copies.delete(node);
+          }
+          for (let node of mutation.addedNodes) {
+            copyStyle(node);
+          }
+        } else {
+          // Vite changes the CSS text of a `<style>` during development
+          let styleE = mutation.target.parentNode == mainHead ? mutation.target : mutation.target.parentNode;
+          let copy = copies.get(styleE);
+          if (copy) {
+            copy.textContent = styleE.textContent;
+          }
+        }
+      }
+    });
+    observer.observe(mainHead, { childList: true, subtree: true, characterData: true });
+    return observer;
   }
 
   protected listenToLinks() {
