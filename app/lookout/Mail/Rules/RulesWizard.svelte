@@ -18,7 +18,7 @@
         {/each}
       </vbox>
       <span class="step">{$t`Step 2: Edit the rule description (click an underlined value)`}</span>
-      <RuleDescriptionBox lines={model.lines} onValueClick={onValueClick} example={model.template?.example} />
+      <RuleDescriptionBox lines={model.lines} on:edit={event => onValueClick(event.detail)} example={model.template?.example} />
     {:else if page == RuleWizardPage.Conditions || page == RuleWizardPage.Actions}
       <span class="question">
         {page == RuleWizardPage.Conditions
@@ -43,14 +43,14 @@
         {/each}
       </vbox>
       <span class="step">{$t`Step 2: Edit the rule description (click an underlined value)`}</span>
-      <RuleDescriptionBox lines={model.lines} onValueClick={onValueClick} />
+      <RuleDescriptionBox lines={model.lines} on:edit={event => onValueClick(event.detail)} />
     {:else}
       <span class="question">{$t`Finish rule setup.`}</span>
       <label class="step" for="rule-wizard-name">{$t`Step 1: Specify a name for this rule`}</label>
       <input id="rule-wizard-name" class="lo-text-field name" type="text" bind:value={model.name}
         on:input={refresh} />
       <span class="step">{$t`Step 2: Review rule description (click an underlined value to edit)`}</span>
-      <RuleDescriptionBox fill lines={model.lines} onValueClick={onValueClick} />
+      <RuleDescriptionBox fill lines={model.lines} on:edit={event => onValueClick(event.detail)} />
     {/if}
     <hbox class="divider" />
   </vbox>

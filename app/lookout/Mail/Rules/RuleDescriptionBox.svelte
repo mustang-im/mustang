@@ -3,9 +3,9 @@
     <div class="line" class:continued={isContinued(i)}>
       {#if isContinued(i)}{$t`and`}{/if}
       {#each line.parts as part}
-        {#if part.isValue && line.item && onValueClick}
+        {#if part.isValue && line.item}
           <button type="button" class="value" class:placeholder={part.isPlaceholder}
-            on:click={() => onValueClick(line.item)}>{part.text}</button>
+            on:click={() => dispatch("edit", line.item)}>{part.text}</button>
         {:else if part.isValue}
           <span class="value">{part.text}</span>
         {:else}
@@ -23,11 +23,13 @@
   import type { RuleDescriptionLine } from "./RuleDescription";
   import type { RuleItem } from "./RuleItems";
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
 
   export let lines: RuleDescriptionLine[];
-  export let onValueClick: ((item: RuleItem) => void) | null = null;
   export let example: string | null = null;
   export let fill = false;
+
+  const dispatch = createEventDispatcher<{ edit: RuleItem }>();
 
   function isContinued(index: number): boolean {
     let item = lines[index]?.item;

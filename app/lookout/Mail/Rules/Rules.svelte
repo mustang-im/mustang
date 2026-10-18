@@ -47,7 +47,7 @@
     {/if}
   </vbox>
   <span class="description-label">{$t`Rule description (click an underlined value to edit):`}</span>
-  <RuleDescriptionBox lines={descriptionLines} onValueClick={onValueClick} />
+  <RuleDescriptionBox lines={descriptionLines} on:edit={event => onValueClick(event.detail)} />
   <hbox class="hint lo-secondary">
     <InfoIcon size={14} />
     {$t`Rules run in ${appName} when it downloads new messages.`}
