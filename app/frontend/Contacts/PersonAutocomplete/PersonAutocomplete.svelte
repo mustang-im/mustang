@@ -103,6 +103,7 @@
 
   let topEl: HTMLDivElement;
   $: inputEl = topEl?.querySelector("input");
+
   async function addPerson(person: PersonUID) {
     if (!person) {
       return;
