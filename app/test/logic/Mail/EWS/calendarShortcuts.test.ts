@@ -6,6 +6,7 @@ import { EWSCalendarShortcut } from "../../../../logic/Calendar/EWS/EWSCalendarS
 import { MAPIAddressBookEntryID, MAPIStoreEntryID } from "../../../../logic/Mail/EWS/MAPIEntryID";
 import { newCalendarForProtocol } from "../../../../logic/Calendar/AccountsList/Calendars";
 import { AuthMethod } from "../../../../logic/Abstract/Account";
+import { errorsForServer } from "../../../../logic/util/error";
 import { expect, test, vi } from "vitest";
 
 /* Outlook (classic and new) and Outlook on the web save the calendars of
@@ -357,8 +358,8 @@ test("EWS: Skip a calendar that is not shared with us anymore", async () => {
 test("EWS: Report an unexpected error as data error of the account, but still offer the other calendars", async () => {
   let { account, server } = newTestAccount();
   server.bobCalendarError = "ErrorInternalServerError";
-  let errorCallback = vi.fn();
-  account.errorCallback = errorCallback;
+  errorsForServer.clear();
+  let consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
   let calendars = (await account.listPossibleSubAccounts()).contents as EWSCalendar[];
 
@@ -367,8 +368,10 @@ test("EWS: Report an unexpected error as data error of the account, but still of
   let dataErrors = account.dataErrors.contents;
   expect(dataErrors.length).toBe(2);
   expect(dataErrors.every(ex => ex.message.includes("ErrorInternalServerError"))).toBe(true);
-  // `dataError()` also reports it like any other error of the account
-  expect(errorCallback.mock.calls.map(call => call[0])).toEqual(dataErrors);
+  expect(errorsForServer.contents).toEqual(dataErrors);
+  // Not in the errors that the account list shows
+  expect(account.errors.isEmpty).toBe(true);
+  consoleError.mockRestore();
 });
 
 test("EWS: The user never opened a calendar of another user", async () => {

@@ -2,7 +2,6 @@ import { EMailProcessor, EMailProcessorList, ProcessingStartOn } from "../EMailP
 import { SMLData, transformDatesDuringJSONParse } from "./SMLData";
 import { SMLProcessor } from "./SMLProcessor";
 import type { EMail } from "../EMail";
-import { internalError } from "../../util/error";
 import { assert } from "../../util/util";
 import type { Collection } from "svelte-collections";
 
@@ -37,7 +36,7 @@ export abstract class SMLParseProcessor extends EMailProcessor {
           continue;
         }
         processor.processSML(email, sml)
-          .catch(internalError);
+          .catch(ex => email.folder.account.dataError(ex));
       }
     }
   }

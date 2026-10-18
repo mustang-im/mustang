@@ -18,8 +18,9 @@ export function logErrorToServer(ex: Error) {
   errorsForServer.add(ex);
 }
 
-/** Shows the error as warning only in development builds, and does not log it to the error log server */
-function warnInDevBuild(ex: Error) {
+/** A task failed that the user is not waiting for, e.g. marking the original email as replied after sending the reply.
+ * Shows the error as warning only in development builds, and does not log it to the error log server. */
+export function minorError(ex: Error) {
   console.error(errorMessage(ex), ex);
   if (production) {
     return;
@@ -32,17 +33,12 @@ function warnInDevBuild(ex: Error) {
 /** The data of one item is bad, e.g. a database row, an object from the server, or the HTML of an email.
  * Call it in the `catch` within a loop, so that the loop continues with the other items. @see `Account.dataError()` */
 export function dataError(ex: Error) {
-  warnInDevBuild(ex);
+  minorError(ex);
 }
 
 /** Our own state is inconsistent, e.g. an account lost its main account, or failed to load. Probably a bug. */
 export function internalError(ex: Error) {
   logErrorToServer(ex);
-}
-
-/** A task failed that the user is not waiting for, e.g. marking the original email as replied after sending the reply */
-export function minorError(ex: Error) {
-  warnInDevBuild(ex);
 }
 
 function shouldShow(ex: Error): boolean {

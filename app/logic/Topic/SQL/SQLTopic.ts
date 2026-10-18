@@ -4,6 +4,7 @@ import { Topic, type ValueProperty } from "../Topic";
 import { Paragraph } from "../PageContent";
 import { getDatabase } from "./SQLDatabase";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+import { dataError } from "../../util/error";
 import { assert } from "../../util/util";
 import { ArrayColl } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
@@ -85,7 +86,7 @@ export class SQLTopic {
           c.rawHTMLDangerous = sanitize.string(content.html, "");
         }
       } catch (ex) {
-        topic.account.dataError(ex);
+        dataError(ex);
       }
     }
   }

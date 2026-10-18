@@ -48,9 +48,9 @@ export class Account extends Observable {
   loginOnStartup = true;
   /** Error that broke the server connection, unrecoverable, including login failures. */
   fatalError: Error | null = null;
-  /** Non-fatal errors, including when processing a single email */
+  /** Non-fatal errors that are not about a single email or data item. */
   readonly errors = new ArrayColl<Error>();
-  /** @see `dataError()` */
+  /** The data of a single email or item is bad @see `dataError()` */
   readonly dataErrors = new ArrayColl<Error>();
   /** Will be called, when there are errors on the connection
    * which cannot be attributed directly to an API function called,
@@ -68,7 +68,7 @@ export class Account extends Observable {
    * Call it in the `catch` within a loop, so that the loop continues with the other items. */
   dataError(ex: Error) {
     this.dataErrors.add(ex);
-    this.errorCallback(ex);
+    logErrorToServer(ex);
   }
 
   /**
