@@ -10,15 +10,15 @@
         <input id="event-form-title" class="field title" type="text" bind:value={event.title}
           autofocus={!event.title} />
         {#if isMeeting}
-          <button class="field-button" on:click={onAddressBook}
+          <button class="field-button" on:click={() => $openSelectAttendees = event}
             title={$t`Select attendees from the address book`}>
             {$t`Required`}
           </button>
           <hbox class="field attendees">
-            <ParticipantsBox {event} {flow} bind:this={attendeesField} autofocus={!!event.title && !flow.attendees.length} />
+            <ParticipantsBox {event} {flow} autofocus={(!!event.title || isShown) && !flow.attendees.length} />
           </hbox>
         {/if}
-        <TimeBox {event} editor={timeEditor} {flow} {onRecurrence} />
+        <TimeBox {event} editor={timeEditor} {flow} />
         <label class="field-button" for="event-form-location">{$t`Location`}</label>
         <input id="event-form-location" class="field location" type="text" bind:value={event.location} />
         {#if $event.isOnline}
@@ -54,6 +54,7 @@
   import SendButton from "./SendButton.svelte";
   import TimeBox from "./TimeBox.svelte";
   import ParticipantsBox from "./ParticipantsBox.svelte";
+  import { openSelectAttendees } from "./EditEvent.svelte";
   import OnlineMeetingBox from "./OnlineMeetingBox.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
@@ -62,6 +63,7 @@
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
   import type { Editor } from "@tiptap/core";
+  import { onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -73,23 +75,17 @@
   export let sendLabel: string;
   export let sendDisabled: string | false = false;
   export let onSend: () => Promise<void>;
-  export let onRecurrence: () => void;
-  export let onAddressBook: () => void;
 
-  let attendeesField: ParticipantsBox;
   const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
 
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;
   $: attachments = event.attachments;
 
-  export async function checkNames(): Promise<boolean> {
-    return await attendeesField?.checkNames();
-  }
-
-  export function focusAttendees() {
-    attendeesField?.focus();
-  }
+  let isShown = false;
+  onMount(() => {
+    isShown = true;
+  });
 
   function onFilesDrop(dropped: CustomEvent) {
     addFilesAsAttachments(event, dropped.detail.files as File[]);

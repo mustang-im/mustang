@@ -3,14 +3,21 @@
     disabled={readOnly} {autofocus} bind:this={addressField} />
 </hbox>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { writable } from "svelte/store";
+
+  export const checkNamesOf = writable<Event | null>(null);
+</script>
+
+<script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventEditFlow } from "./EventEditFlow";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import MailAutocomplete from "../../Mail/Composer/MailAutocomplete.svelte";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
@@ -39,12 +46,9 @@
     }
   }
 
-  export function focus() {
-    addressField?.focus();
-  }
-
-  export async function checkNames(): Promise<boolean> {
-    return await addressField.checkNames();
+  $: if ($checkNamesOf == event) {
+    $checkNamesOf = null;
+    catchErrors(() => addressField?.checkNames());
   }
 </script>
 

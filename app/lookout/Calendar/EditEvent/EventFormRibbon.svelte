@@ -4,7 +4,7 @@
       <RibbonGroup label={$t`Respond`}>
         {#if $event.isCancelled}
           <RibbonButton label={$t`Remove from Calendar`} icon={RemoveIcon}
-            onClick={actions.onDelete} />
+            onClick={onDelete} />
         {:else}
           <RibbonMenuButton label={$t`Accept`} icon={AcceptIcon} classes="accept">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
@@ -26,14 +26,14 @@
       <RibbonGroup label={$t`Actions`}>
         {#if isInstance}
           <RibbonMenuButton label={$t`Delete`} icon={DeleteIcon}>
-            <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} onClick={actions.onDelete} />
-            <MenuItem label={$t`Delete Series`} icon={DeleteIcon} onClick={actions.onDeleteSeries} />
+            <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} onClick={onDelete} />
+            <MenuItem label={$t`Delete Series`} icon={DeleteIcon} onClick={deleteSeries} />
           </RibbonMenuButton>
         {:else}
           <RibbonButton label={$t`Delete`} icon={DeleteIcon}
             disabled={$event.isCancelled && $t`Use Remove from Calendar`}
             tooltip={$t`Delete the meeting and decline it`}
-            onClick={actions.onDelete} />
+            onClick={onDelete} />
         {/if}
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
           onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
@@ -55,26 +55,26 @@
         {#if !isMeeting}
           <RibbonButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo="Alt+S"
             disabled={saveDisabled}
-            onClick={actions.onSave} />
+            onClick={onSave} />
         {/if}
         {#if isInstance}
           <RibbonMenuButton label={isSent ? $t`Cancel Meeting` : $t`Delete`} icon={isSent ? CancelIcon : DeleteIcon}>
             <MenuItem label={isSent ? $t`Cancel Occurrence` : $t`Delete Occurrence`} icon={isSent ? CancelIcon : DeleteIcon}
-              onClick={actions.onDelete} />
+              onClick={onDelete} />
             {#if $event.seriesStatus == "middle" && !isSent}
               <MenuItem label={$t`Delete This and Following`} icon={DeleteIcon}
-                onClick={actions.onDeleteRemainder} />
+                onClick={() => flow.deleteRemainder()} />
             {/if}
             <MenuItem label={isSent ? $t`Cancel Series` : $t`Delete Series`} icon={isSent ? CancelIcon : DeleteIcon}
-              onClick={actions.onDeleteSeries} />
+              onClick={deleteSeries} />
           </RibbonMenuButton>
         {:else if isSent}
           <RibbonButton label={$t`Cancel Meeting`} icon={CancelIcon}
             tooltip={$t`Send a cancellation to all attendees and delete the meeting`}
-            onClick={actions.onDelete} />
+            onClick={onDelete} />
         {:else}
           <RibbonButton label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Ctrl+D"
-            onClick={actions.onDelete} />
+            onClick={onDelete} />
         {/if}
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
           disabled={!flow.isSaved && (isMeeting ? $t`Send the meeting first` : $t`Save the appointment first`)}
@@ -107,14 +107,14 @@
         {#if isMeeting}
           <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
             tooltip={$t`Select attendees from the address book`}
-            onClick={actions.onAddressBook} />
+            onClick={() => { $openSelectAttendees = event; }} />
           <RibbonButton label={$t`Check Names`} icon={CheckNamesIcon}
             tooltip={$t`Check the names you typed against your address books`}
-            onClick={actions.onCheckNames} />
+            onClick={() => { $checkNamesOf = event; }} />
         {:else}
           <RibbonButton label={$t`Invite Attendees`} icon={InviteIcon}
             tooltip={$t`Turn this appointment into a meeting`}
-            onClick={actions.onInviteAttendees} />
+            onClick={() => flow.inviteAttendees()} />
         {/if}
       </RibbonGroup>
       <RibbonGroup label={$t`Options`}>
@@ -126,7 +126,7 @@
           {/each}
         </RibbonMenuButton>
         <RibbonButton label={$t`Recurrence`} icon={RecurrenceIcon} shortCutInfo="Ctrl+G"
-          onClick={actions.onRecurrence} />
+          onClick={() => { $openRecurrence = event; }} />
       </RibbonGroup>
     {/if}
   </RibbonTab>
@@ -135,12 +135,12 @@
     <RibbonTab label={schedulingLabel} bind:isSelected={isSchedulingSelected}>
       <RibbonGroup label={$t`Scheduling`}>
         <RibbonButton label={$t`Refresh Availability`} icon={RefreshIcon}
-          onClick={actions.onRefreshAvailability} />
+          onClick={() => { $refreshAvailabilityOf = event; }} />
       </RibbonGroup>
       <RibbonGroup label={$t`Attendees`}>
         <RibbonButton label={$t`Add Attendees`} icon={AddAttendeesIcon}
           tooltip={$t`Select attendees from the address book`}
-          onClick={actions.onAddressBook} />
+          onClick={() => { $openSelectAttendees = event; }} />
       </RibbonGroup>
     </RibbonTab>
   {/if}
@@ -153,10 +153,10 @@
     </RibbonTab>
   {/if}
   {#if !isIncoming}
-    <InsertTab {editor} bind:openedTool {onAttachFile} bind:showEmojis>
+    <InsertTab {editor} bind:openedTool onAttachFile={onAddAttachment} bind:showEmojis>
       <svelte:fragment slot="include">
         <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
-          <SignatureMenuItems identity={null} {editor} onSignatures={actions.onSignatures} />
+          <SignatureMenuItems identity={null} {editor} onSignatures={() => { $openSignatures = event; }} />
         </RibbonMenuButton>
       </svelte:fragment>
     </InsertTab>
@@ -164,25 +164,12 @@
     <ReviewTab {editor} bind:openedTool />
   {/if}
 </Ribbon>
-
-<script lang="ts" context="module">
-  export interface EventFormActions {
-    onSave: () => Promise<void>;
-    onDelete: () => Promise<void>;
-    onDeleteRemainder: () => Promise<void>;
-    onDeleteSeries: () => Promise<void>;
-    onInviteAttendees: () => void;
-    onAddressBook: () => void;
-    onCheckNames: () => Promise<void>;
-    onRecurrence: () => void;
-    onRefreshAvailability: () => void;
-    onSignatures: () => void;
-  }
-</script>
+<FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { EventFormInfo } from "./EventFormInfo";
   import { Reminder } from "./Reminder";
   import Ribbon from "../../Shared/Ribbon/Ribbon.svelte";
@@ -196,6 +183,12 @@
   import type { EditorTool } from "../../Shared/Editor/EditorTool";
   import type { Editor } from "@tiptap/core";
   import SignatureMenuItems from "../../Mail/Composer/SignatureMenuItems.svelte";
+  import { openSignatures } from "../../Mail/Composer/SignaturesDialog.svelte";
+  import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
+  import { openSelectAttendees } from "./EditEvent.svelte";
+  import { openRecurrence } from "./RecurrenceDialog.svelte";
+  import { checkNamesOf } from "./ParticipantsBox.svelte";
+  import { refreshAvailabilityOf } from "./AvailabilityGrid.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import type { EventEditFlow } from "./EventEditFlow";
   import type { InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
@@ -236,15 +229,14 @@
   export let flow: EventEditFlow;
   export let editor: Editor;
   export let openedTool: EditorTool | null = null;
-  export let onAttachFile: () => Promise<void>;
   export let showEmojis = false;
-  export let actions: EventFormActions;
-  export let saveDisabled: string | false = false;
   export let canSchedule = false;
   export let schedulingLabel: string;
   export let trackingLabel: string;
   export let isSchedulingSelected = false;
   export let isTrackingSelected = false;
+  export let onSave: () => Promise<void>;
+  export let onDelete: () => Promise<void>;
 
   $: participants = event.participants;
   $: isMeeting = $participants.hasItems;
@@ -255,6 +247,7 @@
   $: reminderMinutes = $event && Reminder.minutesBefore(event);
   $: reminderLabel = Reminder.label(reminderMinutes);
   $: reminderChoices = Reminder.choices(reminderMinutes);
+  $: saveDisabled = ($event && flow.missingPropsReason) ?? false;
   const meetAccounts = appGlobal.meetAccounts.filterObservable(account => account.canCreateURL);
 
   function onOnline(account: MeetAccount | null) {
@@ -278,6 +271,25 @@
     // </copied>
     event.notifyObservers();
   }
+
+  async function deleteSeries() {
+    if (event.isOutgoingMeeting && flow.isSaved) {
+      await flow.cancelMeetingSeries();
+    } else {
+      await flow.deleteAll();
+    }
+  }
+
+  // <copied from="../../../frontend/Calendar/EditEvent/EditEvent.svelte" expandAttachments()>
+  let fileSelector: FileSelector;
+  async function onAddAttachment() {
+    let files = await fileSelector.selectFiles();
+    if (!files?.length) {
+      return;
+    }
+    addFilesAsAttachments(event, files);
+  }
+  // </copied>
 
   async function copyTrackingStatus() {
     let lines = event.participants.contents.map(participant => [

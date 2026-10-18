@@ -107,8 +107,14 @@
   </hbox>
 </vbox>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Event } from "../../../logic/Calendar/Event";
+  import { writable } from "svelte/store";
+
+  export const refreshAvailabilityOf = writable<Event | null>(null);
+</script>
+
+<script lang="ts">
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "./FreeBusy";
@@ -216,7 +222,8 @@
     }
   }
 
-  export function refresh() {
+  $: if ($refreshAvailabilityOf == event) {
+    $refreshAvailabilityOf = null;
     load();
   }
 

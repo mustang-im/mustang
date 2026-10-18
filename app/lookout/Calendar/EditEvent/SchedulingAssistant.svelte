@@ -2,7 +2,7 @@
   <hbox class="header">
     <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
     <grid class="fields">
-      <TimeBox {event} editor={timeEditor} {flow} showSummary={false} {onRecurrence} />
+      <TimeBox {event} editor={timeEditor} {flow} showSummary={false} />
     </grid>
   </hbox>
   <AvailabilityGrid {event} {timeEditor} bind:this={grid} />
@@ -22,13 +22,8 @@
   export let sendLabel: string;
   export let sendDisabled: string | false = false;
   export let onSend: () => Promise<void>;
-  export let onRecurrence: () => void;
 
   let grid: AvailabilityGrid;
-
-  export function refresh() {
-    grid?.refresh();
-  }
 
   export function focusAddAttendee() {
     grid?.focusAddAttendee();

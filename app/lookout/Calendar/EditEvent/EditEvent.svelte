@@ -1,8 +1,7 @@
 <vbox flex class="event-form-page" on:keydown={onKeyDown}>
   {#key ribbonKey}
-    <EventFormRibbon {event} {flow} {editor} bind:openedTool {onAttachFile} {actions} {saveDisabled} {canSchedule}
-      {schedulingLabel} {trackingLabel}
-      bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
+    <EventFormRibbon {event} {flow} {editor} bind:openedTool {canSchedule} {schedulingLabel} {trackingLabel}
+      {onSave} {onDelete} bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
   {/key}
   <vbox flex class="form-card lo-card">
     <hbox class="title-row">
@@ -25,19 +24,17 @@
     {#if isIncoming}
       <InvitationInCalendar {event} {flow} {messages} />
     {:else if showScheduling}
-      <SchedulingAssistant {event} {flow} {timeEditor} bind:this={scheduling}
-        {sendLabel} {sendDisabled} onSend={onSave} onRecurrence={openRecurrence} />
+      <SchedulingAssistant {event} {flow} {timeEditor} {sendLabel} {sendDisabled} onSend={onSave} />
     {:else if showTracking}
       <TrackingView {event} />
     {:else}
-      <EventForm {event} {flow} {timeEditor} {messages} bind:editor bind:showEmojis bind:this={form}
-        {sendLabel} {sendDisabled} onSend={onSave} onRecurrence={openRecurrence}
-        onAddressBook={openAddressBook} />
+      <EventForm {event} {flow} {timeEditor} {messages} bind:editor bind:showEmojis
+        {sendLabel} {sendDisabled} onSend={onSave} />
     {/if}
   </vbox>
 </vbox>
 
-{#if showRecurrenceDialog}
+{#if $openRecurrence == event}
   <RecurrenceDialog {event} {flow} {timeEditor} on:close={onRecurrenceClosed} />
 {/if}
 {#if seriesChoice}
@@ -55,44 +52,47 @@
 {/if}
 {#if attendeesPicks}
   <SelectNamesDialog title={$t`Select Attendees and Resources`} persons={attendeesPicks} label={$t`Required`}
-    on:ok={() => flow.setAttendees(attendeesPicks.contents)} on:close={() => attendeesPicks = null} />
+    on:ok={() => flow.setAttendees(attendeesPicks.contents)} on:close={() => $openSelectAttendees = null} />
 {/if}
-{#if showSignatures}
-  <SignaturesDialog identity={event.calendar?.inviteAs} on:close={() => showSignatures = false} />
+{#if $openSignatures == event}
+  <SignaturesDialog identity={event.calendar?.inviteAs} on:close={() => $openSignatures = null} />
 {/if}
 <EditorToolDialogs {editor} bind:openedTool />
-<FileSelector bind:this={fileSelector} />
+
+<script lang="ts" context="module">
+  import type { Event } from "../../../logic/Calendar/Event";
+  import { writable } from "svelte/store";
+
+  export const openSelectAttendees = writable<Event | null>(null);
+</script>
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { UserError } from "../../../logic/util/util";
   import { EventEditFlow, type SeriesChoice } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
   import { EventFormInfo, type InfoMessage } from "./EventFormInfo";
-  import EventFormRibbon, { type EventFormActions } from "./EventFormRibbon.svelte";
+  import EventFormRibbon from "./EventFormRibbon.svelte";
   import EventForm from "./EventForm.svelte";
   import InvitationInCalendar from "../Invitation/InvitationInCalendar.svelte";
   import TrackingView from "./TrackingView.svelte";
-  import RecurrenceDialog from "./RecurrenceDialog.svelte";
+  import RecurrenceDialog, { openRecurrence } from "./RecurrenceDialog.svelte";
   import SeriesChoiceDialog from "./SeriesChoiceDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import SchedulingAssistant from "./SchedulingAssistant.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
-  import SignaturesDialog from "../../Mail/Composer/SignaturesDialog.svelte";
+  import SignaturesDialog, { openSignatures } from "../../Mail/Composer/SignaturesDialog.svelte";
   import { FreeBusy } from "./FreeBusy";
   import type { EditorTool } from "../../Shared/Editor/EditorTool";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
-  import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import { Keyboard } from "../../Util/keyboard";
   import CloseIcon from "lucide-svelte/icons/x";
   import type { Editor } from "@tiptap/core";
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
   import { ArrayColl } from "svelte-collections";
   import { openComposer } from "../../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
@@ -106,16 +106,11 @@
   const schedulingLabel = gt`Scheduling Assistant`;
   const trackingLabel = gt`Tracking`;
 
-  let form: EventForm;
-  let scheduling: SchedulingAssistant;
-  let fileSelector: FileSelector;
   let editor: Editor = null;
   let openedTool: EditorTool | null = null;
   let showEmojis = false;
-  let showSignatures = false;
   let isSchedulingSelected = false;
   let isTrackingSelected = false;
-  let showRecurrenceDialog = false;
   let showSaveChanges = false;
   let seriesChoice: {
     title: string,
@@ -163,22 +158,9 @@
 
   onMount(() => {
     if (event.isNew && event.recurrenceRule && !event.parentEvent) {
-      showRecurrenceDialog = true;
+      $openRecurrence = event;
     }
   });
-
-  const actions: EventFormActions = {
-    onSave,
-    onDelete,
-    onDeleteRemainder: () => flow.deleteRemainder(),
-    onDeleteSeries,
-    onInviteAttendees,
-    onAddressBook: openAddressBook,
-    onCheckNames: async () => { await form?.checkNames(); },
-    onRecurrence: openRecurrence,
-    onRefreshAvailability: () => scheduling?.refresh(),
-    onSignatures: () => { showSignatures = true; },
-  };
 
   function changesText(isMeeting: boolean, isSaved: boolean) {
     if (isMeeting && !isSaved) {
@@ -230,40 +212,15 @@
     }
   }
 
-  async function onDeleteSeries() {
-    if (event.isOutgoingMeeting && flow.isSaved) {
-      await flow.cancelMeetingSeries();
-    } else {
-      await flow.deleteAll();
-    }
-  }
-
-  async function onInviteAttendees() {
-    flow.inviteAttendees();
-    await tick();
-    form?.focusAttendees();
-  }
-
   let attendeesPicks: ArrayColl<PersonUID> = null;
-  function openAddressBook() {
-    attendeesPicks = new ArrayColl<PersonUID>(flow.attendees);
-  }
-
-  function openRecurrence() {
-    showRecurrenceDialog = true;
+  $: pickAttendees($openSelectAttendees);
+  function pickAttendees(pickedEvent: Event | null) {
+    attendeesPicks = pickedEvent == event ? new ArrayColl<PersonUID>(flow.attendees) : null;
   }
 
   function onRecurrenceClosed() {
-    showRecurrenceDialog = false;
+    $openRecurrence = null;
     event.notifyObservers();
-  }
-
-  async function onAttachFile() {
-    let files = await fileSelector.selectFiles();
-    if (!files?.length) {
-      return;
-    }
-    addFilesAsAttachments(event, files);
   }
 
   function onCloseRequest() {
@@ -275,7 +232,7 @@
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
-    if (keyEvent.defaultPrevented || showRecurrenceDialog || showSaveChanges || seriesChoice || attendeesPicks || openedTool || showSignatures) {
+    if (keyEvent.defaultPrevented || $openRecurrence == event || showSaveChanges || seriesChoice || attendeesPicks || openedTool || $openSignatures == event) {
       return;
     }
     let key = keyEvent.key.toLowerCase();
@@ -288,7 +245,7 @@
     } else if (keyEvent.altKey && !keyEvent.ctrlKey && keyEvent.code == "KeyS" && !Keyboard.isMac && !isIncoming) {
       command = onSave;
     } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "g" && !isIncoming) {
-      command = openRecurrence;
+      command = () => { $openRecurrence = event; };
     } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "d" && !event.parentEvent) {
       command = onDelete;
     } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "f" && flow.isSaved) {
