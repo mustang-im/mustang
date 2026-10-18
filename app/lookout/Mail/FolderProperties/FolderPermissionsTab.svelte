@@ -21,7 +21,7 @@
       <ComboBox label={$t`Permission Level:`} options={levelOptions} value={selected?.level ?? null}
         placeholder={selected && !selected.level ? "–" : null}
         disabled={!selected && $t`Select a person first`}
-        onChange={level => { permissions.setLevel(selected, level); changed(); }} width="100%" />
+        on:change={event => { permissions.setLevel(selected, event.detail); changed(); }} width="100%" />
     </hbox>
     <grid class="rights">
       <GroupBox label={$t`Read`} disabled={!canEditRights}>

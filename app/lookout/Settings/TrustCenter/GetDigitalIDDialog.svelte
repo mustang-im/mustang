@@ -4,7 +4,7 @@
     <span>{$t`A Digital ID lets you add a digital signature to your messages, and lets others send you encrypted messages.`}</span>
     <FormGrid columns="150px minmax(0, 1fr)">
       <span>{$t`E-mail address:`}</span>
-      <ComboBox options={identityOptions} bind:value={identity} onChange={onIdentityChanged} label={$t`E-mail address`} />
+      <ComboBox options={identityOptions} bind:value={identity} on:change={event => onIdentityChanged(event.detail)} label={$t`E-mail address`} />
     </FormGrid>
     <GroupBox label={$t`Type`}>
       <vbox class="types">

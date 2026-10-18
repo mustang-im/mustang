@@ -20,8 +20,7 @@
       <h2>{$t`License`}</h2>
       <License />
       <h2>{$t`${appName} Theme`}</h2>
-      <ComboBox options={themeOptions} value={$theme.value} label={$t`${appName} Theme`} width="240px"
-        onChange={value => { $theme.value = value; }} />
+      <ComboBox options={themeOptions} bind:value={$theme.value} label={$t`${appName} Theme`} width="240px" />
     </vbox>
     <vbox class="column">
       <h2>{$t`Product Information`}</h2>

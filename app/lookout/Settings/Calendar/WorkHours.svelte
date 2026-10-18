@@ -19,7 +19,7 @@
         <hbox class="wide">
           <ComboBox options={timezones} value={$workHours.timezone ?? ""} label={$t`Time zone of the work hours`}
             width="100%" disabled={readOnly}
-            onChange={onTimezoneChanged} />
+            on:change={event => onTimezoneChanged(event.detail)} />
         </hbox>
       {/if}
     </grid>

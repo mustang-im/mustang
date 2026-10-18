@@ -11,7 +11,7 @@
           onChange={time => setEndTime(time)} />
         <span class="label">{$t`Duration:`}</span>
         <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
-          onChange={minutes => setDuration(minutes)} />
+          on:change={event => setDuration(event.detail)} />
       </grid>
     </GroupBox>
 
@@ -61,7 +61,7 @@
                 name="monthly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
                 on:change={() => { pattern.monthlyMode = weekMode; }} />
               <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
-                onChange={mode => setWeekMode(mode)} />
+                on:change={event => setWeekMode(event.detail)} />
               {weekdayName}
               {$t`of every *=> as in: The third Thursday of every 2 months`}
               <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`} />
@@ -82,7 +82,7 @@
                 name="yearly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
                 on:change={() => { pattern.monthlyMode = weekMode; }} />
               <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
-                onChange={mode => setWeekMode(mode)} />
+                on:change={event => setWeekMode(event.detail)} />
               {$t`${weekdayName} of ${monthName} *=> as in: (On the third) Thursday of October`}
             </hbox>
           {/if}

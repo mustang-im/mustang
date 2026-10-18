@@ -4,7 +4,7 @@
       <hbox class="field-row">
         <label for="options-display-language" class="field-label">{$t`Display language:`}</label>
         <ComboBox options={[ { value: "", label: $t`Use system setting` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
-          bind:value={language} onChange={newLanguage => { dateTimeFormat = newLanguage; }} label={$t`Display language`} width="240px" />
+          bind:value={language} on:change={event => { dateTimeFormat = event.detail; }} label={$t`Display language`} width="240px" />
         {#if language != getUILocalePref()}
           <DialogButton label={$t`Save and restart`} icon={RestartIcon} onClick={onSaveLanguage} />
         {/if}
@@ -16,7 +16,7 @@
       <hbox class="field-row">
         <label for="options-date-format" class="field-label">{$t`Format:`}</label>
         <ComboBox options={[ { value: "", label: $t`Same as the display language` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
-          bind:value={dateTimeFormat} onChange={newFormat => { dateTimeFormat = newFormat; onSaveDateTimeFormat(); }} label={$t`Format`} width="240px" />
+          bind:value={dateTimeFormat} on:change={onSaveDateTimeFormat} label={$t`Format`} width="240px" />
       </hbox>
       <grid class="samples">
         <span class="lo-secondary">{$t`Short date:`}</span>

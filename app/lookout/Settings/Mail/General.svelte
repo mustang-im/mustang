@@ -77,7 +77,7 @@
             <CategorySquare {tag} />
             <span class="category-name">{tag.name}</span>
             <ComboBox label={$t`Color of ${tag.name}`} options={colorOptions} value={tag.color}
-              onChange={async color => { tag.color = color; await saveTagsList(); }} width="160px" swatchColumns={5} />
+              on:change={event => catchErrors(async () => { tag.color = event.detail; await saveTagsList(); })} width="160px" swatchColumns={5} />
             <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain" onClick={() => onDeleteCategory(tag)} />
           </hbox>
         {/each}
@@ -94,6 +94,7 @@
 <script lang="ts">
   import type { Tag } from "../../../logic/Abstract/Tag";
   import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
+  import { catchErrors } from "../../../frontend/Util/error";
   import type { ReadingPanePosition } from "../../Mail/3pane/3Pane.svelte";
   import { CategoryChoice } from "../../Shared/Tag/CategoryChoice";
   import { CategoryColors } from "../../Shared/Tag/CategoryColors";

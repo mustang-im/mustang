@@ -48,13 +48,14 @@
   import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";
   import ColorPalette from "../ColorPalette.svelte";
-  import { showError } from "../../../frontend/Util/error";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
+  import { createEventDispatcher } from "svelte";
 
   type T = $$Generic;
+  const dispatch = createEventDispatcher<{ change: T }>();
+
   export let options: ComboOption<T>[] = [];
   export let value: T = null;
-  export let onChange: (value: T) => void | Promise<void> = null;
   export let label: string = null;
   export let placeholder: string = null;
   export let disabled: boolean | string = false;
@@ -69,16 +70,12 @@
   let listMinWidth: string = null;
   $: selectedOption = options.find(option => option.value === value);
 
-  async function select(option: ComboOption<T>) {
+  function select(option: ComboOption<T>) {
     if (!option || option.disabled || option.value === value) {
       return;
     }
     value = option.value;
-    try {
-      await onChange?.(value);
-    } catch (ex) {
-      showError(ex);
-    }
+    dispatch("change", value);
   }
 
   async function onToggle() {
@@ -110,7 +107,7 @@
       : event.key == "End" ? enabled.length - 1
       : event.key == "ArrowDown" ? Math.min(enabled.length - 1, pos + 1)
       : Math.max(0, pos - 1);
-    await select(enabled[next]);
+    select(enabled[next]);
   }
 </script>
 

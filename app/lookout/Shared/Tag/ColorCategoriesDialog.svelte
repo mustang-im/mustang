@@ -29,7 +29,7 @@
           <span>{$t`Color:`}</span>
           <ComboBox label={$t`Color:`} options={colorOptions(selected)} value={selected?.color ?? null}
             disabled={!selected && $t`Select a category first`}
-            onChange={color => onColor(color)} width="100%" swatchColumns={5} />
+            on:change={event => catchErrors(() => onColor(event.detail))} width="100%" swatchColumns={5} />
         </vbox>
       </vbox>
     </hbox>
@@ -49,6 +49,7 @@
 <script lang="ts">
   import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
   import { MessageBox } from "../Dialog/MessageBox";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { CategoryChoice } from "./CategoryChoice";
   import { CategoryColors } from "./CategoryColors";
   import TagAdd from "./TagAdd.svelte";

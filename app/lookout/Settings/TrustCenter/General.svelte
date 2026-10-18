@@ -4,10 +4,10 @@
       {#if identity}
         <grid class="fields">
           <span>{$t`E-mail address:`}</span>
-          <ComboBox options={identityOptions} value={identity} onChange={onIdentityChosen} label={$t`E-mail address`} width="100%" />
+          <ComboBox options={identityOptions} value={identity} on:change={event => onIdentityChosen(event.detail)} label={$t`E-mail address`} width="100%" />
           <span>{$t`Digital ID:`}</span>
           {#if keyOptions.length}
-            <ComboBox options={keyOptions} value={key} onChange={onKeyChosen} label={$t`Digital ID`} width="100%" />
+            <ComboBox options={keyOptions} value={key} on:change={event => catchErrors(() => onKeyChosen(event.detail))} label={$t`Digital ID`} width="100%" />
           {:else}
             <span class="hint">{$t`You don't have a Digital ID for ${identity.emailAddress} yet. Import one or get a new one below.`}</span>
           {/if}

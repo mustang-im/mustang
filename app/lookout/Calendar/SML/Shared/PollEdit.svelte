@@ -2,7 +2,7 @@
   <hbox class="row">
     <span class="row-label">{$t`Duration:`}</span>
     <ComboBox options={durationOptions} value={poll.duration} label={$t`Duration`} width="132px"
-      onChange={minutes => setDuration(minutes)} />
+      on:change={event => setDuration(event.detail)} />
   </hbox>
   <span class="field-label">{$t`Proposed times`}</span>
   <DisplayList {options} duration={poll.duration}

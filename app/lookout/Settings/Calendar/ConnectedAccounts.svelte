@@ -5,12 +5,12 @@
       <ComboBox options={$identities.contents.map(identity => ({ value: identity, label: identity.name }))}
         value={$account.inviteAs} label={$t`Send invitations from`} width="320px"
         disabled={$identities.length <= 1}
-        onChange={identity => { account.inviteAs = identity; return onSave(); }} />
+        on:change={event => catchErrors(() => { account.inviteAs = event.detail; return onSave(); })} />
       <span>{$t`Online meeting:`}</span>
       <ComboBox options={$meetAccounts.contents.map(meetAccount => ({ value: meetAccount, label: meetAccount.name }))}
         value={$account.meetAccount} label={$t`Online meeting`} width="320px"
         disabled={$meetAccounts.length <= 1}
-        onChange={meetAccount => { account.meetAccount = meetAccount; return onSave(); }} />
+        on:change={event => catchErrors(() => { account.meetAccount = event.detail; return onSave(); })} />
     </grid>
   </OptionsRow>
 </OptionsSection>
@@ -20,6 +20,7 @@
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import { catchErrors } from "../../../frontend/Util/error";
   import ConnectedIcon from "lucide-svelte/icons/link";
   import { t } from "../../../l10n/l10n";
 

@@ -21,7 +21,7 @@
           <ComboBox options={workspaceOptions}
             value={account.workspace} placeholder={$t`Move to workspace`}
             label={$t`Workspace of ${account.name}`} width="200px"
-            onChange={chosen => onMove(account, chosen)} />
+            on:change={event => catchErrors(() => onMove(account, event.detail))} />
         {/each}
       </grid>
     {:else}
@@ -42,6 +42,7 @@
   import type { Account } from "../../../logic/Abstract/Account";
   import { Workspace, accountColors, saveWorkspaces } from "../../../logic/Abstract/Workspace";
   import { appGlobal } from "../../../logic/app";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { changedWorkspace, selectedWorkspace } from "../../../frontend/MainWindow/Selected";
   import { getAccountIcon } from "../../../frontend/Settings/Shared/accountUIHelper";
   import { accountSettings } from "../SettingsCategories";
