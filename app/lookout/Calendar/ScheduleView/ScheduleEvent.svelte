@@ -23,12 +23,11 @@
       <EventIcons {event} />
     </div>
   </EventContent>
-  <div class="context-menu" use:moveOutOfGrid>
-    <ContextMenu bind:this={contextMenu}>
-      <EventMenu {event} />
-    </ContextMenu>
-  </div>
 </div>
+
+<ContextMenu bind:this={contextMenu}>
+  <EventMenu {event} />
+</ContextMenu>
 
 <script lang="ts">
   import type { ScheduleItem } from "./ScheduleLayout";
@@ -100,24 +99,9 @@
     CalendarActions.commitInlineTitle();
   }
   // </copied>
-
-  // <copied from="../../Shared/Menu/SubMenu.svelte">
-  function moveOutOfGrid(node: HTMLElement) {
-    let target = node.closest(".lookout-window") ?? document.body;
-    target.appendChild(node);
-    return {
-      destroy() {
-        node.remove();
-      },
-    };
-  }
-  // </copied>
 </script>
 
 <style>
-  .context-menu {
-    display: contents;
-  }
   .schedule-event {
     display: flex;
     position: absolute;
