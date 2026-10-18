@@ -2,6 +2,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
+import { applyPatch } from "./applyPatch";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
@@ -93,6 +94,45 @@ test("The reminder is read from the server", async () => {
   let { event } = await listEvents([serverEvent()]);
 
   expect(event.startTime.getTime() - event.alarm.getTime()).toBe(10 * 60 * 1000);
+});
+
+/** Alerts as another client sets them: 2 reminders and an email from the server the day before */
+function severalAlerts(): TJMAPCalendarEvent["alerts"] {
+  return {
+    "a": { "@type": "Alert", trigger: { "@type": "OffsetTrigger", offset: "-PT15M" } },
+    "b": { "@type": "Alert", trigger: { "@type": "OffsetTrigger", offset: "-PT5M" } },
+    "c": { "@type": "Alert", action: "email", trigger: { "@type": "OffsetTrigger", offset: "-P1D" } },
+  };
+}
+
+test("Removing the reminder removes all alerts that we show, but not the email alert", async () => {
+  let json = serverEvent();
+  json.alerts = severalAlerts();
+  let before = structuredClone(json);
+  let { event, sent } = await listEvents([json]);
+  expect(event.startTime.getTime() - event.alarm.getTime()).toBe(15 * 60 * 1000);
+
+  event.alarm = null;
+  await event.save();
+
+  expect(applyPatch(before, sent[0].update.eventID).alerts).toEqual({ c: severalAlerts().c });
+});
+
+test("An email alert is not a reminder", async () => {
+  let json = serverEvent();
+  json.alerts = { c: severalAlerts().c };
+  let before = structuredClone(json);
+  let { event, sent } = await listEvents([json]);
+  expect(event.alarm).toBe(null);
+
+  event.alarm = new Date(event.startTime.getTime() - 10 * 60 * 1000);
+  await event.save();
+
+  let alerts = applyPatch(before, sent[0].update.eventID).alerts;
+  expect(alerts.c).toEqual(severalAlerts().c);
+  expect(Object.values(alerts).filter((alert: any) => alert.action != "email")).toMatchObject([
+    { trigger: { "@type": "OffsetTrigger", offset: "-PT10M" } },
+  ]);
 });
 
 test("An event without an alert has no reminder", async () => {

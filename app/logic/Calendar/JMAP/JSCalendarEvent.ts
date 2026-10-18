@@ -34,7 +34,7 @@ export class JSCalendarEvent {
     event.duration = toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S"));
 
     // Reminder. We support only one alarm per event, so take the first.
-    event.alarm = this.toAlarm(Object.values(jmap.alerts ?? {})[0], event);
+    event.alarm = this.toAlarm(this.displayAlerts(jmap)[0], event);
 
     // Recurrence
     if (jmap.recurrenceRule) {
@@ -138,11 +138,16 @@ export class JSCalendarEvent {
 
     // Reminder. Keep an unchanged alert as it is: ours is an offset from the start
     // and fires before every occurrence, an absolute trigger only once.
-    let alert = Object.values(jmap.alerts ?? {})[0];
+    let displayAlerts = this.displayAlerts(jmap);
+    let alert = displayAlerts[0];
     if (this.toAlarm(alert, event)?.getTime() != event.alarm?.getTime()) {
       jmap.useDefaultAlerts = false; // or the server ignores our alerts
       if (!event.alarm) {
-        delete jmap.alerts[Object.keys(jmap.alerts)[0]];
+        for (let id in jmap.alerts) {
+          if (displayAlerts.includes(jmap.alerts[id])) {
+            delete jmap.alerts[id];
+          }
+        }
       } else if (alert) {
         alert.trigger = this.fromAlarm(event);
       } else {
@@ -313,6 +318,11 @@ export class JSCalendarEvent {
       "@type": "OffsetTrigger",
       offset: fromSeconds(Math.round((event.alarm.getTime() - event.startTime.getTime()) / 1000)),
     };
+  }
+
+  /** The alerts that we show, but not e.g. email alerts, which the server sends */
+  protected static displayAlerts(jmap: TJMAPCalendarEvent): TJSCalendarAlert[] {
+    return Object.values(jmap.alerts ?? {}).filter(alert => (alert.action ?? "display") == "display");
   }
 
   static toDate(date: string, jmap: TJMAPCalendarEvent, fallback?: null): Date {
