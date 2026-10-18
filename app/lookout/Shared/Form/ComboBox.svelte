@@ -18,12 +18,12 @@
   <span class="chevron"><ChevronDownIcon size="14" /></span>
 </button>
 <Menu bind:isMenuOpen={isOpen} anchor={buttonEl} placement="bottom-start" autoFocus={false}
-  onClose={() => buttonEl?.focus()}
+  on:close={() => buttonEl?.focus()}
   bind:this={menu}>
   {#if swatchColumns}
     <ColorPalette colors={options.map(option => ({ name: option.label, color: option.color }))}
       selected={selectedOption?.color} {label} columns={swatchColumns}
-      onChoose={color => select(options.find(option => option.color == color))} />
+      on:select={event => select(options.find(option => option.color == event.detail))} />
   {:else}
   <div class="lo-combobox-list" style:min-width={listMinWidth}>
     {#each options as option}
