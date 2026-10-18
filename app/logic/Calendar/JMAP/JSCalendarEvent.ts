@@ -64,6 +64,8 @@ export class JSCalendarEvent {
       event.recurrenceRule = new RecurrenceRule(rrinit);
       // Exceptions and exclusions have to be handled by the caller,
       // once the event has been saved locally.
+    } else if (!event.parentEvent) {
+      event.recurrenceRule = null;
     }
 
     // Location
