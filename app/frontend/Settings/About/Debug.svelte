@@ -33,6 +33,9 @@
   import Button from "../../Shared/Button.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   let searchInput = "";
   $: searchTerm = searchInput.toLowerCase();
@@ -40,7 +43,7 @@
 
   let logHistoryEl: HTMLDivElement;
   async function copyLogHistory() {
-    await navigator.clipboard.writeText(logHistoryEl.innerText + "\n");
+    await appWindow.window.navigator.clipboard.writeText(logHistoryEl.innerText + "\n");
   }
 </script>
 

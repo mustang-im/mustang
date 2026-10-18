@@ -22,14 +22,17 @@
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { Directory } from "../../../logic/Files/Directory";
-  import { selectedFolder } from "../selected";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { getFilesSelection } from "../selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import FolderPane from "../FolderLeftPane/FolderPane.svelte";
   import SearchPane from "../Search/SearchPane.svelte";
   import RecentList from "./RecentList.svelte";
   import PersonsPane from "./PersonsPane.svelte";
   import PaneViewSwitcher, { FilesView } from "./PaneViewSwitcher.svelte";
   import { Collection } from 'svelte-collections';
+
+  const { selectedFolder } = getFilesSelection();
+  const { globalSearchTerm } = getNavigation();
 
   /** The list of files and folders to show on the right pane
    * in/out only */

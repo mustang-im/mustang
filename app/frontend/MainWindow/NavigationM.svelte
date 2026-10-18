@@ -4,7 +4,9 @@
   import { showError } from "../Util/error";
   import { App } from "@capacitor/app";
   import { gestures } from "@composi/gestures";
-  import { goBack } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
+
+  const { goBack } = getNavigation();
 
   gestures();
 

@@ -6,7 +6,9 @@
 
 <script lang="ts">
   import PersonPicture from "../../Contacts/Person/PersonPicture.svelte";
-  import { lastPersons } from "../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../Contacts/Person/Selected";
+
+  const { lastPersons } = getContactsSelection();
 
 </script>
 

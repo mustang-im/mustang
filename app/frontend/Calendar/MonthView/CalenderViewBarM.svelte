@@ -45,7 +45,7 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedCalendar } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import { setNewEventTime } from "../event";
   import { openEvent } from "../open";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
@@ -54,8 +54,13 @@
   import SearchIcon from "lucide-svelte/icons/search";
   import TODOsIcon from "lucide-svelte/icons/list-checks";
   import PlusIcon from "lucide-svelte/icons/plus";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedCalendar } = getCalendarSelection();
+  const { goTo } = getNavigation();
+  const appWindow = AppWindow.current();
 
   let isMenuOpen = false;
 
@@ -70,6 +75,6 @@
   function newEvent() {
     let event = $selectedCalendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEvent(event, true);
+    openEvent(event, appWindow, true);
   }
 </script>

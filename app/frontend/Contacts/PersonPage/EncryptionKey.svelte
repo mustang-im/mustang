@@ -241,6 +241,9 @@
   import { saveBlobAsFile } from "../../Util/util";
   import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let key: PublicKey;
   /** If you don't have a `Person` */
@@ -275,7 +278,7 @@
     }
   }
   async function onDelete() {
-    if (!confirm(`Do you want to delete this public key for ${personName}? You will not be able to validate emails signed with this key.`)) {
+    if (!appWindow.window.confirm(`Do you want to delete this public key for ${personName}? You will not be able to validate emails signed with this key.`)) {
       return;
     }
     person.encryptionPublicKeys.remove(key);

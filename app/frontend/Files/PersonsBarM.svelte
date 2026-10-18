@@ -17,12 +17,15 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedPerson } from "../Contacts/Person/Selected";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { getContactsSelection } from "../Contacts/Person/Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import { URLPart } from "../Util/util";
+
+  const { selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
 
   let isMenuOpen = false;
 

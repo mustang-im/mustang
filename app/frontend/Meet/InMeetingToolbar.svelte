@@ -132,8 +132,8 @@
   import { PhoneCall } from "../../logic/Meet/PhoneCall";
   import { meetMustangApp } from "./MeetMustangApp";
   import { selectedCameraSetting, selectedMicSetting, cameraOnSetting, micOnSetting } from "./Setup/selectedDevices";
-  import { showDialPad } from "./uiState";
-  import { openApp } from "../AppsBar/selectedApp";
+  import { getMeetUIState } from "./uiState";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import ParticipantsList from "./ParticipantsList/ParticipantsList.svelte";
   import DeviceButton from "./Setup/DeviceButton.svelte";
   import SelectScreenShare from "./SelectScreenShare.svelte";
@@ -159,6 +159,9 @@
   import { catchErrors, showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
   import { onDestroy, tick } from "svelte";
+
+  const { showDialPad } = getMeetUIState();
+  const { openApp } = getNavigation();
 
   export let meeting: VideoConfMeeting;
   export let isSidebar = false;

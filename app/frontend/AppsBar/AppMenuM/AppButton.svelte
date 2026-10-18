@@ -5,10 +5,12 @@
 </hbox>
 
 <script lang="ts">
-  import { goTo } from "../selectedApp";
+  import { getNavigation } from "../selectedApp";
   import { MustangApp } from "../MustangApp";
   import AppButton from "../AppButton.svelte";
   import AppIcon from "../AppIcon.svelte";
+
+  const { goTo } = getNavigation();
 
   export let app: MustangApp
   export let page: string;

@@ -10,13 +10,15 @@
 </hbox>
 
 <script lang="ts">
-  import { showingWebApp, selectedWebApp } from "./Runner/WebAppsRunning";
+  import { getWebAppsRunning } from "./Runner/WebAppsRunning";
   import { appGlobal } from "../../logic/app";
   import LaunchBar from "./LauncherBar/LaunchBar.svelte";
   import WebAppStore from "./Shop/WebAppStore.svelte";
   import Scroll from "../Shared/Scroll.svelte";
   import { catchErrors } from "../Util/error";
   import { onDestroy, onMount } from "svelte";
+
+  const { showingWebApp, selectedWebApp } = getWebAppsRunning();
 
   let showStore = false;
 

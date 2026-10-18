@@ -1,15 +1,18 @@
-import { selectedAccount, selectedFolder, selectedMessage, selectedSearchTab } from "./Selected";
+import { getMailSelection } from "./Selected";
 import type { SearchView } from "./LeftPane/SearchSwitcher.svelte";
 import { mailMustangApp } from "./MailMustangApp";
-import { goTo, openApp } from "../AppsBar/selectedApp";
+import { getNavigation } from "../AppsBar/selectedApp";
+import type { AppWindow } from "../MainWindow/AppWindow";
 import { appGlobal } from "../../logic/app";
 import type { EMail } from "../../logic/Mail/EMail";
 import { URLPart } from "../Util/util";
 import { assert } from "../../logic/util/util";
 import { tick } from "svelte";
 
-export async function openEMailMessage(message: EMail, tab?: SearchView) {
+export async function openEMailMessage(message: EMail, appWindow: AppWindow, tab?: SearchView) {
   assert(message.folder?.account, "no account for email");
+  let { selectedAccount, selectedFolder, selectedMessage, selectedSearchTab } = getMailSelection(appWindow.mainWindow);
+  let { goTo, openApp, bringAppToFront } = getNavigation(appWindow);
   selectedAccount.set(message.folder?.account);
   selectedFolder.set(message.folder);
   selectedMessage.set(message);
@@ -32,6 +35,9 @@ export async function openEMailMessage(message: EMail, tab?: SearchView) {
       tab: tab,
     });
   }
+  if (appWindow.mainWindow != appWindow) {
+    bringAppToFront();
+  }
 
   await tick();
   selectedAccount.set(message.folder?.account);
@@ -42,6 +48,6 @@ export async function openEMailMessage(message: EMail, tab?: SearchView) {
   }
 }
 
-export function openComposer(mail: EMail) {
-  mailMustangApp.writeMail(mail);
+export function openComposer(mail: EMail, appWindow: AppWindow) {
+  mailMustangApp.writeMail(mail, appWindow);
 }

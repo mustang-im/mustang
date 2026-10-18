@@ -1,16 +1,21 @@
-<svelte:window on:url-mailto|capture={(event) => catchErrors(() => onMailto(event.url))} />
+<svelte:window on:url-mailto|capture={(event) => catchErrors(() => onMailto(event.url, event.appWindow))} />
 
 <script lang="ts">
   import { newMailListener } from "./NotifyNewMail";
   import { mailMustangApp } from "./MailMustangApp";
   import { openFileInternally } from "../Files/open";
-  import { bringAppToFront } from "../AppsBar/selectedApp";
-  import { selectedFolder } from "./Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
+  import { getMailSelection } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import { catchErrors } from "../Util/error";
   import { assert, sleep, type URLString } from "../../logic/util/util";
   import { t } from "../../l10n/l10n";
   import { onMount } from "svelte";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { bringAppToFront } = getNavigation();
+  const { selectedFolder } = getMailSelection();
+  const appWindow = AppWindow.current();
 
   onMount(() => catchErrors(newMailListener));
 
@@ -26,18 +31,19 @@
     let urlObj = new URL(url);
     if (urlObj.protocol == "mailto:") {
       startupArgs.handled();
-      await onMailto(url);
+      await onMailto(url, appWindow);
+      bringAppToFront();
     }
   }
 
-  async function onMailto(url: URLString) {
+  /** @param fromWindow Where the user clicked on the link */
+  async function onMailto(url: URLString, fromWindow: AppWindow) {
     let account = emailAccounts.first;
     assert(account, $t`Please set up an email account before sending mail`);
     await waitForStartup();
     let mail = account.newEMailFrom();
     mail.compose.populateFromMailtoURL(url);
-    mailMustangApp.writeMail(mail);
-    bringAppToFront();
+    mailMustangApp.writeMail(mail, fromWindow);
   }
 
   async function openFile(file: string) {
@@ -46,7 +52,7 @@
       let mime = await appGlobal.remoteApp.readFile(file);
 
       await waitForStartup();
-      await openFileInternally(mime, "message/rfc822");
+      await openFileInternally(mime, "message/rfc822", appWindow);
       bringAppToFront();
     }
   }

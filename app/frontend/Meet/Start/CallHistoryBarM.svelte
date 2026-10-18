@@ -32,8 +32,10 @@
   import Button from "../../Shared/Button.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import HomeIcon from "lucide-svelte/icons/home";
-  import { openApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
+
+  const { openApp } = getNavigation();
 
   let isMenuOpen = false;
 

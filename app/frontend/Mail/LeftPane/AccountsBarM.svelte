@@ -45,8 +45,12 @@
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import WriteIcon from "lucide-svelte/icons/pencil";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { goTo } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let selectedAccount: MailAccount;
   export let selectedFolder: Folder;
@@ -59,6 +63,6 @@
 
   function newMail() {
     let email = selectedAccount.newEMailFrom();
-    mailMustangApp.writeMail(email);
+    mailMustangApp.writeMail(email, appWindow);
   }
 </script>

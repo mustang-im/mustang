@@ -75,7 +75,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import MessageMenu from "./MessageMenu.svelte";
   import MessageMovePopup from "./MessageMovePopup.svelte";
   import Print from "./MessagePrint.svelte";
@@ -95,6 +95,10 @@
   import { URLPart } from "../../Util/util";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { goTo } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 
@@ -117,7 +121,7 @@
   }
   async function editDraft() {
     await message.loadMIME();
-    mailMustangApp.writeMail(message);
+    mailMustangApp.writeMail(message, appWindow);
   }
 
   function loadOther() {

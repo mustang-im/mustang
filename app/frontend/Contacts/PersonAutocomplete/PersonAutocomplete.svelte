@@ -27,7 +27,6 @@
     </svelte:fragment>
   </Autocomplete>
 </hbox>
-<svelte:window on:click|capture={event => catchErrors(() => onClickOutside(event))} />
 
 <script lang="ts">
   import { nameFromEmailAddress, PersonUID } from "../../../logic/Abstract/PersonUID";
@@ -37,7 +36,9 @@
   // <https://github.com/pstanoev/simple-svelte-autocomplete>
   // <http://simple-svelte-autocomplete.surge.sh>
   import Autocomplete from 'simple-svelte-autocomplete';
-  import { tick } from 'svelte';
+  import { AppWindow } from "../../MainWindow/AppWindow";
+  import { onMount, tick } from 'svelte';
+  import { on } from 'svelte/events';
   import { catchErrors, showError } from "../../Util/error";
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { UserError } from "../../../logic/util/util";
@@ -50,6 +51,9 @@
   export let autofocus = false;
   export let typedText: string = ""; /* in/out */
   export let onAddPerson: (person: PersonUID) => void | Promise<void>;
+
+  const appWindow = AppWindow.current();
+  onMount(() => on(appWindow.window, "click", event => catchErrors(() => onClickOutside(event)), { capture: true }));
 
   async function search(inputStr: string) {
     try {
@@ -115,11 +119,12 @@
       return; // clicks on a search result add the person themselves
     }
     let highlightedResult = topEl.querySelector(".autocomplete-list-item.selected");
-    if (!highlightedResult && !canCreate(typedText)) {
-      return; // nothing to add, e.g. a half-typed name
+    if (highlightedResult || canCreate(typedText)) { // else nothing to add, e.g. a half-typed name
+      // The autocomplete component offers no API to add, so fake the ENTER key
+      inputEl.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
     }
-    // The autocomplete component offers no API to add, so fake the ENTER key
-    inputEl.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));
+    // It closes its list only on clicks in the main window, and the TAB key
+    inputEl.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
   }
 
   function canCreate(typedText: string) {

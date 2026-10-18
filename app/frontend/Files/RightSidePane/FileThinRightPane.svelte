@@ -28,12 +28,14 @@
 
 <script lang="ts">
   import type { File } from "../../../logic/Files/File";
-  import { viewFile, fileViewer, isRightSidebarExpanded } from "../selected";
+  import { getFilesSelection } from "../selected";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import XIcon from "lucide-svelte/icons/x";
   import ExpandIcon from "lucide-svelte/icons/chevrons-left";
   import { t } from "../../../l10n/l10n";
+
+  const { viewFile, fileViewer, isRightSidebarExpanded } = getFilesSelection();
 
   export let file: File;
 

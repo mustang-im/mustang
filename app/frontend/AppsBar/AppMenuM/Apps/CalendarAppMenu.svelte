@@ -16,10 +16,10 @@
   import { setNewEventTime } from "../../../Calendar/event";
   import { calendarMustangApp } from "../../../Calendar/CalendarMustangApp";
   import { openEvent } from "../../../Calendar/open";
-  import { selectedCalendar } from "../../../Calendar/selected";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { getCalendarSelection } from "../../../Calendar/selected";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
   import { appGlobal } from "../../../../logic/app";
-  import { goTo } from "../../selectedApp";
+  import { getNavigation } from "../../selectedApp";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
   import BasicButton from "../BasicButton.svelte";
@@ -29,13 +29,19 @@
   import TODOsIcon from "lucide-svelte/icons/square-check-big";
   import { assert } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
+  import { AppWindow } from "../../../MainWindow/AppWindow";
+
+  const { selectedCalendar } = getCalendarSelection();
+  const { selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
+  const appWindow = AppWindow.current();
 
   function onCreateEvent() {
     let calendar = $selectedCalendar ?? appGlobal.calendars.first;
     assert(calendar, "Create a calendar first");
     let event = calendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEvent(event);
+    openEvent(event, appWindow);
   }
 
   function goToTODOs() {

@@ -26,6 +26,9 @@
   import { catchErrors } from "../../Util/error";
   import { sleep, assert } from "../../../logic/util/util";
   import type { ArrayColl } from 'svelte-collections';
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let messages: ArrayColl<EMail>; /** in */
   export let searchMessages: ArrayColl<EMail> | null; /** out */
@@ -36,7 +39,7 @@
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    await openEMailMessage(selectedMessage);
+    await openEMailMessage(selectedMessage, appWindow);
   }
 
   /** From FastList. read only */

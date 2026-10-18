@@ -184,6 +184,9 @@
   import CloseIcon from "lucide-svelte/icons/x";
   import { gt, t } from "../../../l10n/l10n";
   import { ArrayColl } from "svelte-collections";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount;
   let sharedWith = new ArrayColl<PersonUID>();
@@ -210,7 +213,7 @@
   }
 
   async function onDelete(otherPerson: PersonUID) {
-    let confirmed = confirm($t`Are you sure that you want to remove all access to your data from the account ${otherPerson.name}?`);
+    let confirmed = appWindow.window.confirm($t`Are you sure that you want to remove all access to your data from the account ${otherPerson.name}?`);
     if (!confirmed) {
       return;
     }

@@ -4,6 +4,10 @@ export default {
   // Consult https://svelte.dev/docs#compile-time-svelte-preprocess
   // for more information about preprocessors
   preprocess: vitePreprocess({ script: true }),
+  vitePlugin: {
+    // Svelte then adds the CSS of a component to the document that it shows in, e.g. in another window
+    emitCss: false,
+  },
   compilerOptions: {
     // Unlike `onwarn`, this is honored by the build, `svelte-check` and the VSCode extension alike
     warningFilter: warning => !ignoreSvelteCompilerWarnings.includes(warning.code),

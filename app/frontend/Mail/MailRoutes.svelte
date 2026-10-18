@@ -36,8 +36,8 @@
   import { showAccounts } from "../../logic/Mail/AccountsList/ShowAccounts";
   import type { Folder } from "../../logic/Mail/Folder";
   import type { EMail } from "../../logic/Mail/EMail";
-  import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "./Selected";
-  import { selectedWorkspace } from "../MainWindow/Selected";
+  import { getMailSelection } from "./Selected";
+  import { getWorkspaceSelection } from "../MainWindow/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { appGlobal } from "../../logic/app";
   import MailApp from "./MailApp.svelte";
@@ -52,6 +52,9 @@
   import { requiredParam } from "../Util/route";
   import { catchErrors } from "../Util/error";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedAccount, selectedFolder, selectedMessage, selectedMessages } = getMailSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
 
   $: accounts = showAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace); // ?? acc == allAccountsAccount
   $: folders = $selectedAccount?.rootFolders ?? new ArrayColl<Folder>();

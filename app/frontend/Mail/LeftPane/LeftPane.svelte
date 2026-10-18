@@ -47,11 +47,11 @@
   import { type Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import { Person } from "../../../logic/Abstract/Person";
-  import { selectedPerson } from "../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../Contacts/Person/Selected";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
-  import { selectedWorkspace } from "../../MainWindow/Selected";
+  import { getWorkspaceSelection } from "../../MainWindow/Selected";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { openFolderProperties } from '../FolderPropertiesPage.svelte';
   import { appGlobal } from "../../../logic/app";
@@ -69,6 +69,10 @@
   import { catchErrors } from "../../Util/error";
   import { ArrayColl, type Collection } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
+
+  const { selectedPerson } = getContactsSelection();
+  const { globalSearchTerm } = getNavigation();
+  const { selectedWorkspace } = getWorkspaceSelection();
 
   export let accounts: Collection<MailAccount>; /** in */
   export let folders: Collection<Folder>; /** in */

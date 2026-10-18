@@ -47,7 +47,9 @@
   import AppMenuBarM from "./AppMenuBarM.svelte";
   import RecentPersons from "./RecentPersons.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
-  import { goBack } from "../selectedApp";
+  import { getNavigation } from "../selectedApp";
+
+  const { goBack } = getNavigation();
 
   function onClose() {
     goBack();

@@ -36,8 +36,8 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { selectedAccount } from "../Selected";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { getMailSelection } from "../Selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import Header from "../../Chat/PersonHeader.svelte";
   import MessageList from "../../Chat/MessageView/MessageList.svelte";
@@ -53,6 +53,9 @@
   // #endif
   import Splitter from "../../Shared/Splitter.svelte";
   import { Collection, mergeColls } from 'svelte-collections';
+
+  const { selectedAccount } = getMailSelection();
+  const { globalSearchTerm } = getNavigation();
 
   export let accounts: Collection<MailAccount>; /** in */
 

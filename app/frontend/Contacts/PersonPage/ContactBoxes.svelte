@@ -156,7 +156,7 @@
 <script lang="ts">
   import { ContactEntry, type Person } from "../../../logic/Abstract/Person";
   import { StreetAddress } from "../../../logic/Contacts/StreetAddress";
-  import { newPerson, selectedContactEntry } from "../Person/Selected";
+  import { getContactsSelection } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import ContactEntryUI from "./ContactEntryUI.svelte";
   import EmailAddressDisplay from "./EmailAddressDisplay.svelte";
@@ -185,6 +185,8 @@
   import NotesIcon from "lucide-svelte/icons/notebook-pen";
   import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
+
+  const { newPerson, selectedContactEntry } = getContactsSelection();
 
   export let person: Person;
   /** in/out */

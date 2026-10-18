@@ -43,12 +43,14 @@
 <script lang="ts">
   import { settingsCategories, type SettingsCategory } from "../SettingsCategory";
   import { settingsMustangApp } from "../Window/SettingsMustangApp";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { URLPart } from "../../Util/util";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
+
+  const { goTo } = getNavigation();
 
   export let category: SettingsCategory | null;
 

@@ -31,8 +31,10 @@
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import SearchIcon from "lucide-svelte/icons/search";
   import AccountIcon from "lucide-svelte/icons/inbox";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
+
+  const { goTo } = getNavigation();
 
   function goToAccounts() {
     goTo("/mail/", {});

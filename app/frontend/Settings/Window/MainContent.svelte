@@ -8,8 +8,10 @@
 
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
-  import { selectedAccount } from "./selected";
+  import { getSettingsSelection } from "./selected";
   import Scroll from "../../Shared/Scroll.svelte";
+
+  const { selectedAccount } = getSettingsSelection();
 
   export let category: SettingsCategory;
 </script>

@@ -16,7 +16,7 @@
             <Button
               label={account.mainAccount.name}
               icon={AccountIcon}
-              onClick={() => openSettingsCategoryForAccount(account.mainAccount)}
+              onClick={() => openSettingsCategoryForAccount(account.mainAccount, appWindow)}
               plain={true}
               />
           </hbox>
@@ -69,7 +69,7 @@
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
   import { accountSettings, settingsCategories } from "./SettingsCategory";
-  import { selectedAccount as selectedMailAccount, selectedFolder, selectedMessage, selectedMessages } from "../Mail/Selected";
+  import { getMailSelection } from "../Mail/Selected";
   import { openSettingsCategory, openSettingsCategoryForAccount } from "./Window/CategoriesUtils";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -85,6 +85,10 @@
   import AccountIcon from "lucide-svelte/icons/server";
   import debounce from "lodash/debounce";
   import { t } from "../../l10n/l10n";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { selectedAccount: selectedMailAccount, selectedFolder, selectedMessage, selectedMessages } = getMailSelection();
+  const appWindow = AppWindow.current();
 
   export let account: Account;
 
@@ -96,7 +100,7 @@
   }
 
   async function onDelete() {
-    let confirmed = confirm($t`Are you sure that you want to the delete account ${account.name} from ${appName} and all related data?`);
+    let confirmed = appWindow.window.confirm($t`Are you sure that you want to the delete account ${account.name} from ${appName} and all related data?`);
     if (!confirmed) {
       return;
     }
@@ -104,9 +108,9 @@
 
     // Reset selected
     if (account.mainAccount) {
-      openSettingsCategoryForAccount(account.mainAccount);
+      openSettingsCategoryForAccount(account.mainAccount, appWindow);
     } else {
-      openSettingsCategory(settingsCategories.first);
+      openSettingsCategory(settingsCategories.first, appWindow);
     }
     if ($selectedMailAccount == account) {
       $selectedMailAccount = appGlobal.emailAccounts.first;

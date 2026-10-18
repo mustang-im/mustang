@@ -1,9 +1,10 @@
 import type { EMail } from "../../logic/Mail/EMail";
 import type { MailAccount } from "../../logic/Mail/MailAccount";
 import { SpecialFolder, type Folder } from "../../logic/Mail/Folder";
-import { selectedMessage, selectedFolder, selectedAccount } from "./Selected";
+import { getMailSelection } from "./Selected";
 import { mailMustangApp } from "./MailMustangApp";
-import { openApp, bringAppToFront } from "../AppsBar/selectedApp";
+import { getNavigation } from "../AppsBar/selectedApp";
+import { AppWindow } from "../MainWindow/AppWindow";
 import { appGlobal } from "../../logic/app";
 import { SystemNotification, NotificationKinds } from "../Shared/SystemNotification";
 import { getLocalStorage } from "../Util/LocalStorage";
@@ -57,6 +58,8 @@ export async function showNewMail(messages: EMail[]) {
 
 async function openMessage(msg: EMail) {
   try {
+    let { selectedMessage, selectedFolder, selectedAccount } = getMailSelection(AppWindow.main);
+    let { openApp, bringAppToFront } = getNavigation(AppWindow.main);
     selectedMessage.set(msg);
     selectedFolder.set(msg.folder);
     selectedAccount.set(msg.folder?.account);

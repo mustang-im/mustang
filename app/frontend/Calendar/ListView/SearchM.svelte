@@ -13,11 +13,13 @@
 
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
-  import { globalSearchTerm } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import ListView from "./ListView.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
   import SearchBarM from "./SearchBarM.svelte";
   import { t } from "../../../l10n/l10n";
+
+  const { globalSearchTerm } = getNavigation();
 
   export let searchTerm: string;
 

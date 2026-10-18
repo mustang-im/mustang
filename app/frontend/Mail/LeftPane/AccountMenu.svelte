@@ -13,12 +13,16 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { selectedAccount, selectedFolder } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import DownloadIcon from "lucide-svelte/icons/download";
   import SettingsIcon from "lucide-svelte/icons/settings";
   import DisconnectIcon from "lucide-svelte/icons/unplug";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedAccount, selectedFolder } = getMailSelection();
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount;
 
@@ -36,7 +40,7 @@
 
   async function openSettings() {
     const { openSettingsCategoryForAccount } = await import("../../Settings/Window/CategoriesUtils"); // break circular dependency
-    openSettingsCategoryForAccount(account);
+    openSettingsCategoryForAccount(account, appWindow);
   }
 
   async function logOut() {

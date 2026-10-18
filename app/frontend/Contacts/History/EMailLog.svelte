@@ -15,11 +15,14 @@
   import { openEMailMessage } from "../../Mail/open";
   import { SearchView } from "../../Mail/LeftPane/SearchSwitcher.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 
   async function onOpen() {
-    await openEMailMessage(message, SearchView.Person);
+    await openEMailMessage(message, appWindow, SearchView.Person);
   }
 </script>
 

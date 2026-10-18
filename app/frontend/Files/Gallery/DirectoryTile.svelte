@@ -28,11 +28,13 @@
 
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
-  import { selectedFolder, selectedFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { getDateTimeString } from "../../Util/date";
+
+  const { selectedFolder, selectedFile } = getFilesSelection();
 
   export let dir: Directory;
 

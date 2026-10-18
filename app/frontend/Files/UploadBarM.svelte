@@ -58,7 +58,7 @@
 
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
@@ -70,6 +70,8 @@
   import { URLPart } from "../Util/util";
   import { t } from "../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
+
+  const { goTo } = getNavigation();
   const dispatchEvent = createEventDispatcher<{ uploadFile: void, uploadPicture: void }>();
 
   export let person: Person;

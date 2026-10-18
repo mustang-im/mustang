@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-  import { selectedAccount } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import Button from "../../Shared/Button.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import { createEventDispatcher, onMount } from 'svelte';
@@ -28,6 +28,8 @@
   import RuleActions from "./RuleActions.svelte";
   import { catchErrors } from "../../Util/error";
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
+
+  const { selectedAccount } = getMailSelection();
   const dispatchEvent = createEventDispatcher();
 
   /** in */

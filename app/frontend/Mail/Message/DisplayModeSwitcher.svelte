@@ -45,7 +45,7 @@
 
 <script lang="ts">
   import { getLocalStorage } from "../../Util/LocalStorage";
-  import { selectedMessage } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import { DisplayMode } from "./MessageBody.svelte";
   import IslandSwitcher from "../../Shared/IslandSwitcher.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -56,6 +56,8 @@
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedMessage } = getMailSelection();
 
   export let mode: DisplayMode = DisplayMode.HTML;
 

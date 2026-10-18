@@ -308,6 +308,9 @@
   import { getDateString, getDateTimeString } from "../../../Util/date";
   import { assert } from "../../../../logic/util/util";
   import { gt, t } from "../../../../l10n/l10n";
+  import { AppWindow } from "../../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let key: PublicKey & PrivateKey;
   export let identity: MailIdentity;
@@ -344,7 +347,7 @@
   }
   async function onDelete() {
     if (!key.justCreated) {
-      if (!confirm(`WARNING\nYou will not be able to read your own emails which are encrypted with this key - both old and new emails.\nMake sure that you have a backup of the key.\nDo you want to delete your own private key?`)) {
+      if (!appWindow.window.confirm(`WARNING\nYou will not be able to read your own emails which are encrypted with this key - both old and new emails.\nMake sure that you have a backup of the key.\nDo you want to delete your own private key?`)) {
         return;
       }
     }

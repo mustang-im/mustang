@@ -20,16 +20,19 @@
 </Clickable>
 
 <script lang="ts">
-  import { selectedWorkspace } from "./Selected";
+  import { getWorkspaceSelection } from "./Selected";
   import type { MustangApp } from "../AppsBar/MustangApp";
   import { settingsMustangApp } from "../Settings/Window/SettingsMustangApp";
-  import { selectedCategory } from "../Settings/Window/selected";
+  import { getSettingsSelection } from "../Settings/Window/selected";
   import WorkspaceDropDown from "./WorkspaceDropDown.svelte";
   import Popup from "../Shared/Popup.svelte";
   import RoundButton from "../Shared/RoundButton.svelte";
   import Clickable from "../Shared/Clickable.svelte";
   import WorkspaceIcon from 'lucide-svelte/icons/circle';
   import { t } from "../../l10n/l10n";
+
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const { selectedCategory } = getSettingsSelection();
 
   export let selectedApp: MustangApp;
 

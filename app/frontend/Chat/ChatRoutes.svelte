@@ -25,7 +25,7 @@
   import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { ChatPersonUID } from "../../logic/Chat/ChatPersonUID";
   import { Person } from "../../logic/Abstract/Person";
-  import { selectedAccount, selectedRoom } from "./selected";
+  import { getChatSelection } from "./selected";
   import { appGlobal } from "../../logic/app";
   import ChatAppD from "./ChatAppD.svelte";
   import RoomsM from "./RoomsM.svelte";
@@ -33,6 +33,8 @@
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedAccount, selectedRoom } = getChatSelection();
 
   $: location = useLocation();
   $: params = getParams($location?.state);

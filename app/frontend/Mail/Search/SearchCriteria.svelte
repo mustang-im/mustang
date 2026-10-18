@@ -106,7 +106,7 @@
   import { personsInEMails } from "../../../logic/Mail/Person";
   import { Folder } from "../../../logic/Mail/Folder";
   import { EMail } from "../../../logic/Mail/EMail";
-  import { selectedAccount, selectedFolder } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
@@ -125,6 +125,8 @@
   import PersonIcon from "lucide-svelte/icons/user-round";
   import { ArrayColl, Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedAccount, selectedFolder } = getMailSelection();
 
   /** The search criteria
    * in/out */

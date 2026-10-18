@@ -147,8 +147,8 @@
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { Account } from "../../../logic/Abstract/Account";
   import { CalendarEventMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { selectedEvent, selectedCalendar } from "../selected";
-  import { openApp, selectedApp, goBack } from "../../AppsBar/selectedApp";
+  import { getCalendarSelection } from "../selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import Stack from "../../Shared/Stack.svelte";
   import AccountDropDown from "../../Shared/AccountDropDown.svelte";
@@ -166,6 +166,11 @@
   import RevertIcon from "lucide-svelte/icons/undo-2";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedEvent, selectedCalendar } = getCalendarSelection();
+  const { openApp, selectedApp, goBack } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let event: Event;
 
@@ -200,12 +205,12 @@
   function confirmAndChangeRecurrenceRule(): boolean {
     let master = event.parentEvent || event;
     if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
-      if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+      if (!appWindow.window.confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
         return false;
       }
     } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
         !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
-      if (!confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
+      if (!appWindow.window.confirm($t`This change will remove all exceptions and exclusions for this series.`)) {
         return false;
       }
     }
@@ -283,7 +288,7 @@
   }
 
   async function onDeleteAll() {
-    if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+    if (!appWindow.window.confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
       return;
     }
     let master = event.parentEvent;
@@ -305,7 +310,7 @@
   }
 
   function onExpandToWindow() {
-    calendarMustangApp.showEvent(event);
+    calendarMustangApp.showEvent(event, appWindow);
   }
 
   function onShrink() {

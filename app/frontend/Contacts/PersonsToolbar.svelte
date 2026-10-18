@@ -35,7 +35,7 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import { newPerson, selectedPerson } from "./Person/Selected";
+  import { getContactsSelection } from "./Person/Selected";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../logic/app";
   import PersonLine from "./Person/PersonLine.svelte";
@@ -48,6 +48,8 @@
   import { assert } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../l10n/l10n";
+
+  const { newPerson, selectedPerson } = getContactsSelection();
 
   /** in */
   export let persons: Collection<Person>;

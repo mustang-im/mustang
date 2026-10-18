@@ -1,5 +1,6 @@
 import { MustangApp } from "../AppsBar/MustangApp";
-import { openApp } from "../AppsBar/selectedApp";
+import { getNavigation } from "../AppsBar/selectedApp";
+import type { AppWindow } from "../MainWindow/AppWindow";
 import type { Event } from "../../logic/Calendar/Event";
 import CalendarIcon from "../Calendar/CalendarIcon.svelte";
 import EditIcon from "lucide-svelte/icons/pencil";
@@ -12,15 +13,17 @@ export class CalendarMustangApp extends MustangApp {
   icon = CalendarIcon;
   appURL = "/calendar";
 
-  showEvent(event: Event) {
-    let edit = calendarMustangApp.subApps.find(app => app.windowParams?.event == event);
+  showEvent(event: Event, appWindow: AppWindow) {
+    appWindow = appWindow.mainWindow;
+    let edit = calendarMustangApp.subApps.find(app => app.windowParams?.event == event && app.appWindow == appWindow);
     if (!edit) {
       edit = new CalendarEventMustangApp();
       edit.title = derived(event, event => event.title ?? edit.name);
       edit.windowParams = { event: event };
+      edit.appWindow = appWindow;
       calendarMustangApp.subApps.add(edit);
     }
-    openApp(edit, edit.windowParams);
+    getNavigation(appWindow).openApp(edit, edit.windowParams);
   }
 
   /** Closes the full window that `showEvent()` opened, if any */

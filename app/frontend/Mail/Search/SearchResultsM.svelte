@@ -8,7 +8,7 @@
 
 <script lang="ts">
   import { EMail } from "../../../logic/Mail/EMail";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import VerticalMessageList from "../Vertical/VerticalMessageList.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
   import SearchBarM from "./SearchBarM.svelte";
@@ -17,6 +17,10 @@
   import { assert, sleep } from "../../../logic/util/util";
   import { ArrayColl } from "svelte-collections";
   import { openEMailMessage } from "../open";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { goTo } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let searchMessages: ArrayColl<EMail> | null = null;
 
@@ -26,6 +30,6 @@
   async function goToMessage() {
     await sleep(0.1); // wait for `<VerticalMessageList>` to set `selectedMessage`
     assert(selectedMessage, "Need message");
-    await openEMailMessage(selectedMessage);
+    await openEMailMessage(selectedMessage, appWindow);
   }
 </script>

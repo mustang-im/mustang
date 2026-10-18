@@ -125,7 +125,7 @@
   import { PhoneCall } from "../../../../logic/Meet/PhoneCall";
   import type { Person } from "../../../../logic/Abstract/Person";
   import type { PersonUID } from "../../../../logic/Abstract/PersonUID";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
   import { appGlobal } from "../../../../logic/app";
   import DialPad from "../../View/Phone/DialPad.svelte";
   import StartBarM from "../StartBarM.svelte";
@@ -146,6 +146,8 @@
   import { assert, sleep } from "../../../../logic/util/util";
   import { t } from "../../../../l10n/l10n";
   import { ArrayColl } from "svelte-collections";
+
+  const { selectedPerson } = getContactsSelection();
 
   export let isPhoneDial = false;
 

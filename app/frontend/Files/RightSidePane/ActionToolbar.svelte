@@ -34,7 +34,7 @@
 <script lang="ts">
   import type { FileOrDirectory } from "../../../logic/Files/FileOrDirectory";
   import { Directory } from "../../../logic/Files/Directory";
-  import { selectedFile, selectedFolder } from "../selected";
+  import { getFilesSelection } from "../selected";
   import Toolbar from "../../Shared/Toolbar/Toolbar.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import LinkIcon from "lucide-svelte/icons/link";
@@ -44,13 +44,17 @@
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import CheckIcon from "lucide-svelte/icons/check";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedFile, selectedFolder } = getFilesSelection();
+  const appWindow = AppWindow.current();
 
   export let file: FileOrDirectory;
 
   let toast: string | null = null;
   async function onCopyLink() {
     let url = await file.shareLink();
-    await navigator.clipboard.writeText(url);
+    await appWindow.window.navigator.clipboard.writeText(url);
     toast = $t`Link copied to clipboard`;
     setTimeout(() => toast = null, 2000);
   }

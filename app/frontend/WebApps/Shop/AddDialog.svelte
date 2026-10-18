@@ -33,11 +33,13 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import { getSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import SaveIcon from "lucide-svelte/icons/check";
   import SettingsIcon from "lucide-svelte/icons/settings";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
+
+  const { goTo } = getNavigation();
   const dispatchEvent = createEventDispatcher<{ added: WebAppListed }>();
 
   export let app: WebAppListed;

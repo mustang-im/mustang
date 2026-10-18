@@ -14,10 +14,14 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { openEvent } from "../open";
-  import { selectedEvent } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import { getDurationString } from "../../Util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedEvent } = getCalendarSelection();
+  const appWindow = AppWindow.current();
 
   export let event: Event;
   export let showTime = true;
@@ -32,7 +36,7 @@
   }
 
   function onOpen(ev: MouseEvent) {
-    openEvent(event, true);
+    openEvent(event, appWindow, true);
   }
 </script>
 

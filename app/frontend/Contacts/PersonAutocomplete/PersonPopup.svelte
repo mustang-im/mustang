@@ -47,7 +47,7 @@
       </vbox>
     {/if}
   </hbox>
-  {#if $personUID.nameIsUnknown && nameInputEl == document.activeElement}
+  {#if $personUID.nameIsUnknown && nameInputEl == appWindow.window.document.activeElement}
     <hbox class="helptext font-small">{$t`Add the name of the person, and press ENTER`}</hbox>
   {/if}
   {#if !disabled}
@@ -97,6 +97,9 @@
   import { backgroundError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
   const dispatch = createEventDispatcher<{ close: void }>();
 
   export let personUID: PersonUID;
@@ -151,7 +154,7 @@
   }
   function onEditPerson() {
     onClose();
-    openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook));
+    openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook), appWindow);
   }
   function useOtherEmailAddress(emailAddress: string) {
     personUID.emailAddress = emailAddress;

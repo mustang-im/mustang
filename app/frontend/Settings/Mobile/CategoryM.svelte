@@ -44,10 +44,10 @@
   import { settingsCategories } from "../SettingsCategory";
   import type { SettingsCategory } from "../SettingsCategory";
   import { Account } from "../../../logic/Abstract/Account";
-  import { selectedAccount } from "../Window/selected";
+  import { getSettingsSelection } from "../Window/selected";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import { appGlobal } from "../../../logic/app";
-  import { goTo, mustangApps } from "../../AppsBar/selectedApp";
+  import { getNavigation, mustangApps } from "../../AppsBar/selectedApp";
   import { URLPart } from "../../Util/util";
   import CategoryBarM from "./CategoryBarM.svelte";
   import RowButton from "./RowButton.svelte";
@@ -55,6 +55,9 @@
   import InboxIcon from "lucide-svelte/icons/inbox";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedAccount } = getSettingsSelection();
+  const { goTo } = getNavigation();
 
   export let category: SettingsCategory | null;
 

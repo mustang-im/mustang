@@ -16,6 +16,9 @@
   import WriteIcon from "lucide-svelte/icons/plus";
   import { assert } from "../../../logic/util/util";
   import { gt, t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount; /* in/out */
   export let to: PersonUID | null = null;
@@ -26,6 +29,6 @@
     if (to) {
       email.to.add(to);
     }
-    mailMustangApp.writeMail(email);
+    mailMustangApp.writeMail(email, appWindow);
   }
 </script>

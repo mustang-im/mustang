@@ -11,9 +11,11 @@
 </hbox>
 
 <script lang="ts">
-  import { goTo } from "../selectedApp";
+  import { getNavigation } from "../selectedApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import logo from '../../asset/icon/general/logo.svg?raw';
+
+  const { goTo } = getNavigation();
 
   export let onClick = onOpen;
 

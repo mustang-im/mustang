@@ -15,8 +15,8 @@
 </Route>
 
 <script lang="ts">
-  import { selectedEvent } from "./selected";
-  import { selectedPerson } from "../Contacts/Person/Selected";
+  import { getCalendarSelection } from "./selected";
+  import { getContactsSelection } from "../Contacts/Person/Selected";
   import CalendarApp from "./CalendarApp.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import PersonM from "./ListView/PersonM.svelte";
@@ -25,6 +25,9 @@
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedEvent } = getCalendarSelection();
+  const { selectedPerson } = getContactsSelection();
 
   $: location = useLocation();
   $: params = getParams($location?.state);

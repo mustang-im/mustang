@@ -1,4 +1,4 @@
-<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file)}>
+<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file, appWindow)}>
   <vbox class="file box"
     class:selected={file == $selectedFile}>
     <vbox class="tile">
@@ -23,11 +23,15 @@
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { canShowPreview, openFileInDefaultApp } from "../file";
-  import { selectedFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import Thumbnail from "../Thumbnail/Thumbnail.svelte";
   import { getDateTimeString } from "../../Util/date";
   import { catchErrors } from "../../Util/error";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedFile } = getFilesSelection();
+  const appWindow = AppWindow.current();
 
   export let file: File;
 

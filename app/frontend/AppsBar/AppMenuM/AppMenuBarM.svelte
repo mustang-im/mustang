@@ -27,11 +27,13 @@
 
 <script lang="ts">
   import { settingsMustangApp } from "../../Settings/Window/SettingsMustangApp";
-  import { goBack, goTo } from "../selectedApp";
+  import { getNavigation } from "../selectedApp";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
   import AppMenuButton from "../../AppsBar/AppMenuM/AppMenuButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import { t } from "../../../l10n/l10n";
+
+  const { goBack, goTo } = getNavigation();
 
   function onClose() {
     goBack();

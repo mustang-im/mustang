@@ -23,7 +23,7 @@
 {/if}
 
 <script lang="ts">
-  import { selectedCategory, selectedAccount } from "./Window/selected";
+  import { getSettingsSelection } from "./Window/selected";
   import { appGlobal } from "../../logic/app";
   import { getParams } from "../AppsBar/selectedApp";
   import SettingsApp from "./Window/SettingsApp.svelte";
@@ -31,6 +31,8 @@
   import AccountM from "./Mobile/AccountM.svelte";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedCategory, selectedAccount } = getSettingsSelection();
 
   $: location = useLocation();
   $: params = getParams($location?.state);

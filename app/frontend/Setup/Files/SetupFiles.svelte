@@ -11,12 +11,16 @@
 
 <script lang="ts">
   import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
-  import { selectedApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { openSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
   import { filesMustangApp } from "../../Files/FilesMustangApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedApp } = getNavigation();
+  const appWindow = AppWindow.current();
 
   let config: FileSharingAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
@@ -33,7 +37,7 @@
     if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
       $selectedApp.onBack();
     } else {
-      openSettingsCategoryForApp(filesMustangApp);
+      openSettingsCategoryForApp(filesMustangApp, appWindow);
     }
   }
 </script>

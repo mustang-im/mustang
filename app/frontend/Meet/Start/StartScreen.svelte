@@ -92,7 +92,7 @@
       <vbox flex class="previous">
         <hbox class="title font-small">{$t`Previous meetings`}</hbox>
         <MeetingList meetings={previousMeetings}
-          onClick={openEvent}>
+          onClick={event => openEvent(event, appWindow)}>
           <div slot="emptyMsg" class="emptyMsg font-small">{$t`No meetings`}</div>
         </MeetingList>
       </vbox>
@@ -117,9 +117,9 @@
 <script lang="ts">
   import { startAdHocMeeting, callSelected, joinByURL, startFakeMeeting, testIncoming, createMustangMeetAccountIfPossible } from "./start";
   import { PhoneAccount } from "../../../logic/Meet/PhoneAccount";
-  import { selectedPerson } from "../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../Contacts/Person/Selected";
   import { meetMustangApp } from "../MeetMustangApp";
-  import { selectedApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { Event } from "../../../logic/Calendar/Event";
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import { openEvent } from "../../Calendar/open";
@@ -144,6 +144,11 @@
   import { assert, sleep } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
   import { onMount } from "svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedPerson } = getContactsSelection();
+  const { selectedApp } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let isPhoneDial = false;
 
@@ -175,7 +180,7 @@
     assert(calendar, $t`Please set up a calendar first`);
     let event = calendar.newEvent();
     setNewEventTime(event, false, new Date());
-    openEvent(event);
+    openEvent(event, appWindow);
   }
 
   let errorMsg: string | null = null;

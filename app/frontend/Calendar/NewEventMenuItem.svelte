@@ -3,7 +3,7 @@
     icon={AddIcon}
     iconSize="16px"
     label={calendar.name}
-    onClick={() => createNewEvent(calendar, startTime, exact)}
+    onClick={() => createNewEvent(calendar, startTime, appWindow, exact)}
     />
 </hbox>
 
@@ -12,6 +12,9 @@
   import { createNewEvent } from "./event";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let calendar: Calendar;
   export let startTime: Date;

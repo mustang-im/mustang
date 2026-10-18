@@ -8,9 +8,11 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedDate } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
+
+  const { selectedDate } = getCalendarSelection();
 
   export let day: Date;
   export let events: Event[];

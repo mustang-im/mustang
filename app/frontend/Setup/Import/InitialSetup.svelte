@@ -19,7 +19,7 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { openApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { mailMustangApp } from "../../Mail/MailMustangApp";
   import SelectAccounts from "./SelectAccounts.svelte";
   import LoginPage from "./LoginPage.svelte";
@@ -27,6 +27,8 @@
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
   import SelectAddressbooks from "./SelectAddressbooks.svelte";
   import SetupAnyAccountType from "../SetupAnyAccountType.svelte";
+
+  const { openApp } = getNavigation();
 
   let accountCandidates: MailAccount[];
   let accounts: MailAccount[];

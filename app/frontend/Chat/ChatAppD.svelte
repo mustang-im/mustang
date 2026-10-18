@@ -30,10 +30,10 @@
   import { ChatPersonUID } from "../../logic/Chat/ChatPersonUID";
   import { ChatMessage } from "../../logic/Chat/ChatMessage";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
-  import { selectedAccount, selectedRoom } from "./selected";
-  import { selectedWorkspace } from "../MainWindow/Selected";
-  import { selectedPerson } from "../Contacts/Person/Selected";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { getChatSelection } from "./selected";
+  import { getWorkspaceSelection } from "../MainWindow/Selected";
+  import { getContactsSelection } from "../Contacts/Person/Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
@@ -45,6 +45,11 @@
   import Splitter from "../Shared/Splitter.svelte";
   import { catchErrors } from "../Util/error";
   import { mergeColls } from "svelte-collections";
+
+  const { selectedAccount, selectedRoom } = getChatSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const { selectedPerson } = getContactsSelection();
+  const { globalSearchTerm } = getNavigation();
 
   $: accounts = appGlobal.chatAccounts.filterObservable(acc => acc.workspace == $selectedWorkspace || !$selectedWorkspace);
   $: rooms = $selectedAccount ? $selectedAccount.rooms : mergeColls(accounts.map(a => a.rooms));

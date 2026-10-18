@@ -80,9 +80,13 @@
   import ReplyIcon from "lucide-svelte/icons/reply";
   import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import OpenIcon from "lucide-svelte/icons/maximize-2";
-  import { selectedMessage } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import { getLocalStorage } from "../../Util/LocalStorage";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedMessage } = getMailSelection();
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 
@@ -97,11 +101,11 @@
   }
   function reply() {
     let reply = message.compose.replyToAuthor();
-    mailMustangApp.writeMail(reply);
+    mailMustangApp.writeMail(reply, appWindow);
   }
   function replyAll() {
     let reply = message.compose.replyAll();
-    mailMustangApp.writeMail(reply);
+    mailMustangApp.writeMail(reply, appWindow);
   }
   function openMessageAlone() {
     $selectedMessage = message;
