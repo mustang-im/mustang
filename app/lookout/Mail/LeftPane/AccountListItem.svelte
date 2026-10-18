@@ -6,7 +6,7 @@
   tabindex="-1"
   aria-selected={selected}
   title={$account.emailAddress}
-  on:click={onSelect}
+  on:click
   on:contextmenu={onContextMenu}>
   <hbox class="icon">
     <AccountIcon size={16} />
@@ -30,7 +30,6 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { FolderTreeActions } from "./FolderTreeActions";
   import AccountMenu from "./AccountMenu.svelte";
   import ConnectButton from "./ConnectButton.svelte";
@@ -44,13 +43,6 @@
   $: rootFolders = account.rootFolders;
   $: inbox = $rootFolders && account.inbox;
   $: unread = FolderTreeActions.countStore(inbox, false);
-
-  function onSelect() {
-    $selectedAccount = account;
-    if ($selectedFolder?.account != account) {
-      $selectedFolder = account.inbox ?? null;
-    }
-  }
 
   let contextMenu: ContextMenu;
   function onContextMenu(event: MouseEvent) {

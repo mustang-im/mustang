@@ -1,5 +1,5 @@
-{#each $sortedFolders.each as folder (folder)}
-  <FolderNode {folder} depth={0} />
+{#each $foldersSorted.each as folder (folder)}
+  <FolderNode {folder} depth={0} bind:selectedFolder />
 {:else}
   {#if !$account.isLoggedIn}
     <hbox class="empty">
@@ -9,21 +9,25 @@
   {/if}
 {/each}
 <SearchFoldersNode folders={$savedSearches.contents.filter(folder => folder.search.account == account)}
-  nodeID={account.id + "/search-folders"} />
+  nodeID={account.id + "/search-folders"} bind:selectedFolder />
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Folder } from "../../../logic/Mail/Folder";
   import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import FolderNode from "./FolderNode.svelte";
   import SearchFoldersNode from "./SearchFoldersNode.svelte";
   import ConnectButton from "./ConnectButton.svelte";
   import { t } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
 
+  export let folders: Collection<Folder>;
+  export let selectedFolder: Folder;
   export let account: MailAccount;
 
   const savedSearches = savedSearchFolders;
 
-  $: sortedFolders = account.rootFolders.sortBy(folder => folder.orderPos);
+  $: foldersSorted = $folders.sortBy(f => f.orderPos);
 </script>
 
 <style>

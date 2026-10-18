@@ -14,8 +14,10 @@
     {/if}
   </Ribbon>
   <ThreePane bind:messageList
+    {accounts}
     messages={listMessages}
-    selectedFolder={$selectedFolder}
+    bind:selectedAccount={$selectedAccount}
+    bind:selectedFolder={$selectedFolder}
     bind:selectedMessage={$selectedMessage}
     selectedMessages={$selectedMessages}
     bind:searchMessages

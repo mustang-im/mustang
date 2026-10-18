@@ -1,7 +1,7 @@
-<FolderLine {folder} {depth} {isFavorite} />
+<FolderLine {folder} {depth} {isFavorite} bind:selectedFolder />
 {#if isExpanded && $subFolders.hasItems}
   {#each $sortedSubFolders.each as subFolder (subFolder)}
-    <svelte:self folder={subFolder} depth={depth + 1} />
+    <svelte:self folder={subFolder} depth={depth + 1} bind:selectedFolder />
   {/each}
 {/if}
 
@@ -13,6 +13,7 @@
   export let folder: Folder;
   export let depth = 0;
   export let isFavorite = false;
+  export let selectedFolder: Folder;
 
   $: subFolders = folder.subFolders;
   $: sortedSubFolders = folder.subFolders.sortBy(subFolder => subFolder.orderPos);

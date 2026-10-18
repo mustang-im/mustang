@@ -5,7 +5,7 @@
   {/if}
   <Splitter name="lookout.mail.folderPane" initialRightRatio={5} leftMinWidth={180} rightMinWidth={480}
     hasLeft={$folderPane.value == FolderPaneMode.Normal || !$folderPane.value}>
-    <LeftPane slot="left" />
+    <LeftPane {accounts} bind:selectedAccount bind:selectedFolder slot="left" />
     <hbox flex class="main" slot="right">
       <hbox flex class="reading-pane-layout">
         <SplitterBidirectional horizontal={position == "bottom"}
@@ -69,6 +69,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
+  import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
   import LeftPane, { FolderPaneMode } from "../LeftPane/LeftPane.svelte";
   import FolderPaneMinimized from "../../Shared/FolderPaneMinimized.svelte";
@@ -85,7 +86,9 @@
   import { t } from "../../../l10n/l10n";
   import type { ArrayColl, Collection } from "svelte-collections";
 
+  export let accounts: Collection<MailAccount>;
   export let messages: Collection<EMail>;
+  export let selectedAccount: MailAccount | null;
   export let selectedFolder: Folder | null;
   export let selectedMessage: EMail | null;
   export let selectedMessages: ArrayColl<EMail>;

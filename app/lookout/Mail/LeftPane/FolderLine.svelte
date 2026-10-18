@@ -1,12 +1,12 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div class="folder-row"
-  class:selected={$selectedFolder == folder}
+  class:selected={selectedFolder == folder}
   class:unread={count > 0 && !showsTotal}
   class:drop-target={isDropTarget}
   style="--depth: {depth};"
   role="treeitem"
   tabindex="-1"
-  aria-selected={$selectedFolder == folder}
+  aria-selected={selectedFolder == folder}
   aria-expanded={hasChildren ? isExpanded : undefined}
   title={tooltip}
   draggable={!isVirtual && !isRenaming}
@@ -59,7 +59,6 @@
   import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
   import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import { appGlobal } from "../../../logic/app";
-  import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { onDragOverMail } from "../../../frontend/Mail/Message/drag";
   import { MessageActions } from "../MessageActions";
   import { FolderCountMode, FolderTreeActions } from "./FolderTreeActions";
@@ -75,6 +74,7 @@
   export let folder: Folder;
   export let depth = 0;
   export let isFavorite = false;
+  export let selectedFolder: Folder;
 
   $: subFolders = folder.subFolders;
   $: hasChildren = $subFolders.hasItems;
@@ -113,8 +113,7 @@
     if (isRenaming) {
       return;
     }
-    $selectedAccount = folder.account;
-    $selectedFolder = folder;
+    selectedFolder = folder;
   }
 
   let contextMenu: ContextMenu;

@@ -11,13 +11,14 @@
   </div>
   {#if isExpanded}
     {#each folders as folder (folder)}
-      <FolderNode {folder} depth={1} />
+      <FolderNode {folder} depth={1} bind:selectedFolder />
     {/each}
   {/if}
 {/if}
 
 <script lang="ts">
   import type { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
+  import type { Folder } from "../../../logic/Mail/Folder";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import FolderNode from "./FolderNode.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
@@ -26,6 +27,7 @@
 
   export let folders: SavedSearchFolder[];
   export let nodeID: string;
+  export let selectedFolder: Folder;
 
   const expandedIDs = getLocalStorage<string[]>("lookout.mail.expandedFolders", []);
   $: isExpanded = ($expandedIDs.value ?? []).includes(nodeID);

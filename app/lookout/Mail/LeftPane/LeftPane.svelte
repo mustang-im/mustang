@@ -11,7 +11,7 @@
       <SectionHeader id="favorites" label={$t`Favorites`} />
       {#if !isCollapsed("favorites", $collapsedIDs.value)}
         {#each $favorites.each as folder (folder)}
-          <FolderNode {folder} depth={0} isFavorite />
+          <FolderNode {folder} depth={0} isFavorite bind:selectedFolder />
         {/each}
       {/if}
     {/if}
@@ -20,21 +20,21 @@
       {#if !isCollapsed("accounts", $collapsedIDs.value)}
         <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
           {#each accountTrees as account (account.id)}
-            <AccountListItem {account} selected={account == shownAccount} />
+            <AccountListItem {account} selected={account == shownAccount} on:click={() => onSelectAccount(account)} />
           {/each}
         </vbox>
       {/if}
       {#if shownAccount}
         <SectionHeader id={shownAccount.id} account={shownAccount} />
         {#if !isCollapsed(shownAccount.id, $collapsedIDs.value)}
-          <FolderList account={shownAccount} />
+          <FolderList folders={shownAccount.rootFolders} account={shownAccount} bind:selectedFolder />
         {/if}
       {/if}
     {:else}
       {#each accountTrees as account (account.id)}
         <SectionHeader id={account.id} {account} />
         {#if !isCollapsed(account.id, $collapsedIDs.value)}
-          <FolderList {account} />
+          <FolderList folders={account.rootFolders} {account} bind:selectedFolder />
         {/if}
       {/each}
     {/if}
@@ -42,7 +42,7 @@
       <SectionHeader id="search-folders" label={$t`Search Folders`} />
       {#if !isCollapsed("search-folders", $collapsedIDs.value)}
         {#each allAccountSearches as folder (folder)}
-          <FolderNode {folder} depth={0} />
+          <FolderNode {folder} depth={0} bind:selectedFolder />
         {/each}
       {/if}
     {/if}
@@ -59,10 +59,9 @@
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import type { Folder } from "../../../logic/Mail/Folder";
   import { allAccountsAccount } from "../../../logic/Mail/AccountsList/ShowAccounts";
   import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
-  import { appGlobal } from "../../../logic/app";
-  import { selectedAccount } from "../../../frontend/Mail/Selected";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import SectionHeader from "./SectionHeader.svelte";
   import FolderList from "./FolderList.svelte";
@@ -70,18 +69,22 @@
   import FolderNode from "./FolderNode.svelte";
   import MinimizeIcon from "lucide-svelte/icons/chevron-left";
   import { t } from "../../../l10n/l10n";
+  import type { Collection } from "svelte-collections";
+
+  export let accounts: Collection<MailAccount>;
+  export let selectedAccount: MailAccount | null;
+  export let selectedFolder: Folder | null;
 
   const showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
   const favorites = allAccountsAccount.specialFolders;
   const savedSearches = savedSearchFolders;
   $: allAccountSearches = $savedSearches.contents.filter(folder => !folder.search.account || !$accounts.contains(folder.search.account));
-  const accounts = appGlobal.emailAccounts;
   const collapsedIDs = getLocalStorage<string[]>("lookout.mail.collapsedSections", []);
   const separateAccountList = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
   const folderPane = getLocalStorage<FolderPaneMode>("lookout.mail.folderPane", FolderPaneMode.Normal);
 
   let shownAccount: MailAccount = null;
-  $: shownAccount = accountToShow($selectedAccount, accountTrees);
+  $: shownAccount = accountToShow(selectedAccount, accountTrees);
   function accountToShow(selected: MailAccount, all: MailAccount[]): MailAccount {
     if (all.includes(selected)) {
       return selected;
@@ -98,6 +101,20 @@
     }
     ordered.push(...all.filter(account => !ordered.includes(account)));
     return ordered;
+  }
+
+  function onSelectAccount(account: MailAccount) {
+    selectedAccount = account;
+    if (selectedFolder?.account != account) {
+      selectedFolder = account.inbox ?? null;
+    }
+  }
+
+  $: selectedFolder, selectAccountOfFolder();
+  function selectAccountOfFolder() {
+    if (selectedFolder && selectedFolder.account != selectedAccount) {
+      selectedAccount = selectedFolder.account;
+    }
   }
 
   function isCollapsed(id: string, collapsedIDs: string[]): boolean {
