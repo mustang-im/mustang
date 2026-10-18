@@ -51,14 +51,21 @@ const logNotificationErrors = {
 notifications.registerObserver(logNotificationErrors);
 (notifications as any)._logNotificationErrors = logNotificationErrors; // HACK to keep it alive: `registerObserver()` holds it only weakly
 
+function sendErrorsForServer() {
+  let errors = logic.errorsForServer.contents;
+  logic.errorsForServer.clear();
+  for (let ex of errors) {
+    sendToErrorLogServer(ex);
+  }
+}
+
 const logErrorsForServer = {
-  added(added: Error[]) {
-    for (let ex of added) {
-      sendToErrorLogServer(ex);
-    }
+  added() {
+    sendErrorsForServer();
   },
   removed() {
   },
 };
 logic.errorsForServer.registerObserver(logErrorsForServer);
 (logic.errorsForServer as any)._logErrorsForServer = logErrorsForServer; // HACK to keep it alive: `registerObserver()` holds it only weakly
+sendErrorsForServer(); // Errors that logic added before this file was loaded

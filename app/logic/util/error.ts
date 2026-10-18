@@ -10,7 +10,7 @@ export function showError(ex: Error) {
   }
 }
 
-/** The frontend watches this and sends the errors to the error log server */
+/** The frontend watches this, sends the errors to the error log server, and removes them */
 export const errorsForServer = new ArrayColl<Error>();
 /** Logs the error to the error log server, without showing it to the user */
 export function logErrorToServer(ex: Error) {

@@ -71,6 +71,31 @@ test("Errors with `doNotLog` are not logged to the server", () => {
   expect(Sentry.captureException).not.toHaveBeenCalled();
 });
 
+test("The frontend removes the errors from `errorsForServer` after sending them", () => {
+  let ex = new Error("Unexpected");
+
+  logic.logErrorToServer(ex);
+
+  expect(Sentry.captureException).toHaveBeenCalledWith(ex);
+  expect(logic.errorsForServer.isEmpty).toBe(true);
+});
+
+test("An error that is logged while sending another one is sent, and each only once", () => {
+  let first = new Error("First");
+  let second = new Error("Second");
+  vi.mocked(Sentry.captureException).mockImplementationOnce(() => {
+    logic.logErrorToServer(second);
+    return "";
+  });
+
+  logic.logErrorToServer(first);
+
+  expect(Sentry.captureException).toHaveBeenCalledTimes(2);
+  expect(Sentry.captureException).toHaveBeenCalledWith(first);
+  expect(Sentry.captureException).toHaveBeenCalledWith(second);
+  expect(logic.errorsForServer.isEmpty).toBe(true);
+});
+
 /* The error functions that say why the error happened.
  * Which of them log to the server is decided in `logic/util/error.ts`. */
 
@@ -89,4 +114,17 @@ test("dataError() and minorError() are neither shown nor logged to the server in
 
   expect(notifications.isEmpty).toBe(true);
   expect(Sentry.captureException).not.toHaveBeenCalled();
+});
+
+test("Errors that logic logged before the frontend was loaded are sent, too", async () => {
+  vi.resetModules();
+  let freshSentry = await import("@sentry/svelte");
+  let freshLogic = await import("../../../logic/util/error");
+  let ex = new Error("At startup");
+  freshLogic.logErrorToServer(ex);
+
+  await import("../../../frontend/Util/error");
+
+  expect(freshSentry.captureException).toHaveBeenCalledWith(ex);
+  expect(freshLogic.errorsForServer.isEmpty).toBe(true);
 });
