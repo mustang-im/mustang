@@ -50,9 +50,9 @@ export class JMAPCalendar extends Calendar {
   protected async listEventsFromServer() {
     await this.account.ensureLoggedIn();
 
-    this.events.isEmpty
-      ? await this.listAllEvents()
-      : await this.listChangedEvents();
+    this.syncState
+      ? await this.listChangedEvents()
+      : await this.listAllEvents();
   }
 
   protected async listAllEvents(): Promise<ArrayColl<JMAPEvent>> {
@@ -75,6 +75,8 @@ export class JMAPCalendar extends Calendar {
     if (state) {
       this.account.syncState.set("CalendarEvent", state);
     }
+    this.syncState = state;
+    await this.save();
     return allNewEvents;
   }
 
@@ -205,8 +207,8 @@ export class JMAPCalendar extends Calendar {
       let allCalendars = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
       for (let calendar of allCalendars) {
         await calendar.readEventsFromDB();
-        if (calendar.events.isEmpty) {
-          continue; // Adding events here would stop listAllEvents() from ever running
+        if (!calendar.syncState) {
+          continue; // `listEvents()` will list all its events
         }
         let removed = this.findMovedAway(changedResponse.list, calendar);
         let addedThisCal = addedByCal.get(calendar.jmapID);
