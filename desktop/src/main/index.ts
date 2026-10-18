@@ -1,4 +1,4 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
+import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret, webSocketAuthorization } from '../../backend/backend';
 import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
@@ -249,7 +249,7 @@ function handleCommandline(args: string[]) {
 function allowCrossDomainRequestsFromFrontend() {
   const filter = { urls: ["https://*/*", "http://*/*"] };
   session.defaultSession.webRequest.onBeforeSendHeaders(
-    filter,
+    { urls: [...filter.urls, "wss://*/*", "ws://*/*"] },
     (details, callback) => {
       let requestHeaders = details.requestHeaders ?? {};
       for (let name in requestHeaders) {
@@ -270,6 +270,10 @@ function allowCrossDomainRequestsFromFrontend() {
           }
           break;
         }
+      }
+      let authorization = webSocketAuthorization(details.url);
+      if (authorization) {
+        requestHeaders.Authorization = authorization;
       }
       callback({ requestHeaders: requestHeaders });
     }
