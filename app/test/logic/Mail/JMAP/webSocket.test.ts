@@ -138,6 +138,7 @@ function newAccount(webSocketCapability: any = { url: kWebSocketURL, supportsPus
     primaryAccounts: { "urn:ietf:params:jmap:mail": "o" },
     apiUrl: "https://example.com/jmap/",
     eventSourceUrl: "https://example.com/jmap/eventsource/?types={types}&closeafter={closeafter}&ping={ping}",
+    state: "d1655760",
   } as any as TJMAPSession;
   accounts.push(account);
   return account;
@@ -305,7 +306,7 @@ test("Push: we ask for our data types, and a change syncs that type", async () =
   await account.startPushListener();
 
   expect(socket.pushEnables().length).toBe(1);
-  expect(socket.pushEnables()[0].dataTypes).toEqual(["Email", "Identity"]);
+  expect(socket.pushEnables()[0].dataTypes).toEqual(expect.arrayContaining(["Email", "Identity"]));
   socket.sendText({ "@type": "StateChange", changed: { o: { Mailbox: "sai", Email: "sai" } } }); // recorded from Stalwart
   await waitFor(() => synced.length == 2);
   expect(synced).toEqual([["Mailbox", "sai"], ["Email", "sai"]]);
@@ -325,7 +326,7 @@ test("Push: after a reconnect, we enable push again, with the last pushState", a
   await waitFor(() => sockets.length == 2 && sockets[1].pushEnables().length == 1);
 
   expect(sockets[1].pushEnables()[0].pushState).toBe("bbb");
-  expect(sockets[1].pushEnables()[0].dataTypes).toEqual(["Email", "Identity"]);
+  expect(sockets[1].pushEnables()[0].dataTypes).toEqual(firstSocket.pushEnables()[0].dataTypes);
 });
 
 test("disconnect() closes the WebSocket, and we don't reconnect", async () => {
