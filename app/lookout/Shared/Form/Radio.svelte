@@ -1,5 +1,5 @@
 <label class="lo-radio {classes}" class:disabled={!!disabled} title={typeof disabled == "string" ? disabled : tooltip}>
-  <input type="radio" bind:group {value} {name} disabled={!!disabled} on:change={onChanged} />
+  <input type="radio" bind:group {value} {name} disabled={!!disabled} on:change={() => dispatch("change", value)} />
   <span class="dot" aria-hidden="true"></span>
   {#if label || $$slots.default}
     <span class="label">
@@ -9,7 +9,8 @@
 </label>
 
 <script lang="ts">
-  import { showError } from "../../../frontend/Util/error";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher<{ change: any }>();
 
   export let group: any;
   export let value: any;
@@ -17,16 +18,7 @@
   export let name: string = null;
   export let disabled: boolean | string = false;
   export let tooltip: string = null;
-  export let onChange: (value: any) => void | Promise<void> = null;
   export let classes = "";
-
-  async function onChanged() {
-    try {
-      await onChange?.(value);
-    } catch (ex) {
-      showError(ex);
-    }
-  }
 </script>
 
 <style>

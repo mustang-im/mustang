@@ -38,7 +38,7 @@
           {#each [TrustLevel.Personal, signingKey.caName ? TrustLevel.ThirdParty : TrustLevel.Sender, TrustLevel.Distrusted] as level}
             <Radio label={MessageSecurity.trustLabel(level, signingKey.caName, fromName)}
               bind:group={signingKey.trustLevel} value={level}
-              onChange={onTrustChanged} />
+              on:change={() => catchErrors(onTrustChanged)} />
           {/each}
           <!-- </copied> -->
         </GroupBox>
@@ -53,7 +53,7 @@
   import { findIdentityForEMailAddress } from "../../../logic/Mail/MailIdentity";
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
-  import { showError } from "../../../frontend/Util/error";
+  import { catchErrors, showError } from "../../../frontend/Util/error";
   import { MessageSecurity } from "./MessageSecurity";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";

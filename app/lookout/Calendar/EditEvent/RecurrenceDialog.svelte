@@ -59,7 +59,7 @@
             <hbox class="line">
               <Radio label={$t`The *=> as in: The third Thursday of every 2 months`}
                 name="monthly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
-                onChange={() => { pattern.monthlyMode = weekMode; }} />
+                on:change={() => { pattern.monthlyMode = weekMode; }} />
               <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
                 onChange={mode => setWeekMode(mode)} />
               {weekdayName}
@@ -80,7 +80,7 @@
             <hbox class="line">
               <Radio label={$t`On the *=> as in: On the third Thursday of October`}
                 name="yearly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
-                onChange={() => { pattern.monthlyMode = weekMode; }} />
+                on:change={() => { pattern.monthlyMode = weekMode; }} />
               <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
                 onChange={mode => setWeekMode(mode)} />
               {$t`${weekdayName} of ${monthName} *=> as in: (On the third) Thursday of October`}
