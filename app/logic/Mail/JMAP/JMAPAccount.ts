@@ -701,6 +701,7 @@ export class JMAPAccount extends MailAccount {
       .replace("{ping}", "500")
       .replace("{closeafter}", "no");
     let reconnectThrottle = new Throttle(1, 10);
+    let isReconnect = false;
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
       try {
@@ -716,6 +717,10 @@ export class JMAPAccount extends MailAccount {
           throw new HTTPError(stream);
         }
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+        if (isReconnect) {
+          await this.fetchChangesMissedByPush(types as TJMAPObjectType[]);
+        }
+        isReconnect = true;
         for await (let event of eventStream) {
           if (event.name == "state") {
             try {
@@ -753,6 +758,24 @@ export class JMAPAccount extends MailAccount {
           }
         } else {
           throw ex;
+        }
+      }
+    }
+  }
+
+  /** The server doesn't tell us what changed while the push connection was down.
+   * <https://www.rfc-editor.org/rfc/rfc8620#section-7.3> */
+  protected async fetchChangesMissedByPush(types: TJMAPObjectType[]): Promise<void> {
+    let sharedAccounts = this.dependentAccounts().filterOnce(acc => acc instanceof JMAPAccount) as Collection<JMAPAccount>;
+    for (let account of [this, ...sharedAccounts]) {
+      for (let type of types) {
+        if (!account.syncState.has(type)) {
+          continue; // Not read yet, so nothing to update
+        }
+        try {
+          await account.sync(type);
+        } catch (ex) {
+          console.error(ex);
         }
       }
     }

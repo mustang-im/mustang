@@ -49,6 +49,32 @@ function serve(account: JMAPAccount, responses: any[]): () => number {
   return () => attempts;
 }
 
+test("After a reconnect, what changed in the meantime is fetched", { timeout: kTimeoutSec * 1000 }, async () => {
+  let account = newAccount();
+  account.syncState.set("Email", "e1");
+  account.syncState.set("Identity", "i1");
+  let synced: string[] = [];
+  account.sync = async (type: string) => { synced.push(type) };
+  let attempts = serve(account, [closedConnection(), closedConnection()]);
+
+  await account.startPushListener();
+
+  expect(attempts()).toBe(2);
+  expect(synced).toEqual(["Email", "Identity"]); // Once, after the second connection
+});
+
+test("The first connection fetches nothing, because the startup just did", async () => {
+  let account = newAccount();
+  account.syncState.set("Email", "e1");
+  let synced: string[] = [];
+  account.sync = async (type: string) => { synced.push(type) };
+  serve(account, [closedConnection()]);
+
+  await account.startPushListener();
+
+  expect(synced).toEqual([]);
+});
+
 test("A rate-limited push connection is opened again", { timeout: kTimeoutSec * 1000 }, async () => {
   let account = newAccount();
   let attempts = serve(account, [rejectedConnection(429, "Too Many Requests", 1), closedConnection()]);
