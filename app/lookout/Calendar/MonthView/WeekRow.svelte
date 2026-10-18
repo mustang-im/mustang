@@ -21,7 +21,7 @@
       class:today={day.toDateString() == $now.toDateString()}
       class:first-of-month={day.getDate() == 1}
       title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
-      on:click|stopPropagation={() => onOpenDay(day)}
+      on:click|stopPropagation={() => dispatch("openday", day)}
       on:dblclick|stopPropagation>
       {day.getDate() == 1
         ? day.toLocaleDateString(getDateTimeLocale(), { month: "short", day: "numeric" })
@@ -37,7 +37,7 @@
   {#each $layout.hiddenCounts as hiddenCount, i}
     {#if hiddenCount}
       <button class="more" style="grid-column: {i + 1}; grid-row: {maxLines + 1}"
-        on:click|stopPropagation={() => onOpenDay(days[i])}
+        on:click|stopPropagation={() => dispatch("openday", days[i])}
         on:dblclick|stopPropagation>
         {$t`+${hiddenCount} more`}
       </button>
@@ -66,9 +66,8 @@
   export let weekIndex: number;
   export let range: CalendarRange;
   export let events: Collection<Event>;
-  export let onOpenDay: (day: Date) => void;
 
-  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
+  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent }, openday: Date }>();
   const kHeaderHeight = 24;
   const kLineHeight = 22;
 

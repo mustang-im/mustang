@@ -2,19 +2,18 @@
   <vbox flex class="days" slot="first">
     <DateRange bind:date={$selectedDate} range={daysRange} />
     <DayViewGrid range={daysRange} {groups} enlargeSelectedDay={true}
-      onOpenDay={selectDay} onOverlay={showOverlay} on:slotmenu />
+      on:openday={event => selectDay(event.detail)} on:slotmenu />
   </vbox>
   <vbox flex class="month" slot="second">
     <DateRange bind:date={start} range={monthRange} showToday={false}>
       <slot name="top-right" />
     </DateRange>
-    <MonthView range={monthRange} {events} onOpenDay={selectDay} on:slotmenu />
+    <MonthView range={monthRange} {events} on:openday={event => selectDay(event.detail)} on:slotmenu />
   </vbox>
 </SplitterBidirectional>
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
-  import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { CalendarRange } from "./CalendarRange";
   import { eventPeek } from "./selected";
   import { selectedDate } from "../../frontend/Calendar/selected";
@@ -35,10 +34,6 @@
   function selectDay(day: Date) {
     $eventPeek = null;
     $selectedDate = day;
-  }
-
-  function showOverlay() {
-    getLocalStorage<boolean>("lookout.calendar.splitView", false).value = false;
   }
 </script>
 

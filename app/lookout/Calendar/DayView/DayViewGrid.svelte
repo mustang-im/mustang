@@ -5,14 +5,14 @@
       <div class="row" style="grid-template-columns: {columns}">
         {#each groups as group, g}
           <CalendarTab calendar={group.calendar} firstColumn={firstColumnOf(g)} span={range.days.length}
-            isFirst={g == 0} {onOverlay} />
+            isFirst={g == 0} />
         {/each}
       </div>
     {/if}
     <div class="row" style="grid-template-columns: {columns}">
       {#each groups as group, g}
         {#each range.days as day, d}
-          <DayHeader {day} column={firstColumnOf(g) + d} calendar={group.calendar} isToday={day.toDateString() == $now.toDateString()} {onOpenDay} />
+          <DayHeader {day} column={firstColumnOf(g) + d} calendar={group.calendar} isToday={day.toDateString() == $now.toDateString()} on:openday />
         {/each}
       {/each}
     </div>
@@ -83,8 +83,6 @@
   export let range: CalendarRange;
   export let groups: CalendarColumnGroup[];
   export let enlargeSelectedDay = false;
-  export let onOpenDay: (day: Date) => void;
-  export let onOverlay: () => void;
 
   const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
   $: timeScale = $timeScaleSetting.value;

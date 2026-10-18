@@ -1,7 +1,7 @@
 <div class="day-header" class:today={isToday} style="grid-column: {column}" bind:clientWidth={width}>
   <button class="day-button"
     title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
-    on:click={() => onOpenDay(day)}>
+    on:click={() => dispatch("openday", day)}>
     <span class="number">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</span>
     <span class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: width >= 90 ? "long" : "short" })}</span>
   </button>
@@ -16,6 +16,7 @@
   import { WorkingHours } from "../WorkingHours";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
+  import { createEventDispatcher } from "svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
@@ -23,7 +24,8 @@
   export let column: number;
   export let calendar: Calendar | null = null;
   export let isToday = false;
-  export let onOpenDay: (day: Date) => void;
+
+  const dispatch = createEventDispatcher<{ openday: Date }>();
 
   let width = 100;
 

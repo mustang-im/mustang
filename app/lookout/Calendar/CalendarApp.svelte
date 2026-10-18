@@ -13,7 +13,8 @@
       initialRightRatio={5} leftMinWidth={230} rightMinWidth={480}>
       <vbox flex class="folder-pane" slot="left" bind:clientHeight={folderPaneHeight}>
         <DateNavigator {range} date={$startDate} {showWeekNumbers} monthCount={folderPaneHeight >= 760 ? 2 : 1}
-          onSelectDay={selectDay} onSelectWeek={selectWeek} onSelectDays={selectDays} />
+          on:selectday={event => selectDay(event.detail)} on:selectweek={event => selectWeek(event.detail)}
+          on:selectdays={event => selectDays(event.detail.first, event.detail.last)} />
         <hbox class="divider" />
         <CalendarList />
       </vbox>
@@ -46,21 +47,21 @@
                           <vbox flex class="month-column">
                             <div class="month-tab">
                               <CalendarTab calendar={group.calendar} firstColumn={1} span={1}
-                                isFirst={g == 0} onOverlay={() => setSplitView(false)} />
+                                isFirst={g == 0} />
                             </div>
-                            <MonthView {range} events={group.events} onOpenDay={openDay} on:slotmenu={openSlotMenu} />
+                            <MonthView {range} events={group.events} on:openday={event => openDay(event.detail)} on:slotmenu={openSlotMenu} />
                           </vbox>
                         {/each}
                       </hbox>
                     {:else if view == "month"}
-                      <MonthView {range} events={visibleEvents} onOpenDay={openDay} on:slotmenu={openSlotMenu} />
+                      <MonthView {range} events={visibleEvents} on:openday={event => openDay(event.detail)} on:slotmenu={openSlotMenu} />
                     {:else if view == "schedule"}
                       <ScheduleView {range} rows={scheduleRows} on:slotmenu={openSlotMenu} />
                     {:else}
-                      <DayViewGrid {range} {groups} onOpenDay={openDay} onOverlay={() => setSplitView(false)} on:slotmenu={openSlotMenu} />
+                      <DayViewGrid {range} {groups} on:openday={event => openDay(event.detail)} on:slotmenu={openSlotMenu} />
                     {/if}
                     {#if view != "schedule"}
-                      <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} onGoTo={goToEvent} />
+                      <AdjacentEventTabs {range} events={visibleEvents} isRangeEmpty={!$eventsInRange.length} startOffset={view == "month" ? 0 : 56} />
                     {/if}
                   </vbox>
                 {/if}
@@ -283,10 +284,6 @@
   }
   // </copied>
 
-  function setSplitView(split: boolean) {
-    splitViewSetting.value = split;
-  }
-
   function goToToday() {
     $startDate = getToday();
     $selectedDate = getToday();
@@ -326,11 +323,6 @@
   function openDay(day: Date) {
     selectDay(day);
     setView("day");
-  }
-
-  function goToEvent(event: Event) {
-    selectDay(event.startTime);
-    $selectedEvent = event;
   }
 
   function openSlotMenu(event: CustomEvent<{ slots: SlotSelection, mouseEvent: MouseEvent }>) {

@@ -1,7 +1,7 @@
 <div class="calendar-tab" class:selected={$selectedCalendar == calendar}
   style="grid-column: {firstColumn} / span {span}; --calendar-color: {$calendar.color}">
   {#if !isFirst}
-    <button class="tab-button" title={$t`View in overlay mode`} on:click={onOverlay}>
+    <button class="tab-button" title={$t`View in overlay mode`} on:click={() => splitViewSetting.value = false}>
       <OverlayIcon size="14" />
     </button>
   {/if}
@@ -16,6 +16,7 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { selectedCalendar, shownCalendars } from "../../../frontend/Calendar/selected";
+  import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import OverlayIcon from "lucide-svelte/icons/arrow-left";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
@@ -24,7 +25,8 @@
   export let firstColumn: number;
   export let span: number;
   export let isFirst = false;
-  export let onOverlay: () => void;
+
+  const splitViewSetting = getLocalStorage<boolean>("lookout.calendar.splitView", false);
 </script>
 
 <style>

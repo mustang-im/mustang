@@ -1,13 +1,13 @@
 {#if isRangeEmpty}
   {#if previousEvent}
     <button class="adjacent-tab previous" style="inset-inline-start: {startOffset}px"
-      title={tooltip(previousEvent)} on:click={() => onGoTo(previousEvent)}>
+      title={tooltip(previousEvent)} on:click={() => goTo(previousEvent)}>
       <PreviousIcon size="14" />
       <span class="label">{$t`Previous Appointment`}</span>
     </button>
   {/if}
   {#if nextEvent}
-    <button class="adjacent-tab next" title={tooltip(nextEvent)} on:click={() => onGoTo(nextEvent)}>
+    <button class="adjacent-tab next" title={tooltip(nextEvent)} on:click={() => goTo(nextEvent)}>
       <NextIcon size="14" />
       <span class="label">{$t`Next Appointment`}</span>
     </button>
@@ -18,6 +18,7 @@
   import type { Event } from "../../logic/Calendar/Event";
   import type { CalendarRange } from "./CalendarRange";
   import { EventLook } from "./DisplayEvent/EventLook";
+  import { selectedDate, selectedEvent, startDate } from "../../frontend/Calendar/selected";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import type { Collection } from "svelte-collections";
@@ -27,10 +28,15 @@
   export let events: Collection<Event>;
   export let isRangeEmpty: boolean;
   export let startOffset = 0;
-  export let onGoTo: (event: Event) => void;
 
   $: previousEvent = isRangeEmpty ? $events.contents.findLast(event => event.endTime <= range.start) ?? null : null;
   $: nextEvent = isRangeEmpty ? $events.contents.find(event => event.startTime >= range.end) ?? null : null;
+
+  function goTo(event: Event) {
+    $startDate = event.startTime;
+    $selectedDate = event.startTime;
+    $selectedEvent = event;
+  }
 
   function tooltip(event: Event): string {
     let date = event.startTime.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" });

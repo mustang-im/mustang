@@ -14,7 +14,7 @@
       {#if showWeekNumbers}
         <div class="week-number" title={$t`Week ${getWeekNumber(week[0])}`}>{getWeekNumber(week[0])}</div>
       {/if}
-      <WeekRow days={week} {weekIndex} {range} events={inRange} {onOpenDay} on:slotmenu />
+      <WeekRow days={week} {weekIndex} {range} events={inRange} on:slotmenu on:openday />
     </hbox>
   {/each}
 </vbox>
@@ -30,7 +30,6 @@
 
   export let range: CalendarRange;
   export let events: Collection<Event>;
-  export let onOpenDay: (day: Date) => void;
 
   const weekNumbersSetting = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
   $: showWeekNumbers = $weekNumbersSetting.value;
