@@ -24,6 +24,7 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
@@ -46,6 +47,7 @@ export class JMAPAccount extends MailAccount {
   readonly stateLock = new Lock(); /** Protects syncState */
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  protected readonly requestSemaphore = new Semaphore(4);
   protected pushAbort: AbortController | null = null;
   protected throttle = new Throttle(50, 1);
   logging = true;
@@ -151,6 +153,10 @@ export class JMAPAccount extends MailAccount {
     assert(mailAccount, "JMAP Session: Account not found");
 
     this.session = session;
+    let maxConcurrentRequests = sanitize.integer(session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
+    if (maxConcurrentRequests > 0) {
+      this.requestSemaphore.maxParallel = maxConcurrentRequests;
+    }
   }
 
   /** An account shared with us may offer less than our own, e.g. a calendar, but no mail.
@@ -358,32 +364,50 @@ export class JMAPAccount extends MailAccount {
   }
 
   async httpGet(url: string, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpGet(url, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.get(url);
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPost(url, sendJSON);
+    }
     let ky = await this.ky();
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { json: sendJSON });
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPostBinary(url, body, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { body: body });
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
