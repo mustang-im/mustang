@@ -14,7 +14,7 @@
   </DisplayList>
   <hbox class="row add-row">
     <span class="row-label">{$t`Start time:`}</span>
-    <DateField value={newTime} label={$t`Start date`} required onChange={day => setNewDay(day)} />
+    <DateField date={newTime} label={$t`Start date`} required on:change={event => setNewDay(event.detail)} />
     <TimeInput time={newTime} options={TimeOptions.startTimes(newTime)} label={$t`Start time`}
       onChange={time => newTime = time} />
     <DialogButton label={$t`Add Time`} icon={AddIcon}

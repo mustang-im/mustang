@@ -49,9 +49,9 @@
     {#if showDates}
       <span class="label">{$t`Received`}</span>
       <hbox class="dates">
-        <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:value={draft.startDate} />
+        <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:date={draft.startDate} />
         <span class="lo-secondary">{$t`to`}</span>
-        <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:value={draft.endDate} />
+        <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:date={draft.endDate} />
       </hbox>
     {/if}
     <span class="label">{$t`Categories`}</span>

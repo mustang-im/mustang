@@ -19,7 +19,7 @@
 </hbox>
 <Popup bind:popupOpen={isOpen} popupAnchor={fieldEl} placement="bottom-start" boundaryElSel="body">
   {#if isOpen}
-    <DatePicker date={value} {min} label={label ?? placeholder} onPick={onPick} />
+    <DatePicker {date} {min} label={label ?? placeholder} on:pick={event => onPick(event.detail)} />
   {/if}
 </Popup>
 
@@ -30,8 +30,10 @@
   import { showError } from "../../../frontend/Util/error";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";
   import { t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher<{ change: Date }>();
 
-  export let value: Date = null;
+  export let date: Date = null;
   export let min: Date = null;
   export let label: string = null;
   export let placeholder: string = null;
@@ -39,7 +41,6 @@
   export let tooltip: string = null;
   export let width = "156px";
   export let required = false;
-  export let onChange: (value: Date) => void | Promise<void> = null;
   export let classes = "";
   export let inputEl: HTMLInputElement = null;
 
@@ -48,40 +49,34 @@
   let invalid = false;
   let fieldEl: HTMLElement;
 
-  $: text = DateText.format(value);
+  $: text = DateText.format(date);
 
-  async function setValue(date: Date | null) {
-    if (date?.getTime() == value?.getTime()) {
+  function setDate(newDate: Date | null) {
+    if (newDate?.getTime() == date?.getTime()) {
       return;
     }
-    let previous = value;
-    value = date;
-    try {
-      await onChange?.(value);
-    } catch (ex) {
-      value = previous;
-      showError(ex);
-    }
+    date = newDate;
+    dispatch("change", date);
   }
 
   function onTextChanged(): boolean {
     if (!text.trim() && !required) {
-      void setValue(null);
+      setDate(null);
       return true;
     }
     if (!text.trim()) {
-      text = DateText.format(value);
+      text = DateText.format(date);
       return true;
     }
     try {
-      let reference = value ? new Date(value) : new Date(new Date().setHours(0, 0, 0, 0));
-      let date = DateText.parse(text, reference);
-      text = DateText.format(value);
-      void setValue(date);
+      let reference = date ? new Date(date) : new Date(new Date().setHours(0, 0, 0, 0));
+      let parsed = DateText.parse(text, reference);
+      text = DateText.format(date);
+      setDate(parsed);
       return true;
     } catch (ex) {
       invalid = true;
-      text = DateText.format(value);
+      text = DateText.format(date);
       showError(ex);
       return false;
     }
@@ -89,9 +84,9 @@
 
   function onPick(day: Date) {
     isOpen = false;
-    let date = value ? new Date(value) : new Date(new Date(day).setHours(0, 0, 0, 0));
-    date.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
-    void setValue(date);
+    let picked = date ? new Date(date) : new Date(new Date(day).setHours(0, 0, 0, 0));
+    picked.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
+    setDate(picked);
   }
 
   function onKeyDown(event: KeyboardEvent) {

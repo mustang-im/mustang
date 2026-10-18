@@ -6,7 +6,7 @@
   on:close>
   <FormGrid>
     <span>{$t`Date:`}</span>
-    <DateField required bind:value={selectedDate} label={$t`Date`} width="100%" />
+    <DateField required bind:date={selectedDate} label={$t`Date`} width="100%" />
     <span>{$t`Show in:`}</span>
     <ComboBox options={viewOptions} bind:value={view} label={$t`Show in`} />
   </FormGrid>

@@ -11,7 +11,7 @@
           onChange={time => setEndTime(time)} />
         <span class="label">{$t`Duration:`}</span>
         <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
-          on:change={event => setDuration(event.detail)} />
+          on:change={ev => setDuration(ev.detail)} />
       </grid>
     </GroupBox>
 
@@ -61,7 +61,7 @@
                 name="monthly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
                 on:change={() => { pattern.monthlyMode = weekMode; }} />
               <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
-                on:change={event => setWeekMode(event.detail)} />
+                on:change={ev => setWeekMode(ev.detail)} />
               {weekdayName}
               {$t`of every *=> as in: The third Thursday of every 2 months`}
               <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`} />
@@ -82,7 +82,7 @@
                 name="yearly" value={weekMode} group={pattern.monthlyMode == "day" ? "day" : weekMode}
                 on:change={() => { pattern.monthlyMode = weekMode; }} />
               <ComboBox options={weekOptions} value={weekMode} label={$t`Week of the month`}
-                on:change={event => setWeekMode(event.detail)} />
+                on:change={ev => setWeekMode(ev.detail)} />
               {$t`${weekdayName} of ${monthName} *=> as in: (On the third) Thursday of October`}
             </hbox>
           {/if}
@@ -94,13 +94,13 @@
       <hbox class="range">
         <hbox class="range-start">
           <span class="label">{$t`Start:`}</span>
-          <DateField required value={rangeStart} label={$t`Start of the series`} onChange={day => setRangeStart(day)} />
+          <DateField required date={rangeStart} label={$t`Start of the series`} on:change={ev => setRangeStart(ev.detail)} />
         </hbox>
         <vbox class="range-end">
           <hbox class="line">
             <Radio label={$t`End by:`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
-            <DateField required value={pattern.endDate} label={$t`End of the series`}
-              onChange={day => { pattern.endDate = day; pattern.end = "date"; }} />
+            <DateField required date={pattern.endDate} label={$t`End of the series`}
+              on:change={ev => { pattern.endDate = ev.detail; pattern.end = "date"; }} />
           </hbox>
           <hbox class="line">
             <Radio label={$t`End after:`} name="end" value="count" bind:group={pattern.end} classes="end-label" />

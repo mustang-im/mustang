@@ -21,14 +21,14 @@
           class:selected={isSameDay(day, date)}
           disabled={isBefore(day, min)}
           title={day.toLocaleDateString(getDateTimeLocale(), { dateStyle: "full" })}
-          on:click={() => onPick(day)}>
+          on:click={() => dispatch("pick", day)}>
           <span class="number">{day.getDate()}</span>
         </button>
       {/each}
     {/each}
   </div>
   <hbox class="buttons">
-    <button class="today-button" disabled={isBefore($now, min)} on:click={() => onPick(new Date($now))}>{$t`Today`}</button>
+    <button class="today-button" disabled={isBefore($now, min)} on:click={() => dispatch("pick", new Date($now))}>{$t`Today`}</button>
   </hbox>
 </vbox>
 
@@ -38,12 +38,12 @@
   import PreviousIcon from "lucide-svelte/icons/chevron-up";
   import NextIcon from "lucide-svelte/icons/chevron-down";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher<{ pick: Date }>();
 
   export let date: Date;
   export let min: Date = null;
   export let label: string;
-  export let onPick: (day: Date) => void;
-
 
   let month = new DateNavigatorMonth(date ?? new Date());
 

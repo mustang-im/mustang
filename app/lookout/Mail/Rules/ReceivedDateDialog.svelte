@@ -4,9 +4,9 @@
     (hasBefore && !before && $t`Enter the date for Before`)}>
   <grid class="received">
     <Checkbox label={$t`After`} bind:checked={hasAfter} />
-    <DateField label={$t`After`} bind:value={after} disabled={!hasAfter} onChange={() => { hasAfter = true; }} />
+    <DateField label={$t`After`} bind:date={after} disabled={!hasAfter} on:change={() => { hasAfter = true; }} />
     <Checkbox label={$t`Before`} bind:checked={hasBefore} />
-    <DateField label={$t`Before`} bind:value={before} disabled={!hasBefore} onChange={() => { hasBefore = true; }} />
+    <DateField label={$t`Before`} bind:date={before} disabled={!hasBefore} on:change={() => { hasBefore = true; }} />
   </grid>
 </Dialog>
 
