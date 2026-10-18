@@ -98,7 +98,7 @@
   <RibbonTab label={$t`View`}>
     <RibbonGroup label={$t`Current View`}>
       <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
-        <ChangeViewGallery views={calendarViews} {currentView} onChange={onCurrentView} />
+        <ChangeViewGallery views={calendarViews} {currentView} on:change={event => onCurrentView(event.detail)} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
         onClick={() => { isViewSettingsOpen = true; }} />

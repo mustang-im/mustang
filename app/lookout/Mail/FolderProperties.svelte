@@ -7,7 +7,7 @@
   {#if tab == FolderPropertiesTab.General}
     <FolderGeneralTab {folder} bind:name bind:specialFolder bind:countMode />
   {:else if tab == FolderPropertiesTab.Permissions && permissions}
-    <FolderPermissionsTab bind:permissions onChange={() => { permissionsVersion++; }} />
+    <FolderPermissionsTab bind:permissions on:change={() => { permissionsVersion++; }} />
   {:else if tab == FolderPropertiesTab.Synchronization}
     <FolderSyncTab {folder} />
   {/if}

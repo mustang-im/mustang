@@ -11,20 +11,20 @@
 </div>
 
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   type T = $$Generic;
+  const dispatch = createEventDispatcher<{ change: T }>();
 
   export let views: { id: T, label: string, icon: ConstructorOfATypedSvelteComponent, tooltip: string }[];
   export let currentView: T;
-  export let onChange: (view: T) => void;
 
   const closeMenu = getContext<() => void>("onMenuClose");
 
   function choose(view: T) {
     closeMenu?.();
-    onChange(view);
+    dispatch("change", view);
   }
 </script>
 

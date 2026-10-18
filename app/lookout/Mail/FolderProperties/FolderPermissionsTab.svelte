@@ -75,11 +75,11 @@
   import Radio from "../../Shared/Form/Radio.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import { catchErrors, showError } from "../../../frontend/Util/error";
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { t } from "../../../l10n/l10n";
+  const dispatch = createEventDispatcher<{ change: void }>();
 
   export let permissions: FolderPermissions;
-  export let onChange: () => void;
 
   let selected: FolderPermission = null;
   let isLoading = true;
@@ -114,7 +114,7 @@
     version++;
     permissions = permissions;
     selected = selected;
-    onChange();
+    dispatch("change");
   }
 
   function onAdded() {

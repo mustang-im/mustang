@@ -44,7 +44,7 @@
     </RibbonGroup>
     <RibbonGroup label={$t`Current View`}>
       <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
-        <ChangeViewGallery views={contactViews} currentView={$view.value} onChange={setView} />
+        <ChangeViewGallery views={contactViews} currentView={$view.value} on:change={event => setView(event.detail)} />
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
@@ -113,7 +113,7 @@
   <RibbonTab label={$t`View`}>
     <RibbonGroup label={$t`Current View`}>
       <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
-        <ChangeViewGallery views={contactViews} currentView={$view.value} onChange={setView} />
+        <ChangeViewGallery views={contactViews} currentView={$view.value} on:change={event => setView(event.detail)} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} shortLabel={$t`Settings`} icon={ViewSettingsIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}
