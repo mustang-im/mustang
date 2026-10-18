@@ -7,7 +7,8 @@ import { EWSDeleteItemRequest } from "../../Mail/EWS/Request/EWSDeleteItemReques
 import { EWSUpdateItemRequest } from "../../Mail/EWS/Request/EWSUpdateItemRequest";
 import { addDirectoryCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { blobToBase64, dataURLToBlob, ensureArray } from "../../util/util";
+import { ensureArray } from "../../util/util";
+import { blobToBase64, dataURLToBlob } from "../../util/blob";
 import { ArrayColl } from "svelte-collections";
 
 export class EWSPerson extends ExchangePerson {

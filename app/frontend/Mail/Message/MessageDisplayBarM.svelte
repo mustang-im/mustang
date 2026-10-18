@@ -92,7 +92,7 @@
   import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
-  import { URLPart } from "../../Util/util";
+  import { URLPart } from "../../../logic/util/blob";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
