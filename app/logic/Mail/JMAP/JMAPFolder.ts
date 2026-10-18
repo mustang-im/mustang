@@ -26,6 +26,8 @@ export class JMAPFolder extends Folder {
   sortOrder: number = Infinity;
   myRights = {} as TJMAPFolder["myRights"];
   protected poller: ReturnType<typeof setInterval>;
+  /** Message-IDs of the emails whose `Email/import` into this folder broke off */
+  protected readonly unconfirmedImports = new Set<string>();
 
   constructor(account: JMAPAccount) {
     super(account);
@@ -433,6 +435,8 @@ export class JMAPFolder extends Folder {
     let uploadResponse = await this.account.uploadBlob(Buffer.from(email.mime), "message/rfc822", "email");
     let blobId = uploadResponse.blobId;
     assert(uploadResponse.size == email.mime.length, `Storing message failed: Sent ${email.mime.length} bytes, received: ${uploadResponse.size} bytes`);
+    let afterBrokenImport = this.unconfirmedImports.has(email.messageID);
+    this.unconfirmedImports.add(email.messageID);
     let createResponse = await this.account.makeSingleCall("Email/import", {
       accountId: this.account.accountID,
       emails: {
@@ -446,12 +450,60 @@ export class JMAPFolder extends Folder {
         },
       },
     }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    this.unconfirmedImports.delete(email.messageID);
     checkChangeError(createResponse);
     // TODO need to clone email into a new JMAPEMail, esp. when copying (not moving) from EWS to JMAP.
     email.pID = createResponse.created["addMessage"].id;
     email.folder = this;
+    if (afterBrokenImport) {
+      await this.deleteCopiesOfBrokenImport(email);
+    }
     // this.messages.add(email); -- see above
     await this.listChangedMessages();
+  }
+
+  /** An earlier `Email/import` of `email` broke off, so the server may have stored a copy that we don't know.
+   * Deletes such copies, now that the new one is there. The copies that we know are left to the caller. */
+  protected async deleteCopiesOfBrokenImport(email: EMail) {
+    let response = await this.account.makeCombinedCall([
+      [
+        "Email/query", {
+          accountId: this.account.accountID,
+          filter: {
+            inMailbox: this.id,
+          },
+          sort: [
+            { property: "receivedAt", isAscending: false }
+          ],
+          limit: 50,
+        },
+        "list",
+      ], [
+        "Email/get", {
+          accountId: this.account.accountID,
+          "#ids": {
+            resultOf: "list",
+            name: "Email/query",
+            path: "/ids",
+          },
+          properties: ["messageId", "keywords"],
+        },
+        "emails",
+      ],
+    ]);
+    let copies = (response["emails"] as TJMAPGetResponse<TJMAPEMailHeaders>).list.filter(json =>
+      json.id != email.pID &&
+      !this.getEMailByJMAPID(json.id) &&
+      json.messageId?.includes(email.messageID) &&
+      !!json.keywords?.["$draft"] == !!email.isDraft);
+    if (!copies.length) {
+      return;
+    }
+    let destroyResponse = await this.account.makeSingleCall("Email/set", {
+      accountId: this.account.accountID,
+      destroy: copies.map(json => json.id),
+    }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+    checkChangeError(destroyResponse);
   }
 
   /** Uploads the email as individual properties and body parts to the JMAP server */
