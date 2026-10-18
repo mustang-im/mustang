@@ -53,9 +53,7 @@ export class JMAPAddressbook extends Addressbook {
 
   async listContacts() {
     await super.listContacts();
-    if (!this.account.isLoggedIn) {
-      await this.account.login(false);
-    }
+    await this.account.ensureLoggedIn();
 
     this.persons.isEmpty
       ? await this.listAllPersons()
