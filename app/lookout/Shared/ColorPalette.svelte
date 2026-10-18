@@ -14,14 +14,15 @@
 
 <script lang="ts">
   import CheckIcon from "lucide-svelte/icons/check";
-  import { getContext } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
 
   export let colors: { name: string, color: string }[];
   export let selected: string | null = null;
   export let label: string;
   export let columns = 5;
-  export let onChoose: (color: string) => void;
+  export let onChoose: (color: string) => void = null;
 
+  const dispatch = createEventDispatcher<{ select: string }>();
   const closeMenu = getContext<() => void>("onMenuClose");
 
   function isSelected(color: string, selected: string | null): boolean {
@@ -31,7 +32,8 @@
   function choose(color: string) {
     selected = color;
     closeMenu?.();
-    onChoose(color);
+    onChoose?.(color);
+    dispatch("select", color);
   }
 </script>
 
