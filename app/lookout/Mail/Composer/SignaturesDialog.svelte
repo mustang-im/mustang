@@ -68,9 +68,10 @@
 
 <script lang="ts" context="module">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { writable } from "svelte/store";
 
-  export const openSignatures = writable<EMail | null>(null);
+  export const openSignatures = writable<EMail | Event | null>(null);
 </script>
 
 <script lang="ts">
