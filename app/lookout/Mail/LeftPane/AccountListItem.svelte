@@ -100,6 +100,13 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+  .count {
+    flex-shrink: 0;
+    margin-inline-start: 8px;
+    color: var(--lo-accent-text);
+    font-size: 13px;
+    font-weight: 600;
+  }
   /* </copied> */
   .account-row.dependent {
     padding-inline-start: 24px;
@@ -109,12 +116,5 @@
     flex-shrink: 0;
     margin-inline-start: 4px;
     color: var(--lo-danger);
-  }
-  .count {
-    flex-shrink: 0;
-    margin-inline-start: 8px;
-    color: var(--lo-accent-text);
-    font-size: 13px;
-    font-weight: 600;
   }
 </style>

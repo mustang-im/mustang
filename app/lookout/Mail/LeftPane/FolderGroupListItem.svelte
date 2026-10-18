@@ -9,12 +9,22 @@
     <svelte:component this={icon} size={16} />
   </hbox>
   <span class="name">{label}</span>
+  <hbox flex />
+  {#if $unread > 0}
+    <span class="count">{$unread}</span>
+  {/if}
 </div>
 
 <script lang="ts">
+  import type { Folder } from "../../../logic/Mail/Folder";
+  import { FolderTreeActions } from "./FolderTreeActions";
+
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent;
+  export let inbox: Folder | null = null;
   export let selected = false;
+
+  $: unread = FolderTreeActions.countStore(inbox, false);
 </script>
 
 <style>
@@ -65,6 +75,13 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+  .count {
+    flex-shrink: 0;
+    margin-inline-start: 8px;
+    color: var(--lo-accent-text);
+    font-size: 13px;
+    font-weight: 600;
   }
   /* </copied> */
 </style>

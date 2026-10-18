@@ -12,7 +12,7 @@
       {#if !isCollapsed("accounts", $collapsedIDs.value)}
         <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
           {#if $showFavorites.value}
-            <FolderGroupListItem label={$t`Favorites`} icon={FavoritesIcon}
+            <FolderGroupListItem label={$t`Favorites`} icon={FavoritesIcon} inbox={allAccountsAccount.inbox}
               selected={shownEntry == FolderGroup.Favorites} on:click={() => onSelectGroup(FolderGroup.Favorites)} />
           {/if}
           {#if allAccountSearches.length}
