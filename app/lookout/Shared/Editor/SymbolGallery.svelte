@@ -8,10 +8,11 @@
   {/each}
 </grid>
 <MenuDivider />
-<MenuItem label={$t`More Symbols…`} disabled={!editor} onClick={onMoreSymbols} />
+<MenuItem label={$t`More Symbols…`} disabled={!editor} onClick={() => { openedTool = EditorTool.Symbol; }} />
 
 <script lang="ts">
   import { SymbolTable } from "./SymbolTable";
+  import { EditorTool } from "./EditorTool";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
   import type { Editor } from "@tiptap/core";
@@ -19,7 +20,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let editor: Editor;
-  export let onMoreSymbols: () => void;
+  export let openedTool: EditorTool | null = null;
 
   const closeMenu = getContext<() => void>("onMenuClose");
 

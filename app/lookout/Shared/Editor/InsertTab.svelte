@@ -20,7 +20,7 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Symbols`}>
     <RibbonMenuButton label={$t`Symbol`} icon={SymbolIcon} disabled={!editor}>
-      <SymbolGallery {editor} onMoreSymbols={() => { openedTool = EditorTool.Symbol; }} />
+      <SymbolGallery {editor} bind:openedTool />
     </RibbonMenuButton>
     <RibbonButton label={$t`Horizontal Line`} shortLabel={$t`Line`} icon={HorizontalLineIcon} size="small"
       disabled={!editor}
