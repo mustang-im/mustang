@@ -1,6 +1,6 @@
 <hbox class="contact-item"
   on:dblclick={() => ContactActions.edit(person)}
-  on:contextmenu={event => onContextMenu(event, person)}
+  on:contextmenu
   title={$person.name}>
   <PersonPicture {person} size={40} />
   <vbox class="text">
@@ -26,7 +26,6 @@
   import { t } from "../../../l10n/l10n";
 
   export let person: Contact;
-  export let onContextMenu: (event: MouseEvent, person: Contact) => void;
 
   $: asPerson = person instanceof Person ? person : null;
   $: emailAddresses = asPerson?.emailAddresses ?? new ArrayColl<ContactEntry>();

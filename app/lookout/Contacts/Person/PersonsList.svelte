@@ -16,7 +16,7 @@
       bind:selectedItems={selectedPersons}
       on:init={onInit}
       columns="auto">
-      <PersonLine slot="row" let:item person={item} {onContextMenu} />
+      <PersonLine slot="row" let:item person={item} on:contextmenu={event => onContextMenu(event, item)} />
     </FastList>
   {:else}
     <vbox flex class="empty">{emptyText}</vbox>

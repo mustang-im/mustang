@@ -1,6 +1,6 @@
 <div class="cells"
   on:dblclick={() => ContactActions.edit(contact)}
-  on:contextmenu={event => onContextMenu(event, contact)}>
+  on:contextmenu>
   {#each columns as column}
     {#if column == ContactColumn.FullName}
       <hbox class="cell name">
@@ -28,7 +28,6 @@
 
   export let contact: Contact;
   export let columns: ContactColumn[];
-  export let onContextMenu: (event: MouseEvent, contact: Contact) => void;
 </script>
 
 <style>

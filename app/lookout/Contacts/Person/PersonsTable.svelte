@@ -39,7 +39,7 @@
         {#if ContactGrouping.isHeader(item)}
           <ContactGroupRow group={item} onToggle={toggleGroup} />
         {:else}
-          <PersonsTableRow contact={item} {columns} {onContextMenu} />
+          <PersonsTableRow contact={item} {columns} on:contextmenu={event => onContextMenu(event, item)} />
         {/if}
       </svelte:fragment>
     </FastList>
@@ -50,7 +50,7 @@
       bind:selectedItems={selectedPersons}
       on:init={onInit}
       columns={gridColumns}>
-      <PersonsTableRow slot="row" let:item contact={item} {columns} {onContextMenu} />
+      <PersonsTableRow slot="row" let:item contact={item} {columns} on:contextmenu={event => onContextMenu(event, item)} />
     </FastList>
   {:else}
     <vbox flex class="empty">{emptyText}</vbox>
