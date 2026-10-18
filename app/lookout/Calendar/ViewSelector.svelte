@@ -7,7 +7,7 @@
 <Menu bind:isMenuOpen={isViewMenuOpen} anchor={viewButtonEl} placement="bottom-end">
   {#each viewTypes as viewType}
     <MenuItem label={viewLabels[viewType]} icon={viewIcons[viewType]} checked={viewType == view}
-      onClick={() => onView(viewType)} />
+      onClick={() => setView(viewType)} />
   {/each}
 </Menu>
 
@@ -25,7 +25,7 @@
   import { t } from "../../l10n/l10n";
 
   export let view: CalendarViewType;
-  export let onView: (view: CalendarViewType) => void;
+  export let dayCount: number;
 
   const viewTypes: CalendarViewType[] = ["day", "workweek", "week", "month", "schedule", "dual"];
   const viewIcons = { day: DayIcon, workweek: WorkWeekIcon, week: WeekIcon, month: MonthIcon, schedule: ScheduleIcon, dual: DualIcon };
@@ -34,6 +34,15 @@
   let isViewMenuOpen = false;
 
   $: viewLabels = { day: $t`Day`, workweek: $t`Work Week`, week: $t`Week`, month: $t`Month`, schedule: $t`Schedule View`, dual: $t`Day/Month` };
+
+  // <copied to="ArrangeButtons.svelte, SlotMenu.svelte">
+  function setView(viewType: CalendarViewType) {
+    view = viewType;
+    if (viewType == "day" || viewType == "schedule") {
+      dayCount = 1;
+    }
+  }
+  // </copied>
 </script>
 
 <style>

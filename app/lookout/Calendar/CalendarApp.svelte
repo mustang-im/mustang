@@ -1,7 +1,5 @@
 <vbox flex class="calendar-page" bind:this={pageEl}>
-  <CalendarRibbon {view} {currentView}
-    onView={setView} onCurrentView={setCurrentView} onResetView={resetView}
-    onToday={goToToday} onNext7Days={showNext7Days} onGoToDate={openGoToDate}>
+  <CalendarRibbon bind:view bind:dayCount bind:currentView>
     {#if isSearch}
       <CalendarSearchTab organizers={searchOrganizers} hasSelectedCalendar={!!$selectedCalendar} />
     {/if}
@@ -35,11 +33,11 @@
                   <ListView events={tableEvents} />
                 {:else if view == "dual"}
                   <DualView bind:start={$startDate} events={visibleEvents} {groups}>
-                    <ViewSelector slot="top-right" {view} onView={setView} />
+                    <ViewSelector slot="top-right" bind:view bind:dayCount />
                   </DualView>
                 {:else}
-                  <DateRange {range} onToday={goToToday} onStep={step}>
-                    <ViewSelector {view} onView={setView} />
+                  <DateRange bind:date={$startDate} {range}>
+                    <ViewSelector bind:view bind:dayCount />
                   </DateRange>
                   <vbox flex class="grid-area">
                     {#if view == "month" && isSplit}
@@ -80,10 +78,10 @@
   </hbox>
 
   <EventMenu bind:this={eventMenu} />
-  <SlotMenu bind:this={slotMenu} onToday={goToToday} onNext7Days={showNext7Days} onView={setView} />
-  {#if isGoToDateOpen}
+  <SlotMenu bind:this={slotMenu} bind:view bind:dayCount />
+  {#if $isGoToDateOpen}
     <GoToDateDialog date={rangeDate} {view}
-      on:choose={event => goToDate(event.detail.date, event.detail.view)} on:close={() => isGoToDateOpen = false} />
+      on:choose={event => goToDate(event.detail.date, event.detail.view)} on:close={() => $isGoToDateOpen = false} />
   {/if}
   {#if $openCalendarProperties}
     {#key $openCalendarProperties}
@@ -113,7 +111,7 @@
   import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
   import { eventPeek, inlineTitle, selectedSlots, workWeekHours, kCalendarMenus, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarMenus, type CalendarViewType, type SlotSelection } from "./selected";
-  import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
+  import { EventTable } from "./ListView/EventTable";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../frontend/Util/date";
@@ -136,7 +134,7 @@
   import DisplayEvent from "./DisplayEvent/DisplayEvent.svelte";
   import type { ReadingPanePosition } from "../Mail/3pane/3Pane.svelte";
   import SlotMenu from "./SlotMenu.svelte";
-  import GoToDateDialog from "./GoToDateDialog.svelte";
+  import GoToDateDialog, { isGoToDateOpen } from "./GoToDateDialog.svelte";
   import CalendarPropertiesDialog, { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
   import OpenCalendarDialog, { openSharedCalendar } from "./OpenCalendarDialog.svelte";
   import AdjacentEventTabs from "./AdjacentEventTabs.svelte";
@@ -158,7 +156,9 @@
   let view = viewSetting.value;
   let currentView = currentViewSetting.value;
   let dayCount = dayCountSetting.value;
-  const timeScaleSetting = getLocalStorage<number>("lookout.calendar.timeScale", 30);
+  $: viewSetting.value = view;
+  $: currentViewSetting.value = currentView;
+  $: dayCountSetting.value = dayCount;
   const weekNumbersSetting = getLocalStorage<boolean>("lookout.calendar.weekNumbers", false);
   const showDeclinedSetting = getLocalStorage<boolean>("lookout.calendar.showDeclined", true);
   $: showWeekNumbers = $weekNumbersSetting.value;
@@ -173,7 +173,6 @@
   let folderPaneHeight = 0;
   let eventMenu: EventMenu;
   let slotMenu: SlotMenu;
-  let isGoToDateOpen = false;
   let pageEl: HTMLElement;
 
   setContext<CalendarMenus>(kCalendarMenus, {
@@ -189,6 +188,11 @@
     $selectedCalendar = appGlobal.calendars.first;
   }
   $: currentCalendar = $selectedCalendar;
+
+  let shownView = view;
+  let shownDayCount = dayCount;
+  let shownCurrentView = currentView;
+  $: view, dayCount, currentView, showView();
 
   $: rangeDate = view == "dual" ? $selectedDate : $startDate;
   $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
@@ -218,6 +222,7 @@
     : currentView == CalendarCurrentView.Active ? listedEvents.filterObservable(event => event.isUpcoming())
     : null;
   $: tableEvents = searchResults ?? listEvents;
+  $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
 
   let status: StatusBarContent;
   $: status = {
@@ -234,18 +239,32 @@
   });
   // </copied>
 
-  function setView(newView: CalendarViewType) {
-    if (newView == "day" || newView == "schedule") {
-      setDayCount(1);
+  function showView() {
+    if (view == shownView && dayCount == shownDayCount && currentView == shownCurrentView) {
+      return;
     }
-    if (newView == "dual" && !range.contains($selectedDate)) {
-      $selectedDate = $startDate;
-    } else if (view == "dual" && newView != "dual" && newView != "month") {
+    if (view == "dual" && shownView != "dual") {
+      let shownRange = new CalendarRange(shownView, $startDate, shownView == "day" || shownView == "schedule" ? shownDayCount : 1, $workWeekHours.workDays());
+      if (!shownRange.contains($selectedDate)) {
+        $selectedDate = $startDate;
+      }
+    } else if (shownView == "dual" && view != "dual" && view != "month") {
       $startDate = $selectedDate;
     }
-    view = newView;
-    viewSetting.value = newView;
     $eventPeek = null;
+    if (isSearch) {
+      closeSearch();
+    }
+    shownView = view;
+    shownDayCount = dayCount;
+    shownCurrentView = currentView;
+  }
+
+  function setView(newView: CalendarViewType) {
+    if (newView == "day" || newView == "schedule") {
+      dayCount = 1;
+    }
+    view = newView;
     showCalendar();
   }
 
@@ -259,52 +278,22 @@
       (!options.organizerEMail || event.organizer?.emailAddress == options.organizerEMail));
   }
 
-  // <copied to="ListView/CalendarSearchTab.svelte">
+  // <copied to="CalendarRibbon.svelte">
+  function showCalendar() {
+    if (isTable) {
+      currentView = CalendarCurrentView.Calendar;
+    } else if (isSearch) {
+      closeSearch();
+    }
+  }
+  // </copied>
+
+  // <copied to="ListView/CalendarSearchTab.svelte, CalendarRibbon.svelte">
   function closeSearch() {
     $globalSearchTerm = null;
     $calendarSearchOptions = { scope: $calendarSearchOptions.scope, isRecurring: false, hasAttachments: false, organizerEMail: null };
   }
   // </copied>
-
-  function setCurrentView(newView: CalendarCurrentView) {
-    currentView = newView;
-    currentViewSetting.value = newView;
-    $eventPeek = null;
-    if (isSearch) {
-      closeSearch();
-    }
-  }
-
-  function showCalendar() {
-    if (currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active) {
-      setCurrentView(CalendarCurrentView.Calendar);
-    } else if (isSearch) {
-      closeSearch();
-    }
-  }
-
-  function resetView() {
-    const listSettings = [
-      getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start),
-      getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true),
-      getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence),
-      getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns),
-    ];
-    folderPaneSetting.value = CalendarFolderPane.Normal;
-    readingPaneSetting.value = "off";
-    setCurrentView(CalendarCurrentView.Calendar);
-    setView("workweek");
-    setSplitView(false);
-    timeScaleSetting.value = timeScaleSetting.defaultValue;
-    for (let setting of listSettings) {
-      setting.value = setting.defaultValue;
-    }
-  }
-
-  function setDayCount(days: number) {
-    dayCount = days;
-    dayCountSetting.value = days;
-  }
 
   function setSplitView(split: boolean) {
     splitViewSetting.value = split;
@@ -314,13 +303,6 @@
     $startDate = getToday();
     $selectedDate = getToday();
     showCalendar();
-  }
-
-  function showNext7Days() {
-    goToToday();
-    view = "day";
-    viewSetting.value = "day";
-    setDayCount(7);
   }
 
   function step(direction: number) {
@@ -350,8 +332,7 @@
   function selectDays(first: Date, last: Date) {
     selectDay(first);
     view = "day";
-    viewSetting.value = "day";
-    setDayCount(Math.round((last.getTime() - first.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+    dayCount = Math.round((last.getTime() - first.getTime()) / (24 * 60 * 60 * 1000)) + 1;
   }
 
   function openDay(day: Date) {
@@ -365,7 +346,7 @@
   }
 
   function openGoToDate() {
-    isGoToDateOpen = true;
+    $isGoToDateOpen = true;
   }
 
   function goToDate(date: Date, newView: CalendarViewType) {
@@ -409,7 +390,7 @@
       break;
     case "day-count":
       setView("day");
-      setDayCount(command.days);
+      dayCount = command.days;
       break;
     case "go-to-date":
       openGoToDate();

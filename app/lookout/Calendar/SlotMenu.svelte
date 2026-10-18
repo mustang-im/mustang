@@ -10,15 +10,15 @@
   <MenuItem label={$t`New Recurring Meeting`} icon={RecurringMeetingIcon}
     onClick={() => CalendarActions.newEventAtSelection(null, "recurring-meeting")} />
   <MenuDivider />
-  <MenuItem label={$t`Today`} icon={TodayIcon} onClick={onToday} />
-  <MenuItem label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={onNext7Days} />
+  <MenuItem label={$t`Today`} icon={TodayIcon} onClick={goToToday} />
+  <MenuItem label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={showNext7Days} />
   <MenuDivider />
-  <MenuItem label={$t`Day`} icon={DayIcon} shortCutInfo="Ctrl+Alt+1" onClick={() => onView("day")} />
-  <MenuItem label={$t`Work Week`} icon={WorkWeekIcon} shortCutInfo="Ctrl+Alt+2" onClick={() => onView("workweek")} />
-  <MenuItem label={$t`Week`} icon={WeekIcon} shortCutInfo="Ctrl+Alt+3" onClick={() => onView("week")} />
-  <MenuItem label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4" onClick={() => onView("month")} />
-  <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5" onClick={() => onView("schedule")} />
-  <MenuItem label={$t`Day/Month`} icon={DualIcon} onClick={() => onView("dual")} />
+  <MenuItem label={$t`Day`} icon={DayIcon} shortCutInfo="Ctrl+Alt+1" onClick={() => setView("day")} />
+  <MenuItem label={$t`Work Week`} icon={WorkWeekIcon} shortCutInfo="Ctrl+Alt+2" onClick={() => setView("workweek")} />
+  <MenuItem label={$t`Week`} icon={WeekIcon} shortCutInfo="Ctrl+Alt+3" onClick={() => setView("week")} />
+  <MenuItem label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4" onClick={() => setView("month")} />
+  <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5" onClick={() => setView("schedule")} />
+  <MenuItem label={$t`Day/Month`} icon={DualIcon} onClick={() => setView("dual")} />
   <MenuDivider />
   <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => isViewSettingsOpen = true} />
 </ContextMenu>
@@ -29,6 +29,8 @@
 <script lang="ts">
   import type { CalendarViewType } from "./selected";
   import { CalendarActions } from "./CalendarActions";
+  import { selectedDate, startDate } from "../../frontend/Calendar/selected";
+  import { getToday } from "../../frontend/Util/date";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
@@ -49,9 +51,8 @@
   import ViewSettingsIcon from "lucide-svelte/icons/sliders-horizontal";
   import { t } from "../../l10n/l10n";
 
-  export let onToday: () => void;
-  export let onNext7Days: () => void;
-  export let onView: (view: CalendarViewType) => void;
+  export let view: CalendarViewType;
+  export let dayCount: number;
 
   let contextMenu: ContextMenu;
   let isViewSettingsOpen = false;
@@ -59,4 +60,26 @@
   export function openFor(mouseEvent: MouseEvent) {
     contextMenu.onContextMenu(mouseEvent);
   }
+
+  // <copied from="ViewSelector.svelte">
+  function setView(viewType: CalendarViewType) {
+    view = viewType;
+    if (viewType == "day" || viewType == "schedule") {
+      dayCount = 1;
+    }
+  }
+  // </copied>
+
+  // <copied from="CalendarRibbon.svelte">
+  function goToToday() {
+    $startDate = getToday();
+    $selectedDate = getToday();
+  }
+
+  function showNext7Days() {
+    goToToday();
+    view = "day";
+    dayCount = 7;
+  }
+  // </copied>
 </script>

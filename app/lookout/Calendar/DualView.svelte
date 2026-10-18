@@ -1,11 +1,11 @@
 <SplitterBidirectional horizontal={$appGlobal.isSmall} initialSecondRatio={1} firstMinPx={200} secondMinPx={200}>
   <vbox flex class="days" slot="first">
-    <DateRange range={daysRange} onToday={goToToday} onStep={stepDays} />
+    <DateRange bind:date={$selectedDate} range={daysRange} />
     <DayViewGrid range={daysRange} {groups} enlargeSelectedDay={true}
       onOpenDay={selectDay} onOverlay={showOverlay} />
   </vbox>
   <vbox flex class="month" slot="second">
-    <DateRange range={monthRange} onStep={stepMonth}>
+    <DateRange bind:date={start} range={monthRange} showToday={false}>
       <slot name="top-right" />
     </DateRange>
     <MonthView range={monthRange} {events} onOpenDay={selectDay} />
@@ -19,7 +19,6 @@
   import { eventPeek } from "./selected";
   import { selectedDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
-  import { getToday } from "../../frontend/Util/date";
   import DateRange from "./DateRange.svelte";
   import DayViewGrid, { type CalendarColumnGroup } from "./DayView/DayViewGrid.svelte";
   import MonthView from "./MonthView/MonthView.svelte";
@@ -36,20 +35,6 @@
   function selectDay(day: Date) {
     $eventPeek = null;
     $selectedDate = day;
-  }
-
-  function goToToday() {
-    selectDay(getToday());
-    start = getToday();
-  }
-
-  function stepDays(direction: number) {
-    selectDay(CalendarRange.step("dual", $selectedDate, 1, direction));
-  }
-
-  function stepMonth(direction: number) {
-    $eventPeek = null;
-    start = CalendarRange.step("month", start, 1, direction);
   }
 
   function showOverlay() {

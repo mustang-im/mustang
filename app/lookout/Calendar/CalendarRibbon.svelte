@@ -17,15 +17,15 @@
         onClick={() => CalendarActions.newEventAtSelection(null, "online-meeting")}
         disabled={noCalendar} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Go To`} onLauncher={onGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
-      <RibbonButton label={$t`Today`} icon={TodayIcon} onClick={onToday} />
-      <RibbonButton label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={onNext7Days} />
+    <RibbonGroup label={$t`Go To`} onLauncher={openGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
+      <RibbonButton label={$t`Today`} icon={TodayIcon} onClick={() => { goToToday(); showCalendar(); }} />
+      <RibbonButton label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={() => { showNext7Days(); showCalendar(); }} />
       {#if isSimplified}
-        <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo="Ctrl+G" onClick={onGoToDate} />
+        <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo="Ctrl+G" onClick={openGoToDate} />
       {/if}
     </RibbonGroup>
     <RibbonGroup label={$t`Arrange`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
-      <ArrangeButtons {view} {isTable} onView={onView} />
+      <ArrangeButtons bind:view bind:dayCount bind:currentView />
     </RibbonGroup>
     <RibbonGroup label={$t`Manage Calendars`}>
       <RibbonMenuButton label={$t`Open Calendar`} icon={OpenCalendarIcon}>
@@ -98,16 +98,16 @@
   <RibbonTab label={$t`View`}>
     <RibbonGroup label={$t`Current View`}>
       <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
-        <ChangeViewGallery views={calendarViews} {currentView} on:change={event => onCurrentView(event.detail)} />
+        <ChangeViewGallery views={calendarViews} {currentView} on:change={event => setCurrentView(event.detail)} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
         onClick={() => { isViewSettingsOpen = true; }} />
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
         tooltip={$t`Reset the view and the table columns to the default settings`}
-        onClick={onResetView} />
+        onClick={resetView} />
     </RibbonGroup>
     <RibbonGroup label={$t`Arrangement`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
-      <ArrangeButtons {view} {isTable} onView={onView} />
+      <ArrangeButtons bind:view bind:dayCount bind:currentView />
       <RibbonMenuButton label={$t`Time Scale`} icon={TimeScaleIcon} size="small"
         disabled={view == "month" && $t`The time scale applies to the Day, Work Week, Week and Schedule views`}>
         {#each [60, 30, 15, 10, 6, 5] as scale}
@@ -162,14 +162,16 @@
 <script lang="ts">
   import type { Calendar } from "../../logic/Calendar/Calendar";
   import { CalendarActions } from "./CalendarActions";
-  import { openApp } from "../../frontend/AppsBar/selectedApp";
+  import { globalSearchTerm, openApp } from "../../frontend/AppsBar/selectedApp";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
   import { CalendarGroups } from "./CalendarGroups";
-  import { CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
   import { CalendarColors } from "./CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { SettingsDialogs } from "../Settings/SettingsDialogs";
-  import { selectedCalendar } from "../../frontend/Calendar/selected";
+  import { selectedCalendar, selectedDate, startDate } from "../../frontend/Calendar/selected";
+  import { calendarSearchOptions, CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
+  import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
+  import { getToday } from "../../frontend/Util/date";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../frontend/Util/error";
   import { appGlobal } from "../../logic/app";
@@ -190,6 +192,7 @@
   import NewEventMenu from "./NewEventMenu.svelte";
   import OpenCalendarMenuItems from "./OpenCalendarMenuItems.svelte";
   import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
+  import { isGoToDateOpen } from "./GoToDateDialog.svelte";
   import ViewSettingsDialog from "./ViewSettings/ViewSettingsDialog.svelte";
   import RenameDialog from "../Settings/Shared/RenameDialog.svelte";
   import ChangeViewIcon from "lucide-svelte/icons/layout-template";
@@ -225,13 +228,8 @@
   import { t } from "../../l10n/l10n";
 
   export let view: CalendarViewType;
+  export let dayCount: number;
   export let currentView: CalendarCurrentView;
-  export let onCurrentView: (view: CalendarCurrentView) => void;
-  export let onResetView: () => void;
-  export let onView: (view: CalendarViewType) => void;
-  export let onToday: () => void;
-  export let onNext7Days: () => void;
-  export let onGoToDate: () => void;
 
   $: calendarViews = [
     { id: CalendarCurrentView.Calendar, label: $t`Calendar`, icon: CalendarViewIcon, tooltip: $t`Day, week and month calendar` },
@@ -252,6 +250,7 @@
   $: noCalendar = !$calendars.hasItems && $t`Please set up a calendar first`;
   $: noSelection = !$selectedCalendar && $t`Select a calendar first`;
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
+  $: isSearch = !!$globalSearchTerm?.trim();
   $: canDelete = !!$selectedCalendar && (CalendarGroups.isShared($selectedCalendar) || !$selectedCalendar.mainAccount);
   $: isShareable = canShare($selectedCalendar);
   let renamingCalendar: Calendar | null = null;
@@ -265,6 +264,65 @@
       account instanceof MailAccount && !account.isDependentAccount && account.canShareWithPersons();
   }
   // </copied>
+
+  // <copied to="SlotMenu.svelte">
+  function goToToday() {
+    $startDate = getToday();
+    $selectedDate = getToday();
+  }
+
+  function showNext7Days() {
+    goToToday();
+    view = "day";
+    dayCount = 7;
+  }
+  // </copied>
+
+  // <copied from="CalendarApp.svelte">
+  function showCalendar() {
+    if (isTable) {
+      currentView = CalendarCurrentView.Calendar;
+    } else if (isSearch) {
+      closeSearch();
+    }
+  }
+  // </copied>
+
+  // <copied from="CalendarApp.svelte">
+  function closeSearch() {
+    $globalSearchTerm = null;
+    $calendarSearchOptions = { scope: $calendarSearchOptions.scope, isRecurring: false, hasAttachments: false, organizerEMail: null };
+  }
+  // </copied>
+
+  function setCurrentView(newView: CalendarCurrentView) {
+    currentView = newView;
+    if (isSearch) {
+      closeSearch();
+    }
+  }
+
+  function resetView() {
+    const listSettings = [
+      getLocalStorage<EventTableColumn>("lookout.calendar.list.sortColumn", EventTableColumn.Start),
+      getLocalStorage<boolean>("lookout.calendar.list.sortAscending", true),
+      getLocalStorage<EventTableGrouping>("lookout.calendar.list.grouping", EventTableGrouping.Recurrence),
+      getLocalStorage<EventTableColumn[]>("lookout.calendar.list.columns", EventTable.defaultColumns),
+    ];
+    folderPane.value = CalendarFolderPane.Normal;
+    readingPane.value = "off";
+    setCurrentView(CalendarCurrentView.Calendar);
+    view = "workweek";
+    splitViewSetting.value = false;
+    timeScaleSetting.value = timeScaleSetting.defaultValue;
+    for (let setting of listSettings) {
+      setting.value = setting.defaultValue;
+    }
+  }
+
+  function openGoToDate() {
+    $isGoToDateOpen = true;
+  }
 
   function onCalendarOptions() {
     SettingsDialogs.openOptions("calendar");

@@ -1,13 +1,13 @@
 <hbox class="calendar-header">
-  {#if onToday}
-    <button class="today-button" title={$t`Go to today`} on:click={onToday}>
+  {#if showToday}
+    <button class="today-button" title={$t`Go to today`} on:click={goToToday}>
       {$t`Today`}
     </button>
   {/if}
-  <button class="arrow-button" title={previousLabel} aria-label={previousLabel} on:click={() => onStep(-1)}>
+  <button class="arrow-button" title={previousLabel} aria-label={previousLabel} on:click={() => page(-1)}>
     <PreviousIcon size="16" />
   </button>
-  <button class="arrow-button" title={nextLabel} aria-label={nextLabel} on:click={() => onStep(1)}>
+  <button class="arrow-button" title={nextLabel} aria-label={nextLabel} on:click={() => page(1)}>
     <NextIcon size="16" />
   </button>
   <h1 class="title">{range.title(getDateTimeLocale())}</h1>
@@ -16,19 +16,34 @@
 </hbox>
 
 <script lang="ts">
-  import type { CalendarRange } from "./CalendarRange";
+  import { CalendarRange } from "./CalendarRange";
+  import { eventPeek } from "./selected";
+  import { selectedDate, startDate } from "../../frontend/Calendar/selected";
+  import { getToday } from "../../frontend/Util/date";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import { getDateTimeLocale, t } from "../../l10n/l10n";
 
+  export let date: Date;
   export let range: CalendarRange;
-  export let onToday: (() => void) | null = null;
-  export let onStep: (direction: number) => void;
+  export let showToday = true;
 
   $: isMonth = range.view == "month";
   $: stepsByDay = (range.view == "day" || range.view == "schedule") && range.days.length == 1 || range.view == "dual";
   $: previousLabel = isMonth ? $t`Previous month` : stepsByDay ? $t`Previous day` : $t`Previous`;
   $: nextLabel = isMonth ? $t`Next month` : stepsByDay ? $t`Next day` : $t`Next`;
+
+  function goToToday() {
+    $eventPeek = null;
+    date = getToday();
+    $startDate = getToday();
+    $selectedDate = getToday();
+  }
+
+  function page(direction: number) {
+    $eventPeek = null;
+    date = CalendarRange.step(range.view, date, range.days.length, direction);
+  }
 </script>
 
 <style>
