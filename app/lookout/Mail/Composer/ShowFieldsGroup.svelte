@@ -1,16 +1,18 @@
 <RibbonGroup label={$t`Show Fields`}>
   <RibbonToggleButton label={$t`Bcc`} icon={BccIcon}
     tooltip={$t`Show the Bcc field`}
-    checked={$showBcc.value || bccLocked}
-    disabled={bccLocked && $t`Remove the Bcc recipients first`}
+    checked={$showBcc.value || hasBCC}
+    disabled={hasBCC && $t`Remove the Bcc recipients first`}
     onChange={checked => { $showBcc.value = checked; }} />
   <RibbonToggleButton label={$t`From`} icon={FromIcon}
     tooltip={$t`Show the From field`}
-    disabled={!canShowFrom && $t`You have only one sender identity`}
+    disabled={!hasSeveralIdentities && $t`You have only one sender identity`}
     bind:checked={$showFrom.value} />
 </RibbonGroup>
 
 <script lang="ts">
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import { findAllIdentities } from "../../../logic/Mail/MailIdentity";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
@@ -18,9 +20,18 @@
   import FromIcon from "lucide-svelte/icons/user-round";
   import { t } from "../../../l10n/l10n";
 
-  export let canShowFrom = false;
-  export let bccLocked = false;
+  export let mail: EMail;
 
   const showBcc = getLocalStorage<boolean>("lookout.mail.compose.showBcc", false);
   const showFrom = getLocalStorage<boolean>("lookout.mail.compose.showFrom", true);
+
+  $: fromIdentity = mail.identity;
+  /* <copied from="MailComposer.svelte"> */
+  let identities = findAllIdentities();
+  $: hasSeveralIdentities = $identities.length > 1 || !!fromIdentity?.isCatchAll;
+  /* </copied> */
+  /* <copied from="../../../frontend/Mail/Composer/MailComposer.svelte"> */
+  $: bccList = mail.bcc;
+  $: hasBCC = $bccList.hasItems;
+  /* </copied> */
 </script>

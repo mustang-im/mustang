@@ -2,13 +2,13 @@
   {#each types as type}
     <RibbonButton label={label(type)} icon={icon(type)}
       tooltip={tooltip(type)}
-      disabled={commands.sml ? $t`The message already has a poll. Remove it first.` : !commands.identity}
+      disabled={$mail.sml ? $t`The message already has a poll. Remove it first.` : !identity}
       onClick={() => insert(type)} />
   {/each}
 </RibbonGroup>
 
 <script lang="ts">
-  import type { ComposerCommands } from "./ComposerCommands";
+  import type { EMail } from "../../../logic/Mail/EMail";
   import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { createPoll, createMeetingTimePoll, createBookMe } from "../../../logic/Mail/SML/SMLCreateKind";
@@ -23,9 +23,10 @@
   import { appName } from "../../../logic/build";
   import { gt, t } from "../../../l10n/l10n";
 
-  export let commands: ComposerCommands;
+  export let mail: EMail;
 
   const types = ["SimplePoll", "MeetingTimePoll", "BookMe"];
+  $: identity = mail.identity;
 
   function tooltip(type: string): string {
     switch (type) {
@@ -37,11 +38,10 @@
   }
 
   async function insert(type: string) {
-    let identity = commands.identity;
     if (!await ensureAccount(identity)) {
       return;
     }
-    commands.onInsertSML(create(type, identity));
+    mail.sml = create(type, identity);
   }
 
   function create(type: string, identity: MailIdentity): SMLData {

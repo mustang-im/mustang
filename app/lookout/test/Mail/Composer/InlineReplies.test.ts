@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { InlineReplies, InlineReply } from "../../../Mail/Composer/InlineReplies";
 import { inlineReplies, inlineRibbon } from "../../../Mail/Selected";
-import type { ComposerCommands } from "../../../Mail/Composer/ComposerCommands";
 import { messageBoxQuestion } from "../../../Shared/Dialog/MessageBox";
 import type { EMail } from "../../../../logic/Mail/EMail";
 import { afterEach, expect, test } from "vitest";
@@ -9,10 +8,6 @@ import { get } from "svelte/store";
 
 function mail(html = ""): EMail {
   return { html } as EMail;
-}
-
-function commandsFor(draft: EMail): ComposerCommands {
-  return { mail: draft } as ComposerCommands;
 }
 
 const kLongText = "<p>" + "This is what I want to say about it. ".repeat(4) + "</p>";
@@ -72,7 +67,7 @@ test("Removing a reply hides its Message tab", async () => {
   let second = mail();
   await InlineReplies.start(mail(), first);
   await InlineReplies.start(mail(), second);
-  inlineRibbon.set({ draft: second, commands: commandsFor(second) });
+  inlineRibbon.set({ draft: second, editor: null });
   InlineReplies.remove(first);
   expect(get(inlineRibbon).draft).toBe(second);
   inlineReplies.add(new InlineReply(mail(), first));

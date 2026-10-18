@@ -1,10 +1,10 @@
 import type { EMail } from "../../../logic/Mail/EMail";
-import type { ComposerCommands } from "./ComposerCommands";
 import { DraftContent } from "./DraftContent";
 import { MessageBox } from "../../Shared/Dialog/MessageBox";
 import { inlineReplies, inlineRibbon } from "../Selected";
 import { get } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
+import type { Editor } from "@tiptap/core";
 
 export class InlineReply {
   readonly original: EMail;
@@ -19,7 +19,7 @@ export class InlineReply {
 
 export interface InlineRibbon {
   draft: EMail;
-  commands: ComposerCommands;
+  editor: Editor | null;
 }
 
 export class InlineReplies {

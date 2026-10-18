@@ -1,6 +1,6 @@
 <vbox flex class="composer-page" class:inline={isInline} on:keydown|capture={onKeyDown}>
   {#if !isInline}
-    <ComposerRibbon {commands} bind:showEmojis bind:openedTool />
+    <ComposerRibbon {mail} {editor} bind:showEmojis bind:openedTool />
   {/if}
   <vbox flex class="composer" class:lo-card={!isInline} on:keydown={onEscape}>
     <FileDropTarget
@@ -48,7 +48,7 @@
               bind:fromAddress={mail.from.emailAddress}
               bind:fromName={mail.from.name} />
           {/if}
-          <button class="field-button" on:click={() => openSelectNames(RecipientField.To)} tabindex={-1}
+          <button class="field-button" on:click={() => $openSelectNames = { mail, field: RecipientField.To }} tabindex={-1}
             title={$t`Select recipients from the address book`}>
             {$t`To`}
           </button>
@@ -56,7 +56,7 @@
             <MailAutocomplete addresses={mail.to} label={$t`To`} chips={isChips} tabindex={1}
               autofocus={autofocus && mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
           </hbox>
-          <button class="field-button" on:click={() => openSelectNames(RecipientField.Cc)} tabindex={-1}
+          <button class="field-button" on:click={() => $openSelectNames = { mail, field: RecipientField.Cc }} tabindex={-1}
             title={$t`Select recipients from the address book`}>
             {$t`Cc`}
           </button>
@@ -65,7 +65,7 @@
               onAdd={onRecipientAdded} bind:this={ccField} />
           </hbox>
           {#if showBCC}
-            <button class="field-button" on:click={() => openSelectNames(RecipientField.Bcc)} tabindex={-1}
+            <button class="field-button" on:click={() => $openSelectNames = { mail, field: RecipientField.Bcc }} tabindex={-1}
               title={$t`Select recipients from the address book`}>
               {$t`Bcc`}
             </button>
@@ -118,8 +118,8 @@
 </vbox>
 
 {#if isSelectNamesOpen}
-  <SelectNamesDialog {mail} defaultField={selectNamesField}
-    on:close={() => isSelectNamesOpen = false} />
+  <SelectNamesDialog {mail} defaultField={$openSelectNames.field}
+    on:close={() => $openSelectNames = null} />
 {/if}
 {#if showSaveChanges}
   <SaveChangesDialog
@@ -129,14 +129,20 @@
     on:close={() => showSaveChanges = false} />
 {/if}
 {#if showSignatures}
-  <SignaturesDialog identity={fromIdentity} on:close={() => showSignatures = false} />
+  <SignaturesDialog identity={fromIdentity} on:close={() => $openSignatures = null} />
 {/if}
 <EditorToolDialogs {editor} bind:openedTool />
-<FileSelector bind:this={fileSelector} />
-<FileSelector bind:this={imageSelector} acceptFileTypes={["image/png", "image/jpeg", "image/gif"]} />
+
+<script lang="ts" context="module">
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import type { EditorTool } from "../../Shared/Editor/EditorTool";
+  import { writable } from "svelte/store";
+
+  export const checkNamesOf = writable<EMail | null>(null);
+  export const openEditorTool = writable<{ mail: EMail, tool: EditorTool } | null>(null);
+</script>
 
 <script lang="ts">
-  import type { EMail } from "../../../logic/Mail/EMail";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
@@ -147,7 +153,6 @@
   import { WriteMailMustangApp, mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
-  import type { ComposerCommands } from "./ComposerCommands";
   import { InlineReplies } from "./InlineReplies";
   import { inlineRibbon } from "../Selected";
   import { get } from "svelte/store";
@@ -159,12 +164,11 @@
   import { ComposerEncryption } from "./ComposerEncryption";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { DraftContent } from "./DraftContent";
-  import { EditorTool } from "../../Shared/Editor/EditorTool";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import ComposerRibbon from "./ComposerRibbon.svelte";
-  import SelectNamesDialog, { RecipientField } from "./SelectNamesDialog.svelte";
+  import SelectNamesDialog, { RecipientField, openSelectNames } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
-  import SignaturesDialog from "./SignaturesDialog.svelte";
+  import SignaturesDialog, { openSignatures } from "./SignaturesDialog.svelte";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
@@ -173,9 +177,7 @@
   import IdentitySelector from "./IdentitySelector.svelte";
   import EncryptionDetails from "./EncryptionDetails.svelte";
   import SMLComposer from "./SMLComposer.svelte";
-  import type { SMLData } from "../../../logic/Mail/SML/SMLData";
   import AttachmentsUI from "../Message/AttachmentsUI.svelte";
-  import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import FileDropTarget from "../../../frontend/Mail/Composer/Attachments/FileDropTarget.svelte";
   import HTMLEditor from "../../../frontend/Shared/Editor/HTMLEditor.svelte";
   import Spinner from "../../../frontend/Shared/Spinner.svelte";
@@ -197,18 +199,19 @@
   let editor: Editor;
   $: to = mail.to;
   let fromIdentity: MailIdentity;
+  /* <copied to="ShowFieldsGroup.svelte"> */
   let identities = findAllIdentities();
   $: hasSeveralIdentities = $identities.length > 1 || !!fromIdentity?.isCatchAll;
+  /* </copied> */
   const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
   const showFromSetting = getLocalStorage<boolean>("lookout.mail.compose.showFrom", true);
   const sendFormat = getLocalStorage<string>("mail.send.format", "html");
   const showBccSetting = getLocalStorage<boolean>("lookout.mail.compose.showBcc", false);
   let encryptionError: string | null = null;
   let showEmojis = false;
-  let isSelectNamesOpen = false;
-  let selectNamesField = RecipientField.To;
+  $: isSelectNamesOpen = $openSelectNames?.mail == mail;
   let showSaveChanges = false;
-  let showSignatures = false;
+  $: showSignatures = $openSignatures == mail;
   let openedTool: EditorTool | null = null;
   let ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isChips = $ribbonLayout.value == "simplified";
@@ -298,15 +301,6 @@
     // </copied>
   }
 
-  let fileSelector: FileSelector;
-  async function onAddAttachment() {
-    let files = await fileSelector.selectFiles();
-    if (!files?.length) {
-      return;
-    }
-    addFilesAsAttachments(mail, files);
-  }
-
   function onFilesDrop(event: CustomEvent) {
     addFilesAsAttachments(mail, event.detail.files as File[]);
   }
@@ -364,29 +358,8 @@
   $: privateKey = fromIdentity ? getMyPrivateKey(fromIdentity) ?? null : null;
   $: privateKey, fromIdentity && catchErrors(() => ComposerEncryption.applyIdentityDefaults(mail, privateKey));
 
-  $: sml = mail.sml;
-  function setSML(newSML: SMLData | null) {
-    mail.sml = newSML;
-  }
-
-  let commands: ComposerCommands;
-  $: commands = {
-    mail,
-    editor,
-    identity: fromIdentity,
-    canShowFrom: hasSeveralIdentities,
-    bccLocked: hasBCC,
-    onAddressBook: () => openSelectNames(RecipientField.To),
-    onAttachFile: onAddAttachment,
-    onInsertPicture,
-    openTool: (tool: EditorTool) => { openedTool = tool; },
-    onSignatures: () => { showSignatures = true; },
-    onCheckNames,
-    sml,
-    onInsertSML: setSML,
-  };
   $: if (isInline && !closing) {
-    $inlineRibbon = { draft: mail, commands };
+    $inlineRibbon = { draft: mail, editor };
   }
   onDestroy(() => {
     if (get(inlineRibbon)?.draft == mail) {
@@ -436,19 +409,15 @@
     }
   }
 
-  function openSelectNames(field: RecipientField) {
-    selectNamesField = field;
-    isSelectNamesOpen = true;
+  $: if ($openEditorTool?.mail == mail) {
+    openedTool = $openEditorTool.tool;
+    $openEditorTool = null;
   }
 
-  let imageSelector: FileSelector;
-  async function onInsertPicture() {
-    let files = await imageSelector.selectFiles();
-    for (let file of files ?? []) {
-      await insertImage(editor, file, mail);
-    }
+  $: if ($checkNamesOf == mail) {
+    $checkNamesOf = null;
+    catchErrors(onCheckNames);
   }
-
   async function onCheckNames() {
     let fields = [toField, ccField, bccField].filter(field => !!field);
     let errors: Error[] = [];

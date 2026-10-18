@@ -10,7 +10,7 @@
       <SearchTab account={$selectedAccount} folder={$selectedFolder} search={currentSearch} onClose={closeSearch} />
     {/if}
     {#if $inlineRibbon}
-      <ComposerMessageTab commands={$inlineRibbon.commands} isInline />
+      <ComposerMessageTab mail={$inlineRibbon.draft} editor={$inlineRibbon.editor} isInline />
     {/if}
   </Ribbon>
   <ThreePane bind:messageList

@@ -44,22 +44,23 @@
     </RibbonButtonRow>
   </RibbonGroup>
   <RibbonGroup label={$t`Names`}>
-    <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} onClick={commands.onAddressBook} />
+    <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
+      onClick={() => { $openSelectNames = { mail, field: RecipientField.To }; }} />
     <RibbonButton label={$t`Check Names`} icon={CheckNamesIcon}
       tooltip={$t`Check the names you typed in the To, Cc and Bcc boxes against your address books`}
-      onClick={commands.onCheckNames} />
+      onClick={() => { $checkNamesOf = mail; }} />
   </RibbonGroup>
   <RibbonGroup label={$t`Include`} icon={AttachIcon}>
-    <RibbonButton label={$t`Attach File`} icon={AttachIcon} size="small" onClick={commands.onAttachFile} />
+    <RibbonButton label={$t`Attach File`} icon={AttachIcon} size="small" onClick={onAddAttachment} />
     <RibbonButton label={$t`Link`} icon={LinkIcon} size="small" shortCutInfo="Ctrl+K"
-      disabled={!editor} onClick={() => commands.openTool(EditorTool.Link)} />
+      disabled={!editor} onClick={() => { $openEditorTool = { mail, tool: EditorTool.Link }; }} />
     <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon} size="small">
-      <SignatureMenuItems identity={commands.identity} {editor} onSignatures={commands.onSignatures} />
+      <SignatureMenuItems {identity} {editor} onSignatures={() => { $openSignatures = mail; }} />
     </RibbonMenuButton>
   </RibbonGroup>
   {#if isInline}
-    <ShowFieldsGroup canShowFrom={commands.canShowFrom} bccLocked={commands.bccLocked} />
-    <EncryptionButtons mail={commands.mail} identity={commands.identity} />
+    <ShowFieldsGroup {mail} />
+    <EncryptionButtons {mail} {identity} />
   {/if}
   <RibbonGroup label={$t`Editor`}>
     <RibbonToggleButton label={$t`Spelling`} icon={SpellingIcon}
@@ -67,9 +68,11 @@
       bind:checked={$spellcheck.value} />
   </RibbonGroup>
 </RibbonTab>
+<FileSelector bind:this={fileSelector} />
 
 <script lang="ts">
-  import type { ComposerCommands } from "./ComposerCommands";
+  import type { EMail } from "../../../logic/Mail/EMail";
+  import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { EditorTool } from "../../Shared/Editor/EditorTool";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { EditorClipboard } from "../../Shared/Editor/EditorClipboard";
@@ -80,10 +83,14 @@
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import RibbonSplitButton from "../../Shared/Ribbon/RibbonSplitButton.svelte";
   import RibbonButtonRow from "../../Shared/Ribbon/RibbonButtonRow.svelte";
+  import { checkNamesOf, openEditorTool } from "./MailComposer.svelte";
+  import { openSelectNames, RecipientField } from "./SelectNamesDialog.svelte";
+  import { openSignatures } from "./SignaturesDialog.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
   import ShowFieldsGroup from "./ShowFieldsGroup.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import BoldIcon from "lucide-svelte/icons/bold";
   import ItalicIcon from "lucide-svelte/icons/italic";
   import UnderlineIcon from "lucide-svelte/icons/underline";
@@ -104,15 +111,27 @@
   import IndentIcon from "lucide-svelte/icons/list-indent-increase";
   import CheckNamesIcon from "lucide-svelte/icons/user-check";
   import { t } from "../../../l10n/l10n";
-  import type { ChainedCommands } from "@tiptap/core";
+  import type { ChainedCommands, Editor } from "@tiptap/core";
 
-  export let commands: ComposerCommands;
+  export let mail: EMail;
+  export let editor: Editor | null;
   export let isInline = false;
 
   const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);
-  $: editor = commands.editor;
+  $: identity = mail.identity;
 
   function run(command: (chain: ChainedCommands) => ChainedCommands) {
     command(editor.chain().focus()).run();
   }
+
+  /* <copied from="../../../frontend/Mail/Composer/MailComposer.svelte"> */
+  let fileSelector: FileSelector;
+  async function onAddAttachment() {
+    let files = await fileSelector.selectFiles();
+    if (!files?.length) {
+      return;
+    }
+    addFilesAsAttachments(mail, files);
+  }
+  /* </copied> */
 </script>

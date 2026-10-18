@@ -40,7 +40,7 @@
 
   export let mail: EMail;
 
-  $: sml = mail.sml;
+  $: sml = $mail.sml;
   function onRemove() {
     mail.sml = null;
   }
