@@ -1,9 +1,9 @@
 <vbox class="folder-pane-minimized">
-  <button class="expand" on:click={onExpand}
+  <button class="expand" on:click={expand}
     title={$t`Expand the Folder Pane`} aria-label={$t`Expand the Folder Pane`}>
     <ExpandIcon size={16} />
   </button>
-  <button class="folder-name" on:click={onExpand} title={$t`Expand the Folder Pane`}>
+  <button class="folder-name" on:click={expand} title={$t`Expand the Folder Pane`}>
     {name}
   </button>
 </vbox>
@@ -11,9 +11,17 @@
 <script lang="ts">
   import ExpandIcon from "lucide-svelte/icons/chevron-right";
   import { t } from "../../l10n/l10n";
+  import { createEventDispatcher } from "svelte";
 
   export let name: string;
-  export let onExpand: () => void;
+  export let onExpand: () => void = null;
+
+  const dispatch = createEventDispatcher<{ expand: void }>();
+
+  function expand() {
+    onExpand?.();
+    dispatch("expand");
+  }
 </script>
 
 <style>
