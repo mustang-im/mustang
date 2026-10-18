@@ -67,21 +67,22 @@ export class JMAPAddressbook extends Addressbook {
     let hasMore = true;
     let allNewPersons = new ArrayColl<JMAPPerson>();
     for (let i = 0; hasMore; i += batchSize) {
-      let { newPersons, updatedPersons, syncState } = await retryOnTransientError(() =>
+      let { newPersons, syncState, count } = await retryOnTransientError(() =>
         this.fetchPersons(i, batchSize + 1));
       state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
-      hasMore = newPersons.length + updatedPersons.length > batchSize;
+      hasMore = count > batchSize;
     }
+    await this.saveGroups();
     if (state) {
       this.account.syncState.set("ContactCard", state);
     }
     return allNewPersons;
   }
 
-  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string }> {
+  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string, count: number }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPContact>;
     let lock = await this.account.stateLock.lock();
@@ -118,6 +119,7 @@ export class JMAPAddressbook extends Addressbook {
       return {
         ...this.parsePersonsList(listResponse.list),
         syncState: listResponse.state,
+        count: listResponse.list.length,
       };
     } finally {
       lock.release();
@@ -220,6 +222,7 @@ export class JMAPAddressbook extends Addressbook {
         }
         await this.savePersons(changedResult.updatedPersons);
         await this.savePersons(addedResult.newPersons);
+        await addressbook.saveGroups();
         if (this === addressbook) {
           newPersonsOfThisAB = addedResult.newPersons;
         }
@@ -238,6 +241,9 @@ export class JMAPAddressbook extends Addressbook {
   }
 
   protected async parseRemovedPersons(jmapIDs: string[]): Promise<ArrayColl<JMAPPerson>> {
+    for (let group of this.groups.contents.filter(group => jmapIDs.includes(group.jmapID))) {
+      await group.deleteLocally();
+    }
     return new ArrayColl<JMAPPerson>(jmapIDs
       .map(jmapID => this.getPersonByJMAPID(jmapID))
       .filter(ev => ev));
@@ -272,6 +278,10 @@ export class JMAPAddressbook extends Addressbook {
         if (this.deletions.has(id)) {
           continue;
         }
+        if (json.kind == "group") {
+          this.parseGroup(json);
+          continue;
+        }
         let person = checkUpdates && this.getPersonByJMAPID(id);
         if (person) {
           person.fromJMAP(json);
@@ -286,6 +296,23 @@ export class JMAPAddressbook extends Addressbook {
       }
     }
     return { newPersons, updatedPersons };
+  }
+
+  protected parseGroup(json: TJMAPContact) {
+    let group = this.getGroupByJMAPID(json.id);
+    if (!group) {
+      group = this.newGroup();
+      this.groups.add(group);
+    }
+    group.fromJMAP(json);
+  }
+
+  /** After the persons, because they are the members */
+  protected async saveGroups() {
+    for (let group of this.groups) {
+      group.findMembers();
+      await group.saveLocally();
+    }
   }
 
   protected async savePersons(persons: Collection<JMAPPerson>) {
