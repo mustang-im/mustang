@@ -41,7 +41,7 @@
         disabled={!isShareable && $t`This calendar cannot be shared`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
-      <SearchPeopleBox onChoose={contact => ContactActions.show(contact)} />
+      <SearchPeopleBox on:select={event => ContactActions.show(event.detail)} />
       <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo="Ctrl+Shift+B" size="small"
         onClick={() => openApp(contactsMustangApp, {})} />
     </RibbonGroup>

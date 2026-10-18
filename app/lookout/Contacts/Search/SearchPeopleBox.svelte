@@ -23,9 +23,10 @@
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import PersonIcon from "lucide-svelte/icons/user-round";
   import GroupIcon from "lucide-svelte/icons/users-round";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let onChoose: (contact: Contact) => void;
+  const dispatch = createEventDispatcher<{ select: Contact }>();
 
   let value = "";
   let isListOpen = false;
@@ -52,6 +53,6 @@
     isListOpen = false;
     value = "";
     matches = [];
-    onChoose(contact);
+    dispatch("select", contact);
   }
 </script>

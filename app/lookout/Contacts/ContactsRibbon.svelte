@@ -72,7 +72,7 @@
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
-      <SearchPeopleBox onChoose={showContact} />
+      <SearchPeopleBox on:select={event => showContact(event.detail)} />
       <RibbonButton label={$t`Search Contacts`} icon={SearchIcon} size="small"
         onClick={focusSearch} shortCutInfo="Ctrl+E" />
     </RibbonGroup>
