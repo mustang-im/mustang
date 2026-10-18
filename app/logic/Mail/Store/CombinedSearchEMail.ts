@@ -3,6 +3,9 @@ import { QuickSearchEMail } from "./QuickSearchEMail";
 // #if [!WEBMAIL]
 import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 // #endif
+// #if [!WEBMAIL && !MOBILE]
+import { RAGSearchEMail } from "../SQL/RAGSearchEMail";
+// #endif
 import type { EMail } from "../EMail";
 import type { MailAccount } from "../MailAccount";
 import { appGlobal } from "../../app";
@@ -20,10 +23,16 @@ export class CombinedSearchEMail extends SearchEMail {
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
     let searches = new ArrayColl<SearchEMail>();
     let dbSearch: SearchEMail = null;
+    let ragSearch: SearchEMail = null;
     // #if [!WEBMAIL]
     dbSearch = new SQLSearchEMail();
     dbSearch.copyFrom(this);
     searches.add(dbSearch);
+    // #endif
+    // #if [!WEBMAIL && !MOBILE]
+    ragSearch = new RAGSearchEMail();
+    ragSearch.copyFrom(this);
+    searches.add(ragSearch);
     // #endif
 
     let emailAccounts = new ArrayColl(appGlobal.emailAccounts) as Collection<MailAccount>;
@@ -57,7 +66,7 @@ export class CombinedSearchEMail extends SearchEMail {
 
     this.finished = Promise.all(searches.contents.map(async search => {
       try {
-        let isDBSearch = search == dbSearch;
+        let isDBSearch = search == dbSearch || search == ragSearch;
         let found = await search.startSearch(isDBSearch ? limit : serverLimit);
         addUnique(isDBSearch ? found : resultFilter.filter(found, true), allResults, foundMap, limit);
       } catch (ex) {
