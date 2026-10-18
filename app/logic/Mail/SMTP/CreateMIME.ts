@@ -3,7 +3,7 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { Attachment , ContentDisposition } from "../../Abstract/Attachment";
 import { getICal } from "../../Calendar/ICal/ICalGenerator";
 import { appGlobal } from "../../app";
-import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
+import { getUserPreference } from "../../util/util";
 import { fixNewlines } from "../../util/convertHTML";
 import type { ArrayColl } from "svelte-collections";
 import type { default as Mail, Attachment as NMAttachment, Address as NMAddress } from "nodemailer/lib/mailer";
@@ -27,7 +27,7 @@ export class CreateMIME {
         raw: email.sendRawMIME,
       };
     }
-    let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    let doHTML = getUserPreference("mail.send.format", "html") == "html";
     let iCal = email.event ? await getICal(email.event, email.iCalMethod) : null;
     // <https://nodemailer.com/message/>
     return {

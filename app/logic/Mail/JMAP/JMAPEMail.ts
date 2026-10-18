@@ -7,10 +7,9 @@ import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import type { TJMAPEmailAddress, TJMAPEmailBodyPart, TJMAPEMailHeaders, TJMAPPerson } from "./TJMAPMail";
 import type { TJMAPGetResponse } from "./TJMAPGeneric";
-import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, NotReached } from "../../util/util";
+import { assert, NotReached, getUserPreference } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl, Collection } from "svelte-collections";
 
@@ -119,7 +118,7 @@ export class JMAPEMail extends EMail {
 
   static async getJMAPEmailObject(email: EMail, account: JMAPAccount): Promise<any> {
     assert(email.folder.id, "need folder");
-    let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    let doHTML = getUserPreference("mail.send.format", "html") == "html";
     let e = {
       subject: email.subject,
       messageId: [email.messageID],
