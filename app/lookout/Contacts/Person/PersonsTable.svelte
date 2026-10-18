@@ -37,7 +37,7 @@
       columns={gridColumns}>
       <svelte:fragment slot="row" let:item>
         {#if ContactGrouping.isHeader(item)}
-          <ContactGroupRow group={item} onToggle={toggleGroup} />
+          <ContactGroupRow group={item} on:toggle={() => toggleGroup(item)} />
         {:else}
           <PersonsTableRow contact={item} {columns} on:contextmenu={event => onContextMenu(event, item)} />
         {/if}

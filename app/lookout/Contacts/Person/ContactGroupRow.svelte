@@ -1,7 +1,7 @@
-<hbox class="group-row" on:dblclick={() => onToggle(group)}>
+<hbox class="group-row" on:dblclick={() => dispatch("toggle")}>
   <button class="expander" aria-expanded={!group.isCollapsed}
     title={group.isCollapsed ? $t`Expand this group` : $t`Collapse this group`}
-    on:click|stopPropagation={() => onToggle(group)}>
+    on:click|stopPropagation={() => dispatch("toggle")}>
     <ChevronIcon size="14" class="chevron {group.isCollapsed ? 'collapsed' : ''}" />
   </button>
   <span class="label">{group.label}</span>
@@ -11,10 +11,12 @@
 <script lang="ts">
   import type { ContactGroupHeader } from "./ContactGrouping";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let group: ContactGroupHeader;
-  export let onToggle: (group: ContactGroupHeader) => void;
+
+  const dispatch = createEventDispatcher<{ toggle: void }>();
 </script>
 
 <style>
