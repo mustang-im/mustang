@@ -35,14 +35,14 @@
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import { showError } from "../../../frontend/Util/error";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
-  import { tick } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
+  const dispatchEvent = createEventDispatcher<{ change: Date }>();
 
   export let time: Date;
   export let options: TimeOption[];
   export let label: string;
   export let disabled = false;
-  export let onChange: (time: Date) => void;
 
   let text = "";
   let isOpen = false;
@@ -56,7 +56,7 @@
     try {
       let newTime = TimeOptions.parseTime(text, time);
       if (newTime.getTime() != time.getTime()) {
-        onChange(newTime);
+        dispatchEvent("change", newTime);
       }
       text = TimeOptions.timeLabel(time);
       return true;
@@ -70,7 +70,7 @@
 
   function onSelect(option: TimeOption) {
     isOpen = false;
-    onChange(new Date(option.time));
+    dispatchEvent("change", new Date(option.time));
   }
 
   async function onToggle() {
@@ -106,7 +106,7 @@
       }
       let option = options[index];
       if (option) {
-        onChange(new Date(option.time));
+        dispatchEvent("change", new Date(option.time));
       }
     }
   }

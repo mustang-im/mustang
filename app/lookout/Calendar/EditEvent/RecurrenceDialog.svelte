@@ -5,10 +5,10 @@
       <grid class="appointment-time">
         <span class="label">{$t`Start:`}</span>
         <TimeInput time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
-          onChange={time => setStartTime(time)} />
+          on:change={ev => setStartTime(ev.detail)} />
         <span class="label">{$t`End:`}</span>
         <TimeInput time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
-          onChange={time => setEndTime(time)} />
+          on:change={ev => setEndTime(ev.detail)} />
         <span class="label">{$t`Duration:`}</span>
         <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
           on:change={ev => setDuration(ev.detail)} />

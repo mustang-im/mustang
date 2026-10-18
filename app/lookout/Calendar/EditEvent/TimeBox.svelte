@@ -15,7 +15,7 @@
       on:change={ev => editor.setStartDate(ev.detail)} />
     {#if !$event.allDay}
       <TimeInput time={$event.startTime} options={startOptions} label={$t`Start time`} disabled={readOnly}
-        onChange={time => editor.setStart(time)} />
+        on:change={ev => editor.setStart(ev.detail)} />
     {/if}
     {#if !readOnly}
       <Checkbox label={$t`All day`} checked={$event.allDay} on:change={ev => onAllDayChanged(ev.detail)} classes="all-day" />
@@ -32,7 +32,7 @@
       on:change={ev => editor.setEndDate(ev.detail)} />
     {#if !$event.allDay}
       <TimeInput time={$event.endTime} options={endOptions} label={$t`End time`} disabled={readOnly}
-        onChange={time => editor.setEnd(time)} />
+        on:change={ev => editor.setEnd(ev.detail)} />
     {/if}
     {#if showRecurrenceLink && !readOnly}
       <button class="link-button" on:click={onRecurrence}>

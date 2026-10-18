@@ -16,7 +16,7 @@
     <span class="row-label">{$t`Start time:`}</span>
     <DateField date={newTime} label={$t`Start date`} required on:change={event => setNewDay(event.detail)} />
     <TimeInput time={newTime} options={TimeOptions.startTimes(newTime)} label={$t`Start time`}
-      onChange={time => newTime = time} />
+      on:change={event => newTime = event.detail} />
     <DialogButton label={$t`Add Time`} icon={AddIcon}
       disabled={SMLTimeOptions.has(poll.options, newTime) ? $t`This time is already proposed` : false}
       onClick={addTime} />

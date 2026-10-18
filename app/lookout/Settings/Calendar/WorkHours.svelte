@@ -9,11 +9,11 @@
             on:change={event => onWorkDayChanged(weekday, event.detail)} />
           <TimeInput time={timeOf(day.startMinutes)} options={startTimes}
             label={$t`Start time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
-            onChange={time => onStartChanged(weekday, time)} />
+            on:change={event => onStartChanged(weekday, event.detail)} />
           <span class="until" class:disabled={readOnly || !day.isWorkDay}>{$t`to`}</span>
           <TimeInput time={timeOf(day.endMinutes)} options={endTimes}
             label={$t`End time on ${weekdayName(weekday)}`} disabled={readOnly || !day.isWorkDay}
-            onChange={time => onEndChanged(weekday, time)} />
+            on:change={event => onEndChanged(weekday, event.detail)} />
         {/each}
         <span class="first" class:disabled={readOnly}>{$t`Time zone:`}</span>
         <hbox class="wide">
