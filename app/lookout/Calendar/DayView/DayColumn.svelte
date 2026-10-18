@@ -15,7 +15,7 @@
     {#if hiddenAbove.length}
       <button class="hidden-badge" title={$t`${hiddenAbove.length} more items above`}
         on:pointerdown|stopPropagation on:dblclick|stopPropagation
-        on:click|stopPropagation={() => onScrollToMinute(Math.max(...hiddenAbove.map(item => item.startMinute)))}>
+        on:click|stopPropagation={() => dispatch("scrolltominute", Math.max(...hiddenAbove.map(item => item.startMinute)))}>
         +{hiddenAbove.length} <UpIcon size="12" />
       </button>
     {/if}
@@ -24,7 +24,7 @@
     {#if hiddenBelow.length}
       <button class="hidden-badge" title={$t`${hiddenBelow.length} more items below`}
         on:pointerdown|stopPropagation on:dblclick|stopPropagation
-        on:click|stopPropagation={() => onScrollToMinute(Math.min(...hiddenBelow.map(item => item.startMinute)))}>
+        on:click|stopPropagation={() => dispatch("scrolltominute", Math.min(...hiddenBelow.map(item => item.startMinute)))}>
         +{hiddenBelow.length} <DownIcon size="12" />
       </button>
     {/if}
@@ -78,9 +78,8 @@
   export let showsPastTimeLine = false;
   export let visibleFromMinute = 0;
   export let visibleToMinute = TimeColumnLayout.kMinutesPerDay;
-  export let onScrollToMinute: (minute: number) => void;
 
-  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
+  const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent }, scrolltominute: number }>();
 
   let columnEl: HTMLDivElement;
 

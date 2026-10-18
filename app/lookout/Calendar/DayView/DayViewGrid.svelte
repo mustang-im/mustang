@@ -47,7 +47,7 @@
           workingHours={$groupWorkingHours[g]} {pxPerMinute} {timeScale}
           isToday={day.toDateString() == $now.toDateString()}
           showsPastTimeLine={showsToday && day.getTime() < new Date($now).setHours(0, 0, 0, 0)}
-          visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} onScrollToMinute={scrollToMinute} on:slotmenu />
+          visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} on:scrolltominute={event => scrollToMinute(event.detail)} on:slotmenu />
       {/each}
     {/each}
   </div>
