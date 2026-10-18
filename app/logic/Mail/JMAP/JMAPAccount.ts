@@ -769,6 +769,9 @@ export class JMAPAccount extends MailAccount {
     let sharedAccounts = this.dependentAccounts().filterOnce(acc => acc instanceof JMAPAccount) as Collection<JMAPAccount>;
     for (let account of [this, ...sharedAccounts]) {
       for (let type of types) {
+        if (!this.isLoggedIn) {
+          return; // disconnect()
+        }
         if (!account.syncState.has(type)) {
           continue; // Not read yet, so nothing to update
         }
