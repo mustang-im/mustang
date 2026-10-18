@@ -38,7 +38,7 @@
     <vbox flex class="sections">
       <ContactHistory {activities} kind={shownPivot}
         emptyText={pivots.find(pivot => pivot.id == shownPivot)?.emptyText}
-        onShowMore={() => activities = activities.more()} />
+        on:showmore={() => activities = activities.more()} />
     </vbox>
   {:else}
   <vbox flex class="sections">
@@ -119,7 +119,7 @@
       <section>
         <h2>{$t`Recent messages`}</h2>
         <ContactHistory {activities} kind={ActivityKind.Messages} maxCount={3} emptyText=""
-          onShowAll={() => shownPivot = ActivityKind.Messages} />
+          on:showall={() => shownPivot = ActivityKind.Messages} />
       </section>
     {/if}
 
@@ -127,7 +127,7 @@
       <section>
         <h2>{$t`Recent files`}</h2>
         <ContactHistory {activities} kind={ActivityKind.Files} maxCount={3} emptyText=""
-          onShowAll={() => shownPivot = ActivityKind.Files} />
+          on:showall={() => shownPivot = ActivityKind.Files} />
       </section>
     {/if}
 
