@@ -211,6 +211,11 @@ export class JMAPAccount extends MailAccount {
     let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
     return serverMax ? Math.max(1, Math.min(serverMax - 1, 30)) : 5;
   }
+  /** @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxObjectsInSet` */
+  get maxObjectsInSet(): number {
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInSet, null);
+    return serverMax > 0 ? serverMax : 500;
+  }
   // <compat for="Cyrus">
   // Cyrus announces its core extension always, even when its non-standard extensions are off.
   get isCyrus(): boolean {

@@ -472,19 +472,23 @@ export class JMAPFolder extends Folder {
 
   protected async moveOrCopyMessagesOnServer(action: "move" | "copy", messages: Collection<JMAPEMail>) {
     let targetFolderID = this.id;
-    let updates: Record<string, Record<string, boolean>> = {};
-    for (let msg of messages) {
-      let id = msg.jmapID;
-      let sourceFolderID = msg.folder.id;
-      updates[id] = {
-        [`mailboxIds/${targetFolderID}`]: true,
-        [`mailboxIds/${sourceFolderID}`]: action == "copy" ? true : null,
-      };
+    let batchSize = this.account.maxObjectsInSet;
+    let allMessages = messages.contents;
+    for (let i = 0; i < allMessages.length; i += batchSize) {
+      let updates: Record<string, Record<string, boolean>> = {};
+      for (let msg of allMessages.slice(i, i + batchSize)) {
+        let id = msg.jmapID;
+        let sourceFolderID = msg.folder.id;
+        updates[id] = {
+          [`mailboxIds/${targetFolderID}`]: true,
+          [`mailboxIds/${sourceFolderID}`]: action == "copy" ? true : null,
+        };
+      }
+      await this.account.makeSingleCall("Email/set", {
+        accountId: this.account.accountID,
+        update: updates,
+      });
     }
-    await this.account.makeSingleCall("Email/set", {
-      accountId: this.account.accountID,
-      update: updates,
-    });
 
     this.countTotal += messages.length;
     let sourceFolder = messages.first.folder;
