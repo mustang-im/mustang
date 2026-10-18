@@ -14,11 +14,9 @@
     noResultsText={$t`No person found`}
     bind:text={typedText}
     create={() => catchErrors(() => canCreate(typedText))}
-    createText={!canCreate(typedText)
-      ? $t`Enter a person from your address book, or an email address`
-      : isEMailAddressTyped
-      ? $t`Check the name (Press ENTER)`
-      : $t`Add this person (Press ENTER)`}
+    createText={sanitize.emailAddress(typedText, "")
+      ? $t`Add this person (Press ENTER)`
+      : $t`Enter a person from your address book, or an email address`}
     onCreate={(text) => catchErrors(() => onCreate(text))}
     {placeholder}
     {autofocus}
@@ -285,6 +283,9 @@
 }
 .new-person :global(input.autocomplete-input) {
   min-width: 100%;
+}
+.new-person :global(.autocomplete-list:not(:has(.autocomplete-list-item))) {
+  display: none;
 }
 .name-line {
   align-items: center;
