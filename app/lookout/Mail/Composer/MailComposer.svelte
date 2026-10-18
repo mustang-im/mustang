@@ -54,7 +54,7 @@
           </button>
           <hbox class="field">
             <MailAutocomplete addresses={mail.to} label={$t`To`} chips={isChips} tabindex={1}
-              autofocus={autofocus && mail.to.isEmpty} onAdd={onRecipientAdded} bind:this={toField} />
+              autofocus={autofocus && mail.to.isEmpty} on:add={event => onRecipientAdded(event.detail)} bind:this={toField} />
           </hbox>
           <button class="field-button" on:click={() => $openSelectNames = { mail, field: RecipientField.Cc }} tabindex={-1}
             title={$t`Select recipients from the address book`}>
@@ -62,7 +62,7 @@
           </button>
           <hbox class="field">
             <MailAutocomplete addresses={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
-              onAdd={onRecipientAdded} bind:this={ccField} />
+              on:add={event => onRecipientAdded(event.detail)} bind:this={ccField} />
           </hbox>
           {#if showBCC}
             <button class="field-button" on:click={() => $openSelectNames = { mail, field: RecipientField.Bcc }} tabindex={-1}
@@ -71,7 +71,7 @@
             </button>
             <hbox class="field">
               <MailAutocomplete addresses={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
-                onAdd={onRecipientAdded} bind:this={bccField} />
+                on:add={event => onRecipientAdded(event.detail)} bind:this={bccField} />
             </hbox>
           {/if}
           <label class="subject-label" for="composer-subject">{$t`Subject`}</label>

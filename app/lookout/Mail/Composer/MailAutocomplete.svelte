@@ -37,7 +37,7 @@
   {/if}
 </hbox>
 {#if isListOpen}
-  <AutocompleteList {suggestions} bind:highlighted anchor={fieldEl} id={listID} onChoose={choose} />
+  <AutocompleteList {suggestions} bind:highlighted anchor={fieldEl} id={listID} on:select={event => choose(event.detail)} />
 {/if}
 <ContextMenu bind:this={contextMenu}>
   <MenuItem label={$t`Copy`} icon={CopyIcon} onClick={() => onCopy(menuRecipient)} />
@@ -67,6 +67,7 @@
   import { t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
   import { openPersonFromOtherApp } from "../../../frontend/Contacts/open";
+  import { createEventDispatcher } from "svelte";
 
   export let addresses: ArrayColl<PersonUID>;
   export let label: string;
@@ -77,6 +78,7 @@
   export let onAdd: (recipient: PersonUID) => void = null;
   export let placeholder: string = null;
 
+  const dispatch = createEventDispatcher<{ add: PersonUID }>();
   const listID = "address-suggestions-" + Math.random().toString(36).slice(2);
   let fieldEl: HTMLElement;
   let inputEl: HTMLInputElement;
@@ -130,6 +132,7 @@
     }
     addresses.add(recipient);
     onAdd?.(recipient);
+    dispatch("add", recipient);
   }
 
   function remove(recipient: PersonUID) {

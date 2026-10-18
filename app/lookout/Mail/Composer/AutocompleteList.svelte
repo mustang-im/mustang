@@ -8,7 +8,7 @@
       class:highlighted={index == highlighted}
       on:mousedown|preventDefault
       on:mousemove={() => highlighted = index}
-      on:click={() => onChoose(suggestion)}>
+      on:click={() => dispatch("select", suggestion)}>
       <PersonCircle name={suggestion.name || suggestion.emailAddress}
         picture={suggestion.person?.picture} colorKey={suggestion.emailAddress} size={32} />
       <vbox class="text">
@@ -23,13 +23,14 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import { t } from "../../../l10n/l10n";
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
 
   export let suggestions: PersonUID[];
   export let highlighted = 0;
   export let anchor: HTMLElement;
   export let id: string;
-  export let onChoose: (recipient: PersonUID) => void;
+
+  const dispatch = createEventDispatcher<{ select: PersonUID }>();
 
   let top = 0;
   let left = 0;
