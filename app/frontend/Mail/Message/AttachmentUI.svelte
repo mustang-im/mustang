@@ -34,6 +34,9 @@
   import FileIcon from "../../Files/Thumbnail/FileIcon.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let attachment: Attachment;
 
@@ -43,7 +46,7 @@
   async function onOpen() {
     if (canOpenFileInternally(attachment.mimeType)) {
       await attachment.load();
-      await openFileInternallyFromFile(attachment.content);
+      await openFileInternallyFromFile(attachment.content, appWindow);
     } else {
       if (!attachment.filepathLocal) {
         await attachment.load();

@@ -29,15 +29,14 @@
   <vbox class="splitter" />
 {/if}
 
-<svelte:window
-  on:pointermove={onMouseMove}
-  on:pointerup={onMouseUp}
-  />
 
 <script lang="ts">
   import { sanitize } from "../../../lib/util/sanitizeDatatypes";
   import { appGlobal } from "../../logic/app";
   import ErrorBoundary from "./ErrorBoundary.svelte";
+  import { AppWindow } from "../MainWindow/AppWindow";
+  import { onMount } from "svelte";
+  import { on } from "svelte/events";
 
   /** Copy of <Splitter> */
 
@@ -55,6 +54,16 @@
   export let hasBottom = true;
   /** If set, will save the ratio in localStorage as preference and restore it */
   export let name: string = null;
+
+  const appWindow = AppWindow.current();
+  onMount(() => {
+    let removeMove = on(appWindow.window, "pointermove", onMouseMove);
+    let removeUp = on(appWindow.window, "pointerup", onMouseUp);
+    return () => {
+      removeMove();
+      removeUp();
+    };
+  });
 
 	const barHeight = appGlobal.isMobile ? 6 : 2;
 	let bottomRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialBottomRatio;

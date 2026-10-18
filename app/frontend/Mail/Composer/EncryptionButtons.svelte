@@ -71,6 +71,9 @@
   import { assert, UserError } from "../../../logic/util/util";
   import { t, gt } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let mail: EMail;
   export let identity: MailIdentity;
@@ -131,7 +134,7 @@
   }
   function doSign() {
     if (signDisabledReason) {
-      openSettingsCategoryForAccount(identity.account, "mail-identity");
+      openSettingsCategoryForAccount(identity.account, appWindow, "mail-identity");
       return;
     }
     mail.signedByKeyID = getMyPrivateKey(identity)?.id;

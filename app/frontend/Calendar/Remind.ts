@@ -1,6 +1,7 @@
 import type { Event } from "../../logic/Calendar/Event";
 import { openEvent } from "./open";
-import { bringAppToFront } from "../AppsBar/selectedApp";
+import { getNavigation } from "../AppsBar/selectedApp";
+import { AppWindow } from "../MainWindow/AppWindow";
 import { appGlobal } from "../../logic/app";
 import { SystemNotification, NotificationKinds } from "../Shared/SystemNotification";
 import { getComputerOn } from "../../logic/util/backend-wrapper";
@@ -86,8 +87,8 @@ async function showReminder() {
 
 async function openEventInApp(event: Event) {
   try {
-    openEvent(event, false);
-    bringAppToFront();
+    openEvent(event, AppWindow.main, false);
+    getNavigation(AppWindow.main).bringAppToFront();
   } catch (ex) {
     minorError(ex);
   }

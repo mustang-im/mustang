@@ -55,6 +55,9 @@
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { onMount } from "svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount;
   export let startWith: OAuth2UIMethod | null = OAuth2UIMethod.Embed;
@@ -128,7 +131,7 @@
 
   async function showCopyURL(loginURL: URLString) {
     url = loginURL;
-    await navigator.clipboard.writeText(loginURL);
+    await appWindow.window.navigator.clipboard.writeText(loginURL);
     confirmCopied()
       .catch(console.error);
   }

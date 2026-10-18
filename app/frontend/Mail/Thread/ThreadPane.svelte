@@ -14,6 +14,9 @@
   import { catchErrors } from "../../Util/error";
   import { tick } from "svelte";
   import type { Collection } from "svelte-collections";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let message: EMail; /** in */
   /** The discussion runs to the right and replies are indented downwards (mobile),
@@ -64,7 +67,7 @@
   }
 
   function onSelect(node: Node) {
-    catchErrors(() => openEMailMessage((node as ThreadNode).message));
+    catchErrors(() => openEMailMessage((node as ThreadNode).message, appWindow));
   }
 </script>
 

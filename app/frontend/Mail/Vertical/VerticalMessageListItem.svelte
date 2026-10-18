@@ -2,7 +2,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <vbox class="message"
   class:unread={!$message.isRead}
-  draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  draggable="true" on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message, appWindow))}
   style="--account-color: {$message.folder.account.color};"
   on:contextmenu={contextMenu.onContextMenu}
   on:click
@@ -119,7 +119,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
-  import { selectedMessage, selectedMessages } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
   import MessageMenu from "../Message/MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
@@ -140,6 +140,10 @@
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedMessage, selectedMessages } = getMailSelection();
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 

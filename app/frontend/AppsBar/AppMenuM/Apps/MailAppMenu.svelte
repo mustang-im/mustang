@@ -28,11 +28,11 @@
   import { mailMustangApp } from "../../../Mail/MailMustangApp";
   import { Person } from "../../../../logic/Abstract/Person";
   import { newSearchEMail } from "../../../../logic/Mail/Store/setStorage";
-  import { selectedAccount, selectedFolder } from "../../../Mail/Selected";
-  import { selectedWorkspace } from "../../../MainWindow/Selected";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { getMailSelection } from "../../../Mail/Selected";
+  import { getWorkspaceSelection } from "../../../MainWindow/Selected";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
   import { allAccountsAccount } from "../../../../logic/Mail/AccountsList/ShowAccounts";
-  import { goTo } from "../../selectedApp";
+  import { getNavigation } from "../../selectedApp";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
   import BasicButton from "../BasicButton.svelte";
@@ -43,6 +43,11 @@
   import { URLPart } from "../../../../logic/util/blob";
   import { ArrayColl, mergeColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
+
+  const { selectedAccount, selectedFolder } = getMailSelection();
+  const { selectedWorkspace } = getWorkspaceSelection();
+  const { selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
 
   function goToAccount(account: MailAccount) {
     $selectedAccount = account;

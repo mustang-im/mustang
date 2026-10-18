@@ -42,7 +42,7 @@
   import { File } from "../../logic/Files/File";
   import { Directory } from "../../logic/Files/Directory";
   import { getLocalStorage } from "../Util/LocalStorage";
-  import { selectedFile, selectedFolder, selectedLeftTab, viewFile, fileViewer, isRightSidebarExpanded } from "./selected";
+  import { getFilesSelection } from "./selected";
   import LeftPane from "./LeftPane/LeftPane.svelte";
   import FilesList from "./FilesList/FilesList.svelte";
   import Gallery from "./Gallery/Gallery.svelte";
@@ -55,6 +55,8 @@
   import Splitter from "../Shared/Splitter.svelte";
   import type { Collection } from "svelte-collections";
   import { catchErrors } from "../Util/error";
+
+  const { selectedFile, selectedFolder, selectedLeftTab, viewFile, fileViewer, isRightSidebarExpanded } = getFilesSelection();
 
   /** The list of files to show on the right pane */
   let listFiles: Collection<File>;

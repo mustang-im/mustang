@@ -16,12 +16,14 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
   import { appGlobal } from "../../../logic/app";
-  import { selectedPerson } from "../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../Contacts/Person/Selected";
   import PersonsList from "../../Contacts/Person/PersonsList.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
   import { catchErrors } from "../../Util/error";
   import { ArrayColl, Collection, MapColl, SetColl } from 'svelte-collections';
   import { t } from "../../../l10n/l10n";
+
+  const { selectedPerson } = getContactsSelection();
 
   /** The list of files and folders to show on the right pane
    * in/out only */

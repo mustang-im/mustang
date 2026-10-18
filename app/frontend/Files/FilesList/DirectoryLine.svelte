@@ -36,13 +36,15 @@
 
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
-  import { selectedFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import { getDateTimeString } from "../../../logic/util/date";
   import FileOrDirLines from "./FileOrDirLines.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";
   import FolderOpenIcon from "lucide-svelte/icons/folder-open";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedFile } = getFilesSelection();
 
   export let dir: Directory;
   export let indent = 0;

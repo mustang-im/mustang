@@ -10,13 +10,15 @@
 
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "../Contacts/Person/PersonsList.svelte";
   import PersonsBarM from "./PersonsBarM.svelte";
   import { URLPart } from "../../logic/util/blob";
   import { catchErrors } from "../Util/error";
   import { assert, sleep } from "../../logic/util/util";
+
+  const { goTo } = getNavigation();
 
   /** in/out */
   export let selectedPerson: Person;

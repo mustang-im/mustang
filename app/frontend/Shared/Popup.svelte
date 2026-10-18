@@ -8,12 +8,13 @@
     <slot />
   </vbox>
 {/if}
-<svelte:window on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
 <script lang="ts">
+  import { AppWindow } from '../MainWindow/AppWindow';
   import { createPopperActions } from 'svelte-popperjs';
   import type { Placement } from '@popperjs/core';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { on } from 'svelte/events';
 
   /** in/out */
   export let popupOpen: boolean;
@@ -37,6 +38,16 @@
   export let boundaryElSel: string;
   export let autoClose: boolean = true;
 
+  const appWindow = AppWindow.current();
+  onMount(() => {
+    let removeClick = on(appWindow.window, "click", onClickOutside);
+    let removeWheel = on(appWindow.window, "mousewheel", onClickOutside);
+    return () => {
+      removeClick();
+      removeWheel();
+    };
+  });
+
   const [popupRef, popupContent, getInstance] = createPopperActions({
     placement: placement,
     strategy: 'fixed',
@@ -53,7 +64,7 @@
         name: 'preventOverflow',
         options: {
           padding: 8,
-          boundary: document.querySelector(boundaryElSel),
+          boundary: appWindow.window.document.querySelector(boundaryElSel),
         },
       },
       {

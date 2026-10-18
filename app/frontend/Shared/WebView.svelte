@@ -32,6 +32,9 @@
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { openExternalURL } from "../../logic/util/os-integration";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
   const dispatch = createEventDispatcher();
 
   /**
@@ -151,7 +154,7 @@
       if (event.type == "mouseDown") {
         webviewE.click();
       } else if (event.type == "rawKeyDown") {
-        onKeyOnMessage(newElectronKeyboardEvent(event))
+        onKeyOnMessage(newElectronKeyboardEvent(event), appWindow)
           .catch(showError);
       }
     });

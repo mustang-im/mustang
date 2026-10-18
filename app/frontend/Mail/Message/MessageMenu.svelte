@@ -96,6 +96,9 @@
   import { tick } from "svelte";
   import { t } from "../../../l10n/l10n";
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
   export let printE: Print | null = null;
@@ -104,15 +107,15 @@
 
   function reply() {
     let reply = message.compose.replyToAuthor();
-    mailMustangApp.writeMail(reply);
+    mailMustangApp.writeMail(reply, appWindow);
   }
   function replyAll() {
     let reply = message.compose.replyAll();
-    mailMustangApp.writeMail(reply);
+    mailMustangApp.writeMail(reply, appWindow);
   }
   function newToAll() {
     let mail = message.compose.newToAll();
-    mailMustangApp.writeMail(mail);
+    mailMustangApp.writeMail(mail, appWindow);
   }
   async function forward(event: MouseEvent) {
     let setting = getLocalStorage("mail.send.forward", "inline").value;
@@ -123,15 +126,15 @@
     } else {
       forward = await message.compose.forwardInline();
     }
-    mailMustangApp.writeMail(forward);
+    mailMustangApp.writeMail(forward, appWindow);
   }
   async function redirect() {
     let redirect = await message.compose.redirect();
-    mailMustangApp.writeMail(redirect);
+    mailMustangApp.writeMail(redirect, appWindow);
   }
   async function editAsNew() {
     let clone = await message.compose.editAsNew();
-    mailMustangApp.writeMail(clone);
+    mailMustangApp.writeMail(clone, appWindow);
   }
 
   async function deleteMessage() {

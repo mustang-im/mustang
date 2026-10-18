@@ -1,5 +1,5 @@
 <vbox flex class="message-list"
-  on:keydown={event => catchErrors(() => onKeyOnList(event))}
+  on:keydown={event => catchErrors(() => onKeyOnList(event, appWindow))}
   tabindex={0}
   >
   <FastList items={sortedMessages}
@@ -28,6 +28,9 @@
   import type { Collection, ArrayColl } from "svelte-collections";
   import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let messages: Collection<EMail>;
   export let selectedMessages: ArrayColl<EMail>;

@@ -35,11 +35,13 @@
 
 <script lang="ts">
   import type { Account } from "../../logic/Abstract/Account";
-  import { selectedWorkspace } from "../MainWindow/Selected";
+  import { getWorkspaceSelection } from "../MainWindow/Selected";
   import { t } from "../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { createEventDispatcher } from 'svelte';
   import Clickable from "./Clickable.svelte";
+
+  const { selectedWorkspace } = getWorkspaceSelection();
   const dispatch = createEventDispatcher<{ select: Account }>();
 
   export let selectedAccount: Account; /* in/out */

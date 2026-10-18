@@ -6,12 +6,16 @@ import { Addressbook } from "../../../logic/Contacts/Addressbook";
 import { ChatAccount } from "../../../logic/Chat/ChatAccount";
 import { ChatRoom } from "../../../logic/Chat/ChatRoom";
 import { ChatMessage } from "../../../logic/Chat/ChatMessage";
-import { selectedAccount, selectedRoom } from "../../../frontend/Chat/selected";
-import { selectedPerson } from "../../../frontend/Contacts/Person/Selected";
+import { getChatSelection } from "../../../frontend/Chat/selected";
+import { getContactsSelection } from "../../../frontend/Contacts/Person/Selected";
 import ChatAppD from "../../../frontend/Chat/ChatAppD.svelte";
 import { flushSync, mount, unmount } from "svelte";
 import { get } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test } from "vitest";
+import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+
+const { selectedAccount, selectedRoom } = getChatSelection(AppWindow.main);
+const { selectedPerson } = getContactsSelection(AppWindow.main);
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {

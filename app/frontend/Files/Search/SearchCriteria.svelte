@@ -77,7 +77,7 @@
   import { Directory } from "../../../logic/Files/Directory";
   import { SearchFile } from "../../../logic/Files/Store/SearchFile";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { selectedAccount, selectedFolder } from "../selected";
+  import { getFilesSelection } from "../selected";
   import { appGlobal } from "../../../logic/app";
   import SearchField from "../../Shared/SearchField.svelte";
   import GenericFileTypesList from "../../Files/GenericFileTypesList.svelte";
@@ -92,6 +92,8 @@
   import TagIcon from "lucide-svelte/icons/tag";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedAccount, selectedFolder } = getFilesSelection();
 
   /** The search criteria
    * in/out */

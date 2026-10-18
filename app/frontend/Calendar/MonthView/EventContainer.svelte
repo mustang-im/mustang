@@ -7,8 +7,10 @@
 
 <script lang="ts">
   import type { EventInWeekRow } from "./WeekRow";
-  import { selectedEvent } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import EventContent from "./EventContent.svelte";
+
+  const { selectedEvent } = getCalendarSelection();
 
   export let item: EventInWeekRow;
 

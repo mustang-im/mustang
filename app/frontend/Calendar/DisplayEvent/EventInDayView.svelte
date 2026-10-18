@@ -8,7 +8,7 @@
       <RoundButton
         label={$t`Open calendar`}
         icon={CalendarIcon}
-        onClick={() => openEvent(event, false)}
+        onClick={() => openEvent(event, appWindow, false)}
         border={false}
         />
     </hbox>
@@ -41,6 +41,9 @@
   import { getFormattedDateString } from "../../../logic/util/date";
   import { t } from "../../../l10n/l10n";
   import { ArrayColl } from "svelte-collections";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let event: Event;
   export let showHours = 4;

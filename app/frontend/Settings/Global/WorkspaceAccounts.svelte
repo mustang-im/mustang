@@ -38,7 +38,7 @@
   import { settingsCategories } from "../SettingsCategory";
   import { openSettingsCategory, openSettingsCategoryByID, openSettingsCategoryForAccount } from "../Window/CategoriesUtils";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
-  import { openApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { changedWorkspace } from "../../MainWindow/Selected";
   import WorkspaceAccountMenu from "./WorkspaceAccountMenu.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
@@ -47,6 +47,10 @@
   import { assert } from "../../../logic/util/util";
   import { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { openApp } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let title: string;
   export let workspace: Workspace;
@@ -59,7 +63,7 @@
   $: category = settingsCategories.find(cat => cat.id == accountSettingsID);
 
   function onOpenAccount(account: Account) {
-    openSettingsCategoryForAccount(account);
+    openSettingsCategoryForAccount(account, appWindow);
   }
 
   function onNewAccount() {
@@ -71,7 +75,7 @@
   }
 
   function onReOpenThis() {
-    openSettingsCategoryByID("global-workspaces");
+    openSettingsCategoryByID("global-workspaces", appWindow);
   }
 </script>
 

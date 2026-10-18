@@ -15,11 +15,13 @@
 
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
-  import { viewFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import RecentListItem from "./RecentListItem.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+
+  const { viewFile } = getFilesSelection();
 
   let selectedItem: File | null = null;
   $: if (selectedItem) { $viewFile = selectedItem; }

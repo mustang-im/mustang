@@ -87,6 +87,18 @@
       plain
       />
   </hbox>
+  {#if !$appGlobal.isMobile && appWindow.mainWindow == appWindow}
+    <hbox class="popout button">
+      <Button
+        icon={PopOutIcon}
+        iconSize="16px"
+        iconOnly
+        label={$t`Open in a separate window`}
+        onClick={onPopOut}
+        plain
+        />
+    </hbox>
+  {/if}
   <hbox class="menu button">
     <ButtonMenu bind:isMenuOpen>
       <MessageMenu {message} {printE} />
@@ -118,9 +130,14 @@
   import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import WriteIcon from "lucide-svelte/icons/pencil";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
+  import PopOutIcon from "lucide-svelte/icons/square-arrow-out-up-right";
+  import MessageWindow from "./MessageWindow.svelte";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 
@@ -133,13 +150,16 @@
   async function toggleStar() {
     await message.markStarred(!message.isStarred);
   }
+  function onPopOut() {
+    appWindow.open(MessageWindow, { message }, 1000, 800);
+  }
   function reply() {
     let reply = message.compose.replyToAuthor();
-    mailMustangApp.writeMail(reply);
+    mailMustangApp.writeMail(reply, appWindow);
   }
   function replyAll() {
     let reply = message.compose.replyAll();
-    mailMustangApp.writeMail(reply);
+    mailMustangApp.writeMail(reply, appWindow);
   }
   async function deleteMessage() {
     await message.deleteMessage();
@@ -149,7 +169,7 @@
   }
   async function editDraft() {
     await message.loadMIME();
-    mailMustangApp.writeMail(message);
+    mailMustangApp.writeMail(message, appWindow);
   }
 
   let isMenuOpen = false;
@@ -187,7 +207,7 @@
     margin-right: 32px;
   }
   @media (max-width: 600px)  {
-    .reply, .reply-all, .spam, .trash, .move, .menu {
+    .reply, .reply-all, .spam, .trash, .move, .popout, .menu {
       display: none;
     }
   }

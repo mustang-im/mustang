@@ -41,7 +41,7 @@
   import type { Account } from "../../../../logic/Abstract/Account";
   import type { Folder } from "../../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
-  import { selectedFolder } from "../../../Mail/Selected";
+  import { getMailSelection } from "../../../Mail/Selected";
   import FolderProperties from "../../../Mail/FolderProperties.svelte";
   import FolderList from "../../../Mail/LeftPane/FolderList.svelte";
   import CreateFolder from "./CreateFolder.svelte";
@@ -51,6 +51,8 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
+
+  const { selectedFolder } = getMailSelection();
 
   export let folder: Folder = $selectedFolder;
   export let account: Account = folder?.account;

@@ -60,7 +60,7 @@
 
 <script lang="ts">
   import { WebAppLoginType, type WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import { selectedWebApp, showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import { getWebAppsRunning } from "../Runner/WebAppsRunning";
   import { Account } from "../../../logic/Abstract/Account";
   import { appGlobal } from "../../../logic/app";
   import AddDialog from "./AddDialog.svelte";
@@ -70,6 +70,8 @@
   import TrashIcon from "lucide-svelte/icons/trash-2";
   import CircleIcon from "lucide-svelte/icons/circle";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedWebApp, showingWebApp, webAppsRunning } = getWebAppsRunning();
 
   export let app: WebAppListed;
   export let selectedApp: WebAppListed; /* in/out */

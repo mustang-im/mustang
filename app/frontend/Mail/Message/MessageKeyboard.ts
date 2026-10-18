@@ -1,11 +1,13 @@
 import { DeleteStrategy } from "../../../logic/Mail/MailAccount";
-import { selectedMessage, selectedMessages } from "../Selected";
+import { getMailSelection } from "../Selected";
+import type { AppWindow } from "../../MainWindow/AppWindow";
 import { openComposer } from "../open";
 import { get } from "svelte/store";
 
 // <https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values>
 
-export async function onKeyOnList(event: KeyboardEvent) {
+export async function onKeyOnList(event: KeyboardEvent, appWindow: AppWindow) {
+  let { selectedMessage, selectedMessages } = getMailSelection(appWindow);
   let selectedMessagesColl = get(selectedMessages);
   /** Important to use normal static array here. If were were to use `selectedMessages` Collection,
    * it would observe changes to selection even in the future and keep triggering
@@ -69,11 +71,11 @@ export async function onKeyOnList(event: KeyboardEvent) {
   if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey) {
     if (event.key == "r") { // Thunderbird
       event.stopPropagation();
-      openComposer(message.compose.replyToAuthor());
+      openComposer(message.compose.replyToAuthor(), appWindow);
       return;
     } else if (event.key == "l") { // Thunderbird
       event.stopPropagation();
-      openComposer(await message.compose.forward());
+      openComposer(await message.compose.forward(), appWindow);
       return;
     } else if (event.key == "u") { // Outlook
         event.stopPropagation();
@@ -91,11 +93,11 @@ export async function onKeyOnList(event: KeyboardEvent) {
       return;
     } else if (event.key == "n") { // Thunderbird
       event.stopPropagation();
-      openComposer(message.folder.account.newEMailFrom());
+      openComposer(message.folder.account.newEMailFrom(), appWindow);
       return;
     } else if (event.key == "e") { // Thunderbird
       event.stopPropagation();
-      openComposer(await message.compose.editAsNew());
+      openComposer(await message.compose.editAsNew(), appWindow);
       return;
     }
   }
@@ -103,15 +105,15 @@ export async function onKeyOnList(event: KeyboardEvent) {
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && !event.altKey) {
     if (event.key == "R") { // Thunderbird
       event.stopPropagation();
-      openComposer(message.compose.replyAll());
+      openComposer(message.compose.replyAll(), appWindow);
       return;
     } else if (event.key == "L") { // Thunderbird
       event.stopPropagation();
-      openComposer(await message.compose.forwardAsAttachment());
+      openComposer(await message.compose.forwardAsAttachment(), appWindow);
       return;
     } else if (event.key == "N") { // Mustang
       event.stopPropagation();
-      openComposer(message.compose.newToAll());
+      openComposer(message.compose.newToAll(), appWindow);
       return;
     }
   }
@@ -132,9 +134,10 @@ export async function onKeyOnList(event: KeyboardEvent) {
   }
 }
 
-export async function onKeyOnMessage(event: KeyboardEvent) {
-  await onKeyOnList(event);
+export async function onKeyOnMessage(event: KeyboardEvent, appWindow: AppWindow) {
+  await onKeyOnList(event, appWindow);
 
+  let { selectedMessage, selectedMessages } = getMailSelection(appWindow);
   let message = get(selectedMessage);
   if (!message) {
     return;

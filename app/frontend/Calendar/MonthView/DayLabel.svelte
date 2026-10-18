@@ -18,12 +18,14 @@
 </Clickable>
 
 <script lang="ts">
-  import { selectedDate } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import { getToday } from "../../../logic/util/date";
   import Clickable from "../../Shared/Clickable.svelte";
   import TodayIcon from "lucide-svelte/icons/home";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import { getLocalStorage } from "../../Util/LocalStorage";
+
+  const { selectedDate } = getCalendarSelection();
 
   export let day: Date
   export let column: number;

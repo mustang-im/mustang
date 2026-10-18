@@ -25,8 +25,8 @@
 {/if}
 
 <script lang="ts">
-  import { selectedPerson } from "../Contacts/Person/Selected";
-  import { viewFile } from "./selected";
+  import { getContactsSelection } from "../Contacts/Person/Selected";
+  import { getFilesSelection } from "./selected";
   import { appGlobal } from "../../logic/app";
   import FilesAppD from "./FilesAppD.svelte";
   import FileViewer from "./FileViewer.svelte";
@@ -36,6 +36,9 @@
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedPerson } = getContactsSelection();
+  const { viewFile } = getFilesSelection();
 
   $: location = useLocation();
   $: params = getParams($location?.state);

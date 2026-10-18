@@ -13,8 +13,8 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { newPerson, selectedPerson } from "../Person/Selected";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getContactsSelection } from "../Person/Selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -23,11 +23,16 @@
   import { getNext } from "../../../logic/util/collections";
   import { URLPart } from "../../../logic/util/blob";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { newPerson, selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let person: Person;
 
   async function copyContact() {
-    await navigator.clipboard.writeText(person.toPlaintext());
+    await appWindow.window.navigator.clipboard.writeText(person.toPlaintext());
   }
 
   async function deleteIt() {

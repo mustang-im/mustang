@@ -10,7 +10,9 @@
 
 <script lang="ts">
   import type { EventInTimeColumn } from "./DayColumn";
-  import { selectedEvent } from "../selected";
+  import { getCalendarSelection } from "../selected";
+
+  const { selectedEvent } = getCalendarSelection();
 
   export let item: EventInTimeColumn;
 

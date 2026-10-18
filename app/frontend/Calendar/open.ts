@@ -1,11 +1,14 @@
 import type { Event } from "../../logic/Calendar/Event";
-import { selectedDate, selectedEvent, startDate } from "../Calendar/selected";
-import { goTo, openApp } from "../AppsBar/selectedApp";
+import { getCalendarSelection } from "../Calendar/selected";
+import { getNavigation } from "../AppsBar/selectedApp";
 import { calendarMustangApp } from "../Calendar/CalendarMustangApp";
+import type { AppWindow } from "../MainWindow/AppWindow";
 import { appGlobal } from "../../logic/app";
 
 // TODO compare openUIFor()
-export function openEvent(event: Event, edit = true) {
+export function openEvent(event: Event, appWindow: AppWindow, edit = true) {
+  let { selectedDate, selectedEvent, startDate } = getCalendarSelection(appWindow.mainWindow);
+  let { goTo, openApp, bringAppToFront } = getNavigation(appWindow);
   selectedEvent.set(event);
   selectedDate.set(new Date(event.startTime));
   startDate.set(new Date(event.startTime));
@@ -14,8 +17,11 @@ export function openEvent(event: Event, edit = true) {
   } else {
     openApp(calendarMustangApp, { event });
     if (edit) {
-      calendarMustangApp.showEvent(event);
+      calendarMustangApp.showEvent(event, appWindow);
       event.startEditing();
     }
+  }
+  if (appWindow.mainWindow != appWindow) {
+    bringAppToFront();
   }
 }

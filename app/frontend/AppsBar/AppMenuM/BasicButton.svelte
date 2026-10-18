@@ -8,9 +8,11 @@
 </RoundButton>
 
 <script lang="ts">
-  import { goTo } from "../selectedApp";
+  import { getNavigation } from "../selectedApp";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import type { ConstructorOfATypedSvelteComponent } from "svelte";
+
+  const { goTo } = getNavigation();
 
   export let label: string = null;
   export let icon: ConstructorOfATypedSvelteComponent | string = null;

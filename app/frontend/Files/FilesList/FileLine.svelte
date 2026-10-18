@@ -1,4 +1,4 @@
-<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file)}>
+<Clickable onClick={onSelect} onDoubleClick={() => openFileInDefaultApp(file, appWindow)}>
   <hbox class="file line"
     class:selected={file == $selectedFile}>
     <hbox class="firstColumn">
@@ -27,10 +27,14 @@
 <script lang="ts">
   import { File } from "../../../logic/Files/File";
   import { openFileInDefaultApp, fileSize } from "../file";
-  import { selectedFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import { getDateTimeString } from "../../../logic/util/date";
   import Clickable from "../../Shared/Clickable.svelte";
   import FileIcon from "../Thumbnail/FileIcon.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedFile } = getFilesSelection();
+  const appWindow = AppWindow.current();
 
   export let file: File;
   export let indent = 0;

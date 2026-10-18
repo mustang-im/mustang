@@ -54,6 +54,9 @@
   import Clickable from "../../Shared/Clickable.svelte";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let recipient: PersonUID;
 
@@ -64,7 +67,7 @@
   function onOpen(event: Event) {
     let person = recipient.findPerson(); // based on email address
     if (person) {
-      openPersonFromOtherApp(person);
+      openPersonFromOtherApp(person, appWindow);
       return;
     }
     if (recipient.isProxyAddress) {
@@ -94,7 +97,7 @@
     if (recipient.name) {
       text = recipient.name + " <" + recipient.emailAddress + ">";
     }
-    await navigator.clipboard.writeText(text);
+    await appWindow.window.navigator.clipboard.writeText(text);
   }
 </script>
 

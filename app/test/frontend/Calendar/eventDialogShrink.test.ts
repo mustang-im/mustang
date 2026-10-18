@@ -4,12 +4,16 @@ import { appGlobal } from "../../../logic/app";
 import { Calendar } from "../../../logic/Calendar/Calendar";
 import type { Event } from "../../../logic/Calendar/Event";
 import { CalendarEventMustangApp, calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
-import { selectedEvent } from "../../../frontend/Calendar/selected";
-import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
+import { getCalendarSelection } from "../../../frontend/Calendar/selected";
+import { getNavigation } from "../../../frontend/AppsBar/selectedApp";
 import ShowEvent from "../../../frontend/Calendar/DisplayEvent/ShowEvent.svelte";
 import { flushSync, mount, unmount } from "svelte";
 import { get } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test } from "vitest";
+import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+
+const { selectedEvent } = getCalendarSelection(AppWindow.main);
+const { selectedApp } = getNavigation(AppWindow.main);
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {
@@ -39,7 +43,7 @@ function newTestEvent(): Event {
 /** Opens the event in the full window, as `openEvent()` does for a new event */
 function openInFullWindow(event: Event) {
   selectedEvent.set(event);
-  calendarMustangApp.showEvent(event);
+  calendarMustangApp.showEvent(event, AppWindow.main);
   selectedApp.set(calendarMustangApp.subApps.first as CalendarEventMustangApp);
   event.startEditing();
 }

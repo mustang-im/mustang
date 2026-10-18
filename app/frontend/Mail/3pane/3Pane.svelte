@@ -29,7 +29,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { selectedSearchTab } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import TableMessageList from "./TableMessageList.svelte";
   import LeftPane from "../LeftPane/LeftPane.svelte";
   import FolderFooter from "../LeftPane/FolderFooter.svelte";
@@ -44,6 +44,8 @@
   import Splitter from "../../Shared/Splitter.svelte";
   import SplitterBidirectional from "../../Shared/SplitterBidirectional.svelte";
   import type { ArrayColl, Collection } from 'svelte-collections';
+
+  const { selectedSearchTab } = getMailSelection();
 
   export let horizontal: boolean = true;
   export let accounts: Collection<MailAccount>; /** in */

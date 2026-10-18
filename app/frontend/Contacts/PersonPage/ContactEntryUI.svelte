@@ -70,7 +70,7 @@
 <script lang="ts">
   import type { Collection } from "svelte-collections";
   import { ContactEntry } from "../../../logic/Abstract/Person";
-  import { selectedContactEntry } from "../Person/Selected";
+  import { getContactsSelection } from "../Person/Selected";
   import { appGlobal } from "../../../logic/app";
   import Button from "../../Shared/Button.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
@@ -81,6 +81,10 @@
   import { sleep } from "../../../logic/util/util";
   import { createEventDispatcher, tick } from 'svelte';
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedContactEntry } = getContactsSelection();
+  const appWindow = AppWindow.current();
   const dispatch = createEventDispatcher();
 
   export let entry: ContactEntry;
@@ -117,7 +121,7 @@
   }
 
   async function copyValue() {
-    await navigator.clipboard.writeText(entry.value);
+    await appWindow.window.navigator.clipboard.writeText(entry.value);
     copied = true;
     await sleep(2);
     copied = false;

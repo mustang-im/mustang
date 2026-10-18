@@ -43,6 +43,9 @@
   import { assert } from "../../logic/util/util";
   import { ArrayColl } from "svelte-collections";
   import { gt, t } from "../../l10n/l10n";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
    /** in/out */
   export let selectedAddressbook: Addressbook;
@@ -78,7 +81,7 @@
 
   async function onDelete() {
     assert(selectedPersons.hasItems, "Need contacts");
-    if (!confirm(gt`WARNING:\nAre you sure that you want to delete ${selectedPersons.length} contacts?`)) {
+    if (!appWindow.window.confirm(gt`WARNING:\nAre you sure that you want to delete ${selectedPersons.length} contacts?`)) {
       return;
     }
     let promises = new ArrayColl<Promise<void>>();

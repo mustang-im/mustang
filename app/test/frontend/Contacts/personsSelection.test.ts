@@ -3,12 +3,17 @@
 import { appGlobal } from "../../../logic/app";
 import { ContactEntry, Person } from "../../../logic/Abstract/Person";
 import { Addressbook } from "../../../logic/Contacts/Addressbook";
-import { newPerson, selectedPerson } from "../../../frontend/Contacts/Person/Selected";
-import { selectedWorkspace } from "../../../frontend/MainWindow/Selected";
-import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
+import { getContactsSelection } from "../../../frontend/Contacts/Person/Selected";
+import { getWorkspaceSelection } from "../../../frontend/MainWindow/Selected";
+import { getNavigation } from "../../../frontend/AppsBar/selectedApp";
 import ContactsAppD from "../../../frontend/Contacts/ContactsAppD.svelte";
 import { flushSync, mount, unmount } from "svelte";
 import { afterEach, beforeAll, beforeEach, expect, test } from "vitest";
+import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+
+const { newPerson, selectedPerson } = getContactsSelection(AppWindow.main);
+const { selectedWorkspace } = getWorkspaceSelection(AppWindow.main);
+const { globalSearchTerm } = getNavigation(AppWindow.main);
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {

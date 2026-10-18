@@ -13,7 +13,11 @@
   import type { EventInDayRow } from "../MonthView/WeekRow";
   import Clickable from "../../Shared/Clickable.svelte";
   import { openEvent } from "../open";
-  import { selectedEvent } from "../selected";
+  import { getCalendarSelection } from "../selected";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedEvent } = getCalendarSelection();
+  const appWindow = AppWindow.current();
 
   export let item: EventInDayRow;
 
@@ -25,7 +29,7 @@
   }
 
   function onOpen() {
-    openEvent(event, true);
+    openEvent(event, appWindow, true);
   }
 </script>
 

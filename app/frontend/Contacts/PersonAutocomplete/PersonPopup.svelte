@@ -93,6 +93,9 @@
   import { minorError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
   const dispatch = createEventDispatcher<{ close: void }>();
 
   export let personUID: PersonUID;
@@ -147,7 +150,7 @@
   }
   function onEditPerson() {
     onClose();
-    openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook));
+    openPersonFromOtherApp(personUID.createPerson(appGlobal.personalAddressbook), appWindow);
   }
   function useOtherEmailAddress(emailAddress: string) {
     personUID.emailAddress = emailAddress;

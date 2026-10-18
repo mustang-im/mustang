@@ -11,10 +11,12 @@
 </hbox>
 
 <script lang="ts">
-  import { isCalendarListOpen } from "./selected";
+  import { getCalendarSelection } from "./selected";
   import RoundButton from "../Shared/RoundButton.svelte";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../l10n/l10n";
+
+  const { isCalendarListOpen } = getCalendarSelection();
 </script>
 
 <style>

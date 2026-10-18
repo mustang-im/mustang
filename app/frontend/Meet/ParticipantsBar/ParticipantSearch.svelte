@@ -43,6 +43,9 @@
   import { catchErrors } from "../../Util/error";
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { ArrayColl } from "svelte-collections";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let meeting: VideoConfMeeting;
   export let selected: MeetingParticipant;
@@ -79,7 +82,7 @@
   async function copyInvitationLink() {
     assert(meeting.account.canCreateURL, gt`I cannot invite using a link to this kind of meeting`);
     let invitationURL = await meeting.createInvitationURL();
-    await navigator.clipboard.writeText(invitationURL);
+    await appWindow.window.navigator.clipboard.writeText(invitationURL);
   }
 
   $: $participants, removeJoinedParticipant()

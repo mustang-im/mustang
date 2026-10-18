@@ -22,10 +22,14 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { selectedEvent } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import { openEvent } from "../open";
   import { getDurationString } from "../../../logic/util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedEvent } = getCalendarSelection();
+  const appWindow = AppWindow.current();
 
   export let event: Event;
 
@@ -40,7 +44,7 @@
   }
 
   function onOpen() {
-    openEvent(event);
+    openEvent(event, appWindow);
   }
 </script>
 

@@ -64,7 +64,7 @@
 <script lang="ts">
   import type { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { insertImage } from "../Shared/Editor/InsertImage";
-  import { selectedDraft, selectedEditor } from "./selected";
+  import { getChatSelection } from "./selected";
   import HTMLEditorToolbar from "../Shared/Editor/HTMLEditorToolbar.svelte";
   import HTMLEditor from "../Shared/Editor/HTMLEditor.svelte";
   import FileDropTarget from "../Mail/Composer/Attachments/FileDropTarget.svelte";
@@ -80,6 +80,11 @@
   import { catchErrors } from "../Util/error";
   import { assert } from "../../logic/util/util";
   import type { Editor } from '@tiptap/core';
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { selectedDraft, selectedEditor } = getChatSelection();
+
+  const appWindow = AppWindow.current();
 
   export let to: ChatRoom;
 
@@ -133,7 +138,7 @@
 
   function onEmojiBackspace() {
     editor.view.focus();
-    document.execCommand("delete");
+    appWindow.window.document.execCommand("delete");
   }
 </script>
 

@@ -22,7 +22,7 @@
 <script lang="ts">
   import { filesMustangApp } from "../../../Files/FilesMustangApp";
   import { myHarddrive } from "../../../../logic/Files/Harddrive/HarddriveAccount";
-  import { selectedPerson } from "../../../Contacts/Person/Selected";
+  import { getContactsSelection } from "../../../Contacts/Person/Selected";
   import AccountButton from "../AccountButton.svelte";
   import AppButton from "../AppButton.svelte";
   import CombinedButton from "../CombinedButton.svelte";
@@ -32,4 +32,6 @@
   import PlusIcon from "lucide-svelte/icons/plus";
   import AccountIcon from "lucide-svelte/icons/folder-open";
   import { URLPart } from "../../../../logic/util/blob";
+
+  const { selectedPerson } = getContactsSelection();
 </script>

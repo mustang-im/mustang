@@ -45,8 +45,8 @@
 </hbox>
 
 <script lang="ts">
-  import { selectedPerson } from "../Contacts/Person/Selected";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { getContactsSelection } from "../Contacts/Person/Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
@@ -56,6 +56,9 @@
   import PlusIcon from "lucide-svelte/icons/plus";
   import { URLPart } from "../../logic/util/blob";
   import { t } from "../../l10n/l10n";
+
+  const { selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
 
   let isMenuOpen = false;
 

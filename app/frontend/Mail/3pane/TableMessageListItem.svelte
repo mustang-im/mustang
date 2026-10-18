@@ -35,14 +35,14 @@
 <hbox class="correspondent"
   class:unread={!$message.isRead}
   draggable="true"
-  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message, appWindow))}
   on:contextmenu={contextMenu.onContextMenu}
   >{contactName}</hbox>
 <hbox class="subject-tags" on:contextmenu={contextMenu.onContextMenu}>
   <hbox class="subject"
     class:unread={!$message.isRead}
     draggable="true"
-    on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+    on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message, appWindow))}
     >{$message.subject}</hbox>
   <hbox flex />
   <hbox class="tags" class:tagged={$tags.hasItems}>
@@ -66,7 +66,7 @@
 <hbox class="date"
   class:unread={!$message.isRead}
   draggable="true"
-  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message))}
+  on:dragstart={(event) => catchErrors(() => onDragStartMail(event, message, appWindow))}
   on:contextmenu={contextMenu.onContextMenu}
   >{getDateTimeString($message.sent)}</hbox>
 <hbox class="buttons hover" on:contextmenu={contextMenu.onContextMenu}>
@@ -120,7 +120,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { onDragStartMail } from "../Message/drag";
-  import { selectedMessages } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import MessageMenu from "../Message/MessageMenu.svelte";
   import MessageMovePopup from "../Message/MessageMovePopup.svelte";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
@@ -143,6 +143,10 @@
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedMessages } = getMailSelection();
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 

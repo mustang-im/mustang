@@ -17,6 +17,9 @@
   import { assert } from "../../../logic/util/util";
   import type { ArrayColl } from "svelte-collections";
   import { createEventDispatcher, onMount } from 'svelte';
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
   const dispatchEvent = createEventDispatcher();
 
   /** in */
@@ -53,6 +56,6 @@
   });
 
   async function exchangeConfirmCallback(emailAddress: string, redirectDomain: string): Promise<boolean> {
-    return confirm($t`A configuration for your account ${emailAddress} may be available at:\n\n${redirectDomain}\n\nDo you want to submit your password there?`);
+    return appWindow.window.confirm($t`A configuration for your account ${emailAddress} may be available at:\n\n${redirectDomain}\n\nDo you want to submit your password there?`);
   }
 </script>

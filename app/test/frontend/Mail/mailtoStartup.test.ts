@@ -6,11 +6,14 @@ import { Folder, SpecialFolder } from "../../../logic/Mail/Folder";
 import { DummyMailStorage } from "../../../logic/Mail/Store/DummyMailStorage";
 import { Observable, notifyChangedProperty } from "../../../logic/util/Observable";
 import { sleep } from "../../../logic/util/util";
-import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
+import { getMailSelection } from "../../../frontend/Mail/Selected";
 import { mailMustangApp, type WriteMailMustangApp } from "../../../frontend/Mail/MailMustangApp";
 import MailInBackground from "../../../frontend/Mail/MailInBackground.svelte";
 import { flushSync, mount, unmount } from "svelte";
 import { afterEach, expect, test } from "vitest";
+import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+
+const { selectedAccount, selectedFolder } = getMailSelection(AppWindow.main);
 
 /** Same as `StartupArgs` in desktop/backend/backend.ts */
 class TestStartupArgs extends Observable {

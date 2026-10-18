@@ -21,7 +21,7 @@
 {/if}
 
 <script lang="ts">
-  import { selectedPerson } from "./Person/Selected";
+  import { getContactsSelection } from "./Person/Selected";
   import { appGlobal } from "../../logic/app";
   import ContactsAppD from "./ContactsAppD.svelte";
   import PersonsM from "./PersonsM.svelte";
@@ -30,6 +30,8 @@
   import { getParams } from "../AppsBar/selectedApp";
   import { requiredParam } from "../Util/route";
   import { Route, useLocation } from "svelte-navigator";
+
+  const { selectedPerson } = getContactsSelection();
 
   $: location = useLocation();
   $: params = getParams($location?.state);

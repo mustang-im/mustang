@@ -26,13 +26,15 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import { showingWebApp, selectedWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import { getWebAppsRunning } from "../Runner/WebAppsRunning";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import Button from "../../Shared/Button.svelte";
   import DotIcon from "lucide-svelte/icons/dot";
   import CloseIcon from "lucide-svelte/icons/square-x";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import { t } from "../../../l10n/l10n";
+
+  const { showingWebApp, selectedWebApp, webAppsRunning } = getWebAppsRunning();
 
   export let app: WebAppListed;
   export let disabled = false;

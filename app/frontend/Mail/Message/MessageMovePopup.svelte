@@ -83,7 +83,7 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { selectedMessage } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import { availableTags, type Tag } from "../../../logic/Abstract/Tag";
   import { appGlobal } from "../../../logic/app";
   import TagSelector from "../../Shared/Tag/TagSelector.svelte";
@@ -102,6 +102,8 @@
   import { ArrayColl, Collection, SetColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from 'svelte';
+
+  const { selectedMessage } = getMailSelection();
   const dispatch = createEventDispatcher<{ close: void }>();
 
   /** Attention

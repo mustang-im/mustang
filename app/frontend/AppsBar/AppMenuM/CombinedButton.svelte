@@ -12,10 +12,12 @@
 </BasicButton>
 
 <script lang="ts">
-  import { goTo } from "../selectedApp";
+  import { getNavigation } from "../selectedApp";
   import Stack from "../../Shared/Stack.svelte";
   import AppIcon from "../AppIcon.svelte";
   import BasicButton from "./BasicButton.svelte";
+
+  const { goTo } = getNavigation();
 
   export let icon1: ConstructorOfATypedSvelteComponent | string;
   export let icon2: ConstructorOfATypedSvelteComponent | string;

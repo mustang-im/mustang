@@ -7,8 +7,10 @@
 </vbox>
 
 <script lang="ts">
-  import { webAppsRunning, showingWebApp } from "./WebAppsRunning";
+  import { getWebAppsRunning } from "./WebAppsRunning";
   import WebAppRunner from "./WebAppRunner.svelte";
+
+  const { webAppsRunning, showingWebApp } = getWebAppsRunning();
 </script>
 
 <style>

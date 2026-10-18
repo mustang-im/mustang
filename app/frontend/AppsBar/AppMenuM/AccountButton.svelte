@@ -11,10 +11,12 @@
 
 <script lang="ts">
   import { Account } from "../../../logic/Abstract/Account";
-  import { goTo, type PageParams } from "../selectedApp";
+  import { getNavigation, type PageParams } from "../selectedApp";
   import BasicButton from "./BasicButton.svelte";
   import AccountIcon from "lucide-svelte/icons/rabbit";
   import type { ConstructorOfATypedSvelteComponent } from 'svelte';
+
+  const { goTo } = getNavigation();
 
   export let account: Account;
   export let defaultIcon: ConstructorOfATypedSvelteComponent = AccountIcon;

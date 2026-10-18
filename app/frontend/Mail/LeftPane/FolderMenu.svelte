@@ -41,7 +41,7 @@
 
 <script lang="ts">
   import { type Folder, SpecialFolder } from "../../../logic/Mail/Folder";
-  import { selectedFolder } from "../Selected";
+  import { getMailSelection } from "../Selected";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
@@ -52,6 +52,8 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import FolderSettingsIcon from "lucide-svelte/icons/folder-cog";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedFolder } = getMailSelection();
 
   export let folder: Folder;
 

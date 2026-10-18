@@ -11,12 +11,16 @@
 
 <script lang="ts">
   import type { ChatAccount } from "../../../logic/Chat/ChatAccount";
-  import { selectedApp } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { openSettingsCategoryForApp } from "../../Settings/Window/CategoriesUtils";
   import { chatMustangApp } from "../../Chat/ChatMustangApp";
   import { SetupMustangApp } from "../SetupMustangApp";
   import SelectProtocol from "./SelectProtocol.svelte";
   import BackgroundVideo from "../Shared/BackgroundVideo.svelte";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedApp } = getNavigation();
+  const appWindow = AppWindow.current();
 
   let config: ChatAccount;
   let showPage: ConstructorOfATypedSvelteComponent | null = SelectProtocol;
@@ -33,7 +37,7 @@
     if ($selectedApp instanceof SetupMustangApp && typeof($selectedApp.onBack) == "function") {
       $selectedApp.onBack();
     } else {
-      openSettingsCategoryForApp(chatMustangApp);
+      openSettingsCategoryForApp(chatMustangApp, appWindow);
     }
   }
 </script>

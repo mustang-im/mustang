@@ -78,6 +78,9 @@
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import { gt, t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let message: Message;
 
@@ -105,7 +108,7 @@
 
   let hasCopied = false;
   async function onCopy() {
-    await navigator.clipboard.writeText(message.text);
+    await appWindow.window.navigator.clipboard.writeText(message.text);
     hasCopied = true;
     await sleep(1);
     hasCopied = false

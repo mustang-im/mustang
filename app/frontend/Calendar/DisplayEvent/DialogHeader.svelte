@@ -98,8 +98,8 @@
 <script lang="ts">
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
   import { CalendarEventMustangApp, calendarMustangApp } from "../CalendarMustangApp";
-  import { selectedEvent } from "../selected";
-  import { openApp, selectedApp, goBack } from "../../AppsBar/selectedApp";
+  import { getCalendarSelection } from "../selected";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import Stack from "../../Shared/Stack.svelte";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
@@ -112,6 +112,11 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedEvent } = getCalendarSelection();
+  const { openApp, selectedApp, goBack } = getNavigation();
+  const appWindow = AppWindow.current();
 
   export let event: Event;
 
@@ -119,7 +124,7 @@
   let isDeleteSeriesOpen = false;
 
   function onEdit() {
-    calendarMustangApp.showEvent(event); // open full screen
+    calendarMustangApp.showEvent(event, appWindow); // open full screen
     event.startEditing();
   }
 
@@ -135,7 +140,7 @@
   }
 
   async function onDeleteAll() {
-    if (!confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
+    if (!appWindow.window.confirm($t`Are you sure you want to remove this unfortunate series of events?`)) {
       return;
     }
     let master = event.parentEvent;
@@ -169,7 +174,7 @@
   }
 
   function onExpandToWindow() {
-    calendarMustangApp.showEvent(event);
+    calendarMustangApp.showEvent(event, appWindow);
   }
 
   function onShrink() {

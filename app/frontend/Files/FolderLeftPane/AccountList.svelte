@@ -16,11 +16,13 @@
 <script lang="ts">
   import type { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
   import { Directory } from "../../../logic/Files/Directory";
-  import { selectedFile } from "../selected";
+  import { getFilesSelection } from "../selected";
   import AccountListItem from "./AccountListItem.svelte";
   import FastList from "../../Shared/FastList.svelte";
   import type { Collection } from 'svelte-collections';
   import { t } from "../../../l10n/l10n";
+
+  const { selectedFile } = getFilesSelection();
 
   export let accounts: Collection<FileSharingAccount>;
   export let selectedAccount: FileSharingAccount; /* in/out */

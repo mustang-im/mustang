@@ -58,7 +58,7 @@
 
 <script lang="ts">
   import { Person } from "../../../logic/Abstract/Person";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import PersonMenu from "./PersonMenu.svelte";
   import AppBarM from "../../AppsBar/AppBarM.svelte";
@@ -70,6 +70,8 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import { URLPart } from "../../../logic/util/blob";
   import { t } from "../../../l10n/l10n";
+
+  const { goTo } = getNavigation();
 
   export let person: Person;
   /** in/out */

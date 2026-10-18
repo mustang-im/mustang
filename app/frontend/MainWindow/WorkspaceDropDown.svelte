@@ -24,9 +24,11 @@
 
 <script lang="ts">
   import { Workspace } from "../../logic/Abstract/Workspace";
-  import { selectedWorkspace } from "./Selected";
+  import { getWorkspaceSelection } from "./Selected";
   import { appGlobal } from "../../logic/app";
   import Clickable from "../Shared/Clickable.svelte";
+
+  const { selectedWorkspace } = getWorkspaceSelection();
 
   export let open: boolean;
 

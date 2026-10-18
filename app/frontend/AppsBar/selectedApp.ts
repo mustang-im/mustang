@@ -1,66 +1,76 @@
 import type { MustangApp } from "./MustangApp";
-import { createHashHistory } from "../Util/hashHistory";
+import { AppWindow } from "../MainWindow/AppWindow";
+import { createHashHistory, createMemoryHistory } from "../Util/hashHistory";
 import type AnyObject from "svelte-navigator/types/AnyObject";
-import { appGlobal } from "../../logic/app";
 import { minorError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { writable, get, type Writable } from "svelte/store";
 import type RawLocation from "svelte-navigator/types/RawLocation";
 
-export const selectedApp: Writable<MustangApp> = writable(null);
-export const sidebarApp: Writable<MustangApp> = writable(null);
 export const mustangApps = new ArrayColl<MustangApp>;
 
 export const showDemoToggle: Writable<boolean> = writable(true);
 
-/** Search bar in the window title, applies to all apps */
-export const globalSearchTerm: Writable<string> = writable(null);
-
-export const history = createHashHistory();
-
 export type PageParams = Record<string, any>;
-export function openApp(app: MustangApp, params: PageParams) {
-  selectedApp.set(app);
-  goTo(app.appURL, params);
+
+/** Which app and page shows in the window, separately for each main window */
+export function getNavigation(appWindow = AppWindow.current()) {
+  return appWindow.mainWindow.uiState(createNavigation);
 }
 
-export function goTo(pageURL: string, params: PageParams) {
-  let location = window.location.hash.slice(1);
-  let replace = pageURL == location;
-  console.log("Go to", pageURL, replace ? "replace" : "", "from", location, "with params", params);
-  history.navigate(pageURL, {
-    replace,
-    state: addParams(params),
-  });
-}
+function createNavigation(appWindow: AppWindow) {
+  const selectedApp: Writable<MustangApp> = writable(null);
+  const sidebarApp: Writable<MustangApp> = writable(null);
+  /** Search bar in the window title, applies to all apps */
+  const globalSearchTerm: Writable<string> = writable(null);
+  // Going back in the browser history of another window would unload it, because `AppWindow` filled it with `document.open()`
+  const history = appWindow == AppWindow.main ? createHashHistory() : createMemoryHistory();
 
-export function goBack() {
-  history.navigate(-1);
-}
-
-/** When `goTo()` is called, we need to update `selectedApp` accordingly */
-function syncSelectedApp(params: { location: RawLocation }) {
-  let url = params.location.pathname as string;
-  let matchingLength = 0;
-  let selectedAppURL = get(selectedApp)?.appURL;
-  if (selectedAppURL &&
-      url.startsWith(selectedAppURL)) {
-    matchingLength = selectedAppURL.length;
+  function openApp(app: MustangApp, params: PageParams) {
+    selectedApp.set(app);
+    goTo(app.appURL, params);
   }
-  for (let app of mustangApps) {
-    if (url.startsWith(app.appURL) &&
-        app.appURL.length > matchingLength) {
-      selectedApp.set(app);
-      return;
+
+  function goTo(pageURL: string, params: PageParams) {
+    let location = history.location.pathname;
+    let replace = pageURL == location;
+    console.log("Go to", pageURL, replace ? "replace" : "", "from", location, "with params", params);
+    history.navigate(pageURL, {
+      replace,
+      state: addParams(params),
+    });
+  }
+
+  function goBack() {
+    history.navigate(-1);
+  }
+
+  /** When `goTo()` is called, we need to update `selectedApp` accordingly */
+  function syncSelectedApp(params: { location: RawLocation }) {
+    let url = params.location.pathname as string;
+    let matchingLength = 0;
+    let selectedAppURL = get(selectedApp)?.appURL;
+    if (selectedAppURL &&
+        url.startsWith(selectedAppURL)) {
+      matchingLength = selectedAppURL.length;
+    }
+    for (let app of mustangApps) {
+      if (url.startsWith(app.appURL) &&
+          app.appURL.length > matchingLength) {
+        selectedApp.set(app);
+        return;
+      }
     }
   }
-}
-history.listen(syncSelectedApp);
+  history.listen(syncSelectedApp);
 
-export function bringAppToFront() {
-  window.focus();
-  appGlobal.remoteApp.unminimizeMainWindow()
-    .catch(minorError);
+  function bringAppToFront() {
+    appWindow.focus();
+    appWindow.restore()
+      .catch(minorError);
+  }
+
+  return { selectedApp, sidebarApp, globalSearchTerm, history, openApp, goTo, goBack, bringAppToFront };
 }
 
 

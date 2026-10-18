@@ -4,7 +4,7 @@ import { appGlobal } from "../../../../logic/app";
 import { Calendar } from "../../../../logic/Calendar/Calendar";
 import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
-import { selectedEvent } from "../../../../frontend/Calendar/selected";
+import { getCalendarSelection } from "../../../../frontend/Calendar/selected";
 import { notifications } from "../../../../logic/util/Notification";
 import { getWeekStart } from "../../../../logic/util/date";
 import AvailabilityGrid from "../../../../frontend/Calendar/EditEvent/AvailabilityGrid.svelte";
@@ -12,6 +12,9 @@ import { ArrayColl } from "svelte-collections";
 import { flushSync, mount, unmount } from "svelte";
 import { get } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test } from "vitest";
+import { AppWindow } from "../../../../frontend/MainWindow/AppWindow";
+
+const { selectedEvent } = getCalendarSelection(AppWindow.main);
 
 beforeAll(() => {
   appGlobal.remoteApp = {} as any;

@@ -30,9 +30,12 @@
   import RoundButton from "../../Shared/RoundButton.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   function onRemove(tag: Tag) {
-    if (!confirm($t`Do you want to delete this tag entirely?`)) {
+    if (!appWindow.window.confirm($t`Do you want to delete this tag entirely?`)) {
       return;
     }
 

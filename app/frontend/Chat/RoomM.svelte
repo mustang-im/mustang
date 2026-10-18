@@ -25,7 +25,7 @@
   import { ChatRoom } from "../../logic/Chat/ChatRoom";
   import { ChatMessage } from "../../logic/Chat/ChatMessage";
   import { ChatRoomEvent } from "../../logic/Chat/RoomEvent";
-  import { globalSearchTerm } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import MessageList from "./MessageView/MessageList.svelte";
   import Message from "./MessageView/Message.svelte";
@@ -34,6 +34,8 @@
   import PersonHeader from "./PersonHeader.svelte";
   import RoomBarM from "./RoomBarM.svelte";
   import { catchErrors } from "../Util/error";
+
+  const { globalSearchTerm } = getNavigation();
 
   export let room: ChatRoom;
 

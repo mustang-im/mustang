@@ -28,8 +28,8 @@
 
 <script lang="ts">
   import { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedPerson } from "./Person/Selected";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { getContactsSelection } from "./Person/Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import AppBarM from "../AppsBar/AppBarM.svelte";
   import ButtonMenu from "../Shared/Menu/ButtonMenu.svelte";
   import Button from "../Shared/Button.svelte";
@@ -37,6 +37,9 @@
   import PlusIcon from "lucide-svelte/icons/plus";
   import { URLPart } from "../../logic/util/blob";
   import { t } from "../../l10n/l10n";
+
+  const { selectedPerson } = getContactsSelection();
+  const { goTo } = getNavigation();
 
   export let selectedAddressbook: Addressbook;
 

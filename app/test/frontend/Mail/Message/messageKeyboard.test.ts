@@ -7,13 +7,16 @@ import type { EMail } from "../../../../logic/Mail/EMail";
 import { DummyMailStorage } from "../../../../logic/Mail/Store/DummyMailStorage";
 import { findOrCreatePersonUID } from "../../../../logic/Abstract/PersonUID";
 import { sleep } from "../../../../logic/util/util";
-import { selectedMessage, selectedMessages } from "../../../../frontend/Mail/Selected";
+import { getMailSelection } from "../../../../frontend/Mail/Selected";
 import { onKeyOnMessage } from "../../../../frontend/Mail/Message/MessageKeyboard";
 import MessageListHarness from "./MessageListHarness.svelte";
 import { ArrayColl } from "svelte-collections";
 import { flushSync, mount } from "svelte";
 import { get, writable } from "svelte/store";
 import { beforeAll, expect, test } from "vitest";
+import { AppWindow } from "../../../../frontend/MainWindow/AppWindow";
+
+const { selectedMessage, selectedMessages } = getMailSelection(AppWindow.main);
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {
@@ -92,5 +95,5 @@ test("A cursor key with no message selected does nothing", async () => {
   // The <webview> of another app, e.g. Files, forwards its keys to `onKeyOnMessage()`
   selectedMessage.set(null);
   selectedMessages.set(new ArrayColl<EMail>());
-  await onKeyOnMessage(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+  await onKeyOnMessage(new KeyboardEvent("keydown", { key: "ArrowDown" }), AppWindow.main);
 });

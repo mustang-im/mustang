@@ -57,6 +57,9 @@
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import SettingsIcon from "lucide-svelte/icons/settings";
   import { t } from "../../../l10n/l10n";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let account: MailAccount;
 
@@ -65,7 +68,7 @@
   }
 
   async function openSettings() {
-    openSettingsCategoryForAccount(account);
+    openSettingsCategoryForAccount(account, appWindow);
   }
 
   let contextMenu: ContextMenu;

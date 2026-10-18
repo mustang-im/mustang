@@ -47,6 +47,9 @@
   import { ArrayColl } from "svelte-collections";
   import { showError } from "../Util/error";
   import { t } from "../../l10n/l10n";
+  import { AppWindow } from "./AppWindow";
+
+  const appWindow = AppWindow.current();
 
   export let notifications: ArrayColl<Notification>;
 
@@ -58,7 +61,7 @@
 
   function onErrorInfo(ex: Error) {
     let debugInfo = (ex as any).debugInfo;
-    alert(ex.message +
+    appWindow.window.alert(ex.message +
       (debugInfo ? "\n\n" + debugInfo : "") +
       (ex.stack ? "\n\n" + ex.stack : "")
     );

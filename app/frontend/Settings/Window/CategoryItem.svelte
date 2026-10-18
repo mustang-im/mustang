@@ -12,12 +12,16 @@
 
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
-  import { selectedCategory, selectedAccount } from "./selected";
+  import { getSettingsSelection } from "./selected";
   import { openSettingsCategory } from "./CategoriesUtils";
   import SubCategoriesList from "./SubCategoriesList.svelte";
   import AccountsList from "./AccountsList.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import { appGlobal } from "../../../logic/app";
+  import { AppWindow } from "../../MainWindow/AppWindow";
+
+  const { selectedCategory, selectedAccount } = getSettingsSelection();
+  const appWindow = AppWindow.current();
 
   /** in */
   export let category: SettingsCategory;
@@ -29,7 +33,7 @@
     if (appGlobal.isMobile && (category.subCategories.hasItems || category.accounts.hasItems)) {
       isSectionOpen = !isSectionOpen;
     } else {
-      openSettingsCategory(category);
+      openSettingsCategory(category, appWindow);
     }
   }
 </script>

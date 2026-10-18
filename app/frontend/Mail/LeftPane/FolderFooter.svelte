@@ -71,7 +71,7 @@
 <script lang="ts">
   import type { Folder } from '../../../logic/Mail/Folder';
   import type { EMail } from '../../../logic/Mail/EMail';
-  import { quickSearch } from '../Selected';
+  import { getMailSelection } from '../Selected';
   import { appGlobal } from '../../../logic/app';
   import FolderMsgCount from './FolderMsgCount.svelte';
   import SearchField from '../../Shared/SearchField.svelte';
@@ -85,6 +85,8 @@
   import { catchErrors, showError } from '../../Util/error';
   import type { ArrayColl } from 'svelte-collections';
   import { t } from '../../../l10n/l10n';
+
+  const { quickSearch } = getMailSelection();
 
   export let folder: Folder;
   export let searchMessages: ArrayColl<EMail> | null; /** out */

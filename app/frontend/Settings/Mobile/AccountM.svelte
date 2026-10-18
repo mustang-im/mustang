@@ -38,13 +38,15 @@
   import type { SettingsCategory } from "../SettingsCategory";
   import { Account } from "../../../logic/Abstract/Account";
   import { appGlobal } from "../../../logic/app";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { URLPart } from "../../../logic/util/blob";
   import AccountBarM from "./AccountBarM.svelte";
   import RowButton from "./RowButton.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
   import Icon from "../../Shared/Icon.svelte";
   import InboxIcon from "lucide-svelte/icons/inbox";
+
+  const { goTo } = getNavigation();
 
   export let account: Account;
   export let category: SettingsCategory;

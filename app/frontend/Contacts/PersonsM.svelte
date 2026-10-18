@@ -9,8 +9,8 @@
 <script lang="ts">
   import { Person } from "../../logic/Abstract/Person";
   import { Addressbook } from "../../logic/Contacts/Addressbook";
-  import { selectedPerson } from "./Person/Selected";
-  import { globalSearchTerm, goTo } from "../AppsBar/selectedApp";
+  import { getContactsSelection } from "./Person/Selected";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { appGlobal } from "../../logic/app";
   import PersonsList from "./Person/PersonsList.svelte";
   import PersonsToolbar from "./PersonsToolbar.svelte";
@@ -19,6 +19,9 @@
   import { catchErrors } from "../Util/error";
   import { assert, sleep } from "../../logic/util/util";
   import type { Collection } from "svelte-collections";
+
+  const { selectedPerson } = getContactsSelection();
+  const { globalSearchTerm, goTo } = getNavigation();
 
   export let doSearch = false;
 

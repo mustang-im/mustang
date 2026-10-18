@@ -22,7 +22,7 @@
 
 <script lang="ts">
   import type { SettingsCategory } from "../SettingsCategory";
-  import { goTo } from "../../AppsBar/selectedApp";
+  import { getNavigation } from "../../AppsBar/selectedApp";
   import { URLPart } from "../../../logic/util/blob";
   import { SetupMustangApp } from "../../Setup/SetupMustangApp";
   import AccountItem from "./AccountItem.svelte";
@@ -30,6 +30,8 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import { assert } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
+
+  const { goTo } = getNavigation();
 
   /** in */
   export let category: SettingsCategory;

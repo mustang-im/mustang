@@ -112,7 +112,7 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
-  import { newPerson } from "../Person/Selected";
+  import { getContactsSelection } from "../Person/Selected";
   import CallButtons from "./CallButtons.svelte";
   import EditableSimpleText from "./EditableSimpleText.svelte";
   import GroupBox from "./GroupBox.svelte";
@@ -127,6 +127,8 @@
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { showError } from "../../Util/error";
   import { getUILocale, t } from "../../../l10n/l10n";
+
+  const { newPerson } = getContactsSelection();
 
   export let person: Person;
   /** in/out */

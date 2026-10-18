@@ -41,13 +41,15 @@
 
 <script lang="ts">
   import type { WebAppListed } from "../../../logic/WebApps/WebAppListed";
-  import { selectedWebApp, showingWebApp, webAppsRunning } from "../Runner/WebAppsRunning";
+  import { getWebAppsRunning } from "../Runner/WebAppsRunning";
   import AppLaunchButton from "./LaunchBarButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import CloseIcon from "lucide-svelte/icons/square-x";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
+
+  const { selectedWebApp, showingWebApp, webAppsRunning } = getWebAppsRunning();
 
   export let apps: Collection<WebAppListed>;
   export let showStore = false; /* in/out */

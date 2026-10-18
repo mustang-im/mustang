@@ -33,11 +33,13 @@
   import WeekRow from "./WeekRow.svelte";
   import DateRange from "../DateRange.svelte";
   import NewEventMenu from "../NewEventMenu.svelte";
-  import { selectedCalendar } from "../selected";
+  import { getCalendarSelection } from "../selected";
   import { getWeekDays } from "../../../logic/util/date";
   import { catchErrors } from "../../Util/error";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+
+  const { selectedCalendar } = getCalendarSelection();
 
   export let start: Date;
   export let events: Collection<Event>;

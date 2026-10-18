@@ -41,8 +41,10 @@
   import AppMenuButton from "../AppsBar/AppMenuM/AppMenuButton.svelte";
   import PersonsIcon from "lucide-svelte/icons/users";
   import SearchIcon from "lucide-svelte/icons/search";
-  import { goTo } from "../AppsBar/selectedApp";
+  import { getNavigation } from "../AppsBar/selectedApp";
   import { t } from "../../l10n/l10n";
+
+  const { goTo } = getNavigation();
 
   let isMenuOpen = false;
 

@@ -6,9 +6,13 @@
 
 <script lang="ts">
   import { createNewEvent } from "./event";
-  import { shownCalendars } from "./selected";
+  import { getCalendarSelection } from "./selected";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import NewEventMenuItem from "./NewEventMenuItem.svelte";
+  import { AppWindow } from "../MainWindow/AppWindow";
+
+  const { shownCalendars } = getCalendarSelection();
+  const appWindow = AppWindow.current();
 
   let menu: ContextMenu;
   let startTime: Date;
@@ -20,7 +24,7 @@
     if ($shownCalendars.length > 1) {
       menu.onContextMenu(mouseEvent);
     } else {
-      createNewEvent($shownCalendars.first, startTime);
+      createNewEvent($shownCalendars.first, startTime, appWindow);
     }
   }
 </script>
