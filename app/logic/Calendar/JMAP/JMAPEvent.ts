@@ -110,10 +110,12 @@ export class JMAPEvent extends Event {
     if (!this.jmapID) { // never saved to the server
       return;
     }
-    await this.account.makeSingleCall("CalendarEvent/set", {
+    let response = await this.account.makeSingleCall("CalendarEvent/set", {
       accountId: this.account.accountID,
       destroy: [this.jmapID],
-    });
+    }) as TJMAPChangeResponse<TJMAPCalendarEvent>;
+    checkChangeError(response);
+    await super.deleteFromServer(); // server doesn't send
   }
 
   async makeExclusions(exclusions: JMAPEvent[]) {
