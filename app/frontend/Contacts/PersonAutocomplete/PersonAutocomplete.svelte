@@ -1,7 +1,7 @@
 <hbox flex class="person-autocomplete"
-  class:new-person={isEMailAddressTyped}
+  class:new-person={hasNameField}
   bind:this={topEl}
-  on:keydown={onKeyDown}>
+  on:keydown={event => catchErrors(() => onKeyDown(event))}>
   <Autocomplete
     onChange={person => catchErrors(() => addPerson(person))}
     searchFunction={search}
@@ -29,13 +29,14 @@
       </PersonAutocompleteResult>
     </svelte:fragment>
   </Autocomplete>
-  {#if isEMailAddressTyped}
+  {#if hasNameField}
     <hbox class="name-line">
       <input class="name" type="text"
         bind:value={name}
         bind:this={nameInputEl}
+        on:focus={onNameFocus}
         on:input={() => isNameEdited = true}
-        on:keydown={onNameKeyDown}
+        on:keydown={event => catchErrors(() => onNameKeyDown(event))}
         placeholder={$t`Full name`}
         {tabindex} />
       {#if !knownPerson}
@@ -63,6 +64,7 @@
 
 <script lang="ts">
   import { findPerson, nameFromEmailAddress, PersonUID } from "../../../logic/Abstract/PersonUID";
+  import type { Person } from "../../../logic/Abstract/Person";
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { searchContacts } from "../../../logic/Contacts/Search";
   import { appGlobal } from "../../../logic/app";
@@ -88,6 +90,7 @@
   export let autofocus = false;
   export let typedText: string = ""; /* in/out */
   export let onAddPerson: (person: PersonUID) => void | Promise<void>;
+  export let askForName = false;
 
   async function search(inputStr: string) {
     try {
@@ -121,18 +124,26 @@
       throw new UserError($t`Need email address`);
     }
 
-    text = text.trim();
-    if (isEMailAddressTyped) {
-      sanitize.emailAddress(text);
-      focusName();
+    if (hasNameField) {
+      sanitize.emailAddress(text.trim());
+      focusName()
+        .catch(showError);
       return undefined;
     }
 
     // Parse typed text into name and email address
-    let startBracket = text.indexOf("<");
-    let name = text.substring(0, startBracket - 1).trimEnd();
-    let endBracket = text.indexOf(">");
-    let emailAddress = text.substring(startBracket + 1, endBracket);
+    text = text.trim();
+    let name: string;
+    let emailAddress = text;
+    let hasName = text.includes("<") && text.includes(">");
+    if (hasName) {
+      let startBracket = text.indexOf("<");
+      name = text.substring(0, startBracket - 1).trimEnd();
+      let endBracket = text.indexOf(">");
+      emailAddress = text.substring(startBracket + 1, endBracket);
+    } else {
+      name = nameFromEmailAddress(emailAddress);
+    }
     sanitize.emailAddress(emailAddress);
 
     let personUID = new PersonUID(emailAddress, name);
@@ -144,15 +155,15 @@
   /** Clicking outside the field should add the person, same as pressing ENTER.
    * Capture phase, so that we run before the click reaches its target, e.g. the
    * [Send] button. */
-  function onClickOutside(event: MouseEvent) {
+  async function onClickOutside(event: MouseEvent) {
     if (!typedText || topEl.contains(event.target as Node)) {
       return; // clicks on a search result add the person themselves
     }
-    if (isEMailAddressTyped && canCreate(typedText)) {
-      addNewPerson();
+    let highlightedResult = topEl.querySelector(".autocomplete-list:not(.hidden) .autocomplete-list-item.selected");
+    if (hasNameField && !highlightedResult && canCreate(typedText)) {
+      await addNewPerson();
       return;
     }
-    let highlightedResult = topEl.querySelector(".autocomplete-list-item.selected");
     if (!highlightedResult && !canCreate(typedText)) {
       return; // nothing to add, e.g. a half-typed name
     }
@@ -171,53 +182,63 @@
 
   let name = "";
   let isNameEdited = false;
+  let knownPerson: Person = null;
   let nameInputEl: HTMLInputElement;
   let addressbook: Addressbook = appGlobal.collectedAddressbook;
-  $: isEMailAddressTyped = !!typedText?.includes("@") && !typedText.includes("<");
-  $: knownPerson = isEMailAddressTyped ? findPerson(typedText.trim()) : null;
-  $: if (!isEMailAddressTyped) {
-    isNameEdited = false;
-  }
-  $: if (isEMailAddressTyped && !isNameEdited) {
-    name = knownPerson?.name || nameFromEmailAddress(typedText.trim());
+  $: isEMailAddressTyped = typedText?.includes("@") && !typedText.includes("<");
+  $: hasNameField = askForName && isEMailAddressTyped;
+  $: if (!hasNameField) isNameEdited = false;
+  $: typedText, onTypedTextChanged();
+
+  function onTypedTextChanged() {
+    knownPerson = null;
+    if (hasNameField && !isNameEdited) {
+      name = nameFromEmailAddress(typedText.trim());
+    }
   }
 
-  function onKeyDown(event: KeyboardEvent) {
-    if (event.target != inputEl || event.key != "Tab" || event.shiftKey || !isEMailAddressTyped) {
+  function onNameFocus() {
+    knownPerson = findPerson(typedText.trim());
+    if (knownPerson?.name && !isNameEdited) {
+      name = knownPerson.name;
+    }
+  }
+
+  async function onKeyDown(event: KeyboardEvent) {
+    if (event.target != inputEl || event.key != "Tab" || event.shiftKey || !hasNameField) {
       return;
     }
     event.preventDefault();
-    focusName();
+    await focusName();
   }
 
-  function focusName() {
+  async function focusName() {
     nameInputEl.focus();
+    await tick(); // `onNameFocus()` may change the name
     nameInputEl.setSelectionRange(0, 0);
   }
 
-  function onNameKeyDown(event: KeyboardEvent) {
+  async function onNameKeyDown(event: KeyboardEvent) {
     if (!(event.key == "Enter" || event.key == "Tab" && !event.shiftKey)) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
-    catchErrors(onAddNewPerson);
+    await onAddNewPerson();
   }
 
-  function onAddNewPerson() {
-    addNewPerson();
-    focus();
+  async function onAddNewPerson() {
+    let adding = addNewPerson();
+    focus(); // without waiting for the save, which may go to a server
+    await adding;
   }
 
-  function addNewPerson() {
+  async function addNewPerson() {
     let emailAddress = sanitize.emailAddress(typedText.trim());
     let personUID = new PersonUID(emailAddress, name.trim() || nameFromEmailAddress(emailAddress));
-    if (!personUID.findPerson()) {
-      personUID.createPerson(addressbook).save()
-        .catch(showError);
-    }
-    addPerson(personUID)
-      .catch(showError);
+    let newPerson = personUID.findPerson() ? null : personUID.createPerson(addressbook);
+    await addPerson(personUID);
+    await newPerson?.save();
   }
 </script>
 
@@ -304,7 +325,7 @@
   background-color: var(--selected-bg);
   color: var(--selected-fg);
 }
-@media (max-width: 600px) {
+@container persons-autocomplete (max-width: 500px) {
   .person-autocomplete.new-person {
     flex: 1 0 0;
     flex-direction: column;

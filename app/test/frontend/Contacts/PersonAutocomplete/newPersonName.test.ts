@@ -63,17 +63,20 @@ async function savedPersons(addressbook: Addressbook): Promise<string> {
 let component: Record<string, any> | null = null;
 let added: PersonUID[];
 
-function mountAutocomplete() {
+function mountAutocomplete(askForName = true) {
+  component && unmount(component);
+  document.body.innerHTML = "";
   added = [];
   let target = document.createElement("div");
   document.body.append(target);
   component = mount(PersonAutocomplete, { target, props: {
     onAddPerson: (person: PersonUID) => { added.push(person); },
+    askForName,
   } });
   flushSync();
 }
 
-beforeEach(mountAutocomplete);
+beforeEach(() => mountAutocomplete());
 
 afterEach(() => {
   component && unmount(component);
@@ -121,9 +124,10 @@ test("No name field for a search by name", () => {
   expect(nameInput()).toBeNull();
 });
 
-test("TAB moves to the name, with the cursor at the start", () => {
+test("TAB moves to the name, with the cursor at the start", async () => {
   type(emailInput(), kEMailAddress);
   let event = pressKey(emailInput(), "Tab");
+  await settle();
 
   expect(event.defaultPrevented).toBe(true);
   expect(document.activeElement).toBe(nameInput());
@@ -229,23 +233,60 @@ test("Saves the contact in the address book that the user picked", async () => {
   expect(await savedPersons(appGlobal.collectedAddressbook)).toEqual("");
 });
 
-test("A known person: Shows the name from the address book, and leaves the contact alone", async () => {
+function addKnownPerson() {
   let person = appGlobal.personalAddressbook.newPerson();
   person.name = kRealName;
   person.emailAddresses.add(new ContactEntry(kEMailAddress, "work"));
   appGlobal.personalAddressbook.persons.add(person);
+  return person;
+}
+
+test("A known person: Shows the name from the address book in the name field, and leaves the contact alone", async () => {
+  let person = addKnownPerson();
 
   type(emailInput(), kEMailAddress);
-  expect(nameInput().value).toEqual(kRealName);
-  expect(document.body.querySelector(".name-line select")).toBeNull();
+  expect(nameInput().value).toEqual(kGuessedName); // no lookup on every key press
+  expect(document.body.querySelector(".name-line select")).not.toBeNull();
 
   pressKey(emailInput(), "Tab");
+  await settle();
+  expect(nameInput().value).toEqual(kRealName);
+  expect(nameInput().selectionStart).toEqual(0);
+  expect(document.body.querySelector(".name-line select")).toBeNull();
+
   pressKey(nameInput(), "Enter");
   await settle();
 
   expect(added[0].person).toBe(person);
   expect(added[0].name).toEqual(kRealName);
   expect(await savedPersons(appGlobal.personalAddressbook)).toEqual("");
+  expect(await savedPersons(appGlobal.collectedAddressbook)).toEqual("");
+});
+
+test("Clicking outside while a search result is shown adds that person", async () => {
+  let person = addKnownPerson();
+  type(emailInput(), kEMailAddress);
+  await settle(200); // `delay` of the autocomplete, then the search
+  expect(document.body.querySelector(".autocomplete-list-item.selected")).not.toBeNull();
+
+  document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  await settle();
+
+  expect(added).toHaveLength(1);
+  expect(added[0].person).toBe(person);
+  expect(added[0].name).toEqual(kRealName);
+});
+
+test("Without `askForName`, adds the typed email address right away, with the guessed name", async () => {
+  mountAutocomplete(false);
+  type(emailInput(), kEMailAddress);
+  expect(nameInput()).toBeNull();
+  await settle(200);
+  pressKey(emailInput(), "Enter", "keypress");
+  await settle();
+
+  expect(added).toHaveLength(1);
+  expect(added[0].name).toEqual(kGuessedName);
   expect(await savedPersons(appGlobal.collectedAddressbook)).toEqual("");
 });
 
