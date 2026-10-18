@@ -69,7 +69,7 @@
         <ChevronIcon size={14} />
       </button>
       <Menu bind:isMenuOpen={isCategoriesOpen} anchor={categoriesButton} placement="bottom-start">
-        <CategoryMenuItems selected={draft.tags} keepOpen onToggle={toggleTag} />
+        <CategoryMenuItems bind:selected={draft.tags} keepOpen />
       </Menu>
     </hbox>
     <span class="label">{$t`Read status`}</span>
@@ -103,7 +103,6 @@
   import type { Folder } from "../../../logic/Mail/Folder";
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Person } from "../../../logic/Abstract/Person";
-  import type { Tag } from "../../../logic/Abstract/Tag";
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "./MailSearch";
   import { AdvancedSearchDraft, ReadStatus } from "./AdvancedSearchDraft";
@@ -166,12 +165,6 @@
       draft.setFrom(person);
     }
     draft = draft;
-  }
-
-  function toggleTag(tag: Tag) {
-    draft.tags = draft.tags.includes(tag)
-      ? draft.tags.filter(existing => existing != tag)
-      : [...draft.tags, tag];
   }
 
   function onEnter(event: KeyboardEvent) {

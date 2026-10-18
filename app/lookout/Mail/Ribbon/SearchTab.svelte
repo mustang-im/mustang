@@ -9,13 +9,15 @@
       onChange={checked => { $searchOptions = { ...$searchOptions, hasAttachment: checked }; }} />
     <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
       disabled={!$tags.hasItems && $t`There are no categories yet`}>
-      <CategoryMenuItems selected={$searchOptions.tags} onToggle={toggleTag} />
+      <CategoryMenuItems selected={$searchOptions.tags}
+        on:select={event => $searchOptions = { ...$searchOptions, tags: [...$searchOptions.tags, event.detail] }}
+        on:unselect={event => $searchOptions = { ...$searchOptions, tags: $searchOptions.tags.filter(tag => tag != event.detail) }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$searchOptions.received == ReceivedRange.Any || $searchOptions.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($searchOptions.received)}
       icon={ReceivedIcon}
       tooltip={$t`Received`}>
       <ReceivedMenuItems selected={$searchOptions.received}
-        onSelect={received => $searchOptions = { ...$searchOptions, received, receivedStart: null, receivedEnd: null }} />
+        on:select={event => $searchOptions = { ...$searchOptions, received: event.detail, receivedStart: null, receivedEnd: null }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`Sent To`} icon={SentToIcon} size="small"
       tooltip={isSentTo ? $t`Sent To: ${$searchOptions.person.name}` : $t`Sent To`}>
@@ -34,10 +36,10 @@
       tooltip={$t`More refiners`}>
       <SubMenu label={$t`Received`}>
         <ReceivedMenuItems selected={$searchOptions.received}
-          onSelect={received => $searchOptions = { ...$searchOptions, received, receivedStart: null, receivedEnd: null }} />
+          on:select={event => $searchOptions = { ...$searchOptions, received: event.detail, receivedStart: null, receivedEnd: null }} />
       </SubMenu>
       <SubMenu label={$t`Size`}>
-        <SizeMenuItems selected={$searchOptions.size} onSelect={size => $searchOptions = { ...$searchOptions, size }} />
+        <SizeMenuItems selected={$searchOptions.size} on:select={event => $searchOptions = { ...$searchOptions, size: event.detail }} />
       </SubMenu>
       <SubMenu label={$t`Read`}>
         <MenuItem label={$t`Read`} checkable checked={$searchOptions.isRead === true}
@@ -99,7 +101,6 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import type { Tag } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "../Search/MailSearch";
   import { isAdvancedSearchOpen, searchOptions } from "../Selected";
   import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
@@ -159,15 +160,6 @@
     $searchOptions = person
       ? { ...$searchOptions, person, isOutgoing }
       : { ...$searchOptions, person: null, isOutgoing: null };
-  }
-
-  function toggleTag(tag: Tag) {
-    $searchOptions = {
-      ...$searchOptions,
-      tags: $searchOptions.tags.includes(tag)
-        ? $searchOptions.tags.filter(existing => existing != tag)
-        : [...$searchOptions.tags, tag],
-    };
   }
 
   $: saveDisabledReason = !search

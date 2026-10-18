@@ -4,12 +4,13 @@
   onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
 <SubMenu label={$t`This Week`} icon={ReceivedIcon}>
   <ReceivedMenuItems selected={$searchOptions.received}
-    onSelect={received => MailFilters.searchInFolder({ received, receivedStart: null, receivedEnd: null })} />
+    on:select={event => MailFilters.searchInFolder({ received: event.detail, receivedStart: null, receivedEnd: null })} />
 </SubMenu>
 <SubMenu label={$t`Categorized`} icon={CategorizeIcon}
   disabled={!$tags.hasItems && $t`There are no categories yet`}>
   <CategoryMenuItems selected={$searchOptions.tags}
-    onToggle={tag => MailFilters.searchInFolder({ tags: $searchOptions.tags.includes(tag) ? $searchOptions.tags.filter(existing => existing != tag) : [...$searchOptions.tags, tag] })} />
+    on:select={event => MailFilters.searchInFolder({ tags: [...$searchOptions.tags, event.detail] })}
+    on:unselect={event => MailFilters.searchInFolder({ tags: $searchOptions.tags.filter(tag => tag != event.detail) })} />
 </SubMenu>
 <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={isFlagged}
   onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
