@@ -137,7 +137,7 @@ export class JMAPAccount extends MailAccount {
         await this.startupDependentAccounts();
       }
       if (firstSync && !this.isDependentAccount) {
-        await this.addSharedAccounts(); // after `startupDependentAccounts()`: they start up on their own
+        await this.addAllSharedAccounts(); // after `startupDependentAccounts()`: they start up on their own
       }
     });
   }
@@ -833,7 +833,7 @@ export class JMAPAccount extends MailAccount {
     return sanitize.emailAddress(shared.name, null);
   }
 
-  async addSharedAccounts(): Promise<void> {
+  protected async addAllSharedAccounts(): Promise<void> {
     for (let person of await this.availableSharedAccounts()) {
       await this.addSharedFolders(person, "msgfolderroot");
     }

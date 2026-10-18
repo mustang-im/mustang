@@ -28,7 +28,10 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
     }
   }
 
+  await config.loginAndStartup(true);
   getFirstMessages(config)
+    .catch(backgroundError);
+  addDelegates(config)
     .catch(backgroundError);
 }
 
@@ -111,11 +114,11 @@ function replaceVar(str: string, emailAddress: string): string {
 }
 
 /**
+ * After the login:
  * 1. Gets Inbox and Sent messages
  * 2. Sets the realname of the user based on the From in messages in Sent
  * 3. Pre-populates the Collected Addresses. */
 export async function getFirstMessages(config: MailAccount) {
-  await config.loginAndStartup(true);
   let sent = config.getSpecialFolder(SpecialFolder.Sent);
   let inbox = config.getSpecialFolder(SpecialFolder.Inbox);
   if (sent) {
@@ -125,6 +128,21 @@ export async function getFirstMessages(config: MailAccount) {
   }
   if (sent != inbox) {
     await inbox.listMessages();
+  }
+}
+
+/** After the login, adds the colleagues' accounts from <delegatedAccount>,
+ * like Settings | Sharing does. */
+export async function addDelegates(config: MailAccount) {
+  if (!config.setup?.delegatedAccounts?.length) {
+    return;
+  }
+  for (let person of config.setup.delegatedAccounts) {
+    try {
+      await config.addDelegate(person);
+    } catch (ex) {
+      backgroundError(ex);
+    }
   }
 }
 

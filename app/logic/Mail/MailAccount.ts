@@ -17,7 +17,7 @@ import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import type { SearchEMail } from "./Store/SearchEMail";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, assert } from "../util/util";
+import { AbstractFunction, NotImplemented, UserError, assert } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { RunOnce } from "../util/flow/RunOnce";
 import { Collection, ArrayColl } from 'svelte-collections';
@@ -231,7 +231,7 @@ export class MailAccount extends TCPAccount {
 
   /** Which of the `distinguishedIDs` of `person`'s account we may access. */
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
-    return [];
+    throw new NotImplemented(gt`${this.protocol} does not implement delegated accounts`);
   }
 
   /** Adds the mails that `person` shared with us as an account of their own. */
@@ -245,6 +245,45 @@ export class MailAccount extends TCPAccount {
 
   async addSharedCalendar(person: PersonUID): Promise<Calendar> {
     throw new AbstractFunction();
+  }
+
+  /** Adds the mails, contacts and calendar that `person` shared with us,
+   * as far as we don't have them yet. */
+  async addDelegate(person: PersonUID): Promise<void> {
+    let shared = await this.findSharedFolders(person, kSharedFolderIDs);
+    if (!shared.length) {
+      throw new UserError(gt`You have no access to the account of ${person.emailAddress}`);
+    }
+    await this.addSharedByPerson(person, this.newShares(person, shared));
+  }
+
+  /** The colleague may share their calendar only after we added their mailbox,
+   * or the other way round, so add whatever is not set up here yet.
+   * `addSharedAddressbook()` and `addSharedCalendar()` re-use the account that
+   * we already have, but `addSharedFolders()` would create a second mail account.
+   * @param sharedFolderIDs from `findSharedFolders()` */
+  newShares(person: PersonUID, sharedFolderIDs: string[]): string[] {
+    let haveMailAccount = this.dependentAccounts().find(other =>
+      other.protocol == this.protocol && other instanceof MailAccount &&
+      other.isMyEMailAddress(person.emailAddress));
+    return haveMailAccount
+      ? sharedFolderIDs.filter(folder => folder != "msgfolderroot" && folder != "inbox")
+      : sharedFolderIDs;
+  }
+
+  /** @param sharedFolderIDs from `newShares()` */
+  async addSharedByPerson(person: PersonUID, sharedFolderIDs: string[]): Promise<void> {
+    if (sharedFolderIDs.includes("msgfolderroot")) {
+      await this.addSharedFolders(person, "msgfolderroot");
+    } else if (sharedFolderIDs.includes("inbox")) {
+      await this.addSharedFolders(person, "inbox");
+    }
+    if (sharedFolderIDs.includes("contacts")) {
+      await this.addSharedAddressbook(person);
+    }
+    if (sharedFolderIDs.includes("calendar")) {
+      await this.addSharedCalendar(person);
+    }
   }
 
   /** So that the user does not mistake another person's mails for ours */
@@ -354,6 +393,9 @@ function findSubFolderFromList(folders: Collection<Folder>, findFunc: (folder: F
   }
   return null;
 }
+
+/** What we look for in the account of a colleague. @see `findSharedFolders()` */
+export const kSharedFolderIDs = ["msgfolderroot", "inbox", "contacts", "calendar"];
 
 export type ConfigSource = "ispdb" | "autoconfig-isp" | "autodiscover-xml" | "autodiscover-json" | "guess" | "manual" | "harddisk" | "builtin" | null;
 
