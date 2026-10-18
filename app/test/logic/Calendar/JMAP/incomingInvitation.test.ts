@@ -12,6 +12,7 @@ import type { EMail } from "../../../../logic/Mail/EMail";
 import { SpecialFolder } from "../../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../../logic/Mail/MailAccount";
 import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+import { applyPatch } from "./applyPatch";
 import { afterEach, beforeAll, expect, test } from "vitest";
 
 const kMe = "user2@example.com";
@@ -310,7 +311,10 @@ test("Accepting an invitation that the JMAP server added keeps the server's part
 
   expect(calls.length).toEqual(1);
   expect(calls[0].method).toEqual("CalendarEvent/set");
-  let updated = calls[0].args.update.serverEventID as TJMAPCalendarEvent;
+  let patch = calls[0].args.update.serverEventID;
+  // Only my answer, so that answers of the others that arrived in the meantime stay
+  expect(Object.keys(patch).filter(path => path.startsWith("participants"))).toEqual(["participants/meID/participationStatus"]);
+  let updated = applyPatch(serverMeeting("needs-action"), patch);
   // The same participant entries as the server sent, not removed and added again
   expect(Object.keys(updated.participants)).toEqual(["otherID", "meID"]);
   expect(updated.participants.meID.calendarAddress).toEqual("mailto:" + kMe);
