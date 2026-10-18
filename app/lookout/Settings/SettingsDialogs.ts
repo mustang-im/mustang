@@ -9,7 +9,7 @@ import { openApp, selectedApp } from "../../frontend/AppsBar/selectedApp";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 import { get, writable } from "svelte/store";
 
-export type ImportExportAction = "export" | "import-vcard" | "import-ical" | "import-program";
+export type ImportExportAction = "import" | "import-vcard" | "import-ical" | "import-program" | "export";
 
 export type SettingsDialog =
   { kind: "options", categoryID?: string, account?: Account } |

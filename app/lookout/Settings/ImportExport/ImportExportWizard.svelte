@@ -1,14 +1,14 @@
-<Dialog title={$t`Import and Export Wizard`}
+<Dialog title={isExport ? $t`Export` : $t`Import`}
   width="680px"
   height="500px"
   on:close>
   <hbox flex class="wizard">
     <vbox class="wizard-art">
-      <ImportExportIcon size={56} strokeWidth={1} />
+      <svelte:component this={isExport ? ExportIcon : ImportIcon} size={56} strokeWidth={1} />
     </vbox>
     <vbox flex class="wizard-page">
       {#if step == "action"}
-        <label for="import-export-actions">{$t`Choose an action to perform:`}</label>
+        <label for="import-export-actions">{$t`Choose what to import:`}</label>
         <vbox class="choice-list" id="import-export-actions" role="listbox">
           {#each actions as actionEntry (actionEntry.id)}
             <button class="choice" class:selected={action == actionEntry.id}
@@ -24,6 +24,31 @@
           <legend>{$t`Description`}</legend>
           {actions.find(actionEntry => actionEntry.id == action)?.description}
         </fieldset>
+      {:else if step == "source"}
+        <label for="import-export-sources">{$t`Select what to export:`}</label>
+        <vbox class="choice-list sources" id="import-export-sources" role="listbox">
+          {#each sourceGroups as group (group.label)}
+            {#if group.sources.length}
+              <hbox class="group-header" role="presentation">{group.label}</hbox>
+              {#each group.sources as sourceEntry (sourceEntry.source)}
+                <button class="choice" class:selected={source == sourceEntry.source}
+                  role="option" aria-selected={source == sourceEntry.source}
+                  style:padding-inline-start="{8 + sourceEntry.depth * 16}px"
+                  on:click={() => source = sourceEntry.source}
+                  on:dblclick={() => { source = sourceEntry.source; catchErrors(next); }}>
+                  <svelte:component this={group.icon} size={16} />
+                  <span class="folder-name">{sourceEntry.source.name}</span>
+                  {#if sourceEntry.accountName}
+                    <span class="lo-secondary">{sourceEntry.accountName}</span>
+                  {/if}
+                </button>
+              {/each}
+            {/if}
+          {/each}
+          {#if !sourceGroups.some(group => group.sources.length)}
+            <hbox class="empty">{$t`You don't have a calendar or an address book yet.`}</hbox>
+          {/if}
+        </vbox>
       {:else if step == "file-type"}
         <label for="import-export-types">{$t`Create a file of type:`}</label>
         <vbox class="choice-list" id="import-export-types" role="listbox">
@@ -31,12 +56,13 @@
             <button class="choice" class:selected={fileType == fileTypeEntry.id}
               role="option" aria-selected={fileType == fileTypeEntry.id}
               on:click={() => fileType = fileTypeEntry.id}
-              on:dblclick={() => catchErrors(next)}>
+              on:dblclick={() => { fileType = fileTypeEntry.id; catchErrors(finish); }}>
               <svelte:component this={fileTypeEntry.icon} size={16} />
               {fileTypeEntry.label}
             </button>
           {/each}
         </vbox>
+        <hbox class="lo-secondary">{$t`Export ${source?.name}`}</hbox>
       {:else if step == "file"}
         <label for="import-export-file">{$t`File to import:`}</label>
         <hbox class="file-row">
@@ -47,9 +73,7 @@
         <FileSelector bind:this={fileSelector}
           acceptFileTypes={action == "import-vcard" ? [ "text/vcard", ".vcf" ] : [ "text/calendar", ".ics", ".vcs" ]} />
       {:else if step == "folder"}
-        <label for="import-export-folders">{action == "export"
-          ? $t`Select the folder to export from:`
-          : $t`Select the destination folder:`}</label>
+        <label for="import-export-folders">{$t`Select the destination folder:`}</label>
         <vbox class="choice-list folders" id="import-export-folders" role="listbox">
           {#each folders as folderEntry (folderEntry.id)}
             <button class="choice" class:selected={folder == folderEntry}
@@ -88,6 +112,7 @@
   import { SettingsDialogs } from "../SettingsDialogs";
   import { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { Calendar } from "../../../logic/Calendar/Calendar";
+  import type { Topic } from "../../../logic/Topic/Topic";
   import { convertVCardsToPersons, personsToVCardFile } from "../../../logic/Contacts/VCard/VCard";
   import { convertICalToEvents } from "../../../logic/Calendar/ICal/ICalToEvent";
   import { eventsToICalFile } from "../../../logic/Calendar/ICal/ICalGenerator";
@@ -98,38 +123,49 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
-  import ImportExportIcon from "lucide-svelte/icons/arrow-left-right";
   import ExportIcon from "lucide-svelte/icons/file-output";
   import ImportIcon from "lucide-svelte/icons/file-input";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import AddressbookIcon from "lucide-svelte/icons/book-user";
+  import TopicIcon from "lucide-svelte/icons/share-2";
+  import HTMLIcon from "lucide-svelte/icons/file-code";
+  import MarkdownIcon from "lucide-svelte/icons/file-text";
   import { createEventDispatcher } from "svelte";
   import { gt, t } from "../../../l10n/l10n";
 
   export let preselected: Calendar | Addressbook | null = null;
-  export let action: ImportExportAction | null = null;
+  export let action: ImportExportAction = "import";
 
   const dispatch = createEventDispatcher<{ close: void }>();
+  const calendars = appGlobal.calendars;
+  const addressbooks = appGlobal.addressbooks;
+  const topicAccounts = appGlobal.topicAccounts;
 
-  let fileType: "ical" | "vcard" = preselected instanceof Addressbook ? "vcard" : "ical";
+  const isExport = action == "export";
+  let source: Calendar | Addressbook | Topic | null = preselected;
+  let fileType: string | null = null;
   let file: File | null = null;
   let folder: Calendar | Addressbook | null = preselected;
   let fileSelector: FileSelector;
 
-  let step = action ? (action == "export" ? "file-type" : "file") : "action";
-  action ??= "export";
-  $: steps = action == "export" ? ["action", "file-type", "folder"] : ["action", "file", "folder"];
+  let step = isExport
+    ? (preselected ? "file-type" : "source")
+    : (action == "import" ? "action" : "file");
+  if (action == "import") {
+    action = "import-vcard";
+  }
+  const steps = isExport ? ["source", "file-type"] : ["action", "file", "folder"];
   $: stepIndex = steps.indexOf(step);
-  $: worksOnCalendars = action == "import-ical" || action == "export" && fileType == "ical";
-  $: folders = (worksOnCalendars ? appGlobal.calendars.contents : appGlobal.addressbooks.contents) as (Calendar | Addressbook)[];
+  $: worksOnCalendars = action == "import-ical";
+  $: folders = (worksOnCalendars ? $calendars.contents : $addressbooks.contents) as (Calendar | Addressbook)[];
   $: canGoNext =
+    step == "source" ? !!source :
+    step == "file-type" ? fileTypes.some(fileTypeEntry => fileTypeEntry.id == fileType) :
     step == "file" ? !!file :
     step == "folder" ? folders.includes(folder) :
     true;
 
   $: actions = [
-    { id: "export", icon: ExportIcon, label: $t`Export to a file`,
-      description: $t`Export a calendar to an iCalendar file or an address book to a vCard file, for use in other programs.` },
     { id: "import-vcard", icon: ImportIcon, label: $t`Import a VCARD file (.vcf)`,
       description: $t`Import the contacts of a vCard file into one of your address books.` },
     { id: "import-ical", icon: ImportIcon, label: $t`Import an iCalendar (.ics) or vCalendar file (.vcs)`,
@@ -137,13 +173,39 @@
     { id: "import-program", icon: ImportIcon, label: $t`Import from another program or file`,
       description: $t`Import e-mail accounts and address books from another program on this computer.` },
   ] as { id: ImportExportAction, icon: ConstructorOfATypedSvelteComponent, label: string, description: string }[];
-  $: fileTypes = [
-    { id: "ical", icon: CalendarIcon, label: $t`iCalendar (.ics)` },
-    { id: "vcard", icon: AddressbookIcon, label: $t`vCard (.vcf)` },
-  ] as { id: "ical" | "vcard", icon: ConstructorOfATypedSvelteComponent, label: string }[];
+
+  $: sourceGroups = [
+    { label: $t`Calendars`, icon: CalendarIcon,
+      sources: $calendars.contents.map(calendar => ({ source: calendar, depth: 0, accountName: calendar.mainAccount?.name })) },
+    { label: $t`Address books`, icon: AddressbookIcon,
+      sources: $addressbooks.contents.map(addressbook => ({ source: addressbook, depth: 0, accountName: addressbook.mainAccount?.name })) },
+    { label: $t`Topics`, icon: TopicIcon,
+      sources: $topicAccounts.contents.flatMap(topicAccount => topicTree(topicAccount.topics.contents.filter(topic => !topic.parent), 0)) },
+  ] as { label: string, icon: ConstructorOfATypedSvelteComponent, sources: { source: Calendar | Addressbook | Topic, depth: number, accountName?: string }[] }[];
+
+  $: fileTypes = (source instanceof Calendar
+    ? [ { id: "text/calendar", icon: CalendarIcon, label: $t`iCalendar (.ics)` } ]
+    : source instanceof Addressbook
+    ? [ { id: "text/vcard", icon: AddressbookIcon, label: $t`vCard (.vcf)` } ]
+    : source
+    ? [
+      { id: "text/html", icon: HTMLIcon, label: $t`Web page (.html)` },
+      { id: "text/markdown", icon: MarkdownIcon, label: $t`Markdown text (.md)` },
+    ]
+    : []) as { id: string, icon: ConstructorOfATypedSvelteComponent, label: string }[];
+  $: if (!fileTypes.some(fileTypeEntry => fileTypeEntry.id == fileType)) {
+    fileType = fileTypes[0]?.id ?? null;
+  }
+
+  function topicTree(topics: Topic[], depth: number): { source: Topic, depth: number, accountName?: string }[] {
+    return topics.flatMap(topic => [
+      { source: topic, depth, accountName: depth == 0 ? topic.account?.name : undefined },
+      ...topicTree(topic.children.contents, depth + 1),
+    ]);
+  }
 
   function next() {
-    if (action == "import-program") {
+    if (step == "action" && action == "import-program") {
       SettingsDialogs.openSetup("/setup/initial");
       return;
     }
@@ -155,27 +217,34 @@
   }
 
   async function finish() {
-    assert(folders.includes(folder), gt`Please choose a folder first`);
-    if (action == "export") {
-      await exportFolder(folder);
-    } else if (action == "import-vcard") {
-      await importVCard(folder as Addressbook, file);
+    if (isExport) {
+      assert(source && fileType, gt`Please choose what to export first`);
+      await exportToFile(source, fileType);
     } else {
-      await importICal(folder as Calendar, file);
+      assert(folders.includes(folder), gt`Please choose a folder first`);
+      if (action == "import-vcard") {
+        await importVCard(folder as Addressbook, file);
+      } else {
+        await importICal(folder as Calendar, file);
+      }
     }
     dispatch("close");
   }
 
-  async function exportFolder(folder: Calendar | Addressbook) {
-    if (folder instanceof Calendar) {
+  async function exportToFile(source: Calendar | Addressbook | Topic, mimeType: string) {
+    if (source instanceof Calendar) {
       // <copied from="../../../frontend/Settings/Calendar/ImportExport.svelte">
-      let file = await eventsToICalFile(folder.events, folder.name);
+      let file = await eventsToICalFile(source.events, source.name);
+      await saveBlobAsFile(file);
+      // </copied>
+    } else if (source instanceof Addressbook) {
+      // <copied from="../../../frontend/Settings/Contacts/ImportExport.svelte">
+      let file = personsToVCardFile(source.persons, source.name);
       await saveBlobAsFile(file);
       // </copied>
     } else {
-      // <copied from="../../../frontend/Settings/Contacts/ImportExport.svelte">
-      let file = personsToVCardFile(folder.persons, folder.name);
-      await saveBlobAsFile(file);
+      // <copied from="../../../frontend/Topic/Page/TopicPage.svelte">
+      await saveBlobAsFile(source.toFile(mimeType));
       // </copied>
     }
   }
@@ -244,9 +313,17 @@
     background-color: var(--lo-input-bg);
     overflow-y: auto;
   }
-  .choice-list.folders {
+  .choice-list.folders,
+  .choice-list.sources {
     flex: 1 1 auto;
     max-height: none;
+  }
+  .group-header {
+    flex-shrink: 0;
+    padding: 8px 8px 2px 8px;
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
+    font-weight: 600;
   }
   .choice {
     display: flex;
@@ -304,4 +381,4 @@
     padding: 12px 8px;
     color: var(--lo-fg-secondary);
   }
-  </style>
+</style>

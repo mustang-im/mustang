@@ -1,6 +1,20 @@
 <vbox class="open-export-page">
   <h1>{$t`Open`}</h1>
   <vbox class="commands">
+    <button class="command" on:click={() => SettingsDialogs.open({ kind: "import-export", action: "import" })}>
+      <hbox class="command-icon"><ImportIcon size={32} strokeWidth={1.25} /></hbox>
+      <vbox class="command-text">
+        <span class="command-title">{$t`Import`}</span>
+        <span class="command-description">{$t`Import contacts or appointments from a file, or accounts from another program.`}</span>
+      </vbox>
+    </button>
+    <button class="command" on:click={() => SettingsDialogs.open({ kind: "import-export", action: "export" })}>
+      <hbox class="command-icon"><ExportIcon size={32} strokeWidth={1.25} /></hbox>
+      <vbox class="command-text">
+        <span class="command-title">{$t`Export`}</span>
+        <span class="command-description">{$t`Save a calendar, an address book or other data to a file, for use in other programs.`}</span>
+      </vbox>
+    </button>
     <button class="command" disabled={!sharingAccounts.length}
       title={sharingAccounts.length ? null : $t`None of your accounts can open the calendars of colleagues`}
       on:click={() => isOpenCalendarOpen = true}>
@@ -8,13 +22,6 @@
       <vbox class="command-text">
         <span class="command-title">{$t`Open Calendar`}</span>
         <span class="command-description">{$t`Open a calendar that a colleague shared with you.`}</span>
-      </vbox>
-    </button>
-    <button class="command" on:click={() => SettingsDialogs.open({ kind: "import-export" })}>
-      <hbox class="command-icon"><ImportExportIcon size={32} strokeWidth={1.25} /></hbox>
-      <vbox class="command-text">
-        <span class="command-title">{$t`Import/Export`}</span>
-        <span class="command-description">{$t`Import or export files and settings.`}</span>
       </vbox>
     </button>
     <button class="command" disabled={!mailAccount}
@@ -42,7 +49,8 @@
   import OpenCalendarDialog from "../../Calendar/OpenCalendarDialog.svelte";
   import SharedFolderDialog from "../../Mail/LeftPane/SharedFolderDialog.svelte";
   import OpenCalendarIcon from "lucide-svelte/icons/calendar-search";
-  import ImportExportIcon from "lucide-svelte/icons/arrow-left-right";
+  import ImportIcon from "lucide-svelte/icons/file-input";
+  import ExportIcon from "lucide-svelte/icons/file-output";
   import SharedFolderIcon from "lucide-svelte/icons/folder-symlink";
   import { t } from "../../../l10n/l10n";
 
