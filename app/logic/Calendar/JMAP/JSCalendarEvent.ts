@@ -39,29 +39,7 @@ export class JSCalendarEvent {
     // Recurrence
     if (jmap.recurrenceRule) {
       event.recurrenceCase = RecurrenceCase.Master;
-      let r = jmap.recurrenceRule;
-      let rrinit: RecurrenceInit = {
-        masterDuration: event.duration,
-        timezone: event.timezone,
-        seriesStartTime: event.startTime,
-        seriesEndTime: this.toDate(r.until, jmap, null),
-        count: sanitize.integer(r.count, Infinity),
-      // iCal and we don't support hourly, minutely or secondly. Esp. the latter is pretty silly
-        frequency: sanitize.translate(r.frequency, {
-          yearly: Frequency.Yearly,
-          monthly: Frequency.Monthly,
-          weekly: Frequency.Weekly,
-          daily: Frequency.Daily,
-        }, Frequency.Yearly),
-        interval: sanitize.integerRange(r.interval, 1, Infinity, 1),
-        first: sanitize.integer(jsCalWeekday[r.firstDayOfWeek as keyof typeof jsCalWeekday], jsCalWeekday.mo),
-      };
-      if (r.byDay) {
-        rrinit.weekdays = r.byDay.map(day => sanitize.integer(jsCalWeekday[day.day as keyof typeof jsCalWeekday]));
-        // jsCalendar uses -1..4 but we use 0..5
-        rrinit.week = (sanitize.integer(r.byDay[0].nthOfPeriod, 0) + 6) % 6;
-      }
-      event.recurrenceRule = new RecurrenceRule(rrinit);
+      event.recurrenceRule = this.toRecurrenceRule(jmap, event.duration);
       // Exceptions and exclusions have to be handled by the caller,
       // once the event has been saved locally.
     }
@@ -113,6 +91,9 @@ export class JSCalendarEvent {
   static fromEvent(event: Event, jmap: TJMAPCalendarEvent) {
     // ID and metadata
     Object.assign(jmap, event.original);
+    let serverRule = event.recurrenceCase == RecurrenceCase.Master && jmap.recurrenceRule
+      ? this.toRecurrenceRule(jmap, toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S")))
+      : null;
     if (!event.parentEvent) {
       jmap.uid = event.calUID;
     }
@@ -153,18 +134,30 @@ export class JSCalendarEvent {
     // Recurrence
     if (event.recurrenceCase == RecurrenceCase.Master) {
       let jr = jmap.recurrenceRule ??= {} as TJSCalendarRecurrenceRule;
-      delete jr.byMonthDay;
-      delete jr.byMonth;
-      delete jr.byYearDay;
-      delete jr.byWeekNo;
-      delete jr.byHour;
-      delete jr.byMinute;
-      delete jr.bySecond;
-      delete jr.bySetPosition;
       let er = event.recurrenceRule;
-      jr.frequency = er.frequency.toLowerCase() as TJSCalendarRecurrenceFrequency,
-      jr.interval = er.interval;
-      jr.firstDayOfWeek = jsCalWeekday[er.first];
+      // Keep the parts of the rule that we don't support, unless the user changed the repetition
+      if (!this.isSameRepetition(serverRule, er)) {
+        delete jr.byMonthDay;
+        delete jr.byMonth;
+        delete jr.byYearDay;
+        delete jr.byWeekNo;
+        delete jr.byHour;
+        delete jr.byMinute;
+        delete jr.bySecond;
+        delete jr.bySetPosition;
+        jr.frequency = er.frequency.toLowerCase() as TJSCalendarRecurrenceFrequency;
+        jr.interval = er.interval;
+        jr.firstDayOfWeek = jsCalWeekday[er.first];
+        if (er.weekdays) {
+          if (er.week) {
+            jr.byDay = er.weekdays.map(day => ({ day: jsCalWeekday[day], nthOfPeriod: er.week == 5 ? -1 : er.week }));
+          } else {
+            jr.byDay = er.weekdays.map(day => ({ day: jsCalWeekday[day] }));
+          }
+        } else {
+          delete jr.byDay;
+        }
+      }
       if (er.seriesEndTime) {
         delete jr.count;
         jr.until = this.fromDate(er.seriesEndTime, event);
@@ -174,13 +167,6 @@ export class JSCalendarEvent {
       } else {
         delete jr.count;
         delete jr.until;
-      }
-      if (er.weekdays) {
-        if (er.week) {
-          jr.byDay = er.weekdays.map(day => ({ day: jsCalWeekday[day], nthOfPeriod: er.week == 5 ? -1 : er.week }));
-        } else {
-          jr.byDay = er.weekdays.map(day => ({ day: jsCalWeekday[day] }));
-        }
       }
       for (let exclusion of event.exclusions) {
         let ro = jmap.recurrenceOverrides ??= {};
@@ -293,6 +279,44 @@ export class JSCalendarEvent {
     }
 
     jmap.color = event.color;
+  }
+
+  /** @param masterDuration in seconds */
+  static toRecurrenceRule(jmap: TJMAPCalendarEvent, masterDuration: number): RecurrenceRule {
+    let r = jmap.recurrenceRule;
+    let rrinit: RecurrenceInit = {
+      masterDuration,
+      timezone: jmap.timeZone ?? null,
+      seriesStartTime: this.toDate(jmap.start, jmap),
+      seriesEndTime: this.toDate(r.until, jmap, null),
+      count: sanitize.integer(r.count, Infinity),
+    // iCal and we don't support hourly, minutely or secondly. Esp. the latter is pretty silly
+      frequency: sanitize.translate(r.frequency, {
+        yearly: Frequency.Yearly,
+        monthly: Frequency.Monthly,
+        weekly: Frequency.Weekly,
+        daily: Frequency.Daily,
+      }, Frequency.Yearly),
+      interval: sanitize.integerRange(r.interval, 1, Infinity, 1),
+      first: sanitize.integer(jsCalWeekday[r.firstDayOfWeek as keyof typeof jsCalWeekday], jsCalWeekday.mo),
+    };
+    if (r.byDay) {
+      rrinit.weekdays = r.byDay.map(day => sanitize.integer(jsCalWeekday[day.day as keyof typeof jsCalWeekday]));
+      // jsCalendar uses -1..4 but we use 0..5
+      rrinit.week = (sanitize.integer(r.byDay[0].nthOfPeriod, 0) + 6) % 6;
+    }
+    return new RecurrenceRule(rrinit);
+  }
+
+  /** Whether `rule` repeats like `serverRule`, apart from the start and the end of the series */
+  protected static isSameRepetition(serverRule: RecurrenceRule | null, rule: RecurrenceRule): boolean {
+    let weekdays = (r: RecurrenceRule) => [...r.weekdays ?? []].sort().join();
+    return !!serverRule &&
+      serverRule.frequency == rule.frequency &&
+      serverRule.interval == rule.interval &&
+      serverRule.week == rule.week &&
+      serverRule.first == rule.first &&
+      weekdays(serverRule) == weekdays(rule);
   }
 
   /** When the alert fires. null, if there is none, or we don't know the trigger. */
