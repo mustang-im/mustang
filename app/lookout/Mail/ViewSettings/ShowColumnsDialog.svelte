@@ -2,7 +2,7 @@
   <hbox class="columns-editor">
     <vbox flex class="list-box">
       <span class="list-label">{$t`Available columns:`}</span>
-      <ListView items={available} bind:selected={selectedAvailable} onOpen={add}
+      <ListView items={available} bind:selected={selectedAvailable} on:open={event => add(event.detail)}
         label={$t`Available columns:`} height="240px" let:item>
         <span>{ColumnInfo.labelOf(item)}</span>
       </ListView>
@@ -15,7 +15,7 @@
     </vbox>
     <vbox flex class="list-box">
       <span class="list-label">{$t`Show these columns in this order:`}</span>
-      <ListView items={shown} bind:selected={selectedShown} onOpen={column => remove(column)}
+      <ListView items={shown} bind:selected={selectedShown} on:open={event => remove(event.detail)}
         label={$t`Show these columns in this order:`} height="240px" let:item>
         <span>{ColumnInfo.labelOf(item)}</span>
       </ListView>

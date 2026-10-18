@@ -12,8 +12,8 @@
   {#if $availableAccounts.hasItems}
     <vbox class="available">
       <span>{$t`Shared with you:`}</span>
-      <ListView items={$availableAccounts.contents} onSelect={person => recipients.replaceAll([person])}
-        onOpen={person => { recipients.replaceAll([person]); dialog.submit(); }}
+      <ListView items={$availableAccounts.contents} on:select={event => recipients.replaceAll([event.detail])}
+        on:open={event => { recipients.replaceAll([event.detail]); catchErrors(() => dialog.submit()); }}
         label={$t`Shared with you:`} height="120px" let:item>
         <span title={item.emailAddress}>{item.nameOrEMail}</span>
       </ListView>

@@ -15,7 +15,7 @@
         class:selected={item === selected}
         aria-selected={item === selected}
         on:click={() => select(item)}
-        on:dblclick={() => open(item)}>
+        on:dblclick={() => dispatch("open", item)}>
         <slot {item} {index} />
       </div>
     {/each}
@@ -27,7 +27,6 @@
 
 <script lang="ts">
   import type { ListViewColumn } from "./ListViewColumn";
-  import { showError } from "../../../frontend/Util/error";
   import { createEventDispatcher, tick } from "svelte";
 
   type T = $$Generic;
@@ -35,8 +34,6 @@
   export let items: T[] = [];
   export let columns: ListViewColumn[] = [];
   export let selected: T = null;
-  export let onSelect: (item: T) => void = null;
-  export let onOpen: (item: T) => void | Promise<void> = null;
   export let label: string = null;
   export let height = "200px";
   export let classes = "";
@@ -48,26 +45,16 @@
 
   async function select(item: T) {
     selected = item;
-    onSelect?.(item);
     dispatch("select", item);
     await tick();
     rowsEl?.querySelector(".row.selected")?.scrollIntoView({ block: "nearest" });
-  }
-
-  async function open(item: T) {
-    dispatch("open", item);
-    try {
-      await onOpen?.(item);
-    } catch (ex) {
-      showError(ex);
-    }
   }
 
   async function onKeyDown(event: KeyboardEvent) {
     if (event.key == "Enter" && selected) {
       event.preventDefault();
       event.stopPropagation();
-      await open(selected);
+      dispatch("open", selected);
       return;
     }
     if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key) || !items.length) {
