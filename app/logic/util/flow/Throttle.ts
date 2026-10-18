@@ -4,6 +4,8 @@ import { sleep } from "../util";
  * Limits the number of tasks per second.
  */
 export class Throttle {
+  /** For each of the `maxTasks` slots, when the next task may start in it,
+   * in milliseconds like `Date.now()`, earliest first */
   protected nextTime: number[];
   protected perSecond = 1; // in seconds
 
@@ -18,9 +20,9 @@ export class Throttle {
 
   async throttle(): Promise<void> {
     let now = Date.now();
-    let start = Math.max(now, this.nextTime.shift() ?? 0);
-    this.nextTime.push(start + this.perSecond * 1000);
-    let waitFor = start - now;
+    let nextTime = Math.max(now, this.nextTime.shift() ?? 0);
+    this.nextTime.push(nextTime + this.perSecond * 1000);
+    let waitFor = nextTime - now;
     if (waitFor > 0) {
       console.log(`Throttling for ${waitFor}ms because there were ${this.nextTime.length} connections in the last ${this.perSecond} second`);
       await sleep(waitFor / 1000);
