@@ -49,7 +49,7 @@
         padding="2px"
         />
     </hbox>
-    <PersonAutocomplete skipPersonFunc={filterPerson} onAddPerson={openChatWithPerson} askForName={false} />
+    <PersonAutocomplete skipPersonFunc={filterPerson} onAddPerson={openChatWithPerson} />
     <hbox class="label or">{$t`or enter chat ID`}</hbox>
     <hbox>
       <input type="text" bind:value={chatID} />

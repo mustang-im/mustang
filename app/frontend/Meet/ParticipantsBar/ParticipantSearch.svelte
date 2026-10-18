@@ -5,7 +5,6 @@
     placeholder={$t`Add or search a participant`}
     onAddPerson={person => catchErrors(() => addPerson(person), showError)}
     autofocus={false}
-    askForName={false}
     />
   <hbox class="buttons">
     <!--

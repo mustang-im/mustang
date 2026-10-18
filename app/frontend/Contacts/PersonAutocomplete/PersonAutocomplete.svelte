@@ -90,7 +90,7 @@
   export let autofocus = false;
   export let typedText: string = ""; /* in/out */
   export let onAddPerson: (person: PersonUID) => void | Promise<void>;
-  export let askForName = true;
+  export let askForName = false;
 
   async function search(inputStr: string) {
     try {
