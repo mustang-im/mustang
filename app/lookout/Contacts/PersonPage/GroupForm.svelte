@@ -73,7 +73,7 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { ContactActions } from "../ContactActions";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { Keyboard } from "../../Util/keyboard";
+  import { getOSName } from "../../../frontend/Util/util";
   import Ribbon from "../../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -183,7 +183,7 @@
     if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() == "s") {
       event.preventDefault();
       catchErrors(save);
-    } else if (event.altKey && !event.ctrlKey && !event.shiftKey && event.code == "KeyS" && !Keyboard.isMac) {
+    } else if (event.altKey && !event.ctrlKey && !event.shiftKey && event.code == "KeyS" && getOSName() != "macintosh") {
       event.preventDefault();
       catchErrors(saveAndClose);
     }

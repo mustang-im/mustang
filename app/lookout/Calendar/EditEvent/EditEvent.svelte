@@ -1,4 +1,4 @@
-<vbox flex class="event-form-page" on:keydown={onKeyDown}>
+<vbox flex class="event-form-page" on:keydown={keyEvent => catchErrors(() => onKey(keyEvent))}>
   {#key ribbonKey}
     <EventFormRibbon {event} {flow} {editor} bind:openedTool {canSchedule} {schedulingLabel} {trackingLabel}
       {onSave} {onDelete} bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
@@ -83,13 +83,12 @@
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import SignaturesDialog, { openSignatures } from "../../Mail/Composer/SignaturesDialog.svelte";
   import { FreeBusy } from "./FreeBusy";
-  import type { EditorTool } from "../../Shared/Editor/EditorTool";
-  import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
+  import { EditorTool } from "../../Shared/Editor/EditorTool";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { Keyboard } from "../../Util/keyboard";
+  import { getOSName } from "../../../frontend/Util/util";
   import CloseIcon from "lucide-svelte/icons/x";
   import type { Editor } from "@tiptap/core";
   import { onMount } from "svelte";
@@ -231,33 +230,78 @@
     flow.cancel();
   }
 
-  function onKeyDown(keyEvent: KeyboardEvent) {
+  async function onKey(keyEvent: KeyboardEvent) {
     if (keyEvent.defaultPrevented || $openRecurrence == event || showSaveChanges || seriesChoice || attendeesPicks || openedTool || $openSignatures == event) {
       return;
     }
     let key = keyEvent.key.toLowerCase();
-    let command: () => Promise<void> | void = null;
-    let tool = showsEditor && editor ? EditorShortcuts.toolFor(keyEvent) : null;
-    if (tool) {
-      command = () => { openedTool = tool; };
-    } else if (keyEvent.key == "Escape") {
-      command = onCloseRequest;
-    } else if (keyEvent.altKey && !keyEvent.ctrlKey && keyEvent.code == "KeyS" && !Keyboard.isMac && !isIncoming) {
-      command = onSave;
-    } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "g" && !isIncoming) {
-      command = () => { $openRecurrence = event; };
-    } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "d" && !event.parentEvent) {
-      command = onDelete;
-    } else if (keyEvent.ctrlKey && !keyEvent.altKey && key == "f" && flow.isSaved) {
-      command = async () => openComposer(await OutgoingInvitation.forwardEventByMail(event));
-    }
-    if (!command) {
+    if (keyEvent.key == "Escape") {
+      keyEvent.preventDefault();
+      keyEvent.stopPropagation();
+      onCloseRequest();
       return;
     }
-    keyEvent.preventDefault();
-    keyEvent.stopPropagation();
-    catchErrors(command);
+    // Alt+ (Option+S types a character on macOS)
+    if (keyEvent.altKey && !keyEvent.ctrlKey && getOSName() != "macintosh") {
+      if (keyEvent.code == "KeyS" && !isIncoming) {
+        keyEvent.preventDefault();
+        keyEvent.stopPropagation();
+        await onSave();
+        return;
+      }
+    }
+    // Ctrl+
+    if (keyEvent.ctrlKey && !keyEvent.altKey) {
+      if (key == "g" && !isIncoming) {
+        keyEvent.preventDefault();
+        keyEvent.stopPropagation();
+        $openRecurrence = event;
+        return;
+      } else if (key == "d" && !event.parentEvent) {
+        keyEvent.preventDefault();
+        keyEvent.stopPropagation();
+        await onDelete();
+        return;
+      } else if (key == "f" && flow.isSaved) {
+        keyEvent.preventDefault();
+        keyEvent.stopPropagation();
+        openComposer(await OutgoingInvitation.forwardEventByMail(event));
+        return;
+      }
+    }
+    if (showsEditor && editor) {
+      onKeyOnEditor(keyEvent);
+    }
   }
+
+  // <copied from="../../Mail/Composer/MailComposer.svelte">
+  function onKeyOnEditor(event: KeyboardEvent) {
+    let isCtrl = event.ctrlKey || event.metaKey;
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (event.code == "KeyK") {
+        event.preventDefault();
+        event.stopPropagation();
+        openedTool = EditorTool.Link;
+        return;
+      } else if (event.code == "KeyH") {
+        event.preventDefault();
+        event.stopPropagation();
+        openedTool = EditorTool.Replace;
+        return;
+      }
+    }
+    // No modifier
+    if (!isCtrl && !event.altKey && !event.shiftKey) {
+      if (event.key == "F4") {
+        event.preventDefault();
+        event.stopPropagation();
+        openedTool = EditorTool.Find;
+        return;
+      }
+    }
+  }
+  // </copied>
 </script>
 
 <style>

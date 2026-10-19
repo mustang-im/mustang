@@ -1,4 +1,4 @@
-<vbox flex class="composer-page" class:inline={isInline} on:keydown|capture={onKeyDown}>
+<vbox flex class="composer-page" class:inline={isInline} on:keydown|capture={event => catchErrors(() => onKey(event))}>
   {#if !isInline}
     <ComposerRibbon {mail} {editor} bind:showEmojis bind:openedTool />
   {/if}
@@ -135,7 +135,7 @@
 
 <script lang="ts" context="module">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import type { EditorTool } from "../../Shared/Editor/EditorTool";
+  import { EditorTool } from "../../Shared/Editor/EditorTool";
   import { writable } from "svelte/store";
 
   export const checkNamesOf = writable<EMail | null>(null);
@@ -159,11 +159,10 @@
   import { MessageActions } from "../MessageActions";
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
   import { minorError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
-  import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
-  import { Keyboard } from "../../Util/keyboard";
+  import { isTextField } from "../../Util/util";
+  import { getOSName } from "../../../frontend/Util/util";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { hasUserText } from "./DraftContent";
-  import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField, openSelectNames } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
@@ -462,7 +461,8 @@
   function onEscape(event: KeyboardEvent) {
     // ProseMirror prevents the default of every Escape in the message body
     if (event.key != "Escape" || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey ||
-        !Keyboard.isTextField(event.target) || event.defaultPrevented && !Keyboard.isEditor(event.target) ||
+        !isTextField(event.target) ||
+        event.defaultPrevented && !(event.target as HTMLElement).closest("[contenteditable]:not([contenteditable='false'])") ||
         isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
       return;
     }
@@ -471,22 +471,67 @@
     onCloseRequest();
   }
 
-  function onKeyDown(event: KeyboardEvent) {
-    let command = ComposerShortcuts.commandFor(event);
-    let tool = editor ? EditorShortcuts.toolFor(event) : null;
-    if (!command && !tool || isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
+  async function onKey(event: KeyboardEvent) {
+    if (isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
       return;
     }
-    event.preventDefault();
-    event.stopPropagation();
-    if (command == ComposerCommand.Send) {
-      catchErrors(onSendRequest);
-    } else if (command == ComposerCommand.Save) {
-      onSave().catch(showError);
-    } else {
-      openedTool = tool;
+    let isCtrl = event.ctrlKey || event.metaKey;
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (event.key == "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        await onSendRequest();
+        return;
+      } else if (event.code == "KeyS") {
+        event.preventDefault();
+        event.stopPropagation();
+        await onSave();
+        return;
+      }
+    }
+    // Alt+ (Option+S types a character on macOS)
+    if (event.altKey && !isCtrl && !event.shiftKey && getOSName() != "macintosh") {
+      if (event.code == "KeyS") {
+        event.preventDefault();
+        event.stopPropagation();
+        await onSendRequest();
+        return;
+      }
+    }
+    if (editor) {
+      onKeyOnEditor(event);
     }
   }
+
+  // <copied to="../../Calendar/EditEvent/EditEvent.svelte">
+  function onKeyOnEditor(event: KeyboardEvent) {
+    let isCtrl = event.ctrlKey || event.metaKey;
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (event.code == "KeyK") {
+        event.preventDefault();
+        event.stopPropagation();
+        openedTool = EditorTool.Link;
+        return;
+      } else if (event.code == "KeyH") {
+        event.preventDefault();
+        event.stopPropagation();
+        openedTool = EditorTool.Replace;
+        return;
+      }
+    }
+    // No modifier
+    if (!isCtrl && !event.altKey && !event.shiftKey) {
+      if (event.key == "F4") {
+        event.preventDefault();
+        event.stopPropagation();
+        openedTool = EditorTool.Find;
+        return;
+      }
+    }
+  }
+  // </copied>
 </script>
 
 <style>
