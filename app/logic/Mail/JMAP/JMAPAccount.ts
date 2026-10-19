@@ -737,7 +737,7 @@ export class JMAPAccount extends MailAccount {
           watchdog?.fulfilled();
           if (event.name == "ping") {
             try {
-              pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 3600, pingSeconds);
+              pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 1500, pingSeconds);
             } catch (ex) {
               this.dataError(new Error("JMAP push: The server sent an invalid ping: " + ex.message));
             }
