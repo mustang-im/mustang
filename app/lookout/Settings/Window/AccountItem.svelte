@@ -1,4 +1,4 @@
-<button class="entry account" class:selected={itemSelected} class:open={accountSelected}
+<button class="nav-entry account" class:selected={itemSelected} class:open={accountSelected}
   role="treeitem" aria-selected={itemSelected} aria-expanded={$subCategories.hasItems ? accountSelected : undefined}
   title={$account.name}
   on:click={onSelect}>
@@ -45,14 +45,14 @@
 </script>
 
 <style>
-  .entry.account {
+  .nav-entry.account {
     height: 30px;
     padding-inline-start: 12px;
   }
-  :global(.accounts) .entry.account {
+  :global(.accounts) .nav-entry.account {
     padding-inline-start: 36px;
   }
-  .entry.account.open {
+  .nav-entry.account.open {
     font-weight: 600;
   }
   .name {

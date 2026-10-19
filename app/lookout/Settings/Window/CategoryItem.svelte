@@ -1,4 +1,4 @@
-<button class="entry settings-category" class:selected class:sub={!category.isMain}
+<button class="nav-entry settings-category" class:selected class:sub={!category.isMain}
   role="treeitem" aria-selected={selected} aria-expanded={hasChildren ? isSectionOpen : undefined}
   on:click={onSelect}>
   {category.name}
