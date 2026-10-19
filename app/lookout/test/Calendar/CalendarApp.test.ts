@@ -2,12 +2,15 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../logic/app";
 import { Event } from "../../../logic/Calendar/Event";
+import { Calendar } from "../../../logic/Calendar/Calendar";
+import { appGlobal } from "../../../logic/app";
 import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
 import CalendarApp from "../../Calendar/CalendarApp.svelte";
 import { CalendarActions } from "../../Calendar/CalendarActions";
 import { eventPeek, inlineTitle, selectedSlots, type CalendarViewType } from "../../Calendar/selected";
 import { isGoToDateOpen } from "../../Calendar/GoToDateDialog.svelte";
-import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
+import { selectedDate, selectedEvent, shownCalendars, startDate } from "../../../frontend/Calendar/selected";
+import { statusBarContent } from "../../MainWindow/StatusBar.svelte";
 import { openEvent } from "../../../frontend/Calendar/open";
 import { openComposer } from "../../../frontend/Mail/open";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
@@ -234,4 +237,66 @@ test("macOS: no Option+character keys, because they type characters there", () =
   expect(handled("End", { altKey: true })).toBe(true);
   expect(handled("1", { ctrlKey: true, altKey: true })).toBe(true);
   expect(view.value).toBe("day");
+});
+
+function newCalendar(name: string, eventDays: number[]): Calendar {
+  let calendar = new Calendar();
+  calendar.id = name;
+  calendar.name = name;
+  for (let dayOfMonth of eventDays) {
+    let event = new Event();
+    event.title = name + " " + dayOfMonth;
+    event.startTime = new Date(2026, 9, dayOfMonth, 10);
+    event.endTime = new Date(2026, 9, dayOfMonth, 11);
+    event.calendar = calendar;
+    calendar.events.add(event);
+  }
+  return calendar;
+}
+
+/** How many observers are subscribed to the events */
+function subscriptions(calendar: Calendar): number {
+  return calendar.events.contents.reduce((sum, event) => sum + event._observers.length, 0);
+}
+
+test("Showing and hiding another calendar doesn't pile up subscriptions on the events", () => {
+  let work = newCalendar("Work", [12, 14, 20, 28]);
+  let holidays = newCalendar("Holidays", [13]);
+  appGlobal.calendars.addAll([work, holidays]);
+  try {
+    flushSync();
+    let shown = subscriptions(work);
+    expect(shown).toBeGreaterThan(0);
+    for (let i = 0; i < 3; i++) {
+      shownCalendars.show(holidays, false);
+      flushSync();
+      shownCalendars.show(holidays, true);
+      flushSync();
+    }
+    expect(subscriptions(work)).toBe(shown);
+  } finally {
+    shownCalendars.show(holidays, true);
+    appGlobal.calendars.removeAll([work, holidays]);
+  }
+});
+
+test("The status bar counts the events in the shown days", () => {
+  let work = newCalendar("Work", [12, 14, 20]);
+  appGlobal.calendars.add(work);
+  try {
+    flushSync();
+    expect(get(statusBarContent).left[0].label).toBe("Items: 2");
+    let event = new Event();
+    event.startTime = new Date(2026, 9, 15, 9);
+    event.endTime = new Date(2026, 9, 15, 10);
+    event.calendar = work;
+    work.events.add(event);
+    flushSync();
+    expect(get(statusBarContent).left[0].label).toBe("Items: 3");
+    // The next week
+    expect(handled("ArrowDown", { altKey: true })).toBe(true);
+    expect(get(statusBarContent).left[0].label).toBe("Items: 1");
+  } finally {
+    appGlobal.calendars.remove(work);
+  }
 });

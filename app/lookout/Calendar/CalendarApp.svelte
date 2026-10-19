@@ -145,7 +145,7 @@
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { onDestroy } from "svelte";
-  import { derived, get } from "svelte/store";
+  import { get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
   const viewSetting = getLocalStorage<CalendarViewType>("lookout.calendar.view", "workweek");
@@ -186,20 +186,40 @@
   $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1);
   // $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
 
+  const withoutDeclined = new Map<Collection<Event>, Collection<Event>>();
   function visible(events: Collection<Event>, showDeclined: boolean): Collection<Event> {
-    return showDeclined
-      ? events
-      : events.filterObservable(event => event.myParticipation != InvitationResponse.Decline);
+    if (showDeclined) {
+      return events;
+    }
+    let notDeclined = withoutDeclined.get(events);
+    if (!notDeclined) {
+      notDeclined = events.filterObservable(event => event.myParticipation != InvitationResponse.Decline);
+      withoutDeclined.set(events, notDeclined);
+    }
+    return notDeclined;
   }
 
   $: visibleEvents = visible(shownCalendarEvents, showDeclined);
   $: isSplit = splitView && view != "schedule" && $shownCalendars.length > 1;
   $: scheduleRows = $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) })) as CalendarColumnGroup[];
-  $: groups = (isSplit
-    ? $shownCalendars.contents.map(calendar => ({ calendar, events: visible(calendar.eventsWithRecurrences, showDeclined) }))
-    : [{ calendar: null, events: visibleEvents }]) as CalendarColumnGroup[];
+  let groups: CalendarColumnGroup[] = [];
+  $: showGroups(isSplit ? scheduleRows : [{ calendar: null, events: visibleEvents }]);
+  function showGroups(shown: CalendarColumnGroup[]) {
+    if (shown.length == groups.length && shown.every((group, i) => group.calendar == groups[i].calendar && group.events == groups[i].events)) {
+      return;
+    }
+    groups = shown;
+  }
 
-  $: eventsInRange = derived(visibleEvents, events => events.contents.filter(event => event.startTime < range.end && event.endTime > range.start));
+  $: eventsInRange = visibleEvents.filterObservable(isInRange);
+  $: range, filterRange();
+  function filterRange() {
+    eventsInRange.replaceAll(visibleEvents.contents.filter(isInRange));
+  }
+
+  function isInRange(event: Event): boolean {
+    return event.startTime < range.end && event.endTime > range.start;
+  }
 
   $: searchTerm = $globalSearchTerm?.trim() || null;
   $: isSearch = !!searchTerm;

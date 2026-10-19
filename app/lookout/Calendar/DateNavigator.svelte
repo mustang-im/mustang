@@ -63,6 +63,7 @@
 <svelte:window on:mouseup={onDragEnd} />
 
 <script lang="ts">
+  import type { Event } from "../../logic/Calendar/Event";
   import type { CalendarRange } from "./CalendarRange";
   import { DateNavigatorMonth } from "./DateNavigatorMonth";
   import { now } from "./selected";
@@ -91,7 +92,17 @@
   }
 
   $: months = Array.from({ length: Math.max(monthCount, 1) }, (_, i) => month.next(i));
-  $: daysWithEvents = new Set(months.flatMap(shownMonth => [...shownMonth.daysWithEvents($shownCalendarEvents.contents)]));
+  $: monthsEvents = shownCalendarEvents.filterObservable(isInMonths);
+  $: months, filterMonths();
+  function filterMonths() {
+    monthsEvents.replaceAll(shownCalendarEvents.contents.filter(isInMonths));
+  }
+
+  function isInMonths(event: Event): boolean {
+    return event.startTime < months[months.length - 1].end && event.endTime > months[0].start;
+  }
+
+  $: daysWithEvents = new Set(months.flatMap(shownMonth => [...shownMonth.daysWithEvents($monthsEvents.contents)]));
 
   let isMonthListOpen = false;
   let monthListAnchor: HTMLElement = null;

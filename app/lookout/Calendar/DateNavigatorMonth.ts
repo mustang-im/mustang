@@ -41,10 +41,18 @@ export class DateNavigatorMonth {
     return new DateNavigatorMonth(new Date(this.month.getFullYear(), this.month.getMonth() + direction, 1));
   }
 
+  get start(): Date {
+    return this.weeks[0][0];
+  }
+
+  get end(): Date {
+    let lastDay = this.weeks[this.weeks.length - 1][6];
+    return new Date(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate() + 1);
+  }
+
   daysWithEvents(events: Iterable<Event>): Set<string> {
-    let first = this.weeks[0][0];
-    let lastWeek = this.weeks[this.weeks.length - 1];
-    let end = new Date(lastWeek[6].getFullYear(), lastWeek[6].getMonth(), lastWeek[6].getDate() + 1);
+    let first = this.start;
+    let end = this.end;
     let keys = new Set<string>();
     for (let event of events) {
       if (!(event.startTime < end && event.endTime > first)) {
