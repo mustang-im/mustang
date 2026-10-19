@@ -768,7 +768,6 @@ export class JMAPAccount extends MailAccount {
       accountId: this.accountID,
     });
     if (!response) {
-      await this.updateAddressbooks([]);
       return []; // Another user's account, and they did not share their contacts with us
     }
     let listResponse = response as TJMAPGetResponse<TJMAPAddressbook>;

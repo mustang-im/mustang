@@ -26,14 +26,25 @@ function serverAddressbook(id: string, name: string, isDefault = false): TJMAPAd
   } as any;
 }
 
-let onServer: TJMAPAddressbook[];
+let onServer: TJMAPAddressbook[] | "forbidden" | "fails";
 
-function setup(): JMAPAccount {
+/** @param mainAccount Set for another user's account, which they shared with us */
+function setup(mainAccount?: JMAPAccount): JMAPAccount {
   let account = new JMAPAccount();
+  if (mainAccount) {
+    account.initFromMainAccount(mainAccount);
+  }
   account.name = "alice@example.com";
   account.accountID = "a";
   account.makeSingleCall = async (method: string, args: any) => {
     expect(method).toBe("AddressBook/get");
+    if (onServer == "forbidden") {
+      // What Stalwart answers when the other user shares no address book (any more)
+      throw Object.assign(new Error("You do not have access to account " + args.accountId), { code: "forbidden" });
+    }
+    if (onServer == "fails") {
+      throw Object.assign(new Error("HTTP POST <http://127.0.0.1:18080/jmap/> failed with 503 Service Unavailable"), { httpCode: 503 });
+    }
     return { accountId: args.accountId, state: "a1", list: onServer, notFound: [] };
   };
   return account;
@@ -73,4 +84,31 @@ test("A new address book is added and listed when the server tells about it", as
   await account.sync("AddressBook", "a2");
   expect(addressbooks(account)).toEqual(["b: alice@example.com", "d: New"]);
   expect(listed).toEqual(["d"]);
+});
+
+test("An address book that is no longer shared with us is removed, when the server lists the others", async () => {
+  let alice = setup(setup());
+  onServer = [serverAddressbook("b", "Default", true), serverAddressbook("c", "Team")];
+  await alice.listAddressbooks();
+  onServer = [serverAddressbook("b", "Default", true)];
+  await alice.listAddressbooks();
+  expect(addressbooks(alice)).toEqual(["b: alice@example.com"]);
+});
+
+test("When the server doesn't list the address books, ours and their contacts stay", async () => {
+  let alice = setup(setup());
+  onServer = [serverAddressbook("c", "Team")];
+  await alice.listAddressbooks();
+  let team = appGlobal.addressbooks.contents.find(ab => ab.mainAccount == alice);
+  team.persons.add(team.newPerson());
+
+  // A refusal or an error is no list of address books, so it's no reason to delete ours
+  onServer = "forbidden";
+  await alice.listAddressbooks();
+  expect(addressbooks(alice)).toEqual(["c: Team"]);
+
+  onServer = "fails";
+  await expect(alice.listAddressbooks()).rejects.toThrow("503");
+  expect(addressbooks(alice)).toEqual(["c: Team"]);
+  expect(team.persons.length).toBe(1);
 });
