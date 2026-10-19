@@ -77,7 +77,6 @@
   --pane-margin: 0;
   --pane-radius: 0;
   --pane-bg: transparent;
-  --left-pane-bg: var(--leftbar-bg);
   --chat-bubble-incoming-bg: #fdfefe;
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;

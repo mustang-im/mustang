@@ -55,7 +55,7 @@
     position: relative;
   }
   .categories {
-    background-color: var(--left-pane-bg);
+    background-color: var(--leftbar-bg);
     color: var(--leftbar-fg);
     padding-block: 24px;
     padding-block-start: 40px;
