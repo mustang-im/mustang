@@ -3,7 +3,7 @@ import type { Calendar } from "../../logic/Calendar/Calendar";
 import { WorkingHours } from "./WorkingHours";
 import { shownCalendars } from "../../frontend/Calendar/selected";
 import { ShownWorkHours } from "../../frontend/Calendar/ShownWorkHours";
-import { k1MinuteMS } from "../../frontend/Util/date";
+import { k1MinuteMS } from "../../logic/util/date";
 import { EventTable } from "./ListView/EventTable";
 import { appGlobal } from "../../logic/app";
 import { mergeColls, type Collection } from "svelte-collections";

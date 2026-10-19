@@ -91,7 +91,7 @@
   import { SMIMEPrivateKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { getDateString } from "../../../frontend/Util/date";
+  import { getDateString } from "../../../logic/util/date";
   import { catchErrors } from "../../../frontend/Util/error";
   import { appGlobal } from "../../../logic/app";
   import OptionsPage from "../Shared/OptionsPage.svelte";

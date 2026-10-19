@@ -1,7 +1,7 @@
 import type { Event } from "../../../logic/Calendar/Event";
 import { TimeColumnLayout } from "../DayView/DayColumn";
 import { EventLook } from "./EventLook";
-import { k1DayMS } from "../../../frontend/Util/date";
+import { k1DayMS } from "../../../logic/util/date";
 
 export interface DayPreviewItem {
   event: Event;

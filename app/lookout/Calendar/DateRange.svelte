@@ -19,7 +19,7 @@
   import { CalendarRange } from "./CalendarRange";
   import { eventPeek } from "./selected";
   import { selectedDate, startDate } from "../../frontend/Calendar/selected";
-  import { getToday } from "../../frontend/Util/date";
+  import { getToday } from "../../logic/util/date";
   import PreviousIcon from "lucide-svelte/icons/chevron-left";
   import NextIcon from "lucide-svelte/icons/chevron-right";
   import { getDateTimeLocale, t } from "../../l10n/l10n";

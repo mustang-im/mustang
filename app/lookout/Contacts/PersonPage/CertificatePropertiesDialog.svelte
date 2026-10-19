@@ -40,7 +40,7 @@
 <script lang="ts">
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
-  import { getDateString } from "../../../frontend/Util/date";
+  import { getDateString } from "../../../logic/util/date";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";

@@ -1,5 +1,5 @@
 import type { Event } from "../../logic/Calendar/Event";
-import { k1DayMS, k1MinuteMS } from "../../frontend/Util/date";
+import { k1DayMS, k1MinuteMS } from "../../logic/util/date";
 
 export type EventDragMode = "move" | "resize-start" | "resize-end" | "move-days";
 

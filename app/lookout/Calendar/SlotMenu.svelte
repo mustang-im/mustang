@@ -30,7 +30,7 @@
   import type { CalendarViewType } from "./selected";
   import { CalendarActions } from "./CalendarActions";
   import { selectedDate, startDate } from "../../frontend/Calendar/selected";
-  import { getToday } from "../../frontend/Util/date";
+  import { getToday } from "../../logic/util/date";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";

@@ -1,6 +1,6 @@
 import type { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
 import type { Tag } from "../../../logic/Abstract/Tag";
-import { getFormattedDateString } from "../../../frontend/Util/date";
+import { getFormattedDateString } from "../../../logic/util/date";
 import { getUILocale, gt } from "../../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 

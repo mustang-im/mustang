@@ -60,7 +60,7 @@
   import { EventDrag, type EventDragMode } from "../EventDrag";
   import { now, CalendarCurrentView, eventPeek, selectedSlots } from "../selected";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { k1MinuteMS } from "../../../frontend/Util/date";
+  import { k1MinuteMS } from "../../../logic/util/date";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
   import EventContent from "../DisplayEvent/EventContent.svelte";
   import EventIcons from "../DisplayEvent/EventIcons.svelte";

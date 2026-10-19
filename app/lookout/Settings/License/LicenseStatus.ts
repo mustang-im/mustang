@@ -1,6 +1,6 @@
 import { BadTicket, type Ticket } from "../../../logic/util/LicenseClient";
 import { appName } from "../../../logic/build";
-import { getDateString } from "../../../frontend/Util/date";
+import { getDateString } from "../../../logic/util/date";
 import { gt } from "../../../l10n/l10n";
 
 export class LicenseStatus {

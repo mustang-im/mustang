@@ -1,5 +1,5 @@
 import type { Event } from "../../../logic/Calendar/Event";
-import { k1DayMS } from "../../../frontend/Util/date";
+import { k1DayMS } from "../../../logic/util/date";
 
 export class ScheduleItem {
   readonly event: Event;

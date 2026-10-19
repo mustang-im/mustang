@@ -143,7 +143,7 @@
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
-  import { kAllWeekdays, weekdayLabel } from "../../../frontend/Util/date";
+  import { kAllWeekdays, weekdayLabel } from "../../../logic/util/date";
   import { createEventDispatcher } from "svelte";
   import { getDateTimeLocale, gt, plural, t } from "../../../l10n/l10n";
 

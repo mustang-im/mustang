@@ -1,4 +1,4 @@
-import { getWeekStart } from "../../../frontend/Util/date";
+import { getWeekStart } from "../../../logic/util/date";
 import { gt } from "../../../l10n/l10n";
 
 export enum ReceivedRange {

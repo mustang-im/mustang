@@ -63,7 +63,7 @@
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import SubjectIcon from "lucide-svelte/icons/mail";
-  import { getDateString } from "../../../frontend/Util/date";
+  import { getDateString } from "../../../logic/util/date";
   import { gt, t } from "../../../l10n/l10n";
 
   export let message: EMail;

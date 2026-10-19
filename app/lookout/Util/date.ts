@@ -1,4 +1,4 @@
-import { k1DayMS } from "../../frontend/Util/date";
+import { k1DayMS } from "../../logic/util/date";
 
 export function getWeekNumber(day: Date): number {
   let thursday = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 3 - (day.getDay() + 6) % 7);

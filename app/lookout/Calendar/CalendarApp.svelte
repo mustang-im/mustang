@@ -114,7 +114,7 @@
   import { EventTable } from "./ListView/EventTable";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
-  import { getToday } from "../../frontend/Util/date";
+  import { getToday } from "../../logic/util/date";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../frontend/Util/error";
   import { statusBarContent, type StatusBarContent } from "../MainWindow/StatusBar.svelte";

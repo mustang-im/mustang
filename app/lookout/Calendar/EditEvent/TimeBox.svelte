@@ -52,7 +52,7 @@
   import TimeInput from "./TimeInput.svelte";
   import { openRecurrence } from "./RecurrenceDialog.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
-  import { isSameTimezone } from "../../../frontend/Util/date";
+  import { isSameTimezone } from "../../../logic/util/date";
   import RecurrenceIcon from "lucide-svelte/icons/repeat-2";
   import TimezoneIcon from "lucide-svelte/icons/globe";
   import { t } from "../../../l10n/l10n";

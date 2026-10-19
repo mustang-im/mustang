@@ -171,7 +171,7 @@
   import { selectedCalendar, selectedDate, startDate } from "../../frontend/Calendar/selected";
   import { calendarSearchOptions, CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
-  import { getToday } from "../../frontend/Util/date";
+  import { getToday } from "../../logic/util/date";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../frontend/Util/error";
   import { appGlobal } from "../../logic/app";

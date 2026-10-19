@@ -76,7 +76,7 @@
   import TimeRuler from "./TimeRuler.svelte";
   import CalendarTab from "./CalendarTab.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { k1DayMS } from "../../../frontend/Util/date";
+  import { k1DayMS } from "../../../logic/util/date";
   import { derived } from "svelte/store";
   import { onMount, tick } from "svelte";
 

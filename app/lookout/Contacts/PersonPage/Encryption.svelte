@@ -44,7 +44,7 @@
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { saveBlobAsFile } from "../../../frontend/Util/util";
   import { appName } from "../../../logic/build";
-  import { getDateString } from "../../../frontend/Util/date";
+  import { getDateString } from "../../../logic/util/date";
   import ListView from "../../Shared/Form/ListView.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import CertificatePropertiesDialog from "./CertificatePropertiesDialog.svelte";
