@@ -17,7 +17,8 @@ function stalwartMailbox(id: string, name: string, role: string | null, totalEma
 /** Answers like Stalwart, which also gave us the `Mailbox/changes` responses below */
 class FakeServer {
   mailboxes = [stalwartMailbox("a", "Inbox", "inbox", 30, 28), stalwartMailbox("d", "Drafts", "drafts", 2, 0)];
-  changes: Record<string, any> | null = null;
+  /** The `Mailbox/changes` response, or a function of the `sinceState` that returns it */
+  changes: Record<string, any> | ((sinceState: string) => Record<string, any>) | null = null;
   methodsCalled: string[] = [];
 
   answer(request: { methodCalls: [string, Record<string, any>, string][] }) {
@@ -30,7 +31,7 @@ class FakeServer {
           methodResponses.push(["error", { type: "cannotCalculateChanges", description: "The server cannot calculate the changes between the old and new states." }, callID]);
           continue;
         }
-        results[callID] = { accountId: "e", oldState: args.sinceState, ...this.changes };
+        results[callID] = { accountId: "e", oldState: args.sinceState, ...(typeof this.changes == "function" ? this.changes(args.sinceState) : this.changes) };
         methodResponses.push([method, results[callID], callID]);
         continue;
       }
@@ -40,7 +41,7 @@ class FakeServer {
         continue;
       }
       let ids = changes ? changes.updated : args.ids;
-      let properties = changes ? changes.updatedProperties : args.properties;
+      let properties = args.properties;
       let list = this.mailboxes
         .filter(mailbox => !ids || ids.includes(mailbox.id))
         .map(mailbox => properties
@@ -100,4 +101,46 @@ test("When the server can't tell the changes, all folders are listed again", asy
   await account.sync("Mailbox", "s7naq");
 
   expect(account.getAllFolders().contents.map(folder => folder.name)).toEqual(["Inbox"]);
+});
+
+test("A changed folder that we don't know lists all folders again", async () => {
+  let { server, account } = await setup();
+  server.mailboxes.push(stalwartMailbox("k", "Projects", null, 1, 1));
+  server.changes = { newState: "s7naq", hasMoreChanges: false, created: [], updated: ["k"], destroyed: [], updatedProperties: ["totalEmails", "unreadEmails", "totalThreads", "unreadThreads"] };
+
+  await account.sync("Mailbox", "s7naq");
+
+  expect(server.methodsCalled).toEqual(["Mailbox/changes", "Mailbox/get", "Mailbox/get"]);
+  expect(account.getAllFolders().contents.map(folder => folder.name)).toContain("Projects");
+});
+
+/** A buggy or hostile server, which always has more changes */
+async function setupEndless(sameState: boolean) {
+  let { server, account } = await setup();
+  let errors: Error[] = [];
+  account.errorCallback = ex => errors.push(ex);
+  let round = 0;
+  server.changes = (sinceState: string) => ({
+    newState: sameState ? sinceState : "s" + (++round), hasMoreChanges: true,
+    created: [], updated: ["a"], destroyed: [], updatedProperties: ["totalEmails", "unreadEmails"],
+  });
+  return { server, account, errors };
+}
+
+test("Folder changes stop when the server reports more changes, but no new state", async () => {
+  let { server, account, errors } = await setupEndless(true);
+
+  await account.sync("Mailbox", "s7naq");
+
+  expect(server.methodsCalled.filter(method => method == "Mailbox/changes").length).toBe(1);
+  expect(errors.length).toBe(1);
+});
+
+test("Folder changes stop after a maximum number of rounds, when the server always has more", async () => {
+  let { server, account, errors } = await setupEndless(false);
+
+  await account.sync("Mailbox", "s7naq");
+
+  expect(server.methodsCalled.filter(method => method == "Mailbox/changes").length).toBe(1000);
+  expect(errors.length).toBe(1);
 });
