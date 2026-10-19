@@ -23,3 +23,14 @@ test("A website that an older version saved without https:// is shown", () => {
   JSContact.toPerson({ "@type": "Card", version: "1.0", name: { full: "Erika" }, links: { l1: { uri: "erika.example" } } } as TJSContact, person);
   expect(person.urls.contents.map(entry => entry.value)).toEqual(["https://erika.example"]);
 });
+
+test("A malformed link from a buggy server keeps the rest of the contact", () => {
+  let person = new Person();
+  JSContact.toPerson({
+    "@type": "Card", version: "1.0", name: { full: "Erika" },
+    links: { l1: { uri: { evil: true } as any }, l2: { uri: "https://erika.example/" } },
+    notes: { n1: { note: "Still here" } },
+  } as TJSContact, person);
+  expect(person.urls.contents.map(entry => entry.value)).toContain("https://erika.example/");
+  expect(person.notes).toBe("Still here");
+});

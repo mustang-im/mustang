@@ -32,9 +32,12 @@ export class JSContact {
       sanitize.nonemptystring(e.uri ?? e.user, null),
       null, e.service));
     JSContact.toContactEntries(person.urls, jscontact.links, e => {
-      let uri = !e.uri || JSContact.startsWithURIScheme.test(e.uri) ? e.uri : "https://" + e.uri; // written by older versions of Mustang
+      let uri = sanitize.nonemptystring(e.uri, null);
+      if (uri && !JSContact.startsWithURIScheme.test(uri)) {
+        uri = "https://" + uri; // written by older versions of Mustang
+      }
       let url = sanitize.url(uri, null, ["https", "http", "mailto", "tel", "fax"]); // ["*"] ?
-      return new ContactEntry(url, null, url ? new URL(url).protocol.slice(0, -1) : null);
+      return new ContactEntry(url, null, url ? url.slice(0, url.indexOf(":")) : null);
     });
 
     person.picture = sanitize.url(jscontact.media?.avatar?.uri, null, ["https", "data", "blob"]);
