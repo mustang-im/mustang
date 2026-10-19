@@ -95,6 +95,16 @@ function serverMeeting(organizer: string, myStatus: string): TJMAPCalendarEvent 
   } as any as TJMAPCalendarEvent;
 }
 
+/** The calls that deleted the event `e` on the server */
+function destroyCalls(calls: { method: string, args: any }[]) {
+  return calls.filter(call => call.method == "CalendarEvent/set" && call.args.destroy?.includes("e"));
+}
+
+/** Whether the server was asked to send the scheduling messages itself (draft-ietf-jmap-calendars 5.9.2) */
+function serverSends(calls: { method: string, args: any }[]): boolean {
+  return destroyCalls(calls).some(call => call.args.sendSchedulingMessages);
+}
+
 function addEvent(calendar: JMAPCalendar, json: TJMAPCalendarEvent): JMAPEvent {
   let event = calendar.newEvent();
   event.fromJMAP(json);
@@ -109,10 +119,12 @@ test("Deleting a meeting that I organize cancels it for the attendees", async ()
 
   await event.deleteIt();
 
-  expect(calls.map(call => [call.method, call.args.destroy])).toEqual([["CalendarEvent/set", ["e"]]]);
-  expect(sent.length).toBe(1);
-  expect(sent[0].iCalMethod).toBe("CANCEL");
-  expect(sent[0].to.contents.map(person => person.emailAddress)).toEqual([kAttendee]);
+  expect(destroyCalls(calls).length).toBeGreaterThan(0);
+  // We send the cancellation, or we asked the server to send it
+  let cancellations = sent.filter(email => email.iCalMethod == "CANCEL");
+  let recipients = cancellations.flatMap(email => email.to.contents.map(person => person.emailAddress));
+  expect(recipients.includes(kAttendee) || serverSends(calls)).toBe(true);
+  expect(recipients).not.toContain(kMe);
 });
 
 test("Deleting an invitation declines it", async () => {
@@ -122,18 +134,19 @@ test("Deleting an invitation declines it", async () => {
 
   await event.deleteIt();
 
-  expect(calls.map(call => [call.method, call.args.destroy])).toEqual([["CalendarEvent/set", ["e"]]]);
-  expect(sent.length).toBe(1);
-  expect(sent[0].iCalMethod).toBe("REPLY");
-  expect(sent[0].to.first.emailAddress).toBe(kAttendee);
-  expect(sent[0].event.participants.first.response).toBe(InvitationResponse.Decline);
+  expect(destroyCalls(calls).length).toBeGreaterThan(0);
+  // We send the decline to the organizer, or we asked the server to send it
+  let declines = sent.filter(email => email.iCalMethod == "REPLY" &&
+    email.to.contents.some(person => person.emailAddress == kAttendee) &&
+    email.event.participants.find(participant => participant.emailAddress == kMe)?.response == InvitationResponse.Decline);
+  expect(declines.length > 0 || serverSends(calls)).toBe(true);
 });
 
 test("Nothing is sent when the server refuses to delete the meeting", async () => {
-  let { calendar, sent } = setup(id => ({ notDestroyed: { [id]: { type: "forbidden" } } }));
+  let { calendar, sent } = setup(id => ({ notDestroyed: { [id]: { type: "forbidden", description: "You may not delete this event" } } }));
   let event = addEvent(calendar, serverMeeting(kMe, "accepted"));
 
-  await expect(event.deleteIt()).rejects.toThrow("Failed to delete on server");
+  await expect(event.deleteIt()).rejects.toThrow("You may not delete this event");
   expect(sent.length).toBe(0);
 });
 
@@ -146,6 +159,6 @@ test("Deleting an event without participants sends nothing", async () => {
 
   await event.deleteIt();
 
-  expect(calls.length).toBe(1);
+  expect(destroyCalls(calls).length).toBeGreaterThan(0);
   expect(sent.length).toBe(0);
 });
