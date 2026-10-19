@@ -1,17 +1,17 @@
-<RibbonToggleButton label={$t`Day`} icon={DayIcon} shortCutInfo="Ctrl+Alt+1" isRadio
-  checked={!isTable && view == "day"} onChange={() => arrange("day")} />
-<RibbonToggleButton label={$t`Work Week`} icon={WorkWeekIcon} shortCutInfo="Ctrl+Alt+2" isRadio
-  checked={!isTable && view == "workweek"} onChange={() => arrange("workweek")} />
-<RibbonToggleButton label={$t`Week`} icon={WeekIcon} shortCutInfo="Ctrl+Alt+3" isRadio
-  checked={!isTable && view == "week"} onChange={() => arrange("week")} />
-<RibbonToggleButton label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4" isRadio
-  checked={!isTable && view == "month"} onChange={() => arrange("month")} />
-<RibbonToggleButton label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5" isRadio
+<RibbonToggleButton label={$t`Day`} icon={DayIcon} shortCutInfo="Ctrl+Alt+1"
+  selected={!isTable && view == "day"} onClick={() => arrange("day")} />
+<RibbonToggleButton label={$t`Work Week`} icon={WorkWeekIcon} shortCutInfo="Ctrl+Alt+2"
+  selected={!isTable && view == "workweek"} onClick={() => arrange("workweek")} />
+<RibbonToggleButton label={$t`Week`} icon={WeekIcon} shortCutInfo="Ctrl+Alt+3"
+  selected={!isTable && view == "week"} onClick={() => arrange("week")} />
+<RibbonToggleButton label={$t`Month`} icon={MonthIcon} shortCutInfo="Ctrl+Alt+4"
+  selected={!isTable && view == "month"} onClick={() => arrange("month")} />
+<RibbonToggleButton label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo="Ctrl+Alt+5"
   tooltip={$t`Show the calendars in rows, with the time running from left to right`}
-  checked={!isTable && view == "schedule"} onChange={() => arrange("schedule")} />
-<RibbonToggleButton label={$t`Day/Month`} icon={DualIcon} isRadio
+  selected={!isTable && view == "schedule"} onClick={() => arrange("schedule")} />
+<RibbonToggleButton label={$t`Day/Month`} icon={DualIcon}
   tooltip={$t`Show the selected day and the next day on the left, and the month on the right`}
-  checked={!isTable && view == "dual"} onChange={() => arrange("dual")} />
+  selected={!isTable && view == "dual"} onClick={() => arrange("dual")} />
 
 <script lang="ts">
   import { CalendarCurrentView, type CalendarViewType } from "./selected";

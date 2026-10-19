@@ -1,12 +1,12 @@
 <RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Refine`}>
     <RibbonToggleButton label={$t`From`} icon={FromIcon}
-      checked={isFrom}
+      selected={isFrom}
       tooltip={isFrom ? $t`From: ${$searchOptions.person.name}` : $t`Only messages from a person`}
-      onChange={checked => checked ? pickPerson($t`From`, person => setPerson(person, false)) : setPerson(null, false)} />
+      onClick={() => isFrom ? setPerson(null, false) : pickPerson($t`From`, person => setPerson(person, false))} />
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
-      checked={$searchOptions.hasAttachment}
-      onChange={checked => { $searchOptions = { ...$searchOptions, hasAttachment: checked }; }} />
+      selected={$searchOptions.hasAttachment}
+      onClick={() => { $searchOptions = { ...$searchOptions, hasAttachment: !$searchOptions.hasAttachment }; }} />
     <RibbonMenuButton label={$t`Categorized`} icon={CategorizeIcon}
       disabled={!$tags.hasItems && $t`There are no categories yet`}>
       <CategoryMenuItems selected={$searchOptions.tags}
@@ -27,11 +27,11 @@
         onClick={() => $searchOptions = { ...$searchOptions, person: null, isOutgoing: isSentByMe ? null : true }} />
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Unread`} icon={UnreadIcon} size="small"
-      checked={$searchOptions.isRead === false}
-      onChange={checked => { $searchOptions = { ...$searchOptions, isRead: checked ? false : null }; }} />
+      selected={$searchOptions.isRead === false}
+      onClick={() => { $searchOptions = { ...$searchOptions, isRead: $searchOptions.isRead === false ? null : false }; }} />
     <RibbonToggleButton label={$t`Flagged`} icon={FlagIcon} size="small"
-      checked={$searchOptions.flagged}
-      onChange={checked => { $searchOptions = { ...$searchOptions, flagged: checked }; }} />
+      selected={$searchOptions.flagged}
+      onClick={() => { $searchOptions = { ...$searchOptions, flagged: !$searchOptions.flagged }; }} />
     <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small"
       tooltip={$t`More refiners`}>
       <SubMenu label={$t`Received`}>
@@ -55,24 +55,24 @@
     </RibbonMenuButton>
     {#if $searchOptions.threadID}
       <RibbonToggleButton label={$t`This Conversation`} icon={ConversationIcon} size="small"
-        checked={true}
+        selected
         tooltip={$t`Only messages of the conversation that you chose with Find Related`}
-        onChange={checked => { if (!checked) { $searchOptions = { ...$searchOptions, threadID: null }; } }} />
+        onClick={() => { $searchOptions = { ...$searchOptions, threadID: null }; }} />
     {/if}
   </RibbonGroup>
   <RibbonGroup label={$t`Scope`}>
     <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.AllAccounts)} shortLabel={MailSearch.scopeShortLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
-      checked={scope == SearchScope.AllAccounts} isRadio
-      onChange={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts }; }}
+      selected={scope == SearchScope.AllAccounts}
+      onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts }; }}
       shortCutInfo="Ctrl+Alt+A" />
     <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentAccount)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
-      checked={scope == SearchScope.CurrentAccount} isRadio
+      selected={scope == SearchScope.CurrentAccount}
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
-      onChange={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentAccount }; }} />
+      onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentAccount }; }} />
     <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
-      checked={scope == SearchScope.CurrentFolder} isRadio
+      selected={scope == SearchScope.CurrentFolder}
       disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
-      onChange={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder }; }}
+      onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder }; }}
       shortCutInfo="Ctrl+Alt+K" />
   </RibbonGroup>
   <RibbonGroup label={$t`Options`}>

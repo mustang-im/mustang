@@ -8,10 +8,10 @@
           onClick={deleteIt} />
       </RibbonGroup>
       <RibbonGroup label={$t`Show`}>
-        <RibbonToggleButton label={$t`Members`} icon={MembersIcon} isRadio
-          checked={page == "members"} onChange={() => { page = "members"; }} />
-        <RibbonToggleButton label={$t`Notes`} icon={NotesIcon} isRadio
-          checked={page == "notes"} onChange={() => { page = "notes"; }} />
+        <RibbonToggleButton label={$t`Members`} icon={MembersIcon}
+          selected={page == "members"} onClick={() => { page = "members"; }} />
+        <RibbonToggleButton label={$t`Notes`} icon={NotesIcon}
+          selected={page == "notes"} onClick={() => { page = "notes"; }} />
       </RibbonGroup>
       <RibbonGroup label={$t`Members`}>
         <RibbonMenuButton label={$t`Add Members`} icon={AddMembersIcon}>

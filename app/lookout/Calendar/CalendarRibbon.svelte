@@ -117,9 +117,9 @@
       </RibbonMenuButton>
       <RibbonToggleButton label={$t`Overlay`} icon={OverlayIcon} size="small"
         tooltip={$t`Show the calendars on top of each other, instead of side by side`}
-        checked={!splitView}
+        selected={!splitView}
         disabled={overlayDisabled}
-        onChange={checked => onOverlay(checked)} />
+        onClick={onOverlay} />
     </RibbonGroup>
     <RibbonGroup label={$t`Color`}>
       <RibbonMenuButton label={$t`Color`} icon={ColorIcon}
@@ -332,8 +332,8 @@
     await CalendarActions.deleteCalendar($selectedCalendar);
   }
 
-  function onOverlay(overlay: boolean) {
-    splitViewSetting.value = !overlay;
+  function onOverlay() {
+    splitViewSetting.value = !splitView;
   }
 
   function onTimeScale(minutes: number) {

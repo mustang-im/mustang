@@ -42,8 +42,8 @@
       <ArrangeByMenuItems {folder} />
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Reverse Sort`} icon={ReverseIcon} size="small"
-      checked={!!$settings.reverseSort}
-      onChange={checked => MailViewSettings.change(folder, { reverseSort: checked })} />
+      selected={!!$settings.reverseSort}
+      onClick={() => MailViewSettings.change(folder, { reverseSort: !$settings.reverseSort })} />
     <RibbonButton label={$t`Add Columns`} icon={AddColumnsIcon} size="small"
       tooltip={$t`Choose the columns of the single-line view`}
       onClick={onAddColumns} />
@@ -58,8 +58,8 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Layout`}>
     <RibbonToggleButton label={$t`Use Tighter Spacing`} icon={SpacingIcon}
-      checked={!!$settings.tighterSpacing}
-      onChange={checked => MailViewSettings.change(folder, { tighterSpacing: checked }, ApplyScope.AllFolders)} />
+      selected={!!$settings.tighterSpacing}
+      onClick={() => MailViewSettings.change(folder, { tighterSpacing: !$settings.tighterSpacing }, ApplyScope.AllFolders)} />
     <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
       <MenuItem label={$t`Normal`} checked={$folderPane.value == FolderPaneMode.Normal}
         onClick={() => { $folderPane.value = FolderPaneMode.Normal; }} />

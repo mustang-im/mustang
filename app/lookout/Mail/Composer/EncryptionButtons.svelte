@@ -2,14 +2,14 @@
   {#if privateKey}
     <RibbonToggleButton label={$t`Encrypt`} icon={EncryptIcon}
       tooltip={$t`Only the recipients can read the email`}
-      checked={!!$mail.shouldEncrypt}
+      selected={!!$mail.shouldEncrypt}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
-      onChange={() => ComposerEncryption.toggleEncrypted(mail, identity)} />
+      onClick={() => ComposerEncryption.toggleEncrypted(mail, identity)} />
     <RibbonToggleButton label={$t`Sign`} icon={SignIcon}
       tooltip={$t`This proves that I wrote this email`}
-      checked={!!$mail.signedByKeyID}
+      selected={!!$mail.signedByKeyID}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
-      onChange={() => ComposerEncryption.toggleSigned(mail, identity)} />
+      onClick={() => ComposerEncryption.toggleSigned(mail, identity)} />
   {:else}
     <RibbonButton label={$t`Encrypt`} icon={EncryptIcon}
       tooltip={$t`You need a digital ID to encrypt messages. Set it up in the Trust Center.`}

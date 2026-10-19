@@ -14,14 +14,14 @@
         </RibbonSplitButton>
       </RibbonGroup>
       <RibbonGroup label={$t`Show`}>
-        <RibbonToggleButton label={$t`General`} icon={GeneralIcon} isRadio
-          checked={page == "general"} onChange={() => { page = "general"; }} />
-        <RibbonToggleButton label={$t`Details`} icon={DetailsIcon} isRadio
-          checked={page == "details"} onChange={() => { page = "details"; }} />
-        <RibbonToggleButton label={$t`Certificates`} icon={CertificatesIcon} isRadio
-          checked={page == "certificates"} onChange={() => { page = "certificates"; }} />
-        <RibbonToggleButton label={$t`All Fields`} icon={AllFieldsIcon} isRadio
-          checked={page == "all-fields"} onChange={() => { page = "all-fields"; }} />
+        <RibbonToggleButton label={$t`General`} icon={GeneralIcon}
+          selected={page == "general"} onClick={() => { page = "general"; }} />
+        <RibbonToggleButton label={$t`Details`} icon={DetailsIcon}
+          selected={page == "details"} onClick={() => { page = "details"; }} />
+        <RibbonToggleButton label={$t`Certificates`} icon={CertificatesIcon}
+          selected={page == "certificates"} onClick={() => { page = "certificates"; }} />
+        <RibbonToggleButton label={$t`All Fields`} icon={AllFieldsIcon}
+          selected={page == "all-fields"} onClick={() => { page = "all-fields"; }} />
       </RibbonGroup>
       <RibbonGroup label={$t`Communicate`}>
         <RibbonButton label={$t`Email`} icon={MailIcon} size="small"

@@ -29,7 +29,8 @@
   <RibbonGroup label={$t`Emoji`}>
     <RibbonToggleButton label={$t`Emoji`} icon={EmojiIcon}
       disabled={!editor}
-      bind:checked={showEmojis} />
+      selected={showEmojis}
+      onClick={() => { showEmojis = !showEmojis; }} />
   </RibbonGroup>
   <slot name="groups" />
 </RibbonTab>

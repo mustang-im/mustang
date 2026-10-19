@@ -1,14 +1,14 @@
 <RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Scope`}>
-    <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon} isRadio
-      checked={$options.scope == CalendarSearchScope.CurrentFolder}
+    <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon}
+      selected={$options.scope == CalendarSearchScope.CurrentFolder}
       disabled={!hasSelectedCalendar && $t`Select a calendar first`}
       tooltip={$t`Search only the selected calendar`}
-      onChange={() => update({ scope: CalendarSearchScope.CurrentFolder })} />
-    <RibbonToggleButton label={$t`All Calendar Items`} icon={AllCalendarsIcon} isRadio
-      checked={$options.scope == CalendarSearchScope.AllCalendarItems}
+      onClick={() => update({ scope: CalendarSearchScope.CurrentFolder })} />
+    <RibbonToggleButton label={$t`All Calendar Items`} icon={AllCalendarsIcon}
+      selected={$options.scope == CalendarSearchScope.AllCalendarItems}
       tooltip={$t`Search all calendars`}
-      onChange={() => update({ scope: CalendarSearchScope.AllCalendarItems })} />
+      onClick={() => update({ scope: CalendarSearchScope.AllCalendarItems })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Refine`}>
     <RibbonMenuButton label={organizerLabel} icon={OrganizerIcon}
@@ -23,11 +23,11 @@
       {/each}
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
-      checked={$options.hasAttachments}
-      onChange={checked => update({ hasAttachments: checked })} />
+      selected={$options.hasAttachments}
+      onClick={() => update({ hasAttachments: !$options.hasAttachments })} />
     <RibbonToggleButton label={$t`Recurring`} icon={RecurringIcon}
-      checked={$options.isRecurring}
-      onChange={checked => update({ isRecurring: checked })} />
+      selected={$options.isRecurring}
+      onClick={() => update({ isRecurring: !$options.isRecurring })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo="Esc"

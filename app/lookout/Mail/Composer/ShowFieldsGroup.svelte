@@ -1,13 +1,14 @@
 <RibbonGroup label={$t`Show Fields`}>
   <RibbonToggleButton label={$t`Bcc`} icon={BccIcon}
     tooltip={$t`Show the Bcc field`}
-    checked={$showBcc.value || hasBCC}
+    selected={$showBcc.value || hasBCC}
     disabled={hasBCC && $t`Remove the Bcc recipients first`}
-    onChange={checked => { $showBcc.value = checked; }} />
+    onClick={() => { $showBcc.value = !$showBcc.value; }} />
   <RibbonToggleButton label={$t`From`} icon={FromIcon}
     tooltip={$t`Show the From field`}
     disabled={!hasSeveralIdentities && $t`You have only one sender identity`}
-    bind:checked={$showFrom.value} />
+    selected={$showFrom.value}
+    onClick={() => { $showFrom.value = !$showFrom.value; }} />
 </RibbonGroup>
 
 <script lang="ts">

@@ -1,6 +1,6 @@
 <RibbonButtonBase {label} {shortLabel} {icon} {tooltip} {shortCutInfo} {disabled} {size} {classes}
-  toggle pressed={checked}
-  onClick={onToggle} {errorCallback}
+  toggle pressed={selected}
+  {onClick} {errorCallback}
   bind:buttonEl
   />
 
@@ -12,9 +12,8 @@
   export let label: string;
   export let shortLabel: string = null;
   export let icon: ConstructorOfATypedSvelteComponent = null;
-  export let checked = false;
-  export let isRadio = false;
-  export let onChange: (checked: boolean) => void | Promise<void> = null;
+  export let selected = false;
+  export let onClick: (event: Event) => void | Promise<void> = null;
   export let disabled: boolean | string = false;
   export let size: RibbonItemSize = "large";
   export let tooltip: string = null;
@@ -22,18 +21,4 @@
   export let classes = "";
   export let errorCallback = showError;
   export let buttonEl: HTMLButtonElement = null;
-
-  async function onToggle() {
-    if (isRadio && checked) {
-      return;
-    }
-    let wanted = !checked;
-    checked = wanted;
-    try {
-      await onChange?.(wanted);
-    } catch (ex) {
-      checked = !wanted;
-      throw ex;
-    }
-  }
 </script>

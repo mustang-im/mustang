@@ -13,25 +13,25 @@
   <RibbonGroup label={$t`Basic Text`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
       <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo="Ctrl+B"
-        checked={!!editor?.isActive("bold")} disabled={!editor}
-        onChange={() => run(chain => chain.toggleBold())} />
+        selected={!!editor?.isActive("bold")} disabled={!editor}
+        onClick={() => run(chain => chain.toggleBold())} />
       <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo="Ctrl+I"
-        checked={!!editor?.isActive("italic")} disabled={!editor}
-        onChange={() => run(chain => chain.toggleItalic())} />
+        selected={!!editor?.isActive("italic")} disabled={!editor}
+        onClick={() => run(chain => chain.toggleItalic())} />
       <RibbonToggleButton label={$t`Underline`} icon={UnderlineIcon} shortCutInfo="Ctrl+U"
-        checked={!!editor?.isActive("underline")} disabled={!editor}
-        onChange={() => run(chain => chain.toggleUnderline())} />
+        selected={!!editor?.isActive("underline")} disabled={!editor}
+        onClick={() => run(chain => chain.toggleUnderline())} />
       <RibbonToggleButton label={$t`Strikethrough`} icon={StrikethroughIcon}
-        checked={!!editor?.isActive("strike")} disabled={!editor}
-        onChange={() => run(chain => chain.toggleStrike())} />
+        selected={!!editor?.isActive("strike")} disabled={!editor}
+        onClick={() => run(chain => chain.toggleStrike())} />
     </RibbonButtonRow>
     <RibbonButtonRow label={$t`Paragraph`}>
       <RibbonToggleButton label={$t`Bullets`} icon={BulletsIcon}
-        checked={!!editor?.isActive("bulletList")} disabled={!editor}
-        onChange={() => run(chain => chain.toggleBulletList())} />
+        selected={!!editor?.isActive("bulletList")} disabled={!editor}
+        onClick={() => run(chain => chain.toggleBulletList())} />
       <RibbonToggleButton label={$t`Numbering`} icon={NumberingIcon}
-        checked={!!editor?.isActive("orderedList")} disabled={!editor}
-        onChange={() => run(chain => chain.toggleOrderedList())} />
+        selected={!!editor?.isActive("orderedList")} disabled={!editor}
+        onClick={() => run(chain => chain.toggleOrderedList())} />
       <RibbonButton label={$t`Decrease Indent`} icon={OutdentIcon}
         disabled={!editor?.can().liftListItem("listItem") && $t`Only list items can be indented`}
         onClick={() => run(chain => chain.liftListItem("listItem"))} />
@@ -65,7 +65,8 @@
   <RibbonGroup label={$t`Editor`}>
     <RibbonToggleButton label={$t`Spelling`} icon={SpellingIcon}
       tooltip={$t`Check spelling while typing`}
-      bind:checked={$spellcheck.value} />
+      selected={$spellcheck.value}
+      onClick={() => { $spellcheck.value = !$spellcheck.value; }} />
   </RibbonGroup>
 </RibbonTab>
 <FileSelector bind:this={fileSelector} />

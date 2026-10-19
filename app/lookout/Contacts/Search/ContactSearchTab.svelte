@@ -1,25 +1,25 @@
 <RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Scope`}>
-    <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon} isRadio
-      checked={$options.scope == ContactSearchScope.CurrentFolder}
+    <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon}
+      selected={$options.scope == ContactSearchScope.CurrentFolder}
       disabled={!hasSelectedAddressbook && $t`Select an address book first`}
       tooltip={$t`Search only the selected address book`}
-      onChange={() => update({ scope: ContactSearchScope.CurrentFolder })} />
-    <RibbonToggleButton label={$t`All Contact Items`} icon={AllContactsIcon} isRadio
-      checked={$options.scope == ContactSearchScope.AllContactItems || !hasSelectedAddressbook}
+      onClick={() => update({ scope: ContactSearchScope.CurrentFolder })} />
+    <RibbonToggleButton label={$t`All Contact Items`} icon={AllContactsIcon}
+      selected={$options.scope == ContactSearchScope.AllContactItems || !hasSelectedAddressbook}
       tooltip={$t`Search all address books and directories`}
-      onChange={() => update({ scope: ContactSearchScope.AllContactItems })} />
+      onClick={() => update({ scope: ContactSearchScope.AllContactItems })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Refine`}>
     <RibbonToggleButton label={$t`Has Phone Number`} icon={PhoneIcon}
-      checked={$options.hasPhoneNumber}
-      onChange={checked => update({ hasPhoneNumber: checked })} />
+      selected={$options.hasPhoneNumber}
+      onClick={() => update({ hasPhoneNumber: !$options.hasPhoneNumber })} />
     <RibbonToggleButton label={$t`Has Address`} icon={AddressIcon}
-      checked={$options.hasAddress}
-      onChange={checked => update({ hasAddress: checked })} />
+      selected={$options.hasAddress}
+      onClick={() => update({ hasAddress: !$options.hasAddress })} />
     <RibbonToggleButton label={$t`Has E-mail Address`} icon={MailIcon}
-      checked={$options.hasEMailAddress}
-      onChange={checked => update({ hasEMailAddress: checked })} />
+      selected={$options.hasEMailAddress}
+      onClick={() => update({ hasEMailAddress: !$options.hasEMailAddress })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo="Esc"

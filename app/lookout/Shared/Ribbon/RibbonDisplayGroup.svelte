@@ -1,17 +1,17 @@
 <RibbonGroup label={$t`Ribbon`}>
   <RibbonToggleButton label={$t`Simplified Ribbon`} shortLabel={$t`Simplified`} icon={SimplifiedIcon}
     tooltip={$t`Show the commands in one row`}
-    checked={$layout.value == "simplified"}
-    onChange={checked => { $layout.value = checked ? "simplified" : "classic"; }} />
+    selected={$layout.value == "simplified"}
+    onClick={() => { $layout.value = $layout.value == "simplified" ? "classic" : "simplified"; }} />
   <RibbonToggleButton label={$t`Show Tabs Only`} icon={TabsOnlyIcon} size="small"
     tooltip={$t`Show only the tab names. Click a tab to see its commands.`}
     shortCutInfo="Ctrl+F1"
-    checked={!!$collapsed.value}
-    onChange={checked => { $collapsed.value = checked; }} />
+    selected={!!$collapsed.value}
+    onClick={() => { $collapsed.value = !$collapsed.value; }} />
   <RibbonToggleButton label={$t`Quick Access Toolbar`} icon={QuickAccessIcon} size="small"
     tooltip={$t`Show the Quick Access Toolbar`}
-    checked={!$qatHidden.value}
-    onChange={checked => { $qatHidden.value = !checked; }} />
+    selected={!$qatHidden.value}
+    onClick={() => { $qatHidden.value = !$qatHidden.value; }} />
   <RibbonButton label={$t`Customize Ribbon…`} icon={CustomizeIcon} size="small"
     tooltip={$t`Choose which tabs and groups the ribbon shows`}
     onClick={() => { $isCustomizing = true; }} />

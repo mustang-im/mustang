@@ -2,7 +2,8 @@
   <RibbonGroup label={$t`Proofing`}>
     <RibbonToggleButton label={$t`Spelling & Grammar`} shortLabel={$t`Spelling`} icon={SpellingIcon}
       tooltip={$t`Check spelling while typing`}
-      bind:checked={$spellcheck.value} />
+      selected={$spellcheck.value}
+      onClick={() => { $spellcheck.value = !$spellcheck.value; }} />
     <RibbonButton label={$t`Word Count`} icon={WordCountIcon}
       tooltip={$t`The number of words, characters and paragraphs in the text or the selection`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.WordCount; }} />
