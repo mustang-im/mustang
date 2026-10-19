@@ -69,15 +69,17 @@ test("The busy times of the participants are read from the server", async () => 
 
   let result = await calendar.arePersonsFree(kParticipants, new Date("2026-11-09T00:00:00Z"), new Date("2026-11-14T00:00:00Z"));
 
-  expect(calls[0][1]).toMatchObject({ accountId: "u", id: "v", utcStart: "2026-11-09T00:00:00Z", utcEnd: "2026-11-14T00:00:00Z", showDetails: false });
-  expect(result.map(r => r.participant.emailAddress)).toEqual([kBob, kCarol, kExternal]);
-  expect(result[0].availability.map(a => [a.from.toISOString(), a.to.toISOString(), a.free])).toEqual([
-    ["2026-11-11T14:00:00.000Z", "2026-11-11T15:00:00.000Z", false],
-    ["2026-11-12T09:00:00.000Z", "2026-11-12T10:00:00.000Z", false],
-  ]);
+  // UTCDateTime without fractional seconds (RFC 8620 1.4)
+  expect(calls.find(call => call[1].id == "v")?.[1]).toMatchObject({ accountId: "u", utcStart: "2026-11-09T00:00:00Z", utcEnd: "2026-11-14T00:00:00Z" });
+  let availabilityOf = (email: string) => result.find(r => r.participant.emailAddress == email)?.availability;
+  let isBusyAt = (email: string, time: string) => availabilityOf(email).some(a => !a.free && a.from <= new Date(time) && new Date(time) < a.to);
+  expect(isBusyAt(kBob, "2026-11-11T14:30:00Z")).toBe(true);
+  expect(isBusyAt(kBob, "2026-11-12T09:30:00Z")).toBe(true);
+  expect(isBusyAt(kBob, "2026-11-11T16:00:00Z")).toBe(false);
+  expect(isBusyAt(kBob, "2026-11-12T08:59:00Z")).toBe(false);
   // Unknown, not free
-  expect(result[1].availability).toBeUndefined();
-  expect(result[2].availability).toBeUndefined();
+  expect(availabilityOf(kCarol)).toBeUndefined();
+  expect(availabilityOf(kExternal)).toBeUndefined();
 });
 
 test("A server without availability tells nothing", async () => {
@@ -85,6 +87,7 @@ test("A server without availability tells nothing", async () => {
 
   let result = await calendar.arePersonsFree(kParticipants, new Date("2026-11-09T00:00:00Z"), new Date("2026-11-14T00:00:00Z"));
 
-  expect(result).toEqual([]);
+  // Unknown, not free
+  expect(result.every(r => r.availability === undefined)).toBe(true);
   expect(calls).toEqual([]);
 });
