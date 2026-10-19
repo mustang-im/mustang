@@ -156,7 +156,7 @@
     <InsertTab {editor} bind:openedTool onAttachFile={onAddAttachment} bind:showEmojis>
       <svelte:fragment slot="include">
         <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
-          <SignatureMenuItems identity={null} {editor} onSignatures={() => { $openSignatures = event; }} />
+          <SignatureMenuItems identity={null} {editor} on:editSignatures={() => { $openSignatures = event; }} />
         </RibbonMenuButton>
       </svelte:fragment>
     </InsertTab>

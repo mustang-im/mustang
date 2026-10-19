@@ -11,7 +11,7 @@
 {#if withSignature.length}
   <MenuDivider />
 {/if}
-<MenuItem label={$t`Signatures…`} onClick={onSignatures} />
+<MenuItem label={$t`Signatures…`} onClick={() => dispatch("editSignatures")} />
 
 <script lang="ts">
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
@@ -19,11 +19,12 @@
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import type { Editor } from "@tiptap/core";
+  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
   export let identity: MailIdentity;
   export let editor: Editor;
-  export let onSignatures: () => void;
+  const dispatch = createEventDispatcher<{ editSignatures: void }>();
 
   let identities = findAllIdentities();
   $: withSignature = $identities.contents.filter(candidate => SignatureEdits.hasText(candidate.signatureHTML));

@@ -3,7 +3,7 @@
   <InsertTab {editor} bind:openedTool onAttachFile={onAddAttachment} {onInsertPicture} bind:showEmojis>
     <svelte:fragment slot="include">
       <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
-        <SignatureMenuItems {identity} {editor} onSignatures={() => { $openSignatures = mail; }} />
+        <SignatureMenuItems {identity} {editor} on:editSignatures={() => { $openSignatures = mail; }} />
       </RibbonMenuButton>
     </svelte:fragment>
     <svelte:fragment slot="groups">
