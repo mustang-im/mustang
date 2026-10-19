@@ -201,6 +201,11 @@ input[type="checkbox"] {
   accent-color: var(--lo-accent);
 }
 
+/* The accent part of the Mustang icons. Their own <style> makes it turquoise for the whole document, and comes later. */
+:root .cls-2 {
+  stroke: var(--lo-accent-text);
+}
+
 .lo-card {
   background-color: var(--lo-pane-bg);
   border-radius: var(--lo-radius);
