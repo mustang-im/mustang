@@ -46,7 +46,7 @@
   import { assert } from "../../../logic/util/util";
   import { ArrayColl } from "svelte-collections";
   import { onMount } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
 
@@ -76,17 +76,17 @@
 
   async function onOK() {
     let person = recipients.first;
-    assert(person, gt`Enter the name of your colleague first`);
+    assert(person, $t`Enter the name of your colleague first`);
     await addSharedFolder(person, type);
   }
 
   async function addSharedFolder(person: PersonUID, type: SharedFolderType) {
     let name = person.name || person.emailAddress;
     if (type == SharedFolderType.Inbox) {
-      assert(!hasMailAccountOf(person), gt`You have already opened the mail of ${name}`);
+      assert(!hasMailAccountOf(person), $t`You have already opened the mail of ${name}`);
     }
     let shared = await account.findSharedFolders(person, distinguishedIDs(type));
-    assert(shared.length, gt`You have no access to the ${typeLabel(type)} of ${name}`);
+    assert(shared.length, $t`You have no access to the ${typeLabel(type)} of ${name}`);
     if (type == SharedFolderType.Calendar) {
       await account.addSharedCalendar(person);
     } else if (type == SharedFolderType.Contacts) {
@@ -107,11 +107,11 @@
   function typeLabel(type: SharedFolderType): string {
     switch (type) {
       case SharedFolderType.Calendar:
-        return gt`Calendar`;
+        return $t`Calendar`;
       case SharedFolderType.Contacts:
-        return gt`Contacts`;
+        return $t`Contacts`;
       default:
-        return gt`Inbox`;
+        return $t`Inbox`;
     }
   }
 

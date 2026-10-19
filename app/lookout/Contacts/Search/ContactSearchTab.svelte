@@ -22,7 +22,7 @@
       onClick={() => update({ hasEMailAddress: !$options.hasEMailAddress })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
-    <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo="Esc"
+    <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc`}
       onClick={closeSearch} />
   </RibbonGroup>
 </RibbonTab>

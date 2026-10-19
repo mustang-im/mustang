@@ -9,7 +9,7 @@
           {#if conflicts.length}
             <span class="conflict">
               <ConflictIcon size={12} />
-              {$t`Conflicts with ${conflicts.map(event => event.title || gt`(no title)`).join(", ")}`}
+              {$t`Conflicts with ${conflicts.map(event => event.title || $t`(no title)`).join(", ")}`}
             </span>
           {/if}
         </vbox>
@@ -27,7 +27,7 @@
   import { appGlobal } from "../../../../logic/app";
   import type { Collection } from "svelte-collections";
   import ConflictIcon from "lucide-svelte/icons/triangle-alert";
-  import { gt, t } from "../../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
 
   export let options: Collection<Date>;
   export let duration: number;

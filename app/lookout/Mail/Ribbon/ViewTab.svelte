@@ -142,7 +142,7 @@
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseAllIcon from "lucide-svelte/icons/chevrons-down-up";
   import ExpandAllIcon from "lucide-svelte/icons/chevrons-up-down";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   import { createEventDispatcher } from "svelte";
 
   export let folder: Folder | null;
@@ -203,14 +203,14 @@
   }
 
   const viewTypes = [
-    { id: ViewType.Compact, label: gt`Compact`, icon: CompactIcon, tooltip: gt`Sender, subject and preview in a narrow list` },
-    { id: ViewType.Single, label: gt`Single`, icon: SingleIcon, tooltip: gt`One line per message, in columns` },
-    { id: ViewType.Preview, label: gt`Preview`, icon: PreviewViewIcon, tooltip: gt`One line per message in columns, with a preview of the text` },
+    { id: ViewType.Compact, label: $t`Compact`, icon: CompactIcon, tooltip: $t`Sender, subject and preview in a narrow list` },
+    { id: ViewType.Single, label: $t`Single`, icon: SingleIcon, tooltip: $t`One line per message, in columns` },
+    { id: ViewType.Preview, label: $t`Preview`, icon: PreviewViewIcon, tooltip: $t`One line per message in columns, with a preview of the text` },
   ];
   const previewOptions = [
-    { lines: 0, label: gt`Off` },
-    { lines: 1, label: gt`1 Line` },
-    { lines: 2, label: gt`2 Lines` },
-    { lines: 3, label: gt`3 Lines` },
+    { lines: 0, label: $t`Off` },
+    { lines: 1, label: $t`1 Line` },
+    { lines: 2, label: $t`2 Lines` },
+    { lines: 3, label: $t`3 Lines` },
   ];
 </script>

@@ -24,13 +24,13 @@
   import Radio from "../../Shared/Form/Radio.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let settings: ViewSettings;
   const dispatch = createEventDispatcher<{ change: Partial<ViewSettings> }>();
 
   const fieldOptions: ComboOption<ArrangeBy | null>[] = [
-    { value: null, label: gt`(none)` },
+    { value: null, label: $t`(none)` },
     ...arrangeFields().map(option => ({ value: option.id, label: option.label })),
   ];
   let isAutomatic = !settings.groupBy && settings.showInGroups;

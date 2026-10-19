@@ -77,7 +77,7 @@
   import { agendaDays } from "./ToDoAgenda";
   import { derived } from "svelte/store";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let parts: ToDoBarPart[];
 
@@ -107,9 +107,9 @@
     today.setHours(0, 0, 0, 0);
     let diff = Math.round((day.getTime() - today.getTime()) / (24 * 3600 * 1000));
     if (diff == 0) {
-      return gt`Today`;
+      return $t`Today`;
     } else if (diff == 1) {
-      return gt`Tomorrow`;
+      return $t`Tomorrow`;
     }
     return day.toLocaleDateString(getDateTimeLocale(), { weekday: "long", day: "numeric", month: "long" });
   }

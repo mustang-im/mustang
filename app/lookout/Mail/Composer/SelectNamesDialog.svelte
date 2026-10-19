@@ -102,7 +102,7 @@
   import ClearIcon from "lucide-svelte/icons/x";
   import { ArrayColl } from "svelte-collections";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let mail: EMail = null;
   export let defaultField: RecipientField = RecipientField.To;
@@ -115,9 +115,9 @@
 
   const shownFields = mail
     ? [
-      new SelectNamesField(gt`To`, mail.to.contents),
-      new SelectNamesField(gt`Cc`, mail.cc.contents),
-      new SelectNamesField(gt`Bcc`, mail.bcc.contents),
+      new SelectNamesField($t`To`, mail.to.contents),
+      new SelectNamesField($t`Cc`, mail.cc.contents),
+      new SelectNamesField($t`Bcc`, mail.bcc.contents),
     ]
     : [new SelectNamesField(label, persons?.contents ?? [], single)];
   const defaultPick = mail
@@ -130,7 +130,7 @@
 
   function addressbookOptions(books: Addressbook[], searchOnlyBooks: Addressbook[]): ComboOption<Addressbook | null>[] {
     return [
-      { value: null, label: gt`All address books` },
+      { value: null, label: $t`All address books` },
       ...[...books, ...searchOnlyBooks].map(book => ({ value: book, label: book.name })),
     ];
   }

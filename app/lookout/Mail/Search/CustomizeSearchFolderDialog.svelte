@@ -35,7 +35,7 @@
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let title: string;
   export let name: string;
@@ -47,7 +47,7 @@
   let isEditingCriteria = false;
 
   const accountOptions: ComboOption<MailAccount | null>[] = [
-    { value: null, label: gt`All accounts` },
+    { value: null, label: $t`All accounts` },
     ...appGlobal.emailAccounts.contents.map(mailAccount => ({ value: mailAccount, label: mailAccount.name })),
   ];
   $: summary = criteriaSummary(search);
@@ -55,27 +55,27 @@
   function criteriaSummary(_search: SearchEMail): string {
     let parts: string[] = [];
     if (search.bodyText) {
-      parts.push(gt`containing ${search.bodyText}`);
+      parts.push($t`containing ${search.bodyText}`);
     }
     if (search.includesPerson && search.isOutgoing !== true) {
-      parts.push(gt`from ${search.includesPerson.name}`);
+      parts.push($t`from ${search.includesPerson.name}`);
     }
     if (search.includesPerson && search.isOutgoing === true) {
-      parts.push(gt`to ${search.includesPerson.name}`);
+      parts.push($t`to ${search.includesPerson.name}`);
     }
     if (search.isRead === false) {
-      parts.push(gt`unread`);
+      parts.push($t`unread`);
     }
     if (search.isStarred) {
-      parts.push(gt`flagged`);
+      parts.push($t`flagged`);
     }
     if (search.hasAttachment) {
-      parts.push(gt`with attachments`);
+      parts.push($t`with attachments`);
     }
     if (search.tags.hasItems) {
       parts.push(search.tags.contents.map(tag => tag.name).join(", "));
     }
-    return parts.join("; ") || gt`All mail`;
+    return parts.join("; ") || $t`All mail`;
   }
 
   async function onSubmit() {

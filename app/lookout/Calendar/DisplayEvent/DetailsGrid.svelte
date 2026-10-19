@@ -51,7 +51,7 @@
   import OnlineMeetingIcon from "lucide-svelte/icons/video";
   import AttendeesIcon from "lucide-svelte/icons/users-round";
   import { derived } from "svelte/store";
-  import { getDateTimeLocale, gPlural, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, plural, t } from "../../../l10n/l10n";
 
   export let event: Event;
 
@@ -72,7 +72,7 @@
       counts.none ? $t`${counts.none} didn't respond` : null,
     ].filter(Boolean);
     let total = counts.accepted + counts.tentative + counts.declined + counts.none;
-    return $t`${total} ${gPlural(total, { one: "attendee", other: "attendees" })}` + (parts.length ? ": " + parts.join(", ") : "");
+    return total + " " + $plural(total, { one: "attendee", other: "attendees" }) + (parts.length ? ": " + parts.join(", ") : "");
   }
 
   function onJoin() {

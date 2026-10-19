@@ -1,4 +1,4 @@
-<MenuItem label={$t`No Date`} icon={FlagIcon} shortCutInfo="Insert"
+<MenuItem label={$t`No Date`} icon={FlagIcon} shortCutInfo={$t`Insert`}
   tooltip={$t`Flag the message for follow up`}
   checked={allFlagged}
   onClick={async () => { await Promise.all(messages.map(message => message.markStarred(true))); }} />

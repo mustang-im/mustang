@@ -131,7 +131,7 @@
   import HTMLIcon from "lucide-svelte/icons/file-code";
   import MarkdownIcon from "lucide-svelte/icons/file-text";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let preselected: Calendar | Addressbook | null = null;
   export let action: ImportExportAction = "import";
@@ -218,10 +218,10 @@
 
   async function finish() {
     if (isExport) {
-      assert(source && fileType, gt`Please choose what to export first`);
+      assert(source && fileType, $t`Please choose what to export first`);
       await exportToFile(source, fileType);
     } else {
-      assert(folders.includes(folder), gt`Please choose a folder first`);
+      assert(folders.includes(folder), $t`Please choose a folder first`);
       if (action == "import-vcard") {
         await importVCard(folder as Addressbook, file);
       } else {

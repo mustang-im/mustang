@@ -48,18 +48,27 @@ export function timeOfDayLabel(time: Date): string {
 
 export function durationLabel(minutes: number): string {
   if (minutes < 60) {
-    return amountLabel(minutes, { one: "minute", other: "minutes" });
+    return amountLabel(minutes, "minute");
   }
   if (minutes >= 24 * 60 && minutes % (12 * 60) == 0) {
-    return amountLabel(minutes / (24 * 60), { one: "day", other: "days" });
+    return amountLabel(minutes / (24 * 60), "day");
   }
-  return amountLabel(minutes / 60, { one: "hour", other: "hours" });
+  return amountLabel(minutes / 60, "hour");
 }
 
-export function amountLabel(value: number, units: Record<string, string>): string {
+export function amountLabel(value: number, unit: "minute" | "hour" | "day" | "week"): string {
   let number = value.toLocaleString(getDateTimeLocale(), { maximumFractionDigits: 2 });
   let pluralNumber = Number.isInteger(value) ? value : 2;
-  return number + " " + gPlural(pluralNumber, units);
+  switch (unit) {
+    case "minute":
+      return number + " " + gPlural(pluralNumber, { one: "minute", other: "minutes" });
+    case "hour":
+      return number + " " + gPlural(pluralNumber, { one: "hour", other: "hours" });
+    case "day":
+      return number + " " + gPlural(pluralNumber, { one: "day", other: "days" });
+    case "week":
+      return number + " " + gPlural(pluralNumber, { one: "week", other: "weeks" });
+  }
 }
 
 export function parseTime(text: string, day: Date): Date {

@@ -15,7 +15,7 @@
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import ConversationIcon from "lucide-svelte/icons/messages-square";
   import SenderIcon from "lucide-svelte/icons/user-search";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 
@@ -26,7 +26,7 @@
     // <copied from="../../../frontend/Mail/Thread/ThreadPane.svelte">
     await message.findThread(message.folder.messages);
     // </copied>
-    assert(message.threadID, gt`This message is not part of a conversation`);
+    assert(message.threadID, $t`This message is not part of a conversation`);
     findRelated({ threadID: message.threadID });
   }
 

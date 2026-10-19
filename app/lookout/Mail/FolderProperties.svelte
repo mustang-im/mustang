@@ -36,7 +36,7 @@
   import DialogTabs from "../Shared/Dialog/DialogTabs.svelte";
   import { assert } from "../../logic/util/util";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-  import { gt, t } from "../../l10n/l10n";
+  import { t } from "../../l10n/l10n";
 
   export let folder: Folder;
   export let tab: FolderPropertiesTab = FolderPropertiesTab.General;
@@ -50,9 +50,9 @@
   let permissionsVersion = 0;
 
   $: tabs = [
-    { id: FolderPropertiesTab.General, label: gt`General` },
-    ...(permissions ? [{ id: FolderPropertiesTab.Permissions, label: gt`Permissions` }] : []),
-    { id: FolderPropertiesTab.Synchronization, label: gt`Synchronization` },
+    { id: FolderPropertiesTab.General, label: $t`General` },
+    ...(permissions ? [{ id: FolderPropertiesTab.Permissions, label: $t`Permissions` }] : []),
+    { id: FolderPropertiesTab.Synchronization, label: $t`Synchronization` },
   ];
   $: isChanged = isDirty(name, specialFolder, countMode, permissionsVersion);
 
@@ -65,7 +65,7 @@
     let isRenamed = name != folder.name;
     let isSpecialChanged = specialFolder != folder.specialFolder;
     if (isRenamed) {
-      assert(name.trim(), gt`Name cannot be empty`);
+      assert(name.trim(), $t`Name cannot be empty`);
       await folder.rename(name.trim());
       name = folder.name;
     }

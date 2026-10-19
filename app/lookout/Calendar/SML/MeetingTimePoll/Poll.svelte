@@ -29,16 +29,16 @@
   import RejectIcon from "lucide-svelte/icons/ban";
   import { ensureArray } from "../../../../logic/util/util";
   import { ArrayColl } from "svelte-collections";
-  import { gt, t } from "../../../../l10n/l10n";
+  import { t } from "../../../../l10n/l10n";
 
   export let sml: SMLData;
   export let myReaction: TSMLAction;
 
   const voteChoices = [
-    { preference: TSMLMeetingTimePreference.Accept, label: gt`This time is OK for me`, icon: AcceptIcon },
-    { preference: TSMLMeetingTimePreference.Maybe, label: gt`Not sure yet`, icon: MaybeIcon },
-    { preference: TSMLMeetingTimePreference.Bad, label: gt`It would be problematic for me`, icon: BadIcon },
-    { preference: TSMLMeetingTimePreference.Reject, label: gt`I cannot attend at this time`, icon: RejectIcon },
+    { preference: TSMLMeetingTimePreference.Accept, label: $t`This time is OK for me`, icon: AcceptIcon },
+    { preference: TSMLMeetingTimePreference.Maybe, label: $t`Not sure yet`, icon: MaybeIcon },
+    { preference: TSMLMeetingTimePreference.Bad, label: $t`It would be problematic for me`, icon: BadIcon },
+    { preference: TSMLMeetingTimePreference.Reject, label: $t`I cannot attend at this time`, icon: RejectIcon },
   ];
 
   $: poll = $sml.sml as TSMLMeetingTimePoll;

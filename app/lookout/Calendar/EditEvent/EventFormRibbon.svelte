@@ -35,7 +35,7 @@
             tooltip={$t`Delete the meeting and decline it`}
             onClick={onDelete} />
         {/if}
-        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
+        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
           onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
       <RibbonGroup label={$t`Calendar`}>
@@ -53,7 +53,7 @@
     {:else}
       <RibbonGroup label={$t`Actions`}>
         {#if !isMeeting}
-          <RibbonButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo="Alt+S"
+          <RibbonButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo={$t`Alt+S`}
             disabled={saveDisabled}
             onClick={onSave} />
         {/if}
@@ -73,10 +73,10 @@
             tooltip={$t`Send a cancellation to all attendees and delete the meeting`}
             onClick={onDelete} />
         {:else}
-          <RibbonButton label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Ctrl+D"
+          <RibbonButton label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Ctrl+D`}
             onClick={onDelete} />
         {/if}
-        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
+        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
           disabled={!flow.isSaved && (isMeeting ? $t`Send the meeting first` : $t`Save the appointment first`)}
           onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
@@ -125,7 +125,7 @@
               onClick={() => setReminderMinutesBefore(event, minutes)} />
           {/each}
         </RibbonMenuButton>
-        <RibbonButton label={$t`Recurrence`} icon={RecurrenceIcon} shortCutInfo="Ctrl+G"
+        <RibbonButton label={$t`Recurrence`} icon={RecurrenceIcon} shortCutInfo={$t`Ctrl+G`}
           onClick={() => { $openRecurrence = event; }} />
       </RibbonGroup>
     {/if}

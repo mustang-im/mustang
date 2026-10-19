@@ -15,7 +15,7 @@
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let rule: FilterRuleAction;
   const dispatch = createEventDispatcher<{ copy: MailAccount, close: void }>();
@@ -26,7 +26,7 @@
   function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
     return mailAccounts.map(account => ({
       value: account,
-      label: `${account.inbox?.name || gt`Inbox`} [${account.emailAddress || account.name}]`,
+      label: `${account.inbox?.name || $t`Inbox`} [${account.emailAddress || account.name}]`,
       disabled: !!RuleListActions.cannotCopyTo(rule, account),
     }));
   }

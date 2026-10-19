@@ -10,7 +10,7 @@
     </RibbonGroup>
   {/if}
   <RibbonGroup label={$t`Links`}>
-    <RibbonButton label={$t`Link`} icon={LinkIcon} shortCutInfo="Ctrl+K"
+    <RibbonButton label={$t`Link`} icon={LinkIcon} shortCutInfo={$t`Ctrl+K`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.Link; }} />
   </RibbonGroup>
   <RibbonGroup label={$t`Text`}>

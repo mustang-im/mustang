@@ -95,15 +95,15 @@
   import { ArrayColl } from "svelte-collections";
   import { openComposer } from "../../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let event: Event;
 
   event.startEditing();
   const flow = new EventEditFlow(event);
   const timeEditor = new EventTimeEditor(event);
-  const schedulingLabel = gt`Scheduling Assistant`;
-  const trackingLabel = gt`Tracking`;
+  const schedulingLabel = $t`Scheduling Assistant`;
+  const trackingLabel = $t`Tracking`;
 
   let editor: Editor = null;
   let openedTool: EditorTool | null = null;
@@ -163,11 +163,11 @@
 
   function changesText(isMeeting: boolean, isSaved: boolean) {
     if (isMeeting && !isSaved) {
-      return { question: gt`This meeting invitation has not been sent yet. Do you want to send it now?`, save: gt`Send`, discard: gt`Don't Send` };
+      return { question: $t`This meeting invitation has not been sent yet. Do you want to send it now?`, save: $t`Send`, discard: $t`Don't Send` };
     } else if (isMeeting) {
-      return { question: gt`Do you want to send an update with your changes to the attendees?`, save: gt`Send Update`, discard: gt`Discard Changes` };
+      return { question: $t`Do you want to send an update with your changes to the attendees?`, save: $t`Send Update`, discard: $t`Discard Changes` };
     }
-    return { question: gt`Do you want to save changes?`, save: gt`Save`, discard: gt`Don't Save` };
+    return { question: $t`Do you want to save changes?`, save: $t`Save`, discard: $t`Don't Save` };
   }
 
   async function onSave() {
@@ -177,8 +177,8 @@
     }
     if (flow.needsSeriesChoice) {
       seriesChoice = {
-        title: flow.isMeeting ? gt`Recurring Meeting` : gt`Recurring Appointment`,
-        okLabel: flow.willSend ? gt`Send` : gt`Save`,
+        title: flow.isMeeting ? $t`Recurring Meeting` : $t`Recurring Appointment`,
+        okLabel: flow.willSend ? $t`Send` : $t`Save`,
         choices: flow.seriesChoices(),
         onChoose: choice => flow.saveWith(choice),
       };

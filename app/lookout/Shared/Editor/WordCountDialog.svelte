@@ -3,13 +3,13 @@
     <hbox class="caption">{$t`Statistics:`}</hbox>
     <grid class="rows">
       <span>{$t`Words`}</span>
-      <span class="value">{statistics.words.toLocaleString()}</span>
+      <span class="value">{statistics.words.toLocaleString(getDateTimeLocale())}</span>
       <span>{$t`Characters (no spaces)`}</span>
-      <span class="value">{statistics.charactersWithoutSpaces.toLocaleString()}</span>
+      <span class="value">{statistics.charactersWithoutSpaces.toLocaleString(getDateTimeLocale())}</span>
       <span>{$t`Characters (with spaces)`}</span>
-      <span class="value">{statistics.charactersWithSpaces.toLocaleString()}</span>
+      <span class="value">{statistics.charactersWithSpaces.toLocaleString(getDateTimeLocale())}</span>
       <span>{$t`Paragraphs`}</span>
-      <span class="value">{statistics.paragraphs.toLocaleString()}</span>
+      <span class="value">{statistics.paragraphs.toLocaleString(getDateTimeLocale())}</span>
     </grid>
     {#if isSelection}
       <hbox class="note lo-secondary">{$t`Counted in the selected text`}</hbox>
@@ -22,7 +22,7 @@
   import Dialog from "../Dialog/Dialog.svelte";
   import type { Editor } from "@tiptap/core";
   import { createEventDispatcher } from "svelte";
-  import { t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let editor: Editor;
 

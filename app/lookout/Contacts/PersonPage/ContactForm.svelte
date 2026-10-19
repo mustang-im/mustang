@@ -3,7 +3,7 @@
     <RibbonTab label={$t`Contact`}>
       <RibbonGroup label={$t`Actions`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
-          onClick={saveAndClose} shortCutInfo="Alt+S" />
+          onClick={saveAndClose} shortCutInfo={$t`Alt+S`} />
         <RibbonButton label={$t`Delete`} icon={DeleteIcon}
           onClick={deleteIt} />
         <RibbonSplitButton label={$t`Save & New`} icon={SaveNewIcon} size="small"

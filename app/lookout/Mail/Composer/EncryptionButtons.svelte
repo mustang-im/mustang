@@ -32,7 +32,7 @@
   import SignIcon from "lucide-svelte/icons/signature";
   import { showError } from "../../../frontend/Util/error";
   import { assert, UserError } from "../../../logic/util/util";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;
   export let identity: MailIdentity;
@@ -66,7 +66,7 @@
       return;
     }
     let encryptDisabledReason = mail.mustEncrypt
-      ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
+      ? $t`Policy requires that this email stays encrypted, to keep protect secret information`
       : null;
     if (!mail.shouldEncrypt && encryptDisabledReason) {
       showError(new UserError(encryptDisabledReason));

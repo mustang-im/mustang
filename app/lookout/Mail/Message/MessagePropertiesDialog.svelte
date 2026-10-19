@@ -20,13 +20,13 @@
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { catchErrors } from "../../../frontend/Util/error";
   import { onMount } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
 
   const importanceOptions: ComboOption<boolean>[] = [
-    { value: false, label: gt`Normal` },
-    { value: true, label: gt`High` },
+    { value: false, label: $t`Normal` },
+    { value: true, label: $t`High` },
   ];
   let isImportant = !!message.isImportant;
   let headers = "";
@@ -35,7 +35,7 @@
   async function loadHeaders() {
     await message.loadMIME();
     if (!message.mime) {
-      headers = gt`Source not available`;
+      headers = $t`Source not available`;
       return;
     }
     let source = new TextDecoder().decode(message.mime);

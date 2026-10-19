@@ -64,7 +64,7 @@
     <RibbonToggleButton label={scopeLabel(SearchScope.AllAccounts)} shortLabel={scopeShortLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
       selected={scope == SearchScope.AllAccounts}
       onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts }; }}
-      shortCutInfo="Ctrl+Alt+A" />
+      shortCutInfo={$t`Ctrl+Alt+A`} />
     <RibbonToggleButton label={scopeLabel(SearchScope.CurrentAccount)} shortLabel={scopeShortLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
       selected={scope == SearchScope.CurrentAccount}
       disabled={!isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
@@ -73,11 +73,11 @@
       selected={scope == SearchScope.CurrentFolder}
       disabled={!isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
       onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder }; }}
-      shortCutInfo="Ctrl+Alt+K" />
+      shortCutInfo={$t`Ctrl+Alt+K`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Options`}>
     <RibbonMenuButton label={$t`Search Tools`} shortLabel={$t`Tools *=> Search tools`} icon={SearchToolsIcon}>
-      <MenuItem label={$t`Advanced Find…`} icon={AdvancedIcon} shortCutInfo="Ctrl+Shift+F"
+      <MenuItem label={$t`Advanced Find…`} icon={AdvancedIcon} shortCutInfo={$t`Ctrl+Shift+F`}
         onClick={() => $isAdvancedSearchOpen = true} />
     </RibbonMenuButton>
     <RibbonButton label={$t`Save as Search Folder`} shortLabel={$t`Save Search`} icon={SaveSearchIcon} size="small"
@@ -91,7 +91,7 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon}
-      onClick={() => { dispatch("close"); }} shortCutInfo="Esc" />
+      onClick={() => { dispatch("close"); }} shortCutInfo={$t`Esc`} />
   </RibbonGroup>
 </RibbonTab>
 

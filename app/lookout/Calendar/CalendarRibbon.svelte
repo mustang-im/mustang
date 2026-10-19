@@ -1,10 +1,10 @@
 <Ribbon>
   <RibbonTab label={$t`Home`}>
     <RibbonGroup label={$t`New`}>
-      <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo="Ctrl+N"
+      <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N`}
         onClick={() => CalendarActions.newEventAtSelection(null)}
         disabled={noCalendar} />
-      <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo="Ctrl+Shift+Q"
+      <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q`}
         onClick={() => CalendarActions.newEventAtSelection(null, "meeting")}
         disabled={noCalendar} />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon} disabled={noCalendar}>
@@ -21,7 +21,7 @@
       <RibbonButton label={$t`Today`} icon={TodayIcon} onClick={() => { goToToday(); showCalendar(); }} />
       <RibbonButton label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={() => { showNext7Days(); showCalendar(); }} />
       {#if isSimplified}
-        <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo="Ctrl+G" onClick={openGoToDate} />
+        <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo={$t`Ctrl+G`} onClick={openGoToDate} />
       {/if}
     </RibbonGroup>
     <RibbonGroup label={$t`Arrange`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
@@ -42,7 +42,7 @@
     </RibbonGroup>
     <RibbonGroup label={$t`Find`}>
       <SearchPeopleBox on:select={event => ContactActions.show(event.detail)} />
-      <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo="Ctrl+Shift+B" size="small"
+      <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo={$t`Ctrl+Shift+B`} size="small"
         onClick={() => openApp(contactsMustangApp, {})} />
     </RibbonGroup>
   </RibbonTab>

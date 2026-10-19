@@ -150,7 +150,7 @@
   import { useLocation } from "svelte-navigator";
   import { onDestroy, tick } from "svelte";
   import debounce from "lodash/debounce";
-  import { gt, t } from "../../l10n/l10n";
+  import { t } from "../../l10n/l10n";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
   import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
 
@@ -424,7 +424,7 @@
 
   async function saveSearchFolder(name: string, search: SearchEMail) {
     let folder = $openCustomizeSearchFolder;
-    assert(name.trim(), gt`Enter a name`);
+    assert(name.trim(), $t`Enter a name`);
     folder.name = name.trim();
     folder.search.copyFrom(search);
     await folder.save();

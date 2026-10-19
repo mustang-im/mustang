@@ -8,7 +8,7 @@
       tooltip={$t`Get new mail for the current folder`}
       onClick={() => MessageActions.getNewMail(folder)}
       disabled={MessageActions.disableGetNewMail(folder)}
-      shortCutInfo="Shift+F9" />
+      shortCutInfo={$t`Shift+F9`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Server`}>
     <RibbonButton label={$t`Download All Messages`} shortLabel={$t`Download`} icon={DownloadAllIcon} size="small"

@@ -33,13 +33,13 @@ export function reminderMinutesLabel(minutes: ReminderMinutes): string {
   }
   const kWeek = 7 * 24 * 60;
   if (minutes > 0 && minutes % kWeek == 0) {
-    return amountLabel(minutes / kWeek, { one: "week", other: "weeks" });
+    return amountLabel(minutes / kWeek, "week");
   }
   if (minutes == 12 * 60) {
-    return amountLabel(0.5, { one: "day", other: "days" });
+    return amountLabel(0.5, "day");
   }
   if (minutes > 60 && minutes % 30 != 0) {
-    return amountLabel(minutes, { one: "minute", other: "minutes" });
+    return amountLabel(minutes, "minute");
   }
   return durationLabel(minutes);
 }

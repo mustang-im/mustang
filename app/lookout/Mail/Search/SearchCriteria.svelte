@@ -122,7 +122,7 @@
   import RemoveIcon from "lucide-svelte/icons/x";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let draft: AdvancedSearchDraft;
   export let account: MailAccount | null = null;
@@ -145,9 +145,9 @@
       disabled: !isScopeAvailable(scope, account, folder),
     })) as ComboOption<SearchScope>[];
   const readOptions: ComboOption<ReadStatus>[] = [
-    { value: ReadStatus.All, label: gt`All` },
-    { value: ReadStatus.Read, label: gt`Read` },
-    { value: ReadStatus.Unread, label: gt`Unread` },
+    { value: ReadStatus.All, label: $t`All` },
+    { value: ReadStatus.Read, label: $t`Read` },
+    { value: ReadStatus.Unread, label: $t`Unread` },
   ];
   const sizeOptions: ComboOption<SizeRange>[] = [SizeRange.Any, ...namedSizeRanges]
     .map(size => ({ value: size, label: sizeRangeLabel(size) }));

@@ -8,14 +8,14 @@
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import { gt } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   const contentRendering = getLocalStorage<string>("mail.contentRendering", "html");
 
   const displayModes = [
-    { id: DisplayMode.HTML, label: gt`Display as HTML`, tooltip: gt`Show the message as the sender formatted it` },
-    { id: DisplayMode.Plaintext, label: gt`Display as Plain Text`, tooltip: gt`Show only the text of the message` },
-    { id: DisplayMode.Source, label: gt`View Message Source`, tooltip: gt`Show the on-the-wire format of the message` },
+    { id: DisplayMode.HTML, label: $t`Display as HTML`, tooltip: $t`Show the message as the sender formatted it` },
+    { id: DisplayMode.Plaintext, label: $t`Display as Plain Text`, tooltip: $t`Show only the text of the message` },
+    { id: DisplayMode.Source, label: $t`View Message Source`, tooltip: $t`Show the on-the-wire format of the message` },
   ];
 
   function isCurrent(mode: string, current: string): boolean {
