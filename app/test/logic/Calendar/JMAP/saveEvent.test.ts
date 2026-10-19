@@ -2,7 +2,9 @@
 import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
+import { applyPatch } from "./applyPatch";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
+import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 
@@ -177,6 +179,77 @@ test("A removed reminder is sent to the server", async () => {
   await event.save();
 
   expect(sent[0].update.eventID.alerts).toEqual({});
+});
+
+/* The organizer counts the changes of a meeting in `sequence`, and the server
+ * drops an update from the organizer whose sequence is lower than that of the
+ * invitee's copy (RFC 5546 2.1.4). So an invitee must not change the sequence. */
+describe("Sequence", () => {
+  function invitation(): TJMAPCalendarEvent {
+    let json = serverEvent();
+    json.sequence = 3;
+    json.isOrigin = false;
+    json.organizerCalendarAddress = "mailto:organizer@example.com";
+    json.participants = {
+      organizer: { "@type": "Participant", calendarAddress: "mailto:organizer@example.com", roles: { owner: true }, participationStatus: "accepted" },
+      me: { "@type": "Participant", calendarAddress: "mailto:me@example.com", participationStatus: "accepted" },
+    };
+    return json;
+  }
+
+  /** Lists `json` in a calendar whose account has the identity me@example.com */
+  async function listInvitation(json: TJMAPCalendarEvent) {
+    let { calendar, sent } = setup([json]);
+    let identity = new MailIdentity(calendar.account);
+    identity.emailAddress = "me@example.com";
+    calendar.account.identities.add(identity);
+    appGlobal.emailAccounts.add(calendar.account);
+    try {
+      await (calendar as any).listAllEvents();
+    } finally {
+      appGlobal.emailAccounts.remove(calendar.account);
+    }
+    expect(calendar.events.first.isIncomingMeeting).toBe(true);
+    return { event: calendar.events.first, sent };
+  }
+
+  test("Changing the reminder of an invitation keeps the organizer's sequence", async () => {
+    let { event, sent } = await listInvitation(invitation());
+
+    event.alarm = new Date(event.startTime.getTime() - 30 * 60 * 1000);
+    await event.save();
+    event.alarm = new Date(event.startTime.getTime() - 60 * 60 * 1000);
+    await event.save();
+
+    expect(sent.length).toBe(2);
+    for (let update of sent) {
+      expect(applyPatch(invitation(), update.update.eventID).sequence).toBe(3);
+    }
+  });
+
+  test("Changing one occurrence of an invitation adds no sequence to it", async () => {
+    let { event, sent } = await listInvitation(invitation());
+
+    let occurrence = event.getOccurrenceByDate(new Date(event.startTime.getTime() + 7 * 24 * 60 * 60 * 1000));
+    occurrence.alarm = new Date(occurrence.startTime.getTime() - 30 * 60 * 1000);
+    await occurrence.save();
+
+    let stored = applyPatch(invitation(), sent[0].update.eventID);
+    expect(stored.sequence).toBe(3);
+    expect(Object.values(stored.recurrenceOverrides)[0]).not.toHaveProperty("sequence");
+  });
+
+  test("Changing my own event increments the sequence", async () => {
+    let json = serverEvent();
+    json.sequence = 2;
+    let before = structuredClone(json);
+    let { event, sent } = await listEvents([json]);
+
+    event.title = "Changed";
+    await event.save();
+
+    expect(applyPatch(before, sent[0].update.eventID).sequence).toBe(3);
+  });
 });
 
 /* JSCalendar gives the end of an event as duration, and an all-day event
