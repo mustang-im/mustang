@@ -30,7 +30,7 @@
     align-items: center;
     justify-content: center;
     width: calc(var(--lo-nav-rail-width) - 8px);
-    height: 50px;
+    height: 53px;
     padding: 0;
     border: none;
     border-radius: var(--lo-radius-small);
@@ -77,7 +77,7 @@
   }
   .label {
     max-width: 100%;
-    margin-block-start: 2px;
+    margin-block-start: 5px;
     font-size: 10.5px;
     line-height: 13px;
     white-space: nowrap;
