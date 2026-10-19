@@ -215,6 +215,23 @@ test("Moving an occurrence by a week across the clock change keeps the time of d
   expect(occurrenceTime(master, 11)).toBe(new Date(2027, 2, 29, 9, 0).getTime());
 });
 
+test("Moving the start of the series across the clock change keeps the time of day and the last occurrence", async () => {
+  let master = weeklySeries();
+  master.startTime = new Date(2027, 2, 25, 9, 0);
+  master.endTime = new Date(2027, 2, 25, 10, 0);
+  master.newRecurrenceRule(Frequency.Weekly, 1, 0, [Weekday.Thursday]);
+  await master.setRecurrenceEndTime(new Date(2027, 4, 6, 9, 0));
+  expect(master.instances.length).toBe(7);
+  let occurrence = openOccurrence(master, 2);
+  changeStartTime(occurrence, new Date(2027, 3, 12, 9, 0));
+  await saveForSeries(occurrence);
+
+  expect(master.startTime.getTime()).toBe(new Date(2027, 2, 29, 9, 0).getTime());
+  expect(master.recurrenceRule.weekdays).toEqual([Weekday.Monday]);
+  expect(master.instances.length).toBe(7);
+  expect(master.instances.get(6).startTime.getTime()).toBe(new Date(2027, 4, 10, 9, 0).getTime());
+});
+
 test("A series in another time zone keeps its time of day there", async () => {
   const kTimezone = "Australia/Sydney";
   let local = (time: Date) => time.toLocaleString("lt", { timeZone: kTimezone });
