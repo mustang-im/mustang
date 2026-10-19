@@ -549,8 +549,22 @@ test("Without the WebSocket capability, we use HTTP and EventSource", async () =
   expect(httpRequests.length).toBe(1);
 });
 
-test("A WebSocket without push is not used", async () => {
+test("A WebSocket without push carries the calls, and push uses EventSource", async () => {
   let account = newAccount({ url: kWebSocketURL, supportsPush: false });
+  let socket = await connect(account);
+  let eventSourceURLs = stubEventSource();
+
+  expect(await account.makeSingleCall("Core/echo", { n: 1 })).toEqual({ n: 1 });
+  account.startPushListener().catch(ex => console.error(ex));
+
+  await waitFor(() => eventSourceURLs.length == 1);
+  expect(socket.received.filter(message => message["@type"] == "Request").length).toBe(1);
+  expect(socket.pushEnables()).toEqual([]);
+});
+
+test("Setting: calls over HTTP, push over WebSocket, but the server can't push over it: no WebSocket", async () => {
+  let account = newAccount({ url: kWebSocketURL, supportsPush: false });
+  account.callsOverWebSocket = false;
   let socket = await connect(account);
   let eventSourceURLs = stubEventSource();
 

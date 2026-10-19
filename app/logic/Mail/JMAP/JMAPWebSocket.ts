@@ -3,6 +3,7 @@ import type { TJMAPAPIErrorResponse, TJMAPAPIRequest, TJMAPAPIResponse, TJMAPSta
 import { JMAPRequestError } from "./JMAPError";
 import { ConnectError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
+import { minorError } from "../../util/error";
 import { getComputerOn } from "../../util/backend-wrapper";
 import { Lock } from "../../util/flow/Lock";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -29,6 +30,8 @@ export class JMAPWebSocket {
   /** Stalwart keeps the access rights of a connection from when it was opened,
    * so an account shared with us later is only available over a new connection. */
   readonly sessionState: string;
+  /** The server can push changes over this connection <https://www.rfc-editor.org/rfc/rfc8887#section-4.3.5> */
+  readonly supportsPush: boolean;
   /** The backend adds the `Authorization` header by URL, so the handshakes must not overlap */
   protected static handshakeLock = new Lock();
 
@@ -36,6 +39,7 @@ export class JMAPWebSocket {
     let maxRequests = sanitize.integer(account.session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, 4);
     this.parallelRequests = new Semaphore(Math.max(1, maxRequests));
     this.sessionState = account.session.state;
+    this.supportsPush = !!account.session.capabilities["urn:ietf:params:jmap:websocket"]?.supportsPush;
     this.closed = new Promise(resolve => this.onClosed = resolve);
   }
 
@@ -185,7 +189,7 @@ export class JMAPWebSocket {
     try {
       message = JSON.parse(data);
     } catch (ex) {
-      console.error(this.account.name + ": JMAP WebSocket: Server sent invalid JSON", ex);
+      this.account.dataError(new Error("JMAP WebSocket: Server sent invalid JSON: " + ex.message));
       return;
     }
     let type = message["@type"];
@@ -200,7 +204,7 @@ export class JMAPWebSocket {
       // </compat>
       let pending = this.pending.get(requestID);
       if (!pending) {
-        console.error(this.account.name + ": JMAP WebSocket: Server sent an answer to an unknown request", message);
+        this.account.dataError(new Error("JMAP WebSocket: Server sent an answer to an unknown request: " + JSON.stringify(message).substring(0, 200)));
         return;
       }
       this.pending.delete(requestID);
@@ -212,7 +216,7 @@ export class JMAPWebSocket {
     } else if (type == "StateChange") {
       this.stateChanges = this.stateChanges
         .then(() => this.account.syncStateChange(message as TJMAPStateChange))
-        .catch(ex => console.error(ex));
+        .catch(minorError);
     }
   }
 
@@ -260,7 +264,7 @@ export class JMAPWebSocket {
         this.request({
           using: ["urn:ietf:params:jmap:core"],
           methodCalls: [["Core/echo", {}, "heartbeat"]],
-        }).catch(ex => console.log(this.account.name + ": JMAP WebSocket heartbeat failed:", ex?.message ?? ex));
+        }).catch(minorError);
       }
     }, kTickSec * 1000);
   }

@@ -17,6 +17,7 @@ import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
 import { checkChangeError, JMAPCommandError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
+import { minorError } from "../../util/error";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions, type Folder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
@@ -196,7 +197,7 @@ export class JMAPAccount extends MailAccount {
     if (maxConcurrentRequests > 0) {
       this.requestSemaphore.maxParallel = maxConcurrentRequests;
     }
-    if (this.webSocket?.isOpen && this.webSocket.sessionState != session.state) {
+    if (this.webSocket?.sessionState != session.state && this.webSocket?.isOpen) {
       this.webSocket.closeWhenIdle()
         .catch(this.errorCallback);
     }
@@ -358,19 +359,10 @@ export class JMAPAccount extends MailAccount {
     if (this.isDependentAccount) {
       return await (this.mainAccount as JMAPAccount).sendRequest(request);
     }
-    let webSocket = this.webSocket;
-    if (this.callsOverWebSocket && webSocket?.isOpen && webSocket.sessionState == this.session.state) {
-      try {
-        let response = await webSocket.request(request);
-        if (response) {
-          return response;
-        }
-      } catch (ex) {
-        if (ex.httpCode != 401) {
-          throw ex;
-        }
-        // The login of the connection expired <https://www.rfc-editor.org/rfc/rfc8887#section-4.2>
-        webSocket.close();
+    if (this.callsOverWebSocket && this.webSocket?.sessionState == this.session.state && this.webSocket?.isOpen) {
+      let response = await this.webSocket.request(request);
+      if (response) { // else the connection closed while the request waited for a free slot, so it wasn't sent
+        return response;
       }
     }
     return await this.httpPost(this.session.apiUrl, request);
@@ -789,7 +781,8 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  /** Starts push mail, over WebSocket if the server has it, otherwise over EventSource.
+  /** Starts push mail
+   * Over WebSocket if the server has it, otherwise over EventSource.
    * Runs as long as we're logged in, so don't `await` it */
   async startPushListener(): Promise<void> {
     let types = ["Mailbox", "Email", "Identity"];
@@ -802,7 +795,7 @@ export class JMAPAccount extends MailAccount {
     if (this.haveSharing) {
       types.push("ShareNotification");
     }
-    if (this.webSocket && this.pushOverWebSocket) {
+    if (this.pushOverWebSocket && this.webSocket?.supportsPush) {
       this.webSocketPushTypes = types;
       if (this.webSocket.isOpen) {
         this.webSocket.enablePush(types, this.pushState);
@@ -838,8 +831,8 @@ export class JMAPAccount extends MailAccount {
    * @returns null, if we don't use a WebSocket */
   protected get webSocketURL(): string | null {
     let capability = this.session?.capabilities["urn:ietf:params:jmap:websocket"];
-    if (!capability?.supportsPush ||
-        !(this.callsOverWebSocket || this.pushOverWebSocket) ||
+    if (!(this.callsOverWebSocket || (this.pushOverWebSocket && capability?.supportsPush)) ||
+        !capability ||
         !appGlobal.remoteApp.setWebSocketAuthorization) {
       return null;
     }
@@ -860,7 +853,7 @@ export class JMAPAccount extends MailAccount {
         .catch(this.errorCallback);
     } catch (ex) {
       this.webSocket = null;
-      console.log(this.name + ": JMAP WebSocket failed, using HTTP:", ex?.message ?? ex);
+      this.errorCallback(ex);
     }
   }
 
@@ -894,7 +887,6 @@ export class JMAPAccount extends MailAccount {
         if (ex.name == "AbortError") { // disconnect()
           return;
         }
-        console.log(this.name + ": JMAP WebSocket: Reconnecting failed:", ex?.message ?? ex);
         if (++failures < kFailuresBeforeHTTP) {
           continue;
         }
@@ -909,7 +901,7 @@ export class JMAPAccount extends MailAccount {
           }
           continue; // The network is down
         }
-        console.log(this.name + ": JMAP WebSocket keeps failing, but HTTP works, so using HTTP and EventSource");
+        this.errorCallback(new ConnectError(ex, "JMAP WebSocket keeps failing, but HTTP works, so using HTTP and EventSource"));
         this.webSocket = null;
         if (this.webSocketPushTypes) {
           this.webSocketPushTypes = null;
@@ -971,7 +963,7 @@ export class JMAPAccount extends MailAccount {
           try {
             await this.syncStateChange(JSON.parse(event.data));
           } catch (ex) {
-            console.error(ex);
+            minorError(ex);
           }
         }
         expectAnswer();
