@@ -15,9 +15,11 @@
     <CalendarRoutes />
   </Route>
   <Route path="files/*">
-    <vbox flex class="frontend-page">
-      <FilesRoutes />
-    </vbox>
+    <FilesApp>
+      <vbox flex class="frontend-page">
+        <FilesRoutes />
+      </vbox>
+    </FilesApp>
   </Route>
   <Route path="meet/*">
     <vbox flex class="frontend-page">
@@ -64,6 +66,7 @@
   import MailRoutes from "../Mail/MailRoutes.svelte";
   import CalendarRoutes from "../Calendar/CalendarRoutes.svelte";
   import ContactsRoutes from "../Contacts/ContactsRoutes.svelte";
+  import FilesApp from "../Files/FilesApp.svelte";
   import AppMenu from "../../frontend/AppsBar/AppMenuM/AppMenu.svelte";
   import ChatRoutes from "../../frontend/Chat/ChatRoutes.svelte";
   import FilesRoutes from "../../frontend/Files/FilesRoutes.svelte";
