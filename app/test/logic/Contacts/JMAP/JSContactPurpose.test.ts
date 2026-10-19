@@ -91,3 +91,12 @@ test("Entries that we saved without a purpose before", () => {
   JSContact.toPerson(jscontact, person);
   expect(person.emailAddresses.getIndex(1).purpose).toBe("other");
 });
+
+test("A phone number that a buggy server sends as a number keeps the rest of the contact", () => {
+  let jscontact = stalwartCard();
+  (jscontact.phones.k1 as any).number = 49301234567;
+  let person = new Person();
+  JSContact.toPerson(jscontact, person);
+  expect(person.phoneNumbers.contents.map(entry => entry.value)).toEqual(["49301234567", "+49-170-1234567", "+49-30-7654321"]);
+  expect(person.emailAddresses.length).toBe(2);
+});

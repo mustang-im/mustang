@@ -24,7 +24,7 @@ export class JSContact {
       sanitize.emailAddress(e.address?.replace(/^mailto:/i, ""), null),
       null, "mailto"));
     JSContact.toContactEntries(person.phoneNumbers, jscontact.phones, e => new ContactEntry(
-      sanitize.nonemptystring(e.number?.replace(/^tel:/i, ""), null),
+      sanitize.nonemptystring(e.number, null)?.replace(/^tel:/i, "") || null,
       JSContact.fromPhoneToPurpose(e), JSContact.fromPhoneFeatureToProtocol(e.features)));
     JSContact.toContactEntries(person.chatAccounts, jscontact.onlineServices, e => new ContactEntry(
       sanitize.nonemptystring(e.uri ?? e.user, null),
