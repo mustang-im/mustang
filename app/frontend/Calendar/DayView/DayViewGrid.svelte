@@ -53,7 +53,6 @@
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
-  import { derived } from "svelte/store";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -100,6 +99,9 @@
   let days: Date[] = [];
   let filterStart: Date;
   let filterEnd: Date;
+  $: filtered = events.filterObservable(isShown);
+  $: visibleEvents = filtered.filterObservable(ev => !ev.allDay);
+  $: allDayEvents = filtered.filterObservable(ev => ev.allDay);
   $: start, showDays, setDays();
   function setDays() {
     let startTime = showDays > 3 ? getWeekStart(start) : new Date(start);
@@ -111,12 +113,12 @@
       startTime.setDate(startTime.getDate() + 1);
     }
     filterEnd = startTime;
+    filtered.replaceAll(events.contents.filter(isShown));
   }
 
-  $: filtered = derived([...$events.contents], allEvents =>
-    allEvents.filter(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime));
-  $: visibleEvents = $filtered.filter(ev => !ev.allDay);
-  $: allDayEvents = $filtered.filter(ev => ev.allDay);
+  function isShown(ev: Event): boolean {
+    return ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime;
+  }
 
   let today = getToday();
   // Update today at midnight

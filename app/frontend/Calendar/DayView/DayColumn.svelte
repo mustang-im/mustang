@@ -9,7 +9,7 @@
   {/each}
   {#each $layout as item (item.event)}
     <EventContainer {item}>
-      {#if $overlayEvents?.contains(item.event)}
+      {#if $dayOverlayEvents.contains(item.event)}
         <slot name="event-overlay" start={item.event.startTime} end={item.event.endTime} event={item.event} />
       {:else}
         <EventContent event={item.event} showTime={!item.continuesBefore} />
@@ -27,19 +27,22 @@
   import EventContainer from "./EventContainer.svelte";
   import EventContent from "./EventContent.svelte";
   import CurrentTimeMarker from "../CurrentTimeMarker.svelte";
-  import type { Collection } from "svelte-collections";
+  import { ArrayColl, type Collection } from "svelte-collections";
   import { derived } from "svelte/store";
 
   export let day: Date;
   export let column: number;
-  export let events: Event[];
+  export let events: Collection<Event>;
   export let overlayEvents: Collection<Event> | null = null;
   export let startHour = 0;
   export let endHour = 24;
   export let workHours: WorkHours[] = [];
 
   let hourStarts: Date[] = [];
-  let isInDay: (ev: Event) => boolean;
+  let dayStart: Date;
+  let dayEnd: Date;
+  $: dayEvents = events.filterObservable(isInDay);
+  $: dayOverlayEvents = overlayEvents?.filterObservable(isInDay) ?? new ArrayColl<Event>();
   $: day, startHour, endHour, setDay();
   function setDay() {
     hourStarts = [];
@@ -48,10 +51,15 @@
       hourStart.setHours(hour, 0, 0, 0);
       hourStarts.push(hourStart);
     }
-    let dayStart = hourStarts[0];
-    let dayEnd = new Date(day);
+    dayStart = hourStarts[0];
+    dayEnd = new Date(day);
     dayEnd.setHours(endHour, 0, 0, 0);
-    isInDay = (ev: Event) => ev.startTime < dayEnd && ev.endTime > dayStart && !ev.allDay;
+    dayEvents.replaceAll(events.contents.filter(isInDay));
+    dayOverlayEvents.replaceAll(overlayEvents?.contents.filter(isInDay) ?? []);
+  }
+
+  function isInDay(ev: Event): boolean {
+    return ev.startTime < dayEnd && ev.endTime > dayStart && !ev.allDay;
   }
 
   let offWorkPeriods: WorkPeriod[] = [];
@@ -77,8 +85,8 @@
   }
 
   $: layout = derived(
-    [...events, ...($overlayEvents?.contents ?? [])],
-    allEvents => layoutTimeColumn(allEvents.filter(isInDay), day, startHour, endHour));
+    [...$dayEvents.contents, ...$dayOverlayEvents.contents],
+    eventsInDay => layoutTimeColumn(eventsInDay, day, startHour, endHour));
 
   function isEmpty(layout: EventInTimeColumn[], row: number): boolean {
     return !layout.some(item => item.startRow < row + kRowsPerHour && item.endRow > row);

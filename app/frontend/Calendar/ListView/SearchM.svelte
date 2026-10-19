@@ -12,14 +12,13 @@
 <SearchBarM />
 
 <script lang="ts">
+  import type { Event } from "../../../logic/Calendar/Event";
   import { appGlobal } from "../../../logic/app";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import ListView from "./ListView.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
   import SearchBarM from "./SearchBarM.svelte";
   import { t } from "../../../l10n/l10n";
-  import { ArrayColl } from "svelte-collections";
-  import { derived } from "svelte/store";
 
   export let searchTerm: string;
 
@@ -28,12 +27,18 @@
     $globalSearchTerm = searchTerm;
   }
 
-  let calendarEvents = appGlobal.calendarEvents;
-  $: events = derived([...$calendarEvents.contents], allEvents =>
-    allEvents.filter(event => event.startTime.getTime() > Date.now()));
-  $: filteredEvents = new ArrayColl($globalSearchTerm
-    ? $events.filter(event => event.matchesSearch($globalSearchTerm))
-    : $events);
+  let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
+  let foundEvents = events.filterObservable(isFound);
+  $: $globalSearchTerm, findEvents();
+  $: filteredEvents = $globalSearchTerm ? foundEvents : events;
+
+  function findEvents() {
+    foundEvents.replaceAll(events.contents.filter(isFound));
+  }
+
+  function isFound(event: Event): boolean {
+    return !!$globalSearchTerm && event.matchesSearch($globalSearchTerm);
+  }
 </script>
 
 <style>
