@@ -170,6 +170,7 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 | Propose New Time, Accept Proposal | Respond menu | iTIP `COUNTER` / `DECLINECOUNTER`, EWS proposed times |
 | Reply / Reply All to the attendees by mail | Meeting tab > Respond | Creating a mail from an event |
 | Time zone per event, separate start and end time zones | Appointment tab > Time Zones | A time zone picker (commented out in `frontend/`) and `Event.endTimezone`. Lookout shows the event's time zone when it differs from the local one. |
+| Moving the entire series from an occurrence, for a series in another time zone | Open an occurrence > Entire series | Moving a series by as much as the user moved an occurrence, in the time zone of the series: `Event.copyEditableFieldsFromOccurrence()`, PR #1588. Until it is in master, Lookout moves the series with its own `EventEditFlow.applyOccurrenceToSeries()` by the same days and minutes in the local time zone; then it switches to the logic method. |
 | Default reminders (15 minutes, 18 hours for all-day events) | File > Options > Calendar | A calendar setting |
 | Save an appointment without a title ("(No subject)") | Save & Close | `hasMinimalProps()` requires a title |
 | Forward as iCalendar | Forward menu | Only `forwardEventByMail()` exists, which is what Forward does |
