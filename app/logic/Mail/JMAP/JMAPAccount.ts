@@ -276,16 +276,9 @@ export class JMAPAccount extends MailAccount {
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
     await this.ensureLoggedIn();
-    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
-    if (this.haveContacts) {
-      using.push("urn:ietf:params:jmap:contacts");
-    }
-    if (this.haveCalendar) {
-      using.push("urn:ietf:params:jmap:calendars");
-    }
-    if (this.haveSharing) {
-      using.push("urn:ietf:params:jmap:principals");
-    }
+    const kOurCapabilities = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission",
+      "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars", "urn:ietf:params:jmap:principals"];
+    let using = kOurCapabilities.filter(capability => this.hasCapability(capability));
     let requestJSON: TJMAPAPIRequest = {
       using: using,
       methodCalls: [],
