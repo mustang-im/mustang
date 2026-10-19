@@ -47,7 +47,10 @@ test("Only a department", () => {
   person.department = "Research";
   let jscontact = {} as TJSContact;
   JSContact.fromPerson(person, jscontact);
-  expect(JSON.parse(JSON.stringify(Object.values(jscontact.organizations)))).toEqual([{ units: [{ name: "Research" }] }]);
+  let organizations = Object.values(jscontact.organizations);
+  expect(organizations).toHaveLength(1);
+  expect(organizations[0].units.map(unit => unit.name)).toEqual(["Research"]);
+  expect(organizations[0].name || undefined).toBeUndefined();
 });
 
 test("Editing the note keeps title and company as they are", () => {
