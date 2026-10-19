@@ -789,16 +789,17 @@ export class JMAPAccount extends MailAccount {
     return newAddressbooks;
   }
 
-  /** Applies what changed elsewhere: renamed, deleted, or no longer shared with us */
-  protected async updateAddressbooks(addressbooks: TJMAPAddressbook[]) {
-    let ours = this.dependentAccounts().contents.filter(a => a instanceof JMAPAddressbook) as JMAPAddressbook[];
-    for (let addressbook of ours) {
-      let jmap = addressbooks.find(ab => ab.id == addressbook.jmapID);
+  /** Takes over changes of our address books, e.g. a new name, and removes
+   * those that were deleted on the server or are no longer shared with us. */
+  protected async updateAddressbooks(serverAddressbooks: TJMAPAddressbook[]) {
+    let ourAddressbooks = this.dependentAccounts().filterOnce(account => account instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
+    for (let ourAddressbook of ourAddressbooks) {
+      let jmap = serverAddressbooks.find(json => json.id == ourAddressbook.jmapID);
       if (jmap) {
-        addressbook.fromJMAP(jmap);
-        await addressbook.save();
+        ourAddressbook.fromJMAP(jmap);
+        await ourAddressbook.save();
       } else {
-        await addressbook.deleteIt();
+        await ourAddressbook.deleteIt();
       }
     }
   }
