@@ -87,5 +87,14 @@
   .main-pane {
     background-color: var(--main-bg);
     color: var(--main-fg);
+    margin: var(--pane-margin);
+    border-radius: var(--pane-radius);
+    box-shadow: var(--pane-shadow, none);
+  }
+  .right-side-pane {
+    background-color: var(--pane-bg);
+    margin: var(--pane-margin);
+    border-radius: var(--pane-radius);
+    box-shadow: var(--pane-shadow, none);
   }
 </style>

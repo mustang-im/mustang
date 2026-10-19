@@ -133,7 +133,7 @@
   --icon-primary: var(--lo-accent);
   --offset-bg: var(--lo-accent-tint);
   --offset-fg: var(--lo-fg);
-  --leftbar-bg: var(--lo-pane-bg);
+  --leftbar-bg: var(--lo-window-bg);
   --leftbar-fg: var(--lo-fg);
   --headerbar-bg: var(--lo-window-bg);
   --headerbar-fg: var(--lo-fg);
@@ -282,4 +282,49 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   width: 3px;
   border-radius: 2px;
   background-color: var(--lo-accent);
+}
+
+:root {
+  --island-radius: var(--lo-radius-small);
+  --island-overlap: 0;
+  --button-radius: var(--lo-radius-small);
+  --button-padding: 0 8px;
+  --button-label-padding: 4px;
+  --button-min-height: 32px;
+  --button-filled-border: var(--lo-accent);
+  --button-filled-hover-bg: var(--lo-accent-hover);
+  --button-filled-hover-fg: var(--lo-accent-fg);
+  --search-field-radius: var(--lo-radius-small);
+  --search-field-bg: var(--lo-input-bg);
+  --group-box-radius: var(--lo-radius-small);
+  --group-box-header-bg: transparent;
+  --group-box-header-border: none;
+  --group-box-header-padding: 8px 12px 0 12px;
+  --group-box-header-weight: 600;
+  --group-box-content-padding: 8px 12px 10px 12px;
+  --pane-margin: 0 4px 8px 4px;
+  --pane-radius: var(--lo-radius);
+  --pane-shadow: var(--lo-shadow-card);
+  --pane-bg: var(--lo-pane-bg);
+  --left-pane-shadow: none;
+}
+
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) :is(input[type="number"], input[type="password"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="tel"], input[type="text"]),
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)) {
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--input-line);
+  border-radius: var(--lo-radius-small);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) :is(input[type="number"], input[type="password"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="tel"], input[type="text"]):focus,
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)):focus {
+  border-color: var(--input-focus);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)) {
+  background-color: var(--input-bg);
+  color: var(--input-fg);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) input[type="number"] {
+  min-width: 64px;
 }

@@ -4,7 +4,7 @@
     <MailRoutes />
   </Route>
   <Route path="chat/*">
-    <vbox flex class="frontend-page">
+    <vbox flex class="frontend-panes">
       <ChatRoutes />
     </vbox>
   </Route>
@@ -16,7 +16,7 @@
   </Route>
   <Route path="files/*">
     <FilesApp>
-      <vbox flex class="frontend-page">
+      <vbox flex class="frontend-panes">
         <FilesRoutes />
       </vbox>
     </FilesApp>
@@ -32,12 +32,12 @@
     </vbox>
   </Route>
   <Route path="webapp/*">
-    <vbox flex class="frontend-page">
+    <vbox flex class="frontend-panes">
       <WebAppsRoutes />
     </vbox>
   </Route>
   <Route path="settings/*">
-    <vbox flex class="frontend-page">
+    <vbox flex class="frontend-panes">
       <SettingsRoutes />
     </vbox>
   </Route>
@@ -99,5 +99,10 @@
     border-radius: var(--lo-radius);
     box-shadow: var(--lo-shadow-card);
     overflow: hidden;
+  }
+  .frontend-panes {
+    min-width: 0;
+    min-height: 0;
+    margin: 4px 4px 0 4px;
   }
 </style>
