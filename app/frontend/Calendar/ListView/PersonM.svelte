@@ -12,13 +12,17 @@
   import ListView from "./ListView.svelte";
   import SearchBarM from "./SearchBarM.svelte";
   import { t } from "../../../l10n/l10n";
+  import { ArrayColl } from "svelte-collections";
+  import { derived } from "svelte/store";
 
   export let person: Person;
 
-  let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
-  $: filteredEvents = person
-    ? events.filterObservable(event => event.participants?.some(p => p.matchesPerson(person)))
-    : events;
+  let calendarEvents = appGlobal.calendarEvents;
+  $: events = derived([...$calendarEvents.contents], allEvents =>
+    allEvents.filter(event => event.startTime.getTime() > Date.now()));
+  $: filteredEvents = new ArrayColl(person
+    ? $events.filter(event => event.participants?.some(p => p.matchesPerson(person)))
+    : $events);
 </script>
 
 <style>

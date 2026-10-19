@@ -21,16 +21,18 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import ListView from "./ListView.svelte";
   import SearchField from "../../Shared/SearchField.svelte";
-  import type { Collection } from "svelte-collections";
+  import { ArrayColl, type Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
   import { globalSearchTerm } from "../../AppsBar/selectedApp";
   import { t } from "../../../l10n/l10n";
 
   export let events: Collection<Event>;
 
-  let futureEvents = events.filterObservable(event => event.startTime.getTime() > Date.now());
-  $: filteredEvents = $globalSearchTerm
-    ? futureEvents.filterObservable(event => event.matchesSearch($globalSearchTerm))
-    : futureEvents;
+  $: futureEvents = derived([...$events.contents], allEvents =>
+    allEvents.filter(event => event.startTime.getTime() > Date.now()));
+  $: filteredEvents = new ArrayColl($globalSearchTerm
+    ? $futureEvents.filter(event => event.matchesSearch($globalSearchTerm))
+    : $futureEvents);
 </script>
 
 <style>

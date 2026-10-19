@@ -20,7 +20,7 @@
       </hbox>
     {/each}
     {#each weeks as week}
-      <WeekRow days={week} events={filteredEvents}
+      <WeekRow days={week} events={$filteredEvents}
         on:celldblclick={(param) => newEventMenu.openMenu(param.detail.mouseEvent, param.detail.start)} />
     {/each}
   </grid>
@@ -38,6 +38,7 @@
   import { catchErrors } from "../../Util/error";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
+  import { derived } from "svelte/store";
 
   export let start: Date;
   export let events: Collection<Event>;
@@ -45,7 +46,8 @@
 
   let weeks: Date[][] = [];
   let weekDays: Date[] = [];
-  let filteredEvents: Collection<Event>;
+  let filterStart: Date;
+  let filterEnd: Date;
   let newEventMenu: NewEventMenu;
   $: start, showDays, setDays();
   function setDays() {
@@ -57,7 +59,7 @@
       }
     }
     let startTime = weekDays[0]; // Always start with Monday
-    let filterStart = new Date(startTime);
+    filterStart = new Date(startTime);
     weeks = [];
     for (let i = 0; i < showDays; i++) {
       if (i % 7 == 0) {
@@ -66,9 +68,11 @@
       weeks[weeks.length - 1].push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
-    let filterEnd = startTime;
-    filteredEvents = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
+    filterEnd = startTime;
   }
+
+  $: filteredEvents = derived([...$events.contents], allEvents =>
+    allEvents.filter(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime));
 
   function onScrollWheel(event: WheelEvent) {
     const upDown = event.deltaY > 0 ? 1 : -1;
