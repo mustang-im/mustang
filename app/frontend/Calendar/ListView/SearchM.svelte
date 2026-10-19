@@ -18,6 +18,8 @@
   import SearchField from "../../Shared/SearchField.svelte";
   import SearchBarM from "./SearchBarM.svelte";
   import { t } from "../../../l10n/l10n";
+  import { ArrayColl } from "svelte-collections";
+  import { derived } from "svelte/store";
 
   export let searchTerm: string;
 
@@ -26,10 +28,12 @@
     $globalSearchTerm = searchTerm;
   }
 
-  let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
-  $: filteredEvents = $globalSearchTerm
-    ? events.filterObservable(event => event.matchesSearch($globalSearchTerm))
-    : events;
+  let calendarEvents = appGlobal.calendarEvents;
+  $: events = derived([...$calendarEvents.contents], allEvents =>
+    allEvents.filter(event => event.startTime.getTime() > Date.now()));
+  $: filteredEvents = new ArrayColl($globalSearchTerm
+    ? $events.filter(event => event.matchesSearch($globalSearchTerm))
+    : $events);
 </script>
 
 <style>

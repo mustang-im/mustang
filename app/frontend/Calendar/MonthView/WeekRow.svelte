@@ -28,19 +28,18 @@
   import DayCell from "./DayCell.svelte";
   import EventContainer from "./EventContainer.svelte";
   import MoreEvents from "./MoreEvents.svelte";
-  import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
 
   export let days: Date[];
-  export let events: Collection<Event>;
+  export let events: Event[];
 
-  let weekEvents: Collection<Event>;
+  let weekEvents: Event[];
   $: days, events, setWeek();
   function setWeek() {
     let weekStart = days[0];
     let weekEnd = new Date(days[days.length - 1]);
     weekEnd.setDate(weekEnd.getDate() + 1);
-    weekEvents = events.filterObservable(ev => ev.startTime && ev.startTime < weekEnd && ev.endTime > weekStart);
+    weekEvents = events.filter(ev => ev.startTime && ev.startTime < weekEnd && ev.endTime > weekStart);
   }
 
   let lanesE: HTMLElement;
@@ -55,7 +54,7 @@
     rows = Math.max(WeekRowLayout.kRowsPerLine, Math.floor(lanesHeight / rowHeight));
   }
 
-  $: layout = derived([...$weekEvents.contents], eventsInWeek => new WeekRowLayout(eventsInWeek, days, rows));
+  $: layout = derived(weekEvents, eventsInWeek => new WeekRowLayout(eventsInWeek, days, rows));
 </script>
 
 <style>
