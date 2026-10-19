@@ -5,20 +5,17 @@ import { PersonUID } from "../../../../logic/Abstract/PersonUID";
 import { RecipientText } from "../../../Mail/Composer/RecipientText";
 import { expect, test } from "vitest";
 
-test("Parses a plain email address and guesses the name", () => {
+// Like Outlook, a typed address stays an address, without a name guessed from it
+test("Parses a plain email address without a name", () => {
   let recipient = RecipientText.parse("  fred.miller@example.com ");
   expect(recipient.emailAddress).toBe("fred.miller@example.com");
-  expect(recipient.name).toBe("Fred Miller");
-  expect(recipient.nameIsUnknown).toBe(true);
-  expect((!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress).toBe("fred.miller@example.com");
+  expect(recipient.name).toBeFalsy();
 });
 
 test("Parses name and email address", () => {
   let recipient = RecipientText.parse("Fred Miller <fred@example.com>");
   expect(recipient.emailAddress).toBe("fred@example.com");
   expect(recipient.name).toBe("Fred Miller");
-  expect(recipient.nameIsUnknown).toBe(false);
-  expect((!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress).toBe("Fred Miller");
 
   let quoted = RecipientText.parse("\"Miller, Fred\"<fred@example.com>");
   expect(quoted.name).toBe("Miller, Fred");

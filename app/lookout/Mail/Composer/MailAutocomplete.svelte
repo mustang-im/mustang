@@ -268,7 +268,7 @@
 
   /* <copied from="../Message/RecipientsList.svelte"> */
   function displayName(recipient: PersonUID): string {
-    return (!recipient.nameIsUnknown && recipient.name) || recipient.emailAddress;
+    return recipient.name || recipient.emailAddress;
   }
 
   function clipboardText(recipient: PersonUID): string {
