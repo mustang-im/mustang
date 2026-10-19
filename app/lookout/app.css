@@ -328,3 +328,7 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
 :where(.frontend-page, .frontend-panes, .setup, .settings-content) input[type="number"] {
   min-width: 64px;
 }
+
+.lookout-window .island button.selected {
+  font-weight: 600;
+}

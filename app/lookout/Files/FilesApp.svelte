@@ -90,7 +90,7 @@
 
   /* Gallery */
   .files-page :global(.gallery) {
-    gap: 8px;
+    gap: 2px;
     margin: 0;
     padding: 12px;
   }
@@ -126,11 +126,67 @@
     color: var(--lo-fg-secondary);
   }
 
-  /* Persons list, like the Lookout persons list */
-  .files-page :global(.persons .person) {
-    min-height: 36px;
+  /* Left pane: island aligned with the ribbon and the main pane */
+  .files-page :global(.left-pane) {
+    padding-block-end: 0;
   }
-  .files-page :global(.persons .person::before) {
+  .files-page :global(.left-pane .top > .island) {
+    margin: 0;
+  }
+
+  /* Persons list as a pane, like the Lookout Contacts list */
+  .files-page :global(.left-pane .persons-file-pane) {
+    min-height: 0;
+    margin-block-start: 8px;
+    overflow: hidden;
+    background-color: var(--lo-pane-bg);
+    border-radius: var(--lo-radius);
+    box-shadow: var(--lo-shadow-card);
+  }
+  .files-page :global(.persons) {
+    --person-picture-size: 40px;
+    --persons-pane-email-display: block;
+    margin: 0;
+  }
+  .files-page :global(.persons .search) {
+    flex-shrink: 0;
+    margin: 12px 12px 8px 12px;
+  }
+  .files-page :global(.persons .fast-list) {
+    border-block-start: 1px solid var(--lo-divider);
+  }
+  .files-page :global(.persons hbox.person) {
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 56px;
+    border-block-end: 1px solid var(--lo-divider);
+  }
+  .files-page :global(.persons hbox.person .avatar) {
+    flex-shrink: 0;
+    margin: 0 12px;
+  }
+  .files-page :global(.persons hbox.person .name) {
+    font-size: 15px;
+  }
+  .files-page :global(.persons hbox.person .email) {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--lo-fg-secondary);
+    font-size: var(--lo-font-size-small);
+  }
+  .files-page :global(.persons hbox.person.selected) {
+    color: var(--lo-fg);
+  }
+  .files-page :global(.persons hbox.person::before) {
     display: none;
+  }
+  .files-page :global(.persons hbox.person.selected::before) {
+    display: block;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-left: 3px solid var(--lo-accent);
+    border-radius: 0;
   }
 </style>
