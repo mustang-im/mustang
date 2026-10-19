@@ -54,10 +54,14 @@ test("Deleting a folder deletes its subfolders and emails on the server", async 
 
   await projects.deleteIt();
 
-  let destroy = calls.find(call => call[0] == "Mailbox/set")[1];
-  expect(destroy.onDestroyRemoveEmails).toBe(true);
-  // Children before their parent, because Stalwart destroys in this order. Including "Q1", which we didn't know.
-  expect(destroy.destroy).toEqual(["y", "x", "w"]);
+  let destroyCalls = calls.filter(call => call[0] == "Mailbox/set").map(call => call[1]);
+  expect(destroyCalls.every(call => call.onDestroyRemoveEmails)).toBe(true);
+  let destroyed: string[] = destroyCalls.flatMap(call => call.destroy ?? []);
+  // Including "Q1", which we didn't know
+  expect(new Set(destroyed)).toEqual(new Set(["y", "x", "w"]));
+  // Children before their parent, because Stalwart destroys in this order
+  expect(destroyed.indexOf("y")).toBeLessThan(destroyed.indexOf("x"));
+  expect(destroyed.indexOf("x")).toBeLessThan(destroyed.indexOf("w"));
   expect(account.getAllFolders().contents.map(folder => folder.id)).toEqual(["a"]);
 });
 
