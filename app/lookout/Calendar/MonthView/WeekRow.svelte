@@ -75,13 +75,19 @@
   let height = 0;
   $: maxLines = Math.max(Math.floor((height - kHeaderHeight - 2) / kLineHeight), 1);
 
-  let weekEvents: Collection<Event>;
-  $: days, events, filterWeek();
+  let weekStart: Date;
+  let weekEnd: Date;
+  $: weekEvents = events.filterObservable(isInWeek);
+  $: days, filterWeek();
   function filterWeek() {
-    let weekStart = days[0];
+    weekStart = days[0];
     let lastDay = days[days.length - 1];
-    let weekEnd = new Date(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate() + 1);
-    weekEvents = events.filterObservable(event => event.startTime < weekEnd && event.endTime > weekStart);
+    weekEnd = new Date(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate() + 1);
+    weekEvents.replaceAll(events.contents.filter(isInWeek));
+  }
+
+  function isInWeek(event: Event): boolean {
+    return event.startTime < weekEnd && event.endTime > weekStart;
   }
   $: layout = derived([...$weekEvents.contents], eventsInWeek => new WeekRowLayout(eventsInWeek, days, maxLines));
 

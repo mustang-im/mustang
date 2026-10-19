@@ -110,8 +110,7 @@
   import { openComposer } from "../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
   import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
-  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarSearchOptions, type CalendarViewType, type SlotSelection } from "./selected";
-  import { EventTable } from "./ListView/EventTable";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarViewType, type SlotSelection } from "./selected";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../logic/util/date";
@@ -140,11 +139,10 @@
   import ListView from "./ListView/ListView.svelte";
   import CalendarSearchTab from "./ListView/CalendarSearchTab.svelte";
   import { CalendarSearch } from "./ListView/CalendarSearch";
-  import type { Calendar } from "../../logic/Calendar/Calendar";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../frontend/Shared/SplitterBidirectional.svelte";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
-  import type { Collection } from "svelte-collections";
+  import type { ArrayColl, Collection } from "svelte-collections";
   import { onDestroy } from "svelte";
   import { derived, get } from "svelte/store";
   import { t } from "../../l10n/l10n";
@@ -203,12 +201,14 @@
 
   $: searchTerm = $globalSearchTerm?.trim() || null;
   $: isSearch = !!searchTerm;
-  $: searchResults = searchTerm
-    ? searchedEvents(searchTerm, $calendarSearchOptions, $selectedCalendar)
-    : null;
-  $: searchOrganizers = searchTerm ? CalendarSearch.organizers(searchedEvents(searchTerm, { ...$calendarSearchOptions, organizerEMail: null }, $selectedCalendar).contents) : [];
+  let foundEvents: ArrayColl<Event> = null;
+  let organizerEvents: ArrayColl<Event> = null;
+  $: searchTerm, $calendarSearchOptions, $selectedCalendar, findEvents();
+  $: searchResults = searchTerm ? organizerEvents : null;
+  $: searchOrganizers = searchTerm ? CalendarSearch.organizers($foundEvents.contents) : [];
+  let upcomingEvents: ArrayColl<Event> = null;
   $: listEvents = currentView == CalendarCurrentView.List ? listedEvents
-    : currentView == CalendarCurrentView.Active ? listedEvents.filterObservable(event => event.isUpcoming())
+    : currentView == CalendarCurrentView.Active ? findUpcomingEvents()
     : null;
   $: tableEvents = searchResults ?? listEvents;
   $: isTable = currentView == CalendarCurrentView.List || currentView == CalendarCurrentView.Active;
@@ -258,14 +258,33 @@
     showCalendar();
   }
 
-  function searchedEvents(term: string, options: CalendarSearchOptions, calendar: Calendar | null): Collection<Event> {
-    let scope = options.scope == CalendarSearchScope.CurrentFolder && calendar
-      ? calendar.events.filterObservable(event => EventTable.isListed(event))
-      : allListedEvents;
-    return scope.filterObservable(event => event.matchesSearch(term.trim().toLowerCase()) &&
+  function findEvents() {
+    if (!searchTerm) {
+      return;
+    }
+    foundEvents ??= allListedEvents.filterObservable(isFound);
+    organizerEvents ??= foundEvents.filterObservable(isFromOrganizer);
+    foundEvents.replaceAll(allListedEvents.contents.filter(isFound));
+    organizerEvents.replaceAll(foundEvents.contents.filter(isFromOrganizer));
+  }
+
+  function isFound(event: Event): boolean {
+    let options = $calendarSearchOptions;
+    return !!searchTerm && event.matchesSearch(searchTerm.toLowerCase()) &&
+      (options.scope != CalendarSearchScope.CurrentFolder || !$selectedCalendar || event.calendar == $selectedCalendar) &&
       (!options.isRecurring || !!event.recurrenceRule) &&
-      (!options.hasAttachments || event.attachments.hasItems) &&
-      (!options.organizerEMail || event.organizer?.emailAddress == options.organizerEMail));
+      (!options.hasAttachments || event.attachments.hasItems);
+  }
+
+  function isFromOrganizer(event: Event): boolean {
+    let organizerEMail = $calendarSearchOptions.organizerEMail;
+    return !organizerEMail || event.organizer?.emailAddress == organizerEMail;
+  }
+
+  function findUpcomingEvents(): ArrayColl<Event> {
+    upcomingEvents ??= listedEvents.filterObservable(event => event.isUpcoming());
+    upcomingEvents.replaceAll(listedEvents.contents.filter(event => event.isUpcoming()));
+    return upcomingEvents;
   }
 
   // <copied to="CalendarRibbon.svelte">

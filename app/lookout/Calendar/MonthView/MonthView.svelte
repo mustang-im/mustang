@@ -9,7 +9,7 @@
       </div>
     {/each}
   </div>
-  {#each range.weeks as week, weekIndex (week[0].getTime())}
+  {#each range.weeks as week, weekIndex}
     <hbox flex class="week-row">
       {#if showWeekNumbers}
         <div class="week-number" title={$t`Week ${getWeekNumber(week[0])}`}>{getWeekNumber(week[0])}</div>
@@ -36,7 +36,15 @@
 
   let width = 1000;
 
-  $: inRange = events.filterObservable(event => event.startTime < range.end && event.endTime > range.start);
+  $: inRange = events.filterObservable(isInRange);
+  $: range, filterRange();
+  function filterRange() {
+    inRange.replaceAll(events.contents.filter(isInRange));
+  }
+
+  function isInRange(event: Event): boolean {
+    return event.startTime < range.end && event.endTime > range.start;
+  }
 </script>
 
 <style>

@@ -113,14 +113,22 @@
     group.calendar ? WorkingHours.of(group.calendar) : shownWorkingHours), all => all);
 
   $: groupEvents = groups.map(group => {
-    let inRange = group.events.filterObservable(event =>
-      event.startTime < range.end && event.endTime > range.start);
+    let inRange = group.events.filterObservable(isInRange);
     return {
       calendar: group.calendar,
+      inRange,
       allDay: inRange.filterObservable(event => isInAllDayArea(event)),
       timed: inRange.filterObservable(event => !isInAllDayArea(event)),
     };
   });
+  $: range, filterRange();
+  function filterRange() {
+    groupEvents.forEach((group, g) => group.inRange.replaceAll(groups[g].events.contents.filter(isInRange)));
+  }
+
+  function isInRange(event: Event): boolean {
+    return event.startTime < range.end && event.endTime > range.start;
+  }
 
   // <copied to="../DisplayEvent/EventInDayView.ts">
   function isInAllDayArea(event: Event): boolean {

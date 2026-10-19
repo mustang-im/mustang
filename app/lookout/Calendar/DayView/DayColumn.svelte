@@ -83,12 +83,18 @@
 
   let columnEl: HTMLDivElement;
 
-  let dayEvents: Collection<Event>;
-  $: day, events, filterDay();
+  let dayStart: Date;
+  let dayEnd: Date;
+  $: dayEvents = events.filterObservable(isInDay);
+  $: day, filterDay();
   function filterDay() {
-    let dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-    let dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
-    dayEvents = events.filterObservable(event => event.startTime < dayEnd && event.endTime > dayStart);
+    dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
+    dayEvents.replaceAll(events.contents.filter(isInDay));
+  }
+
+  function isInDay(event: Event): boolean {
+    return event.startTime < dayEnd && event.endTime > dayStart;
   }
   $: offWork = workingHours?.offWorkMinutes(day) ?? [];
   $: layout = derived([...$dayEvents.contents], eventsInDay =>
