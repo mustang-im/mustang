@@ -74,6 +74,10 @@
   --group-box-header-padding: 12px 20px;
   --group-box-header-weight: 500;
   --group-box-content-padding: 24px 20px 16px 20px;
+  --pane-margin: 0;
+  --pane-radius: 0;
+  --pane-bg: transparent;
+  --left-pane-bg: var(--leftbar-bg);
   --chat-bubble-incoming-bg: #fdfefe;
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;

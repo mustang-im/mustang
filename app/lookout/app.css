@@ -302,4 +302,10 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   --group-box-header-padding: 8px 12px 0 12px;
   --group-box-header-weight: 600;
   --group-box-content-padding: 8px 12px 10px 12px;
+  --pane-margin: 0 4px 8px 4px;
+  --pane-radius: var(--lo-radius);
+  --pane-shadow: var(--lo-shadow-card);
+  --pane-bg: var(--lo-pane-bg);
+  --left-pane-bg: transparent;
+  --left-pane-shadow: none;
 }
