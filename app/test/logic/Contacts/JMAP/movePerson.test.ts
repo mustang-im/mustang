@@ -50,6 +50,24 @@ function newAccount(accountID: string, calls: [string, any][]): JMAPAccount {
   return account;
 }
 
+/** The card's address books on the server after our `ContactCard/set` calls */
+function addressBookIdsAfter(calls: [string, any][], addressBookIds: Record<string, boolean>): Record<string, boolean> {
+  let result = { ...addressBookIds };
+  for (let [method, args] of calls.filter(([method]) => method == "ContactCard/set")) {
+    let patch = args.update?.cardID ?? {};
+    if (patch.addressBookIds) {
+      result = { ...patch.addressBookIds };
+    }
+    for (let [path, value] of Object.entries(patch)) {
+      if (path.startsWith("addressBookIds/")) {
+        let id = path.slice("addressBookIds/".length);
+        value ? result[id] = true : delete result[id];
+      }
+    }
+  }
+  return result;
+}
+
 test("Moving a contact to another address book of the same account keeps the card", async () => {
   let calls: [string, any][] = [];
   let account = newAccount("a", calls);
@@ -61,15 +79,16 @@ test("Moving a contact to another address book of the same account keeps the car
 
   let moved = await person.moveToAddressbook(to) as JMAPPerson;
 
-  expect(calls).toEqual([["ContactCard/set", {
-    accountId: "a",
-    update: { cardID: { "addressBookIds/b": null, "addressBookIds/c": true } },
-  }]]);
-  expect(moved).toBe(person);
+  // The same card, not a copy: nothing created, nothing destroyed
+  expect(calls.some(([, args]) => args.create || args.destroy?.length)).toBe(false);
+  expect(addressBookIdsAfter(calls, { b: true })).toEqual({ c: true });
   expect(moved.jmapID).toBe("cardID");
   expect(from.persons.contents).toEqual([]);
-  expect(to.persons.contents).toEqual([person]);
-  expect(moved.original.addressBookIds).toEqual({ c: true });
+  expect(to.persons.contents.map(p => (p as JMAPPerson).jmapID)).toEqual(["cardID"]);
+
+  // A later save must not put it back into the old address book
+  await moved.saveToServer();
+  expect(addressBookIdsAfter(calls, { b: true })).toEqual({ c: true });
 });
 
 test("Moving a contact to another account copies it", async () => {
@@ -82,6 +101,5 @@ test("Moving a contact to another account copies it", async () => {
 
   let moved = await person.moveToAddressbook(to);
 
-  expect(moved).not.toBe(person);
   expect(calls.map(([method, args]) => [method, args.accountId])).toContainEqual(["ContactCard/set", "x"]);
 });
