@@ -13,7 +13,7 @@
   onClick={() => goTo("/mail/rules", { account })} />
 <MenuDivider />
 <MenuItem label={$t`Account Properties…`} icon={SettingsIcon}
-  onClick={() => SettingsDialogs.openAccount(account)} />
+  onClick={() => openAccountSettings(account)} />
 {#if account.mainAccount}
   <MenuItem label={$t`Close "${$account.name}"`} icon={CloseIcon}
     tooltip={$t`Remove your colleague's shared folders from the folder pane`}
@@ -31,7 +31,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import { SettingsDialogs } from "../../Settings/SettingsDialogs";
+  import { openAccountSettings } from "../../Settings/SettingsDialogs";
   import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import { openNewFolder } from "./NewFolderDialog.svelte";
   import { openSharedFolder } from "./SharedFolderDialog.svelte";

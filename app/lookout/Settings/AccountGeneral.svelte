@@ -20,7 +20,7 @@
           {/each}
         </select>
         <span>{$t`Account type:`}</span>
-        <span class="value">{AccountLabels.typeLabel(account)}</span>
+        <span class="value">{getAccountTypeLabel(account)}</span>
       </grid>
     </OptionsRow>
   </OptionsSection>
@@ -66,7 +66,7 @@
   import { selectedCategory, selectedAccount as selectedSettingsAccount } from "./Window/selected";
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
   import { getAccountIcon } from "../../frontend/Settings/Shared/accountUIHelper";
-  import { AccountLabels } from "./Shared/AccountLabels";
+  import { getAccountTypeLabel } from "./Shared/AccountLabels";
   import { askYesNo } from "../Shared/Dialog/MessageBox";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";

@@ -17,41 +17,39 @@ export type SettingsDialog =
   { kind: "import-export", preselected?: Calendar | Addressbook, action?: ImportExportAction } |
   { kind: "new-folder-account", folderKind: FolderAccountKind, localOnly?: boolean };
 
-export class SettingsDialogs {
-  static readonly current = writable<SettingsDialog | null>(null);
+export const settingsDialog = writable<SettingsDialog | null>(null);
 
-  static open(dialog: SettingsDialog) {
-    SettingsDialogs.current.set(dialog);
-  }
+export function openSettingsDialog(dialog: SettingsDialog) {
+  settingsDialog.set(dialog);
+}
 
-  static openOptions(categoryID = "global") {
-    SettingsDialogs.open({ kind: "options", categoryID });
-  }
+export function openOptions(categoryID = "global") {
+  openSettingsDialog({ kind: "options", categoryID });
+}
 
-  static openAccount(account: Account, categoryID = "acc-general") {
-    SettingsDialogs.open({ kind: "account", account, categoryID });
-  }
+export function openAccountSettings(account: Account, categoryID = "acc-general") {
+  openSettingsDialog({ kind: "account", account, categoryID });
+}
 
-  static openTrustCenter(identity: MailIdentity = null) {
-    selectedIdentity.set(identity);
-    SettingsDialogs.openOptions("trust-center");
-  }
+export function openTrustCenter(identity: MailIdentity = null) {
+  selectedIdentity.set(identity);
+  openOptions("trust-center");
+}
 
-  static openSetup(setupURL: string, returnTo: SettingsDialog | null = null) {
-    let previousApp = get(selectedApp) ?? mailMustangApp;
-    SettingsDialogs.close();
-    let setupApp = new SetupMustangApp();
-    setupApp.appURL = setupURL;
-    if (returnTo) {
-      setupApp.onBack = () => {
-        openApp(previousApp, {});
-        SettingsDialogs.open(returnTo);
-      };
-    }
-    openApp(setupApp, {});
+export function openSetup(setupURL: string, returnTo: SettingsDialog | null = null) {
+  let previousApp = get(selectedApp) ?? mailMustangApp;
+  closeSettingsDialog();
+  let setupApp = new SetupMustangApp();
+  setupApp.appURL = setupURL;
+  if (returnTo) {
+    setupApp.onBack = () => {
+      openApp(previousApp, {});
+      openSettingsDialog(returnTo);
+    };
   }
+  openApp(setupApp, {});
+}
 
-  static close() {
-    SettingsDialogs.current.set(null);
-  }
+export function closeSettingsDialog() {
+  settingsDialog.set(null);
 }

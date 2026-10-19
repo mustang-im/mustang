@@ -16,7 +16,7 @@
         {#if person}
           {#if person.company}<span>{person.company}</span>{/if}
           {#if person.position}<span>{person.position}</span>{/if}
-          {#each ContactColumns.businessCardLines(person) as line}
+          {#each businessCardLines(person) as line}
             <span class="detail">{line}</span>
           {/each}
         {:else}
@@ -35,7 +35,7 @@
   import type { Contact } from "../../../logic/Abstract/Contact";
   import { Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
-  import { ContactColumns } from "./ContactColumns";
+  import { businessCardLines } from "./ContactColumns";
   import PersonPicture from "./PersonPicture.svelte";
   import PersonMenu from "../PersonPage/PersonMenu.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";

@@ -1,19 +1,19 @@
 <button class="account-row" class:selected={isSelected} role="option" aria-selected={isSelected}
   on:click
-  on:dblclick={() => SettingsDialogs.openAccount(account)}>
+  on:dblclick={() => openAccountSettings(account)}>
   <hbox class="account-icon"><AccountIcon size={24} strokeWidth={1.5} /></hbox>
   <vbox flex class="account-names">
     <span class="account-address">{$account.emailAddress || $account.name}</span>
     <span class="account-type">{$account.emailAddress && $account.name != $account.emailAddress
-      ? `${$account.name} · ${AccountLabels.typeLabel(account)}`
-      : AccountLabels.typeLabel(account)}</span>
+      ? `${$account.name} · ${getAccountTypeLabel(account)}`
+      : getAccountTypeLabel(account)}</span>
   </vbox>
 </button>
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
-  import { AccountLabels } from "../Shared/AccountLabels";
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { getAccountTypeLabel } from "../Shared/AccountLabels";
+  import { openAccountSettings } from "../SettingsDialogs";
   import AccountIcon from "lucide-svelte/icons/mail";
 
   export let account: MailAccount;

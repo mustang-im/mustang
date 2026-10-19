@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type { SettingsCategory } from "../../../frontend/Settings/SettingsCategory";
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { openSetup } from "../SettingsDialogs";
   import AccountItem from "./AccountItem.svelte";
   import AddIcon from "lucide-svelte/icons/plus";
   import { t } from "../../../l10n/l10n";
@@ -24,7 +24,7 @@
   $: accounts = category.accounts;
 
   function onNewAccount() {
-    SettingsDialogs.openSetup(category.newAccountURL, { kind: "options", categoryID: category.id });
+    openSetup(category.newAccountURL, { kind: "options", categoryID: category.id });
   }
 </script>
 

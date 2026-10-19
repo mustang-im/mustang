@@ -3,7 +3,7 @@
   on:input={event => onTyped(event.detail)} on:enter={onEnter}>
   <svelte:fragment slot="list">
     {#each matches as contact (contact.id)}
-      <MenuItem label={contact.name} tooltip={ContactColumns.value(ContactColumn.EMail, contact)}
+      <MenuItem label={contact.name} tooltip={contactColumnValue(ContactColumn.EMail, contact)}
         icon={contact instanceof Group ? GroupIcon : PersonIcon}
         onClick={() => choose(contact)} />
     {:else}
@@ -16,8 +16,8 @@
   import type { Contact } from "../../../logic/Abstract/Contact";
   import { Group } from "../../../logic/Abstract/Group";
   import { appGlobal } from "../../../logic/app";
-  import { ContactSearch } from "../ContactSearch";
-  import { ContactColumn, ContactColumns } from "../Person/ContactColumns";
+  import { findContacts } from "../ContactSearch";
+  import { ContactColumn, contactColumnValue } from "../Person/ContactColumns";
   import { LetterIndex } from "../LetterIndex";
   import RibbonTextBox from "../../Shared/Ribbon/RibbonTextBox.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -36,7 +36,7 @@
     const kMaxMatches = 12;
     let term = typed.trim();
     matches = term.length >= 2
-      ? ContactSearch.search(appGlobal.addressbooks.contents, term).contents
+      ? findContacts(appGlobal.addressbooks.contents, term).contents
         .sort(LetterIndex.compareByName)
         .slice(0, kMaxMatches)
       : [];

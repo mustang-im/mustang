@@ -74,7 +74,7 @@
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { newCalendarForProtocol } from "../../logic/Calendar/AccountsList/Calendars";
   import { newAddressbookForProtocol } from "../../logic/Contacts/AccountsList/Addressbooks";
-  import { NewFolderAccountFlow, type FolderAccountKind, type ServerFolder } from "./NewFolderAccountFlow";
+  import { saveLocalFolderAccount, findServerFolders, saveServerFolders, type FolderAccountKind, type ServerFolder } from "./NewFolderAccountFlow";
   import { assert } from "../../logic/util/util";
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
@@ -138,13 +138,13 @@
       return;
     }
     if (step == "settings" && isLocal) {
-      await NewFolderAccountFlow.saveLocal(config);
+      await saveLocalFolderAccount(config);
       close();
       return;
     }
     if (step == "settings") {
       try {
-        available = await NewFolderAccountFlow.findServerFolders(config, kind);
+        available = await findServerFolders(config, kind);
       } finally {
         config = config;
       }
@@ -154,7 +154,7 @@
         return;
       }
     }
-    await NewFolderAccountFlow.saveServerFolders(config, available, chosen);
+    await saveServerFolders(config, available, chosen);
     close();
   }
 

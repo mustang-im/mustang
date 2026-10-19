@@ -109,7 +109,7 @@
 
 <script lang="ts">
   import type { ImportExportAction } from "../SettingsDialogs";
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { openSetup } from "../SettingsDialogs";
   import { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { Calendar } from "../../../logic/Calendar/Calendar";
   import type { Topic } from "../../../logic/Topic/Topic";
@@ -206,7 +206,7 @@
 
   function next() {
     if (step == "action" && action == "import-program") {
-      SettingsDialogs.openSetup("/setup/initial");
+      openSetup("/setup/initial");
       return;
     }
     step = steps[stepIndex + 1];

@@ -2,7 +2,7 @@
 import "../../../../logic/app";
 import { Person, ContactEntry } from "../../../../logic/Abstract/Person";
 import { Group } from "../../../../logic/Abstract/Group";
-import { ContactColumn, ContactColumns, ContactView } from "../../../Contacts/Person/ContactColumns";
+import { ContactColumn, defaultContactColumns, shownContactColumns, allContactColumns, contactColumnSets, contactColumnLabel, contactColumnValue, addressText, contactComparator, toggledContactSort, ContactView } from "../../../Contacts/Person/ContactColumns";
 import { expect, test } from "vitest";
 
 function person(name: string, company: string | null, phones: ContactEntry[] = []): Person {
@@ -14,11 +14,11 @@ function person(name: string, company: string | null, phones: ContactEntry[] = [
 }
 
 test("Phone view shows Outlook's phone columns", () => {
-  expect(ContactColumns.defaultColumns(ContactView.Phone)).toEqual([
+  expect(defaultContactColumns(ContactView.Phone)).toEqual([
     ContactColumn.FullName, ContactColumn.Company, ContactColumn.BusinessPhone, ContactColumn.BusinessFax,
     ContactColumn.HomePhone, ContactColumn.MobilePhone,
   ]);
-  expect(ContactColumns.defaultColumns(ContactView.List)).toContain(ContactColumn.EMail);
+  expect(defaultContactColumns(ContactView.List)).toContain(ContactColumn.EMail);
 });
 
 test("Phone columns take the numbers by purpose, faxes separately", () => {
@@ -27,38 +27,38 @@ test("Phone columns take the numbers by purpose, faxes separately", () => {
     new ContactEntry("222", "work", "fax"),
     new ContactEntry("333", "mobile", "tel"),
   ]);
-  expect(ContactColumns.value(ContactColumn.BusinessPhone, anna)).toBe("111");
-  expect(ContactColumns.value(ContactColumn.BusinessFax, anna)).toBe("222");
-  expect(ContactColumns.value(ContactColumn.MobilePhone, anna)).toBe("333");
-  expect(ContactColumns.value(ContactColumn.HomePhone, anna)).toBe("");
+  expect(contactColumnValue(ContactColumn.BusinessPhone, anna)).toBe("111");
+  expect(contactColumnValue(ContactColumn.BusinessFax, anna)).toBe("222");
+  expect(contactColumnValue(ContactColumn.MobilePhone, anna)).toBe("333");
+  expect(contactColumnValue(ContactColumn.HomePhone, anna)).toBe("");
 });
 
 test("Groups show only their name and \"Contact group\"", () => {
   let group = new Group();
   group.name = "Board";
-  expect(ContactColumns.value(ContactColumn.FullName, group)).toBe("Board");
-  expect(ContactColumns.value(ContactColumn.JobTitle, group)).toBe("Contact group");
-  expect(ContactColumns.value(ContactColumn.Company, group)).toBe("");
+  expect(contactColumnValue(ContactColumn.FullName, group)).toBe("Board");
+  expect(contactColumnValue(ContactColumn.JobTitle, group)).toBe("Contact group");
+  expect(contactColumnValue(ContactColumn.Company, group)).toBe("");
 });
 
 test("Sorting by a column puts empty values last, in both directions", () => {
   let contacts = [person("Bea", null), person("Carl", "Zeta"), person("Anna", "Acme")];
-  let ascending = [...contacts].sort(ContactColumns.compare({ column: ContactColumn.Company, ascending: true }));
+  let ascending = [...contacts].sort(contactComparator({ column: ContactColumn.Company, ascending: true }));
   expect(ascending.map(contact => contact.name)).toEqual(["Anna", "Carl", "Bea"]);
-  let descending = [...contacts].sort(ContactColumns.compare({ column: ContactColumn.Company, ascending: false }));
+  let descending = [...contacts].sort(contactComparator({ column: ContactColumn.Company, ascending: false }));
   expect(descending.map(contact => contact.name)).toEqual(["Carl", "Anna", "Bea"]);
 });
 
 test("Clicking the sorted column again reverses the order", () => {
   let sort = { column: ContactColumn.FullName, ascending: true };
-  expect(ContactColumns.toggledSort(sort, ContactColumn.FullName)).toEqual({ column: ContactColumn.FullName, ascending: false });
-  expect(ContactColumns.toggledSort(sort, ContactColumn.Company)).toEqual({ column: ContactColumn.Company, ascending: true });
+  expect(toggledContactSort(sort, ContactColumn.FullName)).toEqual({ column: ContactColumn.FullName, ascending: false });
+  expect(toggledContactSort(sort, ContactColumn.Company)).toEqual({ column: ContactColumn.Company, ascending: true });
 });
 
 test("Street addresses are shown as text", () => {
-  expect(ContactColumns.addressText(JSON.stringify({ street: "Main St 1", city: "Springfield", postalCode: "12345" })))
+  expect(addressText(JSON.stringify({ street: "Main St 1", city: "Springfield", postalCode: "12345" })))
     .toBe("Main St 1\n12345 Springfield");
-  expect(ContactColumns.addressText("Plain text")).toBe("Plain text");
+  expect(addressText("Plain text")).toBe("Plain text");
 });
 
 test("More columns: names, second e-mail, address parts, web page, notes and the folder", () => {
@@ -69,36 +69,36 @@ test("More columns: names, second e-mail, address parts, web page, notes and the
   anna.streetAddresses.add(new ContactEntry(JSON.stringify({ street: "Main St 1", city: "Springfield", postalCode: "12345", country: "USA" }), "home"));
   anna.urls.add(new ContactEntry("https://anna.example", "work", "url"));
   anna.notes = "Met at\nthe fair";
-  expect(ContactColumns.value(ContactColumn.FirstName, anna)).toBe("Anna");
-  expect(ContactColumns.value(ContactColumn.LastName, anna)).toBe("Smith");
-  expect(ContactColumns.value(ContactColumn.EMail2, anna)).toBe("anna@home.example");
-  expect(ContactColumns.value(ContactColumn.EMail3, anna)).toBe("");
-  expect(ContactColumns.value(ContactColumn.HomeCity, anna)).toBe("Springfield");
-  expect(ContactColumns.value(ContactColumn.HomeCountry, anna)).toBe("USA");
-  expect(ContactColumns.value(ContactColumn.BusinessCity, anna)).toBe("");
-  expect(ContactColumns.value(ContactColumn.HomeAddress, anna)).toContain("Main St 1");
-  expect(ContactColumns.value(ContactColumn.WebPage, anna)).toBe("https://anna.example");
-  expect(ContactColumns.value(ContactColumn.Notes, anna)).toBe("Met at the fair");
-  expect(ContactColumns.value(ContactColumn.InFolder, anna)).toBe("");
+  expect(contactColumnValue(ContactColumn.FirstName, anna)).toBe("Anna");
+  expect(contactColumnValue(ContactColumn.LastName, anna)).toBe("Smith");
+  expect(contactColumnValue(ContactColumn.EMail2, anna)).toBe("anna@home.example");
+  expect(contactColumnValue(ContactColumn.EMail3, anna)).toBe("");
+  expect(contactColumnValue(ContactColumn.HomeCity, anna)).toBe("Springfield");
+  expect(contactColumnValue(ContactColumn.HomeCountry, anna)).toBe("USA");
+  expect(contactColumnValue(ContactColumn.BusinessCity, anna)).toBe("");
+  expect(contactColumnValue(ContactColumn.HomeAddress, anna)).toContain("Main St 1");
+  expect(contactColumnValue(ContactColumn.WebPage, anna)).toBe("https://anna.example");
+  expect(contactColumnValue(ContactColumn.Notes, anna)).toBe("Met at the fair");
+  expect(contactColumnValue(ContactColumn.InFolder, anna)).toBe("");
 });
 
 test("Every column has a label, and the column sets offer only known columns", () => {
-  for (let column of ContactColumns.allColumns) {
-    expect(ContactColumns.label(column)).not.toBe(column);
+  for (let column of allContactColumns()) {
+    expect(contactColumnLabel(column)).not.toBe(column);
   }
-  let sets = ContactColumns.columnSets();
+  let sets = contactColumnSets();
   expect(sets[0].label).toBe("Frequently-used fields");
   expect(sets.at(-1).label).toBe("All Contact fields");
-  expect(sets.at(-1).columns.length).toBe(ContactColumns.allColumns.length);
+  expect(sets.at(-1).columns.length).toBe(allContactColumns().length);
   for (let set of sets) {
     for (let column of set.columns) {
-      expect(ContactColumns.allColumns).toContain(column);
+      expect(allContactColumns()).toContain(column);
     }
   }
 });
 
 test("Stored columns: unknown ones dropped, Full Name always there", () => {
-  expect(ContactColumns.shownColumns([ ContactColumn.Company, "gone" as ContactColumn ]))
+  expect(shownContactColumns([ ContactColumn.Company, "gone" as ContactColumn ]))
     .toEqual([ ContactColumn.FullName, ContactColumn.Company ]);
-  expect(ContactColumns.shownColumns(null)).toEqual([ ContactColumn.FullName ]);
+  expect(shownContactColumns(null)).toEqual([ ContactColumn.FullName ]);
 });

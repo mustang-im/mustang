@@ -84,8 +84,8 @@
             <input id="contact-position" type="text" class="lo-text-field" bind:value={person.position} />
 
             <span class="section">{$t`Internet`}</span>
-            <SlotButton slots={ContactSlots.emailSlots} bind:slot={emailSlot} entries={emailAddresses} />
-            <SlotField slots={ContactSlots.emailSlots} bind:slot={emailSlot} entries={emailAddresses} type="email" />
+            <SlotButton slots={emailSlots} bind:slot={emailSlot} entries={emailAddresses} />
+            <SlotField slots={emailSlots} bind:slot={emailSlot} entries={emailAddresses} type="email" />
             <label for="contact-web">{$t`Web page address`}</label>
             <input id="contact-web" type="url" class="lo-text-field"
               value={$urls && firstValue(urls)} on:input={event => setFirstValue(urls, event.currentTarget.value, null)} />
@@ -95,17 +95,17 @@
 
             <span class="section">{$t`Phone numbers`}</span>
             {#each phoneRows as row, i}
-              <SlotButton slots={ContactSlots.phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} />
-              <SlotField slots={ContactSlots.phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} type="tel" />
+              <SlotButton slots={phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} />
+              <SlotField slots={phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} type="tel" />
             {/each}
 
             <span class="section">{$t`Addresses`}</span>
             <div class="top-aligned">
-              <SlotButton slots={ContactSlots.addressSlots} bind:slot={addressSlot} entries={streetAddresses}
+              <SlotButton slots={addressSlots} bind:slot={addressSlot} entries={streetAddresses}
                 onClick={() => { isAddressOpen = true; }} />
             </div>
             <button class="address-box" title={$t`Edit the address`} on:click={() => { isAddressOpen = true; }}>
-              {$streetAddresses && ContactColumns.addressText(addressSlot.valueIn(streetAddresses))}
+              {$streetAddresses && addressText(addressSlot.valueIn(streetAddresses))}
             </button>
           </div>
         </vbox>
@@ -146,7 +146,7 @@
 {/if}
 {#if isAddressOpen}
   <CheckAddressDialog value={addressSlot.valueIn(streetAddresses)}
-    on:change={event => { addressSlot = addressSlot.setValueIn(streetAddresses, event.detail, ContactSlots.addressSlots); }}
+    on:change={event => { addressSlot = addressSlot.setValueIn(streetAddresses, event.detail, addressSlots); }}
     on:close={() => { isAddressOpen = false; }} />
 {/if}
 
@@ -155,8 +155,8 @@
 <script lang="ts">
   import { ContactEntry, Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
-  import { ContactSlots } from "./ContactSlots";
-  import { ContactColumns } from "../Person/ContactColumns";
+  import { emailSlots, phoneSlots, addressSlots, phoneSlot } from "./ContactSlots";
+  import { addressText } from "../Person/ContactColumns";
   import { newPerson } from "../../../frontend/Contacts/Person/Selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import { Keyboard } from "../../Util/keyboard";
@@ -217,9 +217,9 @@
   $: preferredEmail = $emailAddresses.sortBy(entry => entry.preference).first?.value || null;
   $: preferredPhone = $phoneNumbers.sortBy(entry => entry.preference).first?.value || null;
 
-  let emailSlot = ContactSlots.emailSlots[0];
-  let phoneRows = ["business", "home", "business-fax", "mobile"].map(id => ContactSlots.phoneSlot(id));
-  let addressSlot = ContactSlots.addressSlots.find(slot => slot.entryIn(person.streetAddresses)) ?? ContactSlots.addressSlots[0];
+  let emailSlot = emailSlots[0];
+  let phoneRows = ["business", "home", "business-fax", "mobile"].map(id => phoneSlot(id));
+  let addressSlot = addressSlots.find(slot => slot.entryIn(person.streetAddresses)) ?? addressSlots[0];
 
   onMount(async () => {
     await tick();

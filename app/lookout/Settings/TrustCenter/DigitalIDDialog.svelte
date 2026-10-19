@@ -51,7 +51,7 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { DigitalIDs, type DigitalID } from "./DigitalIDs";
+  import { allDigitalIDs, keyName, digitalIDLabel, identityLabel, importDigitalID, exportDigitalID, removeDigitalID, type DigitalID } from "./DigitalIDs";
   import { showMessageBox } from "../../Shared/Dialog/MessageBox";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -81,9 +81,9 @@
   let withPrivateKey = true;
   let deleteAfterExport = false;
 
-  $: identityOptions = identities.map(listed => ({ value: listed, label: DigitalIDs.identityLabel(listed) }));
-  $: keys = DigitalIDs.all(identity);
-  $: keyOptions = keys.map(key => ({ value: key, label: DigitalIDs.label(key) }));
+  $: identityOptions = identities.map(listed => ({ value: listed, label: identityLabel(listed) }));
+  $: keys = allDigitalIDs(identity);
+  $: keyOptions = keys.map(key => ({ value: key, label: digitalIDLabel(key) }));
   $: if (!keys.includes(exportKey)) {
     exportKey = keys[0] ?? null;
   }
@@ -103,14 +103,14 @@
 
   async function onOK() {
     if (mode == "import") {
-      await DigitalIDs.importFile(identity, file, passphrase, name);
+      await importDigitalID(identity, file, passphrase, name);
       dispatch("change", identity);
       return;
     }
-    await DigitalIDs.exportFile(identity, exportKey, withPrivateKey);
+    await exportDigitalID(identity, exportKey, withPrivateKey);
     if (withPrivateKey && deleteAfterExport &&
-        await showMessageBox(gt`Delete Digital ID`, gt`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${DigitalIDs.nameOf(exportKey)} from this computer?`)) {
-      await DigitalIDs.remove(identity, exportKey);
+        await showMessageBox(gt`Delete Digital ID`, gt`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${keyName(exportKey)} from this computer?`)) {
+      await removeDigitalID(identity, exportKey);
     }
     dispatch("change", identity);
   }

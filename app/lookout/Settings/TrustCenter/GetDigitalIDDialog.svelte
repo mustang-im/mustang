@@ -25,7 +25,7 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { DigitalIDs } from "./DigitalIDs";
+  import { identityLabel, createOpenPGPKey, createSMIMEKey } from "./DigitalIDs";
   import { CertificateRequest } from "./CertificateRequest";
   import CertificateRequestFields from "./CertificateRequestFields.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
@@ -42,7 +42,7 @@
 
   let type: "openpgp" | "smime" = "openpgp";
   let request = CertificateRequest.forIdentity(identity);
-  $: identityOptions = identities.map(listed => ({ value: listed, label: DigitalIDs.identityLabel(listed) }));
+  $: identityOptions = identities.map(listed => ({ value: listed, label: identityLabel(listed) }));
 
   function onIdentityChanged(chosen: MailIdentity) {
     let name = request.name;
@@ -53,12 +53,12 @@
   async function onOK() {
     if (type == "smime") {
       request.validate();
-      let key = await DigitalIDs.createSMIME(identity);
+      let key = await createSMIMEKey(identity);
       dispatch("change", identity);
       await request.save(key);
       return;
     }
-    await DigitalIDs.createOpenPGP(identity);
+    await createOpenPGPKey(identity);
     dispatch("change", identity);
   }
 </script>

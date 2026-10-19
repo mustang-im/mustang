@@ -6,7 +6,7 @@ import { Addressbook, SearchOnlyAddressbook } from "../../../logic/Contacts/Addr
 import { ContactEntry, Person } from "../../../logic/Abstract/Person";
 import { Group } from "../../../logic/Abstract/Group";
 import { ContactActions } from "../../Contacts/ContactActions";
-import { ContactSearch } from "../../Contacts/ContactSearch";
+import { defaultContactSearchOptions, hasContactRefiners, findContacts, matchesContactRefiners } from "../../Contacts/ContactSearch";
 import { ContactSearchScope } from "../../Contacts/Person/Selected";
 import { mockMessageBox } from "../Shared/Dialog/mockMessageBox";
 import { beforeEach, expect, test } from "vitest";
@@ -101,7 +101,7 @@ test("New contacts need an address book", () => {
 });
 
 test("Search finds persons by name, email address, phone number and notes", () => {
-  let names = (term: string) => ContactSearch.search([addressbook], term).contents.map(contact => contact.name).sort();
+  let names = (term: string) => findContacts([addressbook], term).contents.map(contact => contact.name).sort();
   expect(names("anna")).toEqual(["Anna Schmidt"]);
   expect(names("example.com")).toEqual(["Bert Meier"]);
   expect(names("30 555")).toEqual(["Carla Diaz"]);
@@ -112,7 +112,7 @@ test("Search finds persons by name, email address, phone number and notes", () =
 
 test("Search finds groups by name", () => {
   newGroup("Project team", anna);
-  let results = ContactSearch.search([addressbook], "team").contents;
+  let results = findContacts([addressbook], "team").contents;
   expect(results.length).toBe(1);
   expect(results[0]).toBeInstanceOf(Group);
 });
@@ -122,19 +122,19 @@ test("Search covers all given address books", () => {
   let dora = new Person(second);
   dora.name = "Dora Anders";
   second.persons.add(dora);
-  let names = ContactSearch.search([addressbook, second], "an").contents.map(contact => contact.name).sort();
+  let names = findContacts([addressbook, second], "an").contents.map(contact => contact.name).sort();
   expect(names).toEqual(["Anna Schmidt", "Dora Anders"]);
 });
 
 test("Search refiners keep persons with a phone number, an address or an email address", () => {
-  let options = { ...ContactSearch.defaultOptions(ContactSearchScope.AllContactItems), hasPhoneNumber: true };
-  expect(ContactSearch.hasRefiners(options)).toBe(true);
-  let withPhone = addressbook.contacts.contents.filter(contact => ContactSearch.matchesRefiners(contact, options)).map(contact => contact.name);
+  let options = { ...defaultContactSearchOptions(ContactSearchScope.AllContactItems), hasPhoneNumber: true };
+  expect(hasContactRefiners(options)).toBe(true);
+  let withPhone = addressbook.contacts.contents.filter(contact => matchesContactRefiners(contact, options)).map(contact => contact.name);
   expect(withPhone).toEqual(["Carla Diaz"]);
   options = { ...options, hasPhoneNumber: false, hasEMailAddress: true };
-  let withEMail = addressbook.contacts.contents.filter(contact => ContactSearch.matchesRefiners(contact, options)).map(contact => contact.name).sort();
+  let withEMail = addressbook.contacts.contents.filter(contact => matchesContactRefiners(contact, options)).map(contact => contact.name).sort();
   expect(withEMail).toEqual(["Anna Schmidt", "Bert Meier"]);
-  expect(ContactSearch.hasRefiners(ContactSearch.defaultOptions(ContactSearchScope.CurrentFolder))).toBe(false);
+  expect(hasContactRefiners(defaultContactSearchOptions(ContactSearchScope.CurrentFolder))).toBe(false);
 });
 
 test("Contact from the Same Company copies the company and the business numbers and addresses", () => {

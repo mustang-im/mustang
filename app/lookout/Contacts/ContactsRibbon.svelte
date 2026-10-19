@@ -91,7 +91,7 @@
     <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Folder`} icon={NewFolderIcon}
         tooltip={$t`Create a new address book on this computer`}
-        onClick={() => SettingsDialogs.open({ kind: "new-folder-account", folderKind: "addressbook", localOnly: true })} />
+        onClick={() => openSettingsDialog({ kind: "new-folder-account", folderKind: "addressbook", localOnly: true })} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon}
@@ -126,7 +126,7 @@
       <RibbonMenuButton label={$t`Arrange By`} shortLabel={$t`Arrange`} icon={ArrangeIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}>
         {#each arrangeColumns as column}
-          <MenuItem label={ContactColumns.label(column)} checked={$sort.value.column == column}
+          <MenuItem label={contactColumnLabel(column)} checked={$sort.value.column == column}
             onClick={() => arrangeBy(column)} />
         {/each}
       </RibbonMenuButton>
@@ -163,11 +163,11 @@
 {/if}
 {#if isShowColumnsOpen}
   <!-- <copied from="Person/PersonsTable.svelte"> -->
-  <ShowColumnsDialog columns={ContactColumns.shownColumns($columnsSetting.value)}
-    allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
+  <ShowColumnsDialog columns={shownContactColumns($columnsSetting.value)}
+    allColumns={allContactColumns()} labelOf={contactColumnLabel}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
-    columnSets={ContactColumns.columnSets()}
-    on:change={event => { $columnsSetting.value = ContactColumns.shownColumns(event.detail); }}
+    columnSets={contactColumnSets()}
+    on:change={event => { $columnsSetting.value = shownContactColumns(event.detail); }}
     on:close={() => isShowColumnsOpen = false} />
   <!-- </copied> -->
 {/if}
@@ -177,11 +177,11 @@
   import { Person, type ContactEntry } from "../../logic/Abstract/Person";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { contactSearchOptions } from "./Person/Selected";
-  import { ContactSearch } from "./ContactSearch";
+  import { defaultContactSearchOptions } from "./ContactSearch";
   import { contactSearchInput } from "./Search/ContactSearchBox.svelte";
   import { ContactActions } from "./ContactActions";
-  import { SettingsDialogs } from "../Settings/SettingsDialogs";
-  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
+  import { openSettingsDialog } from "../Settings/SettingsDialogs";
+  import { ContactColumn, defaultContactGroupBy, defaultContactColumns, shownContactColumns, allContactColumns, contactColumnSets, contactColumnLabel, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import { AddressbookSections } from "./AddressbookSections";
   import { appGlobal } from "../../logic/app";
@@ -248,7 +248,7 @@
   const sort = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
   const folderPane = getLocalStorage<boolean>("lookout.contacts.folderPane", true);
   const readingPane = getLocalStorage<boolean>("lookout.contacts.readingPane", true);
-  $: columnsSetting = getLocalStorage<ContactColumn[]>($view.value == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns($view.value));
+  $: columnsSetting = getLocalStorage<ContactColumn[]>($view.value == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", defaultContactColumns($view.value));
   const arrangeColumns = [ContactColumn.FullName, ContactColumn.Company, ContactColumn.JobTitle, ContactColumn.EMail];
 
   $: contactViews = [
@@ -277,7 +277,7 @@
 
   // <copied from="ContactsAppD.svelte">
   function closeSearch() {
-    $contactSearchOptions = ContactSearch.defaultOptions($contactSearchOptions.scope);
+    $contactSearchOptions = defaultContactSearchOptions($contactSearchOptions.scope);
   }
   // </copied>
 
@@ -290,8 +290,8 @@
     view.value = ContactView.People;
     sort.value = sort.defaultValue;
     for (let tableView of [ContactView.List, ContactView.Phone]) {
-      getLocalStorage<ContactColumn[]>(tableView == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(tableView)).value = ContactColumns.defaultColumns(tableView);
-      getLocalStorage<ContactSort | null>(tableView == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(tableView)).value = ContactColumns.defaultGroupBy(tableView);
+      getLocalStorage<ContactColumn[]>(tableView == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", defaultContactColumns(tableView)).value = defaultContactColumns(tableView);
+      getLocalStorage<ContactSort | null>(tableView == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", defaultContactGroupBy(tableView)).value = defaultContactGroupBy(tableView);
     }
     folderPane.value = true;
     readingPane.value = true;

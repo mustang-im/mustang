@@ -13,10 +13,10 @@
   {:else}
     <RibbonButton label={$t`Encrypt`} icon={EncryptIcon}
       tooltip={$t`You need a digital ID to encrypt messages. Set it up in the Trust Center.`}
-      onClick={() => SettingsDialogs.openTrustCenter(identity)} />
+      onClick={() => openTrustCenter(identity)} />
     <RibbonButton label={$t`Sign`} icon={SignIcon}
       tooltip={$t`You need a digital ID to sign messages. Set it up in the Trust Center.`}
-      onClick={() => SettingsDialogs.openTrustCenter(identity)} />
+      onClick={() => openTrustCenter(identity)} />
   {/if}
 </RibbonGroup>
 
@@ -24,7 +24,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { SettingsDialogs } from "../../Settings/SettingsDialogs";
+  import { openTrustCenter } from "../../Settings/SettingsDialogs";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
@@ -55,7 +55,7 @@
   }
   function doSign() {
     if (!getMyPrivateKey(identity)) {
-      SettingsDialogs.openTrustCenter(identity);
+      openTrustCenter(identity);
       return;
     }
     mail.signedByKeyID = getMyPrivateKey(identity)?.id;

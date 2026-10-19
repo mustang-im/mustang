@@ -62,7 +62,7 @@
     <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Calendar`} shortLabel={$t`New`} icon={NewCalendarIcon}
         tooltip={$t`Create a new calendar on this computer`}
-        onClick={() => SettingsDialogs.open({ kind: "new-folder-account", folderKind: "calendar", localOnly: true })} />
+        onClick={() => openSettingsDialog({ kind: "new-folder-account", folderKind: "calendar", localOnly: true })} />
     </RibbonGroup>
     <RibbonGroup label={$t`Actions`}>
       <RibbonButton label={$t`Rename Calendar`} shortLabel={$t`Rename`} icon={RenameIcon}
@@ -167,7 +167,7 @@
   import { CalendarGroups } from "./CalendarGroups";
   import { CalendarColors } from "./CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
-  import { SettingsDialogs } from "../Settings/SettingsDialogs";
+  import { openSettingsDialog, openOptions } from "../Settings/SettingsDialogs";
   import { selectedCalendar, selectedDate, startDate } from "../../frontend/Calendar/selected";
   import { calendarSearchOptions, CalendarCurrentView, CalendarFolderPane, type CalendarViewType } from "./selected";
   import { EventTable, EventTableColumn, EventTableGrouping } from "./ListView/EventTable";
@@ -325,7 +325,7 @@
   }
 
   function onCalendarOptions() {
-    SettingsDialogs.openOptions("calendar");
+    openOptions("calendar");
   }
 
   async function onDeleteCalendar() {

@@ -47,7 +47,7 @@
       <AccountIcon size="18" />
       <hbox class="label">{appName}</hbox>
     </button>
-    <button class="nav-item" on:click={() => SettingsDialogs.openOptions()}>
+    <button class="nav-item" on:click={() => openOptions()}>
       <OptionsIcon size="18" />
       <hbox class="label">{$t`Options`}</hbox>
     </button>
@@ -75,7 +75,7 @@
 
 <script lang="ts">
   import { backstagePage, isBackstageOpen } from "./selected";
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { openOptions } from "../SettingsDialogs";
   import InfoPage from "./InfoPage.svelte";
   import OpenExportPage from "./OpenExportPage.svelte";
   import ProductAccountPage from "./ProductAccountPage.svelte";

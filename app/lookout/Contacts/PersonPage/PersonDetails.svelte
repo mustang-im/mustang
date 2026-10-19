@@ -68,8 +68,8 @@
           {/each}
           {#each $streetAddresses.each as entry}
             <CardField icon={AddressIcon} label={entryLabel(entry, $t`Address`)}
-              copyValue={ContactColumns.addressText(entry.value)}>
-              <span class="address">{ContactColumns.addressText(entry.value)}</span>
+              copyValue={addressText(entry.value)}>
+              <span class="address">{addressText(entry.value)}</span>
             </CardField>
           {/each}
         </grid>
@@ -141,7 +141,7 @@
 
 <script lang="ts">
   import type { Person, ContactEntry } from "../../../logic/Abstract/Person";
-  import { ContactColumns } from "../Person/ContactColumns";
+  import { addressText } from "../Person/ContactColumns";
   import { ContactActions } from "../ContactActions";
   import { ActivityKind, ContactActivities } from "../History/ContactActivities";
   import ContactHistory from "../History/ContactHistory.svelte";

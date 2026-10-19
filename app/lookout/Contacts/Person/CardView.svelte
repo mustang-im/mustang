@@ -11,7 +11,7 @@
       <div class="card-name">{contact.name || $t`(No name)`}</div>
       {#if person}
         <div class="fields">
-          {#each ContactColumns.addressCardFields(person) as field}
+          {#each addressCardFields(person) as field}
             <span class="label">{field.label}</span>
             <span class="value">{field.value}</span>
           {/each}
@@ -31,7 +31,7 @@
   import type { Contact } from "../../../logic/Abstract/Contact";
   import { Person } from "../../../logic/Abstract/Person";
   import { ContactActions } from "../ContactActions";
-  import { ContactColumns } from "./ContactColumns";
+  import { addressCardFields } from "./ContactColumns";
   import PersonMenu from "../PersonPage/PersonMenu.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { derived } from "svelte/store";

@@ -28,7 +28,7 @@
 </RibbonTab>
 
 <script lang="ts">
-  import { ContactSearch } from "../ContactSearch";
+  import { defaultContactSearchOptions } from "../ContactSearch";
   import { contactSearchOptions as options, ContactSearchScope, type ContactSearchOptions } from "../Person/Selected";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -51,7 +51,7 @@
 
   // <copied from="../ContactsAppD.svelte">
   function closeSearch() {
-    $options = ContactSearch.defaultOptions($options.scope);
+    $options = defaultContactSearchOptions($options.scope);
   }
   // </copied>
 </script>

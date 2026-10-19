@@ -22,7 +22,7 @@
       description={account
         ? $t`Change the settings of ${$account.name}, its server and logon information, or add and remove accounts.`
         : $t`Add and remove accounts or change existing connection settings.`}
-      onClick={() => account ? SettingsDialogs.openAccount(account) : SettingsDialogs.openOptions("mail")} />
+      onClick={() => account ? openAccountSettings(account) : openOptions("mail")} />
 
     <BackstageTile icon={RulesIcon} label={$t`Manage Rules & Alerts`}
       title={$t`Rules and Alerts`}
@@ -35,7 +35,7 @@
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { appGlobal } from "../../../logic/app";
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { openOptions, openAccountSettings, openSetup } from "../SettingsDialogs";
   import { isBackstageOpen } from "./selected";
   import { goTo } from "../../../frontend/AppsBar/selectedApp";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
@@ -58,7 +58,7 @@
 
   function onAddAccount() {
     $isBackstageOpen = false;
-    SettingsDialogs.openSetup("/setup/mail");
+    openSetup("/setup/mail");
   }
 </script>
 

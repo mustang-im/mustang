@@ -4,8 +4,8 @@ import { Person, ContactEntry } from "../../../../logic/Abstract/Person";
 import { PGPPublicKey } from "../../../../logic/Mail/Encryption/PGP/PGPPublicKey";
 import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { TrustLevel } from "../../../../logic/Mail/Encryption/enums";
-import { AllFields } from "../../../Contacts/PersonPage/AllFields";
-import { ContactCertificates } from "../../../Contacts/PersonPage/ContactCertificates";
+import { allFieldRows } from "../../../Contacts/PersonPage/AllFields";
+import { certificateStatus } from "../../../Contacts/PersonPage/ContactCertificates";
 import { expect, test } from "vitest";
 
 function key(id: string, userID: string, KeyClass: typeof PGPPublicKey | typeof SMIMEPublicKey = PGPPublicKey): PGPPublicKey | SMIMEPublicKey {
@@ -20,10 +20,10 @@ test("Certificate status: default, not trusted", () => {
   // A new S/MIME key is obsolete until its certificate is there
   smime.obsolete = false;
   smime.encryptByDefault = true;
-  expect(ContactCertificates.statusOf(smime)).toBe("Default");
+  expect(certificateStatus(smime)).toBe("Default");
   let bad = key("ab12cd", "fred@example.org");
   bad.trustLevel = TrustLevel.Distrusted;
-  expect(ContactCertificates.statusOf(bad)).toBe("Not trusted");
+  expect(certificateStatus(bad)).toBe("Not trusted");
 });
 
 test("All Fields lists the entries of the chosen kind, user-defined fields by name", () => {
@@ -33,8 +33,8 @@ test("All Fields lists the entries of the chosen kind, user-defined fields by na
   person.phoneNumbers.add(new ContactEntry("+49 30 1234", "mobile"));
   person.urls.add(new ContactEntry("https://fred.example"));
   person.custom.add(new ContactEntry("Ginger", "cat"));
-  expect(AllFields.rows(person, "user-defined").map(row => row.name)).toEqual(["cat"]);
-  expect(AllFields.rows(person, "email").map(row => row.entry.value)).toEqual(["fred@example.org", "fred@home.example"]);
-  expect(AllFields.rows(person, "internet").map(row => row.name)).toEqual(["Web page"]);
-  expect(AllFields.rows(person, "all")).toHaveLength(5);
+  expect(allFieldRows(person, "user-defined").map(row => row.name)).toEqual(["cat"]);
+  expect(allFieldRows(person, "email").map(row => row.entry.value)).toEqual(["fred@example.org", "fred@home.example"]);
+  expect(allFieldRows(person, "internet").map(row => row.name)).toEqual(["Web page"]);
+  expect(allFieldRows(person, "all")).toHaveLength(5);
 });

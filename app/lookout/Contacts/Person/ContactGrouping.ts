@@ -1,5 +1,5 @@
 import type { Contact } from "../../../logic/Abstract/Contact";
-import { ContactColumns, type ContactSort } from "./ContactColumns";
+import { contactColumnLabel, contactColumnValue, type ContactSort } from "./ContactColumns";
 import { gt } from "../../../l10n/l10n";
 
 export class ContactGroupHeader {
@@ -29,7 +29,7 @@ export class ContactGrouping {
     let column = this.groupBy.column;
     let byValue = new Map<string, Contact[]>();
     for (let contact of sortedContacts) {
-      let value = ContactColumns.value(column, contact).trim();
+      let value = contactColumnValue(column, contact).trim();
       let key = value.toLocaleLowerCase();
       if (!byValue.has(key)) {
         byValue.set(key, []);
@@ -39,10 +39,10 @@ export class ContactGrouping {
     let direction = this.groupBy.ascending ? 1 : -1;
     let keys = [ ...byValue.keys() ].sort((a, b) =>
       direction * a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }));
-    let columnLabel = ContactColumns.label(column);
+    let columnLabel = contactColumnLabel(column);
     return keys.map(key => {
       let contacts = byValue.get(key);
-      let value = ContactColumns.value(column, contacts[0]).trim();
+      let value = contactColumnValue(column, contacts[0]).trim();
       let label = gt`${columnLabel}: ${value || gt`(none)`}`;
       return new ContactGroupHeader(key, label, contacts, collapsedIDs.has(key));
     });

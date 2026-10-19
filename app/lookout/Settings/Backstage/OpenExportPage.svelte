@@ -1,14 +1,14 @@
 <vbox class="open-export-page">
   <h1>{$t`Open`}</h1>
   <vbox class="commands">
-    <button class="command" on:click={() => SettingsDialogs.open({ kind: "import-export", action: "import" })}>
+    <button class="command" on:click={() => openSettingsDialog({ kind: "import-export", action: "import" })}>
       <hbox class="command-icon"><ImportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Import`}</span>
         <span class="command-description">{$t`Import contacts or appointments from a file, or accounts from another program.`}</span>
       </vbox>
     </button>
-    <button class="command" on:click={() => SettingsDialogs.open({ kind: "import-export", action: "export" })}>
+    <button class="command" on:click={() => openSettingsDialog({ kind: "import-export", action: "export" })}>
       <hbox class="command-icon"><ExportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Export`}</span>
@@ -44,7 +44,7 @@
 
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { openSettingsDialog } from "../SettingsDialogs";
   import { selectedAccount } from "../../../frontend/Mail/Selected";
   import OpenCalendarDialog from "../../Calendar/OpenCalendarDialog.svelte";
   import SharedFolderDialog from "../../Mail/LeftPane/SharedFolderDialog.svelte";

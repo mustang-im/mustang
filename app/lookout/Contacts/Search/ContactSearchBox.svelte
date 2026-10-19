@@ -21,7 +21,7 @@
 </script>
 
 <script lang="ts">
-  import { ContactSearch } from "../ContactSearch";
+  import { defaultContactSearchOptions } from "../ContactSearch";
   import { contactSearchOptions as options } from "../Person/Selected";
   import SearchIcon from "lucide-svelte/icons/search";
   import { onDestroy } from "svelte";
@@ -36,7 +36,7 @@
 
   // <copied from="../ContactsAppD.svelte">
   function closeSearch() {
-    $options = ContactSearch.defaultOptions($options.scope);
+    $options = defaultContactSearchOptions($options.scope);
   }
   // </copied>
 

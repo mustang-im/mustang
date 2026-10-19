@@ -24,8 +24,8 @@
               <span>{$t`Certificate:`}</span>
               <vbox class="status">
                 {#await statusAsync then status}
-                  <span class="value">{DigitalIDs.statusText(status)}</span>
-                  {#if DigitalIDs.needsCertificate(status)}
+                  <span class="value">{keyStatusText(status)}</span>
+                  {#if needsCertificate(status)}
                     <hbox class="buttons">
                       <DialogButton label={$t`Request Certificate…`} onClick={() => { isRequestOpen = true; }} />
                       <DialogButton label={$t`Add Certificate…`} onClick={onAddCertificate} />
@@ -86,7 +86,7 @@
 
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { DigitalIDs, type DigitalID } from "./DigitalIDs";
+  import { usableDigitalIDs, keysAwaitingCertificate, digitalIDLabel, identityLabel, setDefaultDigitalID, addCertificateFile, keyStatusText, needsCertificate, type DigitalID } from "./DigitalIDs";
   import { selectedIdentity } from "./selected";
   import { SMIMEPrivateKey } from "../../../logic/Mail/Encryption/SMIME/SMIMEPrivateKey";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
@@ -127,14 +127,14 @@
   let isGetOpen = false;
   let isRequestOpen = false;
 
-  $: identityOptions = identities.map(listed => ({ value: listed, label: DigitalIDs.identityLabel(listed) }));
+  $: identityOptions = identities.map(listed => ({ value: listed, label: identityLabel(listed) }));
   $: privateKeys = identity?.encryptionPrivateKeys;
   $: $privateKeys, identity, reload();
-  $: usableKeys = identity && $privateKeys ? DigitalIDs.usable(identity) : [];
-  $: keyOptions = identity && $privateKeys ? [ ...usableKeys, ...DigitalIDs.awaitingCertificate(identity).filter(listed => !usableKeys.includes(listed)) ]
+  $: usableKeys = identity && $privateKeys ? usableDigitalIDs(identity) : [];
+  $: keyOptions = identity && $privateKeys ? [ ...usableKeys, ...keysAwaitingCertificate(identity).filter(listed => !usableKeys.includes(listed)) ]
     .map(listed => ({
       value: listed as DigitalID,
-      label: usableKeys.includes(listed) ? DigitalIDs.label(listed) : $t`${DigitalIDs.label(listed)} - waiting for the certificate`,
+      label: usableKeys.includes(listed) ? digitalIDLabel(listed) : $t`${digitalIDLabel(listed)} - waiting for the certificate`,
     })) : [];
   $: isUsable = usableKeys.includes(key);
   $: noKeyReason = !identity ? null
@@ -146,7 +146,7 @@
     if (key && identity?.encryptionPrivateKeys.contains(key)) {
       return;
     }
-    key = identity ? (getMyPrivateKey(identity) as DigitalID) ?? DigitalIDs.awaitingCertificate(identity)[0] ?? null : null;
+    key = identity ? (getMyPrivateKey(identity) as DigitalID) ?? keysAwaitingCertificate(identity)[0] ?? null : null;
     encrypt = !!key?.encryptByDefault;
     sign = !!key?.useToSign || encrypt;
   }
@@ -175,11 +175,11 @@
   }
 
   async function save() {
-    await DigitalIDs.setDefault(identity, key, encrypt, sign);
+    await setDefaultDigitalID(identity, key, encrypt, sign);
   }
 
   function isUsableKey(listed: DigitalID): boolean {
-    return DigitalIDs.usable(identity).includes(listed);
+    return usableDigitalIDs(identity).includes(listed);
   }
 
   function onKeysChanged(changed: MailIdentity) {
@@ -193,7 +193,7 @@
     if (!file || !(key instanceof SMIMEPrivateKey)) {
       return;
     }
-    await DigitalIDs.addCertificateFile(identity, key, file);
+    await addCertificateFile(identity, key, file);
     statusAsync = key.keyStatus();
     key = key;
   }

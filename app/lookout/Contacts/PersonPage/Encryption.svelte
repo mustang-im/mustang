@@ -10,7 +10,7 @@
         <span class="cell">{nameOf(item)}</span>
         <span class="cell">{item.system}</span>
         <span class="cell">{item.expires ? getDateString(item.expires) : "-"}</span>
-        <span class="cell">{ContactCertificates.statusOf(item)}</span>
+        <span class="cell">{certificateStatus(item)}</span>
         <span slot="empty">{$t`This contact has no certificate yet.`}</span>
       </ListView>
     </vbox>
@@ -38,7 +38,7 @@
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
-  import { ContactCertificates } from "./ContactCertificates";
+  import { certificateStatus } from "./ContactCertificates";
   import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";

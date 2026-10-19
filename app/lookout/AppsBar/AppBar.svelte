@@ -6,7 +6,7 @@
   {/each}
   <vbox flex class="spacer" />
   <AppButton app={settingsMustangApp} selected={isSelected(settingsMustangApp, selectedApp)}
-    on:click={() => SettingsDialogs.openOptions()} />
+    on:click={() => openOptions()} />
 </vbox>
 
 <script lang="ts">
@@ -16,7 +16,7 @@
   import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
   import { settingsMustangApp } from "../../frontend/Settings/Window/SettingsMustangApp";
-  import { SettingsDialogs } from "../Settings/SettingsDialogs";
+  import { openOptions } from "../Settings/SettingsDialogs";
   import AppButton from "./AppButton.svelte";
   import SubAppsList from "./SubAppsList.svelte";
   import { catchErrors } from "../../frontend/Util/error";

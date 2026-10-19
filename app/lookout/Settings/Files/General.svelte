@@ -10,7 +10,7 @@
 </OptionsPage>
 
 <script lang="ts">
-  import { SettingsDialogs } from "../SettingsDialogs";
+  import { openSetup } from "../SettingsDialogs";
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
@@ -21,6 +21,6 @@
   import { t } from "../../../l10n/l10n";
 
   function onAddAccount() {
-    SettingsDialogs.openSetup("/setup/files", { kind: "options", categoryID: "files" });
+    openSetup("/setup/files", { kind: "options", categoryID: "files" });
   }
 </script>

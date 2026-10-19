@@ -15,10 +15,10 @@
   </svelte:fragment>
 </Dialog>
 {#if open == "columns"}
-  <ShowColumnsDialog {columns} allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
+  <ShowColumnsDialog {columns} allColumns={allContactColumns()} labelOf={contactColumnLabel}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
-    columnSets={ContactColumns.columnSets()}
-    on:change={event => columns = ContactColumns.shownColumns(event.detail)} on:close={closeSub} />
+    columnSets={contactColumnSets()}
+    on:change={event => columns = shownContactColumns(event.detail)} on:close={closeSub} />
 {:else if open == "group-by"}
   <SortDialog title={$t`Group By`} itemsLabel={$t`Group items by`}
     columnOptions={[ { value: kNoGrouping, label: $t`(none)` }, ...sortOptions ]}
@@ -32,7 +32,7 @@
 {/if}
 
 <script lang="ts">
-  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "../Person/ContactColumns";
+  import { ContactColumn, defaultContactGroupBy, defaultContactColumns, shownContactColumns, allContactColumns, contactColumnSets, contactColumnLabel, ContactView, type ContactSort } from "../Person/ContactColumns";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -43,21 +43,21 @@
 
   export let view: ContactView;
 
-  const columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
+  const columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", defaultContactColumns(view));
   const sortSetting = getLocalStorage<ContactSort>("lookout.contacts.sort", { column: ContactColumn.FullName, ascending: true });
-  const groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
-  let columns = ContactColumns.shownColumns(columnsSetting.value);
+  const groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", defaultContactGroupBy(view));
+  let columns = shownContactColumns(columnsSetting.value);
   let sort = { ...sortSetting.value };
   let groupBy = groupBySetting.value ? { ...groupBySetting.value } : null;
   let open: "columns" | "group-by" | "sort" | null = null;
   const kNoGrouping = "none";
-  $: sortOptions = ContactColumns.columnSets().at(-1).columns
-    .map(column => ({ value: column, label: ContactColumns.label(column) }));
+  $: sortOptions = contactColumnSets().at(-1).columns
+    .map(column => ({ value: column, label: contactColumnLabel(column) }));
 
-  $: columnsSummary = columns.map(column => ContactColumns.label(column)).join(", ");
-  $: sortLabel = ContactColumns.label(sort.column);
+  $: columnsSummary = columns.map(column => contactColumnLabel(column)).join(", ");
+  $: sortLabel = contactColumnLabel(sort.column);
   $: sortSummary = sort.ascending ? $t`${sortLabel} (ascending)` : $t`${sortLabel} (descending)`;
-  $: groupByLabel = groupBy ? ContactColumns.label(groupBy.column) : null;
+  $: groupByLabel = groupBy ? contactColumnLabel(groupBy.column) : null;
   $: groupBySummary = !groupBy ? $t`None`
     : groupBy.ascending ? $t`${groupByLabel} (ascending)` : $t`${groupByLabel} (descending)`;
 
@@ -66,13 +66,13 @@
   }
 
   function reset() {
-    columns = ContactColumns.shownColumns(ContactColumns.defaultColumns(view));
+    columns = shownContactColumns(defaultContactColumns(view));
     sort = { ...sortSetting.defaultValue };
-    groupBy = ContactColumns.defaultGroupBy(view);
+    groupBy = defaultContactGroupBy(view);
   }
 
   function save() {
-    columnsSetting.value = ContactColumns.shownColumns(columns);
+    columnsSetting.value = shownContactColumns(columns);
     sortSetting.value = { ...sort };
     groupBySetting.value = groupBy ? { ...groupBy } : null;
   }

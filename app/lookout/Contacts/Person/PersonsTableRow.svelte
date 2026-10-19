@@ -14,7 +14,7 @@
         </span>
       </hbox>
     {:else}
-      <hbox class="cell"><span class="text">{$contact && ContactColumns.value(column, contact)}</span></hbox>
+      <hbox class="cell"><span class="text">{$contact && contactColumnValue(column, contact)}</span></hbox>
     {/if}
   {/each}
 </div>
@@ -22,7 +22,7 @@
 <script lang="ts">
   import type { Contact } from "../../../logic/Abstract/Contact";
   import { ContactActions } from "../ContactActions";
-  import { ContactColumn, ContactColumns } from "./ContactColumns";
+  import { ContactColumn, contactColumnValue } from "./ContactColumns";
   import PersonPicture from "./PersonPicture.svelte";
   import { t } from "../../../l10n/l10n";
 

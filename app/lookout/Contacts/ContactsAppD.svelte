@@ -58,9 +58,9 @@
   import { Group } from "../../logic/Abstract/Group";
   import { selectedAddressbook, selectedContact } from "./Person/Selected";
   import { ContactActions } from "./ContactActions";
-  import { ContactSearch } from "./ContactSearch";
+  import { defaultContactSearchOptions, hasContactRefiners, findContacts, matchesContactRefiners } from "./ContactSearch";
   import { contactSearchOptions, ContactSearchScope } from "./Person/Selected";
-  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./Person/ContactColumns";
+  import { ContactColumn, contactComparator, ContactView, type ContactSort } from "./Person/ContactColumns";
   import { LetterIndex } from "./LetterIndex";
   import { appGlobal } from "../../logic/app";
   import { selectedPerson } from "../../frontend/Contacts/Person/Selected";
@@ -109,7 +109,7 @@
   }
 
   $: isDirectory = !!$selectedAddressbook && $searchOnlyAddressbooks.some(addressbook => addressbook == $selectedAddressbook);
-  $: isSearch = !!$contactSearchOptions.term?.trim() || ContactSearch.hasRefiners($contactSearchOptions);
+  $: isSearch = !!$contactSearchOptions.term?.trim() || hasContactRefiners($contactSearchOptions);
   $: isCurrentFolder = $contactSearchOptions.scope == ContactSearchScope.CurrentFolder && !!$selectedAddressbook;
   $: searchedAddressbooks = isCurrentFolder
     ? [ $selectedAddressbook ]
@@ -121,14 +121,14 @@
   $: listedContacts = !isSearch
     ? folderContacts
     : searchTerm
-      ? ContactSearch.search(searchedAddressbooks, searchTerm)
+      ? findContacts(searchedAddressbooks, searchTerm)
       : isCurrentFolder ? folderContacts : allContacts;
-  $: refinedSearch = ContactSearch.hasRefiners($contactSearchOptions) ? $contactSearchOptions : null;
+  $: refinedSearch = hasContactRefiners($contactSearchOptions) ? $contactSearchOptions : null;
   $: compareContacts = view == ContactView.List || view == ContactView.Phone
-    ? ContactColumns.compare($sort.value)
+    ? contactComparator($sort.value)
     : LetterIndex.compareByName;
   $: contactsInOrder = derived($listedContacts.contents, () => listedContacts.contents
-    .filter(contact => !refinedSearch || ContactSearch.matchesRefiners(contact, refinedSearch))
+    .filter(contact => !refinedSearch || matchesContactRefiners(contact, refinedSearch))
     .sort(compareContacts));
   let sortedContacts = new ArrayColl<Contact>();
   $: listedContacts, refinedSearch, compareContacts, sortedContacts = new ArrayColl<Contact>();
@@ -202,7 +202,7 @@
 
   // <copied to="Search/ContactSearchBox.svelte, Search/ContactSearchTab.svelte, ContactsRibbon.svelte">
   function closeSearch() {
-    $contactSearchOptions = ContactSearch.defaultOptions($contactSearchOptions.scope);
+    $contactSearchOptions = defaultContactSearchOptions($contactSearchOptions.scope);
   }
   // </copied>
 

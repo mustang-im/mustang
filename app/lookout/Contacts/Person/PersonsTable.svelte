@@ -5,7 +5,7 @@
         class:name={column == ContactColumn.FullName}
         class:drop-before={dropTarget?.column == column && dropTarget.before}
         class:drop-after={dropTarget?.column == column && !dropTarget.before}
-        title={$t`Sort by ${ContactColumns.label(column)}`}
+        title={$t`Sort by ${contactColumnLabel(column)}`}
         aria-sort={$sort.value.column == column ? ($sort.value.ascending ? "ascending" : "descending") : "none"}
         draggable="true"
         on:dragstart={event => onDragStart(event, column)}
@@ -15,7 +15,7 @@
         on:dragend={() => { draggedColumn = null; dropTarget = null; }}
         on:click={() => sortBy(column)}
         on:contextmenu={event => onHeaderContextMenu(event, column)}>
-        <span class="label">{ContactColumns.label(column)}</span>
+        <span class="label">{contactColumnLabel(column)}</span>
         {#if $sort.value.column == column}
           <svelte:component this={$sort.value.ascending ? AscendingIcon : DescendingIcon} size="12" />
         {/if}
@@ -70,7 +70,7 @@
   {/if}
   <SubMenu label={$t`Arrange By`} icon={ArrangeIcon}>
     {#each columns as column}
-      <MenuItem label={ContactColumns.label(column)} checked={$sort.value.column == column}
+      <MenuItem label={contactColumnLabel(column)} checked={$sort.value.column == column}
         onClick={() => { $sort.value = { column, ascending: true }; }} />
     {/each}
   </SubMenu>
@@ -98,11 +98,11 @@
 </ContextMenu>
 {#if isShowColumnsOpen}
   <!-- <copied to="../ContactsRibbon.svelte"> -->
-  <ShowColumnsDialog columns={ContactColumns.shownColumns($columnsSetting.value)}
-    allColumns={ContactColumns.allColumns} labelOf={ContactColumns.label}
+  <ShowColumnsDialog columns={shownContactColumns($columnsSetting.value)}
+    allColumns={allContactColumns()} labelOf={contactColumnLabel}
     requiredColumn={ContactColumn.FullName} requiredReason={$t`The list needs the Full Name column`}
-    columnSets={ContactColumns.columnSets()}
-    on:change={event => { $columnsSetting.value = ContactColumns.shownColumns(event.detail); }}
+    columnSets={contactColumnSets()}
+    on:change={event => { $columnsSetting.value = shownContactColumns(event.detail); }}
     on:close={() => isShowColumnsOpen = false} />
   <!-- </copied> -->
 {/if}
@@ -131,7 +131,7 @@
   import ArrangeIcon from "lucide-svelte/icons/arrow-down-wide-narrow";
   import ReverseIcon from "lucide-svelte/icons/arrow-up-down";
   import FastList from "../../../frontend/Shared/FastList.svelte";
-  import { ContactColumn, ContactColumns, ContactView, type ContactSort } from "./ContactColumns";
+  import { ContactColumn, defaultContactGroupBy, defaultContactColumns, shownContactColumns, allContactColumns, contactColumnSets, contactColumnLabel, contactColumnWidth, toggledContactSort, ContactView, type ContactSort } from "./ContactColumns";
   import { ColumnOrder } from "../../Shared/ViewSettings/ColumnOrder";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import ShowColumnsDialog from "../../Shared/ViewSettings/ShowColumnsDialog.svelte";
@@ -155,10 +155,10 @@
   let isShowColumnsOpen = false;
   let isViewSettingsOpen = false;
 
-  $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", ContactColumns.defaultColumns(view));
-  $: columns = columnsSetting && ContactColumns.shownColumns($columnsSetting.value);
-  $: gridColumns = columns.map(column => ContactColumns.width(column)).join(" ");
-  $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", ContactColumns.defaultGroupBy(view));
+  $: columnsSetting = getLocalStorage<ContactColumn[]>(view == ContactView.Phone ? "lookout.contacts.phone.columns" : "lookout.contacts.list.columns", defaultContactColumns(view));
+  $: columns = columnsSetting && shownContactColumns($columnsSetting.value);
+  $: gridColumns = columns.map(column => contactColumnWidth(column)).join(" ");
+  $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", defaultContactGroupBy(view));
   $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
   $: listedContacts = derived($persons.contents, () => persons.contents);
   let collapsed = new Set<string>();
@@ -210,13 +210,13 @@
   }
 
   function removeColumn(column: ContactColumn) {
-    let order = new ColumnOrder(columnsSetting.value ?? [], ContactColumns.allColumns, ContactColumn.FullName);
+    let order = new ColumnOrder(columnsSetting.value ?? [], allContactColumns(), ContactColumn.FullName);
     order.remove(column);
     columnsSetting.value = order.columns;
   }
 
   function sortBy(column: ContactColumn) {
-    sort.value = ContactColumns.toggledSort(sort.value, column);
+    sort.value = toggledContactSort(sort.value, column);
   }
 
   let draggedColumn: ContactColumn = null;
@@ -225,7 +225,7 @@
   function onDragStart(event: DragEvent, column: ContactColumn) {
     draggedColumn = column;
     event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", ContactColumns.label(column));
+    event.dataTransfer.setData("text/plain", contactColumnLabel(column));
   }
 
   function onDragOver(event: DragEvent, column: ContactColumn) {
@@ -244,7 +244,7 @@
     if (draggedColumn && dropTarget) {
       let pos = columns.indexOf(column);
       let before = dropTarget.before ? column : columns[pos + 1] ?? null;
-      let order = new ColumnOrder(columnsSetting.value ?? [], ContactColumns.allColumns, ContactColumn.FullName);
+      let order = new ColumnOrder(columnsSetting.value ?? [], allContactColumns(), ContactColumn.FullName);
       order.moveBefore(draggedColumn, before);
       columnsSetting.value = order.columns;
     }
