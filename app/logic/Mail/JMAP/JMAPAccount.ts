@@ -808,15 +808,15 @@ export class JMAPAccount extends MailAccount {
 
   /** Takes over changes of our calendars, e.g. a new name, and removes
    * those that were deleted on the server or are no longer shared with us. */
-  protected async updateCalendars(calendars: TJMAPCalendar[]) {
-    let ourCalendars = this.dependentAccounts().contents.filter(account => account instanceof JMAPCalendar) as JMAPCalendar[];
-    for (let calendar of ourCalendars) {
-      let jmap = calendars.find(json => json.id == calendar.jmapID);
+  protected async updateCalendars(serverCalendars: TJMAPCalendar[]) {
+    let ourCalendars = this.dependentAccounts().filterOnce(account => account instanceof JMAPCalendar) as Collection<JMAPCalendar>;
+    for (let ourCalendar of ourCalendars) {
+      let jmap = serverCalendars.find(json => json.id == ourCalendar.jmapID);
       if (jmap) {
-        calendar.fromJMAP(jmap);
-        await calendar.save();
+        ourCalendar.fromJMAP(jmap);
+        await ourCalendar.save();
       } else {
-        await calendar.deleteIt();
+        await ourCalendar.deleteIt();
       }
     }
   }
