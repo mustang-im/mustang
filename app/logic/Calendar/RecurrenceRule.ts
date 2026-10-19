@@ -226,7 +226,7 @@ export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStar
   }
 
   // Must be fast, because it's used by `event.hasChanged()`
-  protected get effectiveWeekdays(): Weekday[] {
+  get effectiveWeekdays(): Weekday[] {
     if (this.weekdays) {
       return this.weekdays;
     }
@@ -442,8 +442,7 @@ export function ruleAsLabel(r: RecurrenceRule): string {
       : gt`Every ${r.interval} weeks`;
     label += `, ` + gt`on *=> as in: Every week, on Thursday` + ` `;
 
-    // A weekly rule without explicit weekdays recurs on the series start weekday.
-    let ruleWeekdays = r.weekdays ?? [r.seriesStartTime.getUTCDay()];
+    let ruleWeekdays = r.effectiveWeekdays;
     let weekdays = kAllWeekdays.filter(weekday => ruleWeekdays.includes(weekday));
     label += sortedList(weekdays, weekday => weekdayLabel(weekday, "long"));
   } else if (r.frequency == Frequency.Monthly) {
