@@ -63,6 +63,7 @@
 
   --lo-nav-rail-width: 64px;
   --lo-titlebar-height: 40px;
+  --lo-ribbon-tab-row-height: 36px;
   --lo-statusbar-height: 24px;
 }
 
@@ -200,6 +201,11 @@ input[type="checkbox"] {
   accent-color: var(--lo-accent);
 }
 
+/* The accent part of the Mustang icons. Their own <style> makes it turquoise for the whole document, and comes later. */
+:root .cls-2 {
+  stroke: var(--lo-accent-text);
+}
+
 .lo-card {
   background-color: var(--lo-pane-bg);
   border-radius: var(--lo-radius);
@@ -250,4 +256,30 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
 }
 .lookout-window .checkbox > .state-icon-wrapper {
   color: var(--lo-accent-fg);
+}
+
+.lookout-window .nav-list {
+  padding-inline: 4px;
+}
+.lookout-window .nav-list .nav-entry {
+  position: relative;
+  border-radius: var(--lo-radius-small);
+}
+.lookout-window .nav-list .nav-entry:not(.selected):hover {
+  background-color: var(--lo-hover-bg);
+}
+.lookout-window .nav-list .nav-entry.selected,
+.lookout-window .nav-list .nav-entry.selected:hover {
+  background-color: var(--lo-selected-bg);
+  font-weight: 600;
+}
+.lookout-window .nav-list .nav-entry.selected::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background-color: var(--lo-accent);
 }

@@ -1,5 +1,5 @@
 <hbox flex class="app-store">
-  <vbox flex class="categories font-small">
+  <vbox flex class="categories font-small nav-list">
     <Scroll>
       <Categories showCategories={topLevelCategories} allCategories={categories} bind:selected={selectedCategory} />
     </Scroll>

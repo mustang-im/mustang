@@ -1,4 +1,4 @@
-<hbox class="category" class:selected={category == selected}>
+<hbox class="category nav-entry" class:selected={category == selected}>
   {#each {length: indent} as _}
     <hbox class="indention" />
   {/each}

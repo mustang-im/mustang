@@ -4,7 +4,7 @@
       <AccountItem {account} {category} />
     {/each}
     {#if category.newAccountURL}
-      <button class="entry add" on:click={onNewAccount}>
+      <button class="nav-entry add" on:click={onNewAccount}>
         <AddIcon size={14} />
         {$t`Add account…`}
       </button>
@@ -32,7 +32,7 @@
   .accounts {
     flex-shrink: 0;
   }
-  .entry.add {
+  .nav-entry.add {
     height: 28px;
     padding-inline-start: 36px;
     color: var(--lo-accent-text);
