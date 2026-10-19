@@ -1,8 +1,8 @@
-{#if $subApps.hasItems}
+{#if shownSubApps.hasItems}
   <!-- A list of parts of the app,
     shown in the AppBar underneath the app button -->
   <hbox class="sub-app-bar" app={mainApp.id}>
-    {#each $subApps.each as app}
+    {#each shownSubApps.each as app}
       <SubAppButton selected={selectedApp == app} {app}
         on:click={() => catchErrors(() => onSelectApp(app))}>
         <AppIcon slot="icon" icon={app.icon} size="16px" />
@@ -14,17 +14,24 @@
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
   import { openApp } from "./selectedApp";
+  import { AppWindow } from "../MainWindow/AppWindow";
   import SubAppButton from "./SubAppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
   import { catchErrors } from "../Util/error";
   import { CollectionObserver } from "svelte-collections";
   import { onDestroy, onMount } from "svelte";
 
+  const appWindow = AppWindow.current();
+
   export let mainApp: MustangApp;
   /* in/out */
   export let selectedApp: MustangApp | null;
 
   $: subApps = $mainApp.subApps;
+  $: shownSubApps = $subApps.filterOnce(isInThisWindow);
+  function isInThisWindow(app: MustangApp): boolean {
+    return !app.appWindow || app.appWindow == appWindow;
+  }
 
   function onSelectApp(app: MustangApp) {
     openApp(app, app.windowParams);
@@ -36,7 +43,7 @@
     removed(apps: MustangApp[]) {
       for (let app of apps) {
         if (selectedApp == app) {
-          selectedApp = mainApp.subApps.last ?? mainApp;
+          selectedApp = mainApp.subApps.filterOnce(isInThisWindow).last ?? mainApp;
         }
       }
     }

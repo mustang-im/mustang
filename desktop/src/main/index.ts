@@ -1,10 +1,18 @@
-import { setMainWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
-import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents } from 'electron'
+import { setMainWindow, addAppWindow, startupBackend, shutdownBackend, startupArgs, updateState, checkForUpdateAndNotify, installUpdate, createJPCSecret } from '../../backend/backend';
+import { app, shell, BrowserWindow, session, Menu, MenuItemConstructorOptions, type WebContents, type BrowserWindowConstructorOptions, type HandlerDetails } from 'electron'
 import { ipcMain } from 'electron/main';
 import { join } from 'path'
 import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../build/icon.png?asset'
 import { installSignalServiceCATrust } from './signalServiceCA'
+
+const windowFrame: BrowserWindowConstructorOptions = {
+  autoHideMenuBar: true,
+  titleBarStyle: process.platform == 'darwin' ? 'hiddenInset' : 'customButtonsOnHover',
+  titleBarOverlay: true,
+  frame: false,
+  ...(process.platform === 'linux' ? { icon } : {}),
+};
 
 function createWindow(): void {
   try {
@@ -17,11 +25,7 @@ function createWindow(): void {
       width: 1700,
       height: 950,
       show: false,
-      autoHideMenuBar: true,
-      titleBarStyle: process.platform == 'darwin' ? 'hiddenInset' : 'customButtonsOnHover',
-      titleBarOverlay: true,
-      frame: false,
-      ...(process.platform === 'linux' ? { icon } : {}),
+      ...windowFrame,
       webPreferences: {
         preload: join(import.meta.dirname, '../preload/index.mjs'),
         sandbox: false,
@@ -51,7 +55,27 @@ function createWindow(): void {
      * Attention: This does *not* catch normal `<a href="">` links.
      * Thus, sanitizeHTML() adds a `target="_blank"` to such links,
      * which is considered a new web window and forces them to end up here. */
-    mainWindow.webContents.setWindowOpenHandler((details): any => {
+    const windowOpenHandler = (details: HandlerDetails): any => {
+      // Windows of our app, see `AppWindow` in the frontend. Their content runs in the main window's JS context.
+      if (details.url == "about:blank" && details.features?.split(",").includes("mustang-window")) {
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: {
+            ...windowFrame,
+            webPreferences: {
+              sandbox: false,
+              webviewTag: true,
+              backgroundThrottling: false,
+            },
+          },
+          createWindow: (options: BrowserWindowConstructorOptions) => {
+            let appWindow = new BrowserWindow(options);
+            appWindow.webContents.setWindowOpenHandler(windowOpenHandler);
+            addAppWindow(details.frameName, appWindow);
+            return appWindow.webContents;
+          },
+        };
+      }
       // Chrome special-cases "about:blank". Make *sure* that we don't get this here.
       if (!details.url?.startsWith("https://")) {
         return { action: 'deny' };
@@ -69,7 +93,8 @@ function createWindow(): void {
         .catch(console.error); // must return the action synchronously
       // ... and do not open a new Electron window
       return { action: 'deny' }
-    })
+    };
+    mainWindow.webContents.setWindowOpenHandler(windowOpenHandler);
 
     mainWindow.webContents.on('did-create-window', (child, _details) => {
       child.on('closed', () => {

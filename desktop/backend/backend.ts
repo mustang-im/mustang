@@ -65,6 +65,9 @@ async function createSharedAppObject() {
     minimizeMainWindow,
     unminimizeMainWindow,
     maximizeMainWindow,
+    minimizeAppWindow,
+    unminimizeAppWindow,
+    maximizeAppWindow,
     addEventListenerWebContents,
     getWebContents,
     writeTextToClipboard,
@@ -630,6 +633,32 @@ let mainWindow: BrowserWindow;
 
 export function setMainWindow(mainWin: BrowserWindow) {
   mainWindow = mainWin;
+  // Their content lives in the main window's JS context, which is gone now
+  mainWindow.on("closed", () => {
+    for (let appWindow of appWindows.values()) {
+      appWindow.close();
+    }
+  });
+}
+
+/** Additional windows that the frontend opened. By window name. */
+const appWindows = new Map<string, BrowserWindow>();
+
+export function addAppWindow(name: string, appWindow: BrowserWindow) {
+  appWindows.set(name, appWindow);
+  appWindow.on("closed", () => appWindows.delete(name));
+}
+
+function minimizeAppWindow(name: string) {
+  appWindows.get(name)?.minimize();
+}
+
+function unminimizeAppWindow(name: string) {
+  appWindows.get(name)?.restore();
+}
+
+function maximizeAppWindow(name: string) {
+  appWindows.get(name)?.maximize();
 }
 
 function minimizeMainWindow() {
