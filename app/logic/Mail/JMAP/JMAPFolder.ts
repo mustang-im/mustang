@@ -66,13 +66,30 @@ export class JMAPFolder extends Folder {
     const batchSize = 200;
     let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
-    for (let i = 0; i < this.countTotal; i += batchSize) {
-      let { newMessages, syncState } = await retryOnTransientError(() =>
-        this.fetchMessageList(i, batchSize));
+    let position = 0;
+    const kMaxRounds = 5000; // 1,000,000 emails
+    let previousIDs: string | null = null;
+    let isComplete = false;
+    for (let round = 1; round <= kMaxRounds; round++) {
+      let { newMessages, syncState, ids, limit } = await retryOnTransientError(() =>
+        this.fetchMessageList(position, batchSize));
+      let pageIDs = ids.join(" ");
+      if (pageIDs == previousIDs) {
+        break;
+      }
+      previousIDs = pageIDs;
       state ??= syncState;
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
       allNewMessages.addAll(newMessages);
+      position += ids.length;
+      if (ids.length < limit) {
+        isComplete = true;
+        break;
+      }
+    }
+    if (!isComplete) {
+      this.account.errorCallback(new Error(`${this.name}: Listing the emails: The server keeps returning more emails. Stopped.`));
     }
     if (state) {
       this.account.syncState.set("Email", state);
@@ -99,7 +116,7 @@ export class JMAPFolder extends Folder {
     }
   }
 
-  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
+  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string, ids: string[], limit: number }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPEMailHeaders>;
     let lock = await this.account.stateLock.lock();
@@ -131,12 +148,15 @@ export class JMAPFolder extends Folder {
           },
           "emails",
         ],
-      ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
+      ]);
       listResponse = response["emails"];
+      let query = response["list"] as TJMAPQueryResponse;
 
       return {
         ...this.parseMessageList(listResponse.list),
         syncState: listResponse.state,
+        ids: sanitize.array(query.ids, []),
+        limit: sanitize.integer(query.limit, limit), // The server may set a lower limit
       };
     } finally {
       lock.release();
