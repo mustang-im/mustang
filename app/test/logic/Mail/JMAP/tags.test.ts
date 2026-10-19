@@ -40,7 +40,7 @@ test("A keyword that the server returns in lowercase is our tag with capitals", 
 test("Junk keywords and system keywords are no tags", () => {
   let email = newEMail();
 
-  update(email, { "$seen": true, "$junk": true, "junk": true, "NonJunk": true, "$label1": true });
+  update(email, { "$seen": true, "$flagged": true, "$junk": true, "junk": true, "NonJunk": true });
 
   expect(email.tags.isEmpty).toBe(true);
 });
