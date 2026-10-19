@@ -63,7 +63,7 @@
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let identity: MailIdentity;
   export let identities: MailIdentity[];
@@ -109,7 +109,7 @@
     }
     await exportDigitalID(identity, exportKey, withPrivateKey);
     if (withPrivateKey && deleteAfterExport &&
-        await showMessageBox(gt`Delete Digital ID`, gt`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${keyName(exportKey)} from this computer?`)) {
+        await showMessageBox($t`Delete Digital ID`, $t`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${keyName(exportKey)} from this computer?`)) {
       await removeDigitalID(identity, exportKey);
     }
     dispatch("change", identity);

@@ -145,7 +145,7 @@
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { kAllWeekdays, weekdayLabel } from "../../../logic/util/date";
   import { createEventDispatcher } from "svelte";
-  import { getDateTimeLocale, gt, plural, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, plural, t } from "../../../l10n/l10n";
 
   export let event: Event;
   export let flow: EventEditFlow;
@@ -165,10 +165,10 @@
   let timesChanged = false;
 
   const frequencies = [
-    { value: Frequency.Daily, label: gt`Daily` },
-    { value: Frequency.Weekly, label: gt`Weekly` },
-    { value: Frequency.Monthly, label: gt`Monthly` },
-    { value: Frequency.Yearly, label: gt`Yearly` },
+    { value: Frequency.Daily, label: $t`Daily` },
+    { value: Frequency.Weekly, label: $t`Weekly` },
+    { value: Frequency.Monthly, label: $t`Monthly` },
+    { value: Frequency.Yearly, label: $t`Yearly` },
   ];
 
   $: endTime = new Date(startTime.getTime() + durationMinutes * 60000);
@@ -194,14 +194,14 @@
 
   function invalidReason(pattern: RecurrencePattern, rangeStart: Date): string | false {
     if (!(pattern.interval >= 1)) {
-      return gt`Please enter a number of 1 or more`;
+      return $t`Please enter a number of 1 or more`;
     }
     if (pattern.end == "count" && !(pattern.count >= 1)) {
-      return gt`Please enter a number of 1 or more`;
+      return $t`Please enter a number of 1 or more`;
     }
     let firstDay = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate());
     if (pattern.end == "date" && pattern.endDate < firstDay) {
-      return gt`The end date is before the start date`;
+      return $t`The end date is before the start date`;
     }
     return false;
   }

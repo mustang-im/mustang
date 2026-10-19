@@ -121,7 +121,7 @@
   import MoveDownIcon from "lucide-svelte/icons/arrow-down";
   import InfoIcon from "lucide-svelte/icons/info";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
   const dispatch = createEventDispatcher<{ close: void }>();
@@ -129,7 +129,7 @@
   const accounts = appGlobal.emailAccounts;
 
   function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
-    return mailAccounts.map(mailAccount => ({ value: mailAccount, label: `${mailAccount.inbox?.name || gt`Inbox`} [${mailAccount.emailAddress || mailAccount.name}]` }));
+    return mailAccounts.map(mailAccount => ({ value: mailAccount, label: `${mailAccount.inbox?.name || $t`Inbox`} [${mailAccount.emailAddress || mailAccount.name}]` }));
   }
   if (!accounts.contains(account)) {
     account = accounts.first;

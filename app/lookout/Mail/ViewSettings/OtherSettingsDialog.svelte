@@ -38,7 +38,7 @@
   import Radio from "../../Shared/Form/Radio.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let settings: ViewSettings;
   export let readingPanePosition: ReadingPanePosition;
@@ -53,10 +53,10 @@
   let readingPane = readingPanePosition;
 
   const previewOptions = [
-    { lines: 0, label: gt`Off` },
-    { lines: 1, label: gt`1 Line` },
-    { lines: 2, label: gt`2 Lines` },
-    { lines: 3, label: gt`3 Lines` },
+    { lines: 0, label: $t`Off` },
+    { lines: 1, label: $t`1 Line` },
+    { lines: 2, label: $t`2 Lines` },
+    { lines: 3, label: $t`3 Lines` },
   ];
 
   function save() {

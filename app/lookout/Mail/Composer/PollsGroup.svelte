@@ -21,7 +21,7 @@
   import SchedulingPollIcon from "lucide-svelte/icons/calendar-clock";
   import BookingsIcon from "lucide-svelte/icons/calendar-check";
   import { appName } from "../../../logic/build";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;
 
@@ -30,9 +30,9 @@
 
   function tooltip(type: string): string {
     switch (type) {
-      case "SimplePoll": return gt`Insert a poll: recipients choose one of the options`;
-      case "MeetingTimePoll": return gt`Insert a scheduling poll: recipients vote for the meeting times that suit them`;
-      case "BookMe": return gt`Offer meeting times: the recipient books one of them with you`;
+      case "SimplePoll": return $t`Insert a poll: recipients choose one of the options`;
+      case "MeetingTimePoll": return $t`Insert a scheduling poll: recipients vote for the meeting times that suit them`;
+      case "BookMe": return $t`Offer meeting times: the recipient books one of them with you`;
       default: return "";
     }
   }
@@ -57,10 +57,10 @@
     if (identity.smlAccount) {
       return true;
     }
-    let create = await showMessageBox(gt`Polls`,
-      gt`Polls and bookings need a free SML account for ${identity.emailAddress}. The SML server sends a confirmation message to this address, which ${appName} processes automatically.` + "\n\n" +
-      gt`Do you want to create the account now?`,
-      gt`Create Account`);
+    let create = await showMessageBox($t`Polls`,
+      $t`Polls and bookings need a free SML account for ${identity.emailAddress}. The SML server sends a confirmation message to this address, which ${appName} processes automatically.` + "\n\n" +
+      $t`Do you want to create the account now?`,
+      $t`Create Account`);
     if (!create) {
       return false;
     }
@@ -75,9 +75,9 @@
   /* <copied from="SMLComposer.svelte"> */
   function label(type: string): string {
     switch (type) {
-      case "SimplePoll": return gt`Poll`;
-      case "MeetingTimePoll": return gt`Scheduling Poll`;
-      case "BookMe": return gt`Bookings`;
+      case "SimplePoll": return $t`Poll`;
+      case "MeetingTimePoll": return $t`Scheduling Poll`;
+      case "BookMe": return $t`Bookings`;
       default: return "";
     }
   }

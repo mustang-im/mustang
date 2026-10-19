@@ -36,7 +36,7 @@
   import PreviewIcon from "lucide-svelte/icons/eye";
   import EditIcon from "lucide-svelte/icons/pencil";
   import RemoveIcon from "lucide-svelte/icons/trash-2";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;
 
@@ -51,9 +51,9 @@
   /* <copied to="PollsGroup.svelte"> */
   function label(type: string): string {
     switch (type) {
-      case "SimplePoll": return gt`Poll`;
-      case "MeetingTimePoll": return gt`Scheduling Poll`;
-      case "BookMe": return gt`Bookings`;
+      case "SimplePoll": return $t`Poll`;
+      case "MeetingTimePoll": return $t`Scheduling Poll`;
+      case "BookMe": return $t`Bookings`;
       default: return "";
     }
   }
@@ -71,9 +71,9 @@
 
   function editSubtitle(type: string): string {
     switch (type) {
-      case "SimplePoll": return gt`Recipients choose one of the options.`;
-      case "MeetingTimePoll": return gt`Recipients vote for the times that suit them.`;
-      case "BookMe": return gt`Recipients book one of the times with you.`;
+      case "SimplePoll": return $t`Recipients choose one of the options.`;
+      case "MeetingTimePoll": return $t`Recipients vote for the times that suit them.`;
+      case "BookMe": return $t`Recipients book one of the times with you.`;
       default: return null;
     }
   }

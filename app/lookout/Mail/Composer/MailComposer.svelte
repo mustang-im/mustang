@@ -186,7 +186,7 @@
   import PopOutIcon from "lucide-svelte/icons/square-arrow-out-up-right";
   import LockIcon from "lucide-svelte/icons/lock";
   import SignIcon from "lucide-svelte/icons/signature";
-  import { t, gt } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   import { onDestroy, tick } from "svelte";
   import type { Editor } from "@tiptap/core";
 
@@ -286,7 +286,7 @@
     let invalidTo = recipients.find(person =>
       !person.emailAddress || kNoReplyRegExp.test(person.emailAddress));
     if (invalidTo) {
-      let notification = showUserError(new UserError(gt`The recipient ${invalidTo.emailAddress} does not accept email`));
+      let notification = showUserError(new UserError($t`The recipient ${invalidTo.emailAddress} does not accept email`));
       doOnClose.push(() => notification.remove());
     }
   }
@@ -376,7 +376,7 @@
         extra.encryptOnlyByDefault = false;
       }
     } else {
-      assert(!mail.mustEncrypt, gt`This email must be encrypted.`);
+      assert(!mail.mustEncrypt, $t`This email must be encrypted.`);
       mail.shouldEncrypt = false;
       mail.signedByKeyID = null;
     }

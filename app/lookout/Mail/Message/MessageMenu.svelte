@@ -1,21 +1,21 @@
 {#if single}
-  <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo="Ctrl+P"
+  <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo={$t`Ctrl+P`}
     onClick={() => { $printMessage = single; }} />
   <MenuDivider />
-  <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo="Ctrl+R"
+  <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo={$t`Ctrl+R`}
     onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())} />
-  <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo="Ctrl+Shift+R"
+  <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo={$t`Ctrl+Shift+R`}
     disabled={!(single.allRecipients().length > 1 && !(single.bcc.hasItems && !single.outgoing)) && $t`There are no other recipients`}
     onClick={() => MessageActions.respond(single, single.compose.replyAll())} />
-  <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
+  <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
     onClick={event => MessageActions.forward(single, event as MouseEvent)} />
   <MenuDivider />
 {/if}
 {#if allRead}
-  <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo="Ctrl+U"
+  <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo={$t`Ctrl+U`}
     onClick={async () => { await Promise.all(messages.contents.map(message => message.markRead(false))); }} />
 {:else}
-  <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo="Ctrl+Alt+U"
+  <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo={$t`Ctrl+Alt+U`}
     onClick={async () => { await Promise.all(messages.contents.map(message => message.markRead(true))); }} />
 {/if}
 <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
@@ -40,9 +40,9 @@
 <SubMenu label={$t`Junk`} icon={JunkIcon}>
   <JunkMenuItems messages={messages.contents} />
 </SubMenu>
-<MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Del"
+<MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Del`}
   onClick={async () => { await Promise.all(messages.contents.map(message => message.deleteMessage())); }} />
-<MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo="Backspace"
+<MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo={$t`Backspace`}
   onClick={() => MessageActions.archive(messages.contents)} />
 {#if single}
   <MenuDivider />

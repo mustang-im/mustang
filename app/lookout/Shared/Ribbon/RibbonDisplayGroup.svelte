@@ -5,7 +5,7 @@
     onClick={() => { $layout.value = $layout.value == "simplified" ? "classic" : "simplified"; }} />
   <RibbonToggleButton label={$t`Show Tabs Only`} icon={TabsOnlyIcon} size="small"
     tooltip={$t`Show only the tab names. Click a tab to see its commands.`}
-    shortCutInfo="Ctrl+F1"
+    shortCutInfo={$t`Ctrl+F1`}
     selected={!!$collapsed.value}
     onClick={() => { $collapsed.value = !$collapsed.value; }} />
   <RibbonToggleButton label={$t`Quick Access Toolbar`} icon={QuickAccessIcon} size="small"

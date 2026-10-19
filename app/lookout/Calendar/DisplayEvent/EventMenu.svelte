@@ -1,4 +1,4 @@
-<MenuItem label={$t`Open`} icon={OpenIcon} shortCutInfo="Enter"
+<MenuItem label={$t`Open`} icon={OpenIcon} shortCutInfo={$t`Enter`}
   onClick={() => openEvent(event, true)} />
 {#if event.isIncomingMeeting && !event.isCancelled}
   <MenuDivider />
@@ -12,7 +12,7 @@
 {/if}
 {#if !event.isCancelled}
   <MenuDivider />
-  <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo="Ctrl+F"
+  <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
     onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
 {/if}
 <MenuDivider />
@@ -29,7 +29,7 @@
 {:else if isRecurring}
   <SubMenu label={$t`Delete`} icon={DeleteIcon}>
     {#if !event.isIncomingMeeting}
-      <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} shortCutInfo="Del"
+      <MenuItem label={$t`Delete Occurrence`} icon={DeleteIcon} shortCutInfo={$t`Del`}
         onClick={() => CalendarActions.deleteOccurrence(event)} />
       {#if event.seriesStatus == "middle"}
         <MenuItem label={$t`Delete This and Following`} icon={DeleteIcon}
@@ -43,7 +43,7 @@
   <MenuItem label={$t`Cancel Meeting`} icon={CancelIcon}
     onClick={() => CalendarActions.cancelMeeting(event)} />
 {:else}
-  <MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo="Del"
+  <MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Del`}
     onClick={() => CalendarActions.deleteOccurrence(event)} />
 {/if}
 

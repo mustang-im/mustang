@@ -1,24 +1,24 @@
 <RibbonTab label={$t`Format Text`}>
   <RibbonGroup label={$t`Clipboard`} icon={PasteIcon}>
-    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo="Ctrl+V"
+    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V`}
       disabled={!editor} onClick={() => pasteClipboard(editor)}>
       <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => pasteClipboard(editor)} />
       <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => pasteClipboardAsText(editor)} />
     </RibbonSplitButton>
-    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo="Ctrl+X"
+    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X`}
       disabled={!editor} onClick={() => cutSelection(editor)} />
-    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo="Ctrl+C"
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C`}
       disabled={!editor} onClick={() => copySelection(editor)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Font`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
-      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo="Ctrl+B"
+      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B`}
         selected={!!editor?.isActive("bold")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBold())} />
-      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo="Ctrl+I"
+      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I`}
         selected={!!editor?.isActive("italic")} disabled={!editor}
         onClick={() => run(chain => chain.toggleItalic())} />
-      <RibbonToggleButton label={$t`Underline`} icon={UnderlineIcon} shortCutInfo="Ctrl+U"
+      <RibbonToggleButton label={$t`Underline`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U`}
         selected={!!editor?.isActive("underline")} disabled={!editor}
         onClick={() => run(chain => chain.toggleUnderline())} />
       <RibbonToggleButton label={$t`Strikethrough`} icon={StrikethroughIcon}
@@ -80,10 +80,10 @@
   <RibbonGroup label={$t`Editing`} icon={FindIcon}>
     <RibbonButton label={$t`Find`} icon={FindIcon} size="small" shortCutInfo="F4"
       disabled={!editor} onClick={() => { openedTool = EditorTool.Find; }} />
-    <RibbonButton label={$t`Replace`} icon={ReplaceIcon} size="small" shortCutInfo="Ctrl+H"
+    <RibbonButton label={$t`Replace`} icon={ReplaceIcon} size="small" shortCutInfo={$t`Ctrl+H`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.Replace; }} />
     <RibbonMenuButton label={$t`Select`} icon={SelectIcon} size="small" disabled={!editor}>
-      <MenuItem label={$t`Select All`} icon={SelectAllIcon} shortCutInfo="Ctrl+A"
+      <MenuItem label={$t`Select All`} icon={SelectAllIcon} shortCutInfo={$t`Ctrl+A`}
         onClick={() => run(chain => chain.selectAll())} />
     </RibbonMenuButton>
   </RibbonGroup>

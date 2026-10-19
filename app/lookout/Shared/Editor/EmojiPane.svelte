@@ -77,7 +77,7 @@
   import FlagsIcon from "lucide-svelte/icons/flag";
   import SearchIcon from "lucide-svelte/icons/search";
   import CloseIcon from "lucide-svelte/icons/x";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
   import { onMount, tick } from "svelte";
 
   export let editor: Editor;
@@ -95,15 +95,15 @@
 
   function categoryLabel(id: string): string {
     switch (id) {
-      case "smileys-emotion": return gt`Smileys`;
-      case "people-body": return gt`People`;
-      case "animals-nature": return gt`Animals and nature`;
-      case "food-drink": return gt`Food and drink`;
-      case "travel-places": return gt`Travel and places`;
-      case "activities": return gt`Activities`;
-      case "objects": return gt`Objects`;
-      case "symbols": return gt`Symbols`;
-      case "flags": return gt`Flags`;
+      case "smileys-emotion": return $t`Smileys`;
+      case "people-body": return $t`People`;
+      case "animals-nature": return $t`Animals and nature`;
+      case "food-drink": return $t`Food and drink`;
+      case "travel-places": return $t`Travel and places`;
+      case "activities": return $t`Activities`;
+      case "objects": return $t`Objects`;
+      case "symbols": return $t`Symbols`;
+      case "flags": return $t`Flags`;
       default: return emojiCategories.find(category => category.id == id)?.title ?? id;
     }
   }

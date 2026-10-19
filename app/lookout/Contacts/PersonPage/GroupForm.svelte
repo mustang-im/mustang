@@ -3,7 +3,7 @@
     <RibbonTab label={$t`Contact Group`}>
       <RibbonGroup label={$t`Actions`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
-          onClick={saveAndClose} shortCutInfo="Alt+S" />
+          onClick={saveAndClose} shortCutInfo={$t`Alt+S`} />
         <RibbonButton label={$t`Delete Group`} icon={DeleteIcon}
           onClick={deleteIt} />
       </RibbonGroup>
@@ -102,7 +102,7 @@
   import { UserError } from "../../../logic/util/util";
   import { onMount, tick } from "svelte";
   import { ArrayColl } from "svelte-collections";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let group: Group;
 
@@ -127,7 +127,7 @@
   function addMember(personUID: PersonUID) {
     let person = personUID.person ?? personUID.findPerson();
     if (!person) {
-      throw new UserError(gt`Only people from your address books can be group members. Please add ${personUID.emailAddress} to your contacts first.`);
+      throw new UserError($t`Only people from your address books can be group members. Please add ${personUID.emailAddress} to your contacts first.`);
     }
     if (!group.participants.contains(person)) {
       group.participants.add(person);

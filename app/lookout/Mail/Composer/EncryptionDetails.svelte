@@ -27,7 +27,7 @@
   import WarningIcon from "lucide-svelte/icons/triangle-alert";
   import { catchErrors } from "../../../frontend/Util/error";
   import type { Collection } from "svelte-collections";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let mail: EMail;
   export let identity: MailIdentity;
@@ -46,7 +46,7 @@
   $: identity, hasKeyServers = getEncryptionSystem(mail) == EncryptionSystem.PGP;
   $: $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
-    gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
+    $t`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function autoFetchMissingKeys() {
     await Promise.all([

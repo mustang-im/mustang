@@ -84,7 +84,7 @@
   import Checkbox from "../Shared/Form/Checkbox.svelte";
   import Radio from "../Shared/Form/Radio.svelte";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../l10n/l10n";
+  import { t } from "../../l10n/l10n";
 
   export let kind: FolderAccountKind;
   export let localOnly = false;
@@ -132,7 +132,7 @@
   }
 
   async function next() {
-    assert(canContinue, gt`Please fill in the fields first`);
+    assert(canContinue, $t`Please fill in the fields first`);
     if (step == "type") {
       chooseType(isLocal);
       return;

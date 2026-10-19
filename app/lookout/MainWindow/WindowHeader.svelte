@@ -63,7 +63,7 @@
   import { getOSName } from "../../frontend/Util/util";
   import { catchErrors } from "../../frontend/Util/error";
   import { rtlLocales } from "../../l10n/list";
-  import { gt, t } from "../../l10n/l10n";
+  import { t } from "../../l10n/l10n";
 
   export let selectedApp: MustangApp;
 
@@ -80,7 +80,7 @@
 
   const sendReceiveAll: QuickAccessCommand = {
     id: "sendReceiveAll",
-    label: gt`Send/Receive All Folders`,
+    label: $t`Send/Receive All Folders`,
     icon: SendReceiveIcon,
     shortCutInfo: "F9",
     shownByDefault: true,
@@ -89,19 +89,19 @@
   $: selection = $selectedMessages;
   const selectedArray = writable<EMail[]>([]);
   $: $selectedArray = $selection?.contents ?? [];
-  const noSelection = derived(selectedArray, messages => !messages.length && gt`Select a message first`);
-  const noSingle = derived(selectedArray, messages => messages.length != 1 && gt`Select one message first`);
+  const noSelection = derived(selectedArray, messages => !messages.length && $t`Select a message first`);
+  const noSingle = derived(selectedArray, messages => messages.length != 1 && $t`Select one message first`);
   const mailCommands: QuickAccessCommand[] = [
     sendReceiveAll,
-    { id: "mail.reply", label: gt`Reply`, icon: ReplyIcon, shortCutInfo: "Ctrl+R", disabled: noSingle,
+    { id: "mail.reply", label: $t`Reply`, icon: ReplyIcon, shortCutInfo: $t`Ctrl+R`, disabled: noSingle,
       run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyToAuthor()) },
-    { id: "mail.replyAll", label: gt`Reply All`, icon: ReplyAllIcon, shortCutInfo: "Ctrl+Shift+R", disabled: noSingle,
+    { id: "mail.replyAll", label: $t`Reply All`, icon: ReplyAllIcon, shortCutInfo: $t`Ctrl+Shift+R`, disabled: noSingle,
       run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyAll()) },
-    { id: "mail.forward", label: gt`Forward`, icon: ForwardIcon, shortCutInfo: "Ctrl+F", disabled: noSingle,
+    { id: "mail.forward", label: $t`Forward`, icon: ForwardIcon, shortCutInfo: $t`Ctrl+F`, disabled: noSingle,
       run: () => MessageActions.forward(get(selectedArray)[0]) },
-    { id: "mail.delete", label: gt`Delete`, icon: DeleteIcon, shortCutInfo: "Del", disabled: noSelection,
+    { id: "mail.delete", label: $t`Delete`, icon: DeleteIcon, shortCutInfo: $t`Del`, disabled: noSelection,
       run: async () => { await Promise.all(get(selectedArray).map(message => message.deleteMessage())); } },
-    { id: "mail.print", label: gt`Print`, icon: PrintIcon, shortCutInfo: "Ctrl+P", disabled: noSingle,
+    { id: "mail.print", label: $t`Print`, icon: PrintIcon, shortCutInfo: $t`Ctrl+P`, disabled: noSingle,
       run: () => { $printMessage = get(selectedArray)[0]; } },
   ];
   $: $quickAccessCommands = isMail ? mailCommands : [sendReceiveAll];

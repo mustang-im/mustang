@@ -61,7 +61,7 @@
   import ComboBox from "../Form/ComboBox.svelte";
   import type { ComboOption } from "../Form/ComboOption";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let items: TaggableObject[] = [];
   export let isChooseMode = false;
@@ -86,7 +86,7 @@
   function colorOptions(tag: Tag): ComboOption<string>[] {
     let options = categoryColors().map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
     if (tag?.color && !options.some(option => option.value.toLowerCase() == tag.color.toLowerCase())) {
-      options.push({ value: tag.color, label: gt`Custom`, color: tag.color });
+      options.push({ value: tag.color, label: $t`Custom`, color: tag.color });
     }
     return options;
   }
@@ -104,7 +104,7 @@
   }
 
   async function onDelete() {
-    if (!await askYesNo(gt`Color Categories`, gt`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
+    if (!await askYesNo($t`Color Categories`, $t`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
     availableTags.remove(selected);

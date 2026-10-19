@@ -12,7 +12,7 @@
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Radio from "../../Shared/Form/Radio.svelte";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let title: string;
   export let okLabel: string;
@@ -24,9 +24,9 @@
   let choice: SeriesChoice = choices[0];
 
   const labels: Record<SeriesChoice, string> = {
-    occurrence: gt`Just this one`,
-    following: gt`This and all following occurrences`,
-    series: gt`The entire series`,
+    occurrence: $t`Just this one`,
+    following: $t`This and all following occurrences`,
+    series: $t`The entire series`,
   };
 
   function onClose() {

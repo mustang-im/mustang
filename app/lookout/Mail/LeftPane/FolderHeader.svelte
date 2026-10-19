@@ -131,7 +131,7 @@
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { ArrayColl, Collection } from "svelte-collections";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let folder: Folder | null;
   export let selectedMessages: ArrayColl<EMail>;
@@ -152,7 +152,7 @@
   $: settings = viewSettingsStore(folder);
   $: folderAccount = folder?.account;
   $: needsConnect = !!folderAccount && !$folderAccount.isLoggedIn;
-  $: arrangeLabel = arrangeFields().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
+  $: arrangeLabel = arrangeFields().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? $t`By Date`;
 
   // <copied from="../../../frontend/Mail/LeftPane/FolderFooter.svelte">
   $: quickSearch.folder = folder;

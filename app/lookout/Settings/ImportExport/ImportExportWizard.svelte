@@ -131,7 +131,7 @@
   import HTMLIcon from "lucide-svelte/icons/file-code";
   import MarkdownIcon from "lucide-svelte/icons/file-text";
   import { createEventDispatcher } from "svelte";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let preselected: Calendar | Addressbook | null = null;
   export let action: ImportExportAction = "import";
@@ -184,9 +184,9 @@
   ] as { label: string, icon: ConstructorOfATypedSvelteComponent, sources: { source: Calendar | Addressbook | Topic, depth: number, accountName?: string }[] }[];
 
   $: fileTypes = (source instanceof Calendar
-    ? [ { id: "text/calendar", icon: CalendarIcon, label: $t`iCalendar (.ics)` } ]
+    ? [ { id: "text/calendar", icon: CalendarIcon, label: "iCalendar (.ics)" } ]
     : source instanceof Addressbook
-    ? [ { id: "text/vcard", icon: AddressbookIcon, label: $t`vCard (.vcf)` } ]
+    ? [ { id: "text/vcard", icon: AddressbookIcon, label: "vCard (.vcf)" } ]
     : source
     ? [
       { id: "text/html", icon: HTMLIcon, label: $t`Web page (.html)` },
@@ -218,10 +218,10 @@
 
   async function finish() {
     if (isExport) {
-      assert(source && fileType, gt`Please choose what to export first`);
+      assert(source && fileType, $t`Please choose what to export first`);
       await exportToFile(source, fileType);
     } else {
-      assert(folders.includes(folder), gt`Please choose a folder first`);
+      assert(folders.includes(folder), $t`Please choose a folder first`);
       if (action == "import-vcard") {
         await importVCard(folder as Addressbook, file);
       } else {

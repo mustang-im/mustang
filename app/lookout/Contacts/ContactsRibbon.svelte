@@ -3,10 +3,10 @@
     <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Contact`} icon={NewContactIcon}
         onClick={() => ContactActions.newContact(selectedAddressbook)}
-        shortCutInfo="Ctrl+N" />
+        shortCutInfo={$t`Ctrl+N`} />
       <RibbonButton label={$t`New Contact Group`} shortLabel={$t`New Group`} icon={NewGroupIcon}
         onClick={() => ContactActions.newGroup(selectedAddressbook)}
-        shortCutInfo="Ctrl+Shift+L" />
+        shortCutInfo={$t`Ctrl+Shift+L`} />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
         <MenuItem label={$t`Contact`} icon={NewContactIcon}
           onClick={() => ContactActions.newContact(selectedAddressbook)} />
@@ -23,7 +23,7 @@
       <RibbonButton label={$t`Delete`} icon={DeleteIcon}
         onClick={onDelete}
         disabled={!$selectedPersons.hasItems && $t`Select a contact first`}
-        shortCutInfo="Del" />
+        shortCutInfo={$t`Del`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Communicate`}>
       <RibbonButton label={$t`Email`} icon={MailIcon}
@@ -74,7 +74,7 @@
     <RibbonGroup label={$t`Find`}>
       <SearchPeopleBox on:select={event => showContact(event.detail)} />
       <RibbonButton label={$t`Search Contacts`} icon={SearchIcon} size="small"
-        onClick={focusSearch} shortCutInfo="Ctrl+E" />
+        onClick={focusSearch} shortCutInfo={$t`Ctrl+E`} />
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`Send / Receive`}>

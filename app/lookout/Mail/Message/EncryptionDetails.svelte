@@ -63,7 +63,7 @@
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import SubjectIcon from "lucide-svelte/icons/mail";
   import { getDateString } from "../../../logic/util/date";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let message: EMail;
   export let isExpanded = false;
@@ -96,9 +96,9 @@
           : $t`Only the recipients can read this email, but there is no assurance about who wrote it.`;
   // </copied>
   $: layers = [
-    { label: gt`Subject: ${message.subject ?? ""}`, icon: SubjectIcon },
-    ...(isEncrypted ? [{ label: gt`Encryption Layer`, icon: EncryptedIcon }] : []),
-    ...(isSigned ? [{ label: gt`Digital Signature Layer`, icon: SignedIcon }] : []),
+    { label: $t`Subject: ${message.subject ?? ""}`, icon: SubjectIcon },
+    ...(isEncrypted ? [{ label: $t`Encryption Layer`, icon: EncryptedIcon }] : []),
+    ...(isSigned ? [{ label: $t`Digital Signature Layer`, icon: SignedIcon }] : []),
   ];
   let selectedLayer = null;
 

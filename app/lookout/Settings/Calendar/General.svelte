@@ -92,7 +92,7 @@
   import DisplayIcon from "lucide-svelte/icons/calendar-days";
   import TimeZoneIcon from "lucide-svelte/icons/globe";
   import RemindersIcon from "lucide-svelte/icons/bell-ring";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   const calendars = appGlobal.calendars;
   let calendar: Calendar = $selectedCalendar ?? calendars.first;
@@ -121,9 +121,9 @@
 
   function durationLabel(minutes: number): string {
     if (minutes < 60 || minutes % 30) {
-      return gt`${minutes} minutes`;
+      return $t`${minutes} minutes`;
     }
-    return minutes == 60 ? gt`1 hour` : gt`${minutes / 60} hours`;
+    return minutes == 60 ? $t`1 hour` : $t`${minutes / 60} hours`;
   }
 
   function setNotification(kind: string, isOn: boolean) {

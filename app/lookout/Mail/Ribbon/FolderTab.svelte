@@ -3,10 +3,10 @@
     <RibbonButton label={$t`New Folder`} icon={NewFolderIcon}
       onClick={onNewFolder}
       disabled={!realAccount ? $t`Select a folder of an account first` : folder && !isVirtual && folder.disableSubfolders()}
-      shortCutInfo="Ctrl+Shift+E" />
+      shortCutInfo={$t`Ctrl+Shift+E`} />
     <RibbonButton label={$t`New Search Folder`} shortLabel={$t`Search *=> New search folder`} icon={NewSearchFolderIcon}
       onClick={() => { $openNewSearchFolder = { account: realAccount }; }}
-      shortCutInfo="Ctrl+Shift+P" />
+      shortCutInfo={$t`Ctrl+Shift+P`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Actions`}>
     <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon} size="small"

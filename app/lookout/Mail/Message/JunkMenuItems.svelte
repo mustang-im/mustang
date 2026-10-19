@@ -1,9 +1,9 @@
-<MenuItem label={$t`Mark as Junk`} icon={JunkIcon} shortCutInfo="Ctrl+J"
+<MenuItem label={$t`Mark as Junk`} icon={JunkIcon} shortCutInfo={$t`Ctrl+J`}
   tooltip={$t`Move to the Junk folder, and train the junk filter`}
   disabled={allJunk && $t`The selected messages are already junk`}
   onClick={async () => { await Promise.all(messages.map(message => message.treatSpam(true))); }} />
 <MenuDivider />
-<MenuItem label={$t`Not Junk`} icon={NotJunkIcon} shortCutInfo="Ctrl+Alt+J"
+<MenuItem label={$t`Not Junk`} icon={NotJunkIcon} shortCutInfo={$t`Ctrl+Alt+J`}
   tooltip={$t`Move back to the Inbox, and train the junk filter`}
   disabled={!anyJunk && $t`The selected messages are not junk`}
   onClick={async () => { await Promise.all(messages.map(message => message.treatSpam(false))); }} />

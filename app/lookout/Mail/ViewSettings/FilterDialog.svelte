@@ -40,20 +40,20 @@
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { booleanHasValue } from "../../../logic/util/util";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
-  const inOptions: ComboOption<string>[] = [{ value: "body", label: gt`subject field and message body` }];
+  const inOptions: ComboOption<string>[] = [{ value: "body", label: $t`subject field and message body` }];
   const readOptions: ComboOption<boolean>[] = [
-    { value: false, label: gt`unread` },
-    { value: true, label: gt`read` },
+    { value: false, label: $t`unread` },
+    { value: true, label: $t`read` },
   ];
   const attachmentOptions: ComboOption<boolean>[] = [
-    { value: true, label: gt`one or more attachments` },
-    { value: false, label: gt`no attachments` },
+    { value: true, label: $t`one or more attachments` },
+    { value: false, label: $t`no attachments` },
   ];
   const flagOptions: ComboOption<boolean>[] = [
-    { value: true, label: gt`are flagged` },
-    { value: false, label: gt`have no flag` },
+    { value: true, label: $t`are flagged` },
+    { value: false, label: $t`have no flag` },
   ];
 
   let tab = "messages";

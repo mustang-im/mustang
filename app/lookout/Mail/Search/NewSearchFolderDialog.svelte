@@ -78,13 +78,13 @@
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
-  import { gt, t } from "../../../l10n/l10n";
+  import { t } from "../../../l10n/l10n";
 
   export let defaultAccount: MailAccount | null = null;
 
   const templates = SearchFolderTemplate.all();
   const accountOptions: ComboOption<MailAccount | null>[] = [
-    { value: null, label: gt`All accounts` },
+    { value: null, label: $t`All accounts` },
     ...appGlobal.emailAccounts.contents.map(mailAccount => ({ value: mailAccount, label: mailAccount.name })),
   ];
   let selected = templates[0];

@@ -24,7 +24,7 @@
   import Poll from "./Poll.svelte";
   import MeetingTimePoll from "../../Calendar/SML/MeetingTimePoll/Poll.svelte";
   import Book from "../../Calendar/SML/BookMe/Book.svelte";
-  import { getDateTimeLocale, gt } from "../../../l10n/l10n";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let sml: SMLData;
   export let message: EMail;
@@ -39,9 +39,9 @@
 
   function cardTitle(type: string): string {
     switch (type) {
-      case "SimplePoll": return gt`Poll`;
-      case "MeetingTimePoll": return gt`Scheduling poll: Vote for the meeting time`;
-      case "BookMe": return gt`Book a meeting`;
+      case "SimplePoll": return $t`Poll`;
+      case "MeetingTimePoll": return $t`Scheduling poll: Vote for the meeting time`;
+      case "BookMe": return $t`Book a meeting`;
       default: return "";
     }
   }
@@ -60,11 +60,11 @@
     let parts: string[] = [];
     let organizer = request?.organizer?.name || request?.organizer?.email;
     if (organizer && !isOrganizer) {
-      parts.push(gt`From ${organizer}`);
+      parts.push($t`From ${organizer}`);
     }
     if (request?.ends instanceof Date && !isNaN(request.ends.getTime())) {
       let ends = request.ends.toLocaleDateString(getDateTimeLocale(), { weekday: "short", month: "short", day: "numeric" });
-      parts.push(gt`Closes on ${ends}`);
+      parts.push($t`Closes on ${ends}`);
     }
     return parts.join(" · ");
   }

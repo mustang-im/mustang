@@ -3,17 +3,17 @@
     <RibbonButton label={$t`New Email`} icon={NewMailIcon}
       onClick={() => mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom())}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
-      shortCutInfo="Ctrl+N" />
+      shortCutInfo={$t`Ctrl+N`} />
     <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
-      <MenuItem label={$t`Email Message`} icon={NewMailIcon} shortCutInfo="Ctrl+Shift+M"
+      <MenuItem label={$t`Email Message`} icon={NewMailIcon} shortCutInfo={$t`Ctrl+Shift+M`}
         onClick={() => mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom())} />
-      <MenuItem label={$t`Appointment`} icon={AppointmentIcon} shortCutInfo="Ctrl+Shift+A"
+      <MenuItem label={$t`Appointment`} icon={AppointmentIcon} shortCutInfo={$t`Ctrl+Shift+A`}
         onClick={() => createNewEvent(get(selectedCalendar), new Date(), false)} />
-      <MenuItem label={$t`Meeting`} icon={MeetingIcon} shortCutInfo="Ctrl+Shift+Q"
+      <MenuItem label={$t`Meeting`} icon={MeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q`}
         onClick={() => MessageActions.newMeeting()} />
-      <MenuItem label={$t`Contact`} icon={ContactIcon} shortCutInfo="Ctrl+Shift+C"
+      <MenuItem label={$t`Contact`} icon={ContactIcon} shortCutInfo={$t`Ctrl+Shift+C`}
         onClick={() => MessageActions.newContact()} />
-      <MenuItem label={$t`Contact Group`} icon={ContactGroupIcon} shortCutInfo="Ctrl+Shift+L"
+      <MenuItem label={$t`Contact Group`} icon={ContactGroupIcon} shortCutInfo={$t`Ctrl+Shift+L`}
         onClick={() => ContactActions.newGroup(null)} />
     </RibbonMenuButton>
   </RibbonGroup>
@@ -23,25 +23,25 @@
     </RibbonMenuButton>
     <RibbonButton label={$t`Delete`} icon={DeleteIcon}
       onClick={async () => { await Promise.all(messages.map(message => message.deleteMessage())); }}
-      disabled={noSelection} shortCutInfo="Del" />
+      disabled={noSelection} shortCutInfo={$t`Del`} />
     <RibbonButton label={$t`Archive`} icon={ArchiveIcon}
       onClick={() => MessageActions.archive(messages)}
-      disabled={noSelection} shortCutInfo="Backspace" />
+      disabled={noSelection} shortCutInfo={$t`Backspace`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Respond`}>
     <RibbonButton label={$t`Reply`} icon={ReplyIcon} size="small"
       onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())}
-      disabled={noSingle} shortCutInfo="Ctrl+R" />
+      disabled={noSingle} shortCutInfo={$t`Ctrl+R`} />
     <RibbonButton label={$t`Reply All`} icon={ReplyAllIcon} size="small"
       onClick={() => MessageActions.respond(single, single.compose.replyAll())}
       disabled={noSingle || (!(single.allRecipients().length > 1 && !(single.bcc.hasItems && !single.outgoing)) && $t`There are no other recipients`)}
-      shortCutInfo="Ctrl+Shift+R" />
+      shortCutInfo={$t`Ctrl+Shift+R`} />
     <RibbonButton label={$t`Forward`} icon={ForwardIcon} size="small"
       onClick={event => MessageActions.forward(single, event as MouseEvent)}
-      disabled={noSingle} shortCutInfo="Ctrl+F" />
+      disabled={noSingle} shortCutInfo={$t`Ctrl+F`} />
     <RibbonMenuButton label={$t`More`} icon={MoreRespondIcon} size="small" disabled={noSingle}>
       <MenuItem label={$t`Forward as Attachment`} icon={ForwardAttachmentIcon}
-        shortCutInfo="Ctrl+Alt+F"
+        shortCutInfo={$t`Ctrl+Alt+F`}
         onClick={async () => mailMustangApp.writeMail(await single.compose.forwardAsAttachment())} />
       <MenuItem label={$t`Redirect`} icon={RedirectIcon}
         tooltip={$t`Send this message to somebody else, who can reply to the original sender`}
@@ -56,10 +56,10 @@
   </RibbonGroup>
   <RibbonGroup label={$t`Move`}>
     <RibbonButton label={$t`Move`} icon={MoveIcon} disabled={noSelection}
-      tooltip={$t`Move the selected messages to another folder`} shortCutInfo="Ctrl+Shift+V"
+      tooltip={$t`Move the selected messages to another folder`} shortCutInfo={$t`Ctrl+Shift+V`}
       onClick={() => { $openMoveMessages = { messages, copy: false }; }} />
     <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" disabled={noSelection}
-      tooltip={$t`Copy the selected messages to another folder`} shortCutInfo="Ctrl+Shift+Y"
+      tooltip={$t`Copy the selected messages to another folder`} shortCutInfo={$t`Ctrl+Shift+Y`}
       onClick={() => { $openMoveMessages = { messages, copy: true }; }} />
     <RibbonMenuButton label={$t`Rules`} icon={RulesIcon} size="small">
       <RulesMenuItems message={single} account={realAccount} />
@@ -69,7 +69,7 @@
     <RibbonButton label={$t`Unread/ Read`} icon={shouldMarkRead ? ReadIcon : UnreadIcon} size="small"
       tooltip={shouldMarkRead ? $t`Mark as Read` : $t`Mark as Unread`}
       onClick={async () => { await Promise.all(messages.map(message => message.markRead(shouldMarkRead))); }}
-      disabled={noSelection} shortCutInfo={shouldMarkRead ? "Ctrl+Alt+U" : "Ctrl+U"} />
+      disabled={noSelection} shortCutInfo={shouldMarkRead ? $t`Ctrl+Alt+U` : $t`Ctrl+U`} />
     <RibbonMenuButton label={$t`Categorize`} icon={CategorizeIcon} size="small" disabled={noSelection}>
       <CategorizeMenuItems {messages} />
     </RibbonMenuButton>
@@ -97,7 +97,7 @@
       </RibbonTextBox>
     {/if}
     <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} size="small"
-      onClick={() => openApp(contactsMustangApp, {})} shortCutInfo="Ctrl+Shift+B" />
+      onClick={() => openApp(contactsMustangApp, {})} shortCutInfo={$t`Ctrl+Shift+B`} />
     <RibbonMenuButton label={$t`Filter Email`} icon={FilterIcon} size="small">
       <FilterMenuItems />
     </RibbonMenuButton>

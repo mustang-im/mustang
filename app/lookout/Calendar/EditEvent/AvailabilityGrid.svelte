@@ -134,7 +134,7 @@
   import ChevronIcon from "lucide-svelte/icons/chevron-up";
   import { onMount, tick } from "svelte";
   import { derived } from "svelte/store";
-  import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
+  import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
   export let timeEditor: EventTimeEditor;
@@ -258,11 +258,11 @@
   function statusLabel(status: AvailabilityStatus): string {
     switch (status) {
     case "free":
-      return gt`Available`;
+      return $t`Available`;
     case "busy":
-      return gt`Busy`;
+      return $t`Busy`;
     default:
-      return gt`No information`;
+      return $t`No information`;
     }
   }
 
