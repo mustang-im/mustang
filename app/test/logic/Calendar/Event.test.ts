@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { Event } from '../../../logic/Calendar/Event';
 import { Calendar } from '../../../logic/Calendar/Calendar';
 import { Frequency, RecurrenceRule } from '../../../logic/Calendar/RecurrenceRule';
-import { k1HourMS } from '../../../frontend/Util/date';
+import { k1HourMS } from '../../../logic/util/date';
 
 function dailyMaster(): Event {
   let master = new Event();

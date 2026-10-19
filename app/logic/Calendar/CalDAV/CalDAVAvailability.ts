@@ -4,7 +4,7 @@ import { line2ical } from "../ICal/ICalGenerator";
 import { VTimezone } from "../ICal/VTimezone";
 import { WindowsToIANATimezone } from "../ICal/WindowsTimezone";
 import { iCalWeekday } from "../RecurrenceRule";
-import { k1DayMS, k1MinuteMS, myTimezone } from "../../../frontend/Util/date";
+import { k1DayMS, k1MinuteMS, myTimezone } from "../../util/date";
 import { appName } from "../../build";
 
 /**

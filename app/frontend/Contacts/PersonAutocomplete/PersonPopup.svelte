@@ -16,7 +16,6 @@
         <input class="name font-normal" type="text"
           bind:value={personUID.name}
           bind:this={nameInputEl}
-          on:input={() => personUID.nameIsUnknown = false}
           on:keydown={(event) => onKeyEnter(event, onClose)}
           placeholder={$t`Enter a name for the person`} />
         <input class="email font-normal" type="email"
@@ -47,9 +46,6 @@
       </vbox>
     {/if}
   </hbox>
-  {#if $personUID.nameIsUnknown && nameInputEl == document.activeElement}
-    <hbox class="helptext font-small">{$t`Add the name of the person, and press ENTER`}</hbox>
-  {/if}
   {#if !disabled}
     {#if person?.emailAddresses.hasItems}
       <vbox class="other-email-addresses">
@@ -94,7 +90,7 @@
   import CheckIcon from "lucide-svelte/icons/check";
   import MailIcon from "lucide-svelte/icons/mail";
   import { createIsSame, onKeyEnter } from "../../Util/util";
-  import { backgroundError } from "../../Util/error";
+  import { minorError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   const dispatch = createEventDispatcher<{ close: void }>();
@@ -132,7 +128,7 @@
   onDestroy(() => {
     if (isEditing) {
       onSave()
-        .catch(backgroundError);
+        .catch(minorError);
     }
   });
   function onClose() {
@@ -186,11 +182,6 @@
   }
   input {
     min-width: 15em;
-  }
-  .helptext {
-    max-width: 15em;
-    margin: 0px 24px;
-    opacity: 50%;
   }
   .top-right.buttons {
     justify-content: start;

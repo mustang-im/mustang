@@ -4,7 +4,7 @@ import { OWACalendar } from "../../../../logic/Calendar/OWA/OWACalendar";
 import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
 import { OWAError } from "../../../../logic/Mail/OWA/OWAError";
 import { IANAToWindowsTimezone } from "../../../../logic/Calendar/ICal/WindowsTimezone";
-import { myTimezone } from "../../../../frontend/Util/date";
+import { myTimezone } from "../../../../logic/util/date";
 import { expect, test } from "vitest";
 
 const kWorkHoursXML = `<?xml version="1.0"?>` +

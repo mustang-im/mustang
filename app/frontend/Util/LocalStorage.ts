@@ -9,6 +9,9 @@ class ObservableLocalStorageSetting<T> extends Observable {
     this.key = key;
     this.defaultValue = defaultValue;
   }
+  // <copied to="../../logic/util/util.ts">
+  // HACK: `getUserPreference()` in logic/ reads `localStorage` directly.
+  // It assumes that this class saves the value there, under the same key, in this format.
   get value(): T {
     return JSON.parse(sanitize.nonemptystring(localStorage.getItem(this.key), null)) ?? this.defaultValue;
   }
@@ -16,6 +19,7 @@ class ObservableLocalStorageSetting<T> extends Observable {
     localStorage.setItem(this.key, JSON.stringify(val));
     this.notifyObservers();
   }
+  // </copied>
   /** Svelte calls this when a component writes to a bound `$setting.value`.
    * The store value is this object itself, and `set value()` above already
    * saved the new value, so we only need to tell the other subscribers. */

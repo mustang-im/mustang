@@ -1,5 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { kAllWeekdays, weekdayLabel } from "../../frontend/Util/date";
+import { kAllWeekdays, weekdayLabel } from "../util/date";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { assert } from "../util/util";
 

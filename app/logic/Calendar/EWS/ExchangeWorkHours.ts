@@ -1,7 +1,7 @@
 import { WorkHours, kMinutesPerDay } from "../WorkHours";
 import { ExchangeTimezone, ExchangeTimezoneChange } from "./ExchangeTimezone";
 import { IANAToWindowsTimezone, WindowsToIANATimezone } from "../ICal/WindowsTimezone";
-import { myTimezone } from "../../../frontend/Util/date";
+import { myTimezone } from "../../util/date";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ensureArray } from "../../util/util";
 

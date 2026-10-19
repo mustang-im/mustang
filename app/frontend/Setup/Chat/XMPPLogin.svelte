@@ -36,7 +36,7 @@
   import Header from "../Shared/Header.svelte";
   import { t } from "../../../l10n/l10n";
   import ErrorMessage, { ErrorGravity } from "../../Shared/ErrorMessage.svelte";
-  import { logError } from "../../Util/error";
+  import { logErrorToServer } from "../../Util/error";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
 
   /** in/out */
@@ -77,7 +77,7 @@
   let errorMessage: string | null = null;
   function showError(ex: Error) {
     console.error(ex);
-    logError(ex);
+    logErrorToServer(ex);
     errorMessage = ex.message ?? ex + "";
   }
 </script>

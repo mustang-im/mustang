@@ -2,7 +2,7 @@ import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../logic/app";
 import logo from '../asset/icon/general/logo.svg?raw';
 import newMessageSoundURL from "/sound/new-message.mp3?url";
-import { backgroundError } from "../Util/error";
+import { minorError, logErrorToServer } from "../Util/error";
 
 /** Tells the user about a new mail, a meeting reminder etc.
  * outside of our app window: a popup in the screen corner and in the
@@ -48,7 +48,7 @@ export class SystemNotification {
       try {
         // TODO
       } catch (ex) {
-        backgroundError(ex);
+        minorError(ex);
       }
     }
 
@@ -59,7 +59,7 @@ export class SystemNotification {
           this.title,
           () => this.onClick?.());
       } catch (ex) {
-        backgroundError(ex);
+        minorError(ex);
       }
     }
 
@@ -67,7 +67,7 @@ export class SystemNotification {
       try {
         await this.playNotificationSound();
       } catch (ex) {
-        backgroundError(ex);
+        minorError(ex);
       }
     }
   }
@@ -83,7 +83,7 @@ export class SystemNotification {
         await this.showWebPopup();
       }
     } catch (ex) {
-      backgroundError(ex);
+      minorError(ex);
     }
   }
 
@@ -143,7 +143,7 @@ export class SystemNotification {
     // e.g. macOS refuses when an app is not signed
     popup.on("failed", (event, error) => {
       onClose();
-      backgroundError(new Error("Failed to show the OS popup notification: " + error));
+      logErrorToServer(new Error("Failed to show the OS popup notification: " + error));
     });
     popup.show();
   }

@@ -67,7 +67,7 @@
   // @ts-ignore ts2300
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
-  import { notifications } from "./Notification";
+  import { notifications } from "../../logic/util/Notification";
   import { selectedAccount } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps, disableAppsBasedOnFeaturesXML } from "../AppsBar/loadMustangApps";

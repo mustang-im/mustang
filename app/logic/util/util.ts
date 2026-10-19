@@ -1,3 +1,4 @@
+import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export function assert(test: boolean | object | string | number | null | undefined, errorMessage: string): asserts test {
   if (!test) {
@@ -36,6 +37,13 @@ export function booleanHasValue(value: boolean | null | undefined): value is boo
   return value === true || value === false;
 }
 
+// <copied from="../../frontend/Util/LocalStorage.ts">
+/** HACK: Assumes that `getLocalStorage()` in the frontend saves the value there, in this format. */
+export function getUserPreference<T>(key: string, defaultValue?: T): T {
+  return JSON.parse(sanitize.nonemptystring(localStorage.getItem(key), null)) ?? defaultValue;
+}
+// </copied>
+
 export function randomID(): string {
   return Date.now() + "-" + Math.ceil(Math.random() * 900000);
 }
@@ -45,56 +53,6 @@ export function capitalizeStart(str: string): string {
 }
 export function capitalizeWords(str: string): string {
   return str.split(" ").map(word => capitalizeStart(word)).join(" ");
-}
-
-export async function blobToBase64(blob: Blob): Promise<string> {
-  let dataURL = await blobToDataURL(blob)
-  return dataURL.split(",")[1];
-}
-
-export async function blobToDataURL(blob: Blob): Promise<URLString> {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    // The file may be gone or changed on disk, since the user picked it
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
-/** Decodes base64. */
-export function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
-  if (Uint8Array.fromBase64) {
-    return Uint8Array.fromBase64(base64);
-  }
-  // Fallback: node doesn't have it yet, unlike Electron
-  // `Uint8Array.from()` with a map is 30x slower = 1.2s for a 20 MB mail
-  let binary = atob(base64);
-  let bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-export function uint8ArrayToBase64(bytes: Uint8Array): string {
-  if ((bytes as any).toBase64) {
-    return (bytes as any).toBase64();
-  }
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-export function uint8ArrayToHex(bytes: Uint8Array): string {
-  return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
-}
-
-export async function dataURLToBlob(dataURL: URLString): Promise<Blob> {
-  let res = await fetch(dataURL);
-  return await res.blob();
 }
 
 /** TODO Implement this correctly */

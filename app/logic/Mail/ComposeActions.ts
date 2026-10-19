@@ -7,13 +7,13 @@ import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { ExtraData } from "./ExtraData";
 import { appName, appVersion, siteRoot } from "../build";
 import { gLicense } from "../util/License";
-import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { importAutoCryptKeys } from "./Encryption/PGP/AutoCrypt";
 import { fileExtensionForMIMEType } from "../Files/FileType/MIMETypes";
 import { escapeAttr, escapeHTML } from "../Files/FileType/htmlHelper";
-import { backgroundError } from "../../frontend/Util/error";
+import { minorError } from "../util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { UserError, assert, dataURLToBlob, type URLString, ensureArray } from "../util/util";
+import { UserError, assert, type URLString, ensureArray, getUserPreference } from "../util/util";
+import { dataURLToBlob } from "../util/blob";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -83,7 +83,7 @@ export class ComposeActions {
     importAutoCryptKeys(original)
       .catch(original.folder.account.errorCallback);
 
-    let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
+    let quoteSetting = getUserPreference("mail.send.quote", "below");
     let quote = `<p class="quote-header">${escapeHTML(this.quotePrefixLine())}</p>
     <blockquote cite="mid:${escapeAttr(original.id ?? "")}">
       ${original.html}
@@ -128,7 +128,7 @@ export class ComposeActions {
   }
 
   async forward(): Promise<EMail> {
-    let setting = getLocalStorage("mail.send.forward", "inline").value;
+    let setting = getUserPreference("mail.send.forward", "inline");
     if (setting == "attachment") {
       return await this.forwardAsAttachment();
     } else {
@@ -374,11 +374,11 @@ export class ComposeActions {
     this.email.folder = previousFolder;
     let sendData = this.email.extraData.get(SendData.extraDataName) as SendData;
     sendData?.replyTo?.markReplied()
-      .catch(backgroundError);
+      .catch(minorError);
     sendData?.forwarded?.markForwarded()
-      .catch(backgroundError);
+      .catch(minorError);
     this.deleteDrafts(previousDrafts)
-      .catch(backgroundError);
+      .catch(minorError);
   }
 
   async saveAsDraft(): Promise<void> {

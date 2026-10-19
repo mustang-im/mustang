@@ -18,7 +18,7 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { Lock } from "../../util/flow/Lock";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
-import { k1DayMS, myTimezone } from "../../../frontend/Util/date";
+import { k1DayMS, myTimezone } from "../../util/date";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 

@@ -1,6 +1,6 @@
 import { utcOffset } from "./ICal/VTimezone";
 import { Observable, notifyChangedProperty } from "../util/Observable";
-import { k1DayMS, k1MinuteMS, myTimezone } from "../../frontend/Util/date";
+import { k1DayMS, k1MinuteMS, myTimezone } from "../util/date";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 
 export class WorkHours extends Observable {

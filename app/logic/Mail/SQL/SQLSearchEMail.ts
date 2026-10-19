@@ -4,7 +4,7 @@ import { getDatabase } from "./SQLDatabase";
 import type { EMail } from "../EMail";
 import { Folder, SpecialFolder } from "../Folder";
 import { appGlobal } from "../../app";
-import { backgroundError } from "../../../frontend/Util/error";
+import { dataError } from "../../util/error";
 import { assert } from "../../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
 import sql, { type Query } from "../../../../lib/rs-sqlite";
@@ -13,7 +13,7 @@ import { gt } from "../../../l10n/l10n";
 export class SQLSearchEMail extends SearchEMail {
   /** Start a database search based on the critera set on this object */
   async startSearch(limit?: number): Promise<ArrayColl<EMail>> {
-    let parseError = backgroundError;
+    let parseError = dataError;
     if (this.folder && this.account) {
       assert(this.account == this.folder.account, "Folder and account need to match");
     }

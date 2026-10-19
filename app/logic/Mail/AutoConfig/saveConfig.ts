@@ -9,7 +9,7 @@ import { FileSharingAccount } from "../../Files/FileSharingAccount";
 import { ChatAccount } from "../../Chat/ChatAccount";
 import { MeetAccount } from "../../Meet/MeetAccount";
 import { appGlobal } from "../../app";
-import { backgroundError } from "../../../frontend/Util/error";
+import { minorError } from "../../util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { NotReached, UserError, assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -29,7 +29,7 @@ export async function saveAndInitConfig(config: MailAccount, emailAddress: strin
   }
 
   getFirstMessages(config)
-    .catch(backgroundError);
+    .catch(minorError);
 }
 
 export async function saveConfig(config: MailAccount, emailAddress: string, password: string): Promise<void> {
@@ -86,7 +86,7 @@ export function fillConfig(config: MailAccount, emailAddress: string, password: 
   if (existingAccount && !existingAccount.name.includes(emailAddress)) {
     config.name += " " + emailAddress;
     existingAccount.name += " " + existingAccount.emailAddress;
-    existingAccount.save().catch(backgroundError);
+    existingAccount.save().catch(minorError);
   }
 
   if (config.outgoing) {

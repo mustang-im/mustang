@@ -1,4 +1,3 @@
-import type { PersonOrGroup } from "../../frontend/Contacts/Person/PersonOrGroup";
 import { Group } from "./Group";
 import type { Addressbook } from "../Contacts/Addressbook";
 import { ContactEntry, Person } from "./Person";
@@ -20,8 +19,6 @@ export class PersonUID extends Observable {
    * `createPerson()` saves it with the contact. */
   @notifyChangedProperty
   encryptionPublicKey?: PublicKey;
-  /** We guessed `name` from the email address, so `PersonPopup` asks the user. Not saved. */
-  nameIsUnknown = false;
 
   constructor(emailAddress?: string, name?: string) {
     super();
@@ -159,7 +156,7 @@ export function findPersonsWithName(name: string): ArrayColl<Person> {
   return results;
 }
 
-export function personDisplayName(person: PersonOrGroup | PersonUID) {
+export function personDisplayName(person: Person | Group | PersonUID) {
   if (!person) {
     return "";
   } else if (person instanceof Person || person instanceof Group) {

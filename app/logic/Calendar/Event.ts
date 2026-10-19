@@ -6,13 +6,13 @@ import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
-import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
+import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { randomID, AbstractFunction, assert } from "../util/util";
-import { backgroundError } from "../../frontend/Util/error";
+import { dataError } from "../util/error";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -39,7 +39,7 @@ export class Event extends Observable {
         return this._text = convertHTMLToText(this._rawHTML);
       }
     } catch (ex) {
-      backgroundError(ex);
+      dataError(ex);
     }
     return "";
   }
@@ -82,7 +82,7 @@ export class Event extends Observable {
         return this._sanitizedHTML = convertTextToHTML(this._text);
       }
     } catch (ex) {
-      backgroundError(ex);
+      dataError(ex);
     }
     return "";
   }

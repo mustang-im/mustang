@@ -48,9 +48,7 @@ export class JMAPCalendar extends Calendar {
   }
 
   protected async listEventsFromServer() {
-    if (!this.account.isLoggedIn) {
-      await this.account.login(false);
-    }
+    await this.account.ensureLoggedIn();
 
     this.events.isEmpty
       ? await this.listAllEvents()

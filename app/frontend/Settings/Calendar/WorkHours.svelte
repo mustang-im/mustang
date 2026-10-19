@@ -63,7 +63,7 @@
   import { kMinutesPerDay } from "../../../logic/Calendar/WorkHours";
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import Checkbox from "../../Shared/Checkbox.svelte";
-  import { myTimezone } from "../../Util/date";
+  import { myTimezone } from "../../../logic/util/date";
   import { catchErrors } from "../../Util/error";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
   import debounce from "lodash/debounce";

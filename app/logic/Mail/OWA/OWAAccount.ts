@@ -28,15 +28,16 @@ import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
-import { logError } from "../../../frontend/Util/error";
 import { ensureLicensed } from "../../util/LicenseClient";
+import { logErrorToServer } from "../../util/error";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, base64ToUint8Array, uint8ArrayToBase64, ensureArray, NotSupported, NotReached } from "../../util/util";
+import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
+import { base64ToUint8Array, uint8ArrayToBase64 } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -656,7 +657,7 @@ export class OWAAccount extends ExchangeMailAccount {
         }
       }
     } catch (ex) {
-      logError(ex);
+      logErrorToServer(ex);
     }
     return accounts;
   }

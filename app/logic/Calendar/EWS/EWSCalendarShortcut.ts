@@ -3,7 +3,6 @@ import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { MAPIAddressBookEntryID, MAPIEntryID, MAPIStoreEntryID } from "../../Mail/EWS/MAPIEntryID";
 import { PersonUID } from "../../Abstract/PersonUID";
 import { ensureArray } from "../../util/util";
-import { logError } from "../../../frontend/Util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class EWSCalendarShortcut {
@@ -85,7 +84,7 @@ export class EWSCalendarShortcut {
         }
       } catch (ex) {
         if (!EWSCalendarShortcut.isStaleError(ex)) {
-          logError(ex);
+          account.dataError(ex);
         }
       }
     }

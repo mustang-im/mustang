@@ -1,6 +1,6 @@
 import { VTimezone, utcOffset } from "../ICal/VTimezone";
 import { WindowsToIANATimezone } from "../ICal/WindowsTimezone";
-import { k1MinuteMS, myTimezone } from "../../../frontend/Util/date";
+import { k1MinuteMS, myTimezone } from "../../util/date";
 
 /** Time zone rules as Windows and Exchange describe them:
  * an offset from UTC, and one yearly change to and from daylight saving time. */

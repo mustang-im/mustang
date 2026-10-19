@@ -19,7 +19,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import { shownWorkHours, type DateInterval } from "../selected";
-  import { getToday } from "../../Util/date";
+  import { getToday } from "../../../logic/util/date";
   import DayViewGrid from "./DayViewGrid.svelte";
   import NewEventMenu from "../NewEventMenu.svelte";
   import DateRange from "../DateRange.svelte";

@@ -139,7 +139,7 @@
   import SpamIcon from "lucide-svelte/icons/shield-x";
   import NotSpamIcon from "lucide-svelte/icons/shield-off";
   import FolderActionsIcon from "lucide-svelte/icons/folder-dot";
-  import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeString } from "../../../logic/util/date";
   import { catchErrors } from "../../Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";

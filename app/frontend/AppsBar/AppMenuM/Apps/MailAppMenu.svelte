@@ -40,7 +40,7 @@
   import PersonIcon from "lucide-svelte/icons/user";
   import PencilIcon from "lucide-svelte/icons/pencil";
   import FolderIcon from "lucide-svelte/icons/folder-open";
-  import { URLPart } from "../../../Util/util";
+  import { URLPart } from "../../../../logic/util/blob";
   import { ArrayColl, mergeColl } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
 

@@ -10,7 +10,8 @@ import { EWSUpdateItemRequest } from "./Request/EWSUpdateItemRequest";
 import { PersonUID, findOrCreatePersonUID, kDummyPerson } from "../../Abstract/PersonUID";
 import { InvitationMessage } from "../../Calendar/Invitation/InvitationStatus";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { base64ToUint8Array, assert, ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { base64ToUint8Array } from "../../util/blob";
 import type { ArrayColl } from "svelte-collections";
 
 const ExchangeScheduling: Record<string, number> = {

@@ -24,6 +24,7 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
@@ -46,7 +47,9 @@ export class JMAPAccount extends MailAccount {
   readonly stateLock = new Lock(); /** Protects syncState */
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  protected readonly requestSemaphore = new Semaphore(4);
   protected pushAbort: AbortController | null = null;
+  protected isDisconnected = false;
   protected throttle = new Throttle(50, 1);
   logging = true;
 
@@ -64,6 +67,7 @@ export class JMAPAccount extends MailAccount {
 
   async login(interactive: boolean): Promise<void> {
     await this.loginRunOnce.runOnce(async () => {
+      this.isDisconnected = false;
       await super.login(interactive);
       if (this.isDependentAccount) {
         return; // `super.login()` logged in the main account, which starts us up
@@ -76,6 +80,28 @@ export class JMAPAccount extends MailAccount {
       await this.loginOAuth2(interactive);
       await this.getSession();
     });
+  }
+
+  /** After `disconnect()`, e.g. a logout, only an explicit `login()` logs in again,
+   * not the work that is still running.
+   * @throws LoginError after `disconnect()` */
+  async ensureLoggedIn(): Promise<void> {
+    if (this.isDisconnected) {
+      throw new LoginError(null, gt`Please login`);
+    }
+    if (this.isDependentAccount) {
+      await (this.mainAccount as JMAPAccount).ensureLoggedIn();
+      return;
+    }
+    if (this.isLoggedIn) {
+      return;
+    }
+    if (this.session) {
+      await this.oAuth2.login(false);
+    }
+    if (!this.isLoggedIn) {
+      await this.login(false);
+    }
   }
 
   async syncOnStartup() {
@@ -151,6 +177,10 @@ export class JMAPAccount extends MailAccount {
     assert(mailAccount, "JMAP Session: Account not found");
 
     this.session = session;
+    let maxConcurrentRequests = sanitize.integer(session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
+    if (maxConcurrentRequests > 0) {
+      this.requestSemaphore.maxParallel = maxConcurrentRequests;
+    }
   }
 
   /** An account shared with us may offer less than our own, e.g. a calendar, but no mail.
@@ -245,14 +275,7 @@ export class JMAPAccount extends MailAccount {
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
-    if (!this.isLoggedIn) {
-      if (this.session) {
-        await this.oAuth2.login(false);
-      }
-      if (!this.isLoggedIn) {
-        await this.login(false);
-      }
-    }
+    await this.ensureLoggedIn();
     let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
     if (this.haveContacts) {
       using.push("urn:ietf:params:jmap:contacts");
@@ -358,32 +381,50 @@ export class JMAPAccount extends MailAccount {
   }
 
   async httpGet(url: string, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpGet(url, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.get(url);
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPost(url, sendJSON);
+    }
     let ky = await this.ky();
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { json: sendJSON });
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPostBinary(url, body, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { body: body });
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
@@ -490,6 +531,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async disconnect(): Promise<void> {
+    this.isDisconnected = true;
     this.stopPolling();
     this.pushAbort?.abort();
     this.session = null;
@@ -510,7 +552,7 @@ export class JMAPAccount extends MailAccount {
     let recipientsAddrs = recipients.map(p => ({ email: p.emailAddress })).contents;
     let identityID = await this.findIdentityOnServer(email);
 
-    let sendResponse = await this.makeSingleCall("EmailSubmission/set", {
+    let responses = await this.makeCalls([["EmailSubmission/set", {
       accountId: this.accountID,
       create: {
         "sendMessage": {
@@ -527,16 +569,24 @@ export class JMAPAccount extends MailAccount {
           // Intentionally delete all other folders
           mailboxIds: {
             [sentFolder.id]: true,
-            [outboxFolder.id]: null,
           },
           ["keywords/$draft"]: null,
         }
       }
-    });
+    }]]);
+    let sendResponse = responses[0][1];
+    let moveToSentResponse = responses.find(response => response[0] == "Email/set")?.[1];
     let error = sendResponse["notCreated"] as any;
     if (error) {
       error = error["sendMessage"];
       throw new Error("Upload of message to server failed: " + (error?.description ?? "") + " " + (error?.properties?.join(", ") ?? ""));
+    }
+    if (moveToSentResponse) {
+      try {
+        checkChangeError(moveToSentResponse as TJMAPChangeResponse<any>);
+      } catch (ex) {
+        this.errorCallback(ex); // Not thrown: The email was sent, and the user should not send it again
+      }
     }
   }
 

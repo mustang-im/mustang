@@ -15,7 +15,7 @@ import { kMaxCount } from "../../Mail/EWS/EWSFolder";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import { Lock } from "../../util/flow/Lock";
-import { k1DayMS } from "../../../frontend/Util/date";
+import { k1DayMS } from "../../util/date";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
