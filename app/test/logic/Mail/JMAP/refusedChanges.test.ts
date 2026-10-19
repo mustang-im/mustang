@@ -26,7 +26,7 @@ test("A flag change that the server refuses gives an error", async () => {
   let email = folder.newEMail();
   email.jmapID = "eaaaaab";
 
-  await expect(email.markRead(true)).rejects.toThrow("Failed to update on server");
+  await expect(email.markRead(true)).rejects.toMatchObject({ type: "notFound" });
 });
 
 test("A rename that the server refuses gives an error", async () => {
@@ -36,5 +36,5 @@ test("A rename that the server refuses gives an error", async () => {
     notUpdated: { bk: { type: "alreadyExists", description: "A mailbox with name 'DupTestA' already exists.", existingId: "bj" } },
   });
 
-  await expect(folder.rename("DupTestA")).rejects.toThrow("already exists");
+  await expect(folder.rename("DupTestA")).rejects.toThrow("A mailbox with name 'DupTestA' already exists.");
 });
