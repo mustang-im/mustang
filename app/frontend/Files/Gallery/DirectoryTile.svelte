@@ -22,7 +22,7 @@
         </hbox>
       </hbox>
     </vbox>
-  </vbox>`
+  </vbox>
 
 </Clickable>
 

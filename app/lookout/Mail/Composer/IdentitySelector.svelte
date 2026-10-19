@@ -1,9 +1,9 @@
-<button type="button" class="field-button" bind:this={buttonEl} tabindex={-1}
+<button type="button" class="field-button" tabindex={-1}
   aria-haspopup="menu" aria-expanded={isMenuOpen}
-  on:click|stopPropagation={() => isMenuOpen = !isMenuOpen}>
+  on:click|stopPropagation={onToggleMenu}>
   {$t`From`} <ChevronDownIcon size={14} />
 </button>
-<hbox class="from-text">
+<hbox class="from-text" bind:this={fromTextEl}>
   {#if selectedIdentity?.isCatchAll}
     <span>{beforeCustom}</span>
     <input type="text" class="custom" bind:value={editableCustom} spellcheck="false"
@@ -11,10 +11,15 @@
       on:change={onCustomEdited} />
     <span>{afterCustom}</span>
   {:else}
-    <span class="address">{fromAddress ?? ""}</span>
+    <button type="button" class="address" tabindex={1}
+      aria-haspopup="menu" aria-expanded={isMenuOpen}
+      on:click|stopPropagation={onToggleMenu}>
+      {fromAddress ?? ""}
+    </button>
   {/if}
 </hbox>
-<Menu bind:isMenuOpen anchor={buttonEl} placement="bottom-start">
+<Menu bind:isMenuOpen anchor={fromTextEl} placement="bottom-start"
+  on:close={() => menuOpenerEl?.focus()}>
   {#each $identities.each as identity}
     <MenuItem label={identity.emailAddress}
       tooltip={identity.realname ? `${identity.realname} <${identity.emailAddress}>` : identity.emailAddress}
@@ -36,11 +41,17 @@
   export let fromName: string;
   export let identities: Collection<MailIdentity> = findAllIdentities();
 
-  let buttonEl: HTMLButtonElement;
+  let fromTextEl: HTMLElement;
+  let menuOpenerEl: HTMLElement;
   let isMenuOpen = false;
   let beforeCustom = "";
   let afterCustom = "";
   let editableCustom = "";
+
+  function onToggleMenu(event: MouseEvent) {
+    menuOpenerEl = event.currentTarget as HTMLElement;
+    isMenuOpen = !isMenuOpen;
+  }
 
   // <copied from="../../../frontend/Mail/Composer/IdentitySelector.svelte">
   $: $selectedIdentity && setIdentity($selectedIdentity)
@@ -77,6 +88,19 @@
   .address {
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .address:focus-visible {
+    outline: none;
+  }
+  .from-text:has(.address:focus-visible) {
+    border-block-end-color: var(--lo-accent);
+    box-shadow: 0 1px 0 0 var(--lo-accent);
   }
   .custom {
     min-width: 6ch;
