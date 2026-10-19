@@ -46,16 +46,37 @@ function setup(addressBookIds: Record<string, boolean>, setResponse: any = null)
   return { person, calls };
 }
 
+/** What the server has after our `ContactCard/set` calls: the card's address books, or null if destroyed */
+function onServerAfter(calls: [string, any][], addressBookIds: Record<string, boolean>): Record<string, boolean> | null {
+  let result = { ...addressBookIds };
+  for (let [method, args] of calls.filter(([method]) => method == "ContactCard/set")) {
+    if (args.destroy?.includes("cardID")) {
+      return null;
+    }
+    let patch = args.update?.cardID ?? {};
+    if (patch.addressBookIds) {
+      result = { ...patch.addressBookIds };
+    }
+    for (let [path, value] of Object.entries(patch)) {
+      if (path.startsWith("addressBookIds/")) {
+        let id = path.slice("addressBookIds/".length);
+        value ? result[id] = true : delete result[id];
+      }
+    }
+  }
+  return result;
+}
+
 test("Deleting a contact that is also in another address book removes it only from this one", async () => {
   let { person, calls } = setup({ b: true, c: true });
   await person.deleteIt();
-  expect(calls[1]).toEqual(["ContactCard/set", { accountId: "a", update: { cardID: { "addressBookIds/b": null } } }]);
+  expect(onServerAfter(calls, { b: true, c: true })).toEqual({ c: true });
 });
 
 test("Deleting a contact that is only in this address book destroys it", async () => {
   let { person, calls } = setup({ b: true });
   await person.deleteIt();
-  expect(calls[1]).toEqual(["ContactCard/set", { accountId: "a", destroy: ["cardID"] }]);
+  expect(onServerAfter(calls, { b: true })).toBeNull();
 });
 
 test("A deletion that the server refuses is an error", async () => {
