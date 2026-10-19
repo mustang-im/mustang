@@ -54,11 +54,11 @@ test("Tab label: appointment, meeting, series and occurrence", () => {
 test("Response summary for the organizer, like Outlook", () => {
   let event = newEvent();
   organize(event, InvitationResponse.NoResponseReceived, InvitationResponse.NoResponseReceived);
-  expect(responseSummary(event)).toBe("No responses have been received for this meeting.");
+  expect(responseSummary(event)).toBe("No responses have been received for this meeting");
   event.participants.get(1).response = InvitationResponse.Accept;
   event.participants.get(2).response = InvitationResponse.Tentative;
   expect(responseCounts(event)).toEqual({ accepted: 1, tentative: 1, declined: 0, none: 0 });
-  expect(responseSummary(event)).toBe("Attendee responses: 1 accepted, 1 tentatively accepted, 0 declined.");
+  expect(responseSummary(event)).toBe("Attendee responses: 1 accepted, 1 tentatively accepted, 0 declined");
 });
 
 test("Conflicts and adjacent appointments", () => {
@@ -79,21 +79,21 @@ test("Info bar of a new meeting, of an invitation, and of a cancelled meeting", 
   let meeting = newEvent();
   organize(meeting, InvitationResponse.Unknown);
   expect(eventInfoMessages(meeting, [], now).map(message => message.text))
-    .toEqual(["You haven't sent this meeting invitation yet."]);
+    .toEqual(["You haven't sent this meeting invitation yet"]);
 
   let invitation = newEvent();
   invite(invitation, InvitationResponse.NoResponseReceived);
-  expect(eventInfoMessages(invitation, [], now)[0].text).toBe("Please respond.");
+  expect(eventInfoMessages(invitation, [], now)[0].text).toBe("Please respond");
   invitation.myParticipation = InvitationResponse.Accept;
-  expect(eventInfoMessages(invitation, [], now)[0].text).toBe("You accepted this meeting.");
+  expect(eventInfoMessages(invitation, [], now)[0].text).toBe("You accepted this meeting");
   invitation.isCancelled = true;
-  expect(eventInfoMessages(invitation, [], now)[0]).toEqual({ kind: "cancelled", text: "This meeting has been cancelled by the organizer." });
+  expect(eventInfoMessages(invitation, [], now)[0]).toEqual({ kind: "cancelled", text: "This meeting has been cancelled by the organizer" });
 });
 
 test("Info bar: in the past, and the series of an occurrence", () => {
   let event = newEvent();
   expect(eventInfoMessages(event, [], new Date(2026, 9, 16)).map(message => message.text))
-    .toEqual(["This appointment occurs in the past."]);
+    .toEqual(["This appointment occurs in the past"]);
   event.newRecurrenceRule(Frequency.Weekly);
   let occurrence = event.instances.get(1);
   let messages = eventInfoMessages(occurrence, [], new Date(2026, 9, 1));

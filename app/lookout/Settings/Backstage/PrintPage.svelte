@@ -34,7 +34,7 @@
         </vbox>
       </vbox>
     {:else}
-      <vbox flex class="empty lo-secondary">{$t`Select a message to see how it will be printed.`}</vbox>
+      <vbox flex class="empty lo-secondary">{$t`Select a message to see how it will be printed`}</vbox>
     {/if}
   </vbox>
 </hbox>

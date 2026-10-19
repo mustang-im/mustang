@@ -4,7 +4,7 @@
   onOK={onGo}
   on:close>
   <vbox class="dialog-content">
-    <span class="caption">{$t`Folders:`}</span>
+    <span class="caption">{$t`Folders`}</span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={target} on:choose={() => dialog.submit()} />
   </vbox>
 </Dialog>

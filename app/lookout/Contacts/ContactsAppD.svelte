@@ -145,10 +145,10 @@
     ? $t`Search ${$shownAddressbook.name}`
     : $t`Search All Contacts`;
   $: emptyText = isSearch
-    ? $t`We didn't find anything to show here.`
+    ? $t`We didn't find anything to show here`
     : isDirectory
-      ? $t`Type a name in the search box to find people in the directory.`
-      : $t`There are no items to show in this view.`;
+      ? $t`Type a name in the search box to find people in the directory`
+      : $t`There are no items to show in this view`;
 
   let selectedContacts = new ArrayColl<Contact>();
   let currentContact: Contact | null = $selectedPerson && $selectedPerson != $selectedContact

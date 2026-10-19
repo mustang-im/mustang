@@ -1,6 +1,6 @@
 <vbox class="license">
   {#if $emailAccounts.isEmpty}
-    <span class="lo-secondary">{$t`Add an email account to buy or check your license.`}</span>
+    <span class="lo-secondary">{$t`Add an email account to buy or check your license`}</span>
   {:else if isChecking}
     <span class="lo-secondary">{$t`Checking…`}</span>
   {:else if error}

@@ -110,13 +110,13 @@ test("Ctrl+K inserts a link", () => {
 
 test("F4 finds", () => {
   expect(handled("F4")).toBe(true);
-  expect(dialogText()).toContain("Find what:");
-  expect(dialogText()).not.toContain("Replace with:");
+  expect(dialogText()).toContain("Find what");
+  expect(dialogText()).not.toContain("Replace with");
 });
 
 test("Ctrl+H replaces", () => {
   expect(handled("h", { metaKey: true })).toBe(true);
-  expect(dialogText()).toContain("Replace with:");
+  expect(dialogText()).toContain("Replace with");
 });
 
 test("Keys don't work while a dialog of the composer is open", async () => {

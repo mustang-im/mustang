@@ -4,7 +4,7 @@
   onOK={onMove}
   on:close>
   <vbox class="dialog-content">
-    <span class="caption">{$t`Move the folder "${FolderTreeActions.displayName(folder)}" to the folder:`}</span>
+    <span class="caption">{$t`Move the folder "${FolderTreeActions.displayName(folder)}" to the folder`}</span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={target}
       disableFolder={candidate => !FolderTreeActions.canMoveFolderInto(folder, candidate) && $t`The folder cannot be moved there`} />
   </vbox>

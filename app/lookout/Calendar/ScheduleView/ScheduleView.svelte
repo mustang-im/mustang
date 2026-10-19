@@ -33,7 +33,7 @@
       nowMinute={showsNow ? nowMinute : null}
       isSelected={$selectedCalendar == row.calendar} on:slotmenu />
   {:else}
-    <div class="empty">{$t`Select a calendar in the folder pane to show it here.`}</div>
+    <div class="empty">{$t`Select a calendar in the folder pane to show it here`}</div>
   {/each}
 </div>
 

@@ -3,9 +3,9 @@
   on:close>
   <vbox class="fields">
     <FormGrid>
-      <span>{$t`Display name:`}</span>
+      <span>{$t`Display name`}</span>
       <TextField bind:value={name} label={$t`Display name`} />
-      <span>{$t`E-mail address:`}</span>
+      <span>{$t`E-mail address`}</span>
       <TextField bind:value={emailAddress} type="email" label={$t`E-mail address`} />
     </FormGrid>
     <Checkbox label={$t`Add to Contacts`} checked disabled={$t`Contact groups can only have contacts as members`} />

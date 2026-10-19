@@ -15,19 +15,19 @@
       </hbox>
       {#if $to.hasItems}
         <hbox class="recipients">
-          <span class="recipients-label">{$t`To:`}</span>
+          <span class="recipients-label">{$t`To`}</span>
           <RecipientsList recipients={to} />
         </hbox>
       {/if}
       {#if $cc.hasItems}
         <hbox class="recipients">
-          <span class="recipients-label">{$t`Cc:`}</span>
+          <span class="recipients-label">{$t`Cc`}</span>
           <RecipientsList recipients={cc} />
         </hbox>
       {/if}
       {#if $bcc.hasItems}
         <hbox class="recipients">
-          <span class="recipients-label">{$t`Bcc:`}</span>
+          <span class="recipients-label">{$t`Bcc`}</span>
           <RecipientsList recipients={bcc} />
         </hbox>
       {/if}

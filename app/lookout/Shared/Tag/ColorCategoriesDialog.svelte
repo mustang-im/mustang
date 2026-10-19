@@ -26,8 +26,8 @@
         <DialogButton label={$t`New…`} onClick={() => { isAdding = true; }} />
         <DialogButton label={$t`Delete`} disabled={!selected && $t`Select a category first`} onClick={onDelete} />
         <vbox class="color-field">
-          <span>{$t`Color:`}</span>
-          <ComboBox label={$t`Color:`} options={colorOptions(selected)} value={selected?.color ?? null}
+          <span>{$t`Color`}</span>
+          <ComboBox label={$t`Color`} options={colorOptions(selected)} value={selected?.color ?? null}
             disabled={!selected && $t`Select a category first`}
             on:change={event => catchErrors(() => onColor(event.detail))} width="100%" swatchColumns={5} />
         </vbox>

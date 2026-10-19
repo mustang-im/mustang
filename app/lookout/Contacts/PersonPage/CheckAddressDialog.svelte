@@ -1,15 +1,15 @@
 <Dialog title={$t`Check Address`} okLabel={$t`OK`} onOK={onOK} width="440px" on:close>
   <GroupBox label={$t`Address details`}>
     <FormGrid>
-      <span>{$t`Street:`}</span>
+      <span>{$t`Street`}</span>
       <TextField bind:value={street} label={$t`Street`} multiline rows={2} />
-      <span>{$t`City:`}</span>
+      <span>{$t`City`}</span>
       <TextField bind:value={city} label={$t`City`} />
-      <span>{$t`State/Province:`}</span>
+      <span>{$t`State/Province`}</span>
       <TextField bind:value={state} label={$t`State/Province`} />
-      <span>{$t`ZIP/Postal code:`}</span>
+      <span>{$t`ZIP/Postal code`}</span>
       <TextField bind:value={postalCode} label={$t`ZIP/Postal code`} />
-      <span>{$t`Country/Region:`}</span>
+      <span>{$t`Country/Region`}</span>
       <TextField bind:value={country} label={$t`Country/Region`} />
     </FormGrid>
   </GroupBox>

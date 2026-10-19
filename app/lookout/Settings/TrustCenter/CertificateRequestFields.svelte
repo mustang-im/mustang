@@ -1,17 +1,17 @@
 <FormGrid columns="150px minmax(0, 1fr)">
-  <span>{$t`Name:`}</span>
+  <span>{$t`Name`}</span>
   <TextField bind:value={request.name} label={$t`Name`} />
-  <span>{$t`E-mail address:`}</span>
+  <span>{$t`E-mail address`}</span>
   <TextField value={request.emailAddress} readonly label={$t`E-mail address`} />
-  <span>{$t`Organization:`}</span>
+  <span>{$t`Organization`}</span>
   <TextField bind:value={request.organization} label={$t`Organization`} />
-  <span>{$t`Department:`}</span>
+  <span>{$t`Department`}</span>
   <TextField bind:value={request.department} label={$t`Department`} />
-  <span>{$t`City:`}</span>
+  <span>{$t`City`}</span>
   <TextField bind:value={request.city} label={$t`City`} />
-  <span>{$t`State/Province:`}</span>
+  <span>{$t`State/Province`}</span>
   <TextField bind:value={request.state} label={$t`State/Province`} />
-  <span>{$t`Country/Region:`}</span>
+  <span>{$t`Country/Region`}</span>
   <TextField bind:value={request.country} label={$t`Country/Region`} width="64px"
     tooltip={$t`The code of the country or region with 2 letters, e.g. DE or US`} />
 </FormGrid>

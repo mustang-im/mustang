@@ -1,8 +1,8 @@
 <Dialog title={$t`Copy rules to`} okLabel={$t`OK`} onOK={onOK} on:close={onClose} width="460px"
   okDisabled={RuleListActions.cannotCopyTo(rule, target)}>
   <hbox class="copy-row">
-    <span>{$t`Folder:`}</span>
-    <ComboBox label={$t`Folder:`} options={accountOptions($accounts.contents)} bind:value={target} width="100%" />
+    <span>{$t`Folder`}</span>
+    <ComboBox label={$t`Folder`} options={accountOptions($accounts.contents)} bind:value={target} width="100%" />
   </hbox>
 </Dialog>
 

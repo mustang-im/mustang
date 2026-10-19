@@ -4,7 +4,7 @@
   onOK={onSave}
   on:close>
   <vbox class="dialog-content">
-    <label for="save-search-name">{$t`Name of the Search Folder:`}</label>
+    <label for="save-search-name">{$t`Name of the Search Folder`}</label>
     <input id="save-search-name" class="lo-text-field" type="text" bind:value={name} />
   </vbox>
 </Dialog>

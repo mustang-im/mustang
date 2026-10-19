@@ -1,7 +1,7 @@
 {#if isDraft}
   <hbox class="info-bar">
     <DraftIcon size={16} />
-    <span>{$t`This message hasn't been sent.`}</span>
+    <span>{$t`This message hasn't been sent`}</span>
     <button class="link" on:click={() => catchErrors(() => MessageActions.openDraft(message))}>{$t`Edit`}</button>
   </hbox>
 {/if}
@@ -15,35 +15,35 @@
 {#if $message.isImportant}
   <hbox class="info-bar">
     <ImportantIcon size={16} class="important" />
-    <span>{$t`This message was sent with High importance.`}</span>
+    <span>{$t`This message was sent with High importance`}</span>
   </hbox>
 {/if}
 {#if $message.isForwarded}
   <hbox class="info-bar">
     <ForwardedIcon size={16} />
-    <span>{$t`You forwarded this message.`}</span>
+    <span>{$t`You forwarded this message`}</span>
   </hbox>
 <!-- {:else if $message.isReplied && reply}
   <button type="button" class="info-bar clickable" title={$t`Open your reply`}
     on:click={() => catchErrors(() => openEMailMessage(reply))}>
     <RepliedIcon size={16} />
     <span>{reply.sent
-      ? $t`You replied to this message on ${getFullDateString(reply.sent)}.`
-      : $t`You replied to this message.`}</span>
+      ? $t`You replied to this message on ${getFullDateString(reply.sent)}`
+      : $t`You replied to this message`}</span>
   </button> -->
 {:else if $message.isReplied}
   <!-- <hbox class="info-bar" title={isSearching ? null : $t`Your reply was not found in your folders`}> -->
   <hbox class="info-bar">
     <RepliedIcon size={16} />
-    <span>{$t`You replied to this message.`}</span>
+    <span>{$t`You replied to this message`}</span>
   </hbox>
 {/if}
 {#if $contentRendering.value == DisplayMode.Plaintext || $contentRendering.value == DisplayMode.Source}
   <hbox class="info-bar">
     <PlainTextIcon size={16} />
     <span>{$contentRendering.value == DisplayMode.Source
-      ? $t`You're viewing the source of this message.`
-      : $t`This message is shown as plain text.`}</span>
+      ? $t`You're viewing the source of this message`
+      : $t`This message is shown as plain text`}</span>
     <button class="link" on:click={() => { $contentRendering.value = DisplayMode.HTML; }}>{$t`Display as HTML`}</button>
   </hbox>
 {/if}

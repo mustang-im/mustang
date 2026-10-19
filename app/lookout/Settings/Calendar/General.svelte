@@ -1,10 +1,10 @@
-<OptionsPage icon={CalendarIcon} description={$t`Change the settings for calendars, meetings, and time zones.`}>
+<OptionsPage icon={CalendarIcon} description={$t`Change the settings for calendars, meetings, and time zones`}>
   <!-- {#if calendar}
     {#key calendar}
       <CalendarWorkHours account={calendar}>
         <svelte:fragment slot="calendar">
           {#if $calendars.length > 1}
-            <span>{$t`Calendar:`}</span>
+            <span>{$t`Calendar`}</span>
             <hbox class="calendar-chooser">
               <ComboBox options={$calendars.contents.map(entry => ({ value: entry, label: entry.name }))}
                 bind:value={calendar} label={$t`Calendar`} width="280px" />
@@ -18,7 +18,7 @@
   <OptionsSection title={$t`Calendar options`}>
     <OptionsRow icon={DurationIcon}>
       <hbox class="field-row">
-        <label for="options-event-duration">{$t`Default duration for new appointments and meetings:`}</label>
+        <label for="options-event-duration">{$t`Default duration for new appointments and meetings`}</label>
         <ComboBox options={durations.map(minutes => ({ value: minutes, label: durationLabel(minutes) }))}
           bind:value={$defaultDuration.value} label={$t`Default duration for new appointments and meetings`} width="160px" />
       </hbox>
@@ -35,27 +35,27 @@
   <OptionsSection title={$t`Time zones`}>
     <OptionsRow icon={TimeZoneIcon}>
       <grid class="time-zone">
-        <span>{$t`Label:`}</span>
+        <span>{$t`Label`}</span>
         <TextField bind:value={$timeZoneLabel.value} label={$t`Label`} width="200px" />
-        <span>{$t`Time zone:`}</span>
+        <span>{$t`Time zone`}</span>
         <ComboBox options={zoneChoices} value={systemZone} label={$t`Time zone`} width={kZoneWidth}
           disabled={$t`The calendar shows the time zone of the operating system`} />
       </grid>
       <Checkbox label={$t`Show a second time zone`} bind:checked={$secondTimeZoneShown.value} />
       <grid class="time-zone indented">
-        <span class:disabled={!$secondTimeZoneShown.value}>{$t`Label:`}</span>
+        <span class:disabled={!$secondTimeZoneShown.value}>{$t`Label`}</span>
         <TextField bind:value={$secondTimeZoneLabel.value} label={$t`Label of the second time zone`} width="200px"
           disabled={!$secondTimeZoneShown.value} />
-        <span class:disabled={!$secondTimeZoneShown.value}>{$t`Time zone:`}</span>
+        <span class:disabled={!$secondTimeZoneShown.value}>{$t`Time zone`}</span>
         <ComboBox options={zoneChoices} bind:value={$secondTimeZone.value} label={$t`Second time zone`} width={kZoneWidth}
           disabled={!$secondTimeZoneShown.value} />
       </grid>
       <Checkbox label={$t`Show a third time zone`} bind:checked={$thirdTimeZoneShown.value} />
       <grid class="time-zone indented">
-        <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Label:`}</span>
+        <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Label`}</span>
         <TextField bind:value={$thirdTimeZoneLabel.value} label={$t`Label of the third time zone`} width="200px"
           disabled={!$thirdTimeZoneShown.value} />
-        <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Time zone:`}</span>
+        <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Time zone`}</span>
         <ComboBox options={zoneChoices} bind:value={$thirdTimeZone.value} label={$t`Third time zone`} width={kZoneWidth}
           disabled={!$thirdTimeZoneShown.value} />
       </grid>

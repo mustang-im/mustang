@@ -6,8 +6,8 @@
         <ComboBox label={$t`Importance`} options={importanceOptions} bind:value={isImportant} width="160px" />
       </hbox>
     </GroupBox>
-    <span>{$t`Internet headers:`}</span>
-    <TextField label={$t`Internet headers:`} value={headers} multiline rows={12} readonly classes="headers" />
+    <span>{$t`Internet headers`}</span>
+    <TextField label={$t`Internet headers`} value={headers} multiline rows={12} readonly classes="headers" />
   </vbox>
 </Dialog>
 

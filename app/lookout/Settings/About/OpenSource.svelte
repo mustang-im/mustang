@@ -1,6 +1,6 @@
 <vbox class="open-source">
   <span>
-    <T msg={$t`You can find the source code of ${appName} core at # under an #.`}>
+    <T msg={$t`You can find the source code of ${appName} core at # under an #`}>
       <a href="https://github.com/mustang-im/mustang" target="_blank">GitHub</a>
       <a href="https://raw.githubusercontent.com/mustang-im/mustang/master/LICENSE" target="_blank" slot="2">{$t`Open-Source license`}</a>
     </T>

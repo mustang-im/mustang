@@ -5,13 +5,13 @@
   </hbox>
   <hbox class="separator" />
   <FormGrid columns="90px minmax(0, 1fr)">
-    <span class="lo-form-label">{$t`Type:`}</span>
+    <span class="lo-form-label">{$t`Type`}</span>
     <span>{$t`Folder containing Mail Items`}</span>
-    <span class="lo-form-label">{$t`Location:`}</span>
+    <span class="lo-form-label">{$t`Location`}</span>
     <span class="location" title={location}>{location}</span>
-    <span class="lo-form-label">{$t`Use as:`}</span>
+    <span class="lo-form-label">{$t`Use as`}</span>
     <hbox>
-      <ComboBox label={$t`Use as:`} options={specialFolderOptions} bind:value={specialFolder}
+      <ComboBox label={$t`Use as`} options={specialFolderOptions} bind:value={specialFolder}
         disabled={$folder.disableChangeSpecial()} width="220px" />
     </hbox>
   </FormGrid>

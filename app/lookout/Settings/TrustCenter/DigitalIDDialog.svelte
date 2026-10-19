@@ -1,7 +1,7 @@
 <Dialog title={$t`Import/Export Digital ID`} okLabel={$t`OK`} onOK={onOK} okDisabled={okDisabled} width="600px" on:close>
   <vbox class="digital-id">
     <FormGrid columns="150px minmax(0, 1fr)">
-      <span>{$t`E-mail address:`}</span>
+      <span>{$t`E-mail address`}</span>
       <ComboBox options={identityOptions} bind:value={identity} label={$t`E-mail address`} />
     </FormGrid>
     <GroupBox>
@@ -10,13 +10,13 @@
         <vbox class="mode-content">
           <span class="hint">{$t`Import the Digital ID from the file to your computer. You must use the password you entered while exporting the certificate to this file.`}</span>
           <FormGrid columns="150px minmax(0, 1fr) 104px">
-            <span>{$t`Import File:`}</span>
+            <span>{$t`Import File`}</span>
             <TextField value={file?.name ?? ""} readonly label={$t`Import File`} disabled={mode != "import"} />
             <DialogButton label={$t`Browse…`} onClick={onBrowse} disabled={mode != "import"} />
-            <span>{$t`Password:`}</span>
+            <span>{$t`Password`}</span>
             <TextField type="password" bind:value={passphrase} label={$t`Password`} disabled={mode != "import"} />
             <span />
-            <span>{$t`Digital ID Name:`}</span>
+            <span>{$t`Digital ID Name`}</span>
             <TextField bind:value={name} label={$t`Digital ID Name`} disabled={mode != "import"} />
             <span />
           </FormGrid>
@@ -30,10 +30,10 @@
         <vbox class="mode-content">
           <span class="hint">{$t`Export the Digital ID information into a file. You will need the password below to import the file again.`}</span>
           <FormGrid columns="150px minmax(0, 1fr) 104px">
-            <span>{$t`Digital ID:`}</span>
+            <span>{$t`Digital ID`}</span>
             <ComboBox options={keyOptions} bind:value={exportKey} label={$t`Digital ID`} disabled={mode != "export"} />
             <span />
-            <span>{$t`Password:`}</span>
+            <span>{$t`Password`}</span>
             <TextField value={mode == "export" && withPrivateKey ? exportKey?.passphrase ?? "" : ""} readonly
               label={$t`Password`} disabled={mode != "export" || !withPrivateKey} classes="code" />
             <span />

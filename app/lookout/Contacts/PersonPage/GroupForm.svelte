@@ -51,7 +51,7 @@
             <span class="text">{item.name || ""}</span>
           </hbox>
           <span class="cell text">{item.emailAddresses.sortBy(entry => entry.preference).first?.value || ""}</span>
-          <svelte:fragment slot="empty">{$t`Use Add Members to add people to this group.`}</svelte:fragment>
+          <svelte:fragment slot="empty">{$t`Use Add Members to add people to this group`}</svelte:fragment>
         </ListView>
       {/if}
     </vbox>

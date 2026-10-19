@@ -7,44 +7,44 @@
           <Radio label={$t`On this computer`} name="folder-account-type" value={true}
             bind:group={isLocal} />
           <span class="lo-secondary">{isCalendar
-            ? $t`A new calendar that only this computer has.`
-            : $t`A new address book that only this computer has.`}</span>
+            ? $t`A new calendar that only this computer has`
+            : $t`A new address book that only this computer has`}</span>
         </hbox>
         <hbox class="type">
           <Radio label={isCalendar ? $t`CalDAV server` : $t`CardDAV server`} name="folder-account-type" value={false}
             bind:group={isLocal} />
           <span class="lo-secondary">{isCalendar
-            ? $t`An existing calendar on the server of your provider or company.`
-            : $t`An existing address book on the server of your provider or company.`}</span>
+            ? $t`An existing calendar on the server of your provider or company`
+            : $t`An existing address book on the server of your provider or company`}</span>
         </hbox>
       </vbox>
     {:else if step == "settings" && isLocal}
       <FormGrid columns="140px minmax(0, 1fr)">
-        <span>{$t`Name:`}</span>
+        <span>{$t`Name`}</span>
         <TextField bind:value={config.name} label={$t`Name`} />
-        <span>{$t`Folder contains:`}</span>
+        <span>{$t`Folder contains`}</span>
         <ComboBox options={contentOptions} value={kind} label={$t`Folder contains`} disabled />
-        <span>{$t`Location:`}</span>
+        <span>{$t`Location`}</span>
         <span class="value">{$t`On this computer`}</span>
       </FormGrid>
     {:else if step == "settings"}
       <span class="heading">{isCalendar ? $t`CalDAV Calendar Settings` : $t`CardDAV Address Book Settings`}</span>
       <FormGrid columns="140px minmax(0, 1fr)">
         <span class="section">{$t`Folder Information`}</span>
-        <span>{$t`Name:`}</span>
+        <span>{$t`Name`}</span>
         <TextField bind:value={config.name} label={$t`Name`} />
         <span class="section">{$t`Server Information`}</span>
-        <span>{$t`Server URL:`}</span>
+        <span>{$t`Server URL`}</span>
         <TextField type="url" bind:value={config.url} label={$t`Server URL`}
           placeholder={isCalendar ? "https://dav.example.com/calendar/" : "https://dav.example.com/contacts/"} />
         <span class="section">{$t`Logon Information`}</span>
-        <span>{$t`User Name:`}</span>
+        <span>{$t`User Name`}</span>
         <TextField bind:value={config.username} label={$t`User Name`} />
-        <span>{$t`Password:`}</span>
+        <span>{$t`Password`}</span>
         <TextField type="password" bind:value={config.password} label={$t`Password`} />
       </FormGrid>
     {:else if step == "choose"}
-      <span class="heading">{isCalendar ? $t`Select the calendars to add:` : $t`Select the address books to add:`}</span>
+      <span class="heading">{isCalendar ? $t`Select the calendars to add` : $t`Select the address books to add`}</span>
       <vbox class="folders">
         {#each available as folder (folder.url)}
           <hbox class="folder">

@@ -1,6 +1,6 @@
 <OptionsSection title={$t`Import and export`}>
   <OptionsRow icon={ImportExportIcon}>
-    <hbox>{$t`Import contacts from a vCard file, or export an address book to a file for use in other programs.`}</hbox>
+    <hbox>{$t`Import contacts from a vCard file, or export an address book to a file for use in other programs`}</hbox>
     <hbox class="buttons">
       <DialogButton label={$t`Import…`} icon={ImportIcon} onClick={() => { wizardAction = "import-vcard"; }} />
       <DialogButton label={$t`Export…`} icon={ExportIcon} onClick={() => { wizardAction = "export"; }} />

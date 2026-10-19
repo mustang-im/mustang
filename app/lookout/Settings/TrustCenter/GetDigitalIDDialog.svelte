@@ -1,9 +1,9 @@
 <Dialog title={$t`Get a Digital ID`} okLabel={type == "smime" ? $t`Create and Save Request…` : $t`Create`}
   onOK={onOK} width="560px" on:close>
   <vbox class="get-digital-id">
-    <span>{$t`A Digital ID lets you add a digital signature to your messages, and lets others send you encrypted messages.`}</span>
+    <span>{$t`A Digital ID lets you add a digital signature to your messages, and lets others send you encrypted messages`}</span>
     <FormGrid columns="150px minmax(0, 1fr)">
-      <span>{$t`E-mail address:`}</span>
+      <span>{$t`E-mail address`}</span>
       <ComboBox options={identityOptions} bind:value={identity} on:change={event => onIdentityChanged(event.detail)} label={$t`E-mail address`} />
     </FormGrid>
     <GroupBox label={$t`Type`}>

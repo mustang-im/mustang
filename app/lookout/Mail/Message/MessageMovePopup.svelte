@@ -5,7 +5,7 @@
   on:close>
   <vbox class="dialog-content">
     <span class="caption">
-      {copy ? $t`Copy the selected items to the folder:` : $t`Move the selected items to the folder:`}
+      {copy ? $t`Copy the selected items to the folder` : $t`Move the selected items to the folder`}
     </span>
     <FolderPicker label={$t`Folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
       disableFolder={folder => !copy && (messages.contents.length > 0 && messages.contents.every(message => message.folder == folder)) && $t`The items are already in this folder`}

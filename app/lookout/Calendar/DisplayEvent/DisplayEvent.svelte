@@ -7,7 +7,7 @@
       </hbox>
       <h2 class="title" class:muted={look.status == "declined" || look.status == "cancelled"}>{look.title}</h2>
       {#if $event.isCancelled}
-        <hbox class="notice">{$t`This meeting has been cancelled by the organizer.`}</hbox>
+        <hbox class="notice">{$t`This meeting has been cancelled by the organizer`}</hbox>
         <hbox class="buttons">
           <ResponseButton label={$t`Remove from Calendar`} icon={DeleteIcon}
             onClick={() => CalendarActions.deleteOccurrence(event)} />

@@ -131,15 +131,15 @@ export async function addCertificateFile(identity: MailIdentity, key: SMIMEPriva
 export function keyStatusText(status: KeyStatus | null): string {
   switch (status) {
   case KeyStatus.NoCertificate:
-    return gt`This Digital ID has no certificate yet.`;
+    return gt`This Digital ID has no certificate yet`;
   case KeyStatus.ChainIncomplete:
-    return gt`The certificates of the certificate authority are missing.`;
+    return gt`The certificates of the certificate authority are missing`;
   case KeyStatus.ChainInvalid:
-    return gt`The certificate chain could not be verified.`;
+    return gt`The certificate chain could not be verified`;
   case KeyStatus.SelfSignedRoot:
-    return gt`This Digital ID uses a self-signed root certificate.`;
+    return gt`This Digital ID uses a self-signed root certificate`;
   case KeyStatus.Valid:
-    return gt`This Digital ID has a valid certificate.`;
+    return gt`This Digital ID has a valid certificate`;
   }
   return "";
 }

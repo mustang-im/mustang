@@ -3,13 +3,13 @@
   <vbox class="groups">
     <GroupBox label={$t`Appointment time`}>
       <grid class="appointment-time">
-        <span class="label">{$t`Start:`}</span>
+        <span class="label">{$t`Start`}</span>
         <TimeInput time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
           on:change={ev => setStartTime(ev.detail)} />
-        <span class="label">{$t`End:`}</span>
+        <span class="label">{$t`End`}</span>
         <TimeInput time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
           on:change={ev => setEndTime(ev.detail)} />
-        <span class="label">{$t`Duration:`}</span>
+        <span class="label">{$t`Duration`}</span>
         <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
           on:change={ev => setDuration(ev.detail)} />
       </grid>
@@ -38,7 +38,7 @@
             <hbox class="line">
               {$t`Recur every`}
               <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval`} />
-              {$plural(pattern.interval, { one: "week", other: "weeks" })} {$t`on:`}
+              {$plural(pattern.interval, { one: "week", other: "weeks" })} {$t`on`}
             </hbox>
             <grid class="weekdays">
               {#each kAllWeekdays as weekday}
@@ -93,17 +93,17 @@
     <GroupBox label={$t`Range of recurrence`}>
       <hbox class="range">
         <hbox class="range-start">
-          <span class="label">{$t`Start:`}</span>
+          <span class="label">{$t`Start`}</span>
           <DateField required date={rangeStart} label={$t`Start of the series`} on:change={ev => setRangeStart(ev.detail)} />
         </hbox>
         <vbox class="range-end">
           <hbox class="line">
-            <Radio label={$t`End by:`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
+            <Radio label={$t`End by`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
             <DateField required date={pattern.endDate} label={$t`End of the series`}
               on:change={ev => { pattern.endDate = ev.detail; pattern.end = "date"; }} />
           </hbox>
           <hbox class="line">
-            <Radio label={$t`End after:`} name="end" value="count" bind:group={pattern.end} classes="end-label" />
+            <Radio label={$t`End after`} name="end" value="count" bind:group={pattern.end} classes="end-label" />
             <SpinBox bind:value={pattern.count} min={1} max={999} width="64px" label={$t`Number of occurrences`}
               on:change={() => { pattern.end = "count"; }} />
             {$plural(pattern.count, { one: "occurrence", other: "occurrences" })}

@@ -2,7 +2,7 @@
   <hbox class="info-bar warning" role="alert">
     <WarningIcon size={16} />
     <span class="text">
-      {$t`To encrypt this message, add certificates for:`}
+      {$t`To encrypt this message, add certificates for`}
       {$recipientsWithoutKeys.contents.map(recipient => recipient.name || recipient.emailAddress).join("; ")}
     </span>
     {#if hasKeyServers}

@@ -4,22 +4,22 @@
   <vbox class="tab-page">
     {#if tab == "messages"}
       <FormGrid columns="190px minmax(0, 1fr)">
-        <span class="lo-form-label">{$t`Search for the word(s):`}</span>
-        <TextField label={$t`Search for the word(s):`} bind:value={words} />
-        <span class="lo-form-label">{$t`In:`}</span>
-        <ComboBox label={$t`In:`} options={inOptions} value="body"
+        <span class="lo-form-label">{$t`Search for the word(s)`}</span>
+        <TextField label={$t`Search for the word(s)`} bind:value={words} />
+        <span class="lo-form-label">{$t`In`}</span>
+        <ComboBox label={$t`In`} options={inOptions} value="body"
           disabled={$t`The words are searched in the subject and the message text`} width="100%" />
       </FormGrid>
     {:else}
       <FormGrid columns="190px minmax(0, 1fr)">
-        <Checkbox label={$t`Only items that are:`} bind:checked={isReadFiltered} />
-        <ComboBox label={$t`Only items that are:`} options={readOptions} bind:value={readValue}
+        <Checkbox label={$t`Only items that are`} bind:checked={isReadFiltered} />
+        <ComboBox label={$t`Only items that are`} options={readOptions} bind:value={readValue}
           disabled={!isReadFiltered} width="100%" />
-        <Checkbox label={$t`Only items with:`} bind:checked={isAttachmentFiltered} />
-        <ComboBox label={$t`Only items with:`} options={attachmentOptions} bind:value={attachmentValue}
+        <Checkbox label={$t`Only items with`} bind:checked={isAttachmentFiltered} />
+        <ComboBox label={$t`Only items with`} options={attachmentOptions} bind:value={attachmentValue}
           disabled={!isAttachmentFiltered} width="100%" />
-        <Checkbox label={$t`Only items which:`} bind:checked={isFlagFiltered} />
-        <ComboBox label={$t`Only items which:`} options={flagOptions} bind:value={flagValue}
+        <Checkbox label={$t`Only items which`} bind:checked={isFlagFiltered} />
+        <ComboBox label={$t`Only items which`} options={flagOptions} bind:value={flagValue}
           disabled={!isFlagFiltered} width="100%" />
       </FormGrid>
     {/if}

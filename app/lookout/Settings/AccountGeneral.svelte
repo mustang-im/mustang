@@ -1,25 +1,25 @@
-<OptionsPage {icon} description={$t`Change the settings of ${$account.name}.`}>
+<OptionsPage {icon} description={$t`Change the settings of ${$account.name}`}>
   <OptionsSection title={$t`Account`}>
     <OptionsRow icon={AccountIcon}>
       <grid class="fields">
-        <label for="account-name">{$t`Account name:`}</label>
+        <label for="account-name">{$t`Account name`}</label>
         <hbox class="name-row">
           <input id="account-name" class="lo-text-field" type="text" bind:value={account.name} on:input={onChange} required />
           <input type="color" class="color" bind:value={account.color} on:change={onChange} list="proposed-colors"
             title={$t`Color`} aria-label={$t`Color`} />
         </hbox>
         {#if account instanceof MailAccount || account instanceof ChatAccount || account instanceof MeetAccount}
-          <label for="account-realname" title={$t`Your real name, as shown to other people when you are sending messages`}>{$t`Your name:`}</label>
+          <label for="account-realname" title={$t`Your real name, as shown to other people when you are sending messages`}>{$t`Your name`}</label>
           <input id="account-realname" class="lo-text-field" type="text" bind:value={account.realname} on:input={onChange}
             title={$t`Your real name, as shown to other people when you are sending messages`} />
         {/if}
-        <label for="account-workspace">{$t`Workspace:`}</label>
+        <label for="account-workspace">{$t`Workspace`}</label>
         <select id="account-workspace" class="lo-text-field" bind:value={account.workspace} on:change={onChange}>
           {#each $workspaces.each as workspace}
             <option value={workspace}>{workspace.name}</option>
           {/each}
         </select>
-        <span>{$t`Account type:`}</span>
+        <span>{$t`Account type`}</span>
         <span class="value">{getAccountTypeLabel(account)}</span>
       </grid>
     </OptionsRow>
@@ -28,7 +28,7 @@
   {#if mainAccount}
     <OptionsSection title={$t`Part of an account`}>
       <OptionsRow icon={MainAccountIcon}>
-        <span>{$t`This is part of the account ${$mainAccount.name}, which has the server and logon settings.`}</span>
+        <span>{$t`This is part of the account ${$mainAccount.name}, which has the server and logon settings`}</span>
         <hbox>
           <DialogButton label={$t`Go to ${$mainAccount.name}`} onClick={onOpenMainAccount} />
         </hbox>

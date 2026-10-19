@@ -1,19 +1,19 @@
 <Dialog title={$t`Certificate Properties`} okLabel={$t`OK`} onOK={onOK} width="520px" on:close>
   <vbox class="certificate">
     <FormGrid columns="150px minmax(0, 1fr)">
-      <span>{$t`Name:`}</span>
+      <span>{$t`Name`}</span>
       <TextField bind:value={name} label={$t`Name`} placeholder={key.defaultName} />
-      <span>{$t`Issued to:`}</span>
+      <span>{$t`Issued to`}</span>
       <span class="value">{key.userIDs.contents.join(", ") || "-"}</span>
-      <span>{$t`Issued by:`}</span>
+      <span>{$t`Issued by`}</span>
       <span class="value">{key.caName || $t`Not certified by a certification authority`}</span>
-      <span>{$t`Valid from:`}</span>
+      <span>{$t`Valid from`}</span>
       <span class="value">{key.created ? getDateString(key.created) : "-"}</span>
-      <span>{$t`Valid to:`}</span>
+      <span>{$t`Valid to`}</span>
       <span class="value">{key.expires ? getDateString(key.expires) : $t`No end date`}</span>
-      <span>{$t`Type:`}</span>
+      <span>{$t`Type`}</span>
       <span class="value">{[key.system, key.cipher, key.keyLengthInBits ? $t`${key.keyLengthInBits} bits` : null].filter(Boolean).join(", ")}</span>
-      <span>{$t`Verification code:`}</span>
+      <span>{$t`Verification code`}</span>
       <span class="value code">{key.fingerprintDisplay}</span>
     </FormGrid>
     <GroupBox label={$t`Trust`}>

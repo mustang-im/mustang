@@ -62,7 +62,7 @@
   const currentView = getLocalStorage<CalendarCurrentView>("lookout.calendar.currentView", CalendarCurrentView.Calendar);
   $: isSearch = !!$globalSearchTerm?.trim();
   $: label = isSearch ? $t`Search results` : $currentView.value == CalendarCurrentView.Active ? $t`Active appointments` : $t`All appointments`;
-  $: emptyText = isSearch ? $t`We didn't find anything to show here.` : $t`There are no items to show in this view.`;
+  $: emptyText = isSearch ? $t`We didn't find anything to show here` : $t`There are no items to show in this view`;
   $: showCalendarColumn = isSearch && $calendarSearchOptions.scope == CalendarSearchScope.AllCalendarItems;
 
   let rowsEl: HTMLElement;

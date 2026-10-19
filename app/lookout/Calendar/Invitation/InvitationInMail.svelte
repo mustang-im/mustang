@@ -9,7 +9,7 @@
       {#if !$message.event}
         <hbox class="info-bar">
           <InfoIcon size={16} />
-          <span>{$t`The meeting of this invitation was not found.`}</span>
+          <span>{$t`The meeting of this invitation was not found`}</span>
         </hbox>
       {/if}
     {:catch ex}
@@ -30,12 +30,12 @@
     {#if conflict == "conflict"}
       <hbox class="info-bar warning">
         <WarningIcon size={16} />
-        <span>{$t`This appointment conflicts with another one on your calendar.`}</span>
+        <span>{$t`This appointment conflicts with another one on your calendar`}</span>
       </hbox>
     {:else if conflict == "adjacent"}
       <hbox class="info-bar">
         <InfoIcon size={16} />
-        <span>{$t`Adjacent to another appointment on your calendar.`}</span>
+        <span>{$t`Adjacent to another appointment on your calendar`}</span>
       </hbox>
     {/if}
     {#if isCancelled && hasCalEvent}
@@ -156,19 +156,19 @@
   function invitationStatusText(message: EMail, incoming: IncomingInvitation | null, myResponse: InvitationResponse, calEvent: Event | null): string {
     let kind = kindOf(message);
     if (kind == "cancellation") {
-      return $t`This meeting has been cancelled by the organizer.`;
+      return $t`This meeting has been cancelled by the organizer`;
     }
     if (kind == "reply") {
       return replyText(message);
     }
     if (myResponse == InvitationResponse.Organizer) {
-      return $t`You are the organizer of this meeting.`;
+      return $t`You are the organizer of this meeting`;
     }
     if (!incoming) {
-      return $t`There is no calendar for this meeting in this account.`;
+      return $t`There is no calendar for this meeting in this account`;
     }
     if (calEvent?.isCancelled) {
-      return $t`This meeting has been cancelled by the organizer.`;
+      return $t`This meeting has been cancelled by the organizer`;
     }
     return myResponseText(myResponse);
   }
@@ -181,13 +181,13 @@
     }
     switch (participant?.response) {
     case InvitationResponse.Accept:
-      return $t`${name} has accepted this meeting.`;
+      return $t`${name} has accepted this meeting`;
     case InvitationResponse.Tentative:
-      return $t`${name} has tentatively accepted this meeting.`;
+      return $t`${name} has tentatively accepted this meeting`;
     case InvitationResponse.Decline:
-      return $t`${name} has declined this meeting.`;
+      return $t`${name} has declined this meeting`;
     }
-    return $t`${name} has responded to this meeting.`;
+    return $t`${name} has responded to this meeting`;
   }
 
   // <copied from="../../../frontend/Calendar/Invitation/InvitationInMail.svelte"> Only for old messages that didn't save the event

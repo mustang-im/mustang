@@ -13,15 +13,15 @@ export class LicenseStatus {
   get text(): string {
     let license = this.license;
     if (license.isSoonExpiring) {
-      return gt`Your license expires in ${license.daysLeft} days, on ${getDateString(license.expiresOn)}.`;
+      return gt`Your license expires in ${license.daysLeft} days, on ${getDateString(license.expiresOn)}`;
     }
     if (license.isExpired) {
-      return gt`Your license has expired on ${getDateString(license.expiresOn)}.`;
+      return gt`Your license has expired on ${getDateString(license.expiresOn)}`;
     }
     if (license.valid) {
       return gt`Your license is valid until ${getDateString(license.expiresOn)}. Thank you for your purchase.`;
     }
-    return gt`You can buy a license to use ${appName} fully.`;
+    return gt`You can buy a license to use ${appName} fully`;
   }
 
   get needsPurchase(): boolean {

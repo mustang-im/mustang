@@ -5,14 +5,14 @@
       <hbox class="command-icon"><ImportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Import`}</span>
-        <span class="command-description">{$t`Import contacts or appointments from a file, or accounts from another program.`}</span>
+        <span class="command-description">{$t`Import contacts or appointments from a file, or accounts from another program`}</span>
       </vbox>
     </button>
     <button class="command" on:click={() => openSettingsDialog({ kind: "import-export", action: "export" })}>
       <hbox class="command-icon"><ExportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Export`}</span>
-        <span class="command-description">{$t`Save a calendar, an address book or other data to a file, for use in other programs.`}</span>
+        <span class="command-description">{$t`Save a calendar, an address book or other data to a file, for use in other programs`}</span>
       </vbox>
     </button>
     <button class="command" disabled={!sharingAccounts.length}
@@ -21,7 +21,7 @@
       <hbox class="command-icon"><OpenCalendarIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Open Calendar`}</span>
-        <span class="command-description">{$t`Open a calendar that a colleague shared with you.`}</span>
+        <span class="command-description">{$t`Open a calendar that a colleague shared with you`}</span>
       </vbox>
     </button>
     <button class="command" disabled={!mailAccount}
@@ -29,7 +29,7 @@
       <hbox class="command-icon"><SharedFolderIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
         <span class="command-title">{$t`Other User's Folder`}</span>
-        <span class="command-description">{$t`Open a folder shared by another user.`}</span>
+        <span class="command-description">{$t`Open a folder shared by another user`}</span>
       </vbox>
     </button>
   </vbox>

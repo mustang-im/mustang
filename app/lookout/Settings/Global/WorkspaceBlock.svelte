@@ -2,7 +2,7 @@
   <OptionsRow icon={workspace ? $workspace.icon : UnassignedIcon}>
     {#if workspace}
       <hbox class="name-row">
-        <label for="workspace-name-{index}">{$t`Name:`}</label>
+        <label for="workspace-name-{index}">{$t`Name`}</label>
         <input id="workspace-name-{index}" class="lo-text-field" type="text" bind:value={workspace.name} on:change required />
         <input type="color" class="color" bind:value={workspace.color} on:change list="proposed-workspace-colors"
           title={$t`Color`} aria-label={$t`Color`} />

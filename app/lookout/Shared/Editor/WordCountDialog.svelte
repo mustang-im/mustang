@@ -1,6 +1,6 @@
 <Dialog title={$t`Word Count`} on:close={onClose} width="360px" cancelLabel={$t`Close`}>
   <vbox class="statistics">
-    <hbox class="caption">{$t`Statistics:`}</hbox>
+    <hbox class="caption">{$t`Statistics`}</hbox>
     <grid class="rows">
       <span>{$t`Words`}</span>
       <span class="value">{statistics.words.toLocaleString(getDateTimeLocale())}</span>

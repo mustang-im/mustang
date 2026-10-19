@@ -2,7 +2,7 @@
   <vbox class="other-settings">
     <GroupBox label={$t`Day and Week`}>
       <hbox class="field-row">
-        <span>{$t`Time scale:`}</span>
+        <span>{$t`Time scale`}</span>
         <ComboBox options={timeScaleOptions} bind:value={chosenTimeScale} label={$t`Time scale`} width="260px" />
       </hbox>
     </GroupBox>

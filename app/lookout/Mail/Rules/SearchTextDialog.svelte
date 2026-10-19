@@ -1,6 +1,6 @@
 <Dialog title={$t`Search Text`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="440px">
   <vbox class="search-text">
-    <label for="search-text-new">{$t`Specify words or phrases to search for in the subject or body:`}</label>
+    <label for="search-text-new">{$t`Specify words or phrases to search for in the subject or body`}</label>
     <hbox class="row">
       <input id="search-text-new" class="lo-text-field" type="text" bind:value={typed} autofocus
         on:keydown={onKey} />
@@ -8,7 +8,7 @@
         disabled={(!typed.trim() && $t`Type a word or phrase first`) ||
           (!!phrase && $t`A rule can search for one word or phrase. Remove the one in the list first.`)} />
     </hbox>
-    <span>{$t`Search list:`}</span>
+    <span>{$t`Search list`}</span>
     <hbox class="row list-row">
       <vbox class="list" role="listbox" aria-label={$t`Search list`}>
         {#if phrase}

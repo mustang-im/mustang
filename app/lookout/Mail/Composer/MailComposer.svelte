@@ -84,10 +84,10 @@
         <hbox class="info-bar">
           {#if $mail.shouldEncrypt}
             <LockIcon size={16} />
-            {$t`This message will be encrypted and digitally signed.`}
+            {$t`This message will be encrypted and digitally signed`}
           {:else}
             <SignIcon size={16} />
-            {$t`This message will be digitally signed.`}
+            {$t`This message will be digitally signed`}
           {/if}
         </hbox>
       {/if}
@@ -376,7 +376,7 @@
         extra.encryptOnlyByDefault = false;
       }
     } else {
-      assert(!mail.mustEncrypt, $t`This email must be encrypted.`);
+      assert(!mail.mustEncrypt, $t`This email must be encrypted`);
       mail.shouldEncrypt = false;
       mail.signedByKeyID = null;
     }

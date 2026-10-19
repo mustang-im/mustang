@@ -1,15 +1,15 @@
 <Dialog title={title} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="480px"
   okDisabled={!name.trim() && $t`Enter a name`}>
   <FormGrid columns="max-content minmax(0, 1fr)">
-    <span class="lo-form-label">{$t`Name:`}</span>
-    <TextField label={$t`Name:`} bind:value={name} />
-    <span class="lo-form-label">{$t`Criteria:`}</span>
+    <span class="lo-form-label">{$t`Name`}</span>
+    <TextField label={$t`Name`} bind:value={name} />
+    <span class="lo-form-label">{$t`Criteria`}</span>
     <hbox class="criteria">
       <span class="summary" title={summary}>{summary}</span>
       <DialogButton label={$t`Criteria…`} onClick={() => { isEditingCriteria = true; }} />
     </hbox>
-    <span class="lo-form-label">{$t`Search mail in:`}</span>
-    <ComboBox label={$t`Search mail in:`} options={accountOptions} bind:value={account} width="100%" />
+    <span class="lo-form-label">{$t`Search mail in`}</span>
+    <ComboBox label={$t`Search mail in`} options={accountOptions} bind:value={account} width="100%" />
   </FormGrid>
 </Dialog>
 {#if isEditingCriteria}
