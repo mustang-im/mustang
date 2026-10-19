@@ -1,7 +1,8 @@
 import type { Person } from "../../../logic/Abstract/Person";
 import type { Tag } from "../../../logic/Abstract/Tag";
 import type { SearchOptions, SearchScope } from "./MailSearch";
-import { ReceivedRange, ReceivedRanges, SizeRange } from "./SearchRanges";
+import { SizeRange } from "./SearchRanges";
+// import { ReceivedRange, ReceivedRanges } from "./SearchRanges";
 
 export enum ReadStatus {
   All = "all",
@@ -20,16 +21,16 @@ export class AdvancedSearchDraft {
   replied: boolean;
   tags: Tag[];
   size: SizeRange;
-  startDate: Date | null;
-  endDate: Date | null;
-  protected received: ReceivedRange;
-  protected receivedStart: Date | null;
-  protected receivedEnd: Date | null;
-  protected shownStartDate: Date | null;
-  protected shownEndDate: Date | null;
+  // startDate: Date | null;
+  // endDate: Date | null;
+  // protected received: ReceivedRange;
+  // protected receivedStart: Date | null;
+  // protected receivedEnd: Date | null;
+  // protected shownStartDate: Date | null;
+  // protected shownEndDate: Date | null;
   protected threadID: string | null;
 
-  constructor(options: SearchOptions, keywords: string | null, now = new Date()) {
+  constructor(options: SearchOptions, keywords: string | null) {
     this.scope = options.scope;
     this.keywords = keywords ?? "";
     this.person = options.person;
@@ -40,13 +41,13 @@ export class AdvancedSearchDraft {
     this.replied = options.replied;
     this.tags = [...options.tags];
     this.size = options.size;
-    this.received = options.received;
-    this.receivedStart = options.receivedStart;
-    this.receivedEnd = options.receivedEnd;
+    // this.received = options.received;
+    // this.receivedStart = options.receivedStart;
+    // this.receivedEnd = options.receivedEnd;
     this.threadID = options.threadID;
-    let dates = ReceivedRanges.dates(options.received, now, options.receivedStart, options.receivedEnd);
-    this.startDate = this.shownStartDate = dates.start;
-    this.endDate = this.shownEndDate = dates.end ? ReceivedRanges.startOfDay(dates.end) : null;
+    // let dates = ReceivedRanges.dates(options.received, now, options.receivedStart, options.receivedEnd);
+    // this.startDate = this.shownStartDate = dates.start;
+    // this.endDate = this.shownEndDate = dates.end ? ReceivedRanges.startOfDay(dates.end) : null;
   }
 
   setFrom(person: Person | null) {
@@ -79,8 +80,8 @@ export class AdvancedSearchDraft {
     this.replied = false;
     this.tags = [];
     this.size = SizeRange.Any;
-    this.startDate = null;
-    this.endDate = null;
+    // this.startDate = null;
+    // this.endDate = null;
     this.threadID = null;
   }
 
@@ -94,18 +95,18 @@ export class AdvancedSearchDraft {
       flagged: this.flagged,
       replied: this.replied,
       tags: [...this.tags],
-      received: this.received,
-      receivedStart: this.receivedStart,
-      receivedEnd: this.receivedEnd,
+      // received: this.received,
+      // receivedStart: this.receivedStart,
+      // receivedEnd: this.receivedEnd,
       size: this.size,
       threadID: this.threadID,
     };
-    if (ReceivedRanges.inputValue(this.startDate) != ReceivedRanges.inputValue(this.shownStartDate) ||
-        ReceivedRanges.inputValue(this.endDate) != ReceivedRanges.inputValue(this.shownEndDate)) {
-      options.received = this.startDate || this.endDate ? ReceivedRange.Custom : ReceivedRange.Any;
-      options.receivedStart = this.startDate;
-      options.receivedEnd = this.endDate;
-    }
+    // if (ReceivedRanges.inputValue(this.startDate) != ReceivedRanges.inputValue(this.shownStartDate) ||
+    //     ReceivedRanges.inputValue(this.endDate) != ReceivedRanges.inputValue(this.shownEndDate)) {
+    //   options.received = this.startDate || this.endDate ? ReceivedRange.Custom : ReceivedRange.Any;
+    //   options.receivedStart = this.startDate;
+    //   options.receivedEnd = this.endDate;
+    // }
     return options;
   }
 }

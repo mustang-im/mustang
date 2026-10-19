@@ -2,10 +2,10 @@
   onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
 <MenuItem label={$t`Has Attachments`} icon={AttachmentIcon} checkable checked={hasAttachments}
   onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
-<SubMenu label={$t`This Week`} icon={ReceivedIcon}>
+<!-- <SubMenu label={$t`This Week`} icon={ReceivedIcon}>
   <ReceivedMenuItems selected={$searchOptions.received}
     on:select={event => MailFilters.searchInFolder({ received: event.detail, receivedStart: null, receivedEnd: null })} />
-</SubMenu>
+</SubMenu> -->
 <SubMenu label={$t`Categorized`} icon={CategorizeIcon}
   disabled={!$tags.hasItems && $t`There are no categories yet`}>
   <CategoryMenuItems selected={$searchOptions.tags}
@@ -39,11 +39,11 @@
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
-  import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
+  // import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
   import CategoryMenuItems from "../Search/CategoryMenuItems.svelte";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
-  import ReceivedIcon from "lucide-svelte/icons/calendar-range";
+  // import ReceivedIcon from "lucide-svelte/icons/calendar-range";
   import CategorizeIcon from "lucide-svelte/icons/tags";
   import FlagIcon from "lucide-svelte/icons/flag";
   import SentToIcon from "lucide-svelte/icons/send";

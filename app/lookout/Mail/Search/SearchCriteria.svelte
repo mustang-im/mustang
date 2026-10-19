@@ -46,14 +46,14 @@
         <AddressBookIcon size={16} />
       </button>
     </hbox>
-    {#if showDates}
+    <!-- {#if showDates}
       <span class="label">{$t`Received`}</span>
       <hbox class="dates">
         <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:date={draft.startDate} />
         <span class="lo-secondary">{$t`to`}</span>
         <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:date={draft.endDate} />
       </hbox>
-    {/if}
+    {/if} -->
     <span class="label">{$t`Categories`}</span>
     <hbox class="categories-field">
       <button type="button" class="lo-text-field combo" bind:this={categoriesButton}
@@ -115,7 +115,7 @@
   import Menu from "../../Shared/Menu/Menu.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import TextField from "../../Shared/Form/TextField.svelte";
-  import DateField from "../../Shared/Form/DateField.svelte";
+  // import DateField from "../../Shared/Form/DateField.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
@@ -130,7 +130,7 @@
   export let showAccount = true;
   export let showSearchTerm = true;
   export let showButtons = true;
-  export let showDates = true;
+  // export let showDates = true;
   const dispatch = createEventDispatcher<{ search: void }>();
 
   enum Direction {
@@ -240,14 +240,14 @@
   .pick {
     color: var(--lo-accent-text);
   }
-  .dates {
+  /* .dates {
     align-items: center;
     gap: 12px;
   }
   .dates :global(.lo-datefield) {
     flex: 1 1 0;
     min-width: 0;
-  }
+  } */
   .combo {
     display: flex;
     align-items: center;

@@ -63,6 +63,7 @@ Folder pane, message list, reading pane, and the Home, Send / Receive, Folder, V
 | Search query syntax (`from:`, `subject:`, `received:`) | Search box | A query parser for `SearchEMail` |
 | Search scopes "Subfolders" and "All Outlook Items" | Search tab > Scope | `SearchEMail` over a folder subtree; search across apps |
 | Search refiners and filters: From / Sent To as free text, Subject only, Important, Mentioned, To me / Cc me, Has calendar invites | Search tab > Refine; Home tab > Filter Email; Filter menu above the message list | These criteria in `SearchEMail`, `QuickSearchEMail` and `SQLSearchEMail` |
+| Received date refiner (Today, Yesterday, This Week … Last Year, Custom Dates), the Received dates in Advanced Find | Search tab > Refine > Received and More > Received; Home tab > Filter Email > This Week; Advanced Find | `SQLSearchEMail` filtering by `sentDateMin` / `sentDateMax` (it ignores them now); for saved searches, a relative date range in `SearchEMail` (e.g. "this week"), which moves along with the current day. The date UI is commented out in `Mail/Ribbon/SearchTab.svelte`, `Mail/LeftPane/FilterMenuItems.svelte`, `Mail/Search/SearchCriteria.svelte` (with `SearchFolderCriteriaDialog.svelte`) and `Mail/Search/AdvancedSearchDraft.ts`. |
 | Conditional Formatting, Format Columns, Manage Views, Save Current View as a New View | View tab > Current View; View Settings | Conditional formatting needs a rule engine; the others are *UI only* |
 
 ## Composer

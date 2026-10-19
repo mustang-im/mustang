@@ -13,12 +13,12 @@
         on:select={event => $searchOptions = { ...$searchOptions, tags: [...$searchOptions.tags, event.detail] }}
         on:unselect={event => $searchOptions = { ...$searchOptions, tags: $searchOptions.tags.filter(tag => tag != event.detail) }} />
     </RibbonMenuButton>
-    <RibbonMenuButton label={$searchOptions.received == ReceivedRange.Any || $searchOptions.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($searchOptions.received)}
+    <!-- <RibbonMenuButton label={$searchOptions.received == ReceivedRange.Any || $searchOptions.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($searchOptions.received)}
       icon={ReceivedIcon}
       tooltip={$t`Received`}>
       <ReceivedMenuItems selected={$searchOptions.received}
         on:select={event => $searchOptions = { ...$searchOptions, received: event.detail, receivedStart: null, receivedEnd: null }} />
-    </RibbonMenuButton>
+    </RibbonMenuButton> -->
     <RibbonMenuButton label={$t`Sent To`} icon={SentToIcon} size="small"
       tooltip={isSentTo ? $t`Sent To: ${$searchOptions.person.name}` : $t`Sent To`}>
       <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={isSentTo}
@@ -34,10 +34,10 @@
       onClick={() => { $searchOptions = { ...$searchOptions, flagged: !$searchOptions.flagged }; }} />
     <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small"
       tooltip={$t`More refiners`}>
-      <SubMenu label={$t`Received`}>
+      <!-- <SubMenu label={$t`Received`}>
         <ReceivedMenuItems selected={$searchOptions.received}
           on:select={event => $searchOptions = { ...$searchOptions, received: event.detail, receivedStart: null, receivedEnd: null }} />
-      </SubMenu>
+      </SubMenu> -->
       <SubMenu label={$t`Size`}>
         <SizeMenuItems selected={$searchOptions.size} on:select={event => $searchOptions = { ...$searchOptions, size: event.detail }} />
       </SubMenu>
@@ -83,7 +83,7 @@
     <RibbonButton label={$t`Save as Search Folder`} shortLabel={$t`Save Search`} icon={SaveSearchIcon} size="small"
       tooltip={$t`Save this search as a Search Folder`}
       onClick={onSaveSearch}
-      disabled={saveDisabledReason} />
+      disabled={!search && $t`Type a search term first`} />
     <RibbonButton label={$t`Create Rule`} icon={CreateRuleIcon} size="small"
       tooltip={$t`Handle new messages that match this search automatically`}
       onClick={onCreateRule}
@@ -103,7 +103,7 @@
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { MailSearch, SearchScope } from "../Search/MailSearch";
   import { isAdvancedSearchOpen, searchOptions } from "../Selected";
-  import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
+  // import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
   import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import { openSaveSearch } from "../Search/SavedSearchUI.svelte";
   import { openRulesFromSearch } from "../Search/RulesFromSearchUI.svelte";
@@ -116,12 +116,12 @@
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import CategoryMenuItems from "../Search/CategoryMenuItems.svelte";
-  import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
+  // import ReceivedMenuItems from "../Search/ReceivedMenuItems.svelte";
   import SizeMenuItems from "../Search/SizeMenuItems.svelte";
   import FromIcon from "lucide-svelte/icons/user-round";
   import AttachmentIcon from "lucide-svelte/icons/paperclip";
   import CategorizeIcon from "lucide-svelte/icons/tags";
-  import ReceivedIcon from "lucide-svelte/icons/calendar-range";
+  // import ReceivedIcon from "lucide-svelte/icons/calendar-range";
   import SentToIcon from "lucide-svelte/icons/send";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";
@@ -164,11 +164,6 @@
       : { ...$searchOptions, person: null, isOutgoing: null };
   }
 
-  $: saveDisabledReason = !search
-    ? $t`Type a search term first`
-    : MailSearch.hasDates(search)
-      ? $t`Search Folders can't filter by the received date`
-      : false;
   function onSaveSearch() {
     $openSaveSearch = search;
   }

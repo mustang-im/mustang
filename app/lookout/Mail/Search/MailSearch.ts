@@ -2,15 +2,13 @@ import type { Folder } from "../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import type { Tag } from "../../../logic/Abstract/Tag";
 import type { Person } from "../../../logic/Abstract/Person";
-import type { EMail } from "../../../logic/Mail/EMail";
-import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
 import { newServerSearchEMail } from "../../../logic/Mail/Store/setStorage";
 import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { appGlobal } from "../../../logic/app";
-import { ReceivedRange, ReceivedRanges, SizeRange, SizeRanges } from "./SearchRanges";
+import { SizeRange, SizeRanges } from "./SearchRanges";
 import { gt } from "../../../l10n/l10n";
-import type { Collection } from "svelte-collections";
 
 export enum SearchScope {
   AllAccounts = "all",
@@ -27,9 +25,6 @@ export interface SearchOptions {
   flagged: boolean;
   replied: boolean;
   tags: Tag[];
-  received: ReceivedRange;
-  receivedStart: Date | null;
-  receivedEnd: Date | null;
   size: SizeRange;
   threadID: string | null;
 }
@@ -47,9 +42,6 @@ export class MailSearch {
       flagged: false,
       replied: false,
       tags: [],
-      received: ReceivedRange.Any,
-      receivedStart: null,
-      receivedEnd: null,
       size: SizeRange.Any,
       threadID: null,
     };
@@ -63,7 +55,6 @@ export class MailSearch {
       options.flagged ||
       options.replied ||
       options.tags.length > 0 ||
-      options.received != ReceivedRange.Any ||
       options.size != SizeRange.Any ||
       !!options.threadID;
   }
@@ -112,8 +103,7 @@ export class MailSearch {
     }
   }
 
-  static newSearch(term: string | null, options: SearchOptions, account: MailAccount | null, folder: Folder | null,
-      now = new Date()): SearchEMail {
+  static newSearch(term: string | null, options: SearchOptions, account: MailAccount | null, folder: Folder | null): SearchEMail {
     let search = newServerSearchEMail();
     search.bodyText = term;
     let scope = MailSearch.effectiveScope(options, account, folder);
@@ -137,29 +127,10 @@ export class MailSearch {
     for (let tag of options.tags) {
       search.tags.add(tag);
     }
-    let dates = ReceivedRanges.dates(options.received, now, options.receivedStart, options.receivedEnd);
-    search.sentDateMin = dates.start;
-    search.sentDateMax = dates.end;
     let sizes = SizeRanges.bytes(options.size);
     search.sizeMin = sizes.min;
     search.sizeMax = sizes.max;
     search.threadID = options.threadID;
     return search;
-  }
-
-  static hasDates(search: SearchEMail): boolean {
-    return !!search.sentDateMin || !!search.sentDateMax;
-  }
-
-  /** The database and the servers ignore the dates, so we search without limit and keep only the dates that match */
-  static async startSearch(search: SearchEMail, isLimited = true): Promise<Collection<EMail>> {
-    if (!MailSearch.hasDates(search)) {
-      return await search.startSearch(isLimited ? MailSearch.kLimit + 1 : undefined);
-    }
-    let dateFilter = new SearchEMail();
-    dateFilter.sentDateMin = search.sentDateMin;
-    dateFilter.sentDateMax = search.sentDateMax;
-    let results = await search.startSearch();
-    return results.filter(email => !!email.sent && dateFilter.matches(email));
   }
 }

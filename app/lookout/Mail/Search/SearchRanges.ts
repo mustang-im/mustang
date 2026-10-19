@@ -1,4 +1,3 @@
-import { getWeekStart } from "../../../logic/util/date";
 import { gt } from "../../../l10n/l10n";
 
 export enum ReceivedRange {
@@ -12,11 +11,6 @@ export enum ReceivedRange {
   ThisYear = "this-year",
   LastYear = "last-year",
   Custom = "custom",
-}
-
-export interface DateSpan {
-  start: Date | null;
-  end: Date | null;
 }
 
 export class ReceivedRanges {
@@ -44,66 +38,6 @@ export class ReceivedRanges {
       case ReceivedRange.LastYear: return gt`Last Year`;
       case ReceivedRange.Custom: return gt`Custom Dates`;
     }
-  }
-
-  static dates(range: ReceivedRange, now: Date, customStart: Date | null = null, customEnd: Date | null = null): DateSpan {
-    let today = ReceivedRanges.startOfDay(now);
-    let year = now.getFullYear();
-    let month = now.getMonth();
-    switch (range) {
-      case ReceivedRange.Today:
-        return ReceivedRanges.span(today, ReceivedRanges.addDays(today, 1));
-      case ReceivedRange.Yesterday:
-        return ReceivedRanges.span(ReceivedRanges.addDays(today, -1), today);
-      case ReceivedRange.ThisWeek: {
-        let weekStart = getWeekStart(now);
-        return ReceivedRanges.span(weekStart, ReceivedRanges.addDays(weekStart, 7));
-      }
-      case ReceivedRange.LastWeek: {
-        let weekStart = getWeekStart(now);
-        return ReceivedRanges.span(ReceivedRanges.addDays(weekStart, -7), weekStart);
-      }
-      case ReceivedRange.ThisMonth:
-        return ReceivedRanges.span(new Date(year, month, 1), new Date(year, month + 1, 1));
-      case ReceivedRange.LastMonth:
-        return ReceivedRanges.span(new Date(year, month - 1, 1), new Date(year, month, 1));
-      case ReceivedRange.ThisYear:
-        return ReceivedRanges.span(new Date(year, 0, 1), new Date(year + 1, 0, 1));
-      case ReceivedRange.LastYear:
-        return ReceivedRanges.span(new Date(year - 1, 0, 1), new Date(year, 0, 1));
-      case ReceivedRange.Custom:
-        return {
-          start: customStart ? ReceivedRanges.startOfDay(customStart) : null,
-          end: customEnd ? new Date(ReceivedRanges.addDays(ReceivedRanges.startOfDay(customEnd), 1).getTime() - 1) : null,
-        };
-      default:
-        return { start: null, end: null };
-    }
-  }
-
-  static inputValue(date: Date | null): string {
-    if (!date) {
-      return "";
-    }
-    let month = String(date.getMonth() + 1).padStart(2, "0");
-    let day = String(date.getDate()).padStart(2, "0");
-    return `${date.getFullYear()}-${month}-${day}`;
-  }
-
-  static span(start: Date, nextStart: Date): DateSpan {
-    return { start, end: new Date(nextStart.getTime() - 1) };
-  }
-
-  static startOfDay(date: Date): Date {
-    let result = new Date(date);
-    result.setHours(0, 0, 0, 0);
-    return result;
-  }
-
-  static addDays(date: Date, days: number): Date {
-    let result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
   }
 }
 

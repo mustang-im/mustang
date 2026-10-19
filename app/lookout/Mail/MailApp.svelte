@@ -278,7 +278,7 @@
     isAutoSelectPending = true;
     isSearching = true;
     try {
-      let result = await MailSearch.startSearch(search);
+      let result = await search.startSearch(MailSearch.kLimit + 1);
       if (currentSearch == search) {
         searchResults = result;
       }
@@ -297,7 +297,7 @@
     isShowingAllResults = true;
     isSearching = true;
     try {
-      let result = await MailSearch.startSearch(search, false);
+      let result = await search.startSearch();
       if (currentSearch == search) {
         searchResults = result;
       }

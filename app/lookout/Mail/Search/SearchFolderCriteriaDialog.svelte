@@ -1,5 +1,6 @@
 <Dialog title={$t`Search Folder Criteria`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="560px" bind:this={dialog}>
-  <SearchCriteria bind:draft={criteria.draft} showAccount={false} showDates={false} showButtons={false} on:search={() => dialog.submit()} />
+  <!-- <SearchCriteria bind:draft={criteria.draft} showAccount={false} showDates={false} showButtons={false} on:search={() => dialog.submit()} /> -->
+  <SearchCriteria bind:draft={criteria.draft} showAccount={false} showButtons={false} on:search={() => dialog.submit()} />
   <svelte:fragment slot="buttons-start">
     <DialogButton label={$t`Clear All`} onClick={onClear} />
   </svelte:fragment>

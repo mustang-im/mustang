@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { MailSearch, SearchScope } from "../../../Mail/Search/MailSearch";
-import { ReceivedRange, SizeRange } from "../../../Mail/Search/SearchRanges";
+import { SizeRange } from "../../../Mail/Search/SearchRanges";
 import { expect, test } from "vitest";
 
 test("Any refiner starts a search, like in Outlook", () => {
@@ -10,7 +10,6 @@ test("Any refiner starts a search, like in Outlook", () => {
   expect(MailSearch.hasRefiners({ ...options, hasAttachment: true })).toBe(true);
   expect(MailSearch.hasRefiners({ ...options, person: {} as any })).toBe(true);
   expect(MailSearch.hasRefiners({ ...options, isOutgoing: true })).toBe(true);
-  expect(MailSearch.hasRefiners({ ...options, received: ReceivedRange.ThisWeek })).toBe(true);
   expect(MailSearch.hasRefiners({ ...options, size: SizeRange.Large })).toBe(true);
   expect(MailSearch.hasRefiners({ ...options, threadID: "<thread@example.com>" })).toBe(true);
   // The scope alone is no criterion
