@@ -254,6 +254,7 @@
       dayCount = 1;
     }
     view = newView;
+    $eventPeek = null;
     showCalendar();
   }
 

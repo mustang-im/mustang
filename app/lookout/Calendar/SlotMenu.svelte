@@ -27,7 +27,7 @@
 {/if}
 
 <script lang="ts">
-  import type { CalendarViewType } from "./selected";
+  import { eventPeek, type CalendarViewType } from "./selected";
   import { CalendarActions } from "./CalendarActions";
   import { selectedDate, startDate } from "../../frontend/Calendar/selected";
   import { getToday } from "../../logic/util/date";
@@ -67,6 +67,7 @@
     if (viewType == "day" || viewType == "schedule") {
       dayCount = 1;
     }
+    $eventPeek = null;
   }
   // </copied>
 

@@ -12,7 +12,7 @@
 </Menu>
 
 <script lang="ts">
-  import type { CalendarViewType } from "./selected";
+  import { eventPeek, type CalendarViewType } from "./selected";
   import Menu from "../Shared/Menu/Menu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
@@ -41,6 +41,7 @@
     if (viewType == "day" || viewType == "schedule") {
       dayCount = 1;
     }
+    $eventPeek = null;
   }
   // </copied>
 </script>
