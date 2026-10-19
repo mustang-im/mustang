@@ -1,7 +1,7 @@
 {#if wizardRule}
   <RulesWizard rule={wizardRule} on:finish={event => catchErrors(() => onWizardFinish(event.detail))} on:close={onClose} />
 {:else if createdRule}
-  <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created.`}
+  <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created`}
     on:answer={onClose} />
 {:else}
   <Dialog title={$t`Create Rule`} on:close={onClose} width="540px">
@@ -17,7 +17,7 @@
     </GroupBox>
     <GroupBox label={$t`Do the following`} classes="rule-box">
       <grid class="fields">
-        <Checkbox label={$t`Move the item to folder:`} bind:checked={quickRule.moveToFolder} classes="check" />
+        <Checkbox label={$t`Move the item to folder`} bind:checked={quickRule.moveToFolder} classes="check" />
         <hbox class="folder-row">
           <input type="text" class="value folder lo-text-field" readonly value={quickRule.folder?.name ?? ""}
             aria-label={$t`Folder`} />

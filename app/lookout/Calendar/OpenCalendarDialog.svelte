@@ -8,7 +8,7 @@
   <vbox class="fields">
     {#if accounts.length > 1}
       <hbox class="field">
-        <span class="label">{$t`Account:`}</span>
+        <span class="label">{$t`Account`}</span>
         <ComboBox options={accounts.map(listed => ({ value: listed, label: listed.name }))}
           bind:value={account} label={$t`Account`} />
       </hbox>
@@ -20,7 +20,7 @@
         <MailAutocomplete addresses={persons} label={$t`Name`} />
       </hbox>
     </hbox>
-    <div class="hint lo-secondary">{$t`Type the name or email address of a colleague who shared their calendar with you.`}</div>
+    <div class="hint lo-secondary">{$t`Type the name or email address of a colleague who shared their calendar with you`}</div>
   </vbox>
 </Dialog>
 
@@ -90,7 +90,7 @@
     let name = person.name || person.emailAddress;
     let address = person.emailAddress?.toLowerCase();
     assert(!appGlobal.calendars.contents.some(calendar => calendar.username?.toLowerCase() == address),
-      $t`The calendar of ${name} is already in your calendar list.`);
+      $t`The calendar of ${name} is already in your calendar list`);
     let shared = await account.findSharedFolders(person, ["calendar"]);
     assert(shared.includes("calendar"),
       $t`The calendar of ${name} could not be opened. You don't have permission to see it. Ask ${name} to share the calendar with you.`);

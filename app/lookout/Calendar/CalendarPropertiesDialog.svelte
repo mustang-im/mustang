@@ -19,18 +19,18 @@
         </hbox>
         <hbox class="divider" />
         <div class="facts">
-          <span class="label">{$t`Type:`}</span>
+          <span class="label">{$t`Type`}</span>
           <span>{$t`Folder containing Calendar Items`}</span>
-          <span class="label">{$t`Location:`}</span>
+          <span class="label">{$t`Location`}</span>
           <span>{location}</span>
           {#if owner}
-            <span class="label">{$t`Owner:`}</span>
+            <span class="label">{$t`Owner`}</span>
             <span>{owner}</span>
           {/if}
         </div>
         <hbox class="divider" />
         <vbox class="color-group">
-          <span class="label">{$t`Color:`}</span>
+          <span class="label">{$t`Color`}</span>
           <ColorPalette colors={calendarColors()} bind:selected={color} label={$t`Color`} columns={15} />
         </vbox>
         {#if isShared || !calendar.mainAccount}

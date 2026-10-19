@@ -6,7 +6,7 @@
       label={$t`Recipients`} height="160px" let:item>
       <span>{item.name ?? ""}</span>
       <span>{item.emailAddress}</span>
-      <span slot="empty">{$t`All recipients have a certificate now.`}</span>
+      <span slot="empty">{$t`All recipients have a certificate now`}</span>
     </ListView>
     <hbox class="buttons">
       <DialogButton label={$t`Import…`} disabled={!selected && $t`Select a recipient first`} onClick={onImport} />

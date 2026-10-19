@@ -28,7 +28,7 @@
             </button>
           {/each}
         {:else}
-          <span class="empty">{$t`No upcoming appointments.`}</span>
+          <span class="empty">{$t`No upcoming appointments`}</span>
         {/each}
       </vbox>
     </vbox>
@@ -50,7 +50,7 @@
           <span class="person-name">{person.name}</span>
         </button>
       {:else}
-        <span class="empty">{$t`No contacts yet.`}</span>
+        <span class="empty">{$t`No contacts yet`}</span>
       {/each}
     </vbox>
   {/if}

@@ -112,7 +112,7 @@
     {/if}
 
     {#if !hasContactInfo && !$person.notes?.trim()}
-      <hbox class="no-info">{$t`No contact information yet.`}</hbox>
+      <hbox class="no-info">{$t`No contact information yet`}</hbox>
     {/if}
 
     {#if $recentMessages.hasItems}

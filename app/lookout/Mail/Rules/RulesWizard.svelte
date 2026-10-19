@@ -45,7 +45,7 @@
       <span class="step">{$t`Step 2: Edit the rule description (click an underlined value)`}</span>
       <RuleDescriptionBox lines={model.lines} on:edit={event => onValueClick(event.detail)} />
     {:else}
-      <span class="question">{$t`Finish rule setup.`}</span>
+      <span class="question">{$t`Finish rule setup`}</span>
       <label class="step" for="rule-wizard-name">{$t`Step 1: Specify a name for this rule`}</label>
       <input id="rule-wizard-name" class="lo-text-field name" type="text" bind:value={model.name}
         on:input={refresh} />

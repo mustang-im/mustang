@@ -5,9 +5,9 @@
   width="480px"
   on:close>
   <vbox class="new-search-folder">
-    <span>{$t`Select a Search Folder:`}</span>
+    <span>{$t`Select a Search Folder`}</span>
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <vbox class="templates" role="listbox" tabindex="0" aria-label={$t`Select a Search Folder:`}
+    <vbox class="templates" role="listbox" tabindex="0" aria-label={$t`Select a Search Folder`}
       on:keydown={onKeyDown}>
       {#each templates as template (template.id)}
         {#if template.section}
@@ -22,7 +22,7 @@
         </hbox>
       {/each}
     </vbox>
-    <GroupBox label={$t`Customize Search Folder:`}>
+    <GroupBox label={$t`Customize Search Folder`}>
       <hbox class="customize">
         <span class="description" title={selected.description(values)}>{selected.description(values)}</span>
         <DialogButton label={$t`Choose…`} disabled={!selected.canChoose && $t`This Search Folder needs no choice`}
@@ -30,8 +30,8 @@
       </hbox>
     </GroupBox>
     <hbox class="search-in">
-      <span>{$t`Search mail in:`}</span>
-      <ComboBox label={$t`Search mail in:`} options={accountOptions} bind:value={account} width="100%" />
+      <span>{$t`Search mail in`}</span>
+      <ComboBox label={$t`Search mail in`} options={accountOptions} bind:value={account} width="100%" />
     </hbox>
   </vbox>
 </Dialog>

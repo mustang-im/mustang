@@ -17,7 +17,7 @@
       </hbox>
     {/each}
   {:else}
-    <span class="empty">{emptyText ?? $t`No times were proposed.`}</span>
+    <span class="empty">{emptyText ?? $t`No times were proposed`}</span>
   {/each}
 </vbox>
 

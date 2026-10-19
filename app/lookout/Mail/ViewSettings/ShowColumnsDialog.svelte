@@ -1,9 +1,9 @@
 <Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => { dispatch("change", shown); }} width="620px" on:close>
   <hbox class="columns-editor">
     <vbox flex class="list-box">
-      <span class="list-label">{$t`Available columns:`}</span>
+      <span class="list-label">{$t`Available columns`}</span>
       <ListView items={available} bind:selected={selectedAvailable} on:open={event => add(event.detail)}
-        label={$t`Available columns:`} height="240px" let:item>
+        label={$t`Available columns`} height="240px" let:item>
         <span>{ColumnInfo.labelOf(item)}</span>
       </ListView>
     </vbox>
@@ -14,9 +14,9 @@
         onClick={() => remove(selectedShown)} />
     </vbox>
     <vbox flex class="list-box">
-      <span class="list-label">{$t`Show these columns in this order:`}</span>
+      <span class="list-label">{$t`Show these columns in this order`}</span>
       <ListView items={shown} bind:selected={selectedShown} on:open={event => remove(event.detail)}
-        label={$t`Show these columns in this order:`} height="240px" let:item>
+        label={$t`Show these columns in this order`} height="240px" let:item>
         <span>{ColumnInfo.labelOf(item)}</span>
       </ListView>
       <hbox class="order-buttons">

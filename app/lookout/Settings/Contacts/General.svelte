@@ -1,4 +1,4 @@
-<OptionsPage icon={PeopleIcon} description={$t`Change how you work with your contacts.`}>
+<OptionsPage icon={PeopleIcon} description={$t`Change how you work with your contacts`}>
   <ContactsImportExport account={$selectedAddressbook ?? $addressbooks.first} />
 </OptionsPage>
 

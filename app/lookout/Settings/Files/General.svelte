@@ -1,7 +1,7 @@
-<OptionsPage icon={FilesIcon} description={$t`Change how you share files.`}>
+<OptionsPage icon={FilesIcon} description={$t`Change how you share files`}>
   <OptionsSection title={$t`File sharing accounts`}>
     <OptionsRow icon={ShareIcon}>
-      <span>{$t`Connect a file server, for example WebDAV or Nextcloud, to share files with other people and to open the files of your team.`}</span>
+      <span>{$t`Connect a file server, for example WebDAV or Nextcloud, to share files with other people and to open the files of your team`}</span>
       <hbox>
         <DialogButton label={$t`Add Account…`} icon={AddIcon} onClick={onAddAccount} />
       </hbox>

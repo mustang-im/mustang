@@ -5,7 +5,7 @@
   width="400px"
   on:close>
   <label class="field">
-    <span class="label">{$t`New name:`}</span>
+    <span class="label">{$t`New name`}</span>
     <input type="text" class="lo-text-field" bind:value={name} />
   </label>
 </Dialog>

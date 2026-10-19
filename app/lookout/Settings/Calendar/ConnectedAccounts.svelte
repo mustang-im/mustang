@@ -1,12 +1,12 @@
 <OptionsSection title={$t`Connected accounts`}>
   <OptionsRow icon={ConnectedIcon}>
     <grid class="fields">
-      <span>{$t`Send invitations from:`}</span>
+      <span>{$t`Send invitations from`}</span>
       <ComboBox options={$identities.contents.map(identity => ({ value: identity, label: identity.name }))}
         value={$account.inviteAs} label={$t`Send invitations from`} width="320px"
         disabled={$identities.length <= 1}
         on:change={event => catchErrors(() => { account.inviteAs = event.detail; return onSave(); })} />
-      <span>{$t`Online meeting:`}</span>
+      <span>{$t`Online meeting`}</span>
       <ComboBox options={$meetAccounts.contents.map(meetAccount => ({ value: meetAccount, label: meetAccount.name }))}
         value={$account.meetAccount} label={$t`Online meeting`} width="320px"
         disabled={$meetAccounts.length <= 1}

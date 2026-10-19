@@ -326,14 +326,14 @@ export function businessCardLines(person: Person): string[] {
 
 export function addressCardFields(person: Person): { label: string, value: string }[] {
   const kFields = [
-    { column: ContactColumn.Company, label: gt`Company:` },
-    { column: ContactColumn.JobTitle, label: gt`Job Title:` },
-    { column: ContactColumn.BusinessPhone, label: gt`Business:` },
-    { column: ContactColumn.HomePhone, label: gt`Home:` },
-    { column: ContactColumn.MobilePhone, label: gt`Mobile:` },
-    { column: ContactColumn.BusinessFax, label: gt`Business Fax:` },
-    { column: ContactColumn.EMail, label: gt`E-mail:` },
-    { column: ContactColumn.BusinessAddress, label: gt`Business Address:` },
+    { column: ContactColumn.Company, label: gt`Company` },
+    { column: ContactColumn.JobTitle, label: gt`Job Title` },
+    { column: ContactColumn.BusinessPhone, label: gt`Business` },
+    { column: ContactColumn.HomePhone, label: gt`Home` },
+    { column: ContactColumn.MobilePhone, label: gt`Mobile` },
+    { column: ContactColumn.BusinessFax, label: gt`Business Fax` },
+    { column: ContactColumn.EMail, label: gt`E-mail` },
+    { column: ContactColumn.BusinessAddress, label: gt`Business Address` },
   ];
   return kFields
     .map(field => ({ label: field.label, value: contactColumnValue(field.column, person) }))

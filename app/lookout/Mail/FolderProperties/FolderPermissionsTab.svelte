@@ -9,7 +9,7 @@
     <span title={item.level ? null : $t`The server doesn't tell the permission level of existing permissions`}>
       {item.level ? FolderPermissions.levelLabel(item.level) : "–"}
     </span>
-    <span slot="empty">{$t`You have not given anybody access yet.`}</span>
+    <span slot="empty">{$t`You have not given anybody access yet`}</span>
   </ListView>
   <hbox class="list-buttons">
     <DialogButton label={$t`Add…`} onClick={() => { isAdding = true; }} />
@@ -17,8 +17,8 @@
   </hbox>
   <GroupBox label={$t`Permissions`} disabled={!selected}>
     <hbox class="level-row">
-      <span>{$t`Permission Level:`}</span>
-      <ComboBox label={$t`Permission Level:`} options={levelOptions} value={selected?.level ?? null}
+      <span>{$t`Permission Level`}</span>
+      <ComboBox label={$t`Permission Level`} options={levelOptions} value={selected?.level ?? null}
         placeholder={selected && !selected.level ? "–" : null}
         disabled={!selected && $t`Select a person first`}
         on:change={event => { permissions.setLevel(selected, event.detail); changed(); }} width="100%" />

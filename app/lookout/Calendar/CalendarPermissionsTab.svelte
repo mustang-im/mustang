@@ -31,7 +31,7 @@
           </button>
         </hbox>
       {:else}
-        <hbox class="message lo-secondary">{$t`You have not shared this calendar with anybody.`}</hbox>
+        <hbox class="message lo-secondary">{$t`You have not shared this calendar with anybody`}</hbox>
       {/each}
     {/if}
   </vbox>

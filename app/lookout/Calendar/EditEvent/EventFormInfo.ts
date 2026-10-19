@@ -64,9 +64,9 @@ export function responseCounts(event: Event): ResponseCounts {
 export function responseSummary(event: Event): string {
   let counts = responseCounts(event);
   if (!counts.accepted && !counts.tentative && !counts.declined) {
-    return gt`No responses have been received for this meeting.`;
+    return gt`No responses have been received for this meeting`;
   }
-  return gt`Attendee responses: ${counts.accepted} accepted, ${counts.tentative} tentatively accepted, ${counts.declined} declined.`;
+  return gt`Attendee responses: ${counts.accepted} accepted, ${counts.tentative} tentatively accepted, ${counts.declined} declined`;
 }
 
 export function eventWhenText(event: Event, locale: string): string {
@@ -122,13 +122,13 @@ export function sortForTracking(participants: Participant[], column: TrackingCol
 export function myResponseText(response: InvitationResponse): string {
   switch (response) {
   case InvitationResponse.Accept:
-    return gt`You accepted this meeting.`;
+    return gt`You accepted this meeting`;
   case InvitationResponse.Tentative:
-    return gt`You tentatively accepted this meeting.`;
+    return gt`You tentatively accepted this meeting`;
   case InvitationResponse.Decline:
-    return gt`You declined this meeting.`;
+    return gt`You declined this meeting`;
   default:
-    return gt`Please respond.`;
+    return gt`Please respond`;
   }
 }
 
@@ -165,28 +165,28 @@ export function eventInfoMessages(event: Event, events: Iterable<Event>, now = n
   let isMeeting = isMeetingEvent(event);
   if (event.isIncomingMeeting) {
     if (event.isCancelled) {
-      messages.push({ kind: "cancelled", text: gt`This meeting has been cancelled by the organizer.` });
+      messages.push({ kind: "cancelled", text: gt`This meeting has been cancelled by the organizer` });
     } else {
       messages.push({ kind: "info", text: myResponseText(event.myParticipation) });
     }
   } else if (isMeeting) {
     messages.push(isSavedEvent(event)
       ? { kind: "info", text: responseSummary(event) }
-      : { kind: "info", text: gt`You haven't sent this meeting invitation yet.` });
+      : { kind: "info", text: gt`You haven't sent this meeting invitation yet` });
   }
   if (event.parentEvent?.recurrenceRule) {
     messages.push({ kind: "recurrence", text: pattern.summary(event) });
   }
   let conflict = eventConflict(event, events);
   if (conflict == "conflict") {
-    messages.push({ kind: "warning", text: gt`This appointment conflicts with another one on your calendar.` });
+    messages.push({ kind: "warning", text: gt`This appointment conflicts with another one on your calendar` });
   } else if (conflict == "adjacent") {
-    messages.push({ kind: "info", text: gt`Adjacent to another appointment on your calendar.` });
+    messages.push({ kind: "info", text: gt`Adjacent to another appointment on your calendar` });
   }
   if (!event.recurrenceRule && event.endTime && event.endTime < now) {
     messages.push({ kind: "info", text: isMeeting || event.isIncomingMeeting
-      ? gt`This meeting occurs in the past.`
-      : gt`This appointment occurs in the past.` });
+      ? gt`This meeting occurs in the past`
+      : gt`This appointment occurs in the past` });
   }
   return messages;
 }

@@ -5,8 +5,8 @@
   </hbox>
   <vbox flex class="tab-page">
     <hbox class="account-row">
-      <span>{$t`E-mail account:`}</span>
-      <ComboBox label={$t`E-mail account:`} options={$accounts.contents.map(mailAccount => ({ value: mailAccount, label: mailAccount.name }))}
+      <span>{$t`E-mail account`}</span>
+      <ComboBox label={$t`E-mail account`} options={$accounts.contents.map(mailAccount => ({ value: mailAccount, label: mailAccount.name }))}
         bind:value={account} width="280px" />
     </hbox>
     <vbox class="section">

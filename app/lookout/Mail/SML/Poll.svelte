@@ -10,7 +10,7 @@
       {/if}
     </vbox>
   {:else}
-    <span class="empty">{$t`This poll has no options yet.`}</span>
+    <span class="empty">{$t`This poll has no options yet`}</span>
   {/each}
 </vbox>
 

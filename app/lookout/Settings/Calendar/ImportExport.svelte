@@ -1,6 +1,6 @@
 <OptionsSection title={$t`Import and export`}>
   <OptionsRow icon={ImportExportIcon}>
-    <hbox>{$t`Import appointments and meetings from an iCalendar file, or export a calendar to a file for use in other programs.`}</hbox>
+    <hbox>{$t`Import appointments and meetings from an iCalendar file, or export a calendar to a file for use in other programs`}</hbox>
     <hbox class="buttons">
       <DialogButton label={$t`Import…`} icon={ImportIcon} onClick={() => { wizardAction = "import-ical"; }} />
       <DialogButton label={$t`Export…`} icon={ExportIcon} onClick={() => { wizardAction = "export"; }} />

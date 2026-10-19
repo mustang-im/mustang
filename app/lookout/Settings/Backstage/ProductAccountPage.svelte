@@ -7,7 +7,7 @@
         <hbox class="user">
           <PersonCircle name={$mainAccount.realname || $mainAccount.name} colorKey={$mainAccount.emailAddress} size={48} />
           <vbox class="user-text">
-            <label for="backstage-realname" class="lo-secondary">{$t`Your name:`}</label>
+            <label for="backstage-realname" class="lo-secondary">{$t`Your name`}</label>
             <input id="backstage-realname" class="lo-text-field" type="text"
               title={$t`Your real name, as shown to other people when you are sending messages`}
               value={$mainAccount.realname ?? ""}
@@ -15,7 +15,7 @@
           </vbox>
         </hbox>
       {:else}
-        <span class="lo-secondary">{$t`No email account is set up yet.`}</span>
+        <span class="lo-secondary">{$t`No email account is set up yet`}</span>
       {/if}
       <h2>{$t`License`}</h2>
       <License />
@@ -39,7 +39,7 @@
         {/if}
       </BackstageTile>
       <BackstageTile label={$t`About ${appName}`} icon={AboutIcon}
-        title={$t`About ${appName}`} description={$t`Learn more about ${appName}, its version and copyright.`}
+        title={$t`About ${appName}`} description={$t`Learn more about ${appName}, its version and copyright`}
         onClick={() => { isAboutOpen = true; }} />
       <h2>{$t`Open-Source Licenses`}</h2>
       <OpenSource />
@@ -74,7 +74,7 @@
 
   let isAboutOpen = false;
   let hasUpdate = false;
-  let updateText = $t`Updates are installed for you.`;
+  let updateText = $t`Updates are installed for you`;
 
   $: mainAccount = $emailAccounts.first;
   $: themeOptions = [
@@ -91,7 +91,7 @@
   async function checkForUpdate() {
     updateText = $t`Checking for updates…`;
     hasUpdate = !!await appGlobal.remoteApp.checkForUpdate();
-    updateText = hasUpdate ? $t`An update is available.` : $t`You're up to date.`;
+    updateText = hasUpdate ? $t`An update is available` : $t`You're up to date`;
   }
 
   async function installUpdate() {

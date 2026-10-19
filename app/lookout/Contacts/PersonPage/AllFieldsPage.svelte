@@ -1,6 +1,6 @@
 <vbox class="all-fields-page">
   <hbox class="select-row">
-    <span>{$t`Select from:`}</span>
+    <span>{$t`Select from`}</span>
     <ComboBox options={fieldSets} bind:value={fieldSet} label={$t`Select from`} width="280px" />
   </hbox>
   <ListView items={rows} bind:selected label={$t`Fields`} height="320px"
@@ -15,7 +15,7 @@
     {/if}
     <span slot="empty">{fieldSet == "user-defined"
       ? $t`This contact has no user-defined fields. Click New… to add one.`
-      : $t`This contact has no fields of this kind.`}</span>
+      : $t`This contact has no fields of this kind`}</span>
   </ListView>
   <hbox class="buttons">
     <DialogButton label={$t`New…`} onClick={() => { isNewOpen = true; }} />
@@ -29,7 +29,7 @@
   <Dialog title={$t`New Column`} okLabel={$t`OK`} okDisabled={!newName.trim() && $t`Enter a name`}
     onOK={onAdd} width="360px" on:close={() => { isNewOpen = false; newName = ""; }}>
     <FormGrid>
-      <span>{$t`Name:`}</span>
+      <span>{$t`Name`}</span>
       <TextField bind:value={newName} label={$t`Name`} />
     </FormGrid>
   </Dialog>

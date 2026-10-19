@@ -2,14 +2,14 @@
   <vbox class="show-columns">
     {#if columnSets.length}
       <vbox class="column-set">
-        <span>{$t`Select available columns from:`}</span>
+        <span>{$t`Select available columns from`}</span>
         <ComboBox options={columnSets.map((set, i) => ({ value: i, label: set.label }))} bind:value={columnSet}
           label={$t`Select available columns from`} width="240px" />
       </vbox>
     {/if}
     <hbox class="lists">
       <vbox class="list">
-        <span class="list-label">{$t`Available columns:`}</span>
+        <span class="list-label">{$t`Available columns`}</span>
         <ListView items={available} bind:selected={availableSelected} label={$t`Available columns`}
           on:open={event => add(event.detail)} height="240px" let:item>
           <span>{labelOf(item)}</span>
@@ -22,7 +22,7 @@
           disabled={!order.canRemove(shownSelected) && (shownSelected == requiredColumn && requiredReason || $t`Choose a column on the right`)} />
       </vbox>
       <vbox class="list">
-        <span class="list-label">{$t`Show these columns in this order:`}</span>
+        <span class="list-label">{$t`Show these columns in this order`}</span>
         <ListView items={order.columns} bind:selected={shownSelected} label={$t`Shown columns`}
           on:open={() => remove()} height="240px" let:item>
           <span>{labelOf(item)}</span>

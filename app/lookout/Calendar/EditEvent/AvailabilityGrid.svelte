@@ -13,7 +13,7 @@
     {:else if errorText}
       <span class="status error">{errorText}</span>
     {:else if freeBusy && !freeBusy.isSupported}
-      <span class="status lo-secondary">{$t`This calendar doesn't provide the availability of other people.`}</span>
+      <span class="status lo-secondary">{$t`This calendar doesn't provide the availability of other people`}</span>
     {/if}
   </hbox>
   <hbox flex class="grid-scroll">

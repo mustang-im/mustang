@@ -8,7 +8,7 @@
     </vbox>
     <vbox flex class="wizard-page">
       {#if step == "action"}
-        <label for="import-export-actions">{$t`Choose what to import:`}</label>
+        <label for="import-export-actions">{$t`Choose what to import`}</label>
         <vbox class="choice-list" id="import-export-actions" role="listbox">
           {#each actions as actionEntry (actionEntry.id)}
             <button class="choice" class:selected={action == actionEntry.id}
@@ -25,7 +25,7 @@
           {actions.find(actionEntry => actionEntry.id == action)?.description}
         </fieldset>
       {:else if step == "source"}
-        <label for="import-export-sources">{$t`Select what to export:`}</label>
+        <label for="import-export-sources">{$t`Select what to export`}</label>
         <vbox class="choice-list sources" id="import-export-sources" role="listbox">
           {#each sourceGroups as group (group.label)}
             {#if group.sources.length}
@@ -46,11 +46,11 @@
             {/if}
           {/each}
           {#if !sourceGroups.some(group => group.sources.length)}
-            <hbox class="empty">{$t`You don't have a calendar or an address book yet.`}</hbox>
+            <hbox class="empty">{$t`You don't have a calendar or an address book yet`}</hbox>
           {/if}
         </vbox>
       {:else if step == "file-type"}
-        <label for="import-export-types">{$t`Create a file of type:`}</label>
+        <label for="import-export-types">{$t`Create a file of type`}</label>
         <vbox class="choice-list" id="import-export-types" role="listbox">
           {#each fileTypes as fileTypeEntry (fileTypeEntry.id)}
             <button class="choice" class:selected={fileType == fileTypeEntry.id}
@@ -64,7 +64,7 @@
         </vbox>
         <hbox class="lo-secondary">{$t`Export ${source?.name}`}</hbox>
       {:else if step == "file"}
-        <label for="import-export-file">{$t`File to import:`}</label>
+        <label for="import-export-file">{$t`File to import`}</label>
         <hbox class="file-row">
           <input id="import-export-file" class="lo-text-field" type="text" readonly
             value={file?.name ?? ""} placeholder={$t`Click Browse… to choose a file`} />
@@ -73,7 +73,7 @@
         <FileSelector bind:this={fileSelector}
           acceptFileTypes={action == "import-vcard" ? [ "text/vcard", ".vcf" ] : [ "text/calendar", ".ics", ".vcs" ]} />
       {:else if step == "folder"}
-        <label for="import-export-folders">{$t`Select the destination folder:`}</label>
+        <label for="import-export-folders">{$t`Select the destination folder`}</label>
         <vbox class="choice-list folders" id="import-export-folders" role="listbox">
           {#each folders as folderEntry (folderEntry.id)}
             <button class="choice" class:selected={folder == folderEntry}
@@ -88,8 +88,8 @@
             </button>
           {:else}
             <hbox class="empty">{worksOnCalendars
-              ? $t`You don't have a calendar yet.`
-              : $t`You don't have an address book yet.`}</hbox>
+              ? $t`You don't have a calendar yet`
+              : $t`You don't have an address book yet`}</hbox>
           {/each}
         </vbox>
       {/if}
@@ -167,11 +167,11 @@
 
   $: actions = [
     { id: "import-vcard", icon: ImportIcon, label: $t`Import a VCARD file (.vcf)`,
-      description: $t`Import the contacts of a vCard file into one of your address books.` },
+      description: $t`Import the contacts of a vCard file into one of your address books` },
     { id: "import-ical", icon: ImportIcon, label: $t`Import an iCalendar (.ics) or vCalendar file (.vcs)`,
-      description: $t`Import the appointments and meetings of an iCalendar or vCalendar file into one of your calendars.` },
+      description: $t`Import the appointments and meetings of an iCalendar or vCalendar file into one of your calendars` },
     { id: "import-program", icon: ImportIcon, label: $t`Import from another program or file`,
-      description: $t`Import e-mail accounts and address books from another program on this computer.` },
+      description: $t`Import e-mail accounts and address books from another program on this computer` },
   ] as { id: ImportExportAction, icon: ConstructorOfATypedSvelteComponent, label: string, description: string }[];
 
   $: sourceGroups = [

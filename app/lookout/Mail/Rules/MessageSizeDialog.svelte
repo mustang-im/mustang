@@ -2,12 +2,12 @@
   okDisabled={(!atLeast && !atMost && $t`Enter a size`) ||
     (!!atLeast && !!atMost && atLeast > atMost && $t`At least must not be larger than At most`)}>
   <vbox class="size">
-    <span>{$t`Specify the size (in kilobytes) to check for:`}</span>
+    <span>{$t`Specify the size (in kilobytes) to check for`}</span>
     <grid class="fields">
-      <span>{$t`At least:`}</span>
-      <SpinBox label={$t`At least:`} bind:value={atLeast} min={0} stepSize={10} suffix={$t`KB`} width="120px" />
-      <span>{$t`At most:`}</span>
-      <SpinBox label={$t`At most:`} bind:value={atMost} min={0} stepSize={10} suffix={$t`KB`} width="120px" />
+      <span>{$t`At least`}</span>
+      <SpinBox label={$t`At least`} bind:value={atLeast} min={0} stepSize={10} suffix={$t`KB`} width="120px" />
+      <span>{$t`At most`}</span>
+      <SpinBox label={$t`At most`} bind:value={atMost} min={0} stepSize={10} suffix={$t`KB`} width="120px" />
     </grid>
   </vbox>
 </Dialog>

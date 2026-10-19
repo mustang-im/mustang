@@ -5,9 +5,9 @@
   width="340px"
   on:close>
   <FormGrid>
-    <span>{$t`Date:`}</span>
+    <span>{$t`Date`}</span>
     <DateField required bind:date={selectedDate} label={$t`Date`} width="100%" />
-    <span>{$t`Show in:`}</span>
+    <span>{$t`Show in`}</span>
     <ComboBox options={viewOptions} bind:value={view} label={$t`Show in`} />
   </FormGrid>
 </Dialog>

@@ -71,9 +71,9 @@
 
   function editSubtitle(type: string): string {
     switch (type) {
-      case "SimplePoll": return $t`Recipients choose one of the options.`;
-      case "MeetingTimePoll": return $t`Recipients vote for the times that suit them.`;
-      case "BookMe": return $t`Recipients book one of the times with you.`;
+      case "SimplePoll": return $t`Recipients choose one of the options`;
+      case "MeetingTimePoll": return $t`Recipients vote for the times that suit them`;
+      case "BookMe": return $t`Recipients book one of the times with you`;
       default: return null;
     }
   }

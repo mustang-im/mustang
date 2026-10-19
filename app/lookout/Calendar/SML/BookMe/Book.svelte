@@ -1,7 +1,7 @@
 <vbox class="booking">
   {#if state == TSMLBookMeState.Select}
     <span class="intro">
-      {isOrganizer ? $t`You proposed these meeting times.` : $t`Choose a time to book a meeting with ${organizerName}.`}
+      {isOrganizer ? $t`You proposed these meeting times` : $t`Choose a time to book a meeting with ${organizerName}`}
     </span>
     <DisplayList {options} duration={bookMe.duration} let:time>
       <DialogButton label={$t`Book`} icon={BookIcon}
@@ -43,7 +43,7 @@
       </vbox>
     </hbox>
   {:else}
-    <span class="empty">{$t`This booking is in a state that ${appName} doesn't know.`}</span>
+    <span class="empty">{$t`This booking is in a state that ${appName} doesn't know`}</span>
   {/if}
 </vbox>
 

@@ -1,9 +1,9 @@
 <Dialog title={$t`Check Full Name`} okLabel={$t`OK`} onOK={onOK} width="420px" on:close>
   <GroupBox label={$t`Name details`}>
     <FormGrid>
-      <span>{$t`First:`}</span>
+      <span>{$t`First`}</span>
       <TextField bind:value={firstName} label={$t`First`} />
-      <span>{$t`Last:`}</span>
+      <span>{$t`Last`}</span>
       <TextField bind:value={lastName} label={$t`Last`} />
     </FormGrid>
   </GroupBox>

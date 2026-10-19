@@ -1,8 +1,8 @@
-<OptionsPage icon={LanguageIcon} description={$t`Set the language preferences for ${appName}.`}>
+<OptionsPage icon={LanguageIcon} description={$t`Set the language preferences for ${appName}`}>
   <OptionsSection title={$t`Display language`}>
     <OptionsRow icon={DisplayLanguageIcon}>
       <hbox class="field-row">
-        <label for="options-display-language" class="field-label">{$t`Display language:`}</label>
+        <label for="options-display-language" class="field-label">{$t`Display language`}</label>
         <ComboBox options={[ { value: "", label: $t`Use system setting` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
           bind:value={language} on:change={event => { dateTimeFormat = event.detail; }} label={$t`Display language`} width="240px" />
         {#if language != getUILocalePref()}
@@ -14,16 +14,16 @@
   <OptionsSection title={$t`Date and time format`}>
     <OptionsRow icon={DateFormatIcon}>
       <hbox class="field-row">
-        <label for="options-date-format" class="field-label">{$t`Format:`}</label>
+        <label for="options-date-format" class="field-label">{$t`Format`}</label>
         <ComboBox options={[ { value: "", label: $t`Same as the display language` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
           bind:value={dateTimeFormat} on:change={onSaveDateTimeFormat} label={$t`Format`} width="240px" />
       </hbox>
       <grid class="samples">
-        <span class="lo-secondary">{$t`Short date:`}</span>
+        <span class="lo-secondary">{$t`Short date`}</span>
         <span>{sampleDate.toLocaleDateString(dateTimeFormatDisplayed, { year: "numeric", month: "2-digit", day: "2-digit" })}</span>
-        <span class="lo-secondary">{$t`Long date:`}</span>
+        <span class="lo-secondary">{$t`Long date`}</span>
         <span>{sampleDate.toLocaleDateString(dateTimeFormatDisplayed, { dateStyle: "long" })}</span>
-        <span class="lo-secondary">{$t`Time:`}</span>
+        <span class="lo-secondary">{$t`Time`}</span>
         <span>{sampleDate.toLocaleTimeString(dateTimeFormatDisplayed, { hour: "numeric", minute: "numeric" })}</span>
       </grid>
     </OptionsRow>

@@ -1,7 +1,7 @@
 <Dialog title={$t`Apply View`} okLabel={$t`OK`} okDisabled={!checked.size && $t`Choose at least one folder`}
   onOK={save} width="420px" on:close>
   <vbox class="apply-view">
-    <span>{$t`Apply view to these folders:`}</span>
+    <span>{$t`Apply view to these folders`}</span>
     <vbox class="folder-list">
       {#each $accounts.each as account (account.id)}
         <hbox class="account">{account.name}</hbox>

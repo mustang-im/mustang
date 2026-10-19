@@ -1,8 +1,8 @@
-<OptionsPage icon={MailIcon} description={$t`Change the settings for messages you create and receive.`}>
+<OptionsPage icon={MailIcon} description={$t`Change the settings for messages you create and receive`}>
   <OptionsSection title={$t`Compose messages`}>
     <OptionsRow icon={ComposeIcon}>
       <hbox class="field-row">
-        <label for="options-compose-format">{$t`Compose messages in this format:`}</label>
+        <label for="options-compose-format">{$t`Compose messages in this format`}</label>
         <ComboBox options={[ { value: "html", label: $t`HTML` }, { value: "plaintext", label: $t`Plain Text` } ]}
           bind:value={$formatSetting.value} label={$t`Compose messages in this format`} width="200px" />
       </hbox>
@@ -15,7 +15,7 @@
   <OptionsSection title={$t`${appName} panes`}>
     <OptionsRow icon={ReadingPaneIcon}>
       <hbox class="field-row">
-        <label for="options-reading-pane">{$t`Reading Pane:`}</label>
+        <label for="options-reading-pane">{$t`Reading Pane`}</label>
         <ComboBox options={[
             { value: "right", label: $t`Right` },
             { value: "bottom", label: $t`Bottom` },
@@ -40,7 +40,7 @@
 
   <OptionsSection title={$t`Message arrival`}>
     <OptionsRow icon={ArrivalIcon}>
-      <hbox>{$t`When new messages arrive:`}</hbox>
+      <hbox>{$t`When new messages arrive`}</hbox>
       <Checkbox label={$t`Play a sound`} checked={$notificationsSetting.value.includes("sound")}
         on:change={event => onNotification("sound", event.detail)} />
       <Checkbox label={$t`Display a Desktop Alert`} checked={$notificationsSetting.value.includes("popup")}
@@ -54,14 +54,14 @@
     <OptionsRow icon={ReplyIcon}>
       <Checkbox label={$t`Open replies and forwards in a new window`} bind:checked={$repliesInNewWindowSetting.value} />
       <grid class="replies">
-        <label for="options-reply">{$t`When replying to a message:`}</label>
+        <label for="options-reply">{$t`When replying to a message`}</label>
         <ComboBox options={[
             { value: "below", label: $t`Include original message text` },
             { value: "above", label: $t`Include original message text, reply below it` },
             { value: "none", label: $t`Do not include original message` },
           ]}
           bind:value={$quoteSetting.value} label={$t`When replying to a message`} width="320px" />
-        <label for="options-forward">{$t`When forwarding a message:`}</label>
+        <label for="options-forward">{$t`When forwarding a message`}</label>
         <ComboBox options={[ { value: "inline", label: $t`Include original message text` }, { value: "attachment", label: $t`Attach original message` } ]}
           bind:value={$forwardSetting.value} label={$t`When forwarding a message`} width="320px" />
       </grid>
@@ -70,7 +70,7 @@
 
   <OptionsSection title={$t`Categories`}>
     <OptionsRow icon={CategoriesIcon}>
-      <hbox>{$t`Mark your messages with categories, to organize them.`}</hbox>
+      <hbox>{$t`Mark your messages with categories, to organize them`}</hbox>
       <vbox class="categories">
         {#each $availableTags.each as tag (tag.name)}
           <hbox class="category">

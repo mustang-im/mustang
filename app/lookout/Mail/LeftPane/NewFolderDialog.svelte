@@ -4,9 +4,9 @@
   onOK={onCreate}
   on:close>
   <vbox class="dialog-content">
-    <span>{$t`Name:`}</span>
-    <TextField label={$t`Name:`} bind:value={name} />
-    <span class="caption">{$t`Select where to place the folder:`}</span>
+    <span>{$t`Name`}</span>
+    <TextField label={$t`Name`} bind:value={name} />
+    <span class="caption">{$t`Select where to place the folder`}</span>
     <FolderPicker label={$t`Folders`} allowAccount
       bind:selectedFolder={parent} bind:selectedAccount={account}
       disableFolder={folder => folder.disableSubfolders()} />

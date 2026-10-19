@@ -1,11 +1,11 @@
 <vbox class="synchronization">
   <GroupBox label={$t`Statistics for this folder`}>
     <FormGrid columns="max-content minmax(0, 1fr)">
-      <span class="lo-form-label">{$t`Server folder contains:`}</span>
+      <span class="lo-form-label">{$t`Server folder contains`}</span>
       <span>{$t`${$folder.countTotal ?? 0} items`}</span>
-      <span class="lo-form-label">{$t`Unread:`}</span>
+      <span class="lo-form-label">{$t`Unread`}</span>
       <span>{$t`${$folder.countUnread ?? 0} items`}</span>
-      <span class="lo-form-label">{$t`Downloaded to this computer:`}</span>
+      <span class="lo-form-label">{$t`Downloaded to this computer`}</span>
       <span>{$t`${downloadedCount} items`}</span>
     </FormGrid>
   </GroupBox>

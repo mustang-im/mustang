@@ -1,6 +1,6 @@
 <vbox class="certificates-page">
   <span class="intro">{$t`${appName} uses one of these certificates to send encrypted mail to this contact. You get a certificate when the contact sends you digitally signed mail, or when you import a certificate file for the contact.`}</span>
-  <span class="list-label">{$t`Certificates (Digital IDs):`}</span>
+  <span class="list-label">{$t`Certificates (Digital IDs)`}</span>
   <hbox class="list-and-buttons">
     <vbox flex class="list">
       <ListView items={sortedKeys} bind:selected label={$t`Certificates`} height="240px"
@@ -11,7 +11,7 @@
         <span class="cell">{item.system}</span>
         <span class="cell">{item.expires ? getDateString(item.expires) : "-"}</span>
         <span class="cell">{certificateStatus(item)}</span>
-        <span slot="empty">{$t`This contact has no certificate yet.`}</span>
+        <span slot="empty">{$t`This contact has no certificate yet`}</span>
       </ListView>
     </vbox>
     <vbox class="buttons">

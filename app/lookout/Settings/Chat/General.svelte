@@ -1,7 +1,7 @@
-<OptionsPage icon={ChatIcon} description={$t`Change how you chat with other people.`}>
+<OptionsPage icon={ChatIcon} description={$t`Change how you chat with other people`}>
   <OptionsSection title={$t`Message arrival`}>
     <OptionsRow icon={ArrivalIcon}>
-      <hbox>{$t`When new chat messages arrive:`}</hbox>
+      <hbox>{$t`When new chat messages arrive`}</hbox>
       <Checkbox label={$t`Play a sound`} checked={$notificationsSetting.value.includes("sound")}
         on:change={event => onNotification("sound", event.detail)} />
       <Checkbox label={$t`Display a Desktop Alert`} checked={$notificationsSetting.value.includes("popup")}

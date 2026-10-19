@@ -1,8 +1,8 @@
-<OptionsPage icon={GeneralIcon} description={$t`General options for working with ${appName}.`}>
+<OptionsPage icon={GeneralIcon} description={$t`General options for working with ${appName}`}>
   <OptionsSection title={$t`Personalize your copy of ${appName}`}>
     <OptionsRow icon={UserInterfaceIcon}>
       <hbox class="field-row">
-        <label for="options-frontend" class="field-label">{$t`User interface:`}</label>
+        <label for="options-frontend" class="field-label">{$t`User interface`}</label>
         <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Lookout` } ]}
           bind:value={frontend} label={$t`User interface`} width="200px" />
         {#if frontend != $frontendSetting.value}
@@ -12,7 +12,7 @@
     </OptionsRow>
     <OptionsRow icon={ThemeIcon}>
       <hbox class="field-row">
-        <label for="options-theme" class="field-label">{$t`Theme:`}</label>
+        <label for="options-theme" class="field-label">{$t`Theme`}</label>
         <ComboBox options={[ { value: "system", label: $t`Use system setting` }, { value: "light", label: $t`Light` }, { value: "dark", label: $t`Dark` } ]}
           value={$themeSetting.value} on:change={event => onSwitchTheme(event.detail)} label={$t`Theme`} width="200px" />
       </hbox>
@@ -24,7 +24,7 @@
       {#if isDefaultApp}
         <hbox class="default-app">
           <DoneIcon size={16} />
-          {$t`${appName} is the default program for email links on this computer.`}
+          {$t`${appName} is the default program for email links on this computer`}
         </hbox>
       {:else}
         <hbox>

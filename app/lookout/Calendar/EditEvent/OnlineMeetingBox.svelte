@@ -8,7 +8,7 @@
     </button>
   {:else}
     <span class="pending lo-secondary">
-      {$t`${$event.createOnlineMeetingWithAccount.name} creates the meeting link when you send the invitation.`}
+      {$t`${$event.createOnlineMeetingWithAccount.name} creates the meeting link when you send the invitation`}
     </span>
   {/if}
   {#if hasURL}

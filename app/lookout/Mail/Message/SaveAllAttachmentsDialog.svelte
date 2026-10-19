@@ -2,7 +2,7 @@
   okDisabled={!chosen.length && $t`Select at least one attachment`}
   on:close>
   <vbox class="save-all">
-    <span>{$t`Attachments:`}</span>
+    <span>{$t`Attachments`}</span>
     <vbox class="list">
       {#each attachments as attachment (attachment)}
         <hbox class="row">

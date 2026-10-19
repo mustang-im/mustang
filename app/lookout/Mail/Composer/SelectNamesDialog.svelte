@@ -1,11 +1,11 @@
 <Dialog title={title ?? $t`Select Names: ${addressbook?.name ?? $t`All address books`}`} on:close={onCancelClicked} width="800px" height="620px">
   <grid class="search-grid">
     <hbox class="search-label">
-      <label for="select-names-search" class="label">{$t`Search:`}</label>
+      <label for="select-names-search" class="label">{$t`Search`}</label>
       <Radio label={$t`All columns`} bind:group={nameOnly} value={false} />
       <Radio label={$t`Name only`} bind:group={nameOnly} value={true} />
     </hbox>
-    <span class="label">{$t`Address Book:`}</span>
+    <span class="label">{$t`Address Book`}</span>
     <hbox class="search">
       <input id="select-names-search" class="lo-text-field" type="text" bind:value={typedTerm} autofocus
         on:input={onTyped} on:keydown={onSearchKey} />

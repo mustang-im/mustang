@@ -25,7 +25,7 @@
     {#each $members.each as member (member.id)}
       <GroupMemberLine person={member} />
     {:else}
-      <hbox class="no-members">{$t`This group has no members yet.`}</hbox>
+      <hbox class="no-members">{$t`This group has no members yet`}</hbox>
     {/each}
   </vbox>
 </vbox>

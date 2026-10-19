@@ -2,7 +2,7 @@
   <Dialog title={$t`Message Security Properties`} cancelLabel={$t`Close`} width="560px" on:close={() => { isExpanded = false; }}>
     <vbox class="security">
       <FormGrid columns="max-content minmax(0, 1fr)">
-        <span class="lo-form-label">{$t`Subject:`}</span>
+        <span class="lo-form-label">{$t`Subject`}</span>
         <span class="value">{$message.subject ?? ""}</span>
       </FormGrid>
       <span>{$t`Messages may contain encryption and digital signature layers. Each digital signature layer may contain multiple signatures.`}</span>
@@ -13,7 +13,7 @@
           <span>{item.label}</span>
         </hbox>
       </ListView>
-      <span class="caption">{$t`Description:`}</span>
+      <span class="caption">{$t`Description`}</span>
       <div class="description">
         <div class="description-title">{title}</div>
         <div>{msg}</div>
@@ -21,15 +21,15 @@
       {#if signingKey && !mySigningKey}
         <GroupBox label={$t`Signing key`}>
           <FormGrid columns="max-content minmax(0, 1fr)">
-            <span class="lo-form-label">{$t`Signer:`}</span>
+            <span class="lo-form-label">{$t`Signer`}</span>
             <span class="value">{$signingKey.name ?? fromName}</span>
-            <span class="lo-form-label">{$t`System:`}</span>
+            <span class="lo-form-label">{$t`System`}</span>
             <span class="value">{signingKey.system}</span>
-            <span class="lo-form-label">{$t`Fingerprint:`}</span>
+            <span class="lo-form-label">{$t`Fingerprint`}</span>
             <span class="value fingerprint">{signingKey.fingerprintDisplay}</span>
-            <span class="lo-form-label">{$t`Valid from:`}</span>
+            <span class="lo-form-label">{$t`Valid from`}</span>
             <span class="value">{signingKey.created ? getDateString(signingKey.created) : "–"}</span>
-            <span class="lo-form-label">{$t`Valid to:`}</span>
+            <span class="lo-form-label">{$t`Valid to`}</span>
             <span class="value">{signingKey.expires ? getDateString(signingKey.expires) : "–"}</span>
           </FormGrid>
         </GroupBox>
@@ -93,7 +93,7 @@
         ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${fromName}. Only the recipients can read it, but the email provider cannot.`
         : isSigned
           ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${fromName}. It was not encrypted, meaning that it was not protected from surveillance.`
-          : $t`Only the recipients can read this email, but there is no assurance about who wrote it.`;
+          : $t`Only the recipients can read this email, but there is no assurance about who wrote it`;
   // </copied>
   $: layers = [
     { label: $t`Subject: ${message.subject ?? ""}`, icon: SubjectIcon },

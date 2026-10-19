@@ -4,8 +4,8 @@
   {#if tab == "symbols"}
     <vbox flex class="page">
       <hbox class="subset-row">
-        <span>{$t`Subset:`}</span>
-        <ComboBox label={$t`Subset:`} options={subsetOptions} bind:value={subset} width="260px" />
+        <span>{$t`Subset`}</span>
+        <ComboBox label={$t`Subset`} options={subsetOptions} bind:value={subset} width="260px" />
       </hbox>
       <grid class="symbols" role="grid" aria-label={$t`Symbols`}>
         {#each characters as character (character)}
@@ -18,7 +18,7 @@
         {/each}
       </grid>
       <vbox class="recent">
-        <span class="caption">{$t`Recently used symbols:`}</span>
+        <span class="caption">{$t`Recently used symbols`}</span>
         <hbox class="recent-symbols">
           {#each recent as character (character)}
             <button type="button" class="symbol" class:selected={character == selected}
@@ -31,14 +31,14 @@
       </vbox>
       <hbox class="code-row lo-secondary">
         {#if selected}
-          {$t`Character code:`} {characterCode(selected)} {$t`from: Unicode (hex)`}
+          {$t`Character code`} {characterCode(selected)} {$t`from: Unicode (hex)`}
         {/if}
       </hbox>
     </vbox>
   {:else}
     <vbox flex class="page special">
       <hbox class="special-header">
-        <span class="special-character">{$t`Character:`}</span>
+        <span class="special-character">{$t`Character`}</span>
       </hbox>
       <vbox flex class="special-list" role="listbox" aria-label={$t`Special Characters`}>
         {#each specialCharacters() as special (special.character)}

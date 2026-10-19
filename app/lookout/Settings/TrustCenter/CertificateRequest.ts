@@ -45,13 +45,13 @@ export class CertificateRequest {
 
   validate() {
     if (!this.name.trim()) {
-      throw new UserError(gt`Please enter your name for the certificate.`);
+      throw new UserError(gt`Please enter your name for the certificate`);
     }
     if (!this.emailAddress.trim()) {
-      throw new UserError(gt`The certificate needs an e-mail address.`);
+      throw new UserError(gt`The certificate needs an e-mail address`);
     }
     if (this.country.trim() && !/^[A-Za-z]{2}$/.test(this.country.trim())) {
-      throw new UserError(gt`Please enter the country or region as a code with 2 letters, e.g. DE or US.`);
+      throw new UserError(gt`Please enter the country or region as a code with 2 letters, e.g. DE or US`);
     }
   }
 

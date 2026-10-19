@@ -20,7 +20,7 @@
     <DetailsGrid {event} />
     {#if $event.isCancelled}
       <hbox class="notice">
-        {$t`This meeting has been cancelled by the organizer.`}
+        {$t`This meeting has been cancelled by the organizer`}
       </hbox>
       <hbox class="buttons">
         <button class="peek-button" on:click={onDelete}>{$t`Remove from Calendar`}</button>

@@ -1,8 +1,8 @@
 <Dialog title={$t`Rules and Alerts`} on:close={onClose} width="720px" height="640px">
   <DialogTabs tabs={[{ id: "email-rules", label: $t`Email Rules` }]} selected="email-rules" />
   <hbox class="folder-row">
-    <span>{$t`Apply changes to this folder:`}</span>
-    <ComboBox label={$t`Apply changes to this folder:`} options={accountOptions($accounts.contents)} bind:value={account} width="320px" />
+    <span>{$t`Apply changes to this folder`}</span>
+    <ComboBox label={$t`Apply changes to this folder`} options={accountOptions($accounts.contents)} bind:value={account} width="320px" />
   </hbox>
   <hbox class="toolbar">
     <DialogButton label={$t`New Rule…`} icon={NewIcon} classes="plain" onClick={onNew} />
@@ -46,11 +46,11 @@
       <hbox class="empty lo-secondary">{$t`There are no rules. Click New Rule… to create one.`}</hbox>
     {/if}
   </vbox>
-  <span class="description-label">{$t`Rule description (click an underlined value to edit):`}</span>
+  <span class="description-label">{$t`Rule description (click an underlined value to edit)`}</span>
   <RuleDescriptionBox lines={descriptionLines} on:edit={event => onValueClick(event.detail)} />
   <hbox class="hint lo-secondary">
     <InfoIcon size={14} />
-    {$t`Rules run in ${appName} when it downloads new messages.`}
+    {$t`Rules run in ${appName} when it downloads new messages`}
   </hbox>
   <svelte:fragment slot="footer">
     <DialogButton label={$t`OK`} primary onClick={onOK} />

@@ -1,27 +1,27 @@
-<OptionsPage icon={TrustCenterIcon} description={$t`Help keep your messages secure and your computer healthy.`}>
+<OptionsPage icon={TrustCenterIcon} description={$t`Help keep your messages secure and your computer healthy`}>
   <OptionsSection title={$t`Encrypted email`}>
     <OptionsRow icon={EncryptIcon}>
       {#if identity}
         <grid class="fields">
-          <span>{$t`E-mail address:`}</span>
+          <span>{$t`E-mail address`}</span>
           <ComboBox options={identityOptions} value={identity} on:change={event => onIdentityChosen(event.detail)} label={$t`E-mail address`} width="100%" />
-          <span>{$t`Digital ID:`}</span>
+          <span>{$t`Digital ID`}</span>
           {#if keyOptions.length}
             <ComboBox options={keyOptions} value={key} on:change={event => catchErrors(() => onKeyChosen(event.detail))} label={$t`Digital ID`} width="100%" />
           {:else}
             <span class="hint">{$t`You don't have a Digital ID for ${identity.emailAddress} yet. Import one or get a new one below.`}</span>
           {/if}
           {#if key}
-            <span>{$t`Issued to:`}</span>
+            <span>{$t`Issued to`}</span>
             <span class="value">{key.userIDs.contents.join(", ") || "-"}</span>
-            <span>{$t`Issued by:`}</span>
+            <span>{$t`Issued by`}</span>
             <span class="value">{key.caName || $t`Not certified by a certification authority`}</span>
-            <span>{$t`Valid to:`}</span>
+            <span>{$t`Valid to`}</span>
             <span class="value">{key.expires ? getDateString(key.expires) : $t`No end date`}</span>
-            <span>{$t`Verification code:`}</span>
+            <span>{$t`Verification code`}</span>
             <span class="value code">{key.fingerprintDisplay}</span>
             {#if key instanceof SMIMEPrivateKey}
-              <span>{$t`Certificate:`}</span>
+              <span>{$t`Certificate`}</span>
               <vbox class="status">
                 {#await statusAsync then status}
                   <span class="value">{keyStatusText(status)}</span>
@@ -46,19 +46,19 @@
           disabled={!isUsable ? noKeyReason : encrypt && $t`Encrypted messages are always signed`}
           on:change={event => catchErrors(() => onSign(event.detail))} />
       {:else}
-        <span class="hint">{$t`Add an email account first.`}</span>
+        <span class="hint">{$t`Add an email account first`}</span>
       {/if}
     </OptionsRow>
   </OptionsSection>
 
   <OptionsSection title={$t`Digital IDs (Certificates)`}>
     <OptionsRow icon={CertificateIcon}>
-      <span>{$t`Digital IDs or Certificates are documents that allow you to prove your identity in electronic transactions.`}</span>
+      <span>{$t`Digital IDs or Certificates are documents that allow you to prove your identity in electronic transactions`}</span>
       <hbox class="buttons">
         <DialogButton label={$t`Import/Export…`} onClick={() => { isImportExportOpen = true; }}
-          disabled={!identity && $t`Add an email account first.`} />
+          disabled={!identity && $t`Add an email account first`} />
         <DialogButton label={$t`Get a Digital ID…`} onClick={() => { isGetOpen = true; }}
-          disabled={!identity && $t`Add an email account first.`} />
+          disabled={!identity && $t`Add an email account first`} />
       </hbox>
     </OptionsRow>
   </OptionsSection>

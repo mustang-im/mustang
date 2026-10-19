@@ -20,13 +20,13 @@
     <BackstageTile icon={AccountSettingsIcon} label={$t`Account Settings`}
       title={$t`Account Settings`}
       description={account
-        ? $t`Change the settings of ${$account.name}, its server and logon information, or add and remove accounts.`
-        : $t`Add and remove accounts or change existing connection settings.`}
+        ? $t`Change the settings of ${$account.name}, its server and logon information, or add and remove accounts`
+        : $t`Add and remove accounts or change existing connection settings`}
       onClick={() => account ? openAccountSettings(account) : openOptions("mail")} />
 
     <BackstageTile icon={RulesIcon} label={$t`Manage Rules & Alerts`}
       title={$t`Rules and Alerts`}
-      description={$t`Use Rules and Alerts to help organize your incoming email messages, and receive updates when items are added, changed, or removed.`}
+      description={$t`Use Rules and Alerts to help organize your incoming email messages, and receive updates when items are added, changed, or removed`}
       disabled={!account && $t`Add an email account first`}
       onClick={() => goTo("/mail/rules", { account })} />
   </vbox>

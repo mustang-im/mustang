@@ -1,19 +1,19 @@
 <vbox class="time-options-editor">
   <hbox class="row">
-    <span class="row-label">{$t`Duration:`}</span>
+    <span class="row-label">{$t`Duration`}</span>
     <ComboBox options={durationOptions} value={poll.duration} label={$t`Duration`} width="132px"
       on:change={event => setDuration(event.detail)} />
   </hbox>
   <span class="field-label">{$t`Proposed times`}</span>
   <DisplayList {options} duration={poll.duration}
-    emptyText={$t`Add the times that you propose.`} let:time>
+    emptyText={$t`Add the times that you propose`} let:time>
     <button type="button" class="remove" title={$t`Remove this time`} aria-label={$t`Remove this time`}
       on:click={() => removeTime(time)}>
       <RemoveIcon size={14} />
     </button>
   </DisplayList>
   <hbox class="row add-row">
-    <span class="row-label">{$t`Start time:`}</span>
+    <span class="row-label">{$t`Start time`}</span>
     <DateField date={newTime} label={$t`Start date`} required on:change={event => setNewDay(event.detail)} />
     <TimeInput time={newTime} options={startTimeOptions(newTime)} label={$t`Start time`}
       on:change={event => newTime = event.detail} />

@@ -6,15 +6,15 @@
     <hbox class="name-field">
       <MailAutocomplete addresses={recipients} label={$t`Name`} />
     </hbox>
-    <span class="lo-form-label">{$t`Folder type:`}</span>
-    <ComboBox label={$t`Folder type:`} options={typeOptions} bind:value={type} width="100%" />
+    <span class="lo-form-label">{$t`Folder type`}</span>
+    <ComboBox label={$t`Folder type`} options={typeOptions} bind:value={type} width="100%" />
   </FormGrid>
   {#if $availableAccounts.hasItems}
     <vbox class="available">
-      <span>{$t`Shared with you:`}</span>
+      <span>{$t`Shared with you`}</span>
       <ListView items={$availableAccounts.contents} on:select={event => recipients.replaceAll([event.detail])}
         on:open={event => { recipients.replaceAll([event.detail]); catchErrors(() => dialog.submit()); }}
-        label={$t`Shared with you:`} height="120px" let:item>
+        label={$t`Shared with you`} height="120px" let:item>
         <span title={item.emailAddress}>{item.nameOrEMail}</span>
       </ListView>
     </vbox>

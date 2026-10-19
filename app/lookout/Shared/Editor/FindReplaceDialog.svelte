@@ -2,12 +2,12 @@
   <DialogTabs tabs={[{ id: "find", label: $t`Find` }, { id: "replace", label: $t`Replace` }]}
     bind:selected={tab} />
   <grid class="fields">
-    <span>{$t`Find what:`}</span>
-    <TextField label={$t`Find what:`} bind:value={term}
+    <span>{$t`Find what`}</span>
+    <TextField label={$t`Find what`} bind:value={term}
       on:input={() => status = ""} on:keydown={onEnter} />
     {#if tab == "replace"}
-      <span>{$t`Replace with:`}</span>
-      <TextField label={$t`Replace with:`} bind:value={replacement} on:keydown={onEnter} />
+      <span>{$t`Replace with`}</span>
+      <TextField label={$t`Replace with`} bind:value={replacement} on:keydown={onEnter} />
     {/if}
   </grid>
   {#if showOptions}
@@ -60,17 +60,17 @@
   }
 
   function onFindNext() {
-    status = findNext(editor, term, matchCase) ? "" : $t`The search item was not found.`;
+    status = findNext(editor, term, matchCase) ? "" : $t`The search item was not found`;
   }
 
   function onReplace() {
-    status = replaceMatch(editor, term, replacement, matchCase) ? "" : $t`The search item was not found.`;
+    status = replaceMatch(editor, term, replacement, matchCase) ? "" : $t`The search item was not found`;
   }
 
   function onReplaceAll() {
     clearFound();
     let count = replaceAllMatches(editor, term, replacement, matchCase);
-    status = count ? $t`All done. ${count} replacements were made.` : $t`The search item was not found.`;
+    status = count ? $t`All done. ${count} replacements were made.` : $t`The search item was not found`;
   }
 
   function onEnter(event: KeyboardEvent) {

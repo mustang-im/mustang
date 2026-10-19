@@ -1,8 +1,8 @@
 <Dialog title={$t`Customize the Ribbon`} okLabel={$t`OK`} width="480px" onOK={save} on:close={onClose}>
   <vbox class="customize">
-    <span class="intro">{$t`Choose the tabs and groups that the ribbon shows.`}</span>
+    <span class="intro">{$t`Choose the tabs and groups that the ribbon shows`}</span>
     <hbox class="list-header">
-      <span>{$t`Customize the Ribbon:`}</span>
+      <span>{$t`Customize the Ribbon`}</span>
       <span class="list-kind">{$t`Main Tabs`}</span>
     </hbox>
     <vbox class="tree" role="tree" aria-label={$t`Main Tabs`}>

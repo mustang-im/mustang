@@ -68,7 +68,7 @@
       {#if isLoading}
         {$t`Loading…`}
       {:else}
-        {$t`We didn't find anything to show here.`}
+        {$t`We didn't find anything to show here`}
       {/if}
     </vbox>
   {/if}
