@@ -117,8 +117,11 @@ export class JSCalendarEvent {
       jmap.uid = event.calUID;
     }
     jmap.updated = (event.lastUpdateTime ?? new Date()).toISOString();
-    jmap.sequence ??= -1;
-    jmap.sequence++;
+    // An invitation must keep the organizer's sequence, or the server ignores the organizer's next update
+    if (!event.isIncomingMeeting) {
+      jmap.sequence ??= -1;
+      jmap.sequence++;
+    }
 
     // Text
     jmap.title = event.title;
