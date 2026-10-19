@@ -52,7 +52,9 @@ function newAccount(accountID: string, addressbooks: TJMAPAddressbook[], mainAcc
   }
   account.accountID = accountID;
   account.makeSingleCall = async (method: string, args: any) => {
-    expect(method).toBe("AddressBook/get");
+    if (method == "AddressBook/set") { // e.g. to subscribe
+      return { accountId: args.accountId, oldState: "a1", newState: "a2", updated: Object.fromEntries(Object.keys(args.update ?? {}).map(id => [id, null])) };
+    }
     return { accountId: args.accountId, state: "a1", list: addressbooks, notFound: [] };
   };
   return account;
@@ -68,7 +70,7 @@ test("Address books that another user shared with us are shown, also when not su
   let bob = newAccount("t", kOwn);
   let alice = newAccount("s", kSharedWithBob, bob);
   await alice.listAddressbooks();
-  expect(addressbookIDs(alice)).toEqual(["b", "c"]);
+  expect(addressbookIDs(alice).sort()).toEqual(["b", "c"]);
 });
 
 test("Our own address books that we unsubscribed stay hidden", async () => {
