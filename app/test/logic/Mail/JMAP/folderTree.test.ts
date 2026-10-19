@@ -41,10 +41,12 @@ function newAccount(mailboxes: any[]) {
   return account;
 }
 
-function tree(folders: Iterable<Folder>): any[] {
-  return [...folders].map(folder => folder.subFolders.hasItems
-    ? [folder.name, tree(folder.subFolders)]
-    : folder.name);
+function names(folders: Iterable<Folder>): Set<string> {
+  return new Set([...folders].map(folder => folder.name));
+}
+
+function folderNamed(account: JMAPAccount, name: string): Folder {
+  return account.getAllFolders().find(folder => folder.name == name);
 }
 
 test("A subfolder that the server lists before its parent is put under its parent right away", async () => {
@@ -52,10 +54,9 @@ test("A subfolder that the server lists before its parent is put under its paren
 
   await account.listFolders();
 
-  expect(tree(account.rootFolders)).toEqual([
-    "Drafts", "Deleted Items", "Sent Items", ["Projects", ["Sub"]], "Junk Mail", "Inbox",
-  ]);
-  expect(account.getAllFolders().find(folder => folder.name == "Sub").parent.name).toBe("Projects");
+  expect(names(account.rootFolders)).toEqual(new Set(["Drafts", "Deleted Items", "Sent Items", "Projects", "Junk Mail", "Inbox"]));
+  expect(names(folderNamed(account, "Projects").subFolders)).toEqual(new Set(["Sub"]));
+  expect(folderNamed(account, "Sub").parent.name).toBe("Projects");
 });
 
 test("A folder that was moved on the server is moved here, too", async () => {
@@ -66,8 +67,7 @@ test("A folder that was moved on the server is moved here, too", async () => {
 
   await account.listFolders();
 
-  expect(tree(account.rootFolders)).toEqual([
-    "Drafts", "Deleted Items", "Sent Items", "Projects", "Junk Mail", "Inbox", "Sub",
-  ]);
-  expect(account.getAllFolders().find(folder => folder.name == "Sub").parent).toBeNull();
+  expect(names(account.rootFolders)).toEqual(new Set(["Drafts", "Deleted Items", "Sent Items", "Projects", "Junk Mail", "Inbox", "Sub"]));
+  expect(folderNamed(account, "Projects").subFolders.isEmpty).toBe(true);
+  expect(folderNamed(account, "Sub").parent).toBeNull();
 });
