@@ -384,10 +384,10 @@
     $folderPane.value = isReading ? FolderPaneMode.Minimized : FolderPaneMode.Normal;
     $ribbonCollapsed.value = isReading;
   }
-  function statusRight(states: typeof statusAccounts, updating: Folder[]) {
+  function statusRight(states: typeof statusAccounts, updating: Collection<Folder>) {
     let items = [];
-    if (updating.length) {
-      items.push({ label: $t`Updating ${FolderTreeActions.displayName(updating[0])}…`, busy: true });
+    if (updating.hasItems) {
+      items.push({ label: $t`Updating ${FolderTreeActions.displayName(updating.first)}…`, busy: true });
     }
     let failed = states.filter(account => account.fatalError);
     let offline = states.filter(account => !account.isLoggedIn && !account.fatalError);

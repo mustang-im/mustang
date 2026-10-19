@@ -8,13 +8,13 @@
     </hbox>
   {/if}
 {/each}
-<SearchFoldersNode folders={$savedSearches.contents.filter(folder => folder.search.account == account)}
+<SearchFoldersNode folders={accountSearches}
   nodeID={account.id + "/search-folders"} bind:selectedFolder />
 
 <script lang="ts">
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
+  import { savedSearchFolders, type SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
   import FolderNode from "./FolderNode.svelte";
   import SearchFoldersNode from "./SearchFoldersNode.svelte";
   import ConnectButton from "./ConnectButton.svelte";
@@ -25,9 +25,17 @@
   export let selectedFolder: Folder;
   export let account: MailAccount;
 
-  const savedSearches = savedSearchFolders;
-
   $: foldersSorted = $folders.sortBy(f => f.orderPos);
+
+  const accountSearches = savedSearchFolders.filterObservable(isOfAccount);
+  $: account, filterSearches();
+  function filterSearches() {
+    accountSearches.replaceAll(savedSearchFolders.contents.filter(isOfAccount));
+  }
+
+  function isOfAccount(folder: SavedSearchFolder): boolean {
+    return folder.search.account == account;
+  }
 </script>
 
 <style>

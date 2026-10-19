@@ -25,7 +25,7 @@
           {/each}
         </hbox>
       {/if}
-      {#each groupEvents as group, g}
+      {#each groupEvents as group, g (group.calendar?.id)}
         <AllDayEvents days={range.days} firstColumn={firstColumnOf(g)} events={group.allDay} calendar={group.calendar} group={g} on:slotmenu />
       {/each}
     </div>
@@ -36,7 +36,7 @@
         <TimeRuler {pxPerMinute} labels={rulerLabels[r]} isPrimary={ruler.isPrimary} width={rulerWidths[r]} />
       {/each}
     </hbox>
-    {#each groupEvents as group, g}
+    {#each groupEvents as group, g (group.calendar?.id)}
       <div class="lines" style="grid-column: {firstColumnOf(g)} / span {range.days.length}">
         {#each slotStarts as minute}
           <div class="slot" class:hour={minute % 60 == 0} />
@@ -112,18 +112,21 @@
   // $: groupWorkingHours = derived(groups.map(group =>
   //   group.calendar ? WorkingHours.of(group.calendar) : shownWorkingHours), all => all);
 
-  $: groupEvents = groups.map(group => {
+  let groupEvents: ReturnType<typeof eventsOf>[] = [];
+  $: groupEvents = groups.map(group => groupEvents.find(shown => shown.events == group.events) ?? eventsOf(group));
+  function eventsOf(group: CalendarColumnGroup) {
     let inRange = group.events.filterObservable(isInRange);
     return {
       calendar: group.calendar,
+      events: group.events,
       inRange,
       allDay: inRange.filterObservable(event => isInAllDayArea(event)),
       timed: inRange.filterObservable(event => !isInAllDayArea(event)),
     };
-  });
+  }
   $: range, filterRange();
   function filterRange() {
-    groupEvents.forEach((group, g) => group.inRange.replaceAll(groups[g].events.contents.filter(isInRange)));
+    groupEvents.forEach(group => group.inRange.replaceAll(group.events.contents.filter(isInRange)));
   }
 
   function isInRange(event: Event): boolean {

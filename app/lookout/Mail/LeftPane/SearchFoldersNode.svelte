@@ -1,4 +1,4 @@
-{#if folders.length}
+{#if $folders.hasItems}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div class="search-folders-row" role="treeitem" tabindex="-1" aria-selected="false" aria-expanded={isExpanded}
     on:click={onToggle}>
@@ -10,7 +10,7 @@
     <span class="name">{$t`Search Folders`}</span>
   </div>
   {#if isExpanded}
-    {#each folders as folder (folder)}
+    {#each $folders.each as folder (folder)}
       <FolderNode {folder} depth={1} bind:selectedFolder />
     {/each}
   {/if}
@@ -23,9 +23,10 @@
   import FolderNode from "./FolderNode.svelte";
   import ChevronIcon from "lucide-svelte/icons/chevron-right";
   import SearchFolderIcon from "lucide-svelte/icons/folder-search";
+  import type { Collection } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  export let folders: SavedSearchFolder[];
+  export let folders: Collection<SavedSearchFolder>;
   export let nodeID: string;
   export let selectedFolder: Folder;
 

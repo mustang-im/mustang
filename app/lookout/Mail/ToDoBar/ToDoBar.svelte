@@ -14,7 +14,7 @@
         on:selectweek={event => { selectedDay = event.detail; }}
         on:selectdays={event => { selectedDay = event.detail.first; }} />
       <vbox class="agenda">
-        {#each agenda as agendaDay (agendaDay.day.getTime())}
+        {#each $agenda as agendaDay (agendaDay.day.getTime())}
           <span class="day-header">{dayLabel(agendaDay.day, $now)}</span>
           {#each agendaDay.events as event (event)}
             <button type="button" class="event" title={event.title}
@@ -43,7 +43,7 @@
           <CloseIcon size={14} />
         </button>
       </hbox>
-      {#each frequentPeople as person (person)}
+      {#each $frequentPeople as person (person)}
         <button type="button" class="person" title={person.emailAddresses.first?.value}
           on:click={() => openPersonFromOtherApp(person)}>
           <PersonCircle name={person.name} picture={person.picture} size={28} />
@@ -65,6 +65,7 @@
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { appGlobal } from "../../../logic/app";
   import { shownCalendarEvents } from "../../../frontend/Calendar/selected";
   import { openEvent } from "../../../frontend/Calendar/open";
@@ -75,6 +76,7 @@
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { agendaDays } from "./ToDoAgenda";
+  import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import CloseIcon from "lucide-svelte/icons/x";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
@@ -86,20 +88,38 @@
     $toDoBar.value = ($toDoBar.value ?? []).filter(existing => existing != part);
   }
 
-  const allPersons = appGlobal.persons;
-  $: events = derived($shownCalendarEvents.contents, () => shownCalendarEvents.contents);
-  $: persons = derived($allPersons.contents, () => allPersons.contents);
   let selectedDay = new Date();
+  const kAgendaDays = 7;
+  const agendaEvents = shownCalendarEvents.filterObservable(isInAgenda);
+  $: selectedDay, filterAgenda();
+  function filterAgenda() {
+    agendaEvents.replaceAll(shownCalendarEvents.contents.filter(isInAgenda));
+  }
 
-  $: agenda = agendaDays($events, selectedDay);
-  $: frequentPeople = topPeople($persons);
+  function isInAgenda(event: Event): boolean {
+    let start = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate());
+    let end = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate() + kAgendaDays);
+    return event.startTime < end && event.endTime > start;
+  }
 
-  function topPeople(persons: Person[]): Person[] {
+  $: agenda = derived([...$agendaEvents.contents], events => agendaDays(events, selectedDay, kAgendaDays));
+
+  const peopleByPopularity = appGlobal.persons.sort((a, b) =>
+    (b.popularity ?? 0) - (a.popularity ?? 0) || (a.name ?? "").localeCompare(b.name ?? ""));
+  $: frequentPeople = derived(topPeople($peopleByPopularity), people => people);
+
+  function topPeople(persons: Collection<Person>): Person[] {
     const kCount = 10;
-    return persons
-      .filter(person => person.name && person.emailAddresses.hasItems)
-      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0) || a.name.localeCompare(b.name))
-      .slice(0, kCount);
+    let top: Person[] = [];
+    for (let person of persons) {
+      if (top.length == kCount) {
+        break;
+      }
+      if (person.name && person.emailAddresses.hasItems) {
+        top.push(person);
+      }
+    }
+    return top;
   }
 
   function dayLabel(day: Date, currentMinute: Date): string {
