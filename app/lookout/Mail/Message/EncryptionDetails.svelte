@@ -15,8 +15,8 @@
       </ListView>
       <span class="caption">{$t`Description:`}</span>
       <div class="description">
-        <div class="description-title">{MessageSecurity.title(isSigned, isEncrypted)}</div>
-        <div>{MessageSecurity.description(isSigned, isEncrypted, !!mySigningKey, fromName)}</div>
+        <div class="description-title">{title}</div>
+        <div>{msg}</div>
       </div>
       {#if signingKey && !mySigningKey}
         <GroupBox label={$t`Signing key`}>
@@ -36,7 +36,7 @@
         <GroupBox label={$t`Edit Trust`}>
           <!-- <copied from="../../../frontend/Contacts/PersonPage/EncryptionKey.svelte" acceptance> -->
           {#each [TrustLevel.Personal, signingKey.caName ? TrustLevel.ThirdParty : TrustLevel.Sender, TrustLevel.Distrusted] as level}
-            <Radio label={MessageSecurity.trustLabel(level, signingKey.caName, fromName)}
+            <Radio label={trustLabel(level, signingKey.caName, fromName)}
               bind:group={signingKey.trustLevel} value={level}
               on:change={() => catchErrors(onTrustChanged)} />
           {/each}
@@ -54,7 +54,6 @@
   import { getPublicKeyByKeyID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { catchErrors, showError } from "../../../frontend/Util/error";
-  import { MessageSecurity } from "./MessageSecurity";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -82,7 +81,19 @@
   // <copied from="../../../frontend/Mail/Message/EncryptionDetails.svelte">
   $: identity = $message.outgoing ? findIdentityForEMailAddress($message.from?.emailAddress) : null;
   $: mySigningKey = identity?.encryptionPrivateKeys.find(key => key.id == message.signedByKeyID);
+  $: title = isSigned && isEncrypted
+      ? $t`End-to-end encrypted and signed`
+      : isSigned
+        ? $t`Signed`
+        : $t`End-to-end-encrypted, but not signed`;
   $: fromName = $message.from?.findPerson()?.name ?? $message.from?.nameOrEMail;
+  $: msg = mySigningKey
+      ? $t`You sent this email`
+      : isSigned && isEncrypted
+        ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${fromName}. Only the recipients can read it, but the email provider cannot.`
+        : isSigned
+          ? $t`If - and only if - you have confidence in the certificate below, you can be sure that this email was indeed written by ${fromName}. It was not encrypted, meaning that it was not protected from surveillance.`
+          : $t`Only the recipients can read this email, but there is no assurance about who wrote it.`;
   // </copied>
   $: layers = [
     { label: gt`Subject: ${message.subject ?? ""}`, icon: SubjectIcon },
@@ -90,6 +101,19 @@
     ...(isSigned ? [{ label: gt`Digital Signature Layer`, icon: SignedIcon }] : []),
   ];
   let selectedLayer = null;
+
+  function trustLabel(level: TrustLevel, caName: string | null, personName: string): string {
+    switch (level) {
+      case TrustLevel.Personal:
+        return $t`I have personally checked the verification code with ${personName}`;
+      case TrustLevel.ThirdParty:
+        return $t`${caName ?? ""} claims that this is correct`;
+      case TrustLevel.Distrusted:
+        return $t`This key is bad`;
+      default:
+        return $t`Not checked`;
+    }
+  }
 
   async function onTrustChanged() {
     // <copied from="../../../frontend/Contacts/PersonPage/EncryptionKey.svelte" onSave()>

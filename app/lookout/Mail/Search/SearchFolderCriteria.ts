@@ -1,7 +1,7 @@
 import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
-import { MailSearch, type SearchOptions } from "./MailSearch";
+import { defaultSearchOptions, type SearchOptions } from "./MailSearch";
 import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
-import { SizeRange, SizeRanges } from "./SearchRanges";
+import { SizeRange, namedSizeRanges, sizeRangeBytes } from "./SearchRanges";
 
 export class SearchFolderCriteria {
   readonly draft: AdvancedSearchDraft;
@@ -14,7 +14,7 @@ export class SearchFolderCriteria {
 
   static optionsOf(search: SearchEMail): SearchOptions {
     return {
-      ...MailSearch.defaultOptions(),
+      ...defaultSearchOptions(),
       person: search.includesPerson,
       isOutgoing: search.isOutgoing ?? null,
       isRead: search.isRead ?? null,
@@ -22,8 +22,8 @@ export class SearchFolderCriteria {
       flagged: !!search.isStarred,
       replied: !!search.isReplied,
       tags: search.tags.contents,
-      size: SizeRanges.named.find(range => {
-        let bytes = SizeRanges.bytes(range);
+      size: namedSizeRanges.find(range => {
+        let bytes = sizeRangeBytes(range);
         return (bytes.min ?? null) == (search.sizeMin ?? null) && (bytes.max ?? null) == (search.sizeMax ?? null);
       }) ?? SizeRange.Any,
     };
@@ -40,7 +40,7 @@ export class SearchFolderCriteria {
     search.isReplied = options.replied ? true : null;
     search.tags.replaceAll(options.tags);
     if (this.draft.size != this.initialSize) {
-      let bytes = SizeRanges.bytes(this.draft.size);
+      let bytes = sizeRangeBytes(this.draft.size);
       search.sizeMin = bytes.min;
       search.sizeMax = bytes.max;
     }

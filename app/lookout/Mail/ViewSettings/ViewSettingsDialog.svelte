@@ -1,4 +1,4 @@
-<Dialog title={$t`Advanced View Settings: ${MailViewSettings.typeLabel(draft.type)}`}
+<Dialog title={$t`Advanced View Settings: ${viewTypeLabel(draft.type)}`}
   okLabel={$t`OK`} onOK={save} width="600px" on:close>
   <GroupBox label={$t`Description`}>
     <div class="rows">
@@ -41,7 +41,7 @@
 
 <script lang="ts">
   import { quickSearch } from "../../../frontend/Mail/Selected";
-  import { ArrangeFields, ColumnInfo, MailViewSettings, type ViewSettings } from "./ViewSettings";
+  import { arrangeFieldLabel, ColumnInfo, viewSettingsOf, replaceViewSettings, viewTypeLabel, defaultViewSettings, type ViewSettings } from "./ViewSettings";
   import { MessageGrouping } from "../3pane/MessageGrouping";
   import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
@@ -57,7 +57,7 @@
 
   export let folder: Folder | null;
 
-  let draft: ViewSettings = MailViewSettings.of(folder);
+  let draft: ViewSettings = viewSettingsOf(folder);
   const readingPaneSetting = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
   let readingPane: ReadingPanePosition = readingPaneSetting.value ?? "right";
   let open: "columns" | "group-by" | "sort" | "filter" | "other" | null = null;
@@ -65,8 +65,8 @@
   $: columnsSummary = draft.columns.map(column => ColumnInfo.labelOf(column)).join(", ");
   $: groupSummary = !draft.showInGroups
     ? $t`None`
-    : $t`${ArrangeFields.labelOf(draft.groupBy ?? draft.arrangeBy)} (${orderLabel(draft.groupBy ?? draft.arrangeBy, draft.groupBy ? draft.groupReverse : draft.reverseSort)})`;
-  $: sortSummary = $t`${ArrangeFields.labelOf(draft.arrangeBy)} (${orderLabel(draft.arrangeBy, draft.reverseSort)})`;
+    : $t`${arrangeFieldLabel(draft.groupBy ?? draft.arrangeBy)} (${orderLabel(draft.groupBy ?? draft.arrangeBy, draft.groupBy ? draft.groupReverse : draft.reverseSort)})`;
+  $: sortSummary = $t`${arrangeFieldLabel(draft.arrangeBy)} (${orderLabel(draft.arrangeBy, draft.reverseSort)})`;
 
   function orderLabel(field: ViewSettings["arrangeBy"], reverse: boolean): string {
     return MessageGrouping.isDescendingByDefault(field) == !!reverse ? $t`ascending` : $t`descending`;
@@ -77,11 +77,11 @@
   }
 
   function resetDraft() {
-    draft = { ...MailViewSettings.defaults(), type: draft.type };
+    draft = { ...defaultViewSettings(), type: draft.type };
   }
 
   function save() {
-    MailViewSettings.replace(folder, draft);
+    replaceViewSettings(folder, draft);
     readingPaneSetting.value = readingPane;
   }
 </script>

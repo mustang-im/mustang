@@ -125,7 +125,7 @@
   import RibbonTextBox from "../../Shared/Ribbon/RibbonTextBox.svelte";
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
   import { ContactActions } from "../../Contacts/ContactActions";
-  import { SelectNames } from "../Composer/SelectNames";
+  import { searchPersons } from "../Composer/SelectNames";
   import type { Person } from "../../../logic/Abstract/Person";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import JunkMenuItems from "../Message/JunkMenuItems.svelte";
@@ -186,7 +186,7 @@
   let peopleSearch = "";
   let isPeopleListOpen = false;
   $: peopleMatches = peopleSearch.trim().length >= 2
-    ? SelectNames.persons(appGlobal.addressbooks, peopleSearch.trim()).contents.slice(0, 8)
+    ? searchPersons(appGlobal.addressbooks, peopleSearch.trim()).contents.slice(0, 8)
     : [];
 
   function openPerson(person: Person) {

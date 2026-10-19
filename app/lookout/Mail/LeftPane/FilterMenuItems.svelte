@@ -1,24 +1,24 @@
 <MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={isUnread}
-  onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
+  onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
 <MenuItem label={$t`Has Attachments`} icon={AttachmentIcon} checkable checked={hasAttachments}
-  onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
+  onClick={() => toggleQuickFilter(QuickFilter.Attachments)} />
 <!-- <SubMenu label={$t`This Week`} icon={ReceivedIcon}>
   <ReceivedMenuItems selected={$searchOptions.received}
-    on:select={event => MailFilters.searchInFolder({ received: event.detail, receivedStart: null, receivedEnd: null })} />
+    on:select={event => searchInFolder({ received: event.detail, receivedStart: null, receivedEnd: null })} />
 </SubMenu> -->
 <SubMenu label={$t`Categorized`} icon={CategorizeIcon}
   disabled={!$tags.hasItems && $t`There are no categories yet`}>
   <CategoryMenuItems selected={$searchOptions.tags}
-    on:select={event => MailFilters.searchInFolder({ tags: [...$searchOptions.tags, event.detail] })}
-    on:unselect={event => MailFilters.searchInFolder({ tags: $searchOptions.tags.filter(tag => tag != event.detail) })} />
+    on:select={event => searchInFolder({ tags: [...$searchOptions.tags, event.detail] })}
+    on:unselect={event => searchInFolder({ tags: $searchOptions.tags.filter(tag => tag != event.detail) })} />
 </SubMenu>
 <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={isFlagged}
-  onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
+  onClick={() => toggleQuickFilter(QuickFilter.Flagged)} />
 <SubMenu label={$t`Sent To`} icon={SentToIcon}>
   <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={isSentTo}
     onClick={onSentTo} />
   <MenuItem label={$t`Sent by Me`} checkable checked={isSentByMe}
-    onClick={() => MailFilters.searchInFolder({ person: null, isOutgoing: isSentByMe ? null : true })} />
+    onClick={() => searchInFolder({ person: null, isOutgoing: isSentByMe ? null : true })} />
 </SubMenu>
 <MenuItem label={$t`More Filters…`} icon={MoreFiltersIcon}
   onClick={moreFilters} />
@@ -32,8 +32,8 @@
   import { availableTags } from "../../../logic/Abstract/Tag";
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
-  import { MailFilters, QuickFilter } from "../MailFilters";
-  import { MailSearch } from "../Search/MailSearch";
+  import { hasSearchCriteria, isQuickFilterActive, toggleQuickFilter, searchInFolder, QuickFilter } from "../MailFilters";
+  import { defaultSearchOptions } from "../Search/MailSearch";
   import { isAdvancedSearchOpen, searchOptions } from "../Selected";
   import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -62,15 +62,15 @@
   let isFlagged = false;
   let hasFilter = false;
   function updateStates() {
-    isUnread = MailFilters.isActive(QuickFilter.Unread);
-    hasAttachments = MailFilters.isActive(QuickFilter.Attachments);
-    isFlagged = MailFilters.isActive(QuickFilter.Flagged);
-    hasFilter = quickSearch.hasSearch() || MailFilters.isSearching();
+    isUnread = isQuickFilterActive(QuickFilter.Unread);
+    hasAttachments = isQuickFilterActive(QuickFilter.Attachments);
+    isFlagged = isQuickFilterActive(QuickFilter.Flagged);
+    hasFilter = quickSearch.hasSearch() || hasSearchCriteria();
   }
 
   function moreFilters() {
-    if (!MailFilters.isSearching()) {
-      MailFilters.searchInFolder({});
+    if (!hasSearchCriteria()) {
+      searchInFolder({});
     }
     $isAdvancedSearchOpen = true;
   }
@@ -78,9 +78,9 @@
   // <copied from="FolderHeader.svelte">
   function clearFilter() {
     quickSearch.reset();
-    if (MailFilters.isSearching()) {
+    if (hasSearchCriteria()) {
       $globalSearchTerm = null;
-      $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope };
+      $searchOptions = { ...defaultSearchOptions(), scope: $searchOptions.scope };
     }
   }
   // </copied>
@@ -89,7 +89,7 @@
     $openSearchPerson = {
       fieldLabel: $t`To`,
       person: isSentTo ? $searchOptions.person : null,
-      onPick: person => person && MailFilters.searchInFolder({ person, isOutgoing: true }),
+      onPick: person => person && searchInFolder({ person, isOutgoing: true }),
     };
   }
 </script>

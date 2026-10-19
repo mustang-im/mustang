@@ -11,7 +11,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { ArrangeFields, type ViewSettings } from "./ViewSettings";
+  import { arrangeFields, type ViewSettings } from "./ViewSettings";
   import { type ArrangeBy, MessageGrouping } from "../3pane/MessageGrouping";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import GroupBox from "../../Shared/Form/GroupBox.svelte";
@@ -24,7 +24,7 @@
   export let settings: ViewSettings;
   const dispatch = createEventDispatcher<{ change: Partial<ViewSettings> }>();
 
-  const fieldOptions: ComboOption<ArrangeBy>[] = ArrangeFields.all().map(option => ({ value: option.id, label: option.label }));
+  const fieldOptions: ComboOption<ArrangeBy>[] = arrangeFields().map(option => ({ value: option.id, label: option.label }));
   let field: ArrangeBy = settings.arrangeBy;
   let isAscending = MessageGrouping.isDescendingByDefault(field) == !!settings.reverseSort;
 

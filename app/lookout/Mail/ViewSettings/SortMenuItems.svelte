@@ -1,18 +1,18 @@
 <MenuLabel label={$t`Sort by`} />
 {#each arrangements as arrangement}
   <MenuItem label={arrangement.label} checkable checked={$settings.arrangeBy == arrangement.id}
-    onClick={() => ViewCommands.arrangeBy(folder, arrangement.id)} />
+    onClick={() => arrangeFolderBy(folder, arrangement.id)} />
 {/each}
 <MenuLabel label={$t`Sort order`} />
 {#each sortOrders as order}
   <MenuItem label={order.label} checkable checked={!!$settings.reverseSort == order.reversed}
-    onClick={() => MailViewSettings.change(folder, { reverseSort: order.reversed })} />
+    onClick={() => changeViewSettings(folder, { reverseSort: order.reversed })} />
 {/each}
 
 <script lang="ts">
   import type { Folder } from "../../../logic/Mail/Folder";
-  import { ArrangeFields, MailViewSettings } from "./ViewSettings";
-  import { ViewCommands } from "./ViewCommands";
+  import { arrangeFields, viewSettingsStore, changeViewSettings } from "./ViewSettings";
+  import { arrangeFolderBy } from "./ViewCommands";
   import { MessageGrouping } from "../3pane/MessageGrouping";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
@@ -20,8 +20,8 @@
 
   export let folder: Folder | null;
 
-  const arrangements = ArrangeFields.all();
+  const arrangements = arrangeFields();
 
-  $: settings = MailViewSettings.store(folder);
+  $: settings = viewSettingsStore(folder);
   $: sortOrders = MessageGrouping.sortOrders($settings.arrangeBy);
 </script>

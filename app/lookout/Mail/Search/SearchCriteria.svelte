@@ -104,9 +104,9 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import type { Person } from "../../../logic/Abstract/Person";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { MailSearch, SearchScope } from "./MailSearch";
+  import { isScopeAvailable, scopeLabel, SearchScope } from "./MailSearch";
   import { AdvancedSearchDraft, ReadStatus } from "./AdvancedSearchDraft";
-  import { SizeRange, SizeRanges } from "./SearchRanges";
+  import { SizeRange, sizeRangeLabel, namedSizeRanges } from "./SearchRanges";
   import CategoryMenuItems from "./CategoryMenuItems.svelte";
   import CategorySquare from "../../Shared/Tag/CategorySquare.svelte";
   import SearchPersonDialog from "./SearchPersonDialog.svelte";
@@ -141,16 +141,16 @@
   $: scopeOptions = [SearchScope.AllAccounts, SearchScope.CurrentAccount, SearchScope.CurrentFolder]
     .map(scope => ({
       value: scope,
-      label: MailSearch.scopeLabel(scope),
-      disabled: !MailSearch.isScopeAvailable(scope, account, folder),
+      label: scopeLabel(scope),
+      disabled: !isScopeAvailable(scope, account, folder),
     })) as ComboOption<SearchScope>[];
   const readOptions: ComboOption<ReadStatus>[] = [
     { value: ReadStatus.All, label: gt`All` },
     { value: ReadStatus.Read, label: gt`Read` },
     { value: ReadStatus.Unread, label: gt`Unread` },
   ];
-  const sizeOptions: ComboOption<SizeRange>[] = [SizeRange.Any, ...SizeRanges.named]
-    .map(size => ({ value: size, label: SizeRanges.label(size) }));
+  const sizeOptions: ComboOption<SizeRange>[] = [SizeRange.Any, ...namedSizeRanges]
+    .map(size => ({ value: size, label: sizeRangeLabel(size) }));
   const tags = availableTags;
   let categoriesButton: HTMLButtonElement;
   let isCategoriesOpen = false;

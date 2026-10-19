@@ -4,12 +4,12 @@
       tooltip={$t`Only the recipients can read the email`}
       selected={!!$mail.shouldEncrypt}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
-      onClick={() => ComposerEncryption.toggleEncrypted(mail, identity)} />
+      onClick={toggleEncrypted} />
     <RibbonToggleButton label={$t`Sign`} icon={SignIcon}
       tooltip={$t`This proves that I wrote this email`}
       selected={!!$mail.signedByKeyID}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
-      onClick={() => ComposerEncryption.toggleSigned(mail, identity)} />
+      onClick={toggleSigned} />
   {:else}
     <RibbonButton label={$t`Encrypt`} icon={EncryptIcon}
       tooltip={$t`You need a digital ID to encrypt messages. Set it up in the Trust Center.`}
@@ -23,7 +23,6 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { ComposerEncryption } from "./ComposerEncryption";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { SettingsDialogs } from "../../Settings/SettingsDialogs";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -31,10 +30,53 @@
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import EncryptIcon from "lucide-svelte/icons/lock";
   import SignIcon from "lucide-svelte/icons/signature";
-  import { t } from "../../../l10n/l10n";
+  import { showError } from "../../../frontend/Util/error";
+  import { assert, UserError } from "../../../logic/util/util";
+  import { gt, t } from "../../../l10n/l10n";
 
   export let mail: EMail;
   export let identity: MailIdentity;
 
   $: privateKey = identity ? getMyPrivateKey(identity) ?? null : null;
+
+  // <copied from="../../../frontend/Mail/Composer/EncryptionButtons.svelte">
+  function toggleSigned() {
+    if (mail.mustEncrypt) {
+      return;
+    }
+    if (mail.signedByKeyID && mail.shouldEncrypt) {
+      mail.shouldEncrypt = false;
+    } else if (mail.signedByKeyID) {
+      mail.signedByKeyID = null;
+      mail.shouldEncrypt = false;
+    } else {
+      doSign();
+    }
+  }
+  function doSign() {
+    if (!getMyPrivateKey(identity)) {
+      SettingsDialogs.openTrustCenter(identity);
+      return;
+    }
+    mail.signedByKeyID = getMyPrivateKey(identity)?.id;
+    assert(mail.signedByKeyID, "No signing key found");
+  }
+  function toggleEncrypted() {
+    if (mail.mustEncrypt) {
+      return;
+    }
+    let encryptDisabledReason = mail.mustEncrypt
+      ? gt`Policy requires that this email stays encrypted, to keep protect secret information`
+      : null;
+    if (!mail.shouldEncrypt && encryptDisabledReason) {
+      showError(new UserError(encryptDisabledReason));
+      return;
+    }
+
+    mail.shouldEncrypt = !mail.shouldEncrypt;
+    if (mail.shouldEncrypt && !mail.signedByKeyID) {
+      doSign();
+    }
+  }
+  // </copied>
 </script>

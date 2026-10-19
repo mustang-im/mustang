@@ -54,8 +54,8 @@
           <MoreIcon size={18} />
         </button>
       </hbox>
-      <span class="date" title={$message.received ? $t`Received: ${MessageDates.fullDate($message.received)}` : null}>
-        {MessageDates.fullDate($message.sent)}
+      <span class="date" title={$message.received ? $t`Received: ${getFullDateString($message.received)}` : null}>
+        {getFullDateString($message.sent)}
       </span>
     </vbox>
   </hbox>
@@ -132,7 +132,7 @@
   import { kDummyPerson, personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageActions } from "../MessageActions";
   import MessagePropertiesDialog from "./MessagePropertiesDialog.svelte";
-  import { MessageDates } from "../3pane/MessageDates";
+  import { getFullDateString } from "../3pane/MessageDates";
   import { derived } from "svelte/store";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";

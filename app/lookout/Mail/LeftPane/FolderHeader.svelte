@@ -36,12 +36,12 @@
     <hbox class="pivots quick-filters">
       <button class="pivot icon-pivot" class:active={$quickSearch.isStarred === true} aria-pressed={$quickSearch.isStarred === true}
         title={$t`Show only flagged messages`} aria-label={$t`Show only flagged messages`}
-        on:click={() => MailFilters.toggle(QuickFilter.Flagged)}>
+        on:click={() => toggleQuickFilter(QuickFilter.Flagged)}>
         <FlagIcon size={16} />
       </button>
       <button class="pivot icon-pivot" class:active={$quickSearch.hasAttachment === true} aria-pressed={$quickSearch.hasAttachment === true}
         title={$t`Show only messages with attachments`} aria-label={$t`Show only messages with attachments`}
-        on:click={() => MailFilters.toggle(QuickFilter.Attachments)}>
+        on:click={() => toggleQuickFilter(QuickFilter.Attachments)}>
         <AttachmentIcon size={16} />
       </button>
       <button class="pivot icon-pivot" class:active={isFolderSearchOpen} aria-pressed={isFolderSearchOpen}
@@ -80,11 +80,11 @@
     <MenuLabel label={$t`Filter`} />
     <MenuItem label={$t`All Mail`} checked={!hasFilter} onClick={clearFilter} />
     <MenuItem label={$t`Unread Mail`} checked={$quickSearch.isRead === false}
-      onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
+      onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
     <MenuItem label={$t`Flagged Mail`} checked={$quickSearch.isStarred}
-      onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
+      onClick={() => toggleQuickFilter(QuickFilter.Flagged)} />
     <MenuItem label={$t`Mail with Attachments`} checked={$quickSearch.hasAttachment}
-      onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
+      onClick={() => toggleQuickFilter(QuickFilter.Attachments)} />
     <MenuDivider />
   {/if}
   <ArrangeByMenuItems {folder} withLabel withSortOrder />
@@ -92,11 +92,11 @@
 <Menu bind:isMenuOpen={isFilterMenuOpen} anchor={filterEl} placement="bottom-end">
   <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={clearFilter} />
   <MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={$quickSearch.isRead === false}
-    onClick={() => MailFilters.toggle(QuickFilter.Unread)} />
+    onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
   <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={$quickSearch.isStarred}
-    onClick={() => MailFilters.toggle(QuickFilter.Flagged)} />
+    onClick={() => toggleQuickFilter(QuickFilter.Flagged)} />
   <MenuItem label={$t`Has files`} icon={AttachmentIcon} checkable checked={$quickSearch.hasAttachment}
-    onClick={() => MailFilters.toggle(QuickFilter.Attachments)} />
+    onClick={() => toggleQuickFilter(QuickFilter.Attachments)} />
 </Menu>
 <Menu bind:isMenuOpen={isSortMenuOpen} anchor={sortEl} placement="bottom-end">
   <SortMenuItems {folder} />
@@ -108,10 +108,10 @@
   import { quickSearch } from "../../../frontend/Mail/Selected";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { catchErrors, showError } from "../../../frontend/Util/error";
-  import { ArrangeFields, MailViewSettings } from "../ViewSettings/ViewSettings";
-  import { MailFilters, QuickFilter } from "../MailFilters";
+  import { arrangeFields, viewSettingsStore } from "../ViewSettings/ViewSettings";
+  import { hasSearchCriteria, toggleQuickFilter, QuickFilter } from "../MailFilters";
   import { QuickFilterList } from "../QuickFilterList";
-  import { MailSearch } from "../Search/MailSearch";
+  import { defaultSearchOptions } from "../Search/MailSearch";
   import { searchOptions } from "../Selected";
   import ConnectButton from "./ConnectButton.svelte";
   import ArrangeByMenuItems from "../ViewSettings/ArrangeByMenuItems.svelte";
@@ -149,10 +149,10 @@
   $: isSimplified = $ribbonLayout.value == "simplified";
   $: listTitle = isSearchResult ? $t`Results` : $folder?.name ?? "";
 
-  $: settings = MailViewSettings.store(folder);
+  $: settings = viewSettingsStore(folder);
   $: folderAccount = folder?.account;
   $: needsConnect = !!folderAccount && !$folderAccount.isLoggedIn;
-  $: arrangeLabel = ArrangeFields.all().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
+  $: arrangeLabel = arrangeFields().find(arrangement => arrangement.id == $settings.arrangeBy)?.button ?? gt`By Date`;
 
   // <copied from="../../../frontend/Mail/LeftPane/FolderFooter.svelte">
   $: quickSearch.folder = folder;
@@ -173,9 +173,9 @@
   // <copied to="FilterMenuItems.svelte">
   function clearFilter() {
     quickSearch.reset();
-    if (MailFilters.isSearching()) {
+    if (hasSearchCriteria()) {
       $globalSearchTerm = null;
-      $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope };
+      $searchOptions = { ...defaultSearchOptions(), scope: $searchOptions.scope };
     }
   }
   // </copied>

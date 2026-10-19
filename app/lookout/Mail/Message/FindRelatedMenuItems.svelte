@@ -9,7 +9,7 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { assert } from "../../../logic/util/util";
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
-  import { MailSearch, type SearchOptions } from "../Search/MailSearch";
+  import { defaultSearchOptions, type SearchOptions } from "../Search/MailSearch";
   import { searchOptions } from "../Selected";
   import { MessageActions } from "../MessageActions";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -32,6 +32,6 @@
 
   function findRelated(change: Partial<SearchOptions>) {
     $globalSearchTerm = null;
-    $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope, ...change };
+    $searchOptions = { ...defaultSearchOptions(), scope: $searchOptions.scope, ...change };
   }
 </script>

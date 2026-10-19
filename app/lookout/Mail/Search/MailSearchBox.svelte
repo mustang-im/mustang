@@ -4,7 +4,7 @@
       title={$t`Choose where to search`}
       aria-haspopup="menu" aria-expanded={isScopeOpen}
       on:click|stopPropagation={() => isScopeOpen = !isScopeOpen}>
-      <span class="scope-label">{MailSearch.scopeLabel(scope)}</span>
+      <span class="scope-label">{scopeLabel(scope)}</span>
       <ChevronIcon size={14} />
     </button>
     <hbox class="divider" />
@@ -30,9 +30,9 @@
   </hbox>
   <Menu bind:isMenuOpen={isScopeOpen} anchor={scopeButton} placement="bottom-start">
     {#each scopes as option}
-      <MenuItem label={MailSearch.scopeLabel(option)}
+      <MenuItem label={scopeLabel(option)}
         checkable checked={option == scope}
-        disabled={!MailSearch.isScopeAvailable(option, $selectedAccount, $selectedFolder) && $t`Select a folder of an account first`}
+        disabled={!isScopeAvailable(option, $selectedAccount, $selectedFolder) && $t`Select a folder of an account first`}
         onClick={() => $searchOptions = { ...$searchOptions, scope: option }} />
     {/each}
   </Menu>
@@ -70,11 +70,11 @@
 <script lang="ts">
   import { globalSearchTerm } from "../../../frontend/AppsBar/selectedApp";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import { MailSearch, SearchScope } from "./MailSearch";
+  import { isScopeAvailable, effectiveScope, scopeLabel, SearchScope } from "./MailSearch";
   import { isAdvancedSearchOpen, searchOptions } from "../Selected";
   import { AdvancedSearchDraft } from "./AdvancedSearchDraft";
   import SearchCriteria from "./SearchCriteria.svelte";
-  import { SelectNames } from "../Composer/SelectNames";
+  import { searchPersons } from "../Composer/SelectNames";
   import type { Person } from "../../../logic/Abstract/Person";
   import { appGlobal } from "../../../logic/app";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
@@ -89,7 +89,7 @@
   import { t } from "../../../l10n/l10n";
 
   const scopes = [SearchScope.AllAccounts, SearchScope.CurrentAccount, SearchScope.CurrentFolder];
-  $: scope = MailSearch.effectiveScope($searchOptions, $selectedAccount, $selectedFolder);
+  $: scope = effectiveScope($searchOptions, $selectedAccount, $selectedFolder);
 
   let boxEl: HTMLElement;
   let inputEl: HTMLInputElement;
@@ -114,7 +114,7 @@
   let isInputFocused = false;
   let activeSuggestion = -1;
   $: suggestions = isInputFocused && typed.trim().length >= 2
-    ? SelectNames.persons(appGlobal.addressbooks, typed.trim(), true).contents.slice(0, 5)
+    ? searchPersons(appGlobal.addressbooks, typed.trim(), true).contents.slice(0, 5)
     : [];
   $: typed, activeSuggestion = -1;
 

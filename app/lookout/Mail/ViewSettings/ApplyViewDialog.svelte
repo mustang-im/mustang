@@ -28,7 +28,7 @@
 
 <script lang="ts">
   import { appGlobal } from "../../../logic/app";
-  import { MailViewSettings } from "./ViewSettings";
+  import { applyViewSettingsToFolders } from "./ViewSettings";
   import { FolderTreeActions } from "../LeftPane/FolderTreeActions";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
@@ -65,7 +65,7 @@
         targets.push(...flatten(target.subFolders.contents, 0).map(entry => entry.folder));
       }
     }
-    MailViewSettings.applyToFolders(folder, targets.filter(target => target != folder));
+    applyViewSettingsToFolders(folder, targets.filter(target => target != folder));
   }
 </script>
 

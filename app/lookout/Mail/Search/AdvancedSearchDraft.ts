@@ -2,7 +2,7 @@ import type { Person } from "../../../logic/Abstract/Person";
 import type { Tag } from "../../../logic/Abstract/Tag";
 import type { SearchOptions, SearchScope } from "./MailSearch";
 import { SizeRange } from "./SearchRanges";
-// import { ReceivedRange, ReceivedRanges } from "./SearchRanges";
+// import { ReceivedRange } from "./SearchRanges";
 
 export enum ReadStatus {
   All = "all",

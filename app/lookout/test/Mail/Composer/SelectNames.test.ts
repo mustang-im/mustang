@@ -4,7 +4,7 @@ import "../../../../logic/app";
 import { Addressbook } from "../../../../logic/Contacts/Addressbook";
 import { ContactEntry, Person } from "../../../../logic/Abstract/Person";
 import { PersonUID } from "../../../../logic/Abstract/PersonUID";
-import { SelectNames, SelectNamesField } from "../../../Mail/Composer/SelectNames";
+import { searchPersons, SelectNamesField } from "../../../Mail/Composer/SelectNames";
 import { beforeEach, expect, test } from "vitest";
 
 let personal: Addressbook;
@@ -36,20 +36,20 @@ beforeEach(() => {
 });
 
 test("Lists only persons with an email address, sorted by name", () => {
-  let persons = SelectNames.persons([personal], "");
+  let persons = searchPersons([personal], "");
   expect(persons.contents).toEqual([anna, bert]);
 });
 
 test("Lists persons of all given address books", () => {
-  let persons = SelectNames.persons([personal, work], "");
+  let persons = searchPersons([personal, work], "");
   expect(persons.contents).toEqual([anna, bert, dora]);
 });
 
 test("Search matches name and email address", () => {
-  expect(SelectNames.persons([personal, work], "MEIER").contents).toEqual([bert]);
-  expect(SelectNames.persons([personal, work], "corp.example").contents).toEqual([dora]);
-  expect(SelectNames.persons([personal, work], "  anna ").contents).toEqual([anna]);
-  expect(SelectNames.persons([personal, work], "nobody").contents).toEqual([]);
+  expect(searchPersons([personal, work], "MEIER").contents).toEqual([bert]);
+  expect(searchPersons([personal, work], "corp.example").contents).toEqual([dora]);
+  expect(searchPersons([personal, work], "  anna ").contents).toEqual([anna]);
+  expect(searchPersons([personal, work], "nobody").contents).toEqual([]);
 });
 
 test("Adds the preferred email address, without duplicates", () => {
@@ -63,9 +63,9 @@ test("Adds the preferred email address, without duplicates", () => {
 
 test("Name only searches only the name", () => {
   dora.position = "Anna's assistant";
-  expect(SelectNames.persons([personal, work], "anna").contents).toEqual([anna]);
-  expect(SelectNames.persons([personal, work], "work.example", true).contents).toEqual([]);
-  expect(SelectNames.persons([personal, work], "schmidt", true).contents).toEqual([anna]);
+  expect(searchPersons([personal, work], "anna").contents).toEqual([anna]);
+  expect(searchPersons([personal, work], "work.example", true).contents).toEqual([]);
+  expect(searchPersons([personal, work], "schmidt", true).contents).toEqual([anna]);
 });
 
 test("A single pick field keeps only the last pick", () => {

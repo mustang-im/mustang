@@ -74,7 +74,7 @@
   import DateNavigator from "../../Calendar/DateNavigator.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { ToDoAgenda } from "./ToDoAgenda";
+  import { agendaDays } from "./ToDoAgenda";
   import { derived } from "svelte/store";
   import CloseIcon from "lucide-svelte/icons/x";
   import { getDateTimeLocale, gt, t } from "../../../l10n/l10n";
@@ -91,7 +91,7 @@
   $: persons = derived($allPersons.contents, () => allPersons.contents);
   let selectedDay = new Date();
 
-  $: agenda = ToDoAgenda.days($events, selectedDay);
+  $: agenda = agendaDays($events, selectedDay);
   $: frequentPeople = topPeople($persons);
 
   function topPeople(persons: Person[]): Person[] {

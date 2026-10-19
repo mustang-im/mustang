@@ -4,12 +4,12 @@ import { FilterRuleAction } from "../../../../logic/Mail/FilterRules/FilterRuleA
 import { FilterMoment } from "../../../../logic/Mail/FilterRules/FilterMoments";
 import { Person, ContactEntry } from "../../../../logic/Abstract/Person";
 import { getTagByName } from "../../../../logic/Abstract/Tag";
-import { RuleDescription } from "../../../Mail/Rules/RuleDescription";
-import { RuleItems } from "../../../Mail/Rules/RuleItems";
+import { ruleDescriptionLines } from "../../../Mail/Rules/RuleDescription";
+import { ruleConditions } from "../../../Mail/Rules/RuleItems";
 import { expect, test } from "vitest";
 
 function texts(rule: FilterRuleAction, checkedIDs?: Set<string>): string[] {
-  return RuleDescription.lines(rule, checkedIDs).map(line => line.parts.map(part => part.text).join(""));
+  return ruleDescriptionLines(rule, checkedIDs).map(line => line.parts.map(part => part.text).join(""));
 }
 
 test("When line by moment", () => {
@@ -92,7 +92,7 @@ test("Missing target folder is broken", () => {
 
 test("Parts mark the value, or the placeholder while there is none", () => {
   let rule = new FilterRuleAction(RulesTestAccount.create("a", ["Inbox"]));
-  let words = RuleItems.conditions().find(item => item.id == "words");
+  let words = ruleConditions().find(item => item.id == "words");
   expect(words.descriptionParts(rule)).toEqual([
     { text: "with ", isValue: false },
     { text: "specific words", isValue: true, isPlaceholder: true },

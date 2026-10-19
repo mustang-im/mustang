@@ -22,7 +22,9 @@
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { RecipientKeys } from "./RecipientKeys";
+  import { queryKeyServers } from "./RecipientKeys";
+  import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
+  import { appGlobal } from "../../../logic/app";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import ListView from "../../Shared/Form/ListView.svelte";
@@ -45,11 +47,17 @@
     if (!file) {
       return;
     }
-    await RecipientKeys.importKeyFile(selected, file);
+    // <copied from="../../../frontend/Contacts/PersonPage/EncryptionImport.svelte" onImportFile()>
+    let person = selected.createPerson(appGlobal.collectedAddressbook);
+    let fileContent = await file.text();
+    let key = await importPublicKey(fileContent);
+    person.addEncryptionPublicKey(key);
+    await person.save();
+    // </copied>
   }
 
   async function onQuery() {
-    await RecipientKeys.queryKeyServers(new ArrayColl([selected]));
+    await queryKeyServers(new ArrayColl([selected]));
   }
 
   function onRemove() {

@@ -4,7 +4,7 @@
       {#each viewTypes as viewType}
         <MenuItem label={viewType.label} tooltip={viewType.tooltip} icon={viewType.icon}
           checked={$settings.type == viewType.id}
-          onClick={() => MailViewSettings.change(folder, { type: viewType.id })} />
+          onClick={() => changeViewSettings(folder, { type: viewType.id })} />
       {/each}
       <MenuDivider />
       <MenuItem label={$t`Apply Current View to Other Mail Folders…`}
@@ -24,11 +24,11 @@
     <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings`} icon={ConversationSettingsIcon} size="small"
       disabled={!$settings.showAsConversations && $t`Turn on Show as Conversations first`}>
       <MenuItem label={$t`Show Senders Above the Subject`} checked={$settings.showSendersAboveSubject} checkable
-        onClick={() => MailViewSettings.change(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject }, ApplyScope.AllFolders)} />
+        onClick={() => changeViewSettings(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject }, ApplyScope.AllFolders)} />
       <MenuItem label={$t`Always Expand Selected Conversation`} checked={$settings.alwaysExpandSelected} checkable
-        onClick={() => MailViewSettings.change(folder, { alwaysExpandSelected: !$settings.alwaysExpandSelected }, ApplyScope.AllFolders)} />
+        onClick={() => changeViewSettings(folder, { alwaysExpandSelected: !$settings.alwaysExpandSelected }, ApplyScope.AllFolders)} />
       <MenuItem label={$t`Use Classic Indented View`} checked={$settings.classicIndented} checkable
-        onClick={() => MailViewSettings.change(folder, { classicIndented: !$settings.classicIndented }, ApplyScope.AllFolders)} />
+        onClick={() => changeViewSettings(folder, { classicIndented: !$settings.classicIndented }, ApplyScope.AllFolders)} />
     </RibbonMenuButton>
   </RibbonGroup>
   <RibbonGroup label={$t`Arrangement`}>
@@ -43,7 +43,7 @@
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Reverse Sort`} icon={ReverseIcon} size="small"
       selected={!!$settings.reverseSort}
-      onClick={() => MailViewSettings.change(folder, { reverseSort: !$settings.reverseSort })} />
+      onClick={() => changeViewSettings(folder, { reverseSort: !$settings.reverseSort })} />
     <RibbonButton label={$t`Add Columns`} icon={AddColumnsIcon} size="small"
       tooltip={$t`Choose the columns of the single-line view`}
       onClick={onAddColumns} />
@@ -59,7 +59,7 @@
   <RibbonGroup label={$t`Layout`}>
     <RibbonToggleButton label={$t`Use Tighter Spacing`} icon={SpacingIcon}
       selected={!!$settings.tighterSpacing}
-      onClick={() => MailViewSettings.change(folder, { tighterSpacing: !$settings.tighterSpacing }, ApplyScope.AllFolders)} />
+      onClick={() => changeViewSettings(folder, { tighterSpacing: !$settings.tighterSpacing }, ApplyScope.AllFolders)} />
     <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
       <MenuItem label={$t`Normal`} checked={$folderPane.value == FolderPaneMode.Normal}
         onClick={() => { $folderPane.value = FolderPaneMode.Normal; }} />
@@ -101,7 +101,7 @@
   import type { ReadingPanePosition } from "../3pane/3Pane.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { catchErrors } from "../../../frontend/Util/error";
-  import { ApplyScope, MailViewSettings, ViewType } from "../ViewSettings/ViewSettings";
+  import { ApplyScope, viewSettingsOf, viewSettingsStore, changeViewSettings, resetViewSettings, ViewType } from "../ViewSettings/ViewSettings";
   import { openViewSettings } from "../ViewSettings/ViewSettingsDialog.svelte";
   import { openShowColumns } from "../ViewSettings/ShowColumnsDialog.svelte";
   import { askedScope } from "../ViewSettings/ApplyScopeDialog.svelte";
@@ -153,7 +153,7 @@
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.mail.readingPane", "right");
   const showFavorites = getLocalStorage<boolean>("lookout.mail.showFavorites", true);
   const toDoBar = getLocalStorage<ToDoBarPart[]>("lookout.mail.toDoBar", []);
-  $: settings = MailViewSettings.store(folder);
+  $: settings = viewSettingsStore(folder);
   let conversationsChecked = false;
   $: conversationsChecked = !!$settings.showAsConversations;
 
@@ -162,15 +162,15 @@
       ? $t`Do you want to show messages arranged by conversations in all folders or just this folder?`
       : $t`Do you want to stop showing messages arranged by conversations in all folders or just this folder?`);
     if (scope) {
-      MailViewSettings.change(folder, { showAsConversations: checked }, scope);
+      changeViewSettings(folder, { showAsConversations: checked }, scope);
     }
-    conversationsChecked = !!MailViewSettings.of(folder).showAsConversations;
+    conversationsChecked = !!viewSettingsOf(folder).showAsConversations;
   }
 
   async function onPreviewLines(lines: number) {
     let scope = await askScope($t`Do you want to change the message preview in all folders or just this folder?`);
     if (scope) {
-      MailViewSettings.change(folder, { previewLines: lines }, scope);
+      changeViewSettings(folder, { previewLines: lines }, scope);
     }
   }
 
@@ -180,8 +180,8 @@
 
   /* <copied to="../3pane/ColumnHeader.svelte"> */
   function onAddColumns() {
-    if (MailViewSettings.of(folder).type == ViewType.Compact) {
-      MailViewSettings.change(folder, { type: ViewType.Single });
+    if (viewSettingsOf(folder).type == ViewType.Compact) {
+      changeViewSettings(folder, { type: ViewType.Single });
     }
     $openShowColumns = { folder };
   }
@@ -197,7 +197,7 @@
   }
 
   function onResetView() {
-    MailViewSettings.reset(folder);
+    resetViewSettings(folder);
     $readingPane.value = "right";
     $folderPane.value = FolderPaneMode.Normal;
   }

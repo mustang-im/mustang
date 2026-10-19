@@ -71,7 +71,7 @@
     {/if}
     <span class="subject" title={$message.subject}>
       {#if $message.subject}
-        {#each TextHighlight.split($message.subject, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
+        {#each highlightParts($message.subject, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
       {:else}
         {$t`(no subject)`}
       {/if}
@@ -105,12 +105,12 @@
     {#if folderName && previewLines == 0}
       <span class="folder-name" title={folderTooltip}>{folderName}</span>
     {/if}
-    <span class="date" title={MessageDates.fullDate($message.sent)}>{MessageDates.listDate($message.sent)}</span>
+    <span class="date" title={getFullDateString($message.sent)}>{getListDateString($message.sent)}</span>
   </hbox>
   {#if previewLines > 0}
     <hbox class="preview-line">
       <div class="preview" style="-webkit-line-clamp: {previewLines};">
-        {#each TextHighlight.split(preview, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
+        {#each highlightParts(preview, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
       </div>
       {#if folderName}
         <span class="folder-name" title={folderTooltip}>{folderName}</span>
@@ -126,9 +126,9 @@
   import type { EMail } from "../../../logic/Mail/EMail";
   import { onDragStartMail } from "../../../frontend/Mail/Message/drag";
   import { inlineReplies } from "../Selected";
-  import { MessageDates } from "../3pane/MessageDates";
+  import { getListDateString, getFullDateString } from "../3pane/MessageDates";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
-  import { TextHighlight } from "../3pane/TextHighlight";
+  import { highlightParts } from "../3pane/TextHighlight";
   import { derived } from "svelte/store";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";

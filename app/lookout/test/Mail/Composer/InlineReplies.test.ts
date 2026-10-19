@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { InlineReplies, InlineReply } from "../../../Mail/Composer/InlineReplies";
+import { startInlineReply, removeInlineReply, InlineReply } from "../../../Mail/Composer/InlineReplies";
 import { inlineReplies, inlineRibbon } from "../../../Mail/Selected";
 import { messageBoxQuestion } from "../../../Shared/Dialog/MessageBox";
 import type { EMail } from "../../../../logic/Mail/EMail";
@@ -26,8 +26,8 @@ test("A reply is kept per original message", async () => {
   let second = mail();
   let firstDraft = mail();
   let secondDraft = mail();
-  await InlineReplies.start(first, firstDraft);
-  await InlineReplies.start(second, secondDraft);
+  await startInlineReply(first, firstDraft);
+  await startInlineReply(second, secondDraft);
   expect(replyFor(first).draft).toBe(firstDraft);
   expect(replyFor(second).draft).toBe(secondDraft);
   expect(replyFor(first).isNew).toBe(true);
@@ -38,8 +38,8 @@ test("A new response replaces an empty one without asking", async () => {
   let original = mail();
   let reply = mail("<p>Hi</p><blockquote>" + kLongText + "</blockquote>");
   let forward = mail();
-  await InlineReplies.start(original, reply);
-  await InlineReplies.start(original, forward);
+  await startInlineReply(original, reply);
+  await startInlineReply(original, forward);
   expect(get(messageBoxQuestion)).toBeNull();
   expect(replyFor(original).draft).toBe(forward);
   expect(inlineReplies.length).toBe(1);
@@ -48,15 +48,15 @@ test("A new response replaces an empty one without asking", async () => {
 test("A new response asks before it replaces one with text", async () => {
   let original = mail();
   let reply = mail(kLongText);
-  await InlineReplies.start(original, reply);
+  await startInlineReply(original, reply);
 
-  let keep = InlineReplies.start(original, mail());
+  let keep = startInlineReply(original, mail());
   get(messageBoxQuestion).answer(false);
   await keep;
   expect(replyFor(original).draft).toBe(reply);
 
   let forward = mail();
-  let replace = InlineReplies.start(original, forward);
+  let replace = startInlineReply(original, forward);
   get(messageBoxQuestion).answer(true);
   await replace;
   expect(replyFor(original).draft).toBe(forward);
@@ -65,16 +65,16 @@ test("A new response asks before it replaces one with text", async () => {
 test("Removing a reply hides its Message tab", async () => {
   let first = mail();
   let second = mail();
-  await InlineReplies.start(mail(), first);
-  await InlineReplies.start(mail(), second);
+  await startInlineReply(mail(), first);
+  await startInlineReply(mail(), second);
   inlineRibbon.set({ draft: second, editor: null });
-  InlineReplies.remove(first);
+  removeInlineReply(first);
   expect(get(inlineRibbon).draft).toBe(second);
   inlineReplies.add(new InlineReply(mail(), first));
 
-  InlineReplies.remove(second);
+  removeInlineReply(second);
   expect(get(inlineRibbon)).toBeNull();
   expect(inlineReplies.length).toBe(1);
-  InlineReplies.remove(first);
+  removeInlineReply(first);
   expect(inlineReplies.isEmpty).toBe(true);
 });

@@ -81,9 +81,8 @@
   import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
   import { personDisplayName } from "../../../logic/Abstract/PersonUID";
   import { MessageRows, type MessageRow } from "./MessageRows";
-  import { MessageMetadata } from "./MessageMetadata";
   import { MessageActions } from "../MessageActions";
-  import { Column, ColumnInfo, MailViewSettings, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
+  import { Column, ColumnInfo, shownViewType, defaultColumns, viewSettingsStore, columnWidthOf, ViewType, type ViewSettings } from "../ViewSettings/ViewSettings";
   import { now } from "../../Calendar/selected";
   import { MessageGrouping } from "./MessageGrouping";
   import VerticalMessageListItem from "../Vertical/VerticalMessageListItem.svelte";
@@ -92,7 +91,7 @@
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
   import type { ArrayColl, Collection } from "svelte-collections";
   import { derived } from "svelte/store";
-  import { catchErrors } from "../../../frontend/Util/error";
+  import { catchErrors, minorError } from "../../../frontend/Util/error";
   import { tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -104,7 +103,7 @@
   export let highlight: string | null = null;
   export let isLoading = false;
 
-  $: settings = MailViewSettings.store(folder);
+  $: settings = viewSettingsStore(folder);
   $: showsRecipients = !!folder && [SpecialFolder.Sent, SpecialFolder.Drafts, SpecialFolder.Outbox].includes(folder.specialFolder);
   $: showGroupHeaders = !!$settings.showInGroups;
   $: previewLines = $settings.previewLines;
@@ -117,11 +116,11 @@
   $: viewType = shownTypeAt($settings, paneWidth);
   function shownTypeAt(view: ViewSettings, width: number): ViewType {
     const kCharWidth = 7;
-    return MailViewSettings.shownType(view, width, kCharWidth);
+    return shownViewType(view, width, kCharWidth);
   }
   $: columns = viewType == ViewType.Compact ? null : visibleColumns($settings, showFolder);
   function visibleColumns(view: ViewSettings, withFolder: boolean): Column[] {
-    let result = (view.columns?.length ? view.columns : MailViewSettings.defaultColumns())
+    let result = (view.columns?.length ? view.columns : defaultColumns())
       .filter(column => ColumnInfo.of(column));
     if (withFolder && !result.includes(Column.Folder)) {
       let subjectPos = result.indexOf(Column.Subject);
@@ -136,7 +135,7 @@
     if (ColumnInfo.of(column)?.isFlexible) {
       return "minmax(120px, 1fr)";
     }
-    return (live[column] ?? MailViewSettings.widthOf(view, column)) + "px";
+    return (live[column] ?? columnWidthOf(view, column)) + "px";
   }
   $: previewIndent = columns ? previewIndentOf(columns, $settings, liveWidths) : 0;
   function previewIndentOf(shown: Column[], view: ViewSettings, live: Partial<Record<Column, number>>): number {
@@ -145,7 +144,7 @@
       if (!ColumnInfo.of(column)?.isIcon) {
         break;
       }
-      indent += live[column] ?? MailViewSettings.widthOf(view, column);
+      indent += live[column] ?? columnWidthOf(view, column);
     }
     return indent + 4;
   }
@@ -198,7 +197,7 @@
   }
   $: rows = new MessageRows(groups, collapsedGroups, showGroupHeaders, kHeaderHeight, messageHeight, expandedThreads);
   $: visibleIndexes = visibleRange(rows, scrollTop, viewHeight);
-  $: MessageMetadata.load(visibleMessages(visibleIndexes));
+  $: loadMetadata(visibleMessages(visibleIndexes));
 
   function visibleMessages(indexes: number[]): EMail[] {
     let visible: EMail[] = [];
@@ -209,6 +208,24 @@
       }
     }
     return visible;
+  }
+
+  // Does what `EMailCollection.getIndexRange()` does for the frontend's list, which shows the collection in its own order
+  function loadMetadata(messages: EMail[]) {
+    let byCollection = new Map<EMailCollection<EMail>, EMail[]>();
+    for (let message of messages) {
+      let collection = message?.folder?.messages;
+      if (!(collection instanceof EMailCollection)) {
+        continue;
+      }
+      let list = byCollection.get(collection) ?? [];
+      list.push(message);
+      byCollection.set(collection, list);
+    }
+    for (let [collection, list] of byCollection) {
+      collection.readMessagesFromDB_parallel(list)
+        .catch(minorError);
+    }
   }
 
   function visibleRange(rows: MessageRows<EMail>, top: number, height: number): number[] {

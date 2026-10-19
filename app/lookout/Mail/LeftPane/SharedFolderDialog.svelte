@@ -26,7 +26,7 @@
 {/if}
 
 <script lang="ts" context="module">
-  import type { MailAccount } from "../../../logic/Mail/MailAccount";
+  import { MailAccount } from "../../../logic/Mail/MailAccount";
   import { writable } from "svelte/store";
 
   export const openSharedFolder = writable<MailAccount | null>(null);
@@ -34,7 +34,6 @@
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { SharedFolders, SharedFolderType } from "./SharedFolders";
   import SelectNamesDialog from "../Composer/SelectNamesDialog.svelte";
   import MailAutocomplete from "../Composer/MailAutocomplete.svelte";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
@@ -51,8 +50,14 @@
 
   export let account: MailAccount;
 
+  enum SharedFolderType {
+    Inbox = "inbox",
+    Calendar = "calendar",
+    Contacts = "contacts",
+  }
+
   const typeOptions: ComboOption<SharedFolderType>[] = [SharedFolderType.Inbox, SharedFolderType.Calendar, SharedFolderType.Contacts]
-    .map(folderType => ({ value: folderType, label: SharedFolders.typeLabel(folderType) }));
+    .map(folderType => ({ value: folderType, label: typeLabel(folderType) }));
   let dialog: Dialog;
   let recipients = new ArrayColl<PersonUID>();
   let type = SharedFolderType.Inbox;
@@ -72,7 +77,53 @@
   async function onOK() {
     let person = recipients.first;
     assert(person, gt`Enter the name of your colleague first`);
-    await SharedFolders.open(account, person, type);
+    await addSharedFolder(person, type);
+  }
+
+  async function addSharedFolder(person: PersonUID, type: SharedFolderType) {
+    let name = person.name || person.emailAddress;
+    if (type == SharedFolderType.Inbox) {
+      assert(!hasMailAccountOf(person), gt`You have already opened the mail of ${name}`);
+    }
+    let shared = await account.findSharedFolders(person, distinguishedIDs(type));
+    assert(shared.length, gt`You have no access to the ${typeLabel(type)} of ${name}`);
+    if (type == SharedFolderType.Calendar) {
+      await account.addSharedCalendar(person);
+    } else if (type == SharedFolderType.Contacts) {
+      await account.addSharedAddressbook(person);
+    } else {
+      await account.addSharedFolders(person, shared.includes("msgfolderroot") ? "msgfolderroot" : "inbox");
+    }
+  }
+
+  function hasMailAccountOf(person: PersonUID): boolean {
+    // <copied from="../../../frontend/Settings/Mail/SharingIncoming.svelte" notYetAdded()>
+    return !!account.dependentAccounts().find(dependent =>
+      dependent.protocol == account.protocol && dependent instanceof MailAccount &&
+      dependent.isMyEMailAddress(person.emailAddress));
+    // </copied>
+  }
+
+  function typeLabel(type: SharedFolderType): string {
+    switch (type) {
+      case SharedFolderType.Calendar:
+        return gt`Calendar`;
+      case SharedFolderType.Contacts:
+        return gt`Contacts`;
+      default:
+        return gt`Inbox`;
+    }
+  }
+
+  function distinguishedIDs(type: SharedFolderType): string[] {
+    switch (type) {
+      case SharedFolderType.Calendar:
+        return ["calendar"];
+      case SharedFolderType.Contacts:
+        return ["contacts"];
+      default:
+        return ["msgfolderroot", "inbox"];
+    }
   }
 </script>
 

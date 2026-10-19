@@ -92,7 +92,7 @@
   import Radio from "../../Shared/Form/Radio.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import { appGlobal } from "../../../logic/app";
-  import { SelectNames, SelectNamesField } from "./SelectNames";
+  import { searchPersons, SelectNamesField } from "./SelectNames";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
@@ -144,7 +144,7 @@
     : $addressbooks.contents;
   $: foundPersons = isSearchOnly && !searchTerm
     ? new ArrayColl<Person>()
-    : SelectNames.persons(searchedBooks, searchTerm, nameOnly);
+    : searchPersons(searchedBooks, searchTerm, nameOnly);
 
   function onTyped() {
     if (nameOnly) {

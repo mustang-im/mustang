@@ -1,5 +1,5 @@
 import type { EMail } from "../../../logic/Mail/EMail";
-import { DraftContent } from "./DraftContent";
+import { hasUserText } from "./DraftContent";
 import { askYesNo } from "../../Shared/Dialog/MessageBox";
 import { inlineReplies, inlineRibbon } from "../Selected";
 import { get } from "svelte/store";
@@ -22,26 +22,24 @@ export interface InlineRibbon {
   editor: Editor | null;
 }
 
-export class InlineReplies {
-  static async start(original: EMail, draft: EMail) {
-    let existing = inlineReplies.find(reply => reply.original == original) ?? null;
-    if (existing && DraftContent.hasUserText(existing.draft.html) &&
-        !await askYesNo(gt`Discard Draft`, gt`You already started a response to this message. Do you want to discard it and start a new one?`)) {
-      return;
-    }
-    if (existing) {
-      InlineReplies.remove(existing.draft);
-    }
-    inlineReplies.add(new InlineReply(original, draft));
+export async function startInlineReply(original: EMail, draft: EMail) {
+  let existing = inlineReplies.find(reply => reply.original == original) ?? null;
+  if (existing && hasUserText(existing.draft.html) &&
+      !await askYesNo(gt`Discard Draft`, gt`You already started a response to this message. Do you want to discard it and start a new one?`)) {
+    return;
   }
+  if (existing) {
+    removeInlineReply(existing.draft);
+  }
+  inlineReplies.add(new InlineReply(original, draft));
+}
 
-  static remove(draft: EMail) {
-    let reply = inlineReplies.find(existing => existing.draft == draft);
-    if (reply) {
-      inlineReplies.remove(reply);
-    }
-    if (get(inlineRibbon)?.draft == draft) {
-      inlineRibbon.set(null);
-    }
+export function removeInlineReply(draft: EMail) {
+  let reply = inlineReplies.find(existing => existing.draft == draft);
+  if (reply) {
+    inlineReplies.remove(reply);
+  }
+  if (get(inlineRibbon)?.draft == draft) {
+    inlineRibbon.set(null);
   }
 }

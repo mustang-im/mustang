@@ -13,7 +13,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { RuleItems } from "./RuleItems";
+  import { kilobytes } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import { createEventDispatcher } from "svelte";
@@ -23,8 +23,8 @@
   export let sizeMax: number | null;
   const dispatch = createEventDispatcher<{ choose: { sizeMin: number | null, sizeMax: number | null }, close: void }>();
 
-  let atLeast: number | null = RuleItems.kilobytes(sizeMin);
-  let atMost: number | null = RuleItems.kilobytes(sizeMax);
+  let atLeast: number | null = kilobytes(sizeMin);
+  let atMost: number | null = kilobytes(sizeMax);
 
   function onSubmit() {
     dispatch("choose", { sizeMin: atLeast ? atLeast * 1024 : null, sizeMax: atMost ? atMost * 1024 : null });

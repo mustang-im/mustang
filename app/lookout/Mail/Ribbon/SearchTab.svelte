@@ -13,7 +13,7 @@
         on:select={event => $searchOptions = { ...$searchOptions, tags: [...$searchOptions.tags, event.detail] }}
         on:unselect={event => $searchOptions = { ...$searchOptions, tags: $searchOptions.tags.filter(tag => tag != event.detail) }} />
     </RibbonMenuButton>
-    <!-- <RibbonMenuButton label={$searchOptions.received == ReceivedRange.Any || $searchOptions.received == ReceivedRange.Custom ? $t`This Week` : ReceivedRanges.label($searchOptions.received)}
+    <!-- <RibbonMenuButton label={$searchOptions.received == ReceivedRange.Any || $searchOptions.received == ReceivedRange.Custom ? $t`This Week` : receivedRangeLabel($searchOptions.received)}
       icon={ReceivedIcon}
       tooltip={$t`Received`}>
       <ReceivedMenuItems selected={$searchOptions.received}
@@ -61,17 +61,17 @@
     {/if}
   </RibbonGroup>
   <RibbonGroup label={$t`Scope`}>
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.AllAccounts)} shortLabel={MailSearch.scopeShortLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
+    <RibbonToggleButton label={scopeLabel(SearchScope.AllAccounts)} shortLabel={scopeShortLabel(SearchScope.AllAccounts)} icon={AllAccountsIcon}
       selected={scope == SearchScope.AllAccounts}
       onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts }; }}
       shortCutInfo="Ctrl+Alt+A" />
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentAccount)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
+    <RibbonToggleButton label={scopeLabel(SearchScope.CurrentAccount)} shortLabel={scopeShortLabel(SearchScope.CurrentAccount)} icon={AccountIcon}
       selected={scope == SearchScope.CurrentAccount}
-      disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
+      disabled={!isScopeAvailable(SearchScope.CurrentAccount, account, folder) && $t`Select a folder of an account first`}
       onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentAccount }; }} />
-    <RibbonToggleButton label={MailSearch.scopeLabel(SearchScope.CurrentFolder)} shortLabel={MailSearch.scopeShortLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
+    <RibbonToggleButton label={scopeLabel(SearchScope.CurrentFolder)} shortLabel={scopeShortLabel(SearchScope.CurrentFolder)} icon={FolderIcon} size="small"
       selected={scope == SearchScope.CurrentFolder}
-      disabled={!MailSearch.isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
+      disabled={!isScopeAvailable(SearchScope.CurrentFolder, account, folder) && $t`Select a folder of an account first`}
       onClick={() => { $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder }; }}
       shortCutInfo="Ctrl+Alt+K" />
   </RibbonGroup>
@@ -101,9 +101,9 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
   import { availableTags } from "../../../logic/Abstract/Tag";
-  import { MailSearch, SearchScope } from "../Search/MailSearch";
+  import { isRealFolder, isRealAccount, isScopeAvailable, effectiveScope, scopeLabel, scopeShortLabel, SearchScope } from "../Search/MailSearch";
   import { isAdvancedSearchOpen, searchOptions } from "../Selected";
-  // import { ReceivedRange, ReceivedRanges } from "../Search/SearchRanges";
+  // import { ReceivedRange, receivedRangeLabel } from "../Search/SearchRanges";
   import { openSearchPerson } from "../Search/SearchPersonDialog.svelte";
   import { openSaveSearch } from "../Search/SavedSearchUI.svelte";
   import { openRulesFromSearch } from "../Search/RulesFromSearchUI.svelte";
@@ -145,7 +145,7 @@
   const dispatch = createEventDispatcher<{ close: void }>();
 
   const tags = availableTags;
-  $: scope = MailSearch.effectiveScope($searchOptions, account, folder);
+  $: scope = effectiveScope($searchOptions, account, folder);
   $: isFrom = !!$searchOptions.person && $searchOptions.isOutgoing !== true;
   // <copied to="../LeftPane/FilterMenuItems.svelte">
   $: isSentTo = !!$searchOptions.person && $searchOptions.isOutgoing === true;
@@ -169,7 +169,7 @@
   }
 
   $: ruleAccount = search?.account ??
-    (MailSearch.isRealFolder(folder) ? folder.account : MailSearch.isRealAccount(account) ? account : null);
+    (isRealFolder(folder) ? folder.account : isRealAccount(account) ? account : null);
   function onCreateRule() {
     $openRulesFromSearch = search;
   }

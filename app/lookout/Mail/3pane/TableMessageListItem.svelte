@@ -52,15 +52,15 @@
           {/if}
           <span class="text subject" title={$message.subject}>
             {#if $message.subject}
-              {#each TextHighlight.split($message.subject, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
+              {#each highlightParts($message.subject, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
             {:else}
               {$t`(no subject)`}
             {/if}
           </span>
         {:else if column == Column.Received}
-          <span class="text date" title={MessageDates.fullDate($message.received ?? $message.sent)}>{MessageDates.listDate($message.received ?? $message.sent)}</span>
+          <span class="text date" title={getFullDateString($message.received ?? $message.sent)}>{getListDateString($message.received ?? $message.sent)}</span>
         {:else if column == Column.Sent}
-          <span class="text date" title={MessageDates.fullDate($message.sent)}>{MessageDates.listDate($message.sent)}</span>
+          <span class="text date" title={getFullDateString($message.sent)}>{getListDateString($message.sent)}</span>
         {:else if column == Column.Size}
           <span class="text size">{$message.size ? fileSize($message.size) : ""}</span>
         {:else if column == Column.Categories}
@@ -86,7 +86,7 @@
   </div>
   {#if previewLines > 0}
     <div class="preview" style="-webkit-line-clamp: {previewLines}; padding-inline-start: {previewIndent}px;">
-      {#each TextHighlight.split(preview, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
+      {#each highlightParts(preview, highlight) as part}{#if part.isMatch}<mark>{part.text}</mark>{:else}{part.text}{/if}{/each}
     </div>
   {/if}
 </div>
@@ -102,8 +102,8 @@
   import { Column, ColumnInfo } from "../ViewSettings/ViewSettings";
   import { derived } from "svelte/store";
   import { inlineReplies } from "../Selected";
-  import { MessageDates } from "./MessageDates";
-  import { TextHighlight } from "./TextHighlight";
+  import { getListDateString, getFullDateString } from "./MessageDates";
+  import { highlightParts } from "./TextHighlight";
   import ReadIcon from "lucide-svelte/icons/mail-open";
   import UnreadIcon from "lucide-svelte/icons/mail";
   import FlagIcon from "lucide-svelte/icons/flag";

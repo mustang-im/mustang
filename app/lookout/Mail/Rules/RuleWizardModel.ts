@@ -1,9 +1,9 @@
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
 import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
 import { FilterMoment } from "../../../logic/Mail/FilterRules/FilterMoments";
-import { RuleDescription, type RuleDescriptionLine } from "./RuleDescription";
-import { RuleItems, type RuleItem } from "./RuleItems";
-import { RuleTemplates, type RuleTemplate } from "./RuleTemplates";
+import { ruleDescriptionLines, type RuleDescriptionLine } from "./RuleDescription";
+import { ruleConditions, ruleActions, allRuleItems, tagNames, type RuleItem } from "./RuleItems";
+import { ruleTemplates, type RuleTemplate } from "./RuleTemplates";
 import { gt } from "../../../l10n/l10n";
 
 export enum RuleWizardPage {
@@ -15,8 +15,8 @@ export enum RuleWizardPage {
 
 export class RuleWizardModel {
   readonly account: MailAccount;
-  readonly conditions = RuleItems.conditions();
-  readonly actions = RuleItems.actions();
+  readonly conditions = ruleConditions();
+  readonly actions = ruleActions();
   readonly templates: RuleTemplate[];
   readonly pages: RuleWizardPage[];
   readonly isNew: boolean;
@@ -31,7 +31,7 @@ export class RuleWizardModel {
   protected constructor(rule: FilterRuleAction, withTemplates: boolean, isNew: boolean) {
     this.account = rule.account;
     this.isNew = isNew;
-    this.templates = withTemplates ? RuleTemplates.all() : [];
+    this.templates = withTemplates ? ruleTemplates() : [];
     this.pages = [
       ...(withTemplates ? [RuleWizardPage.Templates] : []),
       RuleWizardPage.Conditions,
@@ -41,7 +41,7 @@ export class RuleWizardModel {
     this.page = this.pages[0];
     this.rule = RuleWizardModel.copyOf(rule);
     this.name = rule.name ?? "";
-    for (let item of RuleItems.all().filter(item => item.isActive(this.rule))) {
+    for (let item of allRuleItems().filter(item => item.isActive(this.rule))) {
       this.checked.add(item.id);
       this.shownIDs.add(item.id);
     }
@@ -115,7 +115,7 @@ export class RuleWizardModel {
   }
 
   get lines(): RuleDescriptionLine[] {
-    return RuleDescription.lines(this.rule, this.checked);
+    return ruleDescriptionLines(this.rule, this.checked);
   }
 
   get hasConditions(): boolean {
@@ -219,7 +219,7 @@ export class RuleWizardModel {
       return criteria.bodyText;
     }
     if (this.checked.has("category") && criteria.tags.hasItems) {
-      return RuleItems.tagNames(criteria.tags);
+      return tagNames(criteria.tags);
     }
     if ((this.checked.has("move") || this.checked.has("copy")) && this.rule.toFolder) {
       return this.rule.toFolder.name;

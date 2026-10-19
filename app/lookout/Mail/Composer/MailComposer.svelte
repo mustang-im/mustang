@@ -153,7 +153,7 @@
   import { WriteMailMustangApp, mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import type { RibbonLayout } from "../../Shared/Ribbon/RibbonGroup";
-  import { InlineReplies } from "./InlineReplies";
+  import { removeInlineReply } from "./InlineReplies";
   import { inlineRibbon } from "../Selected";
   import { get } from "svelte/store";
   import { MessageActions } from "../MessageActions";
@@ -161,9 +161,8 @@
   import { minorError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
   import { Keyboard } from "../../Util/keyboard";
-  import { ComposerEncryption } from "./ComposerEncryption";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { DraftContent } from "./DraftContent";
+  import { hasUserText } from "./DraftContent";
   import { EditorShortcuts } from "../../Shared/Editor/EditorShortcuts";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField, openSelectNames } from "./SelectNamesDialog.svelte";
@@ -338,7 +337,7 @@
     }
     doOnClose = [];
     if (isInline) {
-      InlineReplies.remove(mail);
+      removeInlineReply(mail);
       return;
     }
 
@@ -356,7 +355,34 @@
   $: showFromRow = $showFromSetting.value && hasSeveralIdentities;
 
   $: privateKey = fromIdentity ? getMyPrivateKey(fromIdentity) ?? null : null;
-  $: privateKey, fromIdentity && catchErrors(() => ComposerEncryption.applyIdentityDefaults(mail, privateKey));
+  // <copied from="../../../frontend/Mail/Composer/EncryptionButtons.svelte">
+  $: privateKey, fromIdentity && catchErrors(changedIdentity);
+  function changedIdentity() {
+    let extra = mail as any;
+    if (privateKey) {
+      if (!mail.signedByKeyID && privateKey.useToSign) {
+        mail.signedByKeyID = privateKey.id;
+        extra.signOnlyByDefault = true;
+      }
+      if (!mail.shouldEncrypt && privateKey.encryptByDefault) {
+        mail.shouldEncrypt = true;
+        extra.encryptOnlyByDefault = true;
+      }
+      if (mail.signedByKeyID && extra.signOnlyByDefault && !privateKey.useToSign) {
+        mail.signedByKeyID = null;
+        extra.signOnlyByDefault = false;
+      }
+      if (mail.shouldEncrypt && extra.encryptOnlyByDefault && !privateKey.encryptByDefault) {
+        mail.shouldEncrypt = null;
+        extra.encryptOnlyByDefault = false;
+      }
+    } else {
+      assert(!mail.mustEncrypt, gt`This email must be encrypted.`);
+      mail.shouldEncrypt = false;
+      mail.signedByKeyID = null;
+    }
+  }
+  // </copied>
 
   $: if (isInline && !closing) {
     $inlineRibbon = { draft: mail, editor };
@@ -402,7 +428,7 @@
   }
 
   function onCloseRequest() {
-    if (DraftContent.hasUserText(mail.html)) {
+    if (hasUserText(mail.html)) {
       showSaveChanges = true;
     } else {
       onClose();

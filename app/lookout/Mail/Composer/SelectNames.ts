@@ -30,16 +30,14 @@ export class SelectNamesField {
   }
 }
 
-export class SelectNames {
-  static persons(addressbooks: Iterable<Addressbook>, searchTerm: string, nameOnly = false): Collection<Person> {
-    let term = searchTerm.trim().toLowerCase();
-    let results = new ArrayColl<Collection<Person>>();
-    for (let addressbook of addressbooks) {
-      results.add(term ? addressbook.quickSearch(term, !nameOnly) : addressbook.persons);
-    }
-    return mergeColls(results)
-      .filterObservable(person => person.emailAddresses.hasItems &&
-        (!nameOnly || !term || !!person.name?.toLowerCase().includes(term)))
-      .sortBy(person => person.name?.toLowerCase() ?? "");
+export function searchPersons(addressbooks: Iterable<Addressbook>, searchTerm: string, nameOnly = false): Collection<Person> {
+  let term = searchTerm.trim().toLowerCase();
+  let results = new ArrayColl<Collection<Person>>();
+  for (let addressbook of addressbooks) {
+    results.add(term ? addressbook.quickSearch(term, !nameOnly) : addressbook.persons);
   }
+  return mergeColls(results)
+    .filterObservable(person => person.emailAddresses.hasItems &&
+      (!nameOnly || !term || !!person.name?.toLowerCase().includes(term)))
+    .sortBy(person => person.name?.toLowerCase() ?? "");
 }

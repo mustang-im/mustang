@@ -10,7 +10,7 @@
 <script lang="ts">
   import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
-  import { MailSearch } from "./MailSearch";
+  import { isRealFolder, isRealAccount } from "./MailSearch";
   import { catchErrors } from "../../../frontend/Util/error";
   import RulesWizard from "../Rules/RulesWizard.svelte";
   import { createEventDispatcher } from "svelte";
@@ -19,7 +19,7 @@
 
   const dispatch = createEventDispatcher<{ close: void }>();
   const account = search.account ??
-    (MailSearch.isRealFolder($selectedFolder) ? $selectedFolder.account : MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : null);
+    (isRealFolder($selectedFolder) ? $selectedFolder.account : isRealAccount($selectedAccount) ? $selectedAccount : null);
   const criteria = new SearchEMail();
   criteria.copyFrom(search);
   const rule = new FilterRuleAction(account, criteria);

@@ -9,7 +9,7 @@ import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
 import { showMessageBox } from "../Shared/Dialog/MessageBox";
 import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
-import { InlineReplies } from "./Composer/InlineReplies";
+import { startInlineReply, removeInlineReply } from "./Composer/InlineReplies";
 import { updatingFolders } from "./Selected";
 import { recentFolders } from "./RecentFolders";
 import { mailMustangApp } from "../../frontend/Mail/MailMustangApp";
@@ -65,7 +65,7 @@ export class MessageActions {
 
   static async respond(original: EMail, draft: EMail) {
     if (MessageActions.respondsInline(original)) {
-      await InlineReplies.start(original, draft);
+      await startInlineReply(original, draft);
     } else {
       mailMustangApp.writeMail(draft);
     }
@@ -80,7 +80,7 @@ export class MessageActions {
   }
 
   static popOut(draft: EMail) {
-    InlineReplies.remove(draft);
+    removeInlineReply(draft);
     mailMustangApp.writeMail(draft);
   }
 

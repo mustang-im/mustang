@@ -6,7 +6,7 @@
       {$recipientsWithoutKeys.contents.map(recipient => recipient.name || recipient.emailAddress).join("; ")}
     </span>
     {#if hasKeyServers}
-      <button class="link" on:click={() => catchErrors(() => RecipientKeys.queryKeyServers(recipientsWithoutKeys))}>{$t`Query Key Servers`}</button>
+      <button class="link" on:click={() => catchErrors(() => queryKeyServers(recipientsWithoutKeys))}>{$t`Query Key Servers`}</button>
     {/if}
     <button class="link" on:click={() => { isDialogOpen = true; }}>{$t`Certificates…`}</button>
     <button class="link" on:click={() => removeRecipients(recipientsWithoutKeys.contents)}>{$t`Remove These Recipients`}</button>
@@ -22,7 +22,7 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { EncryptionSystem } from "../../../logic/Mail/Encryption/enums";
   import { getEncryptionSystem, getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { RecipientKeys } from "./RecipientKeys";
+  import { queryKeyServers } from "./RecipientKeys";
   import RecipientCertificatesDialog from "./RecipientCertificatesDialog.svelte";
   import WarningIcon from "lucide-svelte/icons/triangle-alert";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -52,7 +52,7 @@
     await Promise.all([
       Promise.all(recipientsWithoutKeys.contents.map(recipient =>
         recipient.findPerson()?.fetchEncryptionKeys())),
-      hasKeyServers ? RecipientKeys.queryKeyServers(recipientsWithoutKeys, true) : null,
+      hasKeyServers ? queryKeyServers(recipientsWithoutKeys, true) : null,
     ]);
   }
   // </copied>

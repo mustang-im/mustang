@@ -15,7 +15,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { ArrangeFields, type ViewSettings } from "./ViewSettings";
+  import { arrangeFields, type ViewSettings } from "./ViewSettings";
   import { ArrangeBy, MessageGrouping } from "../3pane/MessageGrouping";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
@@ -31,7 +31,7 @@
 
   const fieldOptions: ComboOption<ArrangeBy | null>[] = [
     { value: null, label: gt`(none)` },
-    ...ArrangeFields.all().map(option => ({ value: option.id, label: option.label })),
+    ...arrangeFields().map(option => ({ value: option.id, label: option.label })),
   ];
   let isAutomatic = !settings.groupBy && settings.showInGroups;
   let field: ArrangeBy | null = settings.showInGroups ? settings.groupBy ?? settings.arrangeBy : null;

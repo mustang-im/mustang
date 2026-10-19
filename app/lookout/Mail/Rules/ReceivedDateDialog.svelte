@@ -11,7 +11,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { RuleItems } from "./RuleItems";
+  import { afterDayOf, beforeDayOf, sentDateMinAfter, sentDateMaxBefore } from "./RuleItems";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
@@ -22,15 +22,15 @@
   export let sentDateMax: Date | null;
   const dispatch = createEventDispatcher<{ choose: { sentDateMin: Date | null, sentDateMax: Date | null }, close: void }>();
 
-  let after: Date | null = RuleItems.afterDay(sentDateMin);
-  let before: Date | null = RuleItems.beforeDay(sentDateMax);
+  let after: Date | null = afterDayOf(sentDateMin);
+  let before: Date | null = beforeDayOf(sentDateMax);
   let hasAfter = !!after;
   let hasBefore = !!before;
 
   function onSubmit() {
     dispatch("choose", {
-      sentDateMin: hasAfter ? RuleItems.sentDateMin(after) : null,
-      sentDateMax: hasBefore ? RuleItems.sentDateMax(before) : null,
+      sentDateMin: hasAfter ? sentDateMinAfter(after) : null,
+      sentDateMax: hasBefore ? sentDateMaxBefore(before) : null,
     });
   }
 

@@ -1,10 +1,10 @@
-{#each ReceivedRanges.named as range}
-  <MenuItem label={ReceivedRanges.label(range)} checkable checked={range == selected}
+{#each namedReceivedRanges as range}
+  <MenuItem label={receivedRangeLabel(range)} checkable checked={range == selected}
     onClick={() => select(range == selected ? ReceivedRange.Any : range)} />
 {/each}
 
 <script lang="ts">
-  import { ReceivedRange, ReceivedRanges } from "./SearchRanges";
+  import { ReceivedRange, namedReceivedRanges, receivedRangeLabel } from "./SearchRanges";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import { createEventDispatcher } from "svelte";
 

@@ -88,7 +88,7 @@
   import { appGlobal } from "../../../logic/app";
   import { appName } from "../../../logic/build";
   import { RuleListActions } from "./RuleListActions";
-  import { RuleDescription } from "./RuleDescription";
+  import { ruleDescriptionLines } from "./RuleDescription";
   import { RulesWorkingList } from "./RulesWorkingList";
   import { RuleWizardModel } from "./RuleWizardModel";
   import type { RuleItem } from "./RuleItems";
@@ -158,7 +158,7 @@
   $: noSelection = $t`Select a rule first`;
   $: canMoveUp = !!selected && $rules && rules.indexOf(selected) > 0;
   $: canMoveDown = !!selected && $rules && rules.indexOf(selected) >= 0 && rules.indexOf(selected) < rules.length - 1;
-  $: descriptionLines = selected && version >= 0 ? RuleDescription.lines(selected) : [];
+  $: descriptionLines = selected && version >= 0 ? ruleDescriptionLines(selected) : [];
 
   function workingList(mailAccount: MailAccount): RulesWorkingList {
     let existing = workingLists.get(mailAccount);

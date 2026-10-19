@@ -28,7 +28,7 @@
     on:click={() => catchErrors(() => openEMailMessage(reply))}>
     <RepliedIcon size={16} />
     <span>{reply.sent
-      ? $t`You replied to this message on ${MessageDates.fullDate(reply.sent)}.`
+      ? $t`You replied to this message on ${getFullDateString(reply.sent)}.`
       : $t`You replied to this message.`}</span>
   </button>
 {:else if $message.isReplied}
@@ -62,7 +62,7 @@
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MessageActions } from "../MessageActions";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { MessageDates } from "../3pane/MessageDates";
+  import { getFullDateString } from "../3pane/MessageDates";
   import { openEMailMessage } from "../../../frontend/Mail/open";
   import { appName } from "../../../logic/build";
   import Menu from "../../Shared/Menu/Menu.svelte";

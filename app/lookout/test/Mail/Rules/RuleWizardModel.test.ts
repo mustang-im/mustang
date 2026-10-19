@@ -4,7 +4,7 @@ import { FilterRuleAction } from "../../../../logic/Mail/FilterRules/FilterRuleA
 import { FilterMoment } from "../../../../logic/Mail/FilterRules/FilterMoments";
 import { getTagByName } from "../../../../logic/Abstract/Tag";
 import { RuleWizardModel, RuleWizardPage } from "../../../Mail/Rules/RuleWizardModel";
-import { RuleDescription } from "../../../Mail/Rules/RuleDescription";
+import { ruleDescriptionLines } from "../../../Mail/Rules/RuleDescription";
 import { expect, test } from "vitest";
 
 function check(model: RuleWizardModel, id: string, checked = true) {
@@ -18,7 +18,7 @@ test("New rule starts with the first template, Back is off", () => {
   expect(model.canGoBack).toBe(false);
   expect(model.template.id).toBe("move-from");
   expect([...model.checked]).toEqual(["from", "move"]);
-  expect(RuleDescription.lines(model.rule, model.checked).map(line => line.parts.map(part => part.text).join(""))).toEqual([
+  expect(ruleDescriptionLines(model.rule, model.checked).map(line => line.parts.map(part => part.text).join(""))).toEqual([
     "Apply this rule after the message arrives",
     "from people or public group",
     "move it to the specified folder",
@@ -136,7 +136,7 @@ test("Finish clears fields of unchecked items that the logic would still run", (
   let result = model.finish();
   expect(result.toFolderID).toBeFalsy();
   expect(result.deleteTrash).toBeNull();
-  expect(RuleDescription.lines(result).map(line => line.parts.map(part => part.text).join("")).slice(1)).toEqual(["mark it as read"]);
+  expect(ruleDescriptionLines(result).map(line => line.parts.map(part => part.text).join("")).slice(1)).toEqual(["mark it as read"]);
 });
 
 test("Name is suggested from the first condition, typed names stay", () => {

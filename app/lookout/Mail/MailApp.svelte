@@ -22,7 +22,7 @@
     selectedMessages={$selectedMessages}
     bind:searchMessages
     isSearchResult={!!searchResults}
-    hasMoreResults={!isSearching && !!searchResults && searchResults.length > MailSearch.kLimit && !isShowingAllResults}
+    hasMoreResults={!isSearching && !!searchResults && searchResults.length > kSearchLimit && !isShowingAllResults}
     on:moreresults={() => catchErrors(showAllResults)}
     showFolder={!!searchResults || $selectedFolder instanceof SavedSearchFolder}
     highlight={searchResults ? searchTerm : null}
@@ -78,8 +78,8 @@
   <ViewSettingsDialog folder={$openViewSettings.folder} on:close={() => $openViewSettings = null} />
 {/if}
 {#if $openShowColumns}
-  <ShowColumnsDialog columns={MailViewSettings.of($openShowColumns.folder).columns}
-    on:change={event => MailViewSettings.change($openShowColumns.folder, { columns: event.detail })}
+  <ShowColumnsDialog columns={viewSettingsOf($openShowColumns.folder).columns}
+    on:change={event => changeViewSettings($openShowColumns.folder, { columns: event.detail })}
     on:close={() => $openShowColumns = null} />
 {/if}
 {#if $openApplyView}
@@ -110,7 +110,7 @@
   import { mailSearchInput } from "./Search/MailSearchBox.svelte";
   import { Keyboard } from "../Util/keyboard";
   import { MessageActions } from "./MessageActions";
-  import { MailSearch, SearchScope } from "./Search/MailSearch";
+  import { kSearchLimit, hasRefiners, isRealFolder, isRealAccount, newMailSearch, SearchScope, defaultSearchOptions } from "./Search/MailSearch";
   import { FolderTreeActions } from "./LeftPane/FolderTreeActions";
   import Ribbon from "../Shared/Ribbon/Ribbon.svelte";
   import HomeTab from "./Ribbon/HomeTab.svelte";
@@ -141,7 +141,7 @@
   import ShowColumnsDialog, { openShowColumns } from "./ViewSettings/ShowColumnsDialog.svelte";
   import ApplyViewDialog, { openApplyView } from "./ViewSettings/ApplyViewDialog.svelte";
   import ApplyScopeDialog, { askedScope } from "./ViewSettings/ApplyScopeDialog.svelte";
-  import { MailViewSettings } from "./ViewSettings/ViewSettings";
+  import { viewSettingsOf, changeViewSettings } from "./ViewSettings/ViewSettings";
   import ConnectedIcon from "lucide-svelte/icons/plug-zap";
   import DisconnectedIcon from "lucide-svelte/icons/unplug";
   import ErrorIcon from "lucide-svelte/icons/circle-alert";
@@ -249,7 +249,7 @@
 
   $: searchTerm = $globalSearchTerm?.trim() || null;
   let isSearchFocused = false;
-  $: hasSearchCriteria = !!searchTerm || MailSearch.hasRefiners($searchOptions);
+  $: hasSearchCriteria = !!searchTerm || hasRefiners($searchOptions);
   $: isSearchActive = hasSearchCriteria || isSearchFocused;
   let currentSearch: SearchEMail | null = null;
   let searchResults: Collection<EMail> | null = null;
@@ -258,13 +258,13 @@
   const startSearchDebounced = debounce(() => catchErrors(startSearch), 300);
   let lastCriteria: string = null;
   async function startSearch() {
-    if (!searchTerm && !MailSearch.hasRefiners($searchOptions)) {
+    if (!searchTerm && !hasRefiners($searchOptions)) {
       currentSearch = null;
       searchResults = null;
       lastCriteria = null;
       return;
     }
-    let search = MailSearch.newSearch(searchTerm, $searchOptions, $selectedAccount, $selectedFolder);
+    let search = newMailSearch(searchTerm, $searchOptions, $selectedAccount, $selectedFolder);
     // <copied from="../../frontend/Mail/Search/SearchPane.svelte">
     let criteria = JSON.stringify(search.toJSON());
     if (criteria == lastCriteria) {
@@ -278,7 +278,7 @@
     isAutoSelectPending = true;
     isSearching = true;
     try {
-      let result = await search.startSearch(MailSearch.kLimit + 1);
+      let result = await search.startSearch(kSearchLimit + 1);
       if (currentSearch == search) {
         searchResults = result;
       }
@@ -310,7 +310,7 @@
 
   function closeSearch() {
     $globalSearchTerm = null;
-    $searchOptions = { ...MailSearch.defaultOptions(), scope: $searchOptions.scope };
+    $searchOptions = { ...defaultSearchOptions(), scope: $searchOptions.scope };
     isSearchFocused = false;
     $mailSearchInput?.blur();
   }
@@ -352,8 +352,8 @@
     if (results) {
       items.push({ label: searching
         ? $t`Searching…`
-        : results.length > MailSearch.kLimit && !isShowingAllResults
-          ? $t`More than ${MailSearch.kLimit} results`
+        : results.length > kSearchLimit && !isShowingAllResults
+          ? $t`More than ${kSearchLimit} results`
           : $t`Results: ${results.length}`, busy: searching });
     } else if (isFiltered) {
       items.push({ label: $t`Filter applied`, icon: FilterIcon });
@@ -370,7 +370,7 @@
     return items;
   }
 
-  $: statusAccounts = MailSearch.isRealFolder($selectedFolder) ? [$selectedFolder.account] : $accounts.contents;
+  $: statusAccounts = isRealFolder($selectedFolder) ? [$selectedFolder.account] : $accounts.contents;
   $: accountStates = derived(statusAccounts, () => statusAccounts);
   $: statusItemsRight = statusRight($accountStates, $updatingFolders);
   const ribbonCollapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
@@ -507,14 +507,14 @@
         $isAdvancedSearchOpen = true;
         return;
       case MailKeyAction.NewFolder:
-        if (MailSearch.isRealFolder(folder)) {
+        if (isRealFolder(folder)) {
           $openNewFolder = { account: folder.account, parent: folder };
-        } else if (MailSearch.isRealAccount($selectedAccount) || $accounts.hasItems) {
-          $openNewFolder = { account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : $accounts.first, parent: null };
+        } else if (isRealAccount($selectedAccount) || $accounts.hasItems) {
+          $openNewFolder = { account: isRealAccount($selectedAccount) ? $selectedAccount : $accounts.first, parent: null };
         }
         return;
       case MailKeyAction.NewSearchFolder:
-        $openNewSearchFolder = { account: MailSearch.isRealAccount($selectedAccount) ? $selectedAccount : null };
+        $openNewSearchFolder = { account: isRealAccount($selectedAccount) ? $selectedAccount : null };
         return;
       case MailKeyAction.GoToFolder:
         isGoToFolderOpen = true;

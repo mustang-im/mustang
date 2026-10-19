@@ -13,7 +13,7 @@
     {#if email}
       <hbox class="first-line">
         <span class="primary">{email.from?.name || email.from?.emailAddress || ""}</span>
-        <span class="date">{MessageDates.listDate(time)}</span>
+        <span class="date">{getListDateString(time)}</span>
       </hbox>
       <span class="subject">{$email.subject || $t`(No subject)`}</span>
       {#if preview}
@@ -22,7 +22,7 @@
     {:else if file}
       <hbox class="first-line">
         <span class="primary">{file.name ?? ""}</span>
-        <span class="date">{MessageDates.listDate(time)}</span>
+        <span class="date">{getListDateString(time)}</span>
       </hbox>
       <span class="secondary">{file.size ? fileSize(file.size) : ""}</span>
     {:else if event}
@@ -43,7 +43,7 @@
   import { File } from "../../../logic/Files/File";
   import type { LogEntry } from "../../../logic/Contacts/History/History";
   import { ContactActivities } from "./ContactActivities";
-  import { MessageDates } from "../../Mail/3pane/MessageDates";
+  import { getListDateString, getFullDateString } from "../../Mail/3pane/MessageDates";
   import { fileSize } from "../../../frontend/Files/file";
   import { catchErrors } from "../../../frontend/Util/error";
   import { openEMailMessage } from "../../../frontend/Mail/open";
@@ -66,9 +66,9 @@
       ? { weekday: "short", year: "numeric", month: "numeric", day: "numeric" }
       : { weekday: "short", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" })
     : "";
-  $: tooltip = message instanceof EMail ? `${message.subject ?? ""}\n${MessageDates.fullDate(time)}`
+  $: tooltip = message instanceof EMail ? `${message.subject ?? ""}\n${getFullDateString(time)}`
     : message instanceof Event ? `${message.title ?? ""}\n${eventDate}`
-    : message instanceof File ? `${message.name ?? ""}\n${MessageDates.fullDate(time)}`
+    : message instanceof File ? `${message.name ?? ""}\n${getFullDateString(time)}`
     : "";
 
   async function open() {
