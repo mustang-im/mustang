@@ -475,6 +475,22 @@ class StartupArgs extends Observable {
 }
 export const startupArgs = new StartupArgs();
 
+// <copied to="../../app/test/logic/util/httpPool.test.ts">
+/** The server closed our idle keep-alive connections while the computer slept, but we
+ * don't know that yet, and the next request on one of them would fail with "fetch failed".
+ * Chromium closes them when the computer wakes up, Node's `fetch()` doesn't.
+ * Requests that are still running finish on the old connections. */
+function closeIdleHTTPConnections(): void {
+  const kGlobalDispatcher = Symbol.for("undici.globalDispatcher.1"); // Shared by `fetch()` and the `undici` package
+  let dispatcher = (globalThis as any)[kGlobalDispatcher];
+  if (!dispatcher) {
+    return;
+  }
+  (globalThis as any)[kGlobalDispatcher] = new dispatcher.constructor();
+  dispatcher.close().catch(console.error);
+}
+// </copied>
+
 /** Tells the UI whether the computer is awake or in sleep mode.
  * The UI subscribes to it via `computerOn` in app/logic/util/backend-wrapper.ts */
 export class DesktopComputerOn extends Observable {
@@ -483,7 +499,10 @@ export class DesktopComputerOn extends Observable {
 
   start(): void {
     powerMonitor.on("suspend", () => this.isSleeping = true);
-    powerMonitor.on("resume", () => this.isSleeping = false);
+    powerMonitor.on("resume", () => {
+      closeIdleHTTPConnections();
+      this.isSleeping = false;
+    });
   }
 }
 const computerOn = new DesktopComputerOn();
