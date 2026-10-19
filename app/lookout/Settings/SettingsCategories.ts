@@ -28,7 +28,6 @@ import FilesGeneral from "./Files/General.svelte";
 import WhatsAppImportBackup from "../../frontend/Settings/Chat/WhatsAppImportBackup.svelte";
 import CalendarConnectedAccounts from "./Calendar/ConnectedAccounts.svelte";
 import CalendarImportExport from "./Calendar/ImportExport.svelte";
-import CalendarWorkHours from "./Calendar/WorkHours.svelte";
 import ContactsImportExport from "./Contacts/ImportExport.svelte";
 import { Account } from "../../logic/Abstract/Account";
 import { MailAccount } from "../../logic/Mail/MailAccount";
@@ -94,7 +93,6 @@ settingsCategories.add(calendarSettings);
 
 // <copied from="../../frontend/Settings/SettingsCategories.ts">
 accountSettings.add(new AccSetting(Calendar, "calendar-connected", gt`Connected accounts`, CalendarConnectedAccounts, true));
-accountSettings.add(new AccSetting(Calendar, "calendar-work-hours", gt`Work hours`, CalendarWorkHours, true));
 accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
 accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 // </copied>

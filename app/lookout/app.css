@@ -14,7 +14,7 @@
   --lo-window-bg: #EDF1F6;
   --lo-pane-bg: #FFFFFF;
   --lo-pane-alt-bg: #F7F9FB;
-  --lo-calendar-off-work-bg: color-mix(in srgb, black 4%, var(--lo-pane-bg));
+  /* --lo-calendar-off-work-bg: color-mix(in srgb, black 4%, var(--lo-pane-bg)); */
   --lo-ribbon-bg: #FFFFFF;
   --lo-titlebar-bg: var(--lo-window-bg);
   --lo-statusbar-bg: var(--lo-window-bg);
@@ -78,7 +78,7 @@
     --lo-window-bg: #1B1C1F;
     --lo-pane-bg: #26272B;
     --lo-pane-alt-bg: #222326;
-    --lo-calendar-off-work-bg: color-mix(in srgb, black 28%, var(--lo-pane-bg));
+    /* --lo-calendar-off-work-bg: color-mix(in srgb, black 28%, var(--lo-pane-bg)); */
     --lo-ribbon-bg: #26272B;
 
     --lo-fg: #ECEDEF;

@@ -1,5 +1,5 @@
 <OptionsPage icon={CalendarIcon} description={$t`Change the settings for calendars, meetings, and time zones.`}>
-  {#if calendar}
+  <!-- {#if calendar}
     {#key calendar}
       <CalendarWorkHours account={calendar}>
         <svelte:fragment slot="calendar">
@@ -13,7 +13,7 @@
         </svelte:fragment>
       </CalendarWorkHours>
     {/key}
-  {/if}
+  {/if} -->
 
   <OptionsSection title={$t`Calendar options`}>
     <OptionsRow icon={DurationIcon}>
@@ -86,7 +86,6 @@
   import OptionsPage from "../Shared/OptionsPage.svelte";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
-  import CalendarWorkHours from "./WorkHours.svelte";
   import CalendarImportExport from "./ImportExport.svelte";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import DurationIcon from "lucide-svelte/icons/calendar-clock";
@@ -134,9 +133,9 @@
 </script>
 
 <style>
-  .calendar-chooser {
+  /* .calendar-chooser {
     grid-column: 2 / -1;
-  }
+  } */
   .time-zone {
     grid-template-columns: max-content max-content;
     align-items: center;

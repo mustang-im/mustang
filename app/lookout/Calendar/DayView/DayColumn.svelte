@@ -29,9 +29,9 @@
       </button>
     {/if}
   </div>
-  {#each offWork as offWorkRange}
+  <!-- {#each offWork as offWorkRange}
     <div class="off-hours" style="top: {offWorkRange.from * pxPerMinute}px; height: {(offWorkRange.to - offWorkRange.from) * pxPerMinute}px" />
-  {/each}
+  {/each} -->
   {#if selectionHere}
     <div class="slot-selection"
       style="top: {selectionStart * pxPerMinute}px; height: {(selectionEnd - selectionStart) * pxPerMinute}px">
@@ -51,7 +51,6 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { TimeColumnLayout } from "./DayColumn";
-  import type { WorkingHours } from "../WorkingHours";
   import { CalendarActions } from "../CalendarActions";
   import { now, selectedSlots, eventPeek, type SlotSelection } from "../selected";
   import { selectedEvent } from "../../../frontend/Calendar/selected";
@@ -71,7 +70,7 @@
   export let group: number;
   export let events: Collection<Event>;
   export let calendar: Calendar | null;
-  export let workingHours: WorkingHours | null = null;
+  // export let workingHours: WorkingHours | null = null;
   export let pxPerMinute: number;
   export let timeScale: number;
   export let isToday = false;
@@ -96,7 +95,7 @@
   function isInDay(event: Event): boolean {
     return event.startTime < dayEnd && event.endTime > dayStart;
   }
-  $: offWork = workingHours?.offWorkMinutes(day) ?? [];
+  // $: offWork = workingHours?.offWorkMinutes(day) ?? [];
   $: layout = derived([...$dayEvents.contents], eventsInDay =>
     new TimeColumnLayout(eventsInDay, day, timeScale).items);
 
@@ -240,12 +239,12 @@
     background-color: var(--lo-hover-bg);
     color: var(--lo-fg);
   }
-  .off-hours {
+  /* .off-hours {
     position: absolute;
     inset-inline: 0;
     background-color: var(--lo-calendar-off-work-bg);
     pointer-events: none;
-  }
+  } */
   .slot-selection {
     position: absolute;
     inset-inline: 0;

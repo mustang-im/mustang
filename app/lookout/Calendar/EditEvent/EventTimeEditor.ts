@@ -1,5 +1,4 @@
 import type { Event } from "../../../logic/Calendar/Event";
-import { WorkingHours } from "../WorkingHours";
 import { setNewEventTime } from "../../../frontend/Calendar/event";
 
 export class EventTimeEditor {
@@ -131,7 +130,9 @@ export class EventTimeEditor {
       this.setAllDay(false);
       return;
     }
-    let start = WorkingHours.workStartOf(event.calendar, event.startTime);
+    let start = new Date(event.startTime);
+    start.setHours(8, 0, 0, 0);
+    // let start = WorkingHours.workStartOf(event.calendar, event.startTime);
     event.allDay = false;
     setNewEventTime(event, true, start);
   }
