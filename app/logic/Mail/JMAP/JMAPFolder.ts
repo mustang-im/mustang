@@ -4,14 +4,14 @@ import type { JMAPAccount } from "./JMAPAccount";
 import type { EMail } from "../EMail";
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { TJMAPEMailHeaders, TJMAPFolder } from "./TJMAPMail";
-import type { TJMAPChangeResponse, TJMAPGetResponse } from "./TJMAPGeneric";
+import type { TJMAPChangeResponse, TJMAPGetResponse, TJMAPQueryResponse } from "./TJMAPGeneric";
 import { checkChangeError } from "./JMAPError";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { PromiseAllDone } from "../../util/flow/PromiseAllDone";
 import { retryOnTransientError } from "../../util/netUtil";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { NotImplemented, assert } from "../../util/util";
+import { assert } from "../../util/util";
 import { ArrayColl, SetColl, Collection } from "svelte-collections";
 import { Buffer } from "buffer";
 import { gt } from "../../../l10n/l10n";
@@ -66,13 +66,30 @@ export class JMAPFolder extends Folder {
     const batchSize = 200;
     let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
-    for (let i = 0; i < this.countTotal; i += batchSize) {
-      let { newMessages, syncState } = await retryOnTransientError(() =>
-        this.fetchMessageList(i, batchSize));
+    let position = 0;
+    const kMaxRounds = 5000; // 1,000,000 emails
+    let previousIDs: string | null = null;
+    let isComplete = false;
+    for (let round = 1; round <= kMaxRounds; round++) {
+      let { newMessages, syncState, ids, limit } = await retryOnTransientError(() =>
+        this.fetchMessageList(position, batchSize));
+      let pageIDs = ids.join(" ");
+      if (pageIDs == previousIDs) {
+        break;
+      }
+      previousIDs = pageIDs;
       state ??= syncState;
       this.messages.addAll(newMessages);
       await this.saveNewMsgs(newMessages);
       allNewMessages.addAll(newMessages);
+      position += ids.length;
+      if (ids.length < limit) {
+        isComplete = true;
+        break;
+      }
+    }
+    if (!isComplete) {
+      this.account.errorCallback(new Error(`${this.name}: Listing the emails: The server keeps returning more emails. Stopped.`));
     }
     if (state) {
       this.account.syncState.set("Email", state);
@@ -99,7 +116,7 @@ export class JMAPFolder extends Folder {
     }
   }
 
-  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string }> {
+  protected async fetchMessageList(start?: number, limit?: number, options?: any): Promise<{ newMessages: ArrayColl<JMAPEMail>, updatedMessages: ArrayColl<JMAPEMail>, syncState: string, ids: string[], limit: number }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPEMailHeaders>;
     let lock = await this.account.stateLock.lock();
@@ -131,12 +148,15 @@ export class JMAPFolder extends Folder {
           },
           "emails",
         ],
-      ]) as TJMAPGetResponse<TJMAPEMailHeaders>;
+      ]);
       listResponse = response["emails"];
+      let query = response["list"] as TJMAPQueryResponse;
 
       return {
         ...this.parseMessageList(listResponse.list),
         syncState: listResponse.state,
+        ids: sanitize.array(query.ids, []),
+        limit: sanitize.integer(query.limit, limit), // The server may set a lower limit
       };
     } finally {
       lock.release();
@@ -560,35 +580,38 @@ export class JMAPFolder extends Folder {
 
   async markAllRead(): Promise<void> {
     await super.markAllRead();
-    throw new NotImplemented();
-    await this.account.makeCombinedCall([
-      [
-        "Email/query", {
-          accountId: this.account.accountID,
-          filter: {
-            inMailbox: this.id,
-          },
+    let batchSize = Math.max(1, sanitize.integer(this.account.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInSet, 500));
+    const kMaxEMails = 1000000;
+    let maxRounds = Math.ceil(kMaxEMails / batchSize);
+    let previousIDs: string | null = null;
+    for (let round = 1; round <= maxRounds; round++) {
+      let query = await this.account.makeSingleCall("Email/query", {
+        accountId: this.account.accountID,
+        filter: {
+          inMailbox: this.id,
+          notKeyword: "$seen",
         },
-        "list",
-      ], [
-        "Email/set", {
-          accountId: this.account.accountID,
-          update: {
-            "#ids": {
-              name: "Email/query",
-              path: "/ids",
-              resultOf: "list",
-            },
-            idFromResultTODO: {
-              keywords: {
-                ["$seen"]: true,
-              }
-            }
-          }
-        },
-        "markRead",
-      ],
-    ]);
+        limit: batchSize,
+      }) as TJMAPQueryResponse;
+      if (!query.ids.length) {
+        return;
+      }
+      let ids = query.ids.join(" ");
+      if (ids == previousIDs) {
+        break;
+      }
+      previousIDs = ids;
+      let update: Record<string, Record<string, boolean>> = {};
+      for (let id of query.ids) {
+        update[id] = { "keywords/$seen": true };
+      }
+      let response = await this.account.makeSingleCall("Email/set", {
+        accountId: this.account.accountID,
+        update: update,
+      }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
+      checkChangeError(response);
+    }
+    this.account.errorCallback(new Error(`${this.name}: Mark all as read: The server keeps returning unread emails. Stopped.`));
   }
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`
