@@ -251,6 +251,25 @@ test("Moving an occurrence of an all-day series moves all days", async () => {
   expect(occurrenceTime(master, 13)).toBe(new Date(2027, 3, 6).getTime());
 });
 
+test("Making an occurrence all-day makes the entire series all-day, one day long", async () => {
+  let master = weeklySeries();
+  let occurrence = openOccurrence(master, 5);
+  // What the time box does when the user turns on "All day"
+  occurrence.allDay = true;
+  occurrence.timezone = null;
+  occurrence.startTime = new Date(2027, 1, 8);
+  occurrence.endTime = new Date(2027, 1, 9);
+  master.moveSeriesWithOccurrence(occurrence);
+  await saveForSeries(occurrence);
+
+  expect(master.allDay).toBe(true);
+  expect(master.startTime.getTime()).toBe(new Date(2027, 0, 4).getTime());
+  // The series kept its old end time, 10:00 on the first day
+  expect(master.endTime.getTime()).toBe(new Date(2027, 0, 5).getTime());
+  expect(occurrenceTime(master, 5)).toBe(new Date(2027, 1, 8).getTime());
+  expect(master.instances.get(5).endTime.getTime()).toBe(new Date(2027, 1, 9).getTime());
+});
+
 test("A series that ends after a number of times keeps the same occurrences", async () => {
   let master = weeklySeries();
   await master.setRecurrenceCount(10);

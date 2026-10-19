@@ -441,6 +441,8 @@ export class Event extends Observable {
     let days = Math.floor(localTime(startTime) / k1DayMS) - Math.floor(localTime(this.startTime) / k1DayMS);
     let rule = this.recurrenceRule;
     this.startTime = startTime;
+    // The `duration` getter rounds all-day events up to whole days, so setting the same duration would keep a stale end time
+    this.endTime = new Date(startTime);
     this.duration = occurrence.duration;
     this.alarm = occurrence.alarm ? new Date(startTime.getTime() - occurrence.startTime.getTime() + occurrence.alarm.getTime()) : null;
     if (!rule) {
