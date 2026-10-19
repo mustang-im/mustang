@@ -9,7 +9,7 @@ export class JMAPCommandError extends SpecificError {
     let type = sanitize.alphanumdash(jmapError?.type, "serverFail");
     let msg = `JMAP ${method} failed: ${type}`;
     if (jmapError?.description) {
-      msg += ": " + sanitize.nonemptylabel(jmapError.description, "");
+      msg = sanitize.nonemptylabel(jmapError.description, "") + " - " + msg;
     }
     super(null, msg);
     this.code = type;
