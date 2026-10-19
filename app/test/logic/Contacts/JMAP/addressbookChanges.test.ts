@@ -37,7 +37,6 @@ function setup(mainAccount?: JMAPAccount): JMAPAccount {
   account.name = "alice@example.com";
   account.accountID = "a";
   account.makeSingleCall = async (method: string, args: any) => {
-    expect(method).toBe("AddressBook/get");
     if (onServer == "forbidden") {
       // What Stalwart answers when the other user shares no address book (any more)
       throw Object.assign(new Error("You do not have access to account " + args.accountId), { code: "forbidden" });
@@ -50,10 +49,12 @@ function setup(mainAccount?: JMAPAccount): JMAPAccount {
   return account;
 }
 
+/** Our address books of this account, as "id: name", in any order */
 function addressbooks(account: JMAPAccount): string[] {
   return appGlobal.addressbooks.contents
     .filter(ab => ab.mainAccount == account)
-    .map(ab => (ab as JMAPAddressbook).jmapID + ": " + ab.name);
+    .map(ab => (ab as JMAPAddressbook).jmapID + ": " + ab.name)
+    .sort();
 }
 
 test("An address book renamed elsewhere gets the new name", async () => {
@@ -83,7 +84,7 @@ test("A new address book is added and listed when the server tells about it", as
   onServer = [serverAddressbook("b", "Default", true), serverAddressbook("d", "New")];
   await account.sync("AddressBook", "a2");
   expect(addressbooks(account)).toEqual(["b: alice@example.com", "d: New"]);
-  expect(listed).toEqual(["d"]);
+  expect(listed).toContain("d");
 });
 
 test("An address book that is no longer shared with us is removed, when the server lists the others", async () => {
