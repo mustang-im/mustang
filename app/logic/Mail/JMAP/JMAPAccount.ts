@@ -212,6 +212,11 @@ export class JMAPAccount extends MailAccount {
     let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
     return serverMax ? Math.max(1, Math.min(serverMax - 1, 30)) : 5;
   }
+  /** @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxObjectsInSet` */
+  get maxObjectsInSet(): number {
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInSet, null);
+    return serverMax > 0 ? serverMax : 500;
+  }
   // <compat for="Cyrus">
   // Cyrus announces its core extension always, even when its non-standard extensions are off.
   get isCyrus(): boolean {
@@ -730,6 +735,9 @@ export class JMAPAccount extends MailAccount {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
     }
+    if (type == "Calendar") {
+      await this.listCalendars();
+    }
     if (type == "CalendarEvent") {
       let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
       await calendars.first?.fetchChangedEventsForAllCalendars();
@@ -749,7 +757,7 @@ export class JMAPAccount extends MailAccount {
       types.push("ContactCard");
     }
     if (this.haveCalendar) {
-      types.push("CalendarEvent");
+      types.push("Calendar", "CalendarEvent");
     }
     if (this.haveSharing) {
       types.push("ShareNotification");
@@ -873,6 +881,8 @@ export class JMAPAccount extends MailAccount {
       return; // Another user's account, and they did not share their calendars with us
     }
     let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
+    await this.updateCalendars(listResponse.list);
+    this.syncState.set("Calendar", listResponse.state);
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
         this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.jmapID == jmap.id).hasItems) {
@@ -883,6 +893,21 @@ export class JMAPAccount extends MailAccount {
       cal.fromJMAP(jmap)
       appGlobal.calendars.add(cal);
       await cal.save();
+    }
+  }
+
+  /** Takes over changes of our calendars, e.g. a new name, and removes
+   * those that were deleted on the server or are no longer shared with us. */
+  protected async updateCalendars(serverCalendars: TJMAPCalendar[]) {
+    let ourCalendars = this.dependentAccounts().filterOnce(account => account instanceof JMAPCalendar) as Collection<JMAPCalendar>;
+    for (let ourCalendar of ourCalendars) {
+      let jmap = serverCalendars.find(json => json.id == ourCalendar.jmapID);
+      if (jmap) {
+        ourCalendar.fromJMAP(jmap);
+        await ourCalendar.save();
+      } else {
+        await ourCalendar.deleteIt();
+      }
     }
   }
 
