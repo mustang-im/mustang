@@ -115,7 +115,7 @@ export class JMAPEvent extends Event {
       destroy: [this.jmapID],
     }) as TJMAPChangeResponse<TJMAPCalendarEvent>;
     checkChangeError(response);
-    await super.deleteFromServer(); // server doesn't send
+    await super.deleteFromServer(); // we send, because server doesn't
   }
 
   async makeExclusions(exclusions: JMAPEvent[]) {
