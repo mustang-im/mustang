@@ -519,6 +519,7 @@ export class JMAPAccount extends MailAccount {
         folder.countUnread = sanitize.integer(json.unreadEmails, folder.countUnread);
         await this.storage.saveFolderProperties(folder);
       }
+      // With `hasMoreChanges`, an intermediate state, for the changes that we applied so far: An interrupted sync continues here
       this.syncState.set("Mailbox", changes.newState);
       await this.save();
       if (!changes.hasMoreChanges) {

@@ -144,3 +144,36 @@ test("Folder changes stop after a maximum number of rounds, when the server alwa
   expect(server.methodsCalled.filter(method => method == "Mailbox/changes").length).toBe(1000);
   expect(errors.length).toBe(1);
 });
+
+test("Changes in several batches: an interrupted sync continues after the last batch that was applied", async () => {
+  let { server, account } = await setup();
+  // Inbox unread: 28 at s7maq. The server sends the changes in 3 batches, and the connection breaks at the 2nd.
+  let batches: Record<string, { newState: string, unread: number, hasMoreChanges: boolean }> = {
+    s7maq: { newState: "b1", unread: 27, hasMoreChanges: true },
+    b1: { newState: "b2", unread: 26, hasMoreChanges: true },
+    b2: { newState: "b3", unread: 25, hasMoreChanges: false },
+  };
+  let breakAt = "b1";
+  let answer = server.answer.bind(server);
+  server.answer = (request: any) => {
+    let sinceState = request.methodCalls[0][1].sinceState;
+    if (sinceState == breakAt) {
+      breakAt = null;
+      throw new TypeError("fetch failed");
+    }
+    let batch = batches[sinceState];
+    server.mailboxes[0].unreadEmails = batch.unread;
+    server.changes = { newState: batch.newState, hasMoreChanges: batch.hasMoreChanges, created: [], updated: ["a"], destroyed: [], updatedProperties: ["totalEmails", "unreadEmails", "totalThreads", "unreadThreads"] };
+    return answer(request);
+  };
+
+  await expect(account.sync("Mailbox", "b3")).rejects.toThrow("fetch failed");
+
+  expect(account.syncState.get("Mailbox")).toBe("b1"); // not b2: that batch wasn't applied
+  expect(account.inbox.countUnread).toBe(27);
+
+  await account.sync("Mailbox", "b3");
+
+  expect(account.syncState.get("Mailbox")).toBe("b3");
+  expect(account.inbox.countUnread).toBe(25);
+});
