@@ -24,7 +24,7 @@
       disabled={!$attachment.filepathLocal && $t`The attachment is not saved on this computer yet`}
       onClick={() => attachment.openOSFolder()} />
   {/if}
-  <MenuItem label={$t`Save As`} icon={SaveIcon} onClick={() => attachment.saveFile()} />
+  <MenuItem label={$t`Save As`} icon={SaveIcon} onClick={saveFile} />
   {#if canSaveAll}
     <MenuItem label={$t`Save All Attachments…`} icon={SaveAllIcon} onClick={() => { dispatch("saveAll"); }} />
   {/if}
@@ -38,6 +38,7 @@
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import { executableMessage } from "../../../logic/Files/FileType/ExecutableFile";
   import { openFileInternallyFromFile, canOpenFileInternally } from "../../../frontend/Files/open";
+  import { saveBlobAsFile } from "../../../frontend/Util/util";
   import { fileSize } from "../../../frontend/Files/file";
   import FileIcon from "../../../frontend/Files/Thumbnail/FileIcon.svelte";
   import Menu from "../../Shared/Menu/Menu.svelte";
@@ -87,6 +88,12 @@
     event.dataTransfer.items.add(attachment.content);
     event.dataTransfer.setDragImage(iconEl as HTMLElement, 0, 0);
     event.dataTransfer.effectAllowed = "copy";
+  }
+  // </copied>
+
+  // <copied from="../../../frontend/Mail/Message/AttachmentMenu.svelte">
+  async function saveFile() {
+    await saveBlobAsFile(await attachment.getContent());
   }
   // </copied>
 </script>

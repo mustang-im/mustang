@@ -16,6 +16,7 @@
 
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
+  import { saveBlobAsFile } from "../../../frontend/Util/util";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import { t } from "../../../l10n/l10n";
@@ -32,7 +33,7 @@
 
   async function onSave() {
     for (let attachment of chosen) {
-      await attachment.saveFile();
+      await saveBlobAsFile(await attachment.getContent());
     }
   }
 </script>
