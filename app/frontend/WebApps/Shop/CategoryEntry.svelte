@@ -1,4 +1,7 @@
 <hbox class="category nav-entry" class:selected={category == selected}>
+  {#each {length: indent} as _}
+    <hbox class="indention" />
+  {/each}
   <Clickable onClick={onSelect}>
     <hbox flex class="name">{category.nameTranslated}</hbox>
   </Clickable>
@@ -7,9 +10,7 @@
   {/if}
 </hbox>
 {#if isOpen}
-<vbox class="sub-categories">
-  <Categories showCategories={childCategories} {allCategories} bind:selected />
-</vbox>
+  <Categories showCategories={childCategories} {allCategories} bind:selected indent={indent + 1} />
 {/if}
 
 <script lang="ts">
@@ -24,6 +25,7 @@
   export let allCategories: MapColl<string, WebAppCategory>;
   export let category: WebAppCategory;
   export let selected: WebAppCategory; /* in/out */
+  export let indent = 0;
 
   let childCategories = allCategories.filter(cat => cat.parentID == category.id);
   $: hasChildCategories = !$childCategories.isEmpty;
@@ -44,7 +46,7 @@
     padding-block: 6px;
     padding-inline: 24px;
   }
-  .sub-categories {
+  .indention {
     margin-inline-start: 24px;
   }
   .category.selected {
