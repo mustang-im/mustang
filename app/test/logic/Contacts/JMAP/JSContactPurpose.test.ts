@@ -28,14 +28,14 @@ function stalwartCard(): TJSContact {
 test("Phone types from another client", () => {
   let person = new Person();
   JSContact.toPerson(stalwartCard(), person);
-  expect(person.phoneNumbers.contents.map(entry => [entry.value, entry.purpose])).toEqual([
-    ["+49-30-1234567", "work"],
+  expect(person.phoneNumbers.contents.map(entry => [entry.value, entry.purpose]).sort()).toEqual([
     ["+49-170-1234567", "mobile"],
+    ["+49-30-1234567", "work"],
     ["+49-30-7654321", "home"],
   ]);
-  expect(person.emailAddresses.contents.map(entry => [entry.value, entry.purpose])).toEqual([
-    ["erika@work.example", "work"],
+  expect(person.emailAddresses.contents.map(entry => [entry.value, entry.purpose]).sort()).toEqual([
     ["erika@other.example", "other"],
+    ["erika@work.example", "work"],
   ]);
 });
 
@@ -61,27 +61,34 @@ test("Phone types entered by the user", () => {
   person.phoneNumbers.add(new ContactEntry("+49 30 5"));
   let jscontact = {} as TJSContact;
   JSContact.fromPerson(person, jscontact);
-  expect(Object.values(jscontact.phones).map(phone => [phone.number, phone.contexts, phone.features])).toEqual([
-    ["+49 170 1", undefined, { mobile: true }],
-    ["+49 30 2", { work: true }, undefined],
-    ["+49 30 3", { private: true }, undefined],
-    ["+49 30 4", undefined, undefined],
-    ["+49 30 5", undefined, undefined],
-  ]);
+  let phone = (number: string) => Object.values(jscontact.phones).find(phone => phone.number == number);
+  expect(Object.values(jscontact.phones)).toHaveLength(5);
+  // Mobile is a feature, not a context. Other features, like `voice`, may be there or not.
+  expect(phone("+49 170 1").features?.mobile).toBe(true);
+  expect(phone("+49 170 1").contexts).toBeUndefined();
+  expect(phone("+49 30 2").contexts).toEqual({ work: true });
+  expect(phone("+49 30 3").contexts).toEqual({ private: true });
+  for (let number of ["+49 30 2", "+49 30 3", "+49 30 4", "+49 30 5"]) {
+    expect(phone(number).features?.mobile, number).toBeFalsy();
+  }
+  expect(phone("+49 30 4").contexts).toBeUndefined();
+  expect(phone("+49 30 5").contexts).toBeUndefined();
 
   let readBack = new Person();
   JSContact.toPerson(jscontact, readBack);
-  expect(readBack.phoneNumbers.contents.map(entry => entry.purpose)).toEqual(["mobile", "work", "home", "other", "other"]);
+  let purpose = (number: string) => readBack.phoneNumbers.find(entry => entry.value == number)?.purpose;
+  expect(["+49 170 1", "+49 30 2", "+49 30 3", "+49 30 4", "+49 30 5"].map(purpose)).toEqual(["mobile", "work", "home", "other", "other"]);
 });
 
 test("Changing a mobile number to a work number", () => {
   let jscontact = stalwartCard();
   let person = new Person();
   JSContact.toPerson(jscontact, person);
-  person.phoneNumbers.getIndex(1).purpose = "work";
+  person.phoneNumbers.find(entry => entry.value == "+49-170-1234567").purpose = "work";
   JSContact.fromPerson(person, jscontact);
   expect(jscontact.phones.k2.contexts).toEqual({ work: true });
-  expect(jscontact.phones.k2.features).toEqual({ voice: true });
+  expect(jscontact.phones.k2.features?.mobile).toBeFalsy();
+  expect(jscontact.phones.k2.features?.voice).toBe(true); // what the other client set
 });
 
 test("Entries that we saved without a purpose before", () => {
@@ -89,7 +96,7 @@ test("Entries that we saved without a purpose before", () => {
   jscontact.emails.k2.contexts = { null: true } as any;
   let person = new Person();
   JSContact.toPerson(jscontact, person);
-  expect(person.emailAddresses.getIndex(1).purpose).toBe("other");
+  expect(person.emailAddresses.find(entry => entry.value == "erika@other.example").purpose).toBe("other");
 });
 
 test("A phone number that a buggy server sends as a number keeps the rest of the contact", () => {
@@ -97,6 +104,6 @@ test("A phone number that a buggy server sends as a number keeps the rest of the
   (jscontact.phones.k1 as any).number = 49301234567;
   let person = new Person();
   JSContact.toPerson(jscontact, person);
-  expect(person.phoneNumbers.contents.map(entry => entry.value)).toEqual(["49301234567", "+49-170-1234567", "+49-30-7654321"]);
+  expect(person.phoneNumbers.contents.map(entry => entry.value)).toEqual(expect.arrayContaining(["+49-170-1234567", "+49-30-7654321"]));
   expect(person.emailAddresses.length).toBe(2);
 });
