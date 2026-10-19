@@ -41,12 +41,6 @@
   .settings-content :global(.group > .content) {
     padding: 8px 12px 10px 12px;
   }
-  .settings-content :global(.button) {
-    border-radius: var(--lo-radius-small);
-  }
-  .settings-content :global(.button:has(> .label)) {
-    padding-inline: 12px;
-  }
   .settings-content :global(input:not([type="checkbox"]):not([type="radio"]):not([type="color"])),
   .settings-content :global(select) {
     font-family: var(--lo-font);

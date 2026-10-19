@@ -287,4 +287,11 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
 :root {
   --island-radius: var(--lo-radius-small);
   --island-overlap: 0;
+  --button-radius: var(--lo-radius-small);
+  --button-padding: 0 8px;
+  --button-label-padding: 4px;
+  --button-min-height: 32px;
+  --button-filled-border: var(--lo-accent);
+  --button-filled-hover-bg: var(--lo-accent-hover);
+  --button-filled-hover-fg: var(--lo-accent-fg);
 }

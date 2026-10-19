@@ -59,6 +59,13 @@
   --border-radius: 5px;
   --island-radius: 1000px;
   --island-overlap: -6px;
+  --button-radius: 1000px;
+  --button-padding: 6px 8px;
+  --button-label-padding: 0;
+  --button-min-height: auto;
+  --button-filled-border: var(--button-border);
+  --button-filled-hover-bg: var(--hover-bg);
+  --button-filled-hover-fg: var(--hover-fg);
   --chat-bubble-incoming-bg: #fdfefe;
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;
