@@ -245,7 +245,7 @@ export class JSContact {
     streetAddress.state = JSContact.getAddressComponents(address, kinds.state);
     streetAddress.country = JSContact.getAddressComponents(address, kinds.country);
     if (!address.components?.length) {
-      streetAddress.street = sanitize.nonemptystring(address.full, null);
+      streetAddress.street = sanitize.nonemptylabel(address.full, null);
     }
     return streetAddress;
   }
@@ -273,7 +273,7 @@ export class JSContact {
   protected static getAddressComponents(address: TAddress, kinds: TAddressComponentKind[]): string | null {
     return ensureArray(address.components)
       .filter(component => kinds.includes(component.kind))
-      .map(component => sanitize.string(component.value, ""))
+      .map(component => sanitize.label(component.value, ""))
       .filter(value => value)
       .join(" ") || null;
   }
