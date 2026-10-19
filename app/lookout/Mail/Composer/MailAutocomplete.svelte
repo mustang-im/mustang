@@ -115,7 +115,6 @@
   import { searchContacts } from "../../../logic/Contacts/Search";
   import { UserError } from "../../../logic/util/util";
   import { catchErrors, showError, minorError } from "../../../frontend/Util/error";
-  import { RecipientText } from "./RecipientText";
   import AutocompleteList from "./AutocompleteList.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
@@ -173,7 +172,7 @@
       await addNewPerson();
       return true;
     }
-    let { recipients: parsed, unresolved } = RecipientText.parseList(text);
+    let { recipients: parsed, unresolved } = parseRecipientList(text);
     parsed.forEach(add);
     let stillUnresolved: string[] = [];
     for (let name of unresolved) {
@@ -234,7 +233,7 @@
       choose(suggestions[highlighted]);
       return true;
     }
-    let { recipients: parsed, unresolved } = RecipientText.parseList(typed);
+    let { recipients: parsed, unresolved } = parseRecipientList(typed);
     if (!parsed.length) {
       return false;
     }
@@ -307,8 +306,8 @@
 
   function onPaste(event: ClipboardEvent) {
     let text = event.clipboardData?.getData("text/plain") ?? "";
-    let { recipients: parsed, unresolved } = RecipientText.parseList(text);
-    if (!parsed.length || askForName && RecipientText.split(text).length == 1 && !text.includes("<")) {
+    let { recipients: parsed, unresolved } = parseRecipientList(text);
+    if (!parsed.length || askForName && splitRecipientList(text).length == 1 && !text.includes("<")) {
       return;
     }
     event.preventDefault();
@@ -322,11 +321,81 @@
       return;
     }
     if (typed.trim()) {
-      let { recipients: parsed, unresolved } = RecipientText.parseList(typed);
+      let { recipients: parsed, unresolved } = parseRecipientList(typed);
       parsed.forEach(add);
       typed = unresolved.join("; ");
     }
     suggestions = [];
+  }
+
+  function parseRecipientList(text: string): { recipients: PersonUID[], unresolved: string[] } {
+    let recipients: PersonUID[] = [];
+    let unresolved: string[] = [];
+    for (let part of splitRecipientList(text)) {
+      let recipient = parseRecipient(part);
+      if (recipient) {
+        recipients.push(recipient);
+      } else {
+        unresolved.push(part);
+      }
+    }
+    return { recipients, unresolved };
+  }
+
+  function parseRecipient(text: string): PersonUID | null {
+    let match = text.trim().match(/^(.*?)\s*<([^<>]*)>$/);
+    let name = match ? match[1].replace(/^"(.*)"$/, "$1").trim() : "";
+    let emailAddress = (match ? match[2] : text).trim();
+    if (!sanitize.emailAddress(emailAddress, null)) {
+      return null;
+    }
+    return new PersonUID(emailAddress, name || nameFromEmailAddress(emailAddress));
+  }
+
+  function splitRecipientList(text: string): string[] {
+    return splitOutsideQuotes(text, [";", "\n"])
+      .flatMap(part => joinNameParts(splitOutsideQuotes(part, [","])))
+      .map(part => part.trim())
+      .filter(part => !!part);
+  }
+
+  function splitOutsideQuotes(text: string, separators: string[]): string[] {
+    let parts: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    let inBrackets = false;
+    for (let char of text) {
+      if (char == '"') {
+        inQuotes = !inQuotes;
+      } else if (char == "<") {
+        inBrackets = true;
+      } else if (char == ">") {
+        inBrackets = false;
+      } else if (!inQuotes && !inBrackets && separators.includes(char)) {
+        parts.push(current);
+        current = "";
+        continue;
+      }
+      current += char;
+    }
+    parts.push(current);
+    return parts;
+  }
+
+  function joinNameParts(parts: string[]): string[] {
+    let joined: string[] = [];
+    let pending: string[] = [];
+    for (let part of parts) {
+      pending.push(part);
+      if (part.includes("@")) {
+        joined.push(pending.join(","));
+        pending = [];
+      }
+    }
+    if (pending.length) {
+      joined.push(pending.join(","));
+    }
+    return joined;
   }
 
   function onFieldClick(event: MouseEvent) {
