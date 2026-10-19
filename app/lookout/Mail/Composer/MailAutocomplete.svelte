@@ -52,7 +52,8 @@
         on:paste={onPaste}
         on:blur={onBlur} />
       {#if hasNameField}
-        <hbox class="name-line">
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <hbox class="name-line" on:keydown={onNameLineKeyDown}>
           <input class="name" type="text"
             bind:value={name}
             bind:this={nameInputEl}
@@ -386,6 +387,15 @@
   let addressbookButtonEl: HTMLButtonElement;
   let isAddressbookMenuOpen = false;
 
+  function onNameLineKeyDown(event: KeyboardEvent) {
+    if (event.key != "Escape" || !isAddressbookMenuOpen) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    isAddressbookMenuOpen = false;
+  }
+
   // <copied from="../../../frontend/Contacts/PersonAutocomplete/PersonAutocomplete.svelte">
   function canCreate(typedText: string) {
     return typedText && sanitize.emailAddress(typedText, "");
@@ -615,6 +625,7 @@
   }
   .new-person .typed {
     flex: none;
+    width: auto;
     field-sizing: content;
     min-width: 2ch;
     height: 100%;
@@ -633,6 +644,7 @@
   }
   .name-line input.name,
   .edited-person input.name {
+    width: auto;
     min-width: 8em;
     height: 100%;
     padding: 0 8px;
@@ -689,6 +701,7 @@
       border-radius: 14px;
     }
     .new-person .typed {
+      width: 100%;
       field-sizing: fixed;
       height: 26px;
     }
