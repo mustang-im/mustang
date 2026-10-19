@@ -87,7 +87,15 @@
 
   let dayStart: Date;
   let dayEnd: Date;
-  $: dayEvents = events.filterObservable(isInDay);
+  let dayEvents: Collection<Event>;
+  let dayEventsFrom: Collection<Event>;
+  $: filterEvents(events);
+  function filterEvents(source: Collection<Event>) {
+    if (source != dayEventsFrom) {
+      dayEventsFrom = source;
+      dayEvents = source.filterObservable(isInDay);
+    }
+  }
   $: day, filterDay();
   function filterDay() {
     dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());

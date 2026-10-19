@@ -240,7 +240,7 @@ export class MessageActions {
     }
     let disabled = MessageActions.disableGetNewMail(folder);
     assert(!disabled, disabled as string);
-    updatingFolders.update(folders => [...folders, folder]);
+    updatingFolders.add(folder);
     try {
       // <copied from="../../frontend/Mail/LeftPane/FolderMenu.svelte">
       let account = folder.account;
@@ -250,7 +250,7 @@ export class MessageActions {
       await folder.getNewMessages();
       // </copied>
     } finally {
-      updatingFolders.update(folders => folders.filter(updating => updating != folder));
+      updatingFolders.remove(folder);
     }
   }
 

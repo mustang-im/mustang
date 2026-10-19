@@ -50,11 +50,15 @@ beforeEach(() => {
   localStorage.clear();
   startDate.set(new Date(kWednesday));
   selectedDate.set(new Date(kWednesday));
+  mountApp();
+});
+
+function mountApp() {
   let target = document.createElement("div");
   document.body.append(target);
   app = mount(CalendarApp, { target });
   flushSync();
-});
+}
 
 afterEach(() => {
   unmount(app);
@@ -279,6 +283,34 @@ test("Showing and hiding another calendar doesn't pile up subscriptions on the e
     appGlobal.calendars.removeAll([work, holidays]);
   }
 });
+
+for (let shownView of ["workweek", "month", "schedule"] as CalendarViewType[]) {
+  test(`Showing and hiding another calendar in the split ${shownView} view doesn't pile up subscriptions on the events`, () => {
+    unmount(app);
+    getLocalStorage<boolean>("lookout.calendar.splitView", false).value = true;
+    view.value = shownView;
+    mountApp();
+    let work = newCalendar("Work", [12, 14, 20, 28]);
+    let holidays = newCalendar("Holidays", [13]);
+    let team = newCalendar("Team", [15]);
+    appGlobal.calendars.addAll([work, holidays, team]);
+    try {
+      flushSync();
+      let shown = subscriptions(work) + subscriptions(team);
+      expect(shown).toBeGreaterThan(0);
+      for (let i = 0; i < 3; i++) {
+        shownCalendars.show(holidays, false);
+        flushSync();
+        shownCalendars.show(holidays, true);
+        flushSync();
+      }
+      expect(subscriptions(work) + subscriptions(team)).toBe(shown);
+    } finally {
+      shownCalendars.show(holidays, true);
+      appGlobal.calendars.removeAll([work, holidays, team]);
+    }
+  });
+}
 
 test("The status bar counts the events in the shown days", () => {
   let work = newCalendar("Work", [12, 14, 20]);
