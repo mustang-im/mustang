@@ -1,4 +1,4 @@
-<RibbonTab label={$t`Search *=> Ribbon tab with search commands`} isSelected>
+<RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Scope *=> Ribbon group to choose where to search`}>
     <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon}
       selected={$options.scope == ContactSearchScope.CurrentFolder}
@@ -21,7 +21,7 @@
       selected={$options.hasEMailAddress}
       onClick={() => update({ hasEMailAddress: !$options.hasEMailAddress })} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Close *=> Ribbon group with the command to close the search`}>
+  <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc *=> Escape key`}
       onClick={closeSearch} />
   </RibbonGroup>

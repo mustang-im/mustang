@@ -78,13 +78,13 @@
             <span class="category-name">{tag.name}</span>
             <ComboBox label={$t`Color of ${tag.name}`} options={colorOptions} value={tag.color}
               on:change={event => catchErrors(async () => { tag.color = event.detail; await saveTagsList(); })} width="160px" swatchColumns={5} />
-            <DialogButton label={$t`Delete *=> Delete the category`} icon={DeleteIcon} classes="plain" onClick={() => onDeleteCategory(tag)} />
+            <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain" onClick={() => onDeleteCategory(tag)} />
           </hbox>
         {/each}
         <hbox class="category new">
           <TextField label={$t`New category`} placeholder={$t`New category`} bind:value={newCategoryName} width="220px" />
           <ComboBox label={$t`Color of the new category`} options={colorOptions} bind:value={newCategoryColor} width="160px" swatchColumns={5} />
-          <DialogButton label={$t`Add *=> Add the new category`} icon={AddIcon} disabled={!newCategoryName.trim() && $t`Please enter a name for the category`} onClick={onAddCategory} />
+          <DialogButton label={$t`Add`} icon={AddIcon} disabled={!newCategoryName.trim() && $t`Please enter a name for the category`} onClick={onAddCategory} />
         </hbox>
       </vbox>
     </OptionsRow>

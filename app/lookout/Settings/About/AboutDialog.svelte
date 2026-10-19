@@ -1,4 +1,4 @@
-<Dialog title={$t`About ${appName}`} width="440px" cancelLabel={$t`OK *=> Confirm and close the dialog`} on:close>
+<Dialog title={$t`About ${appName}`} width="440px" cancelLabel={$t`OK`} on:close>
   <hbox class="about">
     <span class="logo">{@html logo}</span>
     <vbox class="text">

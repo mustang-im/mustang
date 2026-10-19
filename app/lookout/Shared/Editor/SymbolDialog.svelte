@@ -58,7 +58,7 @@
     <DialogButton label={$t`Insert *=> Insert the selected symbol into the text`} primary
       disabled={!(tab == "symbols" ? selected : selectedSpecial) && $t`Select a symbol`}
       onClick={() => insert(tab == "symbols" ? selected : selectedSpecial)} />
-    <DialogButton label={hasInserted ? $t`Close *=> Close the dialog` : $t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
+    <DialogButton label={hasInserted ? $t`Close` : $t`Cancel`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 

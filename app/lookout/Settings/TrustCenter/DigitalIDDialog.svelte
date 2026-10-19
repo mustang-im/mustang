@@ -1,4 +1,4 @@
-<Dialog title={$t`Import/Export Digital ID`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} okDisabled={okDisabled} width="600px" on:close>
+<Dialog title={$t`Import/Export Digital ID`} okLabel={$t`OK`} onOK={onOK} okDisabled={okDisabled} width="600px" on:close>
   <vbox class="digital-id">
     <FormGrid columns="150px minmax(0, 1fr)">
       <span>{$t`E-mail address`}</span>
@@ -13,8 +13,8 @@
             <span>{$t`Import File *=> File that contains the Digital ID to import`}</span>
             <TextField value={file?.name ?? ""} readonly label={$t`Import File *=> File that contains the Digital ID to import`} disabled={mode != "import"} />
             <DialogButton label={$t`Browse… *=> Choose a file on the computer`} onClick={onBrowse} disabled={mode != "import"} />
-            <span>{$t`Password *=> Password that protects the Digital ID file`}</span>
-            <TextField type="password" bind:value={passphrase} label={$t`Password *=> Password that protects the Digital ID file`} disabled={mode != "import"} />
+            <span>{$t`Password`}</span>
+            <TextField type="password" bind:value={passphrase} label={$t`Password`} disabled={mode != "import"} />
             <span />
             <span>{$t`Digital ID Name`}</span>
             <TextField bind:value={name} label={$t`Digital ID Name`} disabled={mode != "import"} />
@@ -33,9 +33,9 @@
             <span>{$t`Digital ID`}</span>
             <ComboBox options={keyOptions} bind:value={exportKey} label={$t`Digital ID`} disabled={mode != "export"} />
             <span />
-            <span>{$t`Password *=> Password that protects the Digital ID file`}</span>
+            <span>{$t`Password`}</span>
             <TextField value={mode == "export" && withPrivateKey ? exportKey?.passphrase ?? "" : ""} readonly
-              label={$t`Password *=> Password that protects the Digital ID file`} disabled={mode != "export" || !withPrivateKey} classes="code" />
+              label={$t`Password`} disabled={mode != "export" || !withPrivateKey} classes="code" />
             <span />
           </FormGrid>
           <Checkbox label={$t`Include the private key`} bind:checked={withPrivateKey} disabled={mode != "export"} />

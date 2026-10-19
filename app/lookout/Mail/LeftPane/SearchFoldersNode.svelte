@@ -3,7 +3,7 @@
   <div class="search-folders-row" role="treeitem" tabindex="-1" aria-selected="false" aria-expanded={isExpanded}
     on:click={onToggle}>
     <button class="expander" tabindex="-1" on:click|stopPropagation={onToggle}
-      aria-label={isExpanded ? $t`Collapse *=> Hide the entries under this one` : $t`Expand *=> Show the entries under this one`}>
+      aria-label={isExpanded ? $t`Collapse` : $t`Expand`}>
       <ChevronIcon size={12} class="chevron {isExpanded ? 'expanded' : ''}" />
     </button>
     <span class="icon"><SearchFolderIcon size={16} /></span>

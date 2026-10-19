@@ -1,4 +1,4 @@
-<Dialog title={$t`Color Categories`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSubmit} on:close={onClose} width="560px">
+<Dialog title={$t`Color Categories`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="560px">
   <vbox class="color-categories">
     <span class="intro">
       {#if isChooseMode}
@@ -9,7 +9,7 @@
     </span>
     <hbox class="main">
       <vbox flex class="list">
-        <ListView items={$tags} columns={[{ label: $t`Name *=> Name of the category` }]} bind:selected
+        <ListView items={$tags} columns={[{ label: $t`Name` }]} bind:selected
           label={$t`Categories *=> Colored labels to organize emails and other items`} height="240px" let:item>
           <hbox class="category">
             <Checkbox checked={stateOf(item, choiceVersion) == TagState.All}
@@ -24,7 +24,7 @@
       </vbox>
       <vbox class="commands">
         <DialogButton label={$t`New… *=> Create a new category`} onClick={() => { isAdding = true; }} />
-        <DialogButton label={$t`Delete *=> Delete the category`} disabled={!selected && $t`Select a category first`} onClick={onDelete} />
+        <DialogButton label={$t`Delete`} disabled={!selected && $t`Select a category first`} onClick={onDelete} />
         <vbox class="color-field">
           <span>{$t`Color *=> Color of the category`}</span>
           <ComboBox label={$t`Color *=> Color of the category`} options={colorOptions(selected)} value={selected?.color ?? null}
@@ -86,7 +86,7 @@
   function colorOptions(tag: Tag): ComboOption<string>[] {
     let options = categoryColors().map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
     if (tag?.color && !options.some(option => option.value.toLowerCase() == tag.color.toLowerCase())) {
-      options.push({ value: tag.color, label: $t`Custom *=> Color that is not in the list of colors`, color: tag.color });
+      options.push({ value: tag.color, label: $t`Custom`, color: tag.color });
     }
     return options;
   }

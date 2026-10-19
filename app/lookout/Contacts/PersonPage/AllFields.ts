@@ -55,7 +55,7 @@ function fieldName(kind: FieldKind, entry: ContactEntry): string {
     case "email":
       return purpose ? gt`E-mail (${purpose})` : gt`E-mail *=> Email address of the person`;
     case "phone":
-      return purpose ? gt`Phone (${purpose})` : gt`Phone *=> Phone number of unknown type`;
+      return purpose ? gt`Phone (${purpose})` : gt`Phone`;
     case "address":
       return purpose ? gt`Address (${purpose})` : gt`Address *=> Postal address of unknown type`;
     case "web":

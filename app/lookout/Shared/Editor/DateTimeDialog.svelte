@@ -1,5 +1,5 @@
 <Dialog title={$t`Date and Time`} on:close={onClose} width="400px" height="520px"
-  okLabel={$t`OK *=> Confirm and close the dialog`} okDisabled={!selected && $t`Select a format`} onOK={onOK}>
+  okLabel={$t`OK`} okDisabled={!selected && $t`Select a format`} onOK={onOK}>
   <vbox flex class="formats-box">
     <span class="caption">{$t`Available formats`}</span>
     <ListView items={formats} bind:selected on:open={() => catchErrors(onDoubleClick)}

@@ -1,15 +1,15 @@
-<RibbonToggleButton label={$t`Day *=> Calendar view that shows one day`} icon={DayIcon} shortCutInfo={$t`Ctrl+Alt+1 *=> Keyboard shortcut`}
+<RibbonToggleButton label={$t`Day`} icon={DayIcon} shortCutInfo={$t`Ctrl+Alt+1 *=> Keyboard shortcut`}
   selected={!isTable && view == "day"} onClick={() => arrange("day")} />
 <RibbonToggleButton label={$t`Work Week *=> Calendar view that shows Monday to Friday`} icon={WorkWeekIcon} shortCutInfo={$t`Ctrl+Alt+2 *=> Keyboard shortcut`}
   selected={!isTable && view == "workweek"} onClick={() => arrange("workweek")} />
-<RibbonToggleButton label={$t`Week *=> Calendar view that shows a whole week`} icon={WeekIcon} shortCutInfo={$t`Ctrl+Alt+3 *=> Keyboard shortcut`}
+<RibbonToggleButton label={$t`Week`} icon={WeekIcon} shortCutInfo={$t`Ctrl+Alt+3 *=> Keyboard shortcut`}
   selected={!isTable && view == "week"} onClick={() => arrange("week")} />
-<RibbonToggleButton label={$t`Month *=> Calendar view that shows a whole month`} icon={MonthIcon} shortCutInfo={$t`Ctrl+Alt+4 *=> Keyboard shortcut`}
+<RibbonToggleButton label={$t`Month`} icon={MonthIcon} shortCutInfo={$t`Ctrl+Alt+4 *=> Keyboard shortcut`}
   selected={!isTable && view == "month"} onClick={() => arrange("month")} />
 <RibbonToggleButton label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo={$t`Ctrl+Alt+5 *=> Keyboard shortcut`}
   tooltip={$t`Show the calendars in rows, with the time running from left to right`}
   selected={!isTable && view == "schedule"} onClick={() => arrange("schedule")} />
-<RibbonToggleButton label={$t`Day/Month *=> Calendar view with the day on the left and the month on the right`} icon={DualIcon}
+<RibbonToggleButton label={$t`Day/Month`} icon={DualIcon}
   tooltip={$t`Show the selected day and the next day on the left, and the month on the right`}
   selected={!isTable && view == "dual"} onClick={() => arrange("dual")} />
 

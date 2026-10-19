@@ -67,13 +67,13 @@ export class ColumnInfo {
   static readonly all: ColumnInfo[] = [
     new ColumnInfo(Column.Importance, gt`Importance *=> Importance of the email`, 24, true, ArrangeBy.Importance),
     new ColumnInfo(Column.Icon, gt`Icon *=> Column with an icon for the type and state of the email`, 24, true, null),
-    new ColumnInfo(Column.Attachment, gt`Attachment *=> Column that shows whether the email has an attachment`, 24, true, null),
-    new ColumnInfo(Column.From, gt`From *=> Sender of the email`, 160, false, ArrangeBy.From),
-    new ColumnInfo(Column.To, gt`To *=> Main recipients of the email`, 160, false, null),
-    new ColumnInfo(Column.Subject, gt`Subject *=> Subject of the email`, 0, false, ArrangeBy.Subject),
+    new ColumnInfo(Column.Attachment, gt`Attachment`, 24, true, null),
+    new ColumnInfo(Column.From, gt`From`, 160, false, ArrangeBy.From),
+    new ColumnInfo(Column.To, gt`To`, 160, false, null),
+    new ColumnInfo(Column.Subject, gt`Subject`, 0, false, ArrangeBy.Subject),
     new ColumnInfo(Column.Received, gt`Received *=> Date when the email was received`, 132, false, ArrangeBy.Date),
-    new ColumnInfo(Column.Sent, gt`Sent *=> Date when the email was sent`, 132, false, ArrangeBy.Date),
-    new ColumnInfo(Column.Size, gt`Size *=> Size of the email`, 72, false, ArrangeBy.Size),
+    new ColumnInfo(Column.Sent, gt`Sent`, 132, false, ArrangeBy.Date),
+    new ColumnInfo(Column.Size, gt`Size *=> Size of the file`, 72, false, ArrangeBy.Size),
     new ColumnInfo(Column.Categories, gt`Categories *=> Categories of the email`, 104, false, null),
     new ColumnInfo(Column.Flag, gt`Flag Status`, 28, true, ArrangeBy.Flag),
     new ColumnInfo(Column.Folder, gt`In Folder *=> Column with the folder that contains the item`, 120, false, null),
@@ -94,10 +94,10 @@ export class ColumnInfo {
 
 export function arrangeFields(): { id: ArrangeBy, label: string, button: string }[] {
   return [
-    { id: ArrangeBy.Date, label: gt`Date *=> Date of the email`, button: gt`By Date` },
-    { id: ArrangeBy.From, label: gt`From *=> Sender of the email`, button: gt`By From` },
-    { id: ArrangeBy.Subject, label: gt`Subject *=> Subject of the email`, button: gt`By Subject` },
-    { id: ArrangeBy.Size, label: gt`Size *=> Size of the email`, button: gt`By Size` },
+    { id: ArrangeBy.Date, label: gt`Date`, button: gt`By Date` },
+    { id: ArrangeBy.From, label: gt`From`, button: gt`By From` },
+    { id: ArrangeBy.Subject, label: gt`Subject`, button: gt`By Subject` },
+    { id: ArrangeBy.Size, label: gt`Size *=> Size of the file`, button: gt`By Size` },
     { id: ArrangeBy.Importance, label: gt`Importance *=> Importance of the email`, button: gt`By Importance` },
     { id: ArrangeBy.Flag, label: gt`Flag Status`, button: gt`By Flag Status` },
   ];
@@ -230,7 +230,7 @@ export function viewTypeLabel(type: ViewType): string {
     case ViewType.Single:
       return gt`Single *=> View with one line per email, in columns`;
     case ViewType.Preview:
-      return gt`Preview *=> View with one line per email and a preview of the text`;
+      return gt`Preview`;
     default:
       return gt`Compact *=> View with sender, subject and preview in a narrow list`;
   }

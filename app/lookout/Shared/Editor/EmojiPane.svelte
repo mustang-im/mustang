@@ -2,7 +2,7 @@
   <hbox class="pane-header">
     <span class="pane-title">{$t`Expressions *=> Pane with emojis to insert into the text`}</span>
     <hbox flex />
-    <button type="button" class="icon-button" title={$t`Close *=> Close the pane`} aria-label={$t`Close *=> Close the pane`}
+    <button type="button" class="icon-button" title={$t`Close`} aria-label={$t`Close`}
       on:click={() => isOpen = false}>
       <CloseIcon size={16} />
     </button>
@@ -96,7 +96,7 @@
   function categoryLabel(id: string): string {
     switch (id) {
       case "smileys-emotion": return $t`Smileys *=> Emoji category: smileys and emotions`;
-      case "people-body": return $t`People *=> Emoji category: people and body parts`;
+      case "people-body": return $t`People *=> or Persons - Short word, less than 10 characters`;
       case "animals-nature": return $t`Animals and nature`;
       case "food-drink": return $t`Food and drink`;
       case "travel-places": return $t`Travel and places`;

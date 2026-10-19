@@ -1,4 +1,4 @@
-<Dialog title={$t`Received *=> Date when the email was received`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSubmit} on:close={onClose} width="360px"
+<Dialog title={$t`Received *=> Date when the email was received`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="360px"
   okDisabled={(!hasAfter && !hasBefore && $t`Choose After, Before or both`) ||
     (hasAfter && !after && $t`Enter the date for After`) ||
     (hasBefore && !before && $t`Enter the date for Before`)}>

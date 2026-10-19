@@ -1,5 +1,5 @@
 <OptionsPage {icon} description={$t`Change the settings of ${$account.name}`}>
-  <OptionsSection title={$t`Account *=> Section with the name, color and type of the account`}>
+  <OptionsSection title={$t`Account`}>
     <OptionsRow icon={AccountIcon}>
       <grid class="fields">
         <label for="account-name">{$t`Account name`}</label>
@@ -13,7 +13,7 @@
           <input id="account-realname" class="lo-text-field" type="text" bind:value={account.realname} on:input={onChange}
             title={$t`Your real name, as shown to other people when you are sending messages`} />
         {/if}
-        <label for="account-workspace">{$t`Workspace *=> Workspace that the account belongs to`}</label>
+        <label for="account-workspace">{$t`Workspace`}</label>
         <select id="account-workspace" class="lo-text-field" bind:value={account.workspace} on:change={onChange}>
           {#each $workspaces.each as workspace}
             <option value={workspace}>{workspace.name}</option>

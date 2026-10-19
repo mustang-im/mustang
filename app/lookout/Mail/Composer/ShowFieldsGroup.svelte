@@ -1,10 +1,10 @@
 <RibbonGroup label={$t`Show Fields`}>
-  <RibbonToggleButton label={$t`Bcc *=> Recipients who get a hidden copy of the email`} icon={BccIcon}
+  <RibbonToggleButton label={$t`Bcc`} icon={BccIcon}
     tooltip={$t`Show the Bcc field`}
     selected={$showBcc.value || hasBCC}
     disabled={hasBCC && $t`Remove the Bcc recipients first`}
     onClick={() => { $showBcc.value = !$showBcc.value; }} />
-  <RibbonToggleButton label={$t`From *=> Sender of the email`} icon={FromIcon}
+  <RibbonToggleButton label={$t`From`} icon={FromIcon}
     tooltip={$t`Show the From field`}
     disabled={!hasSeveralIdentities && $t`You have only one sender identity`}
     selected={$showFrom.value}

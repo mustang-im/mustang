@@ -1,9 +1,9 @@
 <vbox class="permissions">
   {#if isLoading}
-    <hbox class="lo-secondary">{$t`Loading… *=> Waiting for the data to load`}</hbox>
+    <hbox class="lo-secondary">{$t`Loading…`}</hbox>
   {/if}
   <ListView items={permissions.entries} bind:selected
-    columns={[{ label: $t`Name *=> Name of the person` }, { label: $t`Permission Level`, width: "200px" }]}
+    columns={[{ label: $t`Name` }, { label: $t`Permission Level`, width: "200px" }]}
     label={$t`Permissions *=> Who can access this folder`} height="150px" let:item>
     <span title={item.person.emailAddress}>{item.name}</span>
     <span title={item.level ? null : $t`The server doesn't tell the permission level of existing permissions`}>
@@ -13,7 +13,7 @@
   </ListView>
   <hbox class="list-buttons">
     <DialogButton label={$t`Add… *=> Give another person access to this folder`} onClick={() => { isAdding = true; }} />
-    <DialogButton label={$t`Remove *=> Remove the access of the selected person`} disabled={!selected && $t`Select a person first`} onClick={onRemove} />
+    <DialogButton label={$t`Remove`} disabled={!selected && $t`Select a person first`} onClick={onRemove} />
   </hbox>
   <GroupBox label={$t`Permissions *=> Rights of the selected person for this folder`} disabled={!selected}>
     <hbox class="level-row">
@@ -42,7 +42,7 @@
             disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
         {/each}
       </GroupBox>
-      <GroupBox label={$t`Other *=> Group of the remaining permissions`} disabled={!canEditRights}>
+      <GroupBox label={$t`Other`} disabled={!canEditRights}>
         {#each [Right.DeleteFolder] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
@@ -58,7 +58,7 @@
   </hbox>
 </vbox>
 {#if isAdding}
-  <SelectNamesDialog title={$t`Add Users`} persons={addedPersons} label={$t`Add *=> Persons who get access to the folder`}
+  <SelectNamesDialog title={$t`Add Users`} persons={addedPersons} label={$t`Add`}
     on:ok={onAdded} on:close={() => { isAdding = false; }} />
 {/if}
 

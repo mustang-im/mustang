@@ -145,9 +145,9 @@ export function contactColumnLabel(column: ContactColumn): string {
   case ContactColumn.JobTitle:
     return gt`Job Title`;
   case ContactColumn.Company:
-    return gt`Company *=> Company where the person works`;
+    return gt`Company`;
   case ContactColumn.Department:
-    return gt`Department *=> Department of the person in the company`;
+    return gt`Department`;
   case ContactColumn.EMail:
     return gt`E-mail *=> Email address of the person`;
   case ContactColumn.EMail2:
@@ -203,7 +203,7 @@ export function contactColumnLabel(column: ContactColumn): string {
   case ContactColumn.IMAddress:
     return gt`IM Address`;
   case ContactColumn.Notes:
-    return gt`Notes *=> Notes about the contact`;
+    return gt`Notes`;
   case ContactColumn.InFolder:
     return gt`In Folder *=> Column with the folder that contains the item`;
   }
@@ -326,7 +326,7 @@ export function businessCardLines(person: Person): string[] {
 
 export function addressCardFields(person: Person): { label: string, value: string }[] {
   const kFields = [
-    { column: ContactColumn.Company, label: gt`Company *=> Company where the person works` },
+    { column: ContactColumn.Company, label: gt`Company` },
     { column: ContactColumn.JobTitle, label: gt`Job Title` },
     { column: ContactColumn.BusinessPhone, label: gt`Business *=> Business address or phone number` },
     { column: ContactColumn.HomePhone, label: gt`Home *=> Private address or phone number` },

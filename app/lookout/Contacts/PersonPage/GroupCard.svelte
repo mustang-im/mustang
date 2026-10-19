@@ -11,10 +11,10 @@
         <CardButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([group])}
           disabled={!hasEmailAddress && $t`No member has an email address`} />
-        <CardButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon}
+        <CardButton label={$t`Meeting`} icon={MeetingIcon}
           onClick={() => ContactActions.newMeeting([group])}
           disabled={!hasEmailAddress && $t`No member has an email address`} />
-        <CardButton label={$t`Edit *=> Edit the contact`} icon={EditIcon}
+        <CardButton label={$t`Edit`} icon={EditIcon}
           onClick={() => ContactActions.edit(group)} />
       </hbox>
     </vbox>

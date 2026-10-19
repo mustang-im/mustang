@@ -6,7 +6,7 @@
     <button class="nav-item" class:selected={$backstagePage == "info"}
       on:click={() => $backstagePage = "info"}>
       <InfoIcon size="18" />
-      <hbox class="label">{$t`Info *=> Page with information and settings of the account`}</hbox>
+      <hbox class="label">{$t`Info`}</hbox>
     </button>
     <button class="nav-item" class:selected={$backstagePage == "open-export"}
       on:click={() => $backstagePage = "open-export"}>
@@ -28,7 +28,7 @@
       <button class="nav-item" class:selected={$backstagePage == "print"}
         on:click={() => $backstagePage = "print"}>
         <PrintIcon size="18" />
-        <hbox class="label">{$t`Print *=> Print the selected email`}</hbox>
+        <hbox class="label">{$t`Print`}</hbox>
       </button>
     {:else if area == "calendar"}
       <button class="nav-item" disabled={!$selectedCalendar} on:click={() => run(() => saveCalendar($selectedCalendar))}>

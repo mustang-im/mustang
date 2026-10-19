@@ -1,7 +1,7 @@
 <hbox class="calendar-header">
   {#if showToday}
     <button class="today-button" title={$t`Go to today`} on:click={goToToday}>
-      {$t`Today *=> Show today in the calendar`}
+      {$t`Today`}
     </button>
   {/if}
   <button class="arrow-button" title={previousLabel} aria-label={previousLabel} on:click={() => page(-1)}>
@@ -31,7 +31,7 @@
   $: isMonth = range.view == "month";
   $: stepsByDay = (range.view == "day" || range.view == "schedule") && range.days.length == 1 || range.view == "dual";
   $: previousLabel = isMonth ? $t`Previous month` : stepsByDay ? $t`Previous day` : $t`Previous *=> Show the previous week or days in the calendar`;
-  $: nextLabel = isMonth ? $t`Next month` : stepsByDay ? $t`Next day` : $t`Next *=> Show the next week or days in the calendar`;
+  $: nextLabel = isMonth ? $t`Next month` : stepsByDay ? $t`Next day` : $t`Next`;
 
   function goToToday() {
     $eventPeek = null;

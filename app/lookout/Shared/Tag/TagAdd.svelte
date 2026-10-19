@@ -1,8 +1,8 @@
-<Dialog title={$t`Add New Category`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSubmit} on:close width="380px"
+<Dialog title={$t`Add New Category`} okLabel={$t`OK`} onOK={onSubmit} on:close width="380px"
   okDisabled={!name.trim() && $t`Please enter a name for the category`}>
   <FormGrid>
-    <span class="lo-form-label">{$t`Name *=> Name of the category`}</span>
-    <TextField label={$t`Name *=> Name of the category`} bind:value={name} />
+    <span class="lo-form-label">{$t`Name`}</span>
+    <TextField label={$t`Name`} bind:value={name} />
     <span class="lo-form-label">{$t`Color *=> Color of the category`}</span>
     <hbox>
       <ComboBox label={$t`Color *=> Color of the category`} options={colorOptions} bind:value={color} width="180px" swatchColumns={5} />

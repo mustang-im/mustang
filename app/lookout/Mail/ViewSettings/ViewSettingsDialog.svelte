@@ -1,6 +1,6 @@
 <Dialog title={$t`Advanced View Settings: ${viewTypeLabel(draft.type)}`}
-  okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="600px" on:close>
-  <GroupBox label={$t`Description *=> Summary of the view settings`}>
+  okLabel={$t`OK`} onOK={save} width="600px" on:close>
+  <GroupBox label={$t`Description`}>
     <div class="rows">
       <DialogButton label={$t`Columns… *=> Choose the columns of the list`} classes="settings-button" onClick={() => { open = "columns"; }} />
       <span class="summary" title={columnsSummary}>{columnsSummary}</span>

@@ -147,11 +147,11 @@ export class EventTable {
   static columnLabel(column: EventTableColumn): string {
     switch (column) {
     case EventTableColumn.Subject:
-      return gt`Subject *=> Title of the event`;
+      return gt`Subject`;
     case EventTableColumn.Location:
-      return gt`Location *=> Where the event takes place`;
+      return gt`Location`;
     case EventTableColumn.Start:
-      return gt`Start *=> Start time of the event`;
+      return gt`Start`;
     case EventTableColumn.End:
       return gt`End *=> End time of the event`;
     case EventTableColumn.Recurrence:

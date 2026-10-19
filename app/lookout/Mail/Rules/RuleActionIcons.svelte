@@ -16,7 +16,7 @@
   {#if $rule.deleteImmediately}
     <span title={$t`Permanently delete`}><PermanentDeleteIcon size={14} /></span>
   {:else if $rule.deleteTrash}
-    <span title={$t`Delete *=> Rule action: delete the email`}><DeleteIcon size={14} /></span>
+    <span title={$t`Delete`}><DeleteIcon size={14} /></span>
   {:else if $rule.toFolderID && $rule.copy}
     <span title={$t`Copy to folder *=> Rule action: copy the email to a folder`}><CopyIcon size={14} /></span>
   {:else if $rule.toFolderID}

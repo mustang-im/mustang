@@ -75,7 +75,7 @@
   /* <copied from="SMLComposer.svelte"> */
   function label(type: string): string {
     switch (type) {
-      case "SimplePoll": return $t`Poll *=> A poll in the email: recipients choose one of the options`;
+      case "SimplePoll": return $t`Poll`;
       case "MeetingTimePoll": return $t`Scheduling Poll`;
       case "BookMe": return $t`Bookings *=> Meeting times in the email that the recipient can book`;
       default: return "";

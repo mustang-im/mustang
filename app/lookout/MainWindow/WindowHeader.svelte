@@ -10,22 +10,22 @@
     {#if isMail}
       <MailSearchBox />
     {:else}
-      <SearchField bind:searchTerm={$globalSearchTerm} placeholder={$t`Search *=> Search in the current app`} bind:this={searchField} />
+      <SearchField bind:searchTerm={$globalSearchTerm} placeholder={$t`Search`} bind:this={searchField} />
     {/if}
   </hbox>
   <hbox class="window-buttons">
     {#if !webMail}
-      <button class="window-button minimize" title={$t`Minimize *=> Minimize the window`} aria-label={$t`Minimize *=> Minimize the window`}
+      <button class="window-button minimize" title={$t`Minimize`} aria-label={$t`Minimize`}
         on:click={() => catchErrors(onMinimize)}>
         <MinimizeIcon size="16" />
       </button>
       <button class="window-button maximize"
-        title={canMaximize ? $t`Maximize *=> Maximize the window` : $t`Restore window`}
-        aria-label={canMaximize ? $t`Maximize *=> Maximize the window` : $t`Restore window`}
+        title={canMaximize ? $t`Maximize` : $t`Restore window`}
+        aria-label={canMaximize ? $t`Maximize` : $t`Restore window`}
         on:click={() => catchErrors(onMaximizeOrRestore)}>
         <svelte:component this={canMaximize ? MaximizeIcon : UnmaximizeIcon} size="13" />
       </button>
-      <button class="window-button close" title={$t`Close *=> Close the window`} aria-label={$t`Close *=> Close the window`}
+      <button class="window-button close" title={$t`Close`} aria-label={$t`Close`}
         on:click={() => catchErrors(onCloseApp)}>
         <XIcon size="17" />
       </button>
@@ -93,15 +93,15 @@
   const noSingle = derived(selectedArray, messages => messages.length != 1 && $t`Select one message first`);
   const mailCommands: QuickAccessCommand[] = [
     sendReceiveAll,
-    { id: "mail.reply", label: $t`Reply *=> Reply to the sender of the selected email`, icon: ReplyIcon, shortCutInfo: $t`Ctrl+R *=> Keyboard shortcut`, disabled: noSingle,
+    { id: "mail.reply", label: $t`Reply`, icon: ReplyIcon, shortCutInfo: $t`Ctrl+R *=> Keyboard shortcut`, disabled: noSingle,
       run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyToAuthor()) },
     { id: "mail.replyAll", label: $t`Reply All`, icon: ReplyAllIcon, shortCutInfo: $t`Ctrl+Shift+R *=> Keyboard shortcut`, disabled: noSingle,
       run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyAll()) },
-    { id: "mail.forward", label: $t`Forward *=> Forward the selected email to other people`, icon: ForwardIcon, shortCutInfo: $t`Ctrl+F *=> Keyboard shortcut`, disabled: noSingle,
+    { id: "mail.forward", label: $t`Forward`, icon: ForwardIcon, shortCutInfo: $t`Ctrl+F *=> Keyboard shortcut`, disabled: noSingle,
       run: () => MessageActions.forward(get(selectedArray)[0]) },
-    { id: "mail.delete", label: $t`Delete *=> Delete the selected emails`, icon: DeleteIcon, shortCutInfo: $t`Del *=> Delete key`, disabled: noSelection,
+    { id: "mail.delete", label: $t`Delete`, icon: DeleteIcon, shortCutInfo: $t`Del *=> Delete key`, disabled: noSelection,
       run: async () => { await Promise.all(get(selectedArray).map(message => message.deleteMessage())); } },
-    { id: "mail.print", label: $t`Print *=> Print the selected email`, icon: PrintIcon, shortCutInfo: $t`Ctrl+P *=> Keyboard shortcut`, disabled: noSingle,
+    { id: "mail.print", label: $t`Print`, icon: PrintIcon, shortCutInfo: $t`Ctrl+P *=> Keyboard shortcut`, disabled: noSingle,
       run: () => { $printMessage = get(selectedArray)[0]; } },
   ];
   $: $quickAccessCommands = isMail ? mailCommands : [sendReceiveAll];

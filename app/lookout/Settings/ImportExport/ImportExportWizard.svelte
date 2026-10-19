@@ -1,4 +1,4 @@
-<Dialog title={isExport ? $t`Export *=> Export data to a file` : $t`Import *=> Import data from a file or from another program`}
+<Dialog title={isExport ? $t`Export *=> Export data to a file` : $t`Import`}
   width="680px"
   height="500px"
   on:close>
@@ -21,7 +21,7 @@
           {/each}
         </vbox>
         <fieldset class="description">
-          <legend>{$t`Description *=> Description of the selected choice`}</legend>
+          <legend>{$t`Description`}</legend>
           {actions.find(actionEntry => actionEntry.id == action)?.description}
         </fieldset>
       {:else if step == "source"}
@@ -103,7 +103,7 @@
     {:else}
       <DialogButton label={$t`Next >`} primary disabled={!canGoNext} onClick={next} />
     {/if}
-    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={() => { dispatch("close"); }} />
+    <DialogButton label={$t`Cancel`} onClick={() => { dispatch("close"); }} />
   </svelte:fragment>
 </Dialog>
 

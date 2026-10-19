@@ -4,7 +4,7 @@
   <hbox class="list-and-buttons">
     <vbox flex class="list">
       <ListView items={sortedKeys} bind:selected label={$t`Certificates *=> Certificates (Digital IDs) of the contact`} height="240px"
-        columns={[{ label: $t`Name *=> Name of the certificate` }, { label: $t`Type *=> Kind of Digital ID: OpenPGP key or S/MIME certificate`, width: "90px" }, { label: $t`Valid to *=> Date until which the Digital ID is valid`, width: "110px" }, { label: $t`Status *=> Status of the certificate, e.g. default, expired or not trusted`, width: "110px" }]}
+        columns={[{ label: $t`Name` }, { label: $t`Type *=> Kind of Digital ID: OpenPGP key or S/MIME certificate`, width: "90px" }, { label: $t`Valid to *=> Date until which the Digital ID is valid`, width: "110px" }, { label: $t`Status *=> Status of the certificate, e.g. default, expired or not trusted`, width: "110px" }]}
         on:open={() => { isPropertiesOpen = true; }}
         let:item>
         <span class="cell">{nameOf(item)}</span>
@@ -20,10 +20,10 @@
       <DialogButton label={$t`Set as Default`}
         disabled={!selected ? $t`Select a certificate first` : (selected.obsolete || selected.trustLevel == TrustLevel.Distrusted) && $t`This certificate is not trusted or not valid`}
         onClick={onSetAsDefault} />
-      <DialogButton label={$t`Import… *=> Import a certificate file for the contact`} onClick={onImport} />
-      <DialogButton label={$t`Export… *=> Save the selected certificate to a file`} disabled={!selected && $t`Select a certificate first`}
+      <DialogButton label={$t`Import…`} onClick={onImport} />
+      <DialogButton label={$t`Export…`} disabled={!selected && $t`Select a certificate first`}
         onClick={onExport} />
-      <DialogButton label={$t`Remove *=> Remove the selected certificate from the contact`} disabled={!selected && $t`Select a certificate first`}
+      <DialogButton label={$t`Remove`} disabled={!selected && $t`Select a certificate first`}
         onClick={onRemove} />
     </vbox>
   </hbox>
@@ -31,7 +31,7 @@
 <FileSelector bind:this={fileSelector} {acceptFileTypes} />
 
 {#if isPropertiesOpen && selected}
-  <CertificatePropertiesDialog key={selected} personName={person.name || $t`this person *=> Used when the name of the person is unknown, as in: Encrypt my emails to this person`}
+  <CertificatePropertiesDialog key={selected} personName={person.name || $t`this person`}
     on:close={() => { isPropertiesOpen = false; revision++; }} />
 {/if}
 

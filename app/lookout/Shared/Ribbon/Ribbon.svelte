@@ -4,8 +4,8 @@
   on:contextmenu={onContextMenu}
   bind:this={ribbonEl}>
   <hbox class="tab-row">
-    <button class="tab file-tab" on:click={onFile} title={$t`File *=> Ribbon tab that opens the File view with Save, Print and Options`}>
-      {$t`File *=> Ribbon tab that opens the File view with Save, Print and Options`}
+    <button class="tab file-tab" on:click={onFile} title={$t`File`}>
+      {$t`File`}
     </button>
     <hbox class="tabs" role="tablist" tabindex="-1" on:keydown={onTabRowKeyDown}>
       {#each shownTabs as tab}

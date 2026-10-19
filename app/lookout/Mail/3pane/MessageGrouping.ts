@@ -63,7 +63,7 @@ export class DateGroups {
     } else if (date >= this.tomorrowStart) {
       return { id: "future", label: gt`Future *=> Group of emails with a date in the future` };
     } else if (date >= this.todayStart) {
-      return { id: "today", label: gt`Today *=> The current day` };
+      return { id: "today", label: gt`Today` };
     } else if (date >= this.yesterdayStart) {
       return { id: "yesterday", label: gt`Yesterday *=> The day before today` };
     } else if (date >= this.weekStart) {

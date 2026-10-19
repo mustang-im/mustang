@@ -18,10 +18,10 @@
             <span class="value">{key.caName || $t`Not certified by a certification authority`}</span>
             <span>{$t`Valid to *=> Date until which the Digital ID is valid`}</span>
             <span class="value">{key.expires ? getDateString(key.expires) : $t`No end date`}</span>
-            <span>{$t`Verification code *=> Fingerprint of the Digital ID`}</span>
+            <span>{$t`Verification code`}</span>
             <span class="value code">{key.fingerprintDisplay}</span>
             {#if key instanceof SMIMEPrivateKey}
-              <span>{$t`Certificate *=> Status of the certificate of this Digital ID`}</span>
+              <span>{$t`Certificate`}</span>
               <vbox class="status">
                 {#await statusAsync then status}
                   <span class="value">{keyStatusText(status)}</span>

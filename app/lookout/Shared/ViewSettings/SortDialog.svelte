@@ -1,4 +1,4 @@
-<Dialog title={title ?? $t`Sort *=> Sort the items in the list`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={() => { dispatch("change", { column: sortColumn, ascending: sortAscending }); }} width="420px" on:close>
+<Dialog title={title ?? $t`Sort *=> Sort the items in the list`} okLabel={$t`OK`} onOK={() => { dispatch("change", { column: sortColumn, ascending: sortAscending }); }} width="420px" on:close>
   <GroupBox label={itemsLabel ?? $t`Sort items by`}>
     <hbox class="sort-row">
       <ComboBox options={columnOptions} bind:value={sortColumn} label={itemsLabel ?? $t`Sort items by`} width="200px" />

@@ -1,11 +1,11 @@
 <Dialog title={$t`Rules and Alerts`} bind:this={dialog}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!folder && $t`Select a folder first`}
   onOK={onOK}
   on:close={onClose} width="400px">
   <vbox class="content">
     <span class="caption">{$t`Choose a folder`}</span>
-    <FolderPicker label={$t`Folders *=> List of the folders`} bind:selectedFolder={folder}
+    <FolderPicker label={$t`Folders`} bind:selectedFolder={folder}
       disableFolder={candidate => candidate.account != account && $t`Rules can only use folders of the account ${account.name}`}
       on:choose={() => dialog.submit()} />
   </vbox>

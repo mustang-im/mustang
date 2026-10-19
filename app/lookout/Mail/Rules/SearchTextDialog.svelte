@@ -1,10 +1,10 @@
-<Dialog title={$t`Search Text *=> Words that the rule searches for`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSubmit} on:close={onClose} width="440px">
+<Dialog title={$t`Search Text *=> Words that the rule searches for`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="440px">
   <vbox class="search-text">
     <label for="search-text-new">{$t`Specify words or phrases to search for in the subject or body`}</label>
     <hbox class="row">
       <input id="search-text-new" class="lo-text-field" type="text" bind:value={typed} autofocus
         on:keydown={onKey} />
-      <DialogButton label={$t`Add *=> Add the typed words to the search list`} onClick={onAdd}
+      <DialogButton label={$t`Add`} onClick={onAdd}
         disabled={(!typed.trim() && $t`Type a word or phrase first`) ||
           (!!phrase && $t`A rule can search for one word or phrase. Remove the one in the list first.`)} />
     </hbox>
@@ -16,7 +16,7 @@
             on:click={() => isSelected = true}>"{phrase}"</button>
         {/if}
       </vbox>
-      <DialogButton label={$t`Remove *=> Remove the selected entry from the search list`} onClick={onRemove}
+      <DialogButton label={$t`Remove`} onClick={onRemove}
         disabled={!isSelected && $t`Select an entry in the list first`} />
     </hbox>
   </vbox>

@@ -1,5 +1,5 @@
-<Dialog title={$t`Rename *=> Rename the rule`} on:close={onClose} width="400px"
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+<Dialog title={$t`Rename`} on:close={onClose} width="400px"
+  okLabel={$t`OK`}
   okDisabled={!name.trim() && $t`Please enter a name`}
   onOK={onOK}>
   <vbox class="content">

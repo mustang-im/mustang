@@ -1,4 +1,4 @@
-<Dialog title={$t`Customize the Ribbon`} okLabel={$t`OK *=> Confirm and close the dialog`} width="480px" onOK={save} on:close={onClose}>
+<Dialog title={$t`Customize the Ribbon`} okLabel={$t`OK`} width="480px" onOK={save} on:close={onClose}>
   <vbox class="customize">
     <span class="intro">{$t`Choose the tabs and groups that the ribbon shows`}</span>
     <hbox class="list-header">
@@ -9,8 +9,8 @@
       {#each mainTabs as tab (tab)}
         <hbox class="tree-row tab-row" role="treeitem" aria-expanded={!collapsedTabs.has(tab.label)} aria-selected="false">
           <button type="button" class="expander" tabindex="-1"
-            title={collapsedTabs.has(tab.label) ? $t`Expand *=> Show the entries under this one` : $t`Collapse *=> Hide the entries under this one`}
-            aria-label={collapsedTabs.has(tab.label) ? $t`Expand *=> Show the entries under this one` : $t`Collapse *=> Hide the entries under this one`}
+            title={collapsedTabs.has(tab.label) ? $t`Expand` : $t`Collapse`}
+            aria-label={collapsedTabs.has(tab.label) ? $t`Expand` : $t`Collapse`}
             on:click={() => toggleExpanded(tab.label)}>
             <svelte:component this={collapsedTabs.has(tab.label) ? ExpandIcon : CollapseIcon} size={14} />
           </button>

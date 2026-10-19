@@ -1,5 +1,5 @@
 <RibbonTab label={$t`Home *=> Ribbon tab with the most-used commands`}>
-  <RibbonGroup label={$t`New *=> Ribbon group with commands to create new items`}>
+  <RibbonGroup label={$t`New`}>
     <RibbonButton label={$t`New Email`} icon={NewMailIcon}
       onClick={() => mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom())}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
@@ -9,7 +9,7 @@
         onClick={() => mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom())} />
       <MenuItem label={$t`Appointment *=> Create a new appointment in the calendar`} icon={AppointmentIcon} shortCutInfo={$t`Ctrl+Shift+A *=> Keyboard shortcut`}
         onClick={() => createNewEvent(get(selectedCalendar), new Date(), false)} />
-      <MenuItem label={$t`Meeting *=> Create a new meeting`} icon={MeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
+      <MenuItem label={$t`Meeting`} icon={MeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
         onClick={() => MessageActions.newMeeting()} />
       <MenuItem label={$t`Contact *=> Create a new contact`} icon={ContactIcon} shortCutInfo={$t`Ctrl+Shift+C *=> Keyboard shortcut`}
         onClick={() => MessageActions.newContact()} />
@@ -17,33 +17,33 @@
         onClick={() => ContactActions.newGroup(null)} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Delete *=> Ribbon group with commands to delete items`}>
+  <RibbonGroup label={$t`Delete`}>
     <RibbonMenuButton label={$t`Junk *=> Menu to mark the selected emails as junk or not junk`} icon={JunkIcon} size="small" disabled={noSelection}>
       <JunkMenuItems {messages} />
     </RibbonMenuButton>
-    <RibbonButton label={$t`Delete *=> Delete the selected emails`} icon={DeleteIcon}
+    <RibbonButton label={$t`Delete`} icon={DeleteIcon}
       onClick={async () => { await Promise.all(messages.map(message => message.deleteMessage())); }}
       disabled={noSelection} shortCutInfo={$t`Del *=> Delete key`} />
-    <RibbonButton label={$t`Archive *=> Move the selected emails to the archive folder`} icon={ArchiveIcon}
+    <RibbonButton label={$t`Archive`} icon={ArchiveIcon}
       onClick={() => MessageActions.archive(messages)}
       disabled={noSelection} shortCutInfo={$t`Backspace *=> Backspace key`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Respond *=> Ribbon group with commands to reply to or forward the email`}>
-    <RibbonButton label={$t`Reply *=> Reply to the sender of the selected email`} icon={ReplyIcon} size="small"
+    <RibbonButton label={$t`Reply`} icon={ReplyIcon} size="small"
       onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())}
       disabled={noSingle} shortCutInfo={$t`Ctrl+R *=> Keyboard shortcut`} />
     <RibbonButton label={$t`Reply All`} icon={ReplyAllIcon} size="small"
       onClick={() => MessageActions.respond(single, single.compose.replyAll())}
       disabled={noSingle || (!(single.allRecipients().length > 1 && !(single.bcc.hasItems && !single.outgoing)) && $t`There are no other recipients`)}
       shortCutInfo={$t`Ctrl+Shift+R *=> Keyboard shortcut`} />
-    <RibbonButton label={$t`Forward *=> Forward the selected email to other people`} icon={ForwardIcon} size="small"
+    <RibbonButton label={$t`Forward`} icon={ForwardIcon} size="small"
       onClick={event => MessageActions.forward(single, event as MouseEvent)}
       disabled={noSingle} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`} />
     <RibbonMenuButton label={$t`More *=> More commands to respond to the selected email`} icon={MoreRespondIcon} size="small" disabled={noSingle}>
       <MenuItem label={$t`Forward as Attachment`} icon={ForwardAttachmentIcon}
         shortCutInfo={$t`Ctrl+Alt+F *=> Keyboard shortcut`}
         onClick={async () => mailMustangApp.writeMail(await single.compose.forwardAsAttachment())} />
-      <MenuItem label={$t`Redirect *=> Send the selected email on to somebody else, who can reply to the original sender`} icon={RedirectIcon}
+      <MenuItem label={$t`Redirect`} icon={RedirectIcon}
         tooltip={$t`Send this message to somebody else, who can reply to the original sender`}
         onClick={async () => mailMustangApp.writeMail(await single.compose.redirect())} />
       <MenuItem label={$t`Edit as New`} icon={EditAsNewIcon}
@@ -54,18 +54,18 @@
         onClick={() => mailMustangApp.writeMail(single.compose.newToAll())} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Move *=> Ribbon group with commands to move emails`}>
-    <RibbonButton label={$t`Move *=> Move the selected emails to another folder`} icon={MoveIcon} disabled={noSelection}
+  <RibbonGroup label={$t`Move`}>
+    <RibbonButton label={$t`Move`} icon={MoveIcon} disabled={noSelection}
       tooltip={$t`Move the selected messages to another folder`} shortCutInfo={$t`Ctrl+Shift+V *=> Keyboard shortcut`}
       onClick={() => { $openMoveMessages = { messages, copy: false }; }} />
-    <RibbonButton label={$t`Copy *=> Copy the selected emails to another folder`} icon={CopyIcon} size="small" disabled={noSelection}
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" disabled={noSelection}
       tooltip={$t`Copy the selected messages to another folder`} shortCutInfo={$t`Ctrl+Shift+Y *=> Keyboard shortcut`}
       onClick={() => { $openMoveMessages = { messages, copy: true }; }} />
     <RibbonMenuButton label={$t`Rules *=> Criteria after which emails should be sorted`} icon={RulesIcon} size="small">
       <RulesMenuItems message={single} account={realAccount} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Tags *=> Ribbon group with commands to mark and categorize emails`}>
+  <RibbonGroup label={$t`Tags`}>
     <RibbonButton label={$t`Unread/ Read *=> Mark the selected emails as read or unread`} icon={shouldMarkRead ? ReadIcon : UnreadIcon} size="small"
       tooltip={shouldMarkRead ? $t`Mark as Read` : $t`Mark as Unread`}
       onClick={async () => { await Promise.all(messages.map(message => message.markRead(shouldMarkRead))); }}

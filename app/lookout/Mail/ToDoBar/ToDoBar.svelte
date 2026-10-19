@@ -2,7 +2,7 @@
   {#if parts.includes(ToDoBarPart.Calendar)}
     <vbox class="section calendar">
       <hbox class="section-header">
-        <span>{$t`Calendar *=> To-Do bar section with the upcoming appointments`}</span>
+        <span>{$t`Calendar`}</span>
         <hbox flex />
         <button type="button" class="close" title={$t`Remove from the To-Do Bar`} aria-label={$t`Remove from the To-Do Bar`}
           on:click={() => onClosePart(ToDoBarPart.Calendar)}>
@@ -36,7 +36,7 @@
   {#if parts.includes(ToDoBarPart.People)}
     <vbox class="section people">
       <hbox class="section-header">
-        <span>{$t`People *=> To-Do bar section with your frequent contacts`}</span>
+        <span>{$t`People *=> or Persons - Short word, less than 10 characters`}</span>
         <hbox flex />
         <button type="button" class="close" title={$t`Remove from the To-Do Bar`} aria-label={$t`Remove from the To-Do Bar`}
           on:click={() => onClosePart(ToDoBarPart.People)}>
@@ -107,7 +107,7 @@
     today.setHours(0, 0, 0, 0);
     let diff = Math.round((day.getTime() - today.getTime()) / (24 * 3600 * 1000));
     if (diff == 0) {
-      return $t`Today *=> The current day`;
+      return $t`Today`;
     } else if (diff == 1) {
       return $t`Tomorrow *=> The day after today`;
     }

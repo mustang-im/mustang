@@ -1,4 +1,4 @@
-<Dialog title={$t`Show Columns`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={() => { dispatch("change", shown); }} width="620px" on:close>
+<Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => { dispatch("change", shown); }} width="620px" on:close>
   <hbox class="columns-editor">
     <vbox flex class="list-box">
       <span class="list-label">{$t`Available columns`}</span>

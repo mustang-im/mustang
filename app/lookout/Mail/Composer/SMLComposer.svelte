@@ -3,15 +3,15 @@
     {#if preview}
       <SMLDisplayKinds {sml} message={mail}>
         <svelte:fragment slot="actions">
-          <DialogButton label={$t`Edit *=> Edit the poll`} icon={EditIcon} classes="plain" onClick={() => { preview = false; }} />
-          <DialogButton label={$t`Remove *=> Remove the poll from the email`} icon={RemoveIcon} classes="plain" onClick={onRemove} />
+          <DialogButton label={$t`Edit`} icon={EditIcon} classes="plain" onClick={() => { preview = false; }} />
+          <DialogButton label={$t`Remove`} icon={RemoveIcon} classes="plain" onClick={onRemove} />
         </svelte:fragment>
       </SMLDisplayKinds>
     {:else}
       <ActionCard title={label(type)} subtitle={editSubtitle(type)} icon={icon(type)}>
         <svelte:fragment slot="actions">
-          <DialogButton label={$t`Preview *=> Show how the poll looks for the recipients`} icon={PreviewIcon} classes="plain" onClick={() => { preview = true; }} />
-          <DialogButton label={$t`Remove *=> Remove the poll from the email`} icon={RemoveIcon} classes="plain" onClick={onRemove} />
+          <DialogButton label={$t`Preview`} icon={PreviewIcon} classes="plain" onClick={() => { preview = true; }} />
+          <DialogButton label={$t`Remove`} icon={RemoveIcon} classes="plain" onClick={onRemove} />
         </svelte:fragment>
         {#if type == "SimplePoll"}
           <PollEdit {sml} />
@@ -51,7 +51,7 @@
   /* <copied to="PollsGroup.svelte"> */
   function label(type: string): string {
     switch (type) {
-      case "SimplePoll": return $t`Poll *=> A poll in the email: recipients choose one of the options`;
+      case "SimplePoll": return $t`Poll`;
       case "MeetingTimePoll": return $t`Scheduling Poll`;
       case "BookMe": return $t`Bookings *=> Meeting times in the email that the recipient can book`;
       default: return "";

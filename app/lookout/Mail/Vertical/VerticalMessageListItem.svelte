@@ -59,7 +59,7 @@
         <FlagIcon size={16} />
       </button>
       <button class="action" tabindex="-1"
-        title={$t`Delete *=> Delete this email`}
+        title={$t`Delete`}
         on:click|stopPropagation={() => catchErrors(() => message.deleteMessage())}>
         <DeleteIcon size={16} />
       </button>
@@ -88,7 +88,7 @@
         <span title={$t`Meeting request`}><MeetingIcon size={14} /></span>
       {/if}
       {#if $message.wasEncrypted || $message.signedByKeyID}
-        <span title={$message.wasEncrypted ? $t`Encrypted *=> The email was sent encrypted` : $t`Signed *=> The email has a digital signature, but is not encrypted`}><SecureIcon size={14} /></span>
+        <span title={$message.wasEncrypted ? $t`Encrypted *=> The email was sent encrypted` : $t`Signed`}><SecureIcon size={14} /></span>
       {/if}
       {#if $message.hasVisibleAttachments}
         <span title={$t`Has attachments`}><AttachmentIcon size={14} /></span>

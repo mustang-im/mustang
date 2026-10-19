@@ -25,7 +25,7 @@
       <DialogButton label={$t`Replace All`} disabled={!term} onClick={onReplaceAll} />
     {/if}
     <DialogButton label={$t`Find Next`} primary disabled={!term} onClick={onFindNext} />
-    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
+    <DialogButton label={$t`Cancel`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 

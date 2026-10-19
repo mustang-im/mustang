@@ -79,8 +79,8 @@
   $: mainAccount = $emailAccounts.first;
   $: themeOptions = [
     { value: "system", label: $t`Use system setting` },
-    { value: "light", label: $t`Light *=> Light color scheme` },
-    { value: "dark", label: $t`Dark *=> Dark color scheme` },
+    { value: "light", label: $t`Light` },
+    { value: "dark", label: $t`Dark` },
   ];
 
   async function saveRealname(name: string) {

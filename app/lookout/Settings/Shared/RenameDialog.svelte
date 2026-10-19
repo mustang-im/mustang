@@ -1,5 +1,5 @@
 <Dialog {title}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!name.trim() && $t`Enter a name`}
   onOK={onOK}
   width="400px"

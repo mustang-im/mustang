@@ -10,15 +10,15 @@
   <MenuItem label={$t`New Recurring Meeting`} icon={RecurringMeetingIcon}
     onClick={() => CalendarActions.newEventAtSelection(null, "recurring-meeting")} />
   <MenuDivider />
-  <MenuItem label={$t`Today *=> Show today in the calendar`} icon={TodayIcon} onClick={goToToday} />
+  <MenuItem label={$t`Today`} icon={TodayIcon} onClick={goToToday} />
   <MenuItem label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={showNext7Days} />
   <MenuDivider />
-  <MenuItem label={$t`Day *=> Calendar view that shows one day`} icon={DayIcon} shortCutInfo={$t`Ctrl+Alt+1 *=> Keyboard shortcut`} onClick={() => setView("day")} />
+  <MenuItem label={$t`Day`} icon={DayIcon} shortCutInfo={$t`Ctrl+Alt+1 *=> Keyboard shortcut`} onClick={() => setView("day")} />
   <MenuItem label={$t`Work Week *=> Calendar view that shows Monday to Friday`} icon={WorkWeekIcon} shortCutInfo={$t`Ctrl+Alt+2 *=> Keyboard shortcut`} onClick={() => setView("workweek")} />
-  <MenuItem label={$t`Week *=> Calendar view that shows a whole week`} icon={WeekIcon} shortCutInfo={$t`Ctrl+Alt+3 *=> Keyboard shortcut`} onClick={() => setView("week")} />
-  <MenuItem label={$t`Month *=> Calendar view that shows a whole month`} icon={MonthIcon} shortCutInfo={$t`Ctrl+Alt+4 *=> Keyboard shortcut`} onClick={() => setView("month")} />
+  <MenuItem label={$t`Week`} icon={WeekIcon} shortCutInfo={$t`Ctrl+Alt+3 *=> Keyboard shortcut`} onClick={() => setView("week")} />
+  <MenuItem label={$t`Month`} icon={MonthIcon} shortCutInfo={$t`Ctrl+Alt+4 *=> Keyboard shortcut`} onClick={() => setView("month")} />
   <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo={$t`Ctrl+Alt+5 *=> Keyboard shortcut`} onClick={() => setView("schedule")} />
-  <MenuItem label={$t`Day/Month *=> Calendar view with the day on the left and the month on the right`} icon={DualIcon} onClick={() => setView("dual")} />
+  <MenuItem label={$t`Day/Month`} icon={DualIcon} onClick={() => setView("dual")} />
   <MenuDivider />
   <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => isViewSettingsOpen = true} />
 </ContextMenu>

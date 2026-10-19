@@ -5,7 +5,7 @@
   </RibbonGroup>
   {#if onInsertPicture}
     <RibbonGroup label={$t`Illustrations *=> Ribbon group with commands to insert pictures`}>
-      <RibbonButton label={$t`Pictures *=> Insert a picture into the text`} icon={PictureIcon}
+      <RibbonButton label={$t`Pictures`} icon={PictureIcon}
         disabled={!editor} onClick={onInsertPicture} />
     </RibbonGroup>
   {/if}
@@ -13,7 +13,7 @@
     <RibbonButton label={$t`Link *=> Insert or edit a link in the text`} icon={LinkIcon} shortCutInfo={$t`Ctrl+K *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.Link; }} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Text *=> Ribbon group with commands to insert text, e.g. the date`}>
+  <RibbonGroup label={$t`Text`}>
     <RibbonButton label={$t`Date & Time`} icon={DateTimeIcon}
       tooltip={$t`Insert the current date or time`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.DateTime; }} />
@@ -26,8 +26,8 @@
       disabled={!editor}
       onClick={() => { editor.chain().focus().setHorizontalRule().run(); }} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Emoji *=> Ribbon group with the emoji picker`}>
-    <RibbonToggleButton label={$t`Emoji *=> Show or hide the emoji picker`} icon={EmojiIcon}
+  <RibbonGroup label={$t`Emoji`}>
+    <RibbonToggleButton label={$t`Emoji`} icon={EmojiIcon}
       disabled={!editor}
       selected={showEmojis}
       onClick={() => { showEmojis = !showEmojis; }} />

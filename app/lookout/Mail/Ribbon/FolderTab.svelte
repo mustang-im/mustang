@@ -1,5 +1,5 @@
-<RibbonTab label={$t`Folder *=> Ribbon tab with commands for folders`}>
-  <RibbonGroup label={$t`New *=> Ribbon group with commands to create new items`}>
+<RibbonTab label={$t`Folder`}>
+  <RibbonGroup label={$t`New`}>
     <RibbonButton label={$t`New Folder`} icon={NewFolderIcon}
       onClick={onNewFolder}
       disabled={!realAccount ? $t`Select a folder of an account first` : folder && !isVirtual && folder.disableSubfolders()}
@@ -8,14 +8,14 @@
       onClick={() => { $openNewSearchFolder = { account: realAccount }; }}
       shortCutInfo={$t`Ctrl+Shift+P *=> Keyboard shortcut`} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the selected items`}>
-    <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename *=> Rename the selected folder`} icon={RenameIcon} size="small"
+  <RibbonGroup label={$t`Actions`}>
+    <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon} size="small"
       onClick={() => { $renamingFolder = folder; }}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot rename this folder` : $folderStore?.disableRename()} />
-    <RibbonButton label={$t`Move Folder`} shortLabel={$t`Move *=> Move the selected folder into another folder`} icon={MoveFolderIcon} size="small"
+    <RibbonButton label={$t`Move Folder`} shortLabel={$t`Move`} icon={MoveFolderIcon} size="small"
       onClick={() => { $openMoveFolder = folder; }}
       disabled={!folder ? $t`Select a folder first` : FolderTreeActions.disableMove(folder)} />
-    <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete *=> Delete the selected folder`} icon={DeleteFolderIcon} size="small"
+    <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteFolderIcon} size="small"
       onClick={async () => { await FolderTreeActions.deleteFolder(folder); }}
       disabled={!folder ? $t`Select a folder first` : folder instanceof AllFolders ? $t`You cannot delete this folder` : $folderStore?.disableDelete()} />
   </RibbonGroup>

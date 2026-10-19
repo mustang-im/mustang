@@ -1,13 +1,13 @@
 <Dialog title={$t`Create New Folder`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!name?.trim() && $t`Enter a name`}
   onOK={onCreate}
   on:close>
   <vbox class="dialog-content">
-    <span>{$t`Name *=> Name of the folder`}</span>
-    <TextField label={$t`Name *=> Name of the folder`} bind:value={name} />
+    <span>{$t`Name`}</span>
+    <TextField label={$t`Name`} bind:value={name} />
     <span class="caption">{$t`Select where to place the folder`}</span>
-    <FolderPicker label={$t`Folders *=> List of the folders`} allowAccount
+    <FolderPicker label={$t`Folders`} allowAccount
       bind:selectedFolder={parent} bind:selectedAccount={account}
       disableFolder={folder => folder.disableSubfolders()} />
   </vbox>

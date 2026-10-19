@@ -1,14 +1,14 @@
 <Dialog title={$t`${addressbook.name} Properties`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={isWritable && !name.trim() && $t`Enter a name for the address book`}
   onOK={onOK}
   width="480px"
   on:close>
   <vbox class="properties">
-    <DialogTabs tabs={[ { id: "general", label: $t`General *=> Tab with the general settings of the folder` } ]} selected="general" />
+    <DialogTabs tabs={[ { id: "general", label: $t`General` } ]} selected="general" />
     <hbox class="name-row">
       <span class="folder-icon"><AddressbookIcon size="24" /></span>
-      <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name *=> Name of the calendar or address book`}
+      <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name`}
         disabled={!isWritable} />
     </hbox>
     <hbox class="divider" />

@@ -102,7 +102,7 @@ export class ContactActions {
   static async deleteContacts(contacts: Contact[]): Promise<boolean> {
     assert(contacts.length, gt`Please select a contact first`);
     let saved = contacts.filter(contact => !ContactActions.isUnsaved(contact));
-    if (saved.length && !await showMessageBox(gt`Delete *=> Delete the selected contacts`, saved.length == 1
+    if (saved.length && !await showMessageBox(gt`Delete`, saved.length == 1
         ? gt`Do you want to permanently delete the contact ${saved[0].name}?`
         : gt`Do you want to permanently delete the ${saved.length} selected contacts?`)) {
       return false;

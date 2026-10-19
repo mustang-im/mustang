@@ -10,13 +10,13 @@
         tooltip={$t`Words in the subject or the message text`}
         on:keydown={onEnter} />
     {/if}
-    <span class="label">{$t`From *=> Sender of the email`}</span>
+    <span class="label">{$t`From`}</span>
     <hbox class="person-field underlined">
       {#if from}
         <hbox class="person-chip">
           <PersonCircle name={from.name} picture={from.picture} size={20} />
           <span class="name">{from.name}</span>
-          <button type="button" class="chip-remove" title={$t`Remove *=> Remove this person from the search`} aria-label={$t`Remove *=> Remove this person from the search`}
+          <button type="button" class="chip-remove" title={$t`Remove`} aria-label={$t`Remove`}
             on:click={() => { draft.setFrom(null); draft = draft; }}>
             <RemoveIcon size={12} />
           </button>
@@ -28,13 +28,13 @@
         <AddressBookIcon size={16} />
       </button>
     </hbox>
-    <span class="label">{$t`To *=> Main recipients of the email`}</span>
+    <span class="label">{$t`To`}</span>
     <hbox class="person-field underlined">
       {#if to}
         <hbox class="person-chip">
           <PersonCircle name={to.name} picture={to.picture} size={20} />
           <span class="name">{to.name}</span>
-          <button type="button" class="chip-remove" title={$t`Remove *=> Remove this person from the search`} aria-label={$t`Remove *=> Remove this person from the search`}
+          <button type="button" class="chip-remove" title={$t`Remove`} aria-label={$t`Remove`}
             on:click={() => { draft.setTo(null); draft = draft; }}>
             <RemoveIcon size={12} />
           </button>
@@ -74,9 +74,9 @@
     </hbox>
     <span class="label">{$t`Read status`}</span>
     <ComboBox label={$t`Read status`} options={readOptions} bind:value={draft.readStatus} width="100%" />
-    <span class="label">{$t`Size *=> Size of the email`}</span>
-    <ComboBox label={$t`Size *=> Size of the email`} options={sizeOptions} bind:value={draft.size} width="100%" />
-    <span class="label">{$t`Attachments *=> Whether the email has attachments`}</span>
+    <span class="label">{$t`Size *=> Size of the file`}</span>
+    <ComboBox label={$t`Size *=> Size of the file`} options={sizeOptions} bind:value={draft.size} width="100%" />
+    <span class="label">{$t`Attachments`}</span>
     <Checkbox label={$t`Has Attachments`} bind:checked={draft.hasAttachment} />
     <span class="label">{$t`Flagged *=> State of the email that has been flagged for follow-up`}</span>
     <Checkbox label={$t`Flagged for follow up`} bind:checked={draft.flagged} />
@@ -86,14 +86,14 @@
   {#if showButtons}
     <hbox class="buttons">
       <hbox flex />
-      <DialogButton label={$t`Search *=> Start the search`} primary onClick={() => { dispatch("search"); }} />
+      <DialogButton label={$t`Search`} primary onClick={() => { dispatch("search"); }} />
       <DialogButton label={$t`Clear filters`} onClick={() => { draft.clear(); draft = draft; }} />
     </hbox>
   {/if}
 </vbox>
 {#if picking}
   <SearchPersonDialog
-    fieldLabel={picking == Direction.To ? $t`To *=> Main recipients of the email` : $t`From *=> Sender of the email`}
+    fieldLabel={picking == Direction.To ? $t`To` : $t`From`}
     person={picking == Direction.To ? to : from}
     on:pick={event => onPicked(event.detail)}
     on:close={() => picking = null} />
@@ -145,7 +145,7 @@
       disabled: !isScopeAvailable(scope, account, folder),
     })) as ComboOption<SearchScope>[];
   const readOptions: ComboOption<ReadStatus>[] = [
-    { value: ReadStatus.All, label: $t`All *=> Read status: all emails` },
+    { value: ReadStatus.All, label: $t`All` },
     { value: ReadStatus.Read, label: $t`Read *=> State of the message that has been read` },
     { value: ReadStatus.Unread, label: $t`Unread *=> State of the message that has not been read` },
   ];

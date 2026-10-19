@@ -4,10 +4,10 @@
       <CalendarWorkHours account={calendar}>
         <svelte:fragment slot="calendar">
           {#if $calendars.length > 1}
-            <span>{$t`Calendar *=> Calendar whose work hours are shown`}</span>
+            <span>{$t`Calendar`}</span>
             <hbox class="calendar-chooser">
               <ComboBox options={$calendars.contents.map(entry => ({ value: entry, label: entry.name }))}
-                bind:value={calendar} label={$t`Calendar *=> Calendar whose work hours are shown`} width="280px" />
+                bind:value={calendar} label={$t`Calendar`} width="280px" />
             </hbox>
           {/if}
         </svelte:fragment>

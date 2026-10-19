@@ -87,7 +87,7 @@
 
   function onSentTo() {
     $openSearchPerson = {
-      fieldLabel: $t`To *=> Main recipients of the email`,
+      fieldLabel: $t`To`,
       person: isSentTo ? $searchOptions.person : null,
       onPick: person => person && searchInFolder({ person, isOutgoing: true }),
     };

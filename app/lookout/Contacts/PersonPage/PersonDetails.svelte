@@ -13,13 +13,13 @@
         <CardButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([person])}
           disabled={$emailAddresses.isEmpty && $t`This contact has no email address`} />
-        <CardButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon}
+        <CardButton label={$t`Meeting`} icon={MeetingIcon}
           onClick={() => ContactActions.newMeeting([person])}
           disabled={$emailAddresses.isEmpty && $t`This contact has no email address`} />
         {#if preferredPhone}
-          <CardButton label={$t`Call *=> Make a phone call to the contact`} icon={CallIcon} href="tel:{preferredPhone}" />
+          <CardButton label={$t`Call`} icon={CallIcon} href="tel:{preferredPhone}" />
         {/if}
-        <CardButton label={$t`Edit *=> Edit the contact`} icon={EditIcon}
+        <CardButton label={$t`Edit`} icon={EditIcon}
           onClick={() => ContactActions.edit(person)} />
       </hbox>
     </vbox>
@@ -52,17 +52,17 @@
             </CardField>
           {/each}
           {#each $phoneNumbers.each as entry}
-            <CardField icon={PhoneIcon} label={entryLabel(entry, $t`Phone *=> Phone number of unknown type`)} copyValue={entry.value}>
+            <CardField icon={PhoneIcon} label={entryLabel(entry, $t`Phone`)} copyValue={entry.value}>
               <a class="link" href="tel:{entry.value}">{entry.value}</a>
             </CardField>
           {/each}
           {#each $chatAccounts.each as entry}
-            <CardField icon={ChatIcon} label={entry.protocol ?? entryLabel(entry, $t`Chat *=> Chat address of unknown type`)} copyValue={entry.value}>
+            <CardField icon={ChatIcon} label={entry.protocol ?? entryLabel(entry, $t`Chat`)} copyValue={entry.value}>
               {entry.value}
             </CardField>
           {/each}
           {#each $urls.each as entry}
-            <CardField icon={WebsiteIcon} label={entryLabel(entry, $t`Website *=> Website of unknown type`)} copyValue={entry.value}>
+            <CardField icon={WebsiteIcon} label={entryLabel(entry, $t`Website`)} copyValue={entry.value}>
               <a class="link" href={entry.value} target="_blank">{entry.value}</a>
             </CardField>
           {/each}
@@ -78,16 +78,16 @@
 
     {#if $person.company || $person.position || $person.department}
       <section>
-        <h2>{$t`Organization *=> Section with the company, job title and department of the contact`}</h2>
+        <h2>{$t`Organization`}</h2>
         <grid class="fields">
           {#if $person.company}
-            <CardField icon={CompanyIcon} label={$t`Company *=> Company where the person works`}>{$person.company}</CardField>
+            <CardField icon={CompanyIcon} label={$t`Company`}>{$person.company}</CardField>
           {/if}
           {#if $person.position}
             <CardField icon={JobIcon} label={$t`Job title`}>{$person.position}</CardField>
           {/if}
           {#if $person.department}
-            <CardField icon={DepartmentIcon} label={$t`Department *=> Department of the person in the company`}>{$person.department}</CardField>
+            <CardField icon={DepartmentIcon} label={$t`Department`}>{$person.department}</CardField>
           {/if}
         </grid>
       </section>
@@ -95,7 +95,7 @@
 
     {#if $groups.hasItems}
       <section>
-        <h2>{$t`Groups *=> Groups that this person belongs to`}</h2>
+        <h2>{$t`Groups`}</h2>
         <grid class="fields">
           {#each $groups.each as entry}
             <CardField icon={GroupIcon} label={entry.purposeLabel}>{entry.value}</CardField>
@@ -106,7 +106,7 @@
 
     {#if $person.notes?.trim()}
       <section>
-        <h2>{$t`Notes *=> Notes about the contact`}</h2>
+        <h2>{$t`Notes`}</h2>
         <div class="notes">{$person.notes}</div>
       </section>
     {/if}
@@ -175,8 +175,8 @@
   let shownPivot: "overview" | ActivityKind = "overview";
   $: pivots = [
     { id: "overview", label: $t`Overview *=> Tab with a summary of the contact`, emptyText: "" },
-    { id: ActivityKind.Messages, label: $t`Messages *=> Tab with the emails exchanged with this person`, emptyText: $t`No messages with this person` },
-    { id: ActivityKind.Files, label: $t`Files *=> Tab with the files shared with this person`, emptyText: $t`No files shared with this person` },
+    { id: ActivityKind.Messages, label: $t`Messages`, emptyText: $t`No messages with this person` },
+    { id: ActivityKind.Files, label: $t`Files`, emptyText: $t`No files shared with this person` },
     { id: ActivityKind.Meetings, label: $t`Meetings *=> Tab with the meetings with this person`, emptyText: $t`No meetings with this person` },
   ] as { id: "overview" | ActivityKind, label: string, emptyText: string }[];
   $: activities = new ContactActivities(person);

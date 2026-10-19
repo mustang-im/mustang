@@ -27,7 +27,7 @@
             picture={recipient.person?.picture} colorKey={recipient.emailAddress} size={20} />
           <span class="name">{displayName(recipient)}</span>
           {#if !disabled}
-            <button type="button" class="remove" tabindex={-1} title={$t`Remove *=> Remove this recipient from the email`} aria-label={$t`Remove *=> Remove this recipient from the email`}
+            <button type="button" class="remove" tabindex={-1} title={$t`Remove`} aria-label={$t`Remove`}
               on:click|stopPropagation={() => remove(recipient)}>
               <RemoveIcon size={12} />
             </button>
@@ -99,9 +99,9 @@
 {/if}
 <svelte:window on:click|capture={event => catchErrors(() => onClickOutside(event))} />
 <ContextMenu bind:this={contextMenu}>
-  <MenuItem label={$t`Copy *=> Copy the name and email address to the clipboard`} icon={CopyIcon} onClick={() => onCopy(menuRecipient)} />
-  <MenuItem label={$t`Cut *=> Cut this recipient to the clipboard`} icon={CutIcon} disabled={disabled} onClick={() => onCut(menuRecipient)} />
-  <MenuItem label={$t`Remove *=> Remove this recipient from the email`} icon={RemoveIcon} disabled={disabled} onClick={() => remove(menuRecipient)} />
+  <MenuItem label={$t`Copy`} icon={CopyIcon} onClick={() => onCopy(menuRecipient)} />
+  <MenuItem label={$t`Cut`} icon={CutIcon} disabled={disabled} onClick={() => onCut(menuRecipient)} />
+  <MenuItem label={$t`Remove`} icon={RemoveIcon} disabled={disabled} onClick={() => remove(menuRecipient)} />
   <MenuItem label={$t`Edit Name`} icon={EditIcon} disabled={disabled} onClick={() => onEditName(menuRecipient)} />
   <MenuDivider />
   <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}

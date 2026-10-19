@@ -6,7 +6,7 @@
         <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
       {/if}
       <grid class="fields">
-        <label class="row-label plain" for="event-form-title">{$t`Title *=> Title of the event`}</label>
+        <label class="row-label plain" for="event-form-title">{$t`Title`}</label>
         <input id="event-form-title" class="field title" type="text" bind:value={event.title}
           autofocus={!event.title} />
         {#if isMeeting}
@@ -19,7 +19,7 @@
           </hbox>
         {/if}
         <TimeBox {event} editor={timeEditor} {flow} />
-        <label class="field-button" for="event-form-location">{$t`Location *=> Where the event takes place`}</label>
+        <label class="field-button" for="event-form-location">{$t`Location`}</label>
         <input id="event-form-location" class="field location" type="text" bind:value={event.location} />
         {#if $event.isOnline}
           <span class="row-label">{$t`Online meeting`}</span>

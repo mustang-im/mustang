@@ -97,7 +97,7 @@
 
   function headerLabel(column: Column): string {
     if (column == Column.From && showsRecipients) {
-      return $t`To *=> Main recipients of the email`;
+      return $t`To`;
     }
     return ColumnInfo.labelOf(column);
   }

@@ -1,5 +1,5 @@
 <Dialog title={isLink ? $t`Edit Hyperlink` : $t`Insert Hyperlink`} on:close={onClose} width="600px"
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!href && (linkTo == LinkTarget.Email ? $t`Please enter an email address` : $t`Please enter an address *=> Enter the web address of the link`)}
   onOK={onOK}>
   <hbox class="hyperlink">
@@ -29,8 +29,8 @@
         {:else}
           <span class="lo-form-label">{$t`E-mail address`}</span>
           <TextField label={$t`E-mail address`} type="email" bind:value={emailAddress} />
-          <span class="lo-form-label">{$t`Subject *=> Subject of the email that the link starts`}</span>
-          <TextField label={$t`Subject *=> Subject of the email that the link starts`} bind:value={emailSubject} />
+          <span class="lo-form-label">{$t`Subject`}</span>
+          <TextField label={$t`Subject`} bind:value={emailSubject} />
         {/if}
       </FormGrid>
     </vbox>

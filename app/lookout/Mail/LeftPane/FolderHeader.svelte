@@ -26,7 +26,7 @@
     <hbox class="pivots" role="tablist">
       <button class="pivot" role="tab" class:active={!isUnreadOnly} aria-selected={!isUnreadOnly}
         on:click={() => setUnreadOnly(false)}>
-        {$t`All *=> Show all emails in the folder`}
+        {$t`All`}
       </button>
       <button class="pivot" role="tab" class:active={isUnreadOnly} aria-selected={isUnreadOnly}
         on:click={() => setUnreadOnly(true)}>
@@ -90,7 +90,7 @@
   <ArrangeByMenuItems {folder} withLabel withSortOrder />
 </Menu>
 <Menu bind:isMenuOpen={isFilterMenuOpen} anchor={filterEl} placement="bottom-end">
-  <MenuItem label={$t`All *=> Show all emails in the folder`} icon={AllIcon} checkable checked={!hasFilter} onClick={clearFilter} />
+  <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={clearFilter} />
   <MenuItem label={$t`Unread *=> State of the message that has not been read`} icon={UnreadIcon} checkable checked={$quickSearch.isRead === false}
     onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
   <MenuItem label={$t`Flagged *=> State of the email that has been flagged for follow-up`} icon={FlagIcon} checkable checked={$quickSearch.isStarred}

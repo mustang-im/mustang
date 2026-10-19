@@ -6,11 +6,11 @@
       <MinimizeIcon size={16} />
     </button>
   </hbox>
-  <vbox flex class="scroll" role="tree" aria-label={$t`Folders *=> List of the folders`}>
+  <vbox flex class="scroll" role="tree" aria-label={$t`Folders`}>
     {#if $separateAccountList.value}
-      <SectionHeader id="accounts" label={$t`Accounts *=> List of the email accounts`} />
+      <SectionHeader id="accounts" label={$t`Accounts`} />
       {#if !isCollapsed("accounts", $collapsedIDs.value)}
-        <vbox class="account-list" role="listbox" aria-label={$t`Accounts *=> List of the email accounts`}>
+        <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
           {#if $showFavorites.value}
             <FolderGroupListItem label={$t`Favorites *=> Section of the folder pane with the favorite folders`} icon={FavoritesIcon} inbox={allAccountsAccount.inbox}
               selected={shownEntry == FolderGroup.Favorites} on:click={() => onSelectGroup(FolderGroup.Favorites)} />

@@ -5,7 +5,7 @@
   <vbox class="dialog-box" style:width style:height>
     <hbox class="title-bar">
       <hbox flex class="title">{title}</hbox>
-      <button type="button" class="close" on:click={onCancel} title={$t`Close *=> Close the dialog`} aria-label={$t`Close *=> Close the dialog`}>
+      <button type="button" class="close" on:click={onCancel} title={$t`Close`} aria-label={$t`Close`}>
         <CloseIcon size={16} />
       </button>
     </hbox>
@@ -21,7 +21,7 @@
         {#if okLabel}
           <DialogButton label={okLabel} primary disabled={okDisabled || isRunning} onClick={submit} />
         {/if}
-        <DialogButton label={cancelLabel ?? $t`Cancel *=> Close the dialog without making changes`} onClick={onCancel} />
+        <DialogButton label={cancelLabel ?? $t`Cancel`} onClick={onCancel} />
         {#if onApply}
           <DialogButton label={applyLabel ?? $t`Apply *=> Save the changes and keep the dialog open`} disabled={applyDisabled || isRunning} onClick={apply} />
         {/if}

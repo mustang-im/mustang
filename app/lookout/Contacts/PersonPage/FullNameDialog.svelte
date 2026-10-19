@@ -1,4 +1,4 @@
-<Dialog title={$t`Check Full Name`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="420px" on:close>
+<Dialog title={$t`Check Full Name`} okLabel={$t`OK`} onOK={onOK} width="420px" on:close>
   <GroupBox label={$t`Name details`}>
     <FormGrid>
       <span>{$t`First *=> First name of the person`}</span>

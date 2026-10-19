@@ -30,7 +30,7 @@
             {/if}
           </vbox>
           {#if !readOnly && participant.response != InvitationResponse.Organizer}
-            <button class="remove" title={$t`Remove *=> Remove this attendee from the meeting`} aria-label={$t`Remove *=> Remove this attendee from the meeting`}
+            <button class="remove" title={$t`Remove`} aria-label={$t`Remove`}
               on:click={() => event.participants.remove(participant)}>
               <RemoveIcon size={14} />
             </button>
@@ -90,7 +90,7 @@
     </div>
   </hbox>
   <hbox class="legend">
-    <span class="legend-item"><span class="swatch swatch-busy" /> {$t`Busy *=> Availability: the person has no time`}</span>
+    <span class="legend-item"><span class="swatch swatch-busy" /> {$t`Busy`}</span>
     <span class="legend-item"><span class="swatch swatch-no-info" /> {$t`No information *=> Availability: unknown`}</span>
     <hbox flex />
     <button class="zoom" bind:this={zoomButton} class:open={isZoomMenuOpen}
@@ -258,9 +258,9 @@
   function statusLabel(status: AvailabilityStatus): string {
     switch (status) {
     case "free":
-      return $t`Available *=> Availability: the person has time`;
+      return $t`Available`;
     case "busy":
-      return $t`Busy *=> Availability: the person has no time`;
+      return $t`Busy`;
     default:
       return $t`No information *=> Availability: unknown`;
     }

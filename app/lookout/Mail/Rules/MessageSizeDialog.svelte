@@ -1,4 +1,4 @@
-<Dialog title={$t`Message Size`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSubmit} on:close={onClose} width="380px"
+<Dialog title={$t`Message Size`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="380px"
   okDisabled={(!atLeast && !atMost && $t`Enter a size`) ||
     (!!atLeast && !!atMost && atLeast > atMost && $t`At least must not be larger than At most`)}>
   <vbox class="size">

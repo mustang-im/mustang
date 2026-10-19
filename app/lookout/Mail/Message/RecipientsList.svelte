@@ -11,7 +11,7 @@
 </span>
 <Menu bind:isMenuOpen anchor={menuAnchor} placement="bottom-start">
   <MenuItem label={$t`Send Email`} icon={SendIcon} onClick={() => MessageActions.writeMailTo(menuRecipient)} />
-  <MenuItem label={$t`Copy *=> Copy the name and email address to the clipboard`} icon={CopyIcon} onClick={() => navigator.clipboard.writeText(clipboardText(menuRecipient))} />
+  <MenuItem label={$t`Copy`} icon={CopyIcon} onClick={() => navigator.clipboard.writeText(clipboardText(menuRecipient))} />
   <MenuDivider />
   <MenuItem label={menuRecipient?.findPerson() ? $t`Open Contact Card` : $t`Add to Contacts`}
     icon={ContactIcon} onClick={() => openPersonFromOtherApp(menuRecipient.createPerson(appGlobal.personalAddressbook))} />

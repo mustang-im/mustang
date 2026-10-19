@@ -1,5 +1,5 @@
 <Dialog title={copy ? $t`Copy Items` : $t`Move Items`} bind:this={dialog}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!target && $t`Select a folder first`}
   onOK={onMove}
   on:close>
@@ -7,7 +7,7 @@
     <span class="caption">
       {copy ? $t`Copy the selected items to the folder` : $t`Move the selected items to the folder`}
     </span>
-    <FolderPicker label={$t`Folders *=> List of the folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
+    <FolderPicker label={$t`Folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
       disableFolder={folder => !copy && (messages.contents.length > 0 && messages.contents.every(message => message.folder == folder)) && $t`The items are already in this folder`}
       on:choose={() => dialog.submit()} />
   </vbox>

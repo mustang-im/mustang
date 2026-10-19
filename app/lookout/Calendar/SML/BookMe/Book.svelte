@@ -10,7 +10,7 @@
     </DisplayList>
   {:else if state == TSMLBookMeState.UserConfirm}
     <vbox class="summary">
-      <span class="summary-label">{$t`Request meeting *=> Heading: the meeting time that you are about to request`}</span>
+      <span class="summary-label">{$t`Request meeting`}</span>
       <span class="summary-time">{pollDayLabel(time)}</span>
       <span class="summary-time">{timeOfDayLabel(time)} – {timeOfDayLabel(pollOptionEnd(time, bookMe.duration))}</span>
       <span class="summary-duration">{durationLabel(bookMe.duration)}</span>

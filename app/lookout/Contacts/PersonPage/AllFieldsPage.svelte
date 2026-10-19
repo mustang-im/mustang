@@ -4,7 +4,7 @@
     <ComboBox options={fieldSets} bind:value={fieldSet} label={$t`Select from *=> Choose which kind of fields to show`} width="280px" />
   </hbox>
   <ListView items={rows} bind:selected label={$t`Fields *=> List of the fields of the contact`} height="320px"
-    columns={[{ label: $t`Name *=> Name of the field`, width: "minmax(0, 2fr)" }, { label: $t`Value *=> Value of the field`, width: "minmax(0, 3fr)" }]}
+    columns={[{ label: $t`Name`, width: "minmax(0, 2fr)" }, { label: $t`Value *=> Value of the field`, width: "minmax(0, 3fr)" }]}
     let:item>
     <span class="cell">{item.name}</span>
     {#if item.kind != "address"}
@@ -19,18 +19,18 @@
   </ListView>
   <hbox class="buttons">
     <DialogButton label={$t`New… *=> Add a new user-defined field`} onClick={() => { isNewOpen = true; }} />
-    <DialogButton label={$t`Delete *=> Delete the selected user-defined field`}
+    <DialogButton label={$t`Delete`}
       disabled={selected?.kind != "custom" && $t`Select a user-defined field first`}
       onClick={onDelete} />
   </hbox>
 </vbox>
 
 {#if isNewOpen}
-  <Dialog title={$t`New Column`} okLabel={$t`OK *=> Confirm and close the dialog`} okDisabled={!newName.trim() && $t`Enter a name`}
+  <Dialog title={$t`New Column`} okLabel={$t`OK`} okDisabled={!newName.trim() && $t`Enter a name`}
     onOK={onAdd} width="360px" on:close={() => { isNewOpen = false; newName = ""; }}>
     <FormGrid>
-      <span>{$t`Name *=> Name of the field`}</span>
-      <TextField bind:value={newName} label={$t`Name *=> Name of the field`} />
+      <span>{$t`Name`}</span>
+      <TextField bind:value={newName} label={$t`Name`} />
     </FormGrid>
   </Dialog>
 {/if}

@@ -1,6 +1,6 @@
 <Ribbon>
   <RibbonTab label={$t`Home *=> Ribbon tab with the most-used commands`}>
-    <RibbonGroup label={$t`New *=> Ribbon group with commands to create new items`}>
+    <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
         onClick={() => CalendarActions.newEventAtSelection(null)}
         disabled={noCalendar} />
@@ -18,7 +18,7 @@
         disabled={noCalendar} />
     </RibbonGroup>
     <RibbonGroup label={$t`Go To *=> Ribbon group to jump to a date in the calendar`} onLauncher={openGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
-      <RibbonButton label={$t`Today *=> Show today in the calendar`} icon={TodayIcon} onClick={() => { goToToday(); showCalendar(); }} />
+      <RibbonButton label={$t`Today`} icon={TodayIcon} onClick={() => { goToToday(); showCalendar(); }} />
       <RibbonButton label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={() => { showNext7Days(); showCalendar(); }} />
       {#if isSimplified}
         <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo={$t`Ctrl+G *=> Keyboard shortcut`} onClick={openGoToDate} />
@@ -58,24 +58,24 @@
         disabled={noCalendar} />
     </RibbonGroup>
   </RibbonTab>
-  <RibbonTab label={$t`Folder *=> Ribbon tab with commands for folders`}>
-    <RibbonGroup label={$t`New *=> Ribbon group with commands to create new items`}>
-      <RibbonButton label={$t`New Calendar`} shortLabel={$t`New *=> Create a new calendar`} icon={NewCalendarIcon}
+  <RibbonTab label={$t`Folder`}>
+    <RibbonGroup label={$t`New`}>
+      <RibbonButton label={$t`New Calendar`} shortLabel={$t`New`} icon={NewCalendarIcon}
         tooltip={$t`Create a new calendar on this computer`}
         onClick={() => openSettingsDialog({ kind: "new-folder-account", folderKind: "calendar", localOnly: true })} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the selected items`}>
-      <RibbonButton label={$t`Rename Calendar`} shortLabel={$t`Rename *=> Rename the selected folder`} icon={RenameIcon}
+    <RibbonGroup label={$t`Actions`}>
+      <RibbonButton label={$t`Rename Calendar`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename the calendar in this app`}
         onClick={() => { renamingCalendar = $selectedCalendar; }}
         disabled={noSelection} />
-      <RibbonButton label={$t`Delete Calendar`} shortLabel={$t`Delete *=> Delete the selected folder`} icon={DeleteIcon}
+      <RibbonButton label={$t`Delete Calendar`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Remove the calendar from this app`}
         onClick={() => onDeleteCalendar()}
         disabled={!canDelete && $t`Only calendars that you added or opened yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Open & Share`}>
-      <RibbonMenuButton label={$t`Open Calendar`} shortLabel={$t`Open *=> Open calendar`} icon={OpenCalendarIcon}
+      <RibbonMenuButton label={$t`Open Calendar`} shortLabel={$t`Open`} icon={OpenCalendarIcon}
         tooltip={$t`Open Calendar`}>
         <OpenCalendarMenuItems />
       </RibbonMenuButton>
@@ -131,7 +131,7 @@
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Layout *=> Ribbon group with settings for the window panes`}>
-      <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders *=> Folder pane: show or hide the list of folders`} icon={FolderPaneIcon}>
+      <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
         <MenuItem label={$t`Normal *=> Folder pane at full width`} checked={$folderPane.value == CalendarFolderPane.Normal}
           onClick={() => onFolderPane(CalendarFolderPane.Normal)} />
         <MenuItem label={$t`Minimized *=> Folder pane as a narrow bar`} checked={$folderPane.value == CalendarFolderPane.Minimized}
@@ -232,9 +232,9 @@
   export let currentView: CalendarCurrentView;
 
   $: calendarViews = [
-    { id: CalendarCurrentView.Calendar, label: $t`Calendar *=> View that shows the day, week or month calendar`, icon: CalendarViewIcon, tooltip: $t`Day, week and month calendar` },
-    { id: CalendarCurrentView.Preview, label: $t`Preview *=> Calendar view with location and notes in the events`, icon: PreviewViewIcon, tooltip: $t`Calendar with location and notes in the appointments` },
-    { id: CalendarCurrentView.List, label: $t`List *=> View that shows the items in a table`, icon: ListViewIcon, tooltip: $t`All appointments and meetings in a table` },
+    { id: CalendarCurrentView.Calendar, label: $t`Calendar`, icon: CalendarViewIcon, tooltip: $t`Day, week and month calendar` },
+    { id: CalendarCurrentView.Preview, label: $t`Preview`, icon: PreviewViewIcon, tooltip: $t`Calendar with location and notes in the appointments` },
+    { id: CalendarCurrentView.List, label: $t`List`, icon: ListViewIcon, tooltip: $t`All appointments and meetings in a table` },
     { id: CalendarCurrentView.Active, label: $t`Active *=> View that shows the upcoming events`, icon: ActiveViewIcon, tooltip: $t`Appointments and meetings that are still to come` },
   ];
   const folderPane = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);

@@ -140,7 +140,7 @@ export class FolderPermissions {
       case MailShareCombinedPermissions.Modify:
         return gt`Editor *=> Permission level: may read, create, change and delete emails`;
       default:
-        return gt`Custom *=> Permission level: individually chosen rights`;
+        return gt`Custom`;
     }
   }
 

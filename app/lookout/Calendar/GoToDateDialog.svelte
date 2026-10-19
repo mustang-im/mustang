@@ -1,12 +1,12 @@
 <Dialog title={$t`Go To Date`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!selectedDate && $t`Enter a date`}
   onOK={onOK}
   width="340px"
   on:close>
   <FormGrid>
-    <span>{$t`Date *=> The date to show in the calendar`}</span>
-    <DateField required bind:date={selectedDate} label={$t`Date *=> The date to show in the calendar`} width="100%" />
+    <span>{$t`Date`}</span>
+    <DateField required bind:date={selectedDate} label={$t`Date`} width="100%" />
     <span>{$t`Show in *=> Calendar view in which the date is shown`}</span>
     <ComboBox options={viewOptions} bind:value={view} label={$t`Show in *=> Calendar view in which the date is shown`} />
   </FormGrid>
@@ -39,7 +39,7 @@
     { value: "week", label: $t`Week Calendar` },
     { value: "month", label: $t`Month Calendar` },
     { value: "schedule", label: $t`Schedule View` },
-    { value: "dual", label: $t`Day/Month *=> Calendar view with the day on the left and the month on the right` },
+    { value: "dual", label: $t`Day/Month` },
   ] as { value: CalendarViewType, label: string }[];
 
   function onOK() {

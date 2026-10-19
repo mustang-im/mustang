@@ -1,7 +1,7 @@
 <Dialog title={title ?? $t`Select Names: ${addressbook?.name ?? $t`All address books`}`} on:close={onCancelClicked} width="800px" height="620px">
   <grid class="search-grid">
     <hbox class="search-label">
-      <label for="select-names-search" class="label">{$t`Search *=> Label of the search field`}</label>
+      <label for="select-names-search" class="label">{$t`Search`}</label>
       <Radio label={$t`All columns`} bind:group={nameOnly} value={false} />
       <Radio label={$t`Name only`} bind:group={nameOnly} value={true} />
     </hbox>
@@ -12,7 +12,7 @@
       <button type="button" class="icon-button" title={$t`Go *=> Start the search`} aria-label={$t`Go *=> Start the search`} on:click={onGo}>
         <GoIcon size={14} />
       </button>
-      <button type="button" class="icon-button" title={$t`Clear *=> Clear the search field`} aria-label={$t`Clear *=> Clear the search field`}
+      <button type="button" class="icon-button" title={$t`Clear`} aria-label={$t`Clear`}
         disabled={!typedTerm} on:click={onClear}>
         <ClearIcon size={14} />
       </button>
@@ -23,11 +23,11 @@
   <vbox flex class="list">
     <FastList items={foundPersons} bind:selectedItems columns="minmax(150px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(170px, 1.5fr)">
       <svelte:fragment slot="header">
-        <hbox class="column-header">{$t`Name *=> Name of the person`}</hbox>
+        <hbox class="column-header">{$t`Name`}</hbox>
         <hbox class="column-header">{$t`Title *=> Job title of the person`}</hbox>
         <hbox class="column-header">{$t`Business Phone`}</hbox>
-        <hbox class="column-header">{$t`Department *=> Department of the person in the company`}</hbox>
-        <hbox class="column-header">{$t`Company *=> Company where the person works`}</hbox>
+        <hbox class="column-header">{$t`Department`}</hbox>
+        <hbox class="column-header">{$t`Company`}</hbox>
         <hbox class="column-header">{$t`E-mail Address`}</hbox>
       </svelte:fragment>
       <svelte:fragment slot="row" let:item={person}>
@@ -66,8 +66,8 @@
     {/each}
   </grid>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`OK *=> Confirm and close the dialog`} primary onClick={onOKClicked} />
-    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={onCancelClicked} />
+    <DialogButton label={$t`OK`} primary onClick={onOKClicked} />
+    <DialogButton label={$t`Cancel`} onClick={onCancelClicked} />
   </svelte:fragment>
 </Dialog>
 
@@ -115,9 +115,9 @@
 
   const shownFields = mail
     ? [
-      new SelectNamesField($t`To *=> Main recipients of the email`, mail.to.contents),
-      new SelectNamesField($t`Cc *=> Recipients who get a copy of the email`, mail.cc.contents),
-      new SelectNamesField($t`Bcc *=> Recipients who get a hidden copy of the email`, mail.bcc.contents),
+      new SelectNamesField($t`To`, mail.to.contents),
+      new SelectNamesField($t`Cc`, mail.cc.contents),
+      new SelectNamesField($t`Bcc`, mail.bcc.contents),
     ]
     : [new SelectNamesField(label, persons?.contents ?? [], single)];
   const defaultPick = mail

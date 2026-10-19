@@ -1,4 +1,4 @@
-<Dialog title={$t`Other Settings`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="580px" on:close
+<Dialog title={$t`Other Settings`} okLabel={$t`OK`} onOK={save} width="580px" on:close
   okDisabled={useCompactLayout && !isValidChars && $t`Enter 10 to 999 characters`}>
   <vbox class="other-settings">
     <GroupBox label={$t`Column Headings and Rows`}>

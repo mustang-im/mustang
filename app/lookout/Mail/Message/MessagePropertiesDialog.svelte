@@ -1,6 +1,6 @@
-<Dialog title={$t`Properties *=> Properties of the email`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="560px" on:close>
+<Dialog title={$t`Properties *=> Properties of the email`} okLabel={$t`OK`} onOK={onOK} width="560px" on:close>
   <vbox class="properties">
-    <GroupBox label={$t`Settings *=> Settings of the email`}>
+    <GroupBox label={$t`Settings`}>
       <hbox class="setting">
         <span>{$t`Importance *=> Importance of the email`}</span>
         <ComboBox label={$t`Importance *=> Importance of the email`} options={importanceOptions} bind:value={isImportant} width="160px" />

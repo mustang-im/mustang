@@ -29,7 +29,7 @@
         {#if canJoin}
           <a class="join" href={$event.onlineMeetingURL} target="_blank"
             on:click|stopPropagation on:dblclick|stopPropagation>
-            {$t`Join *=> Join the online meeting`}
+            {$t`Join`}
           </a>
         {/if}
         <EventIcons {event} />

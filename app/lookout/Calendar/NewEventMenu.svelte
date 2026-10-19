@@ -1,6 +1,6 @@
 <MenuItem label={$t`Appointment *=> Create a new appointment in the calendar`} icon={NewAppointmentIcon}
   onClick={() => CalendarActions.newEventAtSelection(null)} />
-<MenuItem label={$t`Meeting *=> Create a new meeting`} icon={NewMeetingIcon}
+<MenuItem label={$t`Meeting`} icon={NewMeetingIcon}
   onClick={() => CalendarActions.newEventAtSelection(null, "meeting")} />
 <MenuItem label={$t`All Day Event`} icon={AllDayIcon}
   onClick={() => CalendarActions.newEventAtSelection(null, "all-day")} />

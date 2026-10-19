@@ -1,21 +1,21 @@
-<RibbonTab label={$t`Message *=> Ribbon tab with the commands for writing the email`} contextual={isInline} isSelected={isInline}>
+<RibbonTab label={$t`Message`} contextual={isInline} isSelected={isInline}>
   <RibbonGroup label={$t`Clipboard *=> Ribbon group with Cut, Copy and Paste`} icon={PasteIcon}>
-    <RibbonSplitButton label={$t`Paste *=> Paste the content of the clipboard`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V *=> Keyboard shortcut`}
+    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => pasteClipboard(editor)}>
       <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => pasteClipboard(editor)} />
       <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => pasteClipboardAsText(editor)} />
     </RibbonSplitButton>
-    <RibbonButton label={$t`Cut *=> Cut the selected text to the clipboard`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X *=> Keyboard shortcut`}
+    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => cutSelection(editor)} />
-    <RibbonButton label={$t`Copy *=> Copy the selected text to the clipboard`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C *=> Keyboard shortcut`}
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => copySelection(editor)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Basic Text *=> Ribbon group with the basic text formatting`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
-      <RibbonToggleButton label={$t`Bold *=> Text formatting: bold font`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B *=> Keyboard shortcut`}
+      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B *=> Keyboard shortcut`}
         selected={!!editor?.isActive("bold")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBold())} />
-      <RibbonToggleButton label={$t`Italic *=> Text formatting: italic font`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I *=> Keyboard shortcut`}
+      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I *=> Keyboard shortcut`}
         selected={!!editor?.isActive("italic")} disabled={!editor}
         onClick={() => run(chain => chain.toggleItalic())} />
       <RibbonToggleButton label={$t`Underline *=> Text formatting: underlined text`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U *=> Keyboard shortcut`}
@@ -54,7 +54,7 @@
     <RibbonButton label={$t`Attach File`} icon={AttachIcon} size="small" onClick={onAddAttachment} />
     <RibbonButton label={$t`Link *=> Insert or edit a link in the text`} icon={LinkIcon} size="small" shortCutInfo={$t`Ctrl+K *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { $openEditorTool = { mail, tool: EditorTool.Link }; }} />
-    <RibbonMenuButton label={$t`Signature *=> Insert one of your signatures into the text`} icon={SignatureIcon} size="small">
+    <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon} size="small">
       <SignatureMenuItems {identity} {editor} on:editSignatures={() => { $openSignatures = mail; }} />
     </RibbonMenuButton>
   </RibbonGroup>

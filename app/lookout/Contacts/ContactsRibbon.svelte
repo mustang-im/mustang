@@ -1,6 +1,6 @@
 <Ribbon>
   <RibbonTab label={$t`Home *=> Ribbon tab with the most-used commands`}>
-    <RibbonGroup label={$t`New *=> Ribbon group with commands to create new items`}>
+    <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Contact`} icon={NewContactIcon}
         onClick={() => ContactActions.newContact(selectedAddressbook)}
         shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`} />
@@ -15,12 +15,12 @@
         <MenuDivider />
         <MenuItem label={$t`E-mail Message`} icon={MailIcon}
           onClick={() => ContactActions.writeMail($selectedPersons.contents)} />
-        <MenuItem label={$t`Meeting *=> Create a new meeting`} icon={MeetingIcon}
+        <MenuItem label={$t`Meeting`} icon={MeetingIcon}
           onClick={() => ContactActions.newMeeting($selectedPersons.contents)} />
       </RibbonMenuButton>
     </RibbonGroup>
-    <RibbonGroup label={$t`Delete *=> Ribbon group with commands to delete items`}>
-      <RibbonButton label={$t`Delete *=> Delete the selected contacts`} icon={DeleteIcon}
+    <RibbonGroup label={$t`Delete`}>
+      <RibbonButton label={$t`Delete`} icon={DeleteIcon}
         onClick={onDelete}
         disabled={!$selectedPersons.hasItems && $t`Select a contact first`}
         shortCutInfo={$t`Del *=> Delete key`} />
@@ -29,14 +29,14 @@
       <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
         onClick={() => ContactActions.writeMail($selectedPersons.contents)}
         disabled={!hasEmailAddress && $t`Select a contact with an email address`} />
-      <RibbonButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon}
+      <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
         onClick={() => ContactActions.newMeeting($selectedPersons.contents)}
         disabled={!hasEmailAddress && $t`Select a contact with an email address`} />
       <RibbonMenuButton label={$t`More *=> More ways to contact the person`} icon={MoreIcon} size="small"
         disabled={!selectedPerson && $t`Select a contact first`}>
-        <SubMenu label={$t`Call *=> Make a phone call to the contact`} icon={CallIcon} disabled={!phoneNumbers.length && $t`The contact has no phone number`}>
+        <SubMenu label={$t`Call`} icon={CallIcon} disabled={!phoneNumbers.length && $t`The contact has no phone number`}>
           {#each phoneNumbers as entry}
-            <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone *=> Phone number of unknown type`})`} icon={CallIcon}
+            <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone`})`} icon={CallIcon}
               onClick={() => ContactActions.call(entry.value)} />
           {/each}
         </SubMenu>
@@ -47,8 +47,8 @@
         <ChangeViewGallery views={contactViews} currentView={$view.value} on:change={event => setView(event.detail)} />
       </RibbonMenuButton>
     </RibbonGroup>
-    <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the selected items`}>
-      <RibbonMenuButton label={$t`Move *=> Move the selected contacts to another address book`} icon={MoveIcon}
+    <RibbonGroup label={$t`Actions`}>
+      <RibbonMenuButton label={$t`Move`} icon={MoveIcon}
         disabled={!$selectedPersons.hasItems && $t`Select a contact first`}>
         {#each addressbookSections as section}
           <MenuLabel label={section.mainAccount?.name ?? $t`My Contacts`} />
@@ -87,18 +87,18 @@
         disabled={!$addressbooks.some(addressbook => addressbook.canSync) && $t`None of your address books is on a server`} />
     </RibbonGroup>
   </RibbonTab>
-  <RibbonTab label={$t`Folder *=> Ribbon tab with commands for folders`}>
-    <RibbonGroup label={$t`New *=> Ribbon group with commands to create new items`}>
+  <RibbonTab label={$t`Folder`}>
+    <RibbonGroup label={$t`New`}>
       <RibbonButton label={$t`New Folder`} icon={NewFolderIcon}
         tooltip={$t`Create a new address book on this computer`}
         onClick={() => openSettingsDialog({ kind: "new-folder-account", folderKind: "addressbook", localOnly: true })} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the selected items`}>
-      <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename *=> Rename the selected folder`} icon={RenameIcon}
+    <RibbonGroup label={$t`Actions`}>
+      <RibbonButton label={$t`Rename Folder`} shortLabel={$t`Rename`} icon={RenameIcon}
         tooltip={$t`Rename Folder`}
         onClick={() => { renamingAddressbook = selectedAddressbook; }}
         disabled={!isWritableAddressbook && $t`Select an address book first`} />
-      <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete *=> Delete the selected folder`} icon={DeleteIcon}
+      <RibbonButton label={$t`Delete Folder`} shortLabel={$t`Delete`} icon={DeleteIcon}
         tooltip={$t`Delete Folder`}
         onClick={() => ContactActions.deleteFolder(selectedAddressbook)}
         disabled={!(selectedAddressbook && $addressbooks.contains(selectedAddressbook) && !selectedAddressbook.mainAccount) && $t`Only address books that you added yourself can be removed here`} />
@@ -115,7 +115,7 @@
       <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views *=> Choose another view of the items`} icon={ChangeViewIcon}>
         <ChangeViewGallery views={contactViews} currentView={$view.value} on:change={event => setView(event.detail)} />
       </RibbonMenuButton>
-      <RibbonButton label={$t`View Settings`} shortLabel={$t`Settings *=> Settings of the current view`} icon={ViewSettingsIcon}
+      <RibbonButton label={$t`View Settings`} shortLabel={$t`Settings`} icon={ViewSettingsIcon}
         disabled={!isTableView && $t`Available in the Phone and List views`}
         onClick={() => { isViewSettingsOpen = true; }} />
       <RibbonButton label={$t`Reset View`} icon={ResetViewIcon}
@@ -138,7 +138,7 @@
         onClick={() => { isShowColumnsOpen = true; }} />
     </RibbonGroup>
     <RibbonGroup label={$t`Layout *=> Ribbon group with settings for the window panes`}>
-      <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders *=> Folder pane: show or hide the list of folders`} icon={FolderPaneIcon}>
+      <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
         <MenuItem label={$t`Normal *=> Folder pane at full width`} checked={$folderPane.value != false} onClick={() => { $folderPane.value = true; }} />
         <MenuItem label={$t`Off *=> The pane is hidden`} checked={$folderPane.value == false} onClick={() => { $folderPane.value = false; }} />
       </RibbonMenuButton>
@@ -252,11 +252,11 @@
   const arrangeColumns = [ContactColumn.FullName, ContactColumn.Company, ContactColumn.JobTitle, ContactColumn.EMail];
 
   $: contactViews = [
-    { id: ContactView.People, label: $t`People *=> View that shows the contacts with their profile card`, icon: PeopleViewIcon, tooltip: $t`Contacts with their profile card` },
+    { id: ContactView.People, label: $t`People *=> or Persons - Short word, less than 10 characters`, icon: PeopleViewIcon, tooltip: $t`Contacts with their profile card` },
     { id: ContactView.BusinessCard, label: $t`Business Card`, icon: BusinessCardViewIcon, tooltip: $t`Contacts as business cards` },
     { id: ContactView.Card, label: $t`Card *=> View that shows the contacts as address cards`, icon: CardViewIcon, tooltip: $t`Contacts as address cards` },
-    { id: ContactView.Phone, label: $t`Phone *=> View that shows a phone list of the contacts`, icon: PhoneViewIcon, tooltip: $t`Phone list` },
-    { id: ContactView.List, label: $t`List *=> View that shows the items in a table`, icon: ListViewIcon, tooltip: $t`Contacts in a table` },
+    { id: ContactView.Phone, label: $t`Phone`, icon: PhoneViewIcon, tooltip: $t`Phone list` },
+    { id: ContactView.List, label: $t`List`, icon: ListViewIcon, tooltip: $t`Contacts in a table` },
   ];
   $: isTableView = $view.value == ContactView.Phone || $view.value == ContactView.List;
   $: hasEmailAddress = ContactActions.hasEmailAddress($selectedPersons.contents);

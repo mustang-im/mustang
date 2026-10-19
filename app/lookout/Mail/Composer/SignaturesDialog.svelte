@@ -1,5 +1,5 @@
 <Dialog title={$t`Signatures and Stationery`} on:close={onCancel} width="700px" height="640px"
-  okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK}>
+  okLabel={$t`OK`} onOK={onOK}>
   <hbox class="tab-strip" role="tablist">
     <button type="button" class="tab selected" role="tab" aria-selected="true">{$t`E-mail Signature`}</button>
   </hbox>
@@ -30,11 +30,11 @@
     <vbox flex class="section edit">
       <hbox class="caption">{$t`Edit signature`}</hbox>
       <hbox class="toolbar">
-        <button type="button" class="tool" class:pressed={isActive("bold")} title={$t`Bold *=> Text formatting: bold font`} aria-label={$t`Bold *=> Text formatting: bold font`}
+        <button type="button" class="tool" class:pressed={isActive("bold")} title={$t`Bold`} aria-label={$t`Bold`}
           disabled={!editor} on:click={() => run(chain => chain.toggleBold())}>
           <BoldIcon size={16} />
         </button>
-        <button type="button" class="tool" class:pressed={isActive("italic")} title={$t`Italic *=> Text formatting: italic font`} aria-label={$t`Italic *=> Text formatting: italic font`}
+        <button type="button" class="tool" class:pressed={isActive("italic")} title={$t`Italic`} aria-label={$t`Italic`}
           disabled={!editor} on:click={() => run(chain => chain.toggleItalic())}>
           <ItalicIcon size={16} />
         </button>
@@ -56,7 +56,7 @@
         {/if}
       </vbox>
       <hbox class="save-row">
-        <DialogButton label={$t`Save *=> Save the changed signature`} disabled={!isChanged(selected, edits) && $t`No changes`}
+        <DialogButton label={$t`Save`} disabled={!isChanged(selected, edits) && $t`No changes`}
           onClick={() => save(selected)} />
       </hbox>
     </vbox>

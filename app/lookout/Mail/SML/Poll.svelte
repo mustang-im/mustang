@@ -1,4 +1,4 @@
-<vbox class="poll" role="radiogroup" aria-label={poll.name || $t`Poll *=> A poll in the email: recipients choose one of the options`}>
+<vbox class="poll" role="radiogroup" aria-label={poll.name || $t`Poll`}>
   {#if poll.name}
     <span class="question">{poll.name}</span>
   {/if}

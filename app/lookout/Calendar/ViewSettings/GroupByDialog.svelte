@@ -1,4 +1,4 @@
-<Dialog title={$t`Group By`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="420px" on:close>
+<Dialog title={$t`Group By`} okLabel={$t`OK`} onOK={save} width="420px" on:close>
   <GroupBox label={$t`Group items by`}>
     <ComboBox options={groupOptions} bind:value={chosen} label={$t`Group items by`} width="200px" />
   </GroupBox>

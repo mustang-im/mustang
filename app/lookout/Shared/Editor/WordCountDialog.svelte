@@ -1,4 +1,4 @@
-<Dialog title={$t`Word Count`} on:close={onClose} width="360px" cancelLabel={$t`Close *=> Close the dialog`}>
+<Dialog title={$t`Word Count`} on:close={onClose} width="360px" cancelLabel={$t`Close`}>
   <vbox class="statistics">
     <hbox class="caption">{$t`Statistics *=> Heading of the counts of words and characters`}</hbox>
     <grid class="rows">

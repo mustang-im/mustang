@@ -8,7 +8,7 @@
     <div class="message-list"
       role="listbox"
       aria-multiselectable="true"
-      aria-label={$t`Messages *=> List of the emails in the folder`}
+      aria-label={$t`Messages`}
       tabindex="0"
       bind:this={listEl}
       bind:clientHeight={viewHeight}
@@ -66,7 +66,7 @@
   {:else}
     <vbox flex class="empty">
       {#if isLoading}
-        {$t`Loading… *=> Waiting for the data to load`}
+        {$t`Loading…`}
       {:else}
         {$t`We didn't find anything to show here`}
       {/if}

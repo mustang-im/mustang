@@ -71,7 +71,7 @@ export const phoneSlots: readonly ContactSlot[] = [
 export const addressSlots: readonly ContactSlot[] = [
   new ContactSlot("business", gt`Business *=> Business address or phone number`, "work", false, 0),
   new ContactSlot("home", gt`Home *=> Private address or phone number`, "home", false, 0),
-  new ContactSlot("other", gt`Other *=> Postal address that is not home or work`, "other", false, 0),
+  new ContactSlot("other", gt`Other *=> Email address or phone number that is not home or work`, "other", false, 0),
 ];
 
 export function phoneSlot(id: string): ContactSlot {

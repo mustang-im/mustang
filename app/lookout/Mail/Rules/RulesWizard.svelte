@@ -29,7 +29,7 @@
         {page == RuleWizardPage.Conditions ? $t`Step 1: Select condition(s)` : $t`Step 1: Select action(s)`}
       </span>
       <vbox class="list" role="group"
-        aria-label={page == RuleWizardPage.Conditions ? $t`Conditions *=> Rule conditions: which emails the rule applies to` : $t`Actions *=> Rule actions: what the rule does with the email`}>
+        aria-label={page == RuleWizardPage.Conditions ? $t`Conditions *=> Rule conditions: which emails the rule applies to` : $t`Actions`}>
         {#each items as item (item.id)}
           <hbox class="row" class:selected={selectedItem == item}>
             <Checkbox checked={model.isChecked(item)} on:change={event => onCheck(item, event.detail)}>
@@ -55,7 +55,7 @@
     <hbox class="divider" />
   </vbox>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
+    <DialogButton label={$t`Cancel`} onClick={onClose} />
     <DialogButton label={$t`< Back`} disabled={!model.canGoBack} onClick={onBack} />
     <DialogButton label={$t`Next >`} primary={page != RuleWizardPage.Finish}
       disabled={model.nextDisabledReason ?? false} onClick={onNext} />

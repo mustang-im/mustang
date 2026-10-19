@@ -1,5 +1,5 @@
 <Dialog title={$t`New Search Folder`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={selected.missingValue(values)}
   onOK={onCreate}
   width="480px"
@@ -36,7 +36,7 @@
   </vbox>
 </Dialog>
 {#if choosing == SearchFolderTemplateID.Person}
-  <SearchPersonDialog fieldLabel={$t`From *=> Sender of the email`} person={values.person}
+  <SearchPersonDialog fieldLabel={$t`From`} person={values.person}
     on:pick={event => { values.person = event.detail; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Categorized}
   <ColorCategoriesDialog isChooseMode chosen={values.tags}

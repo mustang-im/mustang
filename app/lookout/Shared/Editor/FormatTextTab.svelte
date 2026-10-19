@@ -1,21 +1,21 @@
 <RibbonTab label={$t`Format Text *=> Ribbon tab with commands to format the text`}>
   <RibbonGroup label={$t`Clipboard *=> Ribbon group with Cut, Copy and Paste`} icon={PasteIcon}>
-    <RibbonSplitButton label={$t`Paste *=> Paste the content of the clipboard`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V *=> Keyboard shortcut`}
+    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => pasteClipboard(editor)}>
       <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => pasteClipboard(editor)} />
       <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => pasteClipboardAsText(editor)} />
     </RibbonSplitButton>
-    <RibbonButton label={$t`Cut *=> Cut the selected text to the clipboard`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X *=> Keyboard shortcut`}
+    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => cutSelection(editor)} />
-    <RibbonButton label={$t`Copy *=> Copy the selected text to the clipboard`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C *=> Keyboard shortcut`}
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => copySelection(editor)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Font *=> Ribbon group with commands for the font, e.g. bold`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
-      <RibbonToggleButton label={$t`Bold *=> Text formatting: bold font`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B *=> Keyboard shortcut`}
+      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B *=> Keyboard shortcut`}
         selected={!!editor?.isActive("bold")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBold())} />
-      <RibbonToggleButton label={$t`Italic *=> Text formatting: italic font`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I *=> Keyboard shortcut`}
+      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I *=> Keyboard shortcut`}
         selected={!!editor?.isActive("italic")} disabled={!editor}
         onClick={() => run(chain => chain.toggleItalic())} />
       <RibbonToggleButton label={$t`Underline *=> Text formatting: underlined text`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U *=> Keyboard shortcut`}
@@ -29,7 +29,7 @@
         selected={!!editor?.isActive("code")} disabled={!editor}
         onClick={() => run(chain => chain.toggleCode())} />
     </RibbonButtonRow>
-    <RibbonButtonRow label={$t`Clear *=> Group with the command to remove the text formatting`}>
+    <RibbonButtonRow label={$t`Clear`}>
       <RibbonButton label={$t`Clear Formatting`} icon={ClearFormattingIcon}
         disabled={!editor}
         onClick={() => run(chain => chain.clearNodes().unsetAllMarks())} />
@@ -50,8 +50,8 @@
         disabled={!editor?.can().sinkListItem("listItem") && $t`Only list items can be indented`}
         onClick={() => run(chain => chain.sinkListItem("listItem"))} />
     </RibbonButtonRow>
-    <RibbonButtonRow label={$t`Quote *=> Text formatting: quote, e.g. of the original email`}>
-      <RibbonToggleButton label={$t`Quote *=> Text formatting: quote, e.g. of the original email`} icon={QuoteIcon}
+    <RibbonButtonRow label={$t`Quote`}>
+      <RibbonToggleButton label={$t`Quote`} icon={QuoteIcon}
         tooltip={$t`Quote of the original email`}
         selected={!!editor?.isActive("blockquote")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBlockquote())} />

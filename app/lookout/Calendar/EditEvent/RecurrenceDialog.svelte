@@ -1,16 +1,16 @@
 <Dialog title={isMeeting ? $t`Meeting Recurrence` : $t`Appointment Recurrence`}
-  okLabel={$t`OK *=> Confirm and close the dialog`} okDisabled={okDisabled} onOK={onOK} width="640px" on:close={onClose}>
+  okLabel={$t`OK`} okDisabled={okDisabled} onOK={onOK} width="640px" on:close={onClose}>
   <vbox class="groups">
     <GroupBox label={$t`Appointment time`}>
       <grid class="appointment-time">
-        <span class="label">{$t`Start *=> Start time of the event`}</span>
-        <TimeInput time={startTime} options={startOptions} label={$t`Start *=> Start time of the event`} disabled={allDay}
+        <span class="label">{$t`Start`}</span>
+        <TimeInput time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
           on:change={ev => setStartTime(ev.detail)} />
         <span class="label">{$t`End *=> End time of the event`}</span>
         <TimeInput time={endTime} options={endOptions} label={$t`End *=> End time of the event`} disabled={allDay}
           on:change={ev => setEndTime(ev.detail)} />
-        <span class="label">{$t`Duration *=> Length of the event`}</span>
-        <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration *=> Length of the event`} width="132px"
+        <span class="label">{$t`Duration`}</span>
+        <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
           on:change={ev => setDuration(ev.detail)} />
       </grid>
     </GroupBox>
@@ -25,7 +25,7 @@
         <vbox class="options">
           {#if pattern.frequency == Frequency.Daily}
             <hbox class="line">
-              <Radio label={$t`Every *=> as in: Every 3 days`} name="daily" value="interval" bind:group={pattern.dailyMode} />
+              <Radio label={$t`Every`} name="daily" value="interval" bind:group={pattern.dailyMode} />
               <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval *=> Number of days, weeks, months or years between the repetitions`}
                 on:change={() => { pattern.dailyMode = "interval"; }} />
               {$plural(pattern.interval, { one: "day", other: "days" })}
@@ -93,7 +93,7 @@
     <GroupBox label={$t`Range of recurrence`}>
       <hbox class="range">
         <hbox class="range-start">
-          <span class="label">{$t`Start *=> Start date of the recurring series`}</span>
+          <span class="label">{$t`Start`}</span>
           <DateField required date={rangeStart} label={$t`Start of the series`} on:change={ev => setRangeStart(ev.detail)} />
         </hbox>
         <vbox class="range-end">

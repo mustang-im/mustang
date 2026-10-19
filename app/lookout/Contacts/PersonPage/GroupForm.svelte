@@ -1,7 +1,7 @@
 <vbox flex class="group-form-page" bind:this={pageEl}>
   <Ribbon>
     <RibbonTab label={$t`Contact Group`}>
-      <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the open item`}>
+      <RibbonGroup label={$t`Actions`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
           onClick={saveAndClose} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`} />
         <RibbonButton label={$t`Delete Group`} icon={DeleteIcon}
@@ -10,7 +10,7 @@
       <RibbonGroup label={$t`Show *=> Ribbon group to choose which page of the form is shown`}>
         <RibbonToggleButton label={$t`Members *=> Page with the members of the contact group`} icon={MembersIcon}
           selected={page == "members"} onClick={() => { page = "members"; }} />
-        <RibbonToggleButton label={$t`Notes *=> Page with the notes about the contact group`} icon={NotesIcon}
+        <RibbonToggleButton label={$t`Notes`} icon={NotesIcon}
           selected={page == "notes"} onClick={() => { page = "notes"; }} />
       </RibbonGroup>
       <RibbonGroup label={$t`Members *=> Ribbon group with commands for the members of the contact group`}>
@@ -27,7 +27,7 @@
         <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([group])}
           disabled={!hasEmailAddress && $t`Add members with an email address first`} />
-        <RibbonButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon}
+        <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
           onClick={() => ContactActions.newMeeting([group])}
           disabled={!hasEmailAddress && $t`Add members with an email address first`} />
       </RibbonGroup>
@@ -37,11 +37,11 @@
   <FormCard title={$group.name || $t`Untitled *=> Placeholder for a contact or group without a name`} kind={$t`Contact Group`}>
     <vbox flex class="form-body">
       <hbox class="name-row">
-        <label for="group-name">{$t`Name *=> Name of the contact group`}</label>
+        <label for="group-name">{$t`Name`}</label>
         <input id="group-name" type="text" class="lo-text-field" bind:value={group.name} bind:this={nameInput} />
       </hbox>
       {#if page == "notes"}
-        <textarea class="lo-text-field notes" bind:value={group.description} aria-label={$t`Notes *=> Notes about the contact`} />
+        <textarea class="lo-text-field notes" bind:value={group.description} aria-label={$t`Notes`} />
       {:else}
         <ListView items={sortedMembers} columns={memberColumns} bind:selected={selectedMember}
           label={$t`Members *=> Members of the contact group`} height="auto" classes="members"
@@ -114,7 +114,7 @@
 
   $: members = group.participants;
   $: sortedMembers = [...$members.contents].sort(LetterIndex.compareByName);
-  $: memberColumns = [ { label: $t`Name *=> Name of the person`, width: "minmax(0, 1fr)" }, { label: $t`E-mail *=> Email address of the person`, width: "minmax(0, 1fr)" } ];
+  $: memberColumns = [ { label: $t`Name`, width: "minmax(0, 1fr)" }, { label: $t`E-mail *=> Email address of the person`, width: "minmax(0, 1fr)" } ];
   $: hasEmailAddress = ContactActions.hasEmailAddress([$group]) && $members.hasItems;
 
   onMount(async () => {

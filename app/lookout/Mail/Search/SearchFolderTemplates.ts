@@ -44,7 +44,7 @@ export class SearchFolderTemplate {
       new SearchFolderTemplate(SearchFolderTemplateID.Large, gt`Large mail`),
       new SearchFolderTemplate(SearchFolderTemplateID.Attachments, gt`Mail with attachments`),
       new SearchFolderTemplate(SearchFolderTemplateID.Words, gt`Mail with specific words`),
-      new SearchFolderTemplate(SearchFolderTemplateID.Custom, gt`Create a custom Search Folder`, gt`Custom *=> Group of search folder templates with your own criteria`),
+      new SearchFolderTemplate(SearchFolderTemplateID.Custom, gt`Create a custom Search Folder`, gt`Custom`),
     ];
   }
 

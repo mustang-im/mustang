@@ -1,5 +1,5 @@
-<Dialog title={$t`Filter *=> Show only some of the emails in the folder`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="540px" on:close>
-  <DialogTabs tabs={[{ id: "messages", label: $t`Messages *=> Dialog tab with the filter for the email text` }, { id: "more", label: $t`More Choices` }]}
+<Dialog title={$t`Filter *=> Show only some of the emails in the folder`} okLabel={$t`OK`} onOK={save} width="540px" on:close>
+  <DialogTabs tabs={[{ id: "messages", label: $t`Messages` }, { id: "more", label: $t`More Choices` }]}
     bind:selected={tab} />
   <vbox class="tab-page">
     {#if tab == "messages"}
@@ -44,7 +44,7 @@
 
   const inOptions: ComboOption<string>[] = [{ value: "body", label: $t`subject field and message body *=> as in: Search for the words in the subject field and message body` }];
   const readOptions: ComboOption<boolean>[] = [
-    { value: false, label: $t`unread *=> as in: Only items that are unread` },
+    { value: false, label: $t`unread` },
     { value: true, label: $t`read *=> as in: Only items that are read` },
   ];
   const attachmentOptions: ComboOption<boolean>[] = [

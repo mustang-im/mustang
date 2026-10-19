@@ -1,11 +1,11 @@
 <Dialog title={$t`Move Folder`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!target && $t`Select a folder first`}
   onOK={onMove}
   on:close>
   <vbox class="dialog-content">
     <span class="caption">{$t`Move the folder "${FolderTreeActions.displayName(folder)}" to the folder`}</span>
-    <FolderPicker label={$t`Folders *=> List of the folders`} bind:selectedFolder={target}
+    <FolderPicker label={$t`Folders`} bind:selectedFolder={target}
       disableFolder={candidate => !FolderTreeActions.canMoveFolderInto(folder, candidate) && $t`The folder cannot be moved there`} />
   </vbox>
 </Dialog>

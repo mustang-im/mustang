@@ -1,8 +1,8 @@
-<Dialog title={$t`Copy rules to`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} on:close={onClose} width="460px"
+<Dialog title={$t`Copy rules to`} okLabel={$t`OK`} onOK={onOK} on:close={onClose} width="460px"
   okDisabled={RuleListActions.cannotCopyTo(rule, target)}>
   <hbox class="copy-row">
-    <span>{$t`Folder *=> Folder of the account to which the rules are copied`}</span>
-    <ComboBox label={$t`Folder *=> Folder of the account to which the rules are copied`} options={accountOptions($accounts.contents)} bind:value={target} width="100%" />
+    <span>{$t`Folder`}</span>
+    <ComboBox label={$t`Folder`} options={accountOptions($accounts.contents)} bind:value={target} width="100%" />
   </hbox>
 </Dialog>
 
@@ -26,7 +26,7 @@
   function accountOptions(mailAccounts: MailAccount[]): ComboOption<MailAccount>[] {
     return mailAccounts.map(account => ({
       value: account,
-      label: `${account.inbox?.name || $t`Inbox *=> Folder for incoming emails`} [${account.emailAddress || account.name}]`,
+      label: `${account.inbox?.name || $t`Inbox`} [${account.emailAddress || account.name}]`,
       disabled: !!RuleListActions.cannotCopyTo(rule, account),
     }));
   }

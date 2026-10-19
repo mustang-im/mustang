@@ -13,7 +13,7 @@ export const messageBoxQuestion = writable<MessageBoxQuestion | null>(null);
 
 let pendingQuestion: MessageBoxQuestion | null = null;
 
-export function showMessageBox(title: string, message: string, okLabel = gt`OK *=> Confirm and close the dialog`, cancelLabel = gt`Cancel *=> Close the dialog without making changes`): Promise<boolean> {
+export function showMessageBox(title: string, message: string, okLabel = gt`OK`, cancelLabel = gt`Cancel`): Promise<boolean> {
   pendingQuestion?.answer(false);
   return new Promise(resolve => {
     let question: MessageBoxQuestion = {
@@ -36,5 +36,5 @@ export function showMessageBox(title: string, message: string, okLabel = gt`OK *
 }
 
 export function askYesNo(title: string, message: string): Promise<boolean> {
-  return showMessageBox(title, message, gt`Yes *=> Agree to the question in the dialog`, gt`No *=> Disagree with the question in the dialog`);
+  return showMessageBox(title, message, gt`Yes`, gt`No`);
 }

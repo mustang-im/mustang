@@ -1,10 +1,10 @@
 <vbox flex class="contact-form-page" bind:this={pageEl}>
   <Ribbon>
     <RibbonTab label={$t`Contact *=> Ribbon tab with commands for this contact`}>
-      <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the open item`}>
+      <RibbonGroup label={$t`Actions`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
           onClick={saveAndClose} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`} />
-        <RibbonButton label={$t`Delete *=> Delete this contact`} icon={DeleteIcon}
+        <RibbonButton label={$t`Delete`} icon={DeleteIcon}
           onClick={deleteIt} />
         <RibbonSplitButton label={$t`Save & New`} icon={SaveNewIcon} size="small"
           onClick={saveAndNew}>
@@ -14,9 +14,9 @@
         </RibbonSplitButton>
       </RibbonGroup>
       <RibbonGroup label={$t`Show *=> Ribbon group to choose which page of the form is shown`}>
-        <RibbonToggleButton label={$t`General *=> Page with the general information of the contact`} icon={GeneralIcon}
+        <RibbonToggleButton label={$t`General`} icon={GeneralIcon}
           selected={page == "general"} onClick={() => { page = "general"; }} />
-        <RibbonToggleButton label={$t`Details *=> Page with more details of the contact`} icon={DetailsIcon}
+        <RibbonToggleButton label={$t`Details`} icon={DetailsIcon}
           selected={page == "details"} onClick={() => { page = "details"; }} />
         <RibbonToggleButton label={$t`Certificates *=> Page with the certificates (Digital IDs) of the contact`} icon={CertificatesIcon}
           selected={page == "certificates"} onClick={() => { page = "certificates"; }} />
@@ -27,13 +27,13 @@
         <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon} size="small"
           onClick={() => ContactActions.writeMail([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
-        <RibbonButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon} size="small"
+        <RibbonButton label={$t`Meeting`} icon={MeetingIcon} size="small"
           onClick={() => ContactActions.newMeeting([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
         <RibbonMenuButton label={$t`More *=> More ways to contact the person`} icon={MoreIcon} size="small">
-          <SubMenu label={$t`Call *=> Make a phone call to the contact`} icon={CallIcon} disabled={!$phoneNumbers.hasItems && $t`Enter a phone number first`}>
+          <SubMenu label={$t`Call`} icon={CallIcon} disabled={!$phoneNumbers.hasItems && $t`Enter a phone number first`}>
             {#each $phoneNumbers.each as entry}
-              <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone *=> Phone number of unknown type`})`} icon={CallIcon}
+              <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone`})`} icon={CallIcon}
                 onClick={() => ContactActions.call(entry.value)} />
             {/each}
           </SubMenu>
@@ -64,7 +64,7 @@
       {:else if page == "details"}
         <vbox class="column main">
           <div class="fields">
-            <label for="contact-department">{$t`Department *=> Department of the person in the company`}</label>
+            <label for="contact-department">{$t`Department`}</label>
             <input id="contact-department" type="text" class="lo-text-field" bind:value={person.department} />
           </div>
         </vbox>
@@ -78,7 +78,7 @@
                   aria-label={$t`Full Name`} />
               </vbox>
             </hbox>
-            <label for="contact-company">{$t`Company *=> Company where the person works`}</label>
+            <label for="contact-company">{$t`Company`}</label>
             <input id="contact-company" type="text" class="lo-text-field" bind:value={person.company} />
             <label for="contact-position">{$t`Job title`}</label>
             <input id="contact-position" type="text" class="lo-text-field" bind:value={person.position} />
@@ -132,7 +132,7 @@
             {#if preferredPhone}<span class="card-detail">{preferredPhone}</span>{/if}
             {#if preferredEmail}<span class="card-detail link">{preferredEmail}</span>{/if}
           </vbox>
-          <label for="contact-notes" class="notes-label">{$t`Notes *=> Notes about the contact`}</label>
+          <label for="contact-notes" class="notes-label">{$t`Notes`}</label>
           <textarea id="contact-notes" class="lo-text-field" bind:value={person.notes} />
         </vbox>
       {/if}

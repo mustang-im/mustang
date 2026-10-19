@@ -1,5 +1,5 @@
 <Dialog title={$t`Open a Shared Calendar`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!$persons.hasItems && $t`Enter a name first`}
   onOK={onOK}
   width="480px"
@@ -8,16 +8,16 @@
   <vbox class="fields">
     {#if accounts.length > 1}
       <hbox class="field">
-        <span class="label">{$t`Account *=> Your account with which the shared calendar is opened`}</span>
+        <span class="label">{$t`Account`}</span>
         <ComboBox options={accounts.map(listed => ({ value: listed, label: listed.name }))}
-          bind:value={account} label={$t`Account *=> Your account with which the shared calendar is opened`} />
+          bind:value={account} label={$t`Account`} />
       </hbox>
     {/if}
     <hbox class="field">
       <DialogButton label={$t`Name… *=> Choose the colleague from the address book`} tooltip={$t`Choose the person from the address book`}
         onClick={onPick} />
       <hbox class="person-field">
-        <MailAutocomplete addresses={persons} label={$t`Name *=> Name of the person`} />
+        <MailAutocomplete addresses={persons} label={$t`Name`} />
       </hbox>
     </hbox>
     <div class="hint lo-secondary">{$t`Type the name or email address of a colleague who shared their calendar with you`}</div>
@@ -25,7 +25,7 @@
 </Dialog>
 
 {#if isPicking}
-  <SelectNamesDialog title={$t`Select Name: Calendar`} persons={picks} label={$t`Calendar *=> Field for the person whose calendar should be opened`} single
+  <SelectNamesDialog title={$t`Select Name: Calendar`} persons={picks} label={$t`Calendar`} single
     on:ok={onPicked} on:close={onPickClosed} />
 {/if}
 

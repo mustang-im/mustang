@@ -1,4 +1,4 @@
-<Dialog title={$t`Add New Member`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="420px"
+<Dialog title={$t`Add New Member`} okLabel={$t`OK`} onOK={onOK} width="420px"
   okDisabled={!emailAddress.includes("@") && $t`Enter an email address`}
   on:close>
   <vbox class="fields">

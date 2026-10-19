@@ -10,7 +10,7 @@
       disabled={MessageActions.disableGetNewMail(folder)}
       shortCutInfo={$t`Shift+F9 *=> Keyboard shortcut`} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Server *=> Ribbon group with commands that work on the mail server`}>
+  <RibbonGroup label={$t`Server`}>
     <RibbonButton label={$t`Download All Messages`} shortLabel={$t`Download *=> Download all emails of the selected folder`} icon={DownloadAllIcon} size="small"
       tooltip={$t`Download all messages of the current folder, for offline use and search`}
       onClick={() => MessageActions.downloadAll(folder)}

@@ -14,7 +14,7 @@
   <div class="list-heading">{$t`People with access`}</div>
   <vbox class="persons" role="list">
     {#if isLoading}
-      <hbox class="message lo-secondary">{$t`Loading… *=> Waiting for the data to load`}</hbox>
+      <hbox class="message lo-secondary">{$t`Loading…`}</hbox>
     {:else}
       {#each sharedWith as person (person.emailAddress)}
         <hbox class="person" role="listitem">
@@ -25,7 +25,7 @@
               <span class="person-address">{person.emailAddress}</span>
             {/if}
           </vbox>
-          <button type="button" class="remove" title={$t`Remove *=> Stop sharing the calendar with this person`} aria-label={$t`Remove ${person.name || person.emailAddress}`}
+          <button type="button" class="remove" title={$t`Remove`} aria-label={$t`Remove ${person.name || person.emailAddress}`}
             on:click={() => catchErrors(() => onRemove(person))}>
             <RemoveIcon size="16" />
           </button>

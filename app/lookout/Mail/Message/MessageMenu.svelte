@@ -2,12 +2,12 @@
   <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo={$t`Ctrl+P *=> Keyboard shortcut`}
     onClick={() => { $printMessage = single; }} />
   <MenuDivider />
-  <MenuItem label={$t`Reply *=> Reply to the sender of the selected email`} icon={ReplyIcon} shortCutInfo={$t`Ctrl+R *=> Keyboard shortcut`}
+  <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo={$t`Ctrl+R *=> Keyboard shortcut`}
     onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())} />
   <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo={$t`Ctrl+Shift+R *=> Keyboard shortcut`}
     disabled={!(single.allRecipients().length > 1 && !(single.bcc.hasItems && !single.outgoing)) && $t`There are no other recipients`}
     onClick={() => MessageActions.respond(single, single.compose.replyAll())} />
-  <MenuItem label={$t`Forward *=> Forward the selected email to other people`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
+  <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
     onClick={event => MessageActions.forward(single, event as MouseEvent)} />
   <MenuDivider />
 {/if}
@@ -33,16 +33,16 @@
     <RulesMenuItems message={single} account={single.folder?.account} />
   </SubMenu>
 {/if}
-<SubMenu label={$t`Move *=> Move the selected emails to another folder`} icon={MoveIcon}>
+<SubMenu label={$t`Move`} icon={MoveIcon}>
   <MoveMenuItems messages={messages.contents} />
 </SubMenu>
 <MenuDivider />
 <SubMenu label={$t`Junk *=> Menu to mark the selected emails as junk or not junk`} icon={JunkIcon}>
   <JunkMenuItems messages={messages.contents} />
 </SubMenu>
-<MenuItem label={$t`Delete *=> Delete the selected emails`} icon={DeleteIcon} shortCutInfo={$t`Del *=> Delete key`}
+<MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Del *=> Delete key`}
   onClick={async () => { await Promise.all(messages.contents.map(message => message.deleteMessage())); }} />
-<MenuItem label={$t`Archive *=> Move the selected emails to the archive folder`} icon={ArchiveIcon} shortCutInfo={$t`Backspace *=> Backspace key`}
+<MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo={$t`Backspace *=> Backspace key`}
   onClick={() => MessageActions.archive(messages.contents)} />
 {#if single}
   <MenuDivider />

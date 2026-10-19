@@ -60,7 +60,7 @@
   $: summary = $participants && responseSummary(event);
   $: rows = sortForTracking($participants, sortColumn, ascending);
   $: columns = [
-    { id: "name" as TrackingColumn, label: $t`Name *=> Name of the person` },
+    { id: "name" as TrackingColumn, label: $t`Name` },
     { id: "attendance" as TrackingColumn, label: $t`Attendance *=> Role of the attendee: organizer or required attendee` },
     { id: "response" as TrackingColumn, label: $t`Response *=> Answer of the attendee to the invitation` },
   ];

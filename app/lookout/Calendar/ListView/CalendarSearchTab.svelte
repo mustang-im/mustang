@@ -1,4 +1,4 @@
-<RibbonTab label={$t`Search *=> Ribbon tab with search commands`} isSelected>
+<RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Scope *=> Ribbon group to choose where to search`}>
     <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon}
       selected={$options.scope == CalendarSearchScope.CurrentFolder}
@@ -29,7 +29,7 @@
       selected={$options.isRecurring}
       onClick={() => update({ isRecurring: !$options.isRecurring })} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Close *=> Ribbon group with the command to close the search`}>
+  <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc *=> Escape key`}
       onClick={closeSearch} />
   </RibbonGroup>
@@ -62,7 +62,7 @@
   $: chosenOrganizer = organizers.find(organizer => organizer.emailAddress == $options.organizerEMail);
   $: organizerLabel = $options.organizerEMail
     ? chosenOrganizer?.name || $options.organizerEMail
-    : $t`Organizer *=> Refine the search by the person who organized the event`;
+    : $t`Organizer *=> The person who invited to this meeting`;
 
   function update(change: Partial<CalendarSearchOptions>) {
     $options = { ...$options, ...change };

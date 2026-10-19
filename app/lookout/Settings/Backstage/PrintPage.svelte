@@ -1,15 +1,15 @@
 <hbox flex class="print-page">
   <vbox class="options">
-    <h1>{$t`Print *=> Print the selected email`}</h1>
+    <h1>{$t`Print`}</h1>
     <hbox class="print-row">
-      <button class="print-button" disabled={!message} title={message ? $t`Print *=> Print the selected email` : $t`Select a message first`}
+      <button class="print-button" disabled={!message} title={message ? $t`Print` : $t`Select a message first`}
         on:click={onPrint}>
         <PrintIcon size={32} strokeWidth={1.25} />
-        <span>{$t`Print *=> Print the selected email`}</span>
+        <span>{$t`Print`}</span>
       </button>
       <span class="hint">{$t`Specify how you want the item to be printed and then click Print. You choose the printer in the next step.`}</span>
     </hbox>
-    <h2>{$t`Settings *=> Section with the print settings`}</h2>
+    <h2>{$t`Settings`}</h2>
     <vbox class="styles" role="listbox" aria-label={$t`Print style`}>
       <hbox class="style selected" role="option" aria-selected="true">
         <hbox class="style-icon"><MemoStyleIcon size={28} strokeWidth={1.25} /></hbox>
@@ -23,7 +23,7 @@
         <hbox class="sheet-header">{$message.subject ?? ""}</hbox>
         <vbox flex class="sheet-body">
           {#await message.loadBody()}
-            <span class="lo-secondary">{$t`Loading… *=> Waiting for the data to load`}</span>
+            <span class="lo-secondary">{$t`Loading…`}</span>
           {:then}
             <!-- <copied from="../../../frontend/Mail/Message/HTMLDisplay.svelte">, without the dark colors of content-body.css, because paper is white -->
             <WebView html={$message.html} headHTML={kHeadHTML} allowServerCalls={false} title={$t`Print Preview`} />

@@ -9,7 +9,7 @@
         <span class="title">{$event.title || $t`Untitled *=> Placeholder for an event without a title`}</span>
         <span class="kind">– {kindLabel}</span>
       </h1>
-      <hbox class="calendar-name lo-secondary" title={$t`Calendar *=> The calendar in which the event is saved`}>
+      <hbox class="calendar-name lo-secondary" title={$t`Calendar`}>
         <span class="dot" style:background-color={$calendar?.color ?? "var(--lo-accent)"} />
         {$calendar?.name ?? ""}
       </hbox>
@@ -17,7 +17,7 @@
       {#if showsEditor}
         <UndoRedoButtons {editor} />
       {/if}
-      <button class="close" title={$t`Close *=> Close the event form`} aria-label={$t`Close *=> Close the event form`} on:click={onCloseRequest}>
+      <button class="close" title={$t`Close`} aria-label={$t`Close`} on:click={onCloseRequest}>
         <CloseIcon size={18} />
       </button>
     </hbox>
@@ -133,7 +133,7 @@
   $: showTracking = isSent && isTrackingSelected;
   $: showsEditor = !isIncoming && !showScheduling && !showTracking;
   $: $event, $participants, $parentEvent, $shownCalendarEvents, updateState(editor);
-  $: sendLabel = isSaved ? $t`Send Update` : $t`Send *=> Send the invitation to the attendees`;
+  $: sendLabel = isSaved ? $t`Send Update` : $t`Send`;
   $: sendDisabled = saveDisabled || (isSaved && !hasChanges ? $t`There are no changes to send` : false);
   $: saveChangesText = changesText(isMeeting, isSaved);
 
@@ -163,11 +163,11 @@
 
   function changesText(isMeeting: boolean, isSaved: boolean) {
     if (isMeeting && !isSaved) {
-      return { question: $t`This meeting invitation has not been sent yet. Do you want to send it now?`, save: $t`Send *=> Send the invitation to the attendees`, discard: $t`Don't Send` };
+      return { question: $t`This meeting invitation has not been sent yet. Do you want to send it now?`, save: $t`Send`, discard: $t`Don't Send` };
     } else if (isMeeting) {
       return { question: $t`Do you want to send an update with your changes to the attendees?`, save: $t`Send Update`, discard: $t`Discard Changes` };
     }
-    return { question: $t`Do you want to save changes?`, save: $t`Save *=> Save the changes to the event`, discard: $t`Don't Save` };
+    return { question: $t`Do you want to save changes?`, save: $t`Save`, discard: $t`Don't Save` };
   }
 
   async function onSave() {
@@ -178,7 +178,7 @@
     if (flow.needsSeriesChoice) {
       seriesChoice = {
         title: flow.isMeeting ? $t`Recurring Meeting` : $t`Recurring Appointment`,
-        okLabel: flow.willSend ? $t`Send *=> Send the invitation to the attendees` : $t`Save *=> Save the changes to the event`,
+        okLabel: flow.willSend ? $t`Send` : $t`Save`,
         choices: flow.seriesChoices(),
         onChoose: choice => flow.saveWith(choice),
       };

@@ -17,14 +17,14 @@
     <span class="row-label">{$t`When *=> Date and time of the meeting`}</span>
     <span class="value">{when}</span>
     {#if $event.location}
-      <span class="row-label">{$t`Location *=> Where the event takes place`}</span>
+      <span class="row-label">{$t`Location`}</span>
       <span class="value">{$event.location}</span>
     {/if}
     {#if $event.isOnline && $event.onlineMeetingURL}
       <span class="row-label">{$t`Online meeting`}</span>
       <hbox class="value online">
         <button class="join" on:click={() => catchErrors(() => openExternalURL(event.onlineMeetingURL))}>
-          <JoinIcon size={16} /> {$t`Join *=> Join the online meeting`}
+          <JoinIcon size={16} /> {$t`Join`}
         </button>
         <span class="url lo-secondary">{$event.onlineMeetingURL}</span>
       </hbox>

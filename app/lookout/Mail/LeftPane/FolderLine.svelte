@@ -20,7 +20,7 @@
   >
   <button class="expander" class:hidden={!hasChildren} tabindex="-1"
     on:click|stopPropagation={onToggle}
-    aria-label={isExpanded ? $t`Collapse *=> Hide the entries under this one` : $t`Expand *=> Show the entries under this one`}>
+    aria-label={isExpanded ? $t`Collapse` : $t`Expand`}>
     <ChevronIcon size={12} class="chevron {isExpanded ? 'expanded' : ''}" />
   </button>
   <hbox class="icon">

@@ -1,10 +1,10 @@
-<Dialog title={$t`Check Address`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="440px" on:close>
+<Dialog title={$t`Check Address`} okLabel={$t`OK`} onOK={onOK} width="440px" on:close>
   <GroupBox label={$t`Address details`}>
     <FormGrid>
       <span>{$t`Street *=> Street and house number of the person or company`}</span>
       <TextField bind:value={street} label={$t`Street *=> Street and house number of the person or company`} multiline rows={2} />
-      <span>{$t`City *=> City of the person or company`}</span>
-      <TextField bind:value={city} label={$t`City *=> City of the person or company`} />
+      <span>{$t`City`}</span>
+      <TextField bind:value={city} label={$t`City`} />
       <span>{$t`State/Province *=> State or province of the person or company`}</span>
       <TextField bind:value={state} label={$t`State/Province *=> State or province of the person or company`} />
       <span>{$t`ZIP/Postal code`}</span>

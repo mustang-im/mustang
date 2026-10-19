@@ -1,4 +1,4 @@
-<Dialog title={$t`Sort *=> Change the sort order of the email list`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="440px" on:close>
+<Dialog title={$t`Sort *=> Change the sort order of the email list`} okLabel={$t`OK`} onOK={save} width="440px" on:close>
   <GroupBox label={$t`Sort items by`}>
     <hbox class="field-row">
       <ComboBox label={$t`Sort items by`} options={fieldOptions} bind:value={field} width="100%" />

@@ -1,14 +1,14 @@
 <FormGrid columns="150px minmax(0, 1fr)">
-  <span>{$t`Name *=> Name of the person, as written in the certificate`}</span>
-  <TextField bind:value={request.name} label={$t`Name *=> Name of the person, as written in the certificate`} />
+  <span>{$t`Name`}</span>
+  <TextField bind:value={request.name} label={$t`Name`} />
   <span>{$t`E-mail address`}</span>
   <TextField value={request.emailAddress} readonly label={$t`E-mail address`} />
-  <span>{$t`Organization *=> Company or organization of the person`}</span>
-  <TextField bind:value={request.organization} label={$t`Organization *=> Company or organization of the person`} />
-  <span>{$t`Department *=> Department of the person in the company`}</span>
-  <TextField bind:value={request.department} label={$t`Department *=> Department of the person in the company`} />
-  <span>{$t`City *=> City of the person or company`}</span>
-  <TextField bind:value={request.city} label={$t`City *=> City of the person or company`} />
+  <span>{$t`Organization`}</span>
+  <TextField bind:value={request.organization} label={$t`Organization`} />
+  <span>{$t`Department`}</span>
+  <TextField bind:value={request.department} label={$t`Department`} />
+  <span>{$t`City`}</span>
+  <TextField bind:value={request.city} label={$t`City`} />
   <span>{$t`State/Province *=> State or province of the person or company`}</span>
   <TextField bind:value={request.state} label={$t`State/Province *=> State or province of the person or company`} />
   <span>{$t`Country/Region *=> Country or region of the person or company`}</span>

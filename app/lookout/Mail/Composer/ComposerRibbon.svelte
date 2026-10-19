@@ -2,7 +2,7 @@
   <ComposerMessageTab {mail} {editor} />
   <InsertTab {editor} bind:openedTool onAttachFile={onAddAttachment} {onInsertPicture} bind:showEmojis>
     <svelte:fragment slot="include">
-      <RibbonMenuButton label={$t`Signature *=> Insert one of your signatures into the text`} icon={SignatureIcon}>
+      <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
         <SignatureMenuItems {identity} {editor} on:editSignatures={() => { $openSignatures = mail; }} />
       </RibbonMenuButton>
     </svelte:fragment>

@@ -104,7 +104,7 @@ export class CalendarActions {
     if (event.isOutgoingMeeting && event.participants.length > 1 &&
         !await showMessageBox(gt`Send Update`,
           gt`Would you like to move the meeting "${event.title ?? ""}" and send an update to the attendees?`,
-          gt`Send Update`, gt`Cancel *=> Close the dialog without making changes`)) {
+          gt`Send Update`, gt`Cancel`)) {
       return;
     }
     event.startEditing();

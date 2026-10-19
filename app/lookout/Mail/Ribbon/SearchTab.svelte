@@ -1,9 +1,9 @@
-<RibbonTab label={$t`Search *=> Ribbon tab with search commands`} isSelected>
+<RibbonTab label={$t`Search`} isSelected>
   <RibbonGroup label={$t`Refine *=> Ribbon group to narrow down the search results`}>
-    <RibbonToggleButton label={$t`From *=> Only emails from a certain person`} icon={FromIcon}
+    <RibbonToggleButton label={$t`From`} icon={FromIcon}
       selected={isFrom}
       tooltip={isFrom ? $t`From: ${$searchOptions.person.name}` : $t`Only messages from a person`}
-      onClick={() => isFrom ? setPerson(null, false) : pickPerson($t`From *=> Sender of the email`, person => setPerson(person, false))} />
+      onClick={() => isFrom ? setPerson(null, false) : pickPerson($t`From`, person => setPerson(person, false))} />
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
       selected={$searchOptions.hasAttachment}
       onClick={() => { $searchOptions = { ...$searchOptions, hasAttachment: !$searchOptions.hasAttachment }; }} />
@@ -22,7 +22,7 @@
     <RibbonMenuButton label={$t`Sent To *=> Only emails that you sent to a certain person`} icon={SentToIcon} size="small"
       tooltip={isSentTo ? $t`Sent To: ${$searchOptions.person.name}` : $t`Sent To *=> Only emails that you sent to a certain person`}>
       <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={isSentTo}
-        onClick={() => pickPerson($t`To *=> Main recipients of the email`, person => setPerson(person, true))} />
+        onClick={() => pickPerson($t`To`, person => setPerson(person, true))} />
       <MenuItem label={$t`Sent by Me`} checkable checked={isSentByMe}
         onClick={() => $searchOptions = { ...$searchOptions, person: null, isOutgoing: isSentByMe ? null : true }} />
     </RibbonMenuButton>
@@ -38,7 +38,7 @@
         <ReceivedMenuItems selected={$searchOptions.received}
           on:select={event => $searchOptions = { ...$searchOptions, received: event.detail, receivedStart: null, receivedEnd: null }} />
       </SubMenu> -->
-      <SubMenu label={$t`Size *=> Size of the email`}>
+      <SubMenu label={$t`Size *=> Size of the file`}>
         <SizeMenuItems selected={$searchOptions.size} on:select={event => $searchOptions = { ...$searchOptions, size: event.detail }} />
       </SubMenu>
       <SubMenu label={$t`Read *=> State of the message that has been read`}>
@@ -89,7 +89,7 @@
       onClick={onCreateRule}
       disabled={(!search && $t`Type a search term first`) || (!ruleAccount && $t`Select a folder of an account first`)} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Close *=> Ribbon group with the command to close the search`}>
+  <RibbonGroup label={$t`Close`}>
     <RibbonButton label={$t`Close Search`} icon={CloseIcon}
       onClick={() => { dispatch("close"); }} shortCutInfo={$t`Esc *=> Escape key`} />
   </RibbonGroup>

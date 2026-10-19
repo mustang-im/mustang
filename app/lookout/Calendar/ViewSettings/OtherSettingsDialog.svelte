@@ -1,4 +1,4 @@
-<Dialog title={$t`Format Day/Week/Month View`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="480px" on:close>
+<Dialog title={$t`Format Day/Week/Month View`} okLabel={$t`OK`} onOK={save} width="480px" on:close>
   <vbox class="other-settings">
     <GroupBox label={$t`Day and Week`}>
       <hbox class="field-row">

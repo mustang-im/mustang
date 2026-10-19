@@ -48,7 +48,7 @@
         <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
           pressed={response == InvitationResponse.Accept}
           onClick={() => onRespond(InvitationResponse.Accept)} />
-        <ResponseButton label={$t`Tentative *=> Respond to the invitation: maybe attend the meeting`} icon={TentativeIcon} classes="tentative"
+        <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
           pressed={response == InvitationResponse.Tentative}
           onClick={() => onRespond(InvitationResponse.Tentative)} />
         <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"

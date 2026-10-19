@@ -1,5 +1,5 @@
 <Dialog title={$t`Reading Pane`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={isMarkingRead && !isValidDelay && $t`Enter 0 to 20 seconds`}
   onOK={onSave}
   on:close>

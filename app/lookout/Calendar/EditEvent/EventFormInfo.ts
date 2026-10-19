@@ -36,7 +36,7 @@ export function eventTabLabel(event: Event): string {
   if (event.recurrenceRule) {
     return isMeeting ? gt`Meeting Series` : gt`Appointment Series`;
   }
-  return isMeeting ? gt`Meeting *=> Type of calendar item: with invited attendees` : gt`Appointment *=> Type of calendar item: without attendees`;
+  return isMeeting ? gt`Meeting` : gt`Appointment *=> Type of calendar item: without attendees`;
 }
 
 export function responseCounts(event: Event): ResponseCounts {

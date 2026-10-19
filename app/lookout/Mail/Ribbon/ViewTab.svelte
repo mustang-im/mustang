@@ -17,11 +17,11 @@
       tooltip={$t`Reset the message list and the layout to the default settings`}
       onClick={onResetView} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Messages *=> Ribbon group with settings for the message list`}>
+  <RibbonGroup label={$t`Messages`}>
     <RibbonCheckBox label={$t`Show as Conversations`}
       bind:checked={conversationsChecked}
       on:change={event => catchErrors(() => onShowAsConversations(event.detail))} />
-    <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings *=> Settings for the conversation view`} icon={ConversationSettingsIcon} size="small"
+    <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings`} icon={ConversationSettingsIcon} size="small"
       disabled={!$settings.showAsConversations && $t`Turn on Show as Conversations first`}>
       <MenuItem label={$t`Show Senders Above the Subject`} checked={$settings.showSendersAboveSubject} checkable
         onClick={() => changeViewSettings(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject }, ApplyScope.AllFolders)} />
@@ -60,7 +60,7 @@
     <RibbonToggleButton label={$t`Use Tighter Spacing`} icon={SpacingIcon}
       selected={!!$settings.tighterSpacing}
       onClick={() => changeViewSettings(folder, { tighterSpacing: !$settings.tighterSpacing }, ApplyScope.AllFolders)} />
-    <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders *=> Folder pane: show or hide the list of folders`} icon={FolderPaneIcon}>
+    <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
       <MenuItem label={$t`Normal *=> Folder pane at full width`} checked={$folderPane.value == FolderPaneMode.Normal}
         onClick={() => { $folderPane.value = FolderPaneMode.Normal; }} />
       <MenuItem label={$t`Minimized *=> Folder pane as a narrow bar`} checked={$folderPane.value == FolderPaneMode.Minimized}
@@ -82,9 +82,9 @@
       <MenuItem label={$t`Options… *=> Options for the reading pane`} onClick={() => { $openReadingPaneOptions = true; }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`To-Do Bar`} icon={ToDoBarIcon}>
-      <MenuItem label={$t`Calendar *=> To-Do bar section with the upcoming appointments`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
+      <MenuItem label={$t`Calendar`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
         onClick={() => setToDoBarPart(ToDoBarPart.Calendar, !$toDoBar.value?.includes(ToDoBarPart.Calendar))} />
-      <MenuItem label={$t`People *=> To-Do bar section with your frequent contacts`} icon={PeopleIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.People)}
+      <MenuItem label={$t`People *=> or Persons - Short word, less than 10 characters`} icon={PeopleIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.People)}
         onClick={() => setToDoBarPart(ToDoBarPart.People, !$toDoBar.value?.includes(ToDoBarPart.People))} />
       <MenuDivider />
       <MenuItem label={$t`Off *=> The pane is hidden`} checked={!$toDoBar.value?.length}
@@ -205,7 +205,7 @@
   const viewTypes = [
     { id: ViewType.Compact, label: $t`Compact *=> View with sender, subject and preview in a narrow list`, icon: CompactIcon, tooltip: $t`Sender, subject and preview in a narrow list` },
     { id: ViewType.Single, label: $t`Single *=> View with one line per email, in columns`, icon: SingleIcon, tooltip: $t`One line per message, in columns` },
-    { id: ViewType.Preview, label: $t`Preview *=> View with one line per email and a preview of the text`, icon: PreviewViewIcon, tooltip: $t`One line per message in columns, with a preview of the text` },
+    { id: ViewType.Preview, label: $t`Preview`, icon: PreviewViewIcon, tooltip: $t`One line per message in columns, with a preview of the text` },
   ];
   const previewOptions = [
     { lines: 0, label: $t`Off *=> No preview text in the message list` },

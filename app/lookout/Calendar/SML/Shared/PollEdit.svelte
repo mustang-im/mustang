@@ -1,7 +1,7 @@
 <vbox class="time-options-editor">
   <hbox class="row">
-    <span class="row-label">{$t`Duration *=> Length of the event`}</span>
-    <ComboBox options={durationOptions} value={poll.duration} label={$t`Duration *=> Length of the event`} width="132px"
+    <span class="row-label">{$t`Duration`}</span>
+    <ComboBox options={durationOptions} value={poll.duration} label={$t`Duration`} width="132px"
       on:change={event => setDuration(event.detail)} />
   </hbox>
   <span class="field-label">{$t`Proposed times`}</span>

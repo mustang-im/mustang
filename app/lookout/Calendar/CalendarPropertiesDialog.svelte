@@ -1,5 +1,5 @@
 <Dialog title={$t`${calendar.name} Properties`}
-  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okLabel={$t`OK`}
   okDisabled={!name.trim() && $t`Enter a name for the calendar`}
   onOK={onOK}
   width="560px"
@@ -15,7 +15,7 @@
           <span class="calendar-icon" style:--calendar-color={color}>
             <CalendarIcon size="24" />
           </span>
-          <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name *=> Name of the calendar or address book`} />
+          <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name`} />
         </hbox>
         <hbox class="divider" />
         <div class="facts">
@@ -79,7 +79,7 @@
   let color = calendar.color;
 
   $: tabs = [
-    { id: "general", label: $t`General *=> Tab with the general settings of the folder` },
+    { id: "general", label: $t`General` },
     ...(canShare(calendar) ? [ { id: "permissions", label: $t`Permissions *=> Who can access this folder` } ] : []),
   ];
   $: if (!tabs.some(listed => listed.id == tab)) {

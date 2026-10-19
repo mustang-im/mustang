@@ -1,4 +1,4 @@
-<Dialog title={$t`Group By`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="440px" on:close>
+<Dialog title={$t`Group By`} okLabel={$t`OK`} onOK={save} width="440px" on:close>
   <vbox class="group-by">
     <Checkbox label={$t`Automatically group according to arrangement`} bind:checked={isAutomatic} />
     <GroupBox label={$t`Group items by`} disabled={isAutomatic}>

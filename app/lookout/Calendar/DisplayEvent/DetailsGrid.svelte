@@ -18,7 +18,7 @@
   {#if $event.isOnline && $event.onlineMeetingURL}
     <hbox class="row">
       <OnlineMeetingIcon size="16" />
-      <button class="join" on:click={onJoin}>{$t`Join *=> Join the online meeting`}</button>
+      <button class="join" on:click={onJoin}>{$t`Join`}</button>
     </hbox>
   {/if}
   {#if organizer}
