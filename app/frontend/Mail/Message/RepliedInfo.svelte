@@ -18,7 +18,6 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { MyReply } from "../../../logic/Mail/Store/MyReply";
   import { openEMailMessage } from "../open";
   import Button from "../../Shared/Button.svelte";
   import RepliedIcon from "lucide-svelte/icons/reply";
@@ -38,7 +37,7 @@
     }
     isSearching = true;
     try {
-      let found = await MyReply.find(original);
+      let found = await original.findMyReply();
       if (original == message) {
         reply = found;
       }

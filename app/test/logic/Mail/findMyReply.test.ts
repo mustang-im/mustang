@@ -1,21 +1,20 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
-import { appGlobal } from "../../../../logic/app";
-import { MailAccount } from "../../../../logic/Mail/MailAccount";
-import { SpecialFolder, type Folder } from "../../../../logic/Mail/Folder";
-import type { EMail } from "../../../../logic/Mail/EMail";
-import { MyReply } from "../../../../logic/Mail/Store/MyReply";
-import { SearchEMail } from "../../../../logic/Mail/Store/SearchEMail";
-import { SQLEMail } from "../../../../logic/Mail/SQL/SQLEMail";
-import { SQLSearchEMail } from "../../../../logic/Mail/SQL/SQLSearchEMail";
-import { getDatabase } from "../../../../logic/Mail/SQL/SQLDatabase";
-import { DummyMailStorage } from "../../../../logic/Mail/Store/DummyMailStorage";
-import { findOrCreatePersonUID } from "../../../../logic/Abstract/PersonUID";
-import { InProcessSQLiteDatabase } from "../../util/inProcessSQLite";
+import { appGlobal } from "../../../logic/app";
+import { MailAccount } from "../../../logic/Mail/MailAccount";
+import { SpecialFolder, type Folder } from "../../../logic/Mail/Folder";
+import type { EMail } from "../../../logic/Mail/EMail";
+import { SearchEMail } from "../../../logic/Mail/Store/SearchEMail";
+import { SQLEMail } from "../../../logic/Mail/SQL/SQLEMail";
+import { SQLSearchEMail } from "../../../logic/Mail/SQL/SQLSearchEMail";
+import { getDatabase } from "../../../logic/Mail/SQL/SQLDatabase";
+import { DummyMailStorage } from "../../../logic/Mail/Store/DummyMailStorage";
+import { findOrCreatePersonUID } from "../../../logic/Abstract/PersonUID";
+import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
 import { ArrayColl } from "svelte-collections";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import sql from "../../../../../lib/rs-sqlite";
+import sql from "../../../../lib/rs-sqlite";
 import { beforeEach, expect, test } from "vitest";
 
 test("The reply in the Sent folder is found", async () => {
@@ -24,7 +23,7 @@ test("The reply in the Sent folder is found", async () => {
   let reply = newReply(original, sentFolder(account), "2026-03-02");
   sentFolder(account).messages.add(reply);
 
-  expect(await MyReply.find(original)).toBe(reply);
+  expect(await original.findMyReply()).toBe(reply);
 });
 
 test("A reply that is only in the database is found, without loading the Sent folder", async () => {
@@ -33,7 +32,7 @@ test("A reply that is only in the database is found, without loading the Sent fo
   await SQLEMail.save(newReply(original, sentFolder(account), "2026-03-02", "reply1"));
   expect(sentFolder(account).messages.isEmpty).toBe(true);
 
-  let found = await MyReply.find(original);
+  let found = await original.findMyReply();
 
   expect(found?.messageID).toBe("reply1@example.com");
   expect(found?.folder).toBe(sentFolder(account));
@@ -46,7 +45,7 @@ test("A reply that was filed in another folder is found", async () => {
   let original = newIncomingEMail(projects);
   await SQLEMail.save(newReply(original, projects, "2026-03-02", "reply1"));
 
-  let found = await MyReply.find(original);
+  let found = await original.findMyReply();
 
   expect(found?.messageID).toBe("reply1@example.com");
   expect(found?.folder).toBe(projects);
@@ -59,7 +58,7 @@ test("Of several replies, the latest one is found", async () => {
   await SQLEMail.save(newReply(original, sentFolder(account), "2026-03-05", "latest"));
   await SQLEMail.save(newReply(original, sentFolder(account), "2026-03-03", "second"));
 
-  let found = await MyReply.find(original);
+  let found = await original.findMyReply();
 
   expect(found?.messageID).toBe("latest@example.com");
 });
@@ -71,7 +70,7 @@ test("The reply in the Sent folder wins over a copy in another folder", async ()
   folderNamed(account, "Projects").messages.add(copy);
   await SQLEMail.save(newReply(original, sentFolder(account), "2026-03-02", "reply1"));
 
-  let found = await MyReply.find(original);
+  let found = await original.findMyReply();
 
   expect(found?.folder).toBe(sentFolder(account));
 });
@@ -82,7 +81,7 @@ test("A reply that was just sent, and is only on the server, is found in the Sen
   let reply = newReply(original, sentFolder(account), "2026-03-02");
   account.serverResults.add(reply);
 
-  expect(await MyReply.find(original)).toBe(reply);
+  expect(await original.findMyReply()).toBe(reply);
   expect(account.searches.length).toBe(1);
   expect(account.searches[0].folder).toBe(sentFolder(account));
   expect(account.searches[0].inReplyTo).toBe(original.messageID);
@@ -93,7 +92,7 @@ test("The server is not asked when this computer has the reply", async () => {
   let original = newIncomingEMail(account.inbox);
   await SQLEMail.save(newReply(original, sentFolder(account), "2026-03-02"));
 
-  await MyReply.find(original);
+  await original.findMyReply();
 
   expect(account.searches.length).toBe(0);
 });
@@ -106,7 +105,7 @@ test("A reply that somebody else wrote is not the user's reply", async () => {
   account.inbox.messages.add(theirReply);
   await SQLEMail.save(theirReply);
 
-  expect(await MyReply.find(original)).toBeNull();
+  expect(await original.findMyReply()).toBeNull();
 });
 
 test("A reply to another email is not found", async () => {
@@ -115,7 +114,7 @@ test("A reply to another email is not found", async () => {
   let otherOriginal = newIncomingEMail(account.inbox, "unrelated");
   await SQLEMail.save(newReply(otherOriginal, sentFolder(account), "2026-03-02"));
 
-  expect(await MyReply.find(original)).toBeNull();
+  expect(await original.findMyReply()).toBeNull();
 });
 
 test("A reply in another account is not found", async () => {
@@ -124,7 +123,7 @@ test("A reply in another account is not found", async () => {
   let original = newIncomingEMail(account.inbox);
   await SQLEMail.save(newReply(original, sentFolder(personal), "2026-03-02"));
 
-  expect(await MyReply.find(original)).toBeNull();
+  expect(await original.findMyReply()).toBeNull();
 });
 
 test("An email without a Message-ID has no reply", async () => {
@@ -133,7 +132,7 @@ test("An email without a Message-ID has no reply", async () => {
   original.messageID = "";
   await SQLEMail.save(newReply(original, sentFolder(account), "2026-03-02"));
 
-  expect(await MyReply.find(original)).toBeNull();
+  expect(await original.findMyReply()).toBeNull();
 });
 
 test("The database search for replies reads only the replies", async () => {
