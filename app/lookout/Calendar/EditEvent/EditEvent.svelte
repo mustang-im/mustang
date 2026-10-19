@@ -71,7 +71,7 @@
   import { UserError } from "../../../logic/util/util";
   import { EventEditFlow, type SeriesChoice } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
-  import { EventFormInfo, type InfoMessage } from "./EventFormInfo";
+  import { eventTabLabel, eventInfoMessages, type InfoMessage } from "./EventFormInfo";
   import EventFormRibbon from "./EventFormRibbon.svelte";
   import EventForm from "./EventForm.svelte";
   import InvitationInCalendar from "../Invitation/InvitationInCalendar.svelte";
@@ -128,7 +128,7 @@
   $: isSent = isMeeting && $event.isOutgoingMeeting && isSaved;
   $: ribbonKey = `${isMeeting}-${isSent}-${isIncoming}-${canSchedule}`;
   $: isMeeting && !isIncoming && checkScheduling();
-  $: kindLabel = $event && $participants && EventFormInfo.tabLabel(event);
+  $: kindLabel = $event && $participants && eventTabLabel(event);
   $: ribbonKey, isSchedulingSelected = isTrackingSelected = false;
   $: showScheduling = canSchedule && isMeeting && !isIncoming && isSchedulingSelected;
   $: showTracking = isSent && isTrackingSelected;
@@ -142,7 +142,7 @@
   let hasChanges = false;
   let saveDisabled: string | false = false;
   function updateState(_editor: Editor) {
-    messages = EventFormInfo.messages(event, shownCalendarEvents.contents, new Date(), flow.pattern);
+    messages = eventInfoMessages(event, shownCalendarEvents.contents, new Date(), flow.pattern);
     hasChanges = flow.hasChanges;
     saveDisabled = flow.missingPropsReason ?? false;
   }

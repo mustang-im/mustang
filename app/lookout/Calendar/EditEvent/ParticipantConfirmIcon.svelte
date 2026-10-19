@@ -5,7 +5,7 @@
 <script lang="ts">
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { EventFormInfo } from "./EventFormInfo";
+  import { responseText } from "./EventFormInfo";
   import AcceptedIcon from "lucide-svelte/icons/circle-check";
   import TentativeIcon from "lucide-svelte/icons/circle-help";
   import DeclinedIcon from "lucide-svelte/icons/circle-x";
@@ -21,7 +21,7 @@
   $: icon = iconOf(response);
   $: label = response == InvitationResponse.Organizer
     ? $t`Meeting Organizer`
-    : EventFormInfo.responseText(response);
+    : responseText(response);
 
   function kindOf(response: InvitationResponse): string {
     switch (response) {

@@ -31,8 +31,8 @@
                 {/if}
               </hbox>
             </td>
-            <td>{EventFormInfo.attendanceLabel(participant)}</td>
-            <td>{EventFormInfo.responseLabel(participant)}</td>
+            <td>{attendanceLabel(participant)}</td>
+            <td>{responseLabel(participant)}</td>
           </tr>
         {/each}
       </tbody>
@@ -42,7 +42,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { EventFormInfo, type TrackingColumn } from "./EventFormInfo";
+  import { responseSummary, attendanceLabel, responseLabel, sortForTracking, type TrackingColumn } from "./EventFormInfo";
   import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
   import InfoIcon from "lucide-svelte/icons/info";
   import AscendingIcon from "lucide-svelte/icons/chevron-up";
@@ -57,8 +57,8 @@
 
   $: eventParticipants = event.participants;
   $: participants = derived($eventParticipants.contents, () => eventParticipants.contents);
-  $: summary = $participants && EventFormInfo.responseSummary(event);
-  $: rows = EventFormInfo.sortForTracking($participants, sortColumn, ascending);
+  $: summary = $participants && responseSummary(event);
+  $: rows = sortForTracking($participants, sortColumn, ascending);
   $: columns = [
     { id: "name" as TrackingColumn, label: $t`Name` },
     { id: "attendance" as TrackingColumn, label: $t`Attendance` },

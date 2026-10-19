@@ -80,15 +80,17 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
-  import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
+  import type { Event } from "../../../logic/Calendar/Event";
+  import type { Calendar } from "../../../logic/Calendar/Calendar";
+  import type { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
+  import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { appGlobal } from "../../../logic/app";
-  import { MailInvitation } from "../EditEvent/MailInvitation";
   import { CalendarActions } from "../CalendarActions";
   import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
   import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
   import { openApp } from "../../../frontend/AppsBar/selectedApp";
-  import { EventFormInfo } from "../EditEvent/EventFormInfo";
+  import { eventWhenText, eventConflict, myResponseText } from "../EditEvent/EventFormInfo";
   import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
   import ResponseButton from "./ResponseButton.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -108,9 +110,9 @@
 
   const calendarEvents = appGlobal.calendarEvents;
 
-  $: calendar = $message && message.event ? MailInvitation.findCalendar(message) : null;
+  $: calendar = $message && message.event ? findCalendar(message) : null;
   $: incoming = calendar?.getIncomingInvitationForEMail(message) ?? null;
-  $: kind = $message && MailInvitation.kindOf(message);
+  $: kind = $message && kindOf(message);
   $: event = $message && message.event;
   let response: InvitationResponse;
   $: response = incoming?.myParticipation ?? InvitationResponse.NoResponseReceived;
@@ -118,11 +120,75 @@
   $: calEvent = $calendarEvents && (incoming?.calEvent() ?? null);
   $: hasCalEvent = !!calEvent;
   $: isCancelled = kind == "cancellation" || !!calEvent?.isCancelled;
-  $: statusText = response && MailInvitation.statusText(message, incoming, response, calEvent);
-  $: when = $event ? EventFormInfo.whenText($event, getDateTimeLocale()) : "";
+  $: statusText = response && invitationStatusText(message, incoming, response, calEvent);
+  $: when = $event ? eventWhenText($event, getDateTimeLocale()) : "";
   $: conflict = kind == "invitation" && !isCancelled && $event && response != InvitationResponse.Decline
-    ? EventFormInfo.conflict(calEvent ?? $event, $calendarEvents.filter(dayEvent => !dayEvent.isSameUID($event)))
+    ? eventConflict(calEvent ?? $event, $calendarEvents.filter(dayEvent => !dayEvent.isSameUID($event)))
     : null;
+
+  // <copied from="../../../frontend/Calendar/Invitation/IncomingInvitationInMail.svelte" initCalendar()>
+  function findCalendar(message: EMail): Calendar | null {
+    let account = message.folder?.account;
+    if (!account) {
+      return null;
+    }
+    for (let calendar of account.calendarsAvailable) {
+      if (calendar.hasMatchingEvent(message.event)) {
+        return calendar;
+      }
+    }
+    return account.calendar;
+  }
+  // </copied>
+
+  type InvitationKind = "invitation" | "cancellation" | "reply";
+
+  function kindOf(message: EMail): InvitationKind {
+    switch (message.invitationMessage) {
+    case InvitationMessage.CancelledEvent:
+      return "cancellation";
+    case InvitationMessage.ParticipantReply:
+      return "reply";
+    }
+    return "invitation";
+  }
+
+  function invitationStatusText(message: EMail, incoming: IncomingInvitation | null, myResponse: InvitationResponse, calEvent: Event | null): string {
+    let kind = kindOf(message);
+    if (kind == "cancellation") {
+      return $t`This meeting has been cancelled by the organizer.`;
+    }
+    if (kind == "reply") {
+      return replyText(message);
+    }
+    if (myResponse == InvitationResponse.Organizer) {
+      return $t`You are the organizer of this meeting.`;
+    }
+    if (!incoming) {
+      return $t`There is no calendar for this meeting in this account.`;
+    }
+    if (calEvent?.isCancelled) {
+      return $t`This meeting has been cancelled by the organizer.`;
+    }
+    return myResponseText(myResponse);
+  }
+
+  function replyText(message: EMail): string {
+    let participant = message.event?.participants.find(participant => participant.matches(message.from)) ?? null;
+    let name = participant?.name || participant?.emailAddress || message.from?.name || message.from?.emailAddress || "";
+    if (message.outgoing) {
+      return myResponseText(participant?.response);
+    }
+    switch (participant?.response) {
+    case InvitationResponse.Accept:
+      return $t`${name} has accepted this meeting.`;
+    case InvitationResponse.Tentative:
+      return $t`${name} has tentatively accepted this meeting.`;
+    case InvitationResponse.Decline:
+      return $t`${name} has declined this meeting.`;
+    }
+    return $t`${name} has responded to this meeting.`;
+  }
 
   // <copied from="../../../frontend/Calendar/Invitation/InvitationInMail.svelte"> Only for old messages that didn't save the event
   async function loadEvent() {

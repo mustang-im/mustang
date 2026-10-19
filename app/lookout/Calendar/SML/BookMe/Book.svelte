@@ -11,9 +11,9 @@
   {:else if state == TSMLBookMeState.UserConfirm}
     <vbox class="summary">
       <span class="summary-label">{$t`Request meeting`}</span>
-      <span class="summary-time">{SMLTimeOptions.dayLabel(time)}</span>
-      <span class="summary-time">{TimeOptions.timeLabel(time)} – {TimeOptions.timeLabel(SMLTimeOptions.end(time, bookMe.duration))}</span>
-      <span class="summary-duration">{TimeOptions.durationLabel(bookMe.duration)}</span>
+      <span class="summary-time">{pollDayLabel(time)}</span>
+      <span class="summary-time">{timeOfDayLabel(time)} – {timeOfDayLabel(pollOptionEnd(time, bookMe.duration))}</span>
+      <span class="summary-duration">{durationLabel(bookMe.duration)}</span>
     </vbox>
     <hbox class="buttons">
       <DialogButton label={$t`Send Request`} icon={SendIcon} primary
@@ -38,7 +38,7 @@
           <span class="booked-title">{bookMe.name}</span>
         {/if}
         {#if time}
-          <span>{SMLTimeOptions.dayLabel(time)}, {TimeOptions.timeLabel(time)} – {TimeOptions.timeLabel(SMLTimeOptions.end(time, bookMe.duration))}</span>
+          <span>{pollDayLabel(time)}, {timeOfDayLabel(time)} – {timeOfDayLabel(pollOptionEnd(time, bookMe.duration))}</span>
         {/if}
       </vbox>
     </hbox>
@@ -50,8 +50,8 @@
 <script lang="ts">
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
   import { TSMLBookMeState, type TSMLAction, type TSMLBookMe } from "../../../../logic/Mail/SML/TSML";
-  import { SMLTimeOptions } from "../Shared/SMLTimeOptions";
-  import { TimeOptions } from "../../EditEvent/TimeOptions";
+  import { pollDayLabel, pollOptionEnd } from "../Shared/SMLTimeOptions";
+  import { timeOfDayLabel, durationLabel } from "../../EditEvent/TimeOptions";
   import DisplayList from "../Shared/DisplayList.svelte";
   import DialogButton from "../../../Shared/Dialog/DialogButton.svelte";
   import BookIcon from "lucide-svelte/icons/calendar-check";

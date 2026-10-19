@@ -132,7 +132,7 @@
   import type { EventEditFlow } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
   import { RecurrencePattern, type MonthlyMode } from "./RecurrencePattern";
-  import { TimeOptions } from "./TimeOptions";
+  import { startTimeOptions, endTimeOptions, durationLabel } from "./TimeOptions";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -172,9 +172,9 @@
   ];
 
   $: endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-  $: startOptions = TimeOptions.startTimes(startTime);
-  $: endOptions = TimeOptions.endTimes(startTime, endTime);
-  $: durationOptions = durationList(durationMinutes, allDay).map(minutes => ({ value: minutes, label: TimeOptions.durationLabel(minutes) }));
+  $: startOptions = startTimeOptions(startTime);
+  $: endOptions = endTimeOptions(startTime, endTime);
+  $: durationOptions = durationList(durationMinutes, allDay).map(minutes => ({ value: minutes, label: durationLabel(minutes) }));
   $: startWeekday = rangeStart.getDay();
   $: canRepeatOnWeekdays = RecurrencePattern.canRepeatOnWeekdays(rangeStart);
   $: weekChoices = RecurrencePattern.weekChoices(rangeStart);

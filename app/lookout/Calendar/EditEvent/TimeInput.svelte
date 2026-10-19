@@ -31,7 +31,7 @@
 </Popup>
 
 <script lang="ts">
-  import { TimeOptions, type TimeOption } from "./TimeOptions";
+  import { timeOfDayLabel, parseTime, type TimeOption } from "./TimeOptions";
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import { showError } from "../../../frontend/Util/error";
   import ChevronIcon from "lucide-svelte/icons/chevron-down";
@@ -50,19 +50,19 @@
   let comboEl: HTMLElement;
   let listEl: HTMLElement;
 
-  $: text = time ? TimeOptions.timeLabel(time) : "";
+  $: text = time ? timeOfDayLabel(time) : "";
 
   function onTextChanged(): boolean {
     try {
-      let newTime = TimeOptions.parseTime(text, time);
+      let newTime = parseTime(text, time);
       if (newTime.getTime() != time.getTime()) {
         dispatchEvent("change", newTime);
       }
-      text = TimeOptions.timeLabel(time);
+      text = timeOfDayLabel(time);
       return true;
     } catch (ex) {
       invalid = true;
-      text = TimeOptions.timeLabel(time);
+      text = timeOfDayLabel(time);
       showError(ex);
       return false;
     }

@@ -48,7 +48,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { EventEditFlow } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
-  import { TimeOptions } from "./TimeOptions";
+  import { startTimeOptions, endTimeOptions } from "./TimeOptions";
   import TimeInput from "./TimeInput.svelte";
   import { openRecurrence } from "./RecurrenceDialog.svelte";
   import DateField from "../../Shared/Form/DateField.svelte";
@@ -68,9 +68,9 @@
   $: isSeriesMaster = !!$event.recurrenceRule && !$event.parentEvent;
   $: isRecurring = isSeriesMaster || !!$parentEvent?.recurrenceRule;
   $: summary = $event && flow ? flow.pattern.summary(event) : "";
-  $: startOptions = TimeOptions.startTimes($event.startTime);
+  $: startOptions = startTimeOptions($event.startTime);
   $: lastDay = EventTimeEditor.lastDay($event);
-  $: endOptions = TimeOptions.endTimes($event.startTime, $event.endTime);
+  $: endOptions = endTimeOptions($event.startTime, $event.endTime);
   $: showTimezone = !$event.allDay && !isSameTimezone($event.timezone, $event.startTime);
 
   function onAllDayChanged(checked: boolean) {

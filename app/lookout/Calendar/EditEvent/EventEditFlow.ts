@@ -4,7 +4,7 @@ import { Participant } from "../../../logic/Calendar/Participant";
 import type { PersonUID } from "../../../logic/Abstract/PersonUID";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { RecurrencePattern } from "./RecurrencePattern";
-import { Reminder } from "./Reminder";
+import { reminderMinutesBefore, setReminderMinutesBefore } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
 import { showMessageBox, askYesNo } from "../../Shared/Dialog/MessageBox";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
@@ -229,10 +229,10 @@ export class EventEditFlow {
       return;
     }
     let duration = series.duration != before.duration ? series.duration : remainder.duration;
-    let reminder = Reminder.minutesBefore(remainder);
+    let reminder = reminderMinutesBefore(remainder);
     remainder.startTime = EventEditFlow.shift(remainder.startTime, 0, EventEditFlow.minutesOfDayBetween(before.startTime, series.startTime));
     remainder.duration = duration;
-    Reminder.setMinutesBefore(remainder, reminder);
+    setReminderMinutesBefore(remainder, reminder);
   }
 
   static daysBetween(from: Date, to: Date): number {

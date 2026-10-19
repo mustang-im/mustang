@@ -3,7 +3,7 @@
     {isOrganizer ? $t`You proposed these times. Recipients vote for the times that suit them.` : $t`Vote for each time: is it OK for you?`}
   </span>
   <DisplayList {options} duration={poll.duration} let:time>
-    {@const preference = SMLTimeOptions.preference(votes, time)}
+    {@const preference = votePreference(votes, time)}
     <hbox class="vote-buttons" role="group" aria-label={$t`Your vote`}>
       {#each voteChoices as choice}
         <button type="button" class="vote {choice.preference}"
@@ -21,7 +21,7 @@
 <script lang="ts">
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
   import { TSMLMeetingTimePreference, type TSMLAction, type TSMLMeetingTimePoll, type TSMLMeetingTimeVote } from "../../../../logic/Mail/SML/TSML";
-  import { SMLTimeOptions } from "../Shared/SMLTimeOptions";
+  import { votePreference, setVote } from "../Shared/SMLTimeOptions";
   import DisplayList from "../Shared/DisplayList.svelte";
   import AcceptIcon from "lucide-svelte/icons/check";
   import MaybeIcon from "lucide-svelte/icons/badge-question-mark";
@@ -54,7 +54,7 @@
   }
 
   function vote(time: Date, preference: TSMLMeetingTimePreference) {
-    SMLTimeOptions.vote(votes, time, preference);
+    setVote(votes, time, preference);
     votes = votes;
   }
 </script>

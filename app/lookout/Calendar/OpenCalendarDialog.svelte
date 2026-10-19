@@ -38,9 +38,10 @@
 <script lang="ts">
   import type { MailAccount } from "../../logic/Mail/MailAccount";
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
-  import { SharedCalendars } from "./SharedCalendars";
+  import type { Calendar } from "../../logic/Calendar/Calendar";
   import { selectedCalendar } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
+  import { assert } from "../../logic/util/util";
   import Dialog from "../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
   import ComboBox from "../Shared/Form/ComboBox.svelte";
@@ -85,9 +86,20 @@
     isPickConfirmed = false;
   }
 
+  async function openCalendarOf(person: PersonUID): Promise<Calendar> {
+    let name = person.name || person.emailAddress;
+    let address = person.emailAddress?.toLowerCase();
+    assert(!appGlobal.calendars.contents.some(calendar => calendar.username?.toLowerCase() == address),
+      $t`The calendar of ${name} is already in your calendar list.`);
+    let shared = await account.findSharedFolders(person, ["calendar"]);
+    assert(shared.includes("calendar"),
+      $t`The calendar of ${name} could not be opened. You don't have permission to see it. Ask ${name} to share the calendar with you.`);
+    return await account.addSharedCalendar(person);
+  }
+
   async function onOK() {
     for (let person of persons.contents) {
-      let calendar = await SharedCalendars.open(account, person);
+      let calendar = await openCalendarOf(person);
       persons.remove(person);
       $selectedCalendar = calendar;
     }

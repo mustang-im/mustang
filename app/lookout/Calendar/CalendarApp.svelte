@@ -138,7 +138,7 @@
   import AdjacentEventTabs from "./AdjacentEventTabs.svelte";
   import ListView from "./ListView/ListView.svelte";
   import CalendarSearchTab from "./ListView/CalendarSearchTab.svelte";
-  import { CalendarSearch } from "./ListView/CalendarSearch";
+  import { eventOrganizers } from "./ListView/CalendarSearch";
   import Splitter from "../../frontend/Shared/Splitter.svelte";
   import SplitterBidirectional from "../../frontend/Shared/SplitterBidirectional.svelte";
   import { globalSearchTerm } from "../../frontend/AppsBar/selectedApp";
@@ -205,7 +205,7 @@
   let organizerEvents: ArrayColl<Event> = null;
   $: searchTerm, $calendarSearchOptions, $selectedCalendar, findEvents();
   $: searchResults = searchTerm ? organizerEvents : null;
-  $: searchOrganizers = searchTerm ? CalendarSearch.organizers($foundEvents.contents) : [];
+  $: searchOrganizers = searchTerm ? eventOrganizers($foundEvents.contents) : [];
   let upcomingEvents: ArrayColl<Event> = null;
   $: listEvents = currentView == CalendarCurrentView.List ? listedEvents
     : currentView == CalendarCurrentView.Active ? findUpcomingEvents()

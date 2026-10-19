@@ -40,7 +40,7 @@
 
 <script lang="ts">
   import { RecurrenceCase, type Event } from "../../../logic/Calendar/Event";
-  import { EventFormInfo } from "../EditEvent/EventFormInfo";
+  import { responseCounts, eventWhenText } from "../EditEvent/EventFormInfo";
   import { EventTable } from "../ListView/EventTable";
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { catchErrors } from "../../../frontend/Util/error";
@@ -56,7 +56,7 @@
   export let event: Event;
 
   $: isRecurring = $event.recurrenceCase == RecurrenceCase.Instance || $event.recurrenceCase == RecurrenceCase.Exception;
-  $: when = EventFormInfo.whenText($event, getDateTimeLocale());
+  $: when = eventWhenText($event, getDateTimeLocale());
   $: recurrence = isRecurring || $event.recurrenceRule ? EventTable.recurrenceLabel($event.parentEvent ?? $event) : "";
   $: eventParticipants = event.participants;
   $: participants = derived($eventParticipants.contents, () => eventParticipants.contents);
@@ -64,7 +64,7 @@
   $: attendeeSummary = $participants.length ? summarizeResponses() : "";
 
   function summarizeResponses(): string {
-    let counts = EventFormInfo.responseCounts($event);
+    let counts = responseCounts($event);
     let parts = [
       counts.accepted ? $t`${counts.accepted} accepted` : null,
       counts.tentative ? $t`${counts.tentative} tentative` : null,

@@ -121,8 +121,8 @@
         <RibbonMenuButton label={$t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} shortLabel={reminderMinutes == null ? $t`Reminder` : reminderLabel} icon={ReminderIcon}
           tooltip={$t`Reminder: ${reminderLabel}`}>
           {#each reminderChoices as minutes}
-            <MenuItem label={Reminder.label(minutes)} checked={minutes == reminderMinutes}
-              onClick={() => Reminder.setMinutesBefore(event, minutes)} />
+            <MenuItem label={reminderMinutesLabel(minutes)} checked={minutes == reminderMinutes}
+              onClick={() => setReminderMinutesBefore(event, minutes)} />
           {/each}
         </RibbonMenuButton>
         <RibbonButton label={$t`Recurrence`} icon={RecurrenceIcon} shortCutInfo="Ctrl+G"
@@ -170,8 +170,8 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
-  import { EventFormInfo } from "./EventFormInfo";
-  import { Reminder } from "./Reminder";
+  import { eventTabLabel, attendanceLabel, responseLabel } from "./EventFormInfo";
+  import { reminderMinutesBefore, setReminderMinutesBefore, reminderChoicesWith, reminderMinutesLabel } from "./Reminder";
   import Ribbon from "../../Shared/Ribbon/Ribbon.svelte";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
@@ -243,10 +243,10 @@
   $: isIncoming = $event.isIncomingMeeting;
   $: isInstance = !!$event.parentEvent;
   $: isSent = $event.isOutgoingMeeting && $event && flow.isSaved;
-  $: tabLabel = $event && EventFormInfo.tabLabel(event);
-  $: reminderMinutes = $event && Reminder.minutesBefore(event);
-  $: reminderLabel = Reminder.label(reminderMinutes);
-  $: reminderChoices = Reminder.choices(reminderMinutes);
+  $: tabLabel = $event && eventTabLabel(event);
+  $: reminderMinutes = $event && reminderMinutesBefore(event);
+  $: reminderLabel = reminderMinutesLabel(reminderMinutes);
+  $: reminderChoices = reminderChoicesWith(reminderMinutes);
   $: saveDisabled = ($event && flow.missingPropsReason) ?? false;
   const meetAccounts = appGlobal.meetAccounts.filterObservable(account => account.canCreateURL);
 
@@ -294,8 +294,8 @@
   async function copyTrackingStatus() {
     let lines = event.participants.contents.map(participant => [
       participant.name || participant.emailAddress,
-      EventFormInfo.attendanceLabel(participant),
-      EventFormInfo.responseLabel(participant),
+      attendanceLabel(participant),
+      responseLabel(participant),
     ].join("\t"));
     await navigator.clipboard.writeText(lines.join("\n"));
   }

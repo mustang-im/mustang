@@ -15,10 +15,10 @@
   <hbox class="row add-row">
     <span class="row-label">{$t`Start time:`}</span>
     <DateField date={newTime} label={$t`Start date`} required on:change={event => setNewDay(event.detail)} />
-    <TimeInput time={newTime} options={TimeOptions.startTimes(newTime)} label={$t`Start time`}
+    <TimeInput time={newTime} options={startTimeOptions(newTime)} label={$t`Start time`}
       on:change={event => newTime = event.detail} />
     <DialogButton label={$t`Add Time`} icon={AddIcon}
-      disabled={SMLTimeOptions.has(poll.options, newTime) ? $t`This time is already proposed` : false}
+      disabled={hasPollOption(poll.options, newTime) ? $t`This time is already proposed` : false}
       onClick={addTime} />
   </hbox>
 </vbox>
@@ -26,9 +26,9 @@
 <script lang="ts">
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
   import type { TSMLTimePoll } from "../../../../logic/Mail/SML/TSML";
-  import { SMLTimeOptions } from "./SMLTimeOptions";
+  import { hasPollOption, addPollOption, removePollOption, nextPollOption } from "./SMLTimeOptions";
   import DisplayList from "./DisplayList.svelte";
-  import { TimeOptions } from "../../EditEvent/TimeOptions";
+  import { startTimeOptions, durationLabel } from "../../EditEvent/TimeOptions";
   import TimeInput from "../../EditEvent/TimeInput.svelte";
   import DateField from "../../../Shared/Form/DateField.svelte";
   import ComboBox from "../../../Shared/Form/ComboBox.svelte";
@@ -42,9 +42,9 @@
 
   $: poll = $sml.sml as TSMLTimePoll;
   $: options = new ArrayColl(poll.options ?? []);
-  let newTime = SMLTimeOptions.nextOption(($sml.sml as TSMLTimePoll).options ?? [], ($sml.sml as TSMLTimePoll).duration);
+  let newTime = nextPollOption(($sml.sml as TSMLTimePoll).options ?? [], ($sml.sml as TSMLTimePoll).duration);
 
-  $: durationOptions = durations(poll.duration).map(minutes => ({ value: minutes, label: TimeOptions.durationLabel(minutes) }));
+  $: durationOptions = durations(poll.duration).map(minutes => ({ value: minutes, label: durationLabel(minutes) }));
 
   function durations(current: number): number[] {
     let list = [15, 30, 45, 60, 90, 120, 180, 240, 480];
@@ -67,13 +67,13 @@
   }
 
   function addTime() {
-    SMLTimeOptions.add(poll.options, new Date(newTime));
+    addPollOption(poll.options, new Date(newTime));
     poll = poll;
-    newTime = SMLTimeOptions.nextOption(poll.options, poll.duration);
+    newTime = nextPollOption(poll.options, poll.duration);
   }
 
   function removeTime(time: Date) {
-    SMLTimeOptions.remove(poll.options, time);
+    removePollOption(poll.options, time);
     poll = poll;
   }
 </script>

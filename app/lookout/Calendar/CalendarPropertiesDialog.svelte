@@ -31,7 +31,7 @@
         <hbox class="divider" />
         <vbox class="color-group">
           <span class="label">{$t`Color:`}</span>
-          <ColorPalette colors={CalendarColors.palette} bind:selected={color} label={$t`Color`} columns={15} />
+          <ColorPalette colors={calendarColors()} bind:selected={color} label={$t`Color`} columns={15} />
         </vbox>
         {#if isShared || !calendar.mainAccount}
           <hbox class="divider" />
@@ -57,7 +57,7 @@
 
 <script lang="ts">
   import { MailAccount } from "../../logic/Mail/MailAccount";
-  import { CalendarColors } from "./CalendarColors";
+  import { calendarColors } from "./CalendarColors";
   import { CalendarGroups } from "./CalendarGroups";
   import { CalendarActions } from "./CalendarActions";
   import Dialog from "../Shared/Dialog/Dialog.svelte";

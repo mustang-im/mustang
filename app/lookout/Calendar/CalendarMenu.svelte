@@ -17,7 +17,7 @@
     {/if}
     <MenuDivider />
     <SubMenu label={$t`Color`} icon={ColorIcon}>
-      <ColorPalette colors={CalendarColors.palette} selected={calendar.color} label={$t`Calendar color`}
+      <ColorPalette colors={calendarColors()} selected={calendar.color} label={$t`Calendar color`}
         columns={5} on:select={event => catchErrors(async () => { calendar.color = event.detail; await calendar.save(); })} />
     </SubMenu>
     <MenuItem label={$t`Overlay`} icon={OverlayIcon} checked={!$splitView.value} checkable
@@ -45,7 +45,7 @@
   import { CalendarActions } from "./CalendarActions";
   import { CalendarGroups } from "./CalendarGroups";
   import { selectedCalendar, shownCalendars } from "../../frontend/Calendar/selected";
-  import { CalendarColors } from "./CalendarColors";
+  import { calendarColors } from "./CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { catchErrors } from "../../frontend/Util/error";
   import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";

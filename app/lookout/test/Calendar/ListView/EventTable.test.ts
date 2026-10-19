@@ -6,7 +6,7 @@ import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
 import { EventTable, EventTableColumn, EventTableGrouping } from "../../../Calendar/ListView/EventTable";
-import { CalendarSearch } from "../../../Calendar/ListView/CalendarSearch";
+import { eventOrganizers } from "../../../Calendar/ListView/CalendarSearch";
 import { expect, test } from "vitest";
 
 function newEvent(title: string, day: number, location = ""): Event {
@@ -89,5 +89,5 @@ test("Search organizers: each organizer once", () => {
   let series = weekly("Team standup", 12);
   let single = newEvent("Team lunch", 20);
   single.participants.add(new Participant("wanda@example.com", "Wanda Howard", InvitationResponse.Organizer));
-  expect(CalendarSearch.organizers([ series, single, single ]).map(person => person.emailAddress)).toEqual([ "wanda@example.com" ]);
+  expect(eventOrganizers([ series, single, single ]).map(person => person.emailAddress)).toEqual([ "wanda@example.com" ]);
 });

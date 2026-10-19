@@ -6,7 +6,7 @@ import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
-import { EventFormInfo } from "../../../Calendar/EditEvent/EventFormInfo";
+import { eventTabLabel, responseCounts, responseSummary, eventWhenText, sortForTracking, eventConflict, eventInfoMessages } from "../../../Calendar/EditEvent/EventFormInfo";
 import { RecurrencePattern } from "../../../Calendar/EditEvent/RecurrencePattern";
 import { expect, test } from "vitest";
 
@@ -39,26 +39,26 @@ function invite(event: Event, myResponse: InvitationResponse) {
 
 test("Tab label: appointment, meeting, series and occurrence", () => {
   let event = newEvent();
-  expect(EventFormInfo.tabLabel(event)).toBe("Appointment");
+  expect(eventTabLabel(event)).toBe("Appointment");
   organize(event, InvitationResponse.Unknown);
-  expect(EventFormInfo.tabLabel(event)).toBe("Meeting");
+  expect(eventTabLabel(event)).toBe("Meeting");
   event.newRecurrenceRule(Frequency.Weekly);
-  expect(EventFormInfo.tabLabel(event)).toBe("Meeting Series");
-  expect(EventFormInfo.tabLabel(event.instances.get(1))).toBe("Meeting Occurrence");
+  expect(eventTabLabel(event)).toBe("Meeting Series");
+  expect(eventTabLabel(event.instances.get(1))).toBe("Meeting Occurrence");
 
   let single = newEvent();
   single.newRecurrenceRule(Frequency.Daily);
-  expect(EventFormInfo.tabLabel(single)).toBe("Appointment Series");
+  expect(eventTabLabel(single)).toBe("Appointment Series");
 });
 
 test("Response summary for the organizer, like Outlook", () => {
   let event = newEvent();
   organize(event, InvitationResponse.NoResponseReceived, InvitationResponse.NoResponseReceived);
-  expect(EventFormInfo.responseSummary(event)).toBe("No responses have been received for this meeting.");
+  expect(responseSummary(event)).toBe("No responses have been received for this meeting.");
   event.participants.get(1).response = InvitationResponse.Accept;
   event.participants.get(2).response = InvitationResponse.Tentative;
-  expect(EventFormInfo.responseCounts(event)).toEqual({ accepted: 1, tentative: 1, declined: 0, none: 0 });
-  expect(EventFormInfo.responseSummary(event)).toBe("Attendee responses: 1 accepted, 1 tentatively accepted, 0 declined.");
+  expect(responseCounts(event)).toEqual({ accepted: 1, tentative: 1, declined: 0, none: 0 });
+  expect(responseSummary(event)).toBe("Attendee responses: 1 accepted, 1 tentatively accepted, 0 declined.");
 });
 
 test("Conflicts and adjacent appointments", () => {
@@ -69,34 +69,34 @@ test("Conflicts and adjacent appointments", () => {
   allDay.allDay = true;
   let declined = newEvent(new Date(2026, 9, 15, 10, 0), 30);
   invite(declined, InvitationResponse.Decline);
-  expect(EventFormInfo.conflict(event, [event, before])).toBe("adjacent");
-  expect(EventFormInfo.conflict(event, [before, overlapping])).toBe("conflict");
-  expect(EventFormInfo.conflict(event, [allDay, declined])).toBe(null);
+  expect(eventConflict(event, [event, before])).toBe("adjacent");
+  expect(eventConflict(event, [before, overlapping])).toBe("conflict");
+  expect(eventConflict(event, [allDay, declined])).toBe(null);
 });
 
 test("Info bar of a new meeting, of an invitation, and of a cancelled meeting", () => {
   let now = new Date(2026, 9, 1);
   let meeting = newEvent();
   organize(meeting, InvitationResponse.Unknown);
-  expect(EventFormInfo.messages(meeting, [], now).map(message => message.text))
+  expect(eventInfoMessages(meeting, [], now).map(message => message.text))
     .toEqual(["You haven't sent this meeting invitation yet."]);
 
   let invitation = newEvent();
   invite(invitation, InvitationResponse.NoResponseReceived);
-  expect(EventFormInfo.messages(invitation, [], now)[0].text).toBe("Please respond.");
+  expect(eventInfoMessages(invitation, [], now)[0].text).toBe("Please respond.");
   invitation.myParticipation = InvitationResponse.Accept;
-  expect(EventFormInfo.messages(invitation, [], now)[0].text).toBe("You accepted this meeting.");
+  expect(eventInfoMessages(invitation, [], now)[0].text).toBe("You accepted this meeting.");
   invitation.isCancelled = true;
-  expect(EventFormInfo.messages(invitation, [], now)[0]).toEqual({ kind: "cancelled", text: "This meeting has been cancelled by the organizer." });
+  expect(eventInfoMessages(invitation, [], now)[0]).toEqual({ kind: "cancelled", text: "This meeting has been cancelled by the organizer." });
 });
 
 test("Info bar: in the past, and the series of an occurrence", () => {
   let event = newEvent();
-  expect(EventFormInfo.messages(event, [], new Date(2026, 9, 16)).map(message => message.text))
+  expect(eventInfoMessages(event, [], new Date(2026, 9, 16)).map(message => message.text))
     .toEqual(["This appointment occurs in the past."]);
   event.newRecurrenceRule(Frequency.Weekly);
   let occurrence = event.instances.get(1);
-  let messages = EventFormInfo.messages(occurrence, [], new Date(2026, 9, 1));
+  let messages = eventInfoMessages(occurrence, [], new Date(2026, 9, 1));
   expect(messages[0].kind).toBe("recurrence");
   expect(messages[0].text).toContain("Every week, on Thursday");
 
@@ -104,24 +104,24 @@ test("Info bar: in the past, and the series of an occurrence", () => {
   let pattern = RecurrencePattern.fromEvent(occurrence);
   pattern.end = "count";
   pattern.count = 5;
-  messages = EventFormInfo.messages(occurrence, [], new Date(2026, 9, 1), pattern);
+  messages = eventInfoMessages(occurrence, [], new Date(2026, 9, 1), pattern);
   expect(messages[0].text).toContain("5 times");
 });
 
 test("When text", () => {
   let event = newEvent();
-  expect(plain(EventFormInfo.whenText(event, "en-US"))).toBe("Thursday, October 15, 2026, 10:00 – 10:30 AM");
+  expect(plain(eventWhenText(event, "en-US"))).toBe("Thursday, October 15, 2026, 10:00 – 10:30 AM");
   let allDay = newEvent(new Date(2026, 9, 15), 2 * 24 * 60);
   allDay.allDay = true;
-  expect(plain(EventFormInfo.whenText(allDay, "en-US"))).toBe("Thursday, October 15 – Friday, October 16, 2026 (all day)");
+  expect(plain(eventWhenText(allDay, "en-US"))).toBe("Thursday, October 15 – Friday, October 16, 2026 (all day)");
 });
 
 test("Tracking table sorts by name, attendance and response", () => {
   let event = newEvent();
   organize(event, InvitationResponse.Tentative, InvitationResponse.Accept, InvitationResponse.NoResponseReceived);
   let participants = event.participants.contents;
-  let names = (column: Parameters<typeof EventFormInfo.sortForTracking>[1], ascending: boolean) =>
-    EventFormInfo.sortForTracking(participants, column, ascending).map(participant => participant.name);
+  let names = (column: Parameters<typeof sortForTracking>[1], ascending: boolean) =>
+    sortForTracking(participants, column, ascending).map(participant => participant.name);
   expect(names(null, true)).toEqual(["Me", "Person 0", "Person 1", "Person 2"]);
   expect(names("name", false)).toEqual(["Person 2", "Person 1", "Person 0", "Me"]);
   expect(names("attendance", true)[0]).toBe("Me");

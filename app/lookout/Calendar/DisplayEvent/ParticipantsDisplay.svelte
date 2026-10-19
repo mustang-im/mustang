@@ -11,7 +11,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { EventFormInfo } from "../EditEvent/EventFormInfo";
+  import { responseLabel } from "../EditEvent/EventFormInfo";
   import ParticipantConfirmIcon from "../EditEvent/ParticipantConfirmIcon.svelte";
   import { derived } from "svelte/store";
 
@@ -22,7 +22,7 @@
   $: attendees = $participants.filter(participant => participant.response != InvitationResponse.Organizer);
 
   function tooltip(participant: Participant): string {
-    return [participant.name, participant.emailAddress, EventFormInfo.responseLabel(participant)]
+    return [participant.name, participant.emailAddress, responseLabel(participant)]
       .filter(text => text)
       .join("\n");
   }

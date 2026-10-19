@@ -48,7 +48,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { EventEditFlow } from "../EditEvent/EventEditFlow";
-  import { EventFormInfo, type InfoMessage } from "../EditEvent/EventFormInfo";
+  import { eventWhenText, type InfoMessage } from "../EditEvent/EventFormInfo";
   import InfoBar from "../EditEvent/InfoBar.svelte";
   import ParticipantsDisplay from "../DisplayEvent/ParticipantsDisplay.svelte";
   import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
@@ -67,7 +67,7 @@
   export let messages: InfoMessage[];
 
   $: organizer = $event.organizer;
-  $: when = EventFormInfo.whenText($event, getDateTimeLocale());
+  $: when = eventWhenText($event, getDateTimeLocale());
   $: attachments = event.attachments;
 
   // <copied from="../../../frontend/Calendar/Invitation/InvitationInCalendar.svelte">

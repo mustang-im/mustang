@@ -125,7 +125,7 @@
       <RibbonMenuButton label={$t`Color`} icon={ColorIcon}
         disabled={noSelection}>
         {#if $selectedCalendar}
-          <ColorPalette colors={CalendarColors.palette} selected={$selectedCalendar.color} label={$t`Calendar color`}
+          <ColorPalette colors={calendarColors()} selected={$selectedCalendar.color} label={$t`Calendar color`}
             columns={5} on:select={event => catchErrors(async () => { $selectedCalendar.color = event.detail; await $selectedCalendar.save(); })} />
         {/if}
       </RibbonMenuButton>
@@ -165,7 +165,7 @@
   import { globalSearchTerm, openApp } from "../../frontend/AppsBar/selectedApp";
   import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
   import { CalendarGroups } from "./CalendarGroups";
-  import { CalendarColors } from "./CalendarColors";
+  import { calendarColors } from "./CalendarColors";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { openSettingsDialog, openOptions } from "../Settings/SettingsDialogs";
   import { selectedCalendar, selectedDate, startDate } from "../../frontend/Calendar/selected";

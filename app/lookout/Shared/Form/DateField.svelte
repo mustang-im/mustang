@@ -24,7 +24,7 @@
 </Popup>
 
 <script lang="ts">
-  import { DateText } from "../../Calendar/EditEvent/DateText";
+  import { formatDateText, parseDateText } from "../../Calendar/EditEvent/DateText";
   import DatePicker from "./DatePicker.svelte";
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import { showError } from "../../../frontend/Util/error";
@@ -49,7 +49,7 @@
   let invalid = false;
   let fieldEl: HTMLElement;
 
-  $: text = DateText.format(date);
+  $: text = formatDateText(date);
 
   function setDate(newDate: Date | null) {
     if (newDate?.getTime() == date?.getTime()) {
@@ -65,18 +65,18 @@
       return true;
     }
     if (!text.trim()) {
-      text = DateText.format(date);
+      text = formatDateText(date);
       return true;
     }
     try {
       let reference = date ? new Date(date) : new Date(new Date().setHours(0, 0, 0, 0));
-      let parsed = DateText.parse(text, reference);
-      text = DateText.format(date);
+      let parsed = parseDateText(text, reference);
+      text = formatDateText(date);
       setDate(parsed);
       return true;
     } catch (ex) {
       invalid = true;
-      text = DateText.format(date);
+      text = formatDateText(date);
       showError(ex);
       return false;
     }

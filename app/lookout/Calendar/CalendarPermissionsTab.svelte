@@ -5,7 +5,7 @@
     <hbox class="person-field">
       <MailAutocomplete addresses={newPersons} label={$t`Name or email address`} chips />
     </hbox>
-    <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: CalendarSharing.levelLabel(permission) }))}
+    <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: levelLabel(permission) }))}
       bind:value={level} label={$t`Permission Level`} width="210px" />
     <DialogButton label={$t`Share`} primary onClick={onShare}
       disabled={!$newPersons.hasItems && $t`Enter the person first`} />
@@ -38,9 +38,11 @@
 </vbox>
 
 <script lang="ts">
-  import type { Calendar } from "../../logic/Calendar/Calendar";
+  import { CalendarShareCombinedPermissions, type Calendar } from "../../logic/Calendar/Calendar";
   import type { PersonUID } from "../../logic/Abstract/PersonUID";
-  import { CalendarSharing } from "./CalendarSharing";
+  import type { MailAccount } from "../../logic/Mail/MailAccount";
+  import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../logic/util/netUtil";
+  import { assert } from "../../logic/util/util";
   import { askYesNo } from "../Shared/Dialog/MessageBox";
   import { catchErrors } from "../../frontend/Util/error";
   import DialogButton from "../Shared/Dialog/DialogButton.svelte";
@@ -70,10 +72,33 @@
 
   async function onShare() {
     for (let person of newPersons.contents) {
-      await CalendarSharing.share(calendar, person, level);
+      await shareWith(person);
       newPersons.remove(person);
     }
     await load();
+  }
+
+  async function shareWith(person: PersonUID) {
+    let account = calendar.mainAccount as MailAccount;
+    // <copied from="../../frontend/Settings/Mail/SharingOutgoing.svelte">
+    assert(getBaseDomainFromHost(getDomainForEmailAddress(person.emailAddress)) ==
+      getBaseDomainFromHost(getDomainForEmailAddress(account.emailAddress)),
+      $t`You can only share with users in your company`);
+    // </copied>
+    await calendar.addSharedPerson(person, level);
+  }
+
+  function levelLabel(permission: CalendarShareCombinedPermissions): string {
+    switch (permission) {
+    case CalendarShareCombinedPermissions.ReadAvailability:
+      return $t`Can view when I'm busy`;
+    case CalendarShareCombinedPermissions.ReadTitle:
+      return $t`Can view titles and locations`;
+    case CalendarShareCombinedPermissions.ReadAll:
+      return $t`Can view all details`;
+    case CalendarShareCombinedPermissions.Modify:
+      return $t`Can edit`;
+    }
   }
 
   async function onRemove(person: PersonUID) {

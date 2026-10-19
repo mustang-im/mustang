@@ -42,7 +42,7 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { kMinutesPerDay } from "../../../logic/Calendar/WorkHours";
-  import { TimeOptions } from "../../Calendar/EditEvent/TimeOptions";
+  import { startTimeOptions, timeOfDayLabel } from "../../Calendar/EditEvent/TimeOptions";
   import { TimeZoneChoice, ZoneClock } from "../../Calendar/TimeZones";
   import OptionsSection from "../Shared/OptionsSection.svelte";
   import OptionsRow from "../Shared/OptionsRow.svelte";
@@ -58,8 +58,8 @@
 
   const kWeekdays = [1, 2, 3, 4, 5, 6, 0];
   const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const startTimes = TimeOptions.startTimes(today);
-  const endTimes = [ ...startTimes.slice(1), { time: timeOf(kMinutesPerDay), label: TimeOptions.timeLabel(timeOf(kMinutesPerDay)) } ];
+  const startTimes = startTimeOptions(today);
+  const endTimes = [ ...startTimes.slice(1), { time: timeOf(kMinutesPerDay), label: timeOfDayLabel(timeOf(kMinutesPerDay)) } ];
 
   $: workHours = $account.workHours;
   $: readOnly = $account.isOtherPersonsCalendar;
