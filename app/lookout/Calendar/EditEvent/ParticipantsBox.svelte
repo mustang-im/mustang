@@ -1,6 +1,6 @@
 <hbox class="attendees-field" class:read-only={readOnly}>
   <MailAutocomplete addresses={recipients} label={$t`Required`} chips={$ribbonLayout.value == "simplified"}
-    disabled={readOnly} {autofocus} bind:this={addressField} />
+    disabled={readOnly} {autofocus} askForName bind:this={addressField} />
 </hbox>
 
 <script lang="ts" context="module">
@@ -34,8 +34,9 @@
 
   $: takeAttendees($attendees.contents);
   function takeAttendees(current: PersonUID[]) {
-    if (!EventEditFlow.sameAddresses(current, recipients.contents)) {
-      recipients.replaceAll([...new Set(current)]);
+    let participants = [...new Set(current)];
+    if (participants.length != recipients.length || participants.some(participant => !recipients.contains(participant))) {
+      recipients.replaceAll(participants);
     }
   }
 

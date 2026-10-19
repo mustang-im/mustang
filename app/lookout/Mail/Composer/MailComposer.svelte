@@ -53,7 +53,7 @@
             {$t`To`}
           </button>
           <hbox class="field">
-            <MailAutocomplete addresses={mail.to} label={$t`To`} chips={isChips} tabindex={1}
+            <MailAutocomplete addresses={mail.to} label={$t`To`} chips={isChips} tabindex={1} askForName
               autofocus={autofocus && mail.to.isEmpty} on:add={event => onRecipientAdded(event.detail)} bind:this={toField} />
           </hbox>
           <button class="field-button" on:click={() => $openSelectNames = { mail, field: RecipientField.Cc }} tabindex={-1}
@@ -61,7 +61,7 @@
             {$t`Cc`}
           </button>
           <hbox class="field">
-            <MailAutocomplete addresses={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1}
+            <MailAutocomplete addresses={mail.cc} label={$t`Cc`} chips={isChips} tabindex={1} askForName
               on:add={event => onRecipientAdded(event.detail)} bind:this={ccField} />
           </hbox>
           {#if showBCC}
@@ -70,7 +70,7 @@
               {$t`Bcc`}
             </button>
             <hbox class="field">
-              <MailAutocomplete addresses={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1}
+              <MailAutocomplete addresses={mail.bcc} label={$t`Bcc`} chips={isChips} tabindex={1} askForName
                 on:add={event => onRecipientAdded(event.detail)} bind:this={bccField} />
             </hbox>
           {/if}

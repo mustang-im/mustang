@@ -1,4 +1,4 @@
-import { PersonUID } from "../../../logic/Abstract/PersonUID";
+import { PersonUID, nameFromEmailAddress } from "../../../logic/Abstract/PersonUID";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class RecipientText {
@@ -9,7 +9,7 @@ export class RecipientText {
     if (!sanitize.emailAddress(emailAddress, null)) {
       return null;
     }
-    return new PersonUID(emailAddress, name);
+    return new PersonUID(emailAddress, name || nameFromEmailAddress(emailAddress));
   }
 
   static split(text: string): string[] {

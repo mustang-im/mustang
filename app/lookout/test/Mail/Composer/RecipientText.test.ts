@@ -5,11 +5,11 @@ import { PersonUID } from "../../../../logic/Abstract/PersonUID";
 import { RecipientText } from "../../../Mail/Composer/RecipientText";
 import { expect, test } from "vitest";
 
-// Like Outlook, a typed address stays an address, without a name guessed from it
-test("Parses a plain email address without a name", () => {
+// Like frontend's PersonAutocomplete without the name field: no email goes out with a bare address
+test("Parses a plain email address and guesses the name", () => {
   let recipient = RecipientText.parse("  fred.miller@example.com ");
   expect(recipient.emailAddress).toBe("fred.miller@example.com");
-  expect(recipient.name).toBeFalsy();
+  expect(recipient.name).toBe("Fred Miller");
 });
 
 test("Parses name and email address", () => {
