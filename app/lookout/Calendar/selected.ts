@@ -1,6 +1,8 @@
 import type { Event } from "../../logic/Calendar/Event";
 import type { Calendar } from "../../logic/Calendar/Calendar";
+import { WorkingHours } from "./WorkingHours";
 import { shownCalendars } from "../../frontend/Calendar/selected";
+import { ShownWorkHours } from "../../frontend/Calendar/ShownWorkHours";
 import { k1MinuteMS } from "../../logic/util/date";
 import { EventTable } from "./ListView/EventTable";
 import { appGlobal } from "../../logic/app";
@@ -77,8 +79,8 @@ export const now = readable(new Date(), set => {
   return () => clearTimeout(timeout);
 });
 // </copied>
-// export const workWeekHours = WorkingHours.ofAll(new ShownWorkHours(
-//   shownCalendars.filterObservable(calendar => !calendar.isOtherPersonsCalendar)));
+export const workWeekHours = WorkingHours.ofAll(new ShownWorkHours(
+  shownCalendars.filterObservable(calendar => !calendar.isOtherPersonsCalendar)));
 
 export const timeZoneRulers: Readable<TimeZoneRuler[]> = derived([
   getLocalStorage<string>("lookout.calendar.timeZone.label", ""),
