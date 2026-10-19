@@ -30,7 +30,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { EditorFind } from "./EditorFind";
+  import { findNext, clearFound, replaceMatch, replaceAllMatches } from "./EditorFind";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
   import DialogTabs from "../Dialog/DialogTabs.svelte";
@@ -53,23 +53,23 @@
   let showOptions = false;
   let status = "";
 
-  onDestroy(() => EditorFind.clearFound());
+  onDestroy(() => clearFound());
 
   function toggleOptions() {
     showOptions = !showOptions;
   }
 
   function onFindNext() {
-    status = EditorFind.findNext(editor, term, matchCase) ? "" : $t`The search item was not found.`;
+    status = findNext(editor, term, matchCase) ? "" : $t`The search item was not found.`;
   }
 
   function onReplace() {
-    status = EditorFind.replace(editor, term, replacement, matchCase) ? "" : $t`The search item was not found.`;
+    status = replaceMatch(editor, term, replacement, matchCase) ? "" : $t`The search item was not found.`;
   }
 
   function onReplaceAll() {
-    EditorFind.clearFound();
-    let count = EditorFind.replaceAll(editor, term, replacement, matchCase);
+    clearFound();
+    let count = replaceAllMatches(editor, term, replacement, matchCase);
     status = count ? $t`All done. ${count} replacements were made.` : $t`The search item was not found.`;
   }
 

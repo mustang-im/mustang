@@ -13,7 +13,7 @@
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { createPoll, createMeetingTimePoll, createBookMe } from "../../../logic/Mail/SML/SMLCreateKind";
   import { SMLHTTPAccount } from "../../../logic/Mail/SML/SMLHTTPAccount";
-  import { MessageBox } from "../../Shared/Dialog/MessageBox";
+  import { showMessageBox } from "../../Shared/Dialog/MessageBox";
   import { showError } from "../../../frontend/Util/error";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";
@@ -57,7 +57,7 @@
     if (identity.smlAccount) {
       return true;
     }
-    let create = await MessageBox.confirm(gt`Polls`,
+    let create = await showMessageBox(gt`Polls`,
       gt`Polls and bookings need a free SML account for ${identity.emailAddress}. The SML server sends a confirmation message to this address, which ${appName} processes automatically.` + "\n\n" +
       gt`Do you want to create the account now?`,
       gt`Create Account`);

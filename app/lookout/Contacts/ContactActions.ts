@@ -13,7 +13,7 @@ import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { newPerson, selectedPerson } from "../../frontend/Contacts/Person/Selected";
 import { selectedAddressbook, selectedContact } from "./Person/Selected";
-import { MessageBox } from "../Shared/Dialog/MessageBox";
+import { showMessageBox, askYesNo } from "../Shared/Dialog/MessageBox";
 import { appName } from "../../logic/build";
 import { openExternalURL } from "../../logic/util/os-integration";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
@@ -102,7 +102,7 @@ export class ContactActions {
   static async deleteContacts(contacts: Contact[]): Promise<boolean> {
     assert(contacts.length, gt`Please select a contact first`);
     let saved = contacts.filter(contact => !ContactActions.isUnsaved(contact));
-    if (saved.length && !await MessageBox.confirm(gt`Delete`, saved.length == 1
+    if (saved.length && !await showMessageBox(gt`Delete`, saved.length == 1
         ? gt`Do you want to permanently delete the contact ${saved[0].name}?`
         : gt`Do you want to permanently delete the ${saved.length} selected contacts?`)) {
       return false;
@@ -183,7 +183,7 @@ export class ContactActions {
   }
 
   static async deleteFolder(addressbook: Addressbook) {
-    if (!await MessageBox.ask(gt`Delete Folder`, addressbook.protocol == "addressbook-local"
+    if (!await askYesNo(gt`Delete Folder`, addressbook.protocol == "addressbook-local"
         ? gt`Are you sure that you want to delete the address book "${addressbook.name}" and all contacts in it?`
         : gt`Do you want to remove the address book "${addressbook.name}" from ${appName}? This does not change the address book on the server.`)) {
       return;

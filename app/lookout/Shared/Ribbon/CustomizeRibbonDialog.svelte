@@ -36,7 +36,7 @@
 
 <script lang="ts">
   import type { RibbonTabInfo } from "./RibbonGroup";
-  import { RibbonCustomization, type RibbonHiddenParts } from "./RibbonCustomization";
+  import { withHiddenRibbonParts, type RibbonHiddenParts } from "./RibbonCustomization";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
@@ -105,7 +105,7 @@
     if (!shownTabs.length && mainTabs.length) {
       hiddenTabs.delete(mainTabs[0].label);
     }
-    customization.value = RibbonCustomization.withHiddenParts(customization.value, ribbonID, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
+    customization.value = withHiddenRibbonParts(customization.value, ribbonID, { tabs: [...hiddenTabs], groups: [...hiddenGroups] });
   }
 
   function onClose() {

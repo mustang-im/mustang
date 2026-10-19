@@ -67,7 +67,7 @@
   import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../frontend/Mail/Selected";
   import { getAccountIcon } from "../../frontend/Settings/Shared/accountUIHelper";
   import { AccountLabels } from "./Shared/AccountLabels";
-  import { MessageBox } from "../Shared/Dialog/MessageBox";
+  import { askYesNo } from "../Shared/Dialog/MessageBox";
   import { accountColors } from "../../logic/Abstract/Workspace";
   import { MailAccount } from "../../logic/Mail/MailAccount";
   import { ChatAccount } from "../../logic/Chat/ChatAccount";
@@ -106,7 +106,7 @@
   }
 
   async function onRemove() {
-    if (!await MessageBox.ask($t`Remove account`, $t`Are you sure that you want to remove the account ${account.name} from ${appName}? All its content on this computer will be deleted. Content stored on the server will not be affected.`)) {
+    if (!await askYesNo($t`Remove account`, $t`Are you sure that you want to remove the account ${account.name} from ${appName}? All its content on this computer will be deleted. Content stored on the server will not be affected.`)) {
       return;
     }
     let appCategory = settingsCategories.find(cat => cat.accounts.contains(account));

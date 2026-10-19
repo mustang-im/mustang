@@ -197,7 +197,7 @@
   import { appGlobal } from "../../../logic/app";
   import { openComposer } from "../../../frontend/Mail/open";
   import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
-  import { MessageBox } from "../../Shared/Dialog/MessageBox";
+  import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
@@ -261,7 +261,7 @@
 
   async function onOffline() {
     // <copied from="../../../frontend/Calendar/EditEvent/OnlineMeetingBox.svelte">
-    if (event.participants.hasItems && !event.isNew && !await MessageBox.ask($t`Online Meeting`,
+    if (event.participants.hasItems && !event.isNew && !await askYesNo($t`Online Meeting`,
         $t`Attendees who already have the meeting link might miss the meeting. Do you want to remove the online meeting?`)) {
       return;
     }

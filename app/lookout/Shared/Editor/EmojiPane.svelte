@@ -25,7 +25,7 @@
   </hbox>
   {#if !isSearching}
     <hbox class="categories" role="tablist" aria-label={$t`Emoji categories`}>
-      {#each EmojiCatalog.categories as category (category.id)}
+      {#each emojiCategories as category (category.id)}
         <button type="button" class="category" role="tab"
           class:selected={category.id == selectedCategory}
           aria-selected={category.id == selectedCategory}
@@ -50,7 +50,7 @@
         <span class="empty">{$t`No emojis found`}</span>
       {/if}
     {:else}
-      {#each EmojiCatalog.categories as category (category.id)}
+      {#each emojiCategories as category (category.id)}
         <span class="section-header" data-category={category.id}>{categoryLabel(category.id)}</span>
         <div class="emoji-grid" role="group" aria-label={categoryLabel(category.id)}>
           {#each category.emojis as entry (entry.emoji)}
@@ -64,7 +64,7 @@
 </vbox>
 
 <script lang="ts">
-  import { EmojiCatalog, type EmojiEntry } from "./EmojiCatalog";
+  import { emojiCategories, searchEmojis, type EmojiEntry } from "./EmojiCatalog";
   import type { Editor } from "@tiptap/core";
   import SmileysIcon from "lucide-svelte/icons/smile";
   import PeopleIcon from "lucide-svelte/icons/users";
@@ -86,10 +86,10 @@
   let searchTerm = "";
   let searchEl: HTMLInputElement;
   let scrollEl: HTMLElement;
-  let selectedCategory = EmojiCatalog.categories[0]?.id;
+  let selectedCategory = emojiCategories[0]?.id;
 
   $: isSearching = !!searchTerm.trim();
-  $: results = EmojiCatalog.search(searchTerm);
+  $: results = searchEmojis(searchTerm);
 
   onMount(() => searchEl?.focus());
 
@@ -104,7 +104,7 @@
       case "objects": return gt`Objects`;
       case "symbols": return gt`Symbols`;
       case "flags": return gt`Flags`;
-      default: return EmojiCatalog.categories.find(category => category.id == id)?.title ?? id;
+      default: return emojiCategories.find(category => category.id == id)?.title ?? id;
     }
   }
 
@@ -144,7 +144,7 @@
     }
     let top = scrollEl.scrollTop + scrollEl.offsetTop + 4;
     let current = sectionHeaders().filter(header => header.offsetTop <= top).pop();
-    selectedCategory = current?.dataset.category ?? EmojiCatalog.categories[0]?.id;
+    selectedCategory = current?.dataset.category ?? emojiCategories[0]?.id;
   }
 
   async function clearSearch() {

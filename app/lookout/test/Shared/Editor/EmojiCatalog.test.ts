@@ -1,4 +1,4 @@
-import { EmojiCatalog, type EmojiCategory } from "../../../Shared/Editor/EmojiCatalog";
+import { emojiCategories, searchEmojis, type EmojiCategory } from "../../../Shared/Editor/EmojiCatalog";
 import { expect, test } from "vitest";
 
 const categories: EmojiCategory[] = [
@@ -13,23 +13,23 @@ const categories: EmojiCategory[] = [
 ];
 
 test("The catalog has the emoji categories of the frontend data", () => {
-  expect(EmojiCatalog.categories.length).toBeGreaterThan(5);
-  expect(EmojiCatalog.categories[0].emojis.length).toBeGreaterThan(10);
+  expect(emojiCategories.length).toBeGreaterThan(5);
+  expect(emojiCategories[0].emojis.length).toBeGreaterThan(10);
 });
 
 test("An empty search term finds nothing", () => {
-  expect(EmojiCatalog.search("", categories)).toEqual([]);
-  expect(EmojiCatalog.search("   ", categories)).toEqual([]);
-  expect(EmojiCatalog.search(null, categories)).toEqual([]);
+  expect(searchEmojis("", categories)).toEqual([]);
+  expect(searchEmojis("   ", categories)).toEqual([]);
+  expect(searchEmojis(null, categories)).toEqual([]);
 });
 
 test("Search matches names and keywords across categories, ignoring case", () => {
-  expect(EmojiCatalog.search("face", categories).map(entry => entry.emoji)).toEqual(["😀", "😢"]);
-  expect(EmojiCatalog.search("APPLE", categories).map(entry => entry.emoji)).toEqual(["🍏"]);
-  expect(EmojiCatalog.search("part", categories).map(entry => entry.emoji)).toEqual(["🎂"]);
+  expect(searchEmojis("face", categories).map(entry => entry.emoji)).toEqual(["😀", "😢"]);
+  expect(searchEmojis("APPLE", categories).map(entry => entry.emoji)).toEqual(["🍏"]);
+  expect(searchEmojis("part", categories).map(entry => entry.emoji)).toEqual(["🎂"]);
 });
 
 test("Every word of the search term must match", () => {
-  expect(EmojiCatalog.search("face sad", categories).map(entry => entry.emoji)).toEqual(["😢"]);
-  expect(EmojiCatalog.search("face fruit", categories)).toEqual([]);
+  expect(searchEmojis("face sad", categories).map(entry => entry.emoji)).toEqual(["😢"]);
+  expect(searchEmojis("face fruit", categories)).toEqual([]);
 });

@@ -21,7 +21,7 @@
 <script lang="ts">
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import Menu from "../Menu/Menu.svelte";
-  import { RibbonGroupLayout, type RibbonGroupLook, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
+  import { itemLook, type RibbonGroupLook, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
   import { getContext } from "svelte";
   import { readable, type Readable } from "svelte/store";
@@ -43,7 +43,7 @@
 
   const groupLook = getContext<Readable<RibbonGroupLook>>("ribbonGroupLook") ?? readable<RibbonGroupLook>({ layout: "classic", stage: 0, collapsed: false });
   let look: RibbonItemLook;
-  $: look = RibbonGroupLayout.itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, size);
+  $: look = itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, size);
 
   let wrapperEl: HTMLElement;
 

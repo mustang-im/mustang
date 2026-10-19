@@ -1,6 +1,6 @@
 <grid class="gallery" role="group" aria-label={$t`Symbol`}>
-  {#each SymbolTable.gallery() as character (character)}
-    <button type="button" class="symbol" role="menuitem" title={"U+" + SymbolTable.characterCode(character)}
+  {#each symbolGallery() as character (character)}
+    <button type="button" class="symbol" role="menuitem" title={"U+" + characterCode(character)}
       disabled={!editor}
       on:click={() => onInsert(character)}>
       {character}
@@ -11,7 +11,7 @@
 <MenuItem label={$t`More Symbols…`} disabled={!editor} onClick={() => { openedTool = EditorTool.Symbol; }} />
 
 <script lang="ts">
-  import { SymbolTable } from "./SymbolTable";
+  import { symbolGallery, characterCode, noteSymbolUsed } from "./SymbolTable";
   import { EditorTool } from "./EditorTool";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuDivider from "../Menu/MenuDivider.svelte";
@@ -26,7 +26,7 @@
 
   function onInsert(character: string) {
     editor.chain().focus().insertContent({ type: "text", text: character }).run();
-    SymbolTable.used(character);
+    noteSymbolUsed(character);
     closeMenu?.();
   }
 </script>

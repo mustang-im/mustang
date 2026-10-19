@@ -48,10 +48,10 @@
 
 <script lang="ts">
   import { availableTags, saveTagsList } from "../../../logic/Abstract/Tag";
-  import { MessageBox } from "../Dialog/MessageBox";
+  import { askYesNo } from "../Dialog/MessageBox";
   import { catchErrors } from "../../../frontend/Util/error";
   import { CategoryChoice } from "./CategoryChoice";
-  import { CategoryColors } from "./CategoryColors";
+  import { categoryColors } from "./CategoryColors";
   import TagAdd from "./TagAdd.svelte";
   import CategorySquare, { TagState } from "./CategorySquare.svelte";
   import Dialog from "../Dialog/Dialog.svelte";
@@ -84,7 +84,7 @@
   }
 
   function colorOptions(tag: Tag): ComboOption<string>[] {
-    let options = CategoryColors.palette.map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
+    let options = categoryColors().map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
     if (tag?.color && !options.some(option => option.value.toLowerCase() == tag.color.toLowerCase())) {
       options.push({ value: tag.color, label: gt`Custom`, color: tag.color });
     }
@@ -104,7 +104,7 @@
   }
 
   async function onDelete() {
-    if (!await MessageBox.ask(gt`Color Categories`, gt`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
+    if (!await askYesNo(gt`Color Categories`, gt`Are you sure that you want to delete the category ${selected.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
     availableTags.remove(selected);

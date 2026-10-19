@@ -7,10 +7,10 @@ import { InvitationResponse } from "../../../logic/Calendar/Invitation/Invitatio
 import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
 import { DummyCalendarStorage } from "../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { CalendarActions } from "../../Calendar/CalendarActions";
-import { MessageBox } from "../../Shared/Dialog/MessageBox";
-import { beforeEach, expect, test, vi } from "vitest";
+import { mockMessageBox } from "../Shared/Dialog/mockMessageBox";
+import { beforeEach, expect, test } from "vitest";
 
-const messageBox = vi.spyOn(MessageBox, "confirm");
+const messageBox = mockMessageBox();
 beforeEach(() => {
   messageBox.mockReset();
   messageBox.mockResolvedValue(false);

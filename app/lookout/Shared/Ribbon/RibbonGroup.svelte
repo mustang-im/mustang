@@ -39,7 +39,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closePopup} />
 
 <script lang="ts">
-  import { RibbonGroupLayout, type RibbonGroupInfo, type RibbonGroupLook, type RibbonItemInfo, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
+  import { computeStageWidths, type RibbonGroupInfo, type RibbonGroupLook, type RibbonItemInfo, type RibbonLayout, type RibbonMetrics } from "./RibbonGroup";
   import type { RibbonHiddenParts } from "./RibbonCustomization";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
@@ -146,7 +146,7 @@
       let width = Math.max(Math.ceil(buttonsEl.getBoundingClientRect().width), minWidth) + $metrics.groupChrome;
       setRenderedWidth(renderedStage, width, itemsKey);
     }
-    setStageWidths(RibbonGroupLayout.computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified", itemsKey);
+    setStageWidths(computeStageWidths(currentLayout, infos, $metrics, minWidth), currentLayout == "simplified", itemsKey);
     onGroupResized?.();
   }
 

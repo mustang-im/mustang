@@ -39,7 +39,7 @@
   import type { Person } from "../../../logic/Abstract/Person";
   import type { PublicKey } from "../../../logic/Mail/Encryption/PublicKey";
   import { ContactCertificates } from "./ContactCertificates";
-  import { MessageBox } from "../../Shared/Dialog/MessageBox";
+  import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import { TrustLevel } from "../../../logic/Mail/Encryption/enums";
   import { importPublicKey } from "../../../logic/Mail/Encryption/KeyUtils";
   import { saveBlobAsFile } from "../../../frontend/Util/util";
@@ -96,7 +96,7 @@
   }
 
   async function onRemove() {
-    if (!await MessageBox.ask($t`Certificates`, $t`Do you want to remove the certificate ${nameOf(selected)}? You will no longer be able to check messages signed with it.`)) {
+    if (!await askYesNo($t`Certificates`, $t`Do you want to remove the certificate ${nameOf(selected)}? You will no longer be able to check messages signed with it.`)) {
       return;
     }
     person.encryptionPublicKeys.remove(selected);

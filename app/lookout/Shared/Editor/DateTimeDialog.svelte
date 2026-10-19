@@ -10,7 +10,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { DateTimeFormats } from "./DateTimeFormats";
+  import { dateTimeFormats } from "./DateTimeFormats";
   import Dialog from "../Dialog/Dialog.svelte";
   import ListView from "../Form/ListView.svelte";
   import type { Editor } from "@tiptap/core";
@@ -22,7 +22,7 @@
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
-  let formats = DateTimeFormats.list(new Date(), getDateTimeLocale());
+  let formats = dateTimeFormats(new Date(), getDateTimeLocale());
   let selected = formats[0];
 
   function onOK() {

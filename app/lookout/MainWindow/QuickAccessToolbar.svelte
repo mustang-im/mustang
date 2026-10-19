@@ -16,7 +16,7 @@
       {#each $commands as command (command.id)}
         <MenuItem label={command.label} checkable
           checked={$chosenIDs.value ? $chosenIDs.value.includes(command.id) : !!command.shownByDefault}
-          onClick={() => { $chosenIDs.value = QuickAccessToolbar.toggled(command, $commands, $chosenIDs.value); }} />
+          onClick={() => { $chosenIDs.value = toggledQuickAccessIDs(command, $commands, $chosenIDs.value); }} />
       {/each}
       <MenuDivider />
       {#if placement == "above"}
@@ -37,7 +37,7 @@
 </script>
 
 <script lang="ts">
-  import { QuickAccessToolbar, type QuickAccessPosition } from "../Shared/QuickAccess/QuickAccess";
+  import { shownQuickAccessCommands, toggledQuickAccessIDs, type QuickAccessPosition } from "../Shared/QuickAccess/QuickAccess";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import QuickAccessButton from "./QuickAccessButton.svelte";
   import Menu from "../Shared/Menu/Menu.svelte";
@@ -57,7 +57,7 @@
   let customizeEl: HTMLButtonElement;
   let isMenuOpen = false;
 
-  $: shownCommands = QuickAccessToolbar.shown($commands, $chosenIDs.value);
+  $: shownCommands = shownQuickAccessCommands($commands, $chosenIDs.value);
 </script>
 
 <style>

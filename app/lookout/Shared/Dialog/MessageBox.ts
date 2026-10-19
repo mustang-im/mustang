@@ -11,32 +11,30 @@ export interface MessageBoxQuestion {
 
 export const messageBoxQuestion = writable<MessageBoxQuestion | null>(null);
 
-export class MessageBox {
-  protected static pending: MessageBoxQuestion | null = null;
+let pendingQuestion: MessageBoxQuestion | null = null;
 
-  static confirm(title: string, message: string, okLabel = gt`OK`, cancelLabel = gt`Cancel`): Promise<boolean> {
-    MessageBox.pending?.answer(false);
-    return new Promise(resolve => {
-      let question: MessageBoxQuestion = {
-        title,
-        message,
-        okLabel,
-        cancelLabel,
-        answer: ok => {
-          if (MessageBox.pending != question) {
-            return;
-          }
-          MessageBox.pending = null;
-          messageBoxQuestion.set(null);
-          resolve(ok);
-        },
-      };
-      MessageBox.pending = question;
-      messageBoxQuestion.set(question);
-    });
-  }
+export function showMessageBox(title: string, message: string, okLabel = gt`OK`, cancelLabel = gt`Cancel`): Promise<boolean> {
+  pendingQuestion?.answer(false);
+  return new Promise(resolve => {
+    let question: MessageBoxQuestion = {
+      title,
+      message,
+      okLabel,
+      cancelLabel,
+      answer: ok => {
+        if (pendingQuestion != question) {
+          return;
+        }
+        pendingQuestion = null;
+        messageBoxQuestion.set(null);
+        resolve(ok);
+      },
+    };
+    pendingQuestion = question;
+    messageBoxQuestion.set(question);
+  });
+}
 
-  static ask(title: string, message: string): Promise<boolean> {
-    return MessageBox.confirm(title, message, gt`Yes`, gt`No`);
-  }
+export function askYesNo(title: string, message: string): Promise<boolean> {
+  return showMessageBox(title, message, gt`Yes`, gt`No`);
 }

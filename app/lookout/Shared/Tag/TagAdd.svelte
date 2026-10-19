@@ -13,7 +13,7 @@
 <script lang="ts">
   import type { Tag } from "../../../logic/Abstract/Tag";
   import { CategoryChoice } from "./CategoryChoice";
-  import { CategoryColors } from "./CategoryColors";
+  import { categoryColors } from "./CategoryColors";
   import Dialog from "../Dialog/Dialog.svelte";
   import FormGrid from "../Form/FormGrid.svelte";
   import TextField from "../Form/TextField.svelte";
@@ -24,7 +24,7 @@
 
   const dispatch = createEventDispatcher<{ add: Tag }>();
 
-  const colorOptions: ComboOption<string>[] = CategoryColors.palette
+  const colorOptions: ComboOption<string>[] = categoryColors()
     .map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
   let name = "";
   let color = colorOptions[0].value;

@@ -6,7 +6,7 @@ import { InvitationResponse } from "../../../logic/Calendar/Invitation/Invitatio
 import { RecurrencePattern } from "./RecurrencePattern";
 import { Reminder } from "./Reminder";
 import { CalendarActions } from "../CalendarActions";
-import { MessageBox } from "../../Shared/Dialog/MessageBox";
+import { showMessageBox, askYesNo } from "../../Shared/Dialog/MessageBox";
 import { calendarMustangApp } from "../../../frontend/Calendar/CalendarMustangApp";
 import { selectedEvent } from "../../../frontend/Calendar/selected";
 import { goBack } from "../../../frontend/AppsBar/selectedApp";
@@ -136,13 +136,13 @@ export class EventEditFlow {
     let event = this.event;
     let master = event.parentEvent || event;
     if (!master.recurrenceRule && master.unedited?.recurrenceRule) {
-      if (!await MessageBox.confirm(gt`Remove Recurrence`,
+      if (!await showMessageBox(gt`Remove Recurrence`,
           gt`The appointment will no longer repeat, and all other occurrences of the series will be deleted. Is this OK?`)) {
         return false;
       }
     } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
         !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
-      if (!await MessageBox.confirm(gt`Recurrence`,
+      if (!await showMessageBox(gt`Recurrence`,
           gt`Any exceptions associated with this recurring appointment will be lost. Is this OK?`)) {
         return false;
       }
@@ -322,7 +322,7 @@ export class EventEditFlow {
   async deleteAll() {
     // <copied from="../CalendarActions.ts">
     let event = this.event;
-    let isConfirmed = await MessageBox.ask(gt`Delete Series`, event.isIncomingMeeting
+    let isConfirmed = await askYesNo(gt`Delete Series`, event.isIncomingMeeting
       ? gt`Do you want to delete all occurrences of the recurring meeting "${event.title ?? ""}"?`
       : gt`Do you want to delete all occurrences of the recurring appointment "${event.title ?? ""}"?`);
     // </copied>
@@ -341,7 +341,7 @@ export class EventEditFlow {
   async cancelMeeting() {
     // <copied from="../CalendarActions.ts">
     let event = this.event;
-    let isConfirmed = await MessageBox.ask(gt`Cancel Meeting`, event.parentEvent
+    let isConfirmed = await askYesNo(gt`Cancel Meeting`, event.parentEvent
       ? gt`Do you want to cancel this occurrence of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`
       : gt`Do you want to cancel the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`);
     // </copied>
@@ -354,7 +354,7 @@ export class EventEditFlow {
   async cancelMeetingSeries() {
     // <copied from="../CalendarActions.ts">
     let event = this.event;
-    let isConfirmed = await MessageBox.ask(gt`Cancel Series`,
+    let isConfirmed = await askYesNo(gt`Cancel Series`,
       gt`Do you want to cancel all occurrences of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`);
     // </copied>
     if (!isConfirmed) {

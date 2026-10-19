@@ -4,7 +4,7 @@
 
 <script lang="ts">
   import Checkbox from "../Form/Checkbox.svelte";
-  import { RibbonGroupLayout, type RibbonGroupLook, type RibbonItemLook } from "./RibbonGroup";
+  import { itemLook, type RibbonGroupLook, type RibbonItemLook } from "./RibbonGroup";
   import { getContext } from "svelte";
   import { readable, type Readable } from "svelte/store";
 
@@ -15,7 +15,7 @@
 
   const groupLook = getContext<Readable<RibbonGroupLook>>("ribbonGroupLook") ?? readable<RibbonGroupLook>({ layout: "classic", stage: 0, collapsed: false });
   let look: RibbonItemLook;
-  $: look = RibbonGroupLayout.itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, "small");
+  $: look = itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, "small");
 </script>
 
 <style>

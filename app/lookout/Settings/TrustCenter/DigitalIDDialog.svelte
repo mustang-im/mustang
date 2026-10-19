@@ -52,7 +52,7 @@
 <script lang="ts">
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { DigitalIDs, type DigitalID } from "./DigitalIDs";
-  import { MessageBox } from "../../Shared/Dialog/MessageBox";
+  import { showMessageBox } from "../../Shared/Dialog/MessageBox";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import FormGrid from "../../Shared/Form/FormGrid.svelte";
@@ -109,7 +109,7 @@
     }
     await DigitalIDs.exportFile(identity, exportKey, withPrivateKey);
     if (withPrivateKey && deleteAfterExport &&
-        await MessageBox.confirm(gt`Delete Digital ID`, gt`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${DigitalIDs.nameOf(exportKey)} from this computer?`)) {
+        await showMessageBox(gt`Delete Digital ID`, gt`You will no longer be able to read messages that are encrypted with this Digital ID, neither old nor new ones, unless you import the exported file again. Do you want to delete the Digital ID ${DigitalIDs.nameOf(exportKey)} from this computer?`)) {
       await DigitalIDs.remove(identity, exportKey);
     }
     dispatch("change", identity);

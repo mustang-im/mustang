@@ -10,7 +10,7 @@
       <grid class="symbols" role="grid" aria-label={$t`Symbols`}>
         {#each characters as character (character)}
           <button type="button" class="symbol" class:selected={character == selected}
-            title={"U+" + SymbolTable.characterCode(character)}
+            title={"U+" + characterCode(character)}
             on:click={() => selected = character}
             on:dblclick={() => insert(character)}>
             {character}
@@ -31,7 +31,7 @@
       </vbox>
       <hbox class="code-row lo-secondary">
         {#if selected}
-          {$t`Character code:`} {SymbolTable.characterCode(selected)} {$t`from: Unicode (hex)`}
+          {$t`Character code:`} {characterCode(selected)} {$t`from: Unicode (hex)`}
         {/if}
       </hbox>
     </vbox>
@@ -41,7 +41,7 @@
         <span class="special-character">{$t`Character:`}</span>
       </hbox>
       <vbox flex class="special-list" role="listbox" aria-label={$t`Special Characters`}>
-        {#each SymbolTable.specialCharacters as special (special.character)}
+        {#each specialCharacters() as special (special.character)}
           <button type="button" class="special-row" role="option"
             aria-selected={special.character == selectedSpecial}
             class:selected={special.character == selectedSpecial}
@@ -63,7 +63,7 @@
 </Dialog>
 
 <script lang="ts">
-  import { SymbolTable, type SymbolSubset } from "./SymbolTable";
+  import { recentSymbols, symbolSubsets, specialCharacters, subsetCharacters, symbolSubsetOf, characterCode, noteSymbolUsed, type SymbolSubset } from "./SymbolTable";
   import Dialog from "../Dialog/Dialog.svelte";
   import DialogButton from "../Dialog/DialogButton.svelte";
   import DialogTabs from "../Dialog/DialogTabs.svelte";
@@ -77,19 +77,18 @@
   const dispatch = createEventDispatcher<{ close: void }>();
 
   let tab = "symbols";
-  let subsets = SymbolTable.subsets;
+  let subsets = symbolSubsets();
   let subset: SymbolSubset = subsets[0];
   let subsetOptions = subsets.map(candidate => ({ value: candidate, label: candidate.name }));
   let selected: string = null;
   let selectedSpecial: string = null;
   let hasInserted = false;
-  let recentSetting = SymbolTable.recentSymbols;
-  $: recent = $recentSetting.value ?? [];
-  $: characters = SymbolTable.characters(subset);
+  $: recent = $recentSymbols.value ?? [];
+  $: characters = subsetCharacters(subset);
 
   function onRecent(character: string) {
     selected = character;
-    let recentSubset = SymbolTable.subsetOf(character);
+    let recentSubset = symbolSubsetOf(character);
     subset = subsets.find(candidate => candidate.name == recentSubset?.name) ?? subset;
   }
 
@@ -98,7 +97,7 @@
       return;
     }
     editor.chain().focus().insertContent({ type: "text", text: character }).run();
-    SymbolTable.used(character);
+    noteSymbolUsed(character);
     hasInserted = true;
   }
 

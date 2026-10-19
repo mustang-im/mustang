@@ -1,9 +1,9 @@
-import { MessageBox, messageBoxQuestion } from "../../../Shared/Dialog/MessageBox";
+import { showMessageBox, askYesNo, messageBoxQuestion } from "../../../Shared/Dialog/MessageBox";
 import { expect, test } from "vitest";
 import { get } from "svelte/store";
 
 test("A message box answers once and closes", async () => {
-  let answer = MessageBox.confirm("Delete", "Do you want to permanently delete the selected message?");
+  let answer = showMessageBox("Delete", "Do you want to permanently delete the selected message?");
   let question = get(messageBoxQuestion);
   expect(question.title).toBe("Delete");
   expect(question.okLabel).toBe("OK");
@@ -16,7 +16,7 @@ test("A message box answers once and closes", async () => {
 });
 
 test("Yes / No question", async () => {
-  let answer = MessageBox.ask("Delete Folder", "Are you sure?");
+  let answer = askYesNo("Delete Folder", "Are you sure?");
   let question = get(messageBoxQuestion);
   expect([question.okLabel, question.cancelLabel]).toEqual(["Yes", "No"]);
   question.answer(false);
@@ -24,8 +24,8 @@ test("Yes / No question", async () => {
 });
 
 test("A new message box cancels the one that is still open", async () => {
-  let first = MessageBox.confirm("First", "first");
-  let second = MessageBox.confirm("Second", "second");
+  let first = showMessageBox("First", "first");
+  let second = showMessageBox("Second", "second");
   expect(await first).toBe(false);
   expect(get(messageBoxQuestion).title).toBe("Second");
   get(messageBoxQuestion).answer(true);

@@ -18,7 +18,7 @@
 
 <script lang="ts">
   import { consistentColor } from "../../../logic/Abstract/personColor";
-  import { Initials } from "../../Shared/Person/Initials";
+  import { getInitials } from "../../Shared/Person/Initials";
   import GroupIcon from "lucide-svelte/icons/users-round";
   import PersonIcon from "lucide-svelte/icons/user-round";
 
@@ -31,7 +31,7 @@
 
   let isBroken = false;
   $: picture, isBroken = false;
-  $: initials = Initials.of(name);
+  $: initials = getInitials(name);
   $: color = colorKey || name ? consistentColor(colorKey || name) : null;
 </script>
 

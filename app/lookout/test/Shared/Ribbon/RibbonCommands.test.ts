@@ -1,4 +1,4 @@
-import { RibbonCommands } from "../../../Shared/Ribbon/RibbonCommands";
+import { searchRibbonCommands } from "../../../Shared/Ribbon/RibbonCommands";
 import { expect, test } from "vitest";
 
 const entries = [
@@ -13,28 +13,28 @@ const entries = [
 ];
 
 test("An empty search finds nothing", () => {
-  expect(RibbonCommands.search(entries, "")).toEqual([]);
-  expect(RibbonCommands.search(entries, "  ")).toEqual([]);
+  expect(searchRibbonCommands(entries, "")).toEqual([]);
+  expect(searchRibbonCommands(entries, "  ")).toEqual([]);
 });
 
 test("Exact and prefix matches come first, then word starts, then substrings", () => {
-  let labels = RibbonCommands.search(entries, "reply").map(entry => entry.label);
+  let labels = searchRibbonCommands(entries, "reply").map(entry => entry.label);
   expect(labels).toEqual(["Reply", "Reply All"]);
-  labels = RibbonCommands.search(entries, "folder").map(entry => entry.label);
+  labels = searchRibbonCommands(entries, "folder").map(entry => entry.label);
   expect(labels).toEqual(["Send/Receive All Folders", "New Folder", "Delete All"]);
 });
 
 test("The same command on two tabs is listed once", () => {
-  let found = RibbonCommands.search(entries, "receive");
+  let found = searchRibbonCommands(entries, "receive");
   expect(found.length).toBe(1);
   expect(found[0].tabLabel).toBe("Home");
 });
 
 test("Tooltips and group names match, too, with lower rank", () => {
-  expect(RibbonCommands.search(entries, "mark as").map(entry => entry.label)).toEqual(["Unread/ Read"]);
-  expect(RibbonCommands.search(entries, "clean").map(entry => entry.label)).toEqual(["Delete All"]);
+  expect(searchRibbonCommands(entries, "mark as").map(entry => entry.label)).toEqual(["Unread/ Read"]);
+  expect(searchRibbonCommands(entries, "clean").map(entry => entry.label)).toEqual(["Delete All"]);
 });
 
 test("The number of results is limited", () => {
-  expect(RibbonCommands.search(entries, "e", 3).length).toBe(3);
+  expect(searchRibbonCommands(entries, "e", 3).length).toBe(3);
 });

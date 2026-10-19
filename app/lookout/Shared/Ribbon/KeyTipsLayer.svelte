@@ -20,7 +20,7 @@
 </script>
 
 <script lang="ts">
-  import { KeyTips } from "./KeyTips";
+  import { assignKeyTips, quickAccessKeyTip } from "./KeyTips";
   import { tick } from "svelte";
 
   export let ribbonEl: HTMLElement;
@@ -103,9 +103,9 @@
         tellMe.click();
       },
     }] : [];
-    let tabTips = KeyTips.assign(tabTargets.map(target => target.label), ["F", "Q"], true);
+    let tabTips = assignKeyTips(tabTargets.map(target => target.label), ["F", "Q"], true);
     badges = [
-      ...badgesFor(quickAccess.map(el => clickTarget(el, labelOf(el))), quickAccess.map((_el, i) => KeyTips.quickAccessTip(i))),
+      ...badgesFor(quickAccess.map(el => clickTarget(el, labelOf(el))), quickAccess.map((_el, i) => quickAccessKeyTip(i))),
       ...(fileTab ? badgesFor([clickTarget(fileTab, labelOf(fileTab))], ["F"]) : []),
       ...badgesFor(tabTargets, tabTips),
       ...badgesFor(tellMeTargets, tellMeTargets.map(() => "Q")),
@@ -163,7 +163,7 @@
       exit();
       return;
     }
-    badges = badgesFor(targets, KeyTips.assign(targets.map(target => target.label)));
+    badges = badgesFor(targets, assignKeyTips(targets.map(target => target.label)));
     typed = "";
     level = "commands";
   }

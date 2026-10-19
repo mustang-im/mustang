@@ -1,14 +1,14 @@
 <RibbonTab label={$t`Message`} contextual={isInline} isSelected={isInline}>
   <RibbonGroup label={$t`Clipboard`} icon={PasteIcon}>
     <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo="Ctrl+V"
-      disabled={!editor} onClick={() => EditorClipboard.paste(editor)}>
-      <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => EditorClipboard.paste(editor)} />
-      <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => EditorClipboard.pasteAsText(editor)} />
+      disabled={!editor} onClick={() => pasteClipboard(editor)}>
+      <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => pasteClipboard(editor)} />
+      <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => pasteClipboardAsText(editor)} />
     </RibbonSplitButton>
     <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo="Ctrl+X"
-      disabled={!editor} onClick={() => EditorClipboard.cut(editor)} />
+      disabled={!editor} onClick={() => cutSelection(editor)} />
     <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo="Ctrl+C"
-      disabled={!editor} onClick={() => EditorClipboard.copy(editor)} />
+      disabled={!editor} onClick={() => copySelection(editor)} />
   </RibbonGroup>
   <RibbonGroup label={$t`Basic Text`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
@@ -76,7 +76,7 @@
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { EditorTool } from "../../Shared/Editor/EditorTool";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { EditorClipboard } from "../../Shared/Editor/EditorClipboard";
+  import { cutSelection, copySelection, pasteClipboard, pasteClipboardAsText } from "../../Shared/Editor/EditorClipboard";
   import RibbonTab from "../../Shared/Ribbon/RibbonTab.svelte";
   import RibbonGroup from "../../Shared/Ribbon/RibbonGroup.svelte";
   import RibbonButton from "../../Shared/Ribbon/RibbonButton.svelte";

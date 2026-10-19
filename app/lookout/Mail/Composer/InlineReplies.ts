@@ -1,6 +1,6 @@
 import type { EMail } from "../../../logic/Mail/EMail";
 import { DraftContent } from "./DraftContent";
-import { MessageBox } from "../../Shared/Dialog/MessageBox";
+import { askYesNo } from "../../Shared/Dialog/MessageBox";
 import { inlineReplies, inlineRibbon } from "../Selected";
 import { get } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
@@ -26,7 +26,7 @@ export class InlineReplies {
   static async start(original: EMail, draft: EMail) {
     let existing = inlineReplies.find(reply => reply.original == original) ?? null;
     if (existing && DraftContent.hasUserText(existing.draft.html) &&
-        !await MessageBox.ask(gt`Discard Draft`, gt`You already started a response to this message. Do you want to discard it and start a new one?`)) {
+        !await askYesNo(gt`Discard Draft`, gt`You already started a response to this message. Do you want to discard it and start a new one?`)) {
       return;
     }
     if (existing) {

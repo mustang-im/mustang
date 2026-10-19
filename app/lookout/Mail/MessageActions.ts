@@ -7,7 +7,7 @@ import type { Tag } from "../../logic/Abstract/Tag";
 import { Person } from "../../logic/Abstract/Person";
 import type { PersonUID } from "../../logic/Abstract/PersonUID";
 import { appGlobal } from "../../logic/app";
-import { MessageBox } from "../Shared/Dialog/MessageBox";
+import { showMessageBox } from "../Shared/Dialog/MessageBox";
 import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
 import { InlineReplies } from "./Composer/InlineReplies";
 import { updatingFolders } from "./Selected";
@@ -115,7 +115,7 @@ export class MessageActions {
     let question = messages.length == 1
       ? gt`Do you want to permanently delete the selected message?`
       : gt`Do you want to permanently delete the ${messages.length} selected messages?`;
-    if (!await MessageBox.confirm(gt`Delete`, question)) {
+    if (!await showMessageBox(gt`Delete`, question)) {
       return;
     }
     await Promise.all(messages.map(message => message.deleteMessage(DeleteStrategy.DeleteImmediately)));

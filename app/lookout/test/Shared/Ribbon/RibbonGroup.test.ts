@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { RibbonGroupLayout, RibbonLabel, type RibbonGroupInfo } from "../../../Shared/Ribbon/RibbonGroup";
+import { fitGroupStages, isOverflowStage, computeStageWidths, columnsWidth, itemLook, largeLabelLines, type RibbonGroupInfo } from "../../../Shared/Ribbon/RibbonGroup";
 import { expect, test } from "vitest";
 
 function makeGroup(label: string, expandedWidth: number, collapsedWidth = 82): RibbonGroupInfo {
@@ -15,7 +15,7 @@ function collapsedStates(groups: RibbonGroupInfo[], stages: number[]): boolean[]
 }
 
 function fit(groups: RibbonGroupInfo[], availableWidth: number, overflowWidth = 0): number[] {
-  return RibbonGroupLayout.fitStages(groups, availableWidth, overflowWidth);
+  return fitGroupStages(groups, availableWidth, overflowWidth);
 }
 
 test("All groups fit: nothing collapses", () => {
@@ -80,7 +80,7 @@ test("Simplified: when a wide group on the left must show only icons, the groups
 test("Simplified: groups move into the More menu only when all of them show only icons", () => {
   let groups = [makeSimplifiedGroup("New", 250, 86), makeSimplifiedGroup("Respond", 300, 110), makeSimplifiedGroup("Tags", 280, 120)];
   let overflowLabels = (stages: number[]) => groups
-    .filter((group, i) => RibbonGroupLayout.isOverflowStage(group, stages[i]))
+    .filter((group, i) => isOverflowStage(group, stages[i]))
     .map(group => group.label);
   // All icons only: 316. "Tags" into the More menu saves 120, but the More button takes 50 -> 246
   expect(fit(groups, 300, 50)).toEqual([1, 1, 2]);
@@ -99,8 +99,8 @@ test("Simplified: groups move into the More menu only when all of them show only
 const metrics = { largeWidth: 80, smallWidth: 120, smallIconWidth: 36, simplifiedWidth: 110, simplifiedIconWidth: 40, gap: 2, groupChrome: 10 };
 
 test("Classic: large buttons become small, then icons only, before any group collapses", () => {
-  let newGroup = makeStagedGroup("New", RibbonGroupLayout.computeStageWidths("classic", [{ size: "large" }, { size: "large" }], metrics));
-  let respond = makeStagedGroup("Respond", RibbonGroupLayout.computeStageWidths("classic", [{ size: "small" }, { size: "small" }, { size: "small" }, { size: "small" }], metrics));
+  let newGroup = makeStagedGroup("New", computeStageWidths("classic", [{ size: "large" }, { size: "large" }], metrics));
+  let respond = makeStagedGroup("Respond", computeStageWidths("classic", [{ size: "small" }, { size: "small" }, { size: "small" }, { size: "small" }], metrics));
   let groups = [newGroup, respond];
   expect(newGroup.stageWidths).toEqual([172, 130, 46, 90]);
   expect(respond.stageWidths).toEqual([252, 252, 84, 90]);
@@ -116,7 +116,7 @@ test("Classic: large buttons become small, then icons only, before any group col
 });
 
 test("Classic: a group with a text box collapses after its buttons show only icons", () => {
-  let widths = RibbonGroupLayout.computeStageWidths("classic", [{ size: "small", fixedWidth: 160 }, { size: "small" }, { size: "small" }], metrics);
+  let widths = computeStageWidths("classic", [{ size: "small", fixedWidth: 160 }, { size: "small" }, { size: "small" }], metrics);
   // One column of 3 rows, as wide as the text box
   expect(widths).toEqual([170, 170, 170, 90]);
   let groups = [makeStagedGroup("Find", widths)];
@@ -135,33 +135,33 @@ test("Classic: small buttons fill columns of 3, a large button starts a new colu
     { rows: 1, width: 100 },
   ];
   // Columns: [100] [80] [100, 120, 100] [100]
-  expect(RibbonGroupLayout.columnsWidth(cells, 2)).toBe(100 + 80 + 120 + 100 + 3 * 2);
-  expect(RibbonGroupLayout.columnsWidth([], 2)).toBe(0);
+  expect(columnsWidth(cells, 2)).toBe(100 + 80 + 120 + 100 + 3 * 2);
+  expect(columnsWidth([], 2)).toBe(0);
 });
 
 test("Simplified: one row, uniform widths", () => {
-  let widths = RibbonGroupLayout.computeStageWidths("simplified", [{ size: "large" }, { size: "small" }, { size: "small", fixedWidth: 150 }], metrics);
+  let widths = computeStageWidths("simplified", [{ size: "large" }, { size: "small" }, { size: "small", fixedWidth: 150 }], metrics);
   expect(widths).toEqual([110 + 110 + 150 + 4 + 10, 40 + 40 + 150 + 4 + 10, 0]);
 });
 
 test("Button look depends on layout, stage and size", () => {
-  expect(RibbonGroupLayout.itemLook("classic", 0, false, "large")).toBe("large");
-  expect(RibbonGroupLayout.itemLook("classic", 0, false, "small")).toBe("small");
-  expect(RibbonGroupLayout.itemLook("classic", 1, false, "large")).toBe("small");
-  expect(RibbonGroupLayout.itemLook("classic", 2, false, "large")).toBe("small-icon");
+  expect(itemLook("classic", 0, false, "large")).toBe("large");
+  expect(itemLook("classic", 0, false, "small")).toBe("small");
+  expect(itemLook("classic", 1, false, "large")).toBe("small");
+  expect(itemLook("classic", 2, false, "large")).toBe("small-icon");
   // The popup of a collapsed group shows the buttons as designed
-  expect(RibbonGroupLayout.itemLook("classic", 3, true, "large")).toBe("large");
-  expect(RibbonGroupLayout.itemLook("simplified", 0, false, "large")).toBe("simplified");
-  expect(RibbonGroupLayout.itemLook("simplified", 1, false, "small")).toBe("simplified-icon");
-  expect(RibbonGroupLayout.itemLook("simplified", 2, true, "small")).toBe("list");
+  expect(itemLook("classic", 3, true, "large")).toBe("large");
+  expect(itemLook("simplified", 0, false, "large")).toBe("simplified");
+  expect(itemLook("simplified", 1, false, "small")).toBe("simplified-icon");
+  expect(itemLook("simplified", 2, true, "small")).toBe("list");
 });
 
 test("Classic: a group is never narrower than its label", () => {
   // One large button: large 80, small 120, icons only 36. The label "Send/Receive" needs 70.
-  let widths = RibbonGroupLayout.computeStageWidths("classic", [{ size: "large" }], metrics, 70);
+  let widths = computeStageWidths("classic", [{ size: "large" }], metrics, 70);
   expect(widths).toEqual([90, 130, 80, 90]);
   // The simplified ribbon shows no group labels
-  expect(RibbonGroupLayout.computeStageWidths("simplified", [{ size: "large" }], metrics, 70)).toEqual([120, 50, 0]);
+  expect(computeStageWidths("simplified", [{ size: "large" }], metrics, 70)).toEqual([120, 50, 0]);
 });
 
 test("Classic: a group that rendered wider than computed gets small buttons first, so the last group stays inside the ribbon", () => {
@@ -177,15 +177,15 @@ test("Classic: a group that rendered wider than computed gets small buttons firs
 });
 
 test("Classic: large labels with several words always take 2 lines, split where both lines are about equally long", () => {
-  expect(RibbonLabel.largeLines("Delete", false)).toEqual(["Delete", ""]);
-  expect(RibbonLabel.largeLines("New Calendar", false)).toEqual(["New", "Calendar"]);
-  expect(RibbonLabel.largeLines("Rename Calendar", false)).toEqual(["Rename", "Calendar"]);
-  expect(RibbonLabel.largeLines("New Contact Group", false)).toEqual(["New Contact", "Group"]);
-  expect(RibbonLabel.largeLines("Mark All as Read", false)).toEqual(["Mark All", "as Read"]);
-  expect(RibbonLabel.largeLines("Send/Receive All Folders", false)).toEqual(["Send/Receive", "All Folders"]);
+  expect(largeLabelLines("Delete", false)).toEqual(["Delete", ""]);
+  expect(largeLabelLines("New Calendar", false)).toEqual(["New", "Calendar"]);
+  expect(largeLabelLines("Rename Calendar", false)).toEqual(["Rename", "Calendar"]);
+  expect(largeLabelLines("New Contact Group", false)).toEqual(["New Contact", "Group"]);
+  expect(largeLabelLines("Mark All as Read", false)).toEqual(["Mark All", "as Read"]);
+  expect(largeLabelLines("Send/Receive All Folders", false)).toEqual(["Send/Receive", "All Folders"]);
   // The menu arrow counts on the second line
-  expect(RibbonLabel.largeLines("New Items", true)).toEqual(["New", "Items"]);
+  expect(largeLabelLines("New Items", true)).toEqual(["New", "Items"]);
   // "&" stays with the word before it
-  expect(RibbonLabel.largeLines("Spelling & Grammar", false)).toEqual(["Spelling &", "Grammar"]);
-  expect(RibbonLabel.largeLines("Date & Time", false)).toEqual(["Date &", "Time"]);
+  expect(largeLabelLines("Spelling & Grammar", false)).toEqual(["Spelling &", "Grammar"]);
+  expect(largeLabelLines("Date & Time", false)).toEqual(["Date &", "Time"]);
 });

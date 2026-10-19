@@ -8,8 +8,8 @@ import { Group } from "../../../logic/Abstract/Group";
 import { ContactActions } from "../../Contacts/ContactActions";
 import { ContactSearch } from "../../Contacts/ContactSearch";
 import { ContactSearchScope } from "../../Contacts/Person/Selected";
-import { MessageBox } from "../../Shared/Dialog/MessageBox";
-import { beforeEach, expect, test, vi } from "vitest";
+import { mockMessageBox } from "../Shared/Dialog/mockMessageBox";
+import { beforeEach, expect, test } from "vitest";
 
 class TestGAL extends SearchOnlyAddressbook {
   readonly protocol: string = "gal-test";
@@ -36,7 +36,10 @@ function newGroup(name: string, ...members: Person[]): Group {
   return group;
 }
 
+const messageBox = mockMessageBox();
+
 beforeEach(() => {
+  messageBox.mockReset();
   addressbook = new Addressbook();
   addressbook.name = "Personal";
   appGlobal.addressbooks.replaceAll([addressbook]);
@@ -149,7 +152,7 @@ test("Contact from the Same Company copies the company and the business numbers 
 });
 
 test("Deleting saved contacts asks first, with Outlook's Delete question; Cancel keeps them", async () => {
-  let messageBox = vi.spyOn(MessageBox, "confirm").mockResolvedValue(false);
+  messageBox.mockResolvedValue(false);
   expect(await ContactActions.deleteContacts([anna])).toBe(false);
   expect(await ContactActions.deleteContacts([anna, bert])).toBe(false);
   expect(messageBox.mock.calls.map(call => call.slice(0, 2))).toEqual([
@@ -157,22 +160,18 @@ test("Deleting saved contacts asks first, with Outlook's Delete question; Cancel
     ["Delete", "Do you want to permanently delete the 2 selected contacts?"],
   ]);
   expect(addressbook.persons.contents).toContain(anna);
-  messageBox.mockRestore();
 });
 
 test("Deleting a contact that was never saved needs no question", async () => {
-  let messageBox = vi.spyOn(MessageBox, "confirm");
-  let person = ContactActions.createPerson(addressbook);
+    let person = ContactActions.createPerson(addressbook);
   expect(await ContactActions.deleteContacts([person])).toBe(true);
   expect(messageBox).not.toHaveBeenCalled();
-  messageBox.mockRestore();
 });
 
 test("Delete Folder asks Yes / No, and No keeps the address book", async () => {
-  let messageBox = vi.spyOn(MessageBox, "confirm").mockResolvedValue(false);
+  messageBox.mockResolvedValue(false);
   await ContactActions.deleteFolder(addressbook);
   expect(messageBox.mock.calls[0][0]).toBe("Delete Folder");
   expect(messageBox.mock.calls[0].slice(2)).toEqual(["Yes", "No"]);
   expect(appGlobal.addressbooks.contents).toContain(addressbook);
-  messageBox.mockRestore();
 });

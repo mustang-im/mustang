@@ -27,7 +27,7 @@
 <svelte:window on:click={onClickOutside} on:keydown={onKeyDown} on:resize={closeMoreMenu} />
 
 <script lang="ts">
-  import { RibbonGroupLayout, type RibbonGroupInfo, type RibbonLayout, type RibbonMetrics, type RibbonTabInfo } from "./RibbonGroup";
+  import { fitGroupStages, isOverflowStage, type RibbonGroupInfo, type RibbonLayout, type RibbonMetrics, type RibbonTabInfo } from "./RibbonGroup";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import RibbonButtonBase from "./RibbonButtonBase.svelte";
   import MoreIcon from "lucide-svelte/icons/ellipsis";
@@ -106,9 +106,9 @@
     if (!availableWidth) {
       return;
     }
-    let stages = RibbonGroupLayout.fitStages(tab.groups, availableWidth, overflowWidth);
+    let stages = fitGroupStages(tab.groups, availableWidth, overflowWidth);
     tab.groups.forEach((group, i) => group.setStage(stages[i]));
-    let fittedOverflow = tab.groups.filter((group, i) => RibbonGroupLayout.isOverflowStage(group, stages[i]));
+    let fittedOverflow = tab.groups.filter((group, i) => isOverflowStage(group, stages[i]));
     if (overflowGroups.length != fittedOverflow.length || overflowGroups.some((group, i) => group != fittedOverflow[i])) {
       overflowGroups = fittedOverflow;
     }

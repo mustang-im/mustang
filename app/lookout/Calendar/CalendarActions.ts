@@ -9,7 +9,7 @@ import { WorkingHours } from "./WorkingHours";
 import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
-import { MessageBox } from "../Shared/Dialog/MessageBox";
+import { showMessageBox, askYesNo } from "../Shared/Dialog/MessageBox";
 import { appName } from "../../logic/build";
 import { appGlobal } from "../../logic/app";
 import { assert } from "../../logic/util/util";
@@ -101,7 +101,7 @@ export class CalendarActions {
   static async changeTime(event: Event, start: Date, end: Date) {
     assert(event.isEditable, gt`You cannot change the time of a meeting that someone else organized`);
     if (event.isOutgoingMeeting && event.participants.length > 1 &&
-        !await MessageBox.confirm(gt`Send Update`,
+        !await showMessageBox(gt`Send Update`,
           gt`Would you like to move the meeting "${event.title ?? ""}" and send an update to the attendees?`,
           gt`Send Update`, gt`Cancel`)) {
       return;
@@ -121,7 +121,7 @@ export class CalendarActions {
 
   static async cancelMeeting(event: Event) {
     // <copied to="EditEvent/EventEditFlow.ts">
-    let isConfirmed = await MessageBox.ask(gt`Cancel Meeting`, event.parentEvent
+    let isConfirmed = await askYesNo(gt`Cancel Meeting`, event.parentEvent
       ? gt`Do you want to cancel this occurrence of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`
       : gt`Do you want to cancel the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`);
     // </copied>
@@ -153,9 +153,9 @@ export class CalendarActions {
   static async deleteSeries(event: Event) {
     // <copied to="EditEvent/EventEditFlow.ts">
     let isConfirmed = event.isOutgoingMeeting
-      ? await MessageBox.ask(gt`Cancel Series`,
+      ? await askYesNo(gt`Cancel Series`,
       gt`Do you want to cancel all occurrences of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`)
-      : await MessageBox.ask(gt`Delete Series`, event.isIncomingMeeting
+      : await askYesNo(gt`Delete Series`, event.isIncomingMeeting
       ? gt`Do you want to delete all occurrences of the recurring meeting "${event.title ?? ""}"?`
       : gt`Do you want to delete all occurrences of the recurring appointment "${event.title ?? ""}"?`);
     // </copied>
@@ -192,7 +192,7 @@ export class CalendarActions {
   }
 
   static async deleteCalendar(calendar: Calendar): Promise<boolean> {
-    if (!await MessageBox.ask(gt`Delete Calendar`, calendar.protocol == "calendar-local"
+    if (!await askYesNo(gt`Delete Calendar`, calendar.protocol == "calendar-local"
       ? gt`Are you sure that you want to delete the calendar "${calendar.name}" with all its appointments and meetings?`
       : gt`Do you want to remove the calendar "${calendar.name}" from ${appName}? This does not change the calendar on the server.`)) {
       return false;

@@ -97,8 +97,8 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import type { ReadingPanePosition } from "../../Mail/3pane/3Pane.svelte";
   import { CategoryChoice } from "../../Shared/Tag/CategoryChoice";
-  import { CategoryColors } from "../../Shared/Tag/CategoryColors";
-  import { MessageBox } from "../../Shared/Dialog/MessageBox";
+  import { categoryColors } from "../../Shared/Tag/CategoryColors";
+  import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { appName } from "../../../logic/build";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
@@ -148,7 +148,7 @@
     notificationsSetting.value = isOn ? [ ...kinds, kind ] : kinds;
   }
 
-  const colorOptions = CategoryColors.palette
+  const colorOptions = categoryColors()
     .map(entry => ({ value: entry.color, label: entry.name, color: entry.color }));
   let newCategoryName = "";
   let newCategoryColor = colorOptions[0].value;
@@ -159,7 +159,7 @@
   }
 
   async function onDeleteCategory(tag: Tag) {
-    if (!await MessageBox.ask($t`Categories`, $t`Are you sure that you want to delete the category ${tag.name}? This removes it from the list of categories, but not from the items that have it.`)) {
+    if (!await askYesNo($t`Categories`, $t`Are you sure that you want to delete the category ${tag.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
     availableTags.remove(tag);

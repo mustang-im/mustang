@@ -44,7 +44,7 @@
 </Menu>
 
 <script lang="ts">
-  import { RibbonCommands, type RibbonCommandEntry } from "./RibbonCommands";
+  import { searchRibbonCommands, type RibbonCommandEntry } from "./RibbonCommands";
   import Menu from "../Menu/Menu.svelte";
   import MenuItem from "../Menu/MenuItem.svelte";
   import MenuLabel from "../Menu/MenuLabel.svelte";
@@ -110,7 +110,7 @@
   }
 
   function updateResults() {
-    results = RibbonCommands.search(entries, searchTerm);
+    results = searchRibbonCommands(entries, searchTerm);
     isMenuOpen = !!searchTerm.trim();
   }
 

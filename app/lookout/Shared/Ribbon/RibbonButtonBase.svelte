@@ -29,7 +29,7 @@
 </button>
 
 <script lang="ts">
-  import { RibbonGroupLayout, RibbonLabel, type RibbonGroupLook, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
+  import { itemLook, largeLabelLines, type RibbonGroupLook, type RibbonItemLook, type RibbonItemSize } from "./RibbonGroup";
   import { showError } from "../../../frontend/Util/error";
   import LoadingIcon from "lucide-svelte/icons/loader-circle";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
@@ -65,7 +65,7 @@
   let look: RibbonItemLook;
   $: look = fixedLook ?? (isInButtonRow
     ? buttonRowLook($groupLook)
-    : RibbonGroupLayout.itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, size));
+    : itemLook($groupLook.layout, $groupLook.stage, $groupLook.collapsed, size));
 
   // <copied to="RibbonButtonRow.svelte">
   function buttonRowLook(group: RibbonGroupLook): RibbonItemLook {
@@ -80,7 +80,7 @@
   // Chrome breaks lines before the chevron icon even after a word joiner, so the last word and the chevron get a nowrap box.
   // Chrome also never breaks after a slash, so "Send/Receive" gets a zero-width space there.
   $: wrappingLabel = shownLabel?.replace(/\/(?=\S)/g, "/​") ?? "";
-  $: [firstLine, secondLine] = RibbonLabel.largeLines(wrappingLabel, hasMenu);
+  $: [firstLine, secondLine] = largeLabelLines(wrappingLabel, hasMenu);
   $: lastBreak = secondLine.lastIndexOf(" ");
   $: secondStart = (secondLine ? " " : "") + secondLine.slice(0, lastBreak + 1);
   $: lastWord = secondLine.slice(lastBreak + 1);

@@ -32,7 +32,7 @@
   import type { MailAccount } from "../../../logic/Mail/MailAccount";
   import { selectedAccount, selectedFolder } from "../../../frontend/Mail/Selected";
   import { SettingsDialogs } from "../../Settings/SettingsDialogs";
-  import { MessageBox } from "../../Shared/Dialog/MessageBox";
+  import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import { openNewFolder } from "./NewFolderDialog.svelte";
   import { openSharedFolder } from "./SharedFolderDialog.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -52,7 +52,7 @@
   export let account: MailAccount;
 
   async function onClose() {
-    if (!await MessageBox.ask($t`Close "${account.name}"`, $t`Are you sure that you want to delete the account ${account.name} and all related data from ${appName}?`)) {
+    if (!await askYesNo($t`Close "${account.name}"`, $t`Are you sure that you want to delete the account ${account.name} and all related data from ${appName}?`)) {
       return;
     }
     await account.deleteIt();

@@ -3,7 +3,7 @@ import { AllFolders } from "../../../logic/Mail/Virtual/AllFolders";
 import { SavedSearchFolder } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { assert } from "../../../logic/util/util";
 import { selectedFolder } from "../../../frontend/Mail/Selected";
-import { MessageBox } from "../../Shared/Dialog/MessageBox";
+import { askYesNo } from "../../Shared/Dialog/MessageBox";
 import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { derived, get, readable, type Readable } from "svelte/store";
 import { gt } from "../../../l10n/l10n";
@@ -128,7 +128,7 @@ export class FolderTreeActions {
   }
 
   static async deleteAll(folder: Folder) {
-    if (!await MessageBox.ask(gt`Delete All`, gt`All items in ${FolderTreeActions.displayName(folder)} will be permanently deleted. Continue?`)) {
+    if (!await askYesNo(gt`Delete All`, gt`All items in ${FolderTreeActions.displayName(folder)} will be permanently deleted. Continue?`)) {
       return;
     }
     // <copied from="../../../frontend/Mail/LeftPane/FolderMenu.svelte">
@@ -140,7 +140,7 @@ export class FolderTreeActions {
 
   static async deleteFolder(folder: Folder): Promise<Folder | null> {
     if (!(folder instanceof SavedSearchFolder) &&
-        !await MessageBox.ask(gt`Delete Folder`, gt`Are you sure that you want to delete the folder ${folder.name} and all messages in it? This will also delete it on the server.`)) {
+        !await askYesNo(gt`Delete Folder`, gt`Are you sure that you want to delete the folder ${folder.name} and all messages in it? This will also delete it on the server.`)) {
       return null;
     }
     // <copied from="../../../frontend/Mail/FolderProperties.svelte">
