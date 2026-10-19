@@ -655,6 +655,11 @@ export class JMAPAccount extends MailAccount {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
     }
+    if (type == "AddressBook") {
+      for (let addressbook of await this.listAddressbooks()) {
+        await addressbook.syncOnStartup();
+      }
+    }
     if (type == "CalendarEvent") {
       let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
       await calendars.first?.fetchChangedEventsForAllCalendars();
@@ -671,7 +676,7 @@ export class JMAPAccount extends MailAccount {
     assert(url, "Need event source URL");
     let types = ["Email", "Identity"];
     if (this.haveContacts) {
-      types.push("ContactCard");
+      types.push("ContactCard", "AddressBook");
     }
     if (this.haveCalendar) {
       types.push("CalendarEvent");
@@ -747,9 +752,12 @@ export class JMAPAccount extends MailAccount {
       accountId: this.accountID,
     });
     if (!response) {
-      return; // Another user's account, and they did not share their contacts with us
+      await this.updateAddressbooks([]);
+      return []; // Another user's account, and they did not share their contacts with us
     }
     let listResponse = response as TJMAPGetResponse<TJMAPAddressbook>;
+    await this.updateAddressbooks(listResponse.list);
+    let newAddressbooks: JMAPAddressbook[] = [];
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
           this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook && a.jmapID == jmap.id).hasItems) {
@@ -760,6 +768,23 @@ export class JMAPAccount extends MailAccount {
       ab.fromJMAP(jmap)
       appGlobal.addressbooks.add(ab);
       await ab.save();
+      newAddressbooks.push(ab);
+    }
+    return newAddressbooks;
+  }
+
+  /** Takes over changes of our address books, e.g. a new name, and removes
+   * those that were deleted on the server or are no longer shared with us. */
+  protected async updateAddressbooks(serverAddressbooks: TJMAPAddressbook[]) {
+    let ourAddressbooks = this.dependentAccounts().filterOnce(account => account instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
+    for (let ourAddressbook of ourAddressbooks) {
+      let jmap = serverAddressbooks.find(json => json.id == ourAddressbook.jmapID);
+      if (jmap) {
+        ourAddressbook.fromJMAP(jmap);
+        await ourAddressbook.save();
+      } else {
+        await ourAddressbook.deleteIt();
+      }
     }
   }
 
