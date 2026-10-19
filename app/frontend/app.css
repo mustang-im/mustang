@@ -68,6 +68,12 @@
   --button-filled-hover-fg: var(--hover-fg);
   --search-field-radius: 100px;
   --search-field-bg: field;
+  --group-box-radius: 6px;
+  --group-box-header-bg: var(--headerbar-bg);
+  --group-box-header-border: 1px solid var(--border);
+  --group-box-header-padding: 12px 20px;
+  --group-box-header-weight: 500;
+  --group-box-content-padding: 24px 20px 16px 20px;
   --chat-bubble-incoming-bg: #fdfefe;
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;

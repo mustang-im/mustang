@@ -29,17 +29,9 @@
   }
   .settings-content :global(.group) {
     margin-block-end: 12px;
-    border-color: var(--lo-border);
-    border-radius: var(--lo-radius-small);
   }
   .settings-content :global(.group > .header) {
-    padding: 8px 12px 0 12px;
-    border: none;
     font-size: var(--lo-font-size);
-    font-weight: 600;
-  }
-  .settings-content :global(.group > .content) {
-    padding: 8px 12px 10px 12px;
   }
   .settings-content :global(input:not([type="checkbox"]):not([type="radio"]):not([type="color"])),
   .settings-content :global(select) {
