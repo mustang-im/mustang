@@ -64,7 +64,8 @@ function newAccount(accountID: string, calendars: TJMAPCalendar[], mainAccount?:
 function calendarIDs(account: JMAPAccount): string[] {
   return appGlobal.calendars.contents
     .filter(cal => cal.mainAccount == account)
-    .map(cal => (cal as JMAPCalendar).jmapID);
+    .map(cal => (cal as JMAPCalendar).jmapID)
+    .sort();
 }
 
 test("Calendars that another user shared with us are shown, also when not subscribed", async () => {
