@@ -11,14 +11,13 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import { layoutDayRow } from "../MonthView/WeekRow";
   import AllDayEvent from "./AllDayEvent.svelte";
-  import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
 
   export let days: Date[];
-  export let events: Collection<Event>;
+  export let events: Event[];
   export let maxHeight: number;
 
-  $: layout = derived([...$events.contents], allDayEvents => layoutDayRow(allDayEvents, days));
+  $: layout = derived(events, allDayEvents => layoutDayRow(allDayEvents, days));
 </script>
 
 <style>
