@@ -90,7 +90,7 @@
 
   /* Gallery */
   .files-page :global(.gallery) {
-    gap: 8px;
+    gap: 2px;
     margin: 0;
     padding: 12px;
   }
@@ -124,6 +124,14 @@
   .files-page :global(.right-side-bar .file-properties) {
     opacity: 1;
     color: var(--lo-fg-secondary);
+  }
+
+  /* Left pane: island aligned with the ribbon and the main pane */
+  .files-page :global(.left-pane) {
+    padding-block-end: 0;
+  }
+  .files-page :global(.left-pane .top > .island) {
+    margin: 0;
   }
 
   /* Persons list, like the Lookout persons list */
