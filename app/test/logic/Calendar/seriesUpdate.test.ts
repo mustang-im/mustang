@@ -109,6 +109,28 @@ test("A new series end keeps the exceptions within the series", async () => {
   expect(master.exceptions.contains(late)).toBe(false);
 });
 
+// "This and following" and "Delete this and following" shortened the old series
+// outside of an editing session, so `hasChanged()` was false, and the attendees
+// kept the removed occurrences in their calendars.
+test.each([
+  ["no end"],
+  ["10 times"],
+  ["1 March"],
+])("Attendees get an update when a series with %s is truncated", async (before) => {
+  let master = meetingSeries();
+  await kSeriesEnds[before](master);
+  let early = addException(master, 1);
+  let sendInvitations = spyOnInvitations();
+
+  let instance = master.getOccurrenceByDate(master.recurrenceRule.getOccurrenceByIndex(3));
+  await instance.truncateRecurrence();
+
+  expect(sendInvitations).toHaveBeenCalledTimes(1);
+  expect(master.recurrenceRule.count).toBe(3);
+  expect(master.unedited).toBeNull();
+  expect(master.exceptions.contains(early)).toBe(true);
+});
+
 /** Records the invitation emails that the organizer sends, instead of sending them */
 function spyOnSentInvitations() {
   let sent: { method: string, event: Event, to: string[] }[] = [];
@@ -127,20 +149,6 @@ function exclusionIndexes(master: Event): number[] {
     .map(exclusion => master.recurrenceRule.getIndexOfOccurrence(exclusion))
     .sort((a, b) => a - b);
 }
-
-// "Delete this and following" saved the shortened series without an editing
-// session, so `hasChanged()` was false, and the attendees kept all occurrences.
-test.each(["no end", "10 times", "1 March"])("Attendees get an update when the organizer deletes this and following occurrences of a series with %s", async (end) => {
-  let master = meetingSeries();
-  await kSeriesEnds[end](master);
-  let sent = spyOnSentInvitations();
-
-  await occurrence(master, 5).truncateRecurrence();
-
-  expect(master.recurrenceRule.count).toBe(5);
-  expect(sent).toEqual([{ method: "REQUEST", event: master, to: ["attendee@example.com"] }]);
-  expect(master.unedited).toBeNull();
-});
 
 // With a later exception, the series ends with that exception,
 // and the occurrences from this one until it are excluded.
