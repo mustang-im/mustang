@@ -29,6 +29,7 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
+import { minorError } from "../../util/error";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
 
@@ -778,7 +779,7 @@ export class JMAPAccount extends MailAccount {
         try {
           await account.sync(type);
         } catch (ex) {
-          console.error(ex);
+          minorError(ex);
         }
       }
     }
