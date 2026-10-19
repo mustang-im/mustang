@@ -17,7 +17,7 @@
   import { openEMailMessage } from "../open";
   import Button from "../../Shared/Button.svelte";
   import RepliedIcon from "lucide-svelte/icons/reply";
-  import { catchErrors, backgroundError } from "../../Util/error";
+  import { catchErrors, minorError } from "../../Util/error";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let message: EMail;
@@ -25,7 +25,7 @@
   let reply: EMail | null = null;
   let isSearching = false;
   $: isReplied = $message.isReplied;
-  $: catchErrors(() => findReply(message, isReplied), backgroundError);
+  $: catchErrors(() => findReply(message, isReplied), minorError);
   async function findReply(original: EMail, isReplied: boolean) {
     reply = null;
     if (!isReplied) {
