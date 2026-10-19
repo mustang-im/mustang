@@ -99,7 +99,7 @@
   {/if}
 </vbox>
 
-<svelte:window on:keydown={onKeyDown} />
+<svelte:window on:keydown={(event) => catchErrors(() => onKeyOnCalendar(event))} />
 
 <script lang="ts">
   import type { Event } from "../../logic/Calendar/Event";
@@ -109,12 +109,13 @@
   import { openEvent } from "../../frontend/Calendar/open";
   import { openComposer } from "../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
-  import { CalendarKeys, type CalendarCommand } from "./CalendarKeys";
   import { eventPeek, inlineTitle, selectedSlots, workWeekHours, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarViewType, type SlotSelection } from "./selected";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../logic/util/date";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
+  import { getOSName } from "../../frontend/Util/util";
+  import { getKeyDigit, isTextField } from "../Util/util";
   import { catchErrors } from "../../frontend/Util/error";
   import { statusBarContent, type StatusBarContent } from "../MainWindow/StatusBar.svelte";
   import CalendarRibbon from "./CalendarRibbon.svelte";
@@ -358,87 +359,153 @@
     setView(newView);
   }
 
-  function onKeyDown(keyEvent: KeyboardEvent) {
-    let target = keyEvent.target as HTMLElement;
-    if (keyEvent.defaultPrevented ||
-        !pageEl?.contains(target) && target != document.body ||
-        target?.closest?.("input, textarea, select, [contenteditable=''], [contenteditable='true'], dialog")) {
+  async function onKeyOnCalendar(event: KeyboardEvent) {
+    let target = event.target as HTMLElement;
+    if (event.defaultPrevented || !pageEl?.contains(target) && target != document.body ||
+        isTextField(target) || target?.closest?.("dialog")) {
       return;
     }
-    let command = CalendarKeys.commandFor(keyEvent);
-    if (!command && $selectedSlots && keyEvent.key.length == 1 && keyEvent.key != " " &&
-        !keyEvent.ctrlKey && !keyEvent.metaKey && !keyEvent.altKey) {
-      keyEvent.preventDefault();
-      $eventPeek = null;
-      $inlineTitle = keyEvent.key;
-      return;
+    let calendarEvent = $selectedEvent;
+    let isCtrl = event.ctrlKey || event.metaKey;
+    let key = event.key.length == 1 ? event.key.toLowerCase() : event.key;
+    let digit = getKeyDigit(event);
+    // Ctrl+Alt+
+    if (isCtrl && event.altKey && !event.shiftKey) {
+      const kViews: CalendarViewType[] = [null, "day", "workweek", "week", "month", "schedule"];
+      let newView = kViews[digit ?? 0];
+      if (newView) {
+        event.preventDefault();
+        event.stopPropagation();
+        setView(newView);
+        return;
+      } else if (key == "ArrowRight" || key == "ArrowLeft") {
+        event.preventDefault();
+        event.stopPropagation();
+        step(key == "ArrowRight" ? 1 : -1);
+        return;
+      }
     }
-    if (!command || command.command == "open" && target?.closest?.("button, a")) {
-      return;
+    // Ctrl+Shift+
+    if (isCtrl && event.shiftKey && !event.altKey) {
+      if (key == "a") {
+        event.preventDefault();
+        event.stopPropagation();
+        CalendarActions.newEventAtSelection(null);
+        return;
+      } else if (key == "q") {
+        event.preventDefault();
+        event.stopPropagation();
+        CalendarActions.newEventAtSelection(null, "meeting");
+        return;
+      }
     }
-    keyEvent.preventDefault();
-    catchErrors(() => runCommand(command));
-  }
-
-  async function runCommand(command: CalendarCommand) {
-    let event = $selectedEvent;
-    switch (command.command) {
-    case "new-appointment":
-      CalendarActions.newEventAtSelection(null);
-      break;
-    case "new-meeting":
-      CalendarActions.newEventAtSelection(null, "meeting");
-      break;
-    case "view":
-      setView(command.view);
-      break;
-    case "day-count":
-      setView("day");
-      dayCount = command.days;
-      break;
-    case "go-to-date":
-      openGoToDate();
-      break;
-    case "today":
-      goToToday();
-      break;
-    case "step-days":
-      setRangeDate(new Date(rangeDate.getFullYear(), rangeDate.getMonth(), rangeDate.getDate() + command.days));
-      break;
-    case "step-months":
-      $startDate = new Date($startDate.getFullYear(), $startDate.getMonth() + command.months, 1);
-      break;
-    case "step-period":
-      step(command.direction);
-      break;
-    case "week-edge":
-      selectDay(CalendarRange.weekEdge($selectedDate, command.isEnd));
-      break;
-    case "open":
-      if (event) {
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "n") {
+        event.preventDefault();
+        event.stopPropagation();
+        CalendarActions.newEventAtSelection(null);
+        return;
+      } else if (key == "g") {
+        event.preventDefault();
+        event.stopPropagation();
+        openGoToDate();
+        return;
+      } else if (key == "f") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (calendarEvent && !calendarEvent.isCancelled) {
+          openComposer(await OutgoingInvitation.forwardEventByMail(calendarEvent));
+        }
+        return;
+      } else if (key == "ArrowRight" || key == "ArrowLeft") {
+        event.preventDefault();
+        event.stopPropagation();
+        setRangeDate(new Date(rangeDate.getFullYear(), rangeDate.getMonth(), rangeDate.getDate() + (key == "ArrowRight" ? 1 : -1)));
+        return;
+      }
+    }
+    // Alt+ (or Option+)
+    if (event.altKey && !isCtrl && !event.shiftKey) {
+      if (key == "ArrowDown" || key == "ArrowUp") {
+        event.preventDefault();
+        event.stopPropagation();
+        setRangeDate(new Date(rangeDate.getFullYear(), rangeDate.getMonth(), rangeDate.getDate() + (key == "ArrowDown" ? 7 : -7)));
+        return;
+      } else if (key == "PageDown" || key == "PageUp") {
+        event.preventDefault();
+        event.stopPropagation();
+        $startDate = new Date($startDate.getFullYear(), $startDate.getMonth() + (key == "PageDown" ? 1 : -1), 1);
+        return;
+      } else if (key == "Home" || key == "End") {
+        event.preventDefault();
+        event.stopPropagation();
+        selectDay(CalendarRange.weekEdge($selectedDate, key == "End"));
+        return;
+      }
+    }
+    // Alt+ (Option+ types characters on macOS)
+    if (event.altKey && !isCtrl && getOSName() != "macintosh") {
+      if (event.shiftKey) {
+        if (event.code == "KeyY") {
+          event.preventDefault();
+          event.stopPropagation();
+          goToToday();
+          return;
+        }
+      } else if (digit != null) {
+        event.preventDefault();
+        event.stopPropagation();
+        setView("day");
+        dayCount = digit == 0 ? 10 : digit;
+        return;
+      } else if (key == "-") {
+        event.preventDefault();
+        event.stopPropagation();
+        setView("week");
+        return;
+      } else if (key == "=") {
+        event.preventDefault();
+        event.stopPropagation();
+        setView("month");
+        return;
+      }
+    }
+    // No modifier
+    if (!isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "Enter" && !target?.closest?.("button, a")) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (calendarEvent) {
+          $eventPeek = null;
+          openEvent(calendarEvent, true);
+        }
+        return;
+      } else if (key == "Delete") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (calendarEvent) {
+          $eventPeek = null;
+          await CalendarActions.deleteDefault(calendarEvent);
+        }
+        return;
+      } else if (key == "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (isSearch) {
+          closeSearch();
+        }
         $eventPeek = null;
-        openEvent(event, true);
+        $inlineTitle = null;
+        $selectedSlots = null;
+        return;
       }
-      break;
-    case "delete":
-      if (event) {
-        $eventPeek = null;
-        await CalendarActions.deleteDefault(event);
-      }
-      break;
-    case "forward":
-      if (event && !event.isCancelled) {
-        openComposer(await OutgoingInvitation.forwardEventByMail(event));
-      }
-      break;
-    case "escape":
-      if (isSearch) {
-        closeSearch();
-      }
+    }
+    if ($selectedSlots && event.key.length == 1 && event.key != " " && !isCtrl && !event.altKey) {
+      event.preventDefault();
+      event.stopPropagation();
       $eventPeek = null;
-      $inlineTitle = null;
-      $selectedSlots = null;
-      break;
+      $inlineTitle = event.key;
     }
   }
 </script>
