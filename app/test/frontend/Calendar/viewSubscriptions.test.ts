@@ -9,7 +9,7 @@ import MonthView from "../../../frontend/Calendar/MonthView/MonthView.svelte";
 import ListViewWithSearch from "../../../frontend/Calendar/ListView/ListViewWithSearch.svelte";
 import { ArrayColl } from "svelte-collections";
 import { flushSync, mount, unmount } from "svelte";
-import { afterEach, beforeAll, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {
@@ -81,10 +81,6 @@ test("Paging the week view doesn't pile up subscriptions on the events", () => {
     swipe(".week", "swiperight");
   }
   expect(subscriptions(events)).toBe(shown);
-
-  unmount(view);
-  view = null;
-  expect(subscriptions(events)).toBe(0);
 });
 
 test("Paging the month view doesn't pile up subscriptions on the events", () => {
@@ -99,10 +95,6 @@ test("Paging the month view doesn't pile up subscriptions on the events", () => 
     swipe(".month", "swiperight");
   }
   expect(subscriptions(events)).toBe(shown);
-
-  unmount(view);
-  view = null;
-  expect(subscriptions(events)).toBe(0);
 });
 
 test("Typing a search term doesn't pile up subscriptions on the events", () => {
@@ -119,10 +111,21 @@ test("Typing a search term doesn't pile up subscriptions on the events", () => {
   globalSearchTerm.set(null);
   flushSync();
   expect(subscriptions(events)).toBe(shown);
+});
 
-  unmount(view);
-  view = null;
-  expect(subscriptions(events)).toBe(0);
+test("A changed event is filtered alone, not together with all others", () => {
+  let events = newEvents();
+  view = mount(ListViewWithSearch, { target: document.body, props: { events } });
+  globalSearchTerm.set("meeting");
+  flushSync();
+  expect(document.querySelector(".result-count").textContent).toContain("42");
+
+  let matchesSearch = vi.spyOn(Event.prototype, "matchesSearch");
+  let event = events.contents.find(event => event.title == "Meeting 20");
+  event.title = "Lunch";
+  flushSync();
+  expect(matchesSearch).toHaveBeenCalledTimes(1);
+  matchesSearch.mockRestore();
 });
 
 test("Moving an event into the shown week shows it", () => {

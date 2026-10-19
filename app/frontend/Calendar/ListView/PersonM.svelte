@@ -8,21 +8,26 @@
 
 <script lang="ts">
   import { Person } from "../../../logic/Abstract/Person";
+  import type { Event } from "../../../logic/Calendar/Event";
   import { appGlobal } from "../../../logic/app";
   import ListView from "./ListView.svelte";
   import SearchBarM from "./SearchBarM.svelte";
   import { t } from "../../../l10n/l10n";
-  import { ArrayColl } from "svelte-collections";
-  import { derived } from "svelte/store";
 
   export let person: Person;
 
-  let calendarEvents = appGlobal.calendarEvents;
-  $: events = derived([...$calendarEvents.contents], allEvents =>
-    allEvents.filter(event => event.startTime.getTime() > Date.now()));
-  $: filteredEvents = new ArrayColl(person
-    ? $events.filter(event => event.participants?.some(p => p.matchesPerson(person)))
-    : $events);
+  let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
+  let personEvents = events.filterObservable(isWithPerson);
+  $: person, findEvents();
+  $: filteredEvents = person ? personEvents : events;
+
+  function findEvents() {
+    personEvents.replaceAll(events.contents.filter(isWithPerson));
+  }
+
+  function isWithPerson(event: Event): boolean {
+    return !!person && event.participants?.some(p => p.matchesPerson(person));
+  }
 </script>
 
 <style>
