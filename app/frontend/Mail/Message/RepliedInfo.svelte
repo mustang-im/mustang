@@ -1,18 +1,14 @@
 {#if $message.isReplied}
-  <hbox class="replied font-small" class:found={!!reply}
-    title={reply || isSearching ? null : $t`Your reply was not found in your folders`}>
-    {#if reply}
-      <Button plain
-        icon={RepliedIcon} iconSize="14px"
-        label={reply.sent
-          ? $t`You replied to this message on ${reply.sent.toLocaleString(getDateTimeLocale(), { dateStyle: "medium", timeStyle: "short" })}`
-          : $t`You replied to this message`}
-        tooltip={$t`Open your reply`}
-        onClick={onOpenReply} />
-    {:else}
-      <RepliedIcon size="14px" />
-      <hbox>{$t`You replied to this message`}</hbox>
-    {/if}
+  <hbox class="replied font-small" class:found={!!reply}>
+    <Button plain
+      icon={RepliedIcon} iconSize="14px"
+      label={reply?.sent
+        ? $t`You replied to this message on ${reply.sent.toLocaleString(getDateTimeLocale(), { dateStyle: "medium", timeStyle: "short" })}`
+        : $t`You replied to this message`}
+      tooltip={reply
+        ? $t`Open your reply`
+        : isSearching ? null : $t`Your reply was not found in your folders`}
+      onClick={reply ? onOpenReply : null} />
   </hbox>
 {/if}
 
@@ -56,16 +52,16 @@
 <style>
   .replied {
     align-items: center;
-    gap: 4px;
     min-height: 24px;
     color: grey;
-  }
-  .replied:not(.found) {
-    padding-inline: 8px;
   }
   .replied :global(button) {
     padding: 2px 8px;
     color: inherit;
     font-size: inherit;
+  }
+  .replied:not(.found) :global(button:hover) {
+    background-color: transparent;
+    color: inherit;
   }
 </style>
