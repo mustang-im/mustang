@@ -61,7 +61,6 @@ test("A folder that was empty at the folder listing shows the emails that arrive
   await inbox.listMessages();
 
   expect(inbox.messages.contents.map(email => email.subject)).toEqual(["Email 0", "Email 1"]);
-  expect(inbox.countTotal).toBe(2);
   expect(account.syncState.get("Email")).toBe("saq");
 });
 
@@ -83,7 +82,7 @@ test("Listing pages until a short page, not by the outdated folder count", async
   expect(queries.map(query => query.position)).toEqual([0, 200, 400]);
   expect(queries.some(query => query.calculateTotal)).toBe(false); // expensive for the server
   expect(inbox.messages.length).toBe(450);
-  expect(inbox.countTotal).toBe(450);
+  expect(inbox.countTotal).toBe(300); // Listing doesn't change it: `countTotal` comes from `Mailbox/get`
 });
 
 test("A server with a lower limit than we asked for still gets all emails listed", async () => {
@@ -93,7 +92,6 @@ test("A server with a lower limit than we asked for still gets all emails listed
 
   expect(queries.map(query => query.position)).toEqual([0, 100, 200]);
   expect(inbox.messages.length).toBe(250);
-  expect(inbox.countTotal).toBe(250);
 });
 
 /** A buggy or hostile server, which never ends the list */

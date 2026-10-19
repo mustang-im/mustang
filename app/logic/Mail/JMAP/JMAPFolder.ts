@@ -84,7 +84,6 @@ export class JMAPFolder extends Folder {
       allNewMessages.addAll(newMessages);
       position += ids.length;
       if (ids.length < limit) {
-        this.countTotal = position;
         isComplete = true;
         break;
       }
