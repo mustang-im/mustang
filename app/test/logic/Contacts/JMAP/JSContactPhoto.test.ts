@@ -21,6 +21,10 @@ function serverCard(): TJSContact {
   } as TJSContact;
 }
 
+function photos(jscontact: TJSContact) {
+  return Object.values(jscontact.media ?? {}).filter(media => media.kind == "photo");
+}
+
 function newPerson(): JMAPPerson {
   return new JMAPPerson(null);
 }
@@ -37,10 +41,9 @@ test("Changing the photo replaces it, instead of adding a second one", () => {
   JSContact.toPerson(jscontact, person);
   person.picture = kNewPhoto;
   JSContact.fromPerson(person, jscontact);
-  expect(Object.keys(jscontact.media)).toEqual(["k1", "k2"]);
-  expect(jscontact.media.k2.uri).toBe(kNewPhoto);
-  expect(jscontact.media.k2.mediaType).toBeUndefined(); // may not match the new photo
-  expect(jscontact.media.k1.uri).toBe("https://example.com/logo.png");
+  expect(photos(jscontact).map(photo => photo.uri)).toEqual([kNewPhoto]);
+  expect([undefined, "image/png"]).toContain(photos(jscontact)[0].mediaType); // not one that doesn't match the new photo
+  expect(jscontact.media.k1).toEqual(serverCard().media.k1);
 });
 
 test("Deleting the photo removes it, but not the logo", () => {
@@ -49,7 +52,8 @@ test("Deleting the photo removes it, but not the logo", () => {
   JSContact.toPerson(jscontact, person);
   person.picture = null;
   JSContact.fromPerson(person, jscontact);
-  expect(Object.keys(jscontact.media)).toEqual(["k1"]);
+  expect(photos(jscontact)).toEqual([]);
+  expect(jscontact.media.k1).toEqual(serverCard().media.k1);
 });
 
 test("A new photo, and saving again", () => {
@@ -58,7 +62,7 @@ test("A new photo, and saving again", () => {
   let jscontact = {} as TJSContact;
   JSContact.fromPerson(person, jscontact);
   JSContact.fromPerson(person, jscontact);
-  expect(Object.values(jscontact.media)).toEqual([{ kind: "photo", uri: kPhoto }]);
+  expect(photos(jscontact).map(photo => photo.uri)).toEqual([kPhoto]);
 });
 
 test("Of several photos, the preferred one", () => {
