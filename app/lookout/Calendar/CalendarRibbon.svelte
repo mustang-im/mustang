@@ -1,20 +1,20 @@
 <Ribbon>
   <RibbonTab label={$t`Home *=> Ribbon tab with the most-used commands`}>
     <RibbonGroup label={$t`New`}>
-      <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
-        onClick={() => CalendarActions.newEventAtSelection(null)}
+      <NewEventRibbonButton label={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
+        onCreate={calendar => CalendarActions.newEventAtSelection(calendar)}
         disabled={noCalendar} />
-      <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
-        onClick={() => CalendarActions.newEventAtSelection(null, "meeting")}
+      <NewEventRibbonButton label={$t`New Meeting`} shortLabel={$t`Meeting`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
+        onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "meeting")}
         disabled={noCalendar} />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon} disabled={noCalendar}>
         <NewEventMenu />
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Online Meeting`}>
-      <RibbonButton label={$t`New Online Meeting`} shortLabel={$t`Online *=> New online meeting`} icon={OnlineMeetingIcon}
+      <NewEventRibbonButton label={$t`New Online Meeting`} shortLabel={$t`Online *=> New online meeting`} icon={OnlineMeetingIcon}
         tooltip={$t`New meeting with a link to an online meeting`}
-        onClick={() => CalendarActions.newEventAtSelection(null, "online-meeting")}
+        onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "online-meeting")}
         disabled={noCalendar} />
     </RibbonGroup>
     <RibbonGroup label={$t`Go To *=> Ribbon group to jump to a date in the calendar`} onLauncher={openGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
@@ -190,6 +190,7 @@
   import { ContactActions } from "../Contacts/ContactActions";
   import ChangeViewGallery from "../Shared/Ribbon/ChangeViewGallery.svelte";
   import NewEventMenu from "./NewEventMenu.svelte";
+  import NewEventRibbonButton from "./NewEventRibbonButton.svelte";
   import OpenCalendarMenuItems from "./OpenCalendarMenuItems.svelte";
   import { openCalendarProperties } from "./CalendarPropertiesDialog.svelte";
   import { isGoToDateOpen } from "./GoToDateDialog.svelte";

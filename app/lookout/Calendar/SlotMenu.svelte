@@ -1,14 +1,14 @@
 <ContextMenu bind:this={contextMenu}>
-  <MenuItem label={$t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
-    onClick={() => CalendarActions.newEventAtSelection(null)} />
-  <MenuItem label={$t`New All Day Event`} icon={AllDayIcon}
-    onClick={() => CalendarActions.newEventAtSelection(null, "all-day")} />
-  <MenuItem label={$t`New Meeting Request`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
-    onClick={() => CalendarActions.newEventAtSelection(null, "meeting")} />
-  <MenuItem label={$t`New Recurring Appointment`} icon={RecurringIcon}
-    onClick={() => CalendarActions.newEventAtSelection(null, "recurring")} />
-  <MenuItem label={$t`New Recurring Meeting`} icon={RecurringMeetingIcon}
-    onClick={() => CalendarActions.newEventAtSelection(null, "recurring-meeting")} />
+  <NewEventSubMenu label={$t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
+    calendar={$selectedSlots?.calendar} onCreate={calendar => CalendarActions.newEventAtSelection(calendar)} />
+  <NewEventSubMenu label={$t`New All Day Event`} icon={AllDayIcon}
+    calendar={$selectedSlots?.calendar} onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "all-day")} />
+  <NewEventSubMenu label={$t`New Meeting Request`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
+    calendar={$selectedSlots?.calendar} onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "meeting")} />
+  <NewEventSubMenu label={$t`New Recurring Appointment`} icon={RecurringIcon}
+    calendar={$selectedSlots?.calendar} onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "recurring")} />
+  <NewEventSubMenu label={$t`New Recurring Meeting`} icon={RecurringMeetingIcon}
+    calendar={$selectedSlots?.calendar} onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "recurring-meeting")} />
   <MenuDivider />
   <MenuItem label={$t`Today`} icon={TodayIcon} onClick={goToToday} />
   <MenuItem label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={showNext7Days} />
@@ -27,13 +27,14 @@
 {/if}
 
 <script lang="ts">
-  import { eventPeek, type CalendarViewType } from "./selected";
+  import { eventPeek, selectedSlots, type CalendarViewType } from "./selected";
   import { CalendarActions } from "./CalendarActions";
   import { selectedDate, startDate } from "../../frontend/Calendar/selected";
   import { getToday } from "../../logic/util/date";
   import ContextMenu from "../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
+  import NewEventSubMenu from "./NewEventSubMenu.svelte";
   import ViewSettingsDialog from "./ViewSettings/ViewSettingsDialog.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";

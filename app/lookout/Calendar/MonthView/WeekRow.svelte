@@ -7,7 +7,7 @@
       class:today={day.toDateString() == $now.toDateString()}
       class:selected={isSelected(day, $selectedSlots)}>
       <button class="add-button" title={$t`New appointment on this day`}
-        on:click|stopPropagation={() => onAdd(day)} on:dblclick|stopPropagation>
+        on:click|stopPropagation={event => onAdd(event.currentTarget, day)} on:dblclick|stopPropagation>
         <AddIcon size="14" />
       </button>
       {#if isSelected(day, $selectedSlots) && day.getTime() == $selectedSlots.start.getTime()}
@@ -44,6 +44,7 @@
     {/if}
   {/each}
 </div>
+<NewEventCalendarMenu bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
@@ -55,6 +56,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
   import InlineEventTitle from "../InlineEventTitle.svelte";
+  import NewEventCalendarMenu from "../NewEventCalendarMenu.svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
@@ -71,6 +73,7 @@
   const kLineHeight = 22;
 
   let weekEl: HTMLDivElement;
+  let newEventMenu: NewEventCalendarMenu;
   let height = 0;
   $: maxLines = Math.max(Math.floor((height - kHeaderHeight - 2) / kLineHeight), 1);
 
@@ -132,13 +135,13 @@
   function onDoubleClick(mouseEvent: MouseEvent) {
     let day = dayAt(mouseEvent.clientX);
     selectDay(day);
-    catchErrors(() => CalendarActions.newEvent(null, day, null, "all-day"));
+    catchErrors(() => newEventMenu.openMenu(mouseEvent, calendar => CalendarActions.newEvent(calendar, day, null, "all-day")));
   }
 
-  function onAdd(day: Date) {
+  function onAdd(button: HTMLElement, day: Date) {
     let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 8);
     // let start = WorkingHours.workStartOf($selectedCalendar, day);
-    catchErrors(() => CalendarActions.newEvent(null, start, null));
+    catchErrors(() => newEventMenu.openMenu(button, calendar => CalendarActions.newEvent(calendar, start, null)));
   }
 
   function onContextMenu(mouseEvent: MouseEvent) {

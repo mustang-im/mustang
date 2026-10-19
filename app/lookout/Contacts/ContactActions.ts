@@ -3,6 +3,7 @@ import { Group } from "../../logic/Abstract/Group";
 import type { Contact } from "../../logic/Abstract/Contact";
 import { PersonUID } from "../../logic/Abstract/PersonUID";
 import type { Addressbook } from "../../logic/Contacts/Addressbook";
+import type { Calendar } from "../../logic/Calendar/Calendar";
 import { Participant } from "../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../logic/Calendar/Invitation/InvitationStatus";
 import { appGlobal } from "../../logic/app";
@@ -151,8 +152,8 @@ export class ContactActions {
     mailMustangApp.writeMail(mail);
   }
 
-  static newMeeting(contacts: Iterable<Contact>) {
-    let calendar = get(selectedCalendar) ?? appGlobal.calendars.first;
+  static newMeeting(contacts: Iterable<Contact>, calendar: Calendar | null) {
+    calendar ??= get(selectedCalendar) ?? appGlobal.calendars.first;
     assert(calendar, gt`Please set up a calendar first`);
     selectedCalendar.set(calendar);
     let event = calendar.newEvent();

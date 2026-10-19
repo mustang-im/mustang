@@ -6,6 +6,7 @@ import { DeleteStrategy } from "../../logic/Mail/MailAccount";
 import type { Tag } from "../../logic/Abstract/Tag";
 import { Person } from "../../logic/Abstract/Person";
 import type { PersonUID } from "../../logic/Abstract/PersonUID";
+import type { Calendar } from "../../logic/Calendar/Calendar";
 import { appGlobal } from "../../logic/app";
 import { showMessageBox } from "../Shared/Dialog/MessageBox";
 import type { ReadingPanePosition } from "./3pane/3Pane.svelte";
@@ -45,10 +46,10 @@ export class MessageActions {
     mailMustangApp.writeMail(mail);
   }
 
-  static newMeeting() {
+  static newMeeting(calendar: Calendar | null = null) {
     let start = new Date();
     start.setHours(start.getHours() + 1, 0, 0, 0);
-    CalendarActions.newEvent(null, start, null, "meeting");
+    CalendarActions.newEvent(calendar, start, null, "meeting");
   }
 
   static newContact() {

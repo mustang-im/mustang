@@ -9,7 +9,7 @@ import CalendarApp from "../../Calendar/CalendarApp.svelte";
 import { CalendarActions } from "../../Calendar/CalendarActions";
 import { eventPeek, inlineTitle, selectedSlots, type CalendarViewType } from "../../Calendar/selected";
 import { isGoToDateOpen } from "../../Calendar/GoToDateDialog.svelte";
-import { selectedDate, selectedEvent, shownCalendars, startDate } from "../../../frontend/Calendar/selected";
+import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, startDate } from "../../../frontend/Calendar/selected";
 import { statusBarContent } from "../../MainWindow/StatusBar.svelte";
 import { openEvent } from "../../../frontend/Calendar/open";
 import { openComposer } from "../../../frontend/Mail/open";
@@ -298,5 +298,36 @@ test("The status bar counts the events in the shown days", () => {
     expect(get(statusBarContent).left[0].label).toBe("Items: 1");
   } finally {
     appGlobal.calendars.remove(work);
+  }
+});
+
+test("The + on a day asks for the calendar when several are shown, and the new appointment goes into the chosen one", async () => {
+  let work = newCalendar("Work", []);
+  let family = newCalendar("Family", []);
+  appGlobal.calendars.addAll([work, family]);
+  try {
+    flushSync();
+    document.querySelector<HTMLButtonElement>(".day-header .add-button").click();
+    flushSync();
+    expect(openEvent).not.toHaveBeenCalled();
+    let items = Array.from(document.querySelectorAll<HTMLButtonElement>(".lo-menu .lo-menuitem"));
+    expect(items.map(item => item.textContent.trim())).toEqual(expect.arrayContaining(["Work", "Family"]));
+    items.find(item => item.textContent.trim() == "Family").click();
+    await vi.waitFor(() => expect(openEvent).toHaveBeenCalledTimes(1));
+    let event = vi.mocked(openEvent).mock.calls[0][0];
+    expect(event.calendar).toBe(family);
+    expect(get(selectedCalendar)).toBe(family);
+
+    vi.mocked(openEvent).mockClear();
+    shownCalendars.show(work, false);
+    flushSync();
+    document.querySelector<HTMLButtonElement>(".day-header .add-button").click();
+    flushSync();
+    expect(document.querySelector(".lo-menu")).toBe(null);
+    expect(openEvent).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(openEvent).mock.calls[0][0].calendar).toBe(family);
+  } finally {
+    shownCalendars.show(work, true);
+    appGlobal.calendars.removeAll([work, family]);
   }
 });

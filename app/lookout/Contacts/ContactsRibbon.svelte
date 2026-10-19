@@ -15,8 +15,8 @@
         <MenuDivider />
         <MenuItem label={$t`E-mail Message`} icon={MailIcon}
           onClick={() => ContactActions.writeMail($selectedPersons.contents)} />
-        <MenuItem label={$t`Meeting`} icon={MeetingIcon}
-          onClick={() => ContactActions.newMeeting($selectedPersons.contents)} />
+        <NewEventSubMenu label={$t`Meeting`} icon={MeetingIcon}
+          onCreate={calendar => ContactActions.newMeeting($selectedPersons.contents, calendar)} />
       </RibbonMenuButton>
     </RibbonGroup>
     <RibbonGroup label={$t`Delete`}>
@@ -29,8 +29,8 @@
       <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
         onClick={() => ContactActions.writeMail($selectedPersons.contents)}
         disabled={!hasEmailAddress && $t`Select a contact with an email address`} />
-      <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
-        onClick={() => ContactActions.newMeeting($selectedPersons.contents)}
+      <NewEventRibbonButton label={$t`Meeting`} icon={MeetingIcon}
+        onCreate={calendar => ContactActions.newMeeting($selectedPersons.contents, calendar)}
         disabled={!hasEmailAddress && $t`Select a contact with an email address`} />
       <RibbonMenuButton label={$t`More *=> More ways to contact the person`} icon={MoreIcon} size="small"
         disabled={!selectedPerson && $t`Select a contact first`}>
@@ -192,6 +192,8 @@
   import RibbonButton from "../Shared/Ribbon/RibbonButton.svelte";
   import RibbonMenuButton from "../Shared/Ribbon/RibbonMenuButton.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
+  import NewEventSubMenu from "../Calendar/NewEventSubMenu.svelte";
+  import NewEventRibbonButton from "../Calendar/NewEventRibbonButton.svelte";
   import MenuLabel from "../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../Shared/Menu/SubMenu.svelte";

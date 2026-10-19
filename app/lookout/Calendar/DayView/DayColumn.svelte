@@ -46,6 +46,7 @@
       style="top: {($now.getHours() * 60 + $now.getMinutes()) * pxPerMinute}px" />
   {/if}
 </div>
+<NewEventCalendarMenu {calendar} bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
@@ -57,6 +58,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
   import InlineEventTitle from "../InlineEventTitle.svelte";
+  import NewEventCalendarMenu from "../NewEventCalendarMenu.svelte";
   import UpIcon from "lucide-svelte/icons/chevron-up";
   import DownIcon from "lucide-svelte/icons/chevron-down";
   import { t } from "../../../l10n/l10n";
@@ -81,6 +83,7 @@
   const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent }, scrolltominute: number }>();
 
   let columnEl: HTMLDivElement;
+  let newEventMenu: NewEventCalendarMenu;
 
   let dayStart: Date;
   let dayEnd: Date;
@@ -170,7 +173,7 @@
     let isRange = selectionEnd - selectionStart > timeScale;
     let start = timeAt(isRange ? selectionStart : slot);
     let end = isRange ? timeAt(selectionEnd) : null;
-    catchErrors(() => CalendarActions.newEvent(calendar, start, end));
+    catchErrors(() => newEventMenu.openMenu(mouseEvent, chosen => CalendarActions.newEvent(chosen, start, end)));
   }
 
   function onContextMenu(mouseEvent: MouseEvent) {
