@@ -557,8 +557,11 @@ export class JMAPFolder extends Folder {
 
   async markAllRead(): Promise<void> {
     await super.markAllRead();
-    let batchSize = sanitize.integer(this.account.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInSet, 500);
-    while (true) {
+    let batchSize = Math.max(1, sanitize.integer(this.account.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInSet, 500));
+    const kMaxEMails = 1000000;
+    let maxRounds = Math.ceil(kMaxEMails / batchSize);
+    let previousIDs: string | null = null;
+    for (let round = 1; round <= maxRounds; round++) {
       let query = await this.account.makeSingleCall("Email/query", {
         accountId: this.account.accountID,
         filter: {
@@ -570,6 +573,11 @@ export class JMAPFolder extends Folder {
       if (!query.ids.length) {
         return;
       }
+      let ids = query.ids.join(" ");
+      if (ids == previousIDs) {
+        break;
+      }
+      previousIDs = ids;
       let update: Record<string, Record<string, boolean>> = {};
       for (let id of query.ids) {
         update[id] = { "keywords/$seen": true };
@@ -580,6 +588,7 @@ export class JMAPFolder extends Folder {
       }) as TJMAPChangeResponse<TJMAPEMailHeaders>;
       checkChangeError(response);
     }
+    this.account.errorCallback(new Error(`${this.name}: Mark all as read: The server keeps returning unread emails. Stopped.`));
   }
 
   /** @param specialUse From RFC 6154, e.g. `\Sent`
