@@ -3,7 +3,9 @@
     <InfoBar {messages} />
     <hbox class="header">
       {#if isMeeting}
-        <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
+        <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} hasMenu={needsSeriesChoice}>
+          <SeriesChoiceMenuItems {flow} />
+        </SendButton>
       {/if}
       <grid class="fields">
         <label class="row-label plain" for="event-form-title">{$t`Title`}</label>
@@ -52,6 +54,7 @@
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import InfoBar from "./InfoBar.svelte";
   import SendButton from "./SendButton.svelte";
+  import SeriesChoiceMenuItems from "./SeriesChoiceMenuItems.svelte";
   import TimeBox from "./TimeBox.svelte";
   import ParticipantsBox from "./ParticipantsBox.svelte";
   import { openSelectAttendees } from "./EditEvent.svelte";
@@ -74,6 +77,7 @@
   export let showEmojis = false;
   export let sendLabel: string;
   export let sendDisabled: string | false = false;
+  export let needsSeriesChoice = false;
   export let onSend: () => Promise<void>;
 
   const spellcheck = getLocalStorage<boolean>("mail.send.spellcheck.enabled", false);

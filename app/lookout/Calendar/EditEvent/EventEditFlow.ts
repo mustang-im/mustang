@@ -88,9 +88,14 @@ export class EventEditFlow {
     return !!this.event.parentEvent && this.canSaveSeries;
   }
 
+  get isRecurrenceChanged(): boolean {
+    let series = this.event.parentEvent;
+    return !!series && (series.hasChanged() || this.seriesEndChanged);
+  }
+
   seriesChoices(): SeriesChoice[] {
     let choices: SeriesChoice[] = [];
-    if (this.canSaveSingle) {
+    if (this.canSaveSingle || this.isRecurrenceChanged) {
       choices.push("occurrence");
     }
     if (this.event.seriesStatus == "middle") {
@@ -98,6 +103,21 @@ export class EventEditFlow {
     }
     choices.push("series");
     return choices;
+  }
+
+  seriesChoiceLabel(choice: SeriesChoice): string {
+    switch (choice) {
+    case "occurrence":
+      return gt`Just this one *=> Only this occurrence of the recurring event`;
+    case "following":
+      return gt`This and all following occurrences`;
+    case "series":
+      return gt`The entire series`;
+    }
+  }
+
+  seriesChoiceDisabled(choice: SeriesChoice): string | false {
+    return choice == "occurrence" && this.isRecurrenceChanged && gt`You changed the recurrence pattern`;
   }
 
   async saveWith(choice: SeriesChoice | null) {

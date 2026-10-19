@@ -1,7 +1,7 @@
 <vbox flex class="event-form-page" on:keydown={keyEvent => catchErrors(() => onKey(keyEvent))}>
   {#key ribbonKey}
     <EventFormRibbon {event} {flow} {editor} bind:openedTool {canSchedule} {schedulingLabel} {trackingLabel}
-      {onSave} {onDelete} bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
+      {needsSeriesChoice} {onSave} {onDelete} bind:showEmojis bind:isSchedulingSelected bind:isTrackingSelected />
   {/key}
   <vbox flex class="form-card lo-card">
     <hbox class="title-row">
@@ -24,12 +24,12 @@
     {#if isIncoming}
       <InvitationInCalendar {event} {flow} {messages} />
     {:else if showScheduling}
-      <SchedulingAssistant {event} {flow} {timeEditor} {sendLabel} {sendDisabled} onSend={onSave} />
+      <SchedulingAssistant {event} {flow} {timeEditor} {sendLabel} {sendDisabled} {needsSeriesChoice} onSend={onSave} />
     {:else if showTracking}
       <TrackingView {event} />
     {:else}
       <EventForm {event} {flow} {timeEditor} {messages} bind:editor bind:showEmojis
-        {sendLabel} {sendDisabled} onSend={onSave} />
+        {sendLabel} {sendDisabled} {needsSeriesChoice} onSend={onSave} />
     {/if}
   </vbox>
 </vbox>
@@ -38,8 +38,7 @@
   <RecurrenceDialog {event} {flow} {timeEditor} on:close={onRecurrenceClosed} />
 {/if}
 {#if seriesChoice}
-  <SeriesChoiceDialog title={seriesChoice.title} okLabel={seriesChoice.okLabel}
-    choices={seriesChoice.choices} onChoose={seriesChoice.onChoose}
+  <SeriesChoiceDialog title={seriesChoice.title} okLabel={seriesChoice.okLabel} {flow}
     on:close={() => seriesChoice = null} />
 {/if}
 {#if showSaveChanges}
@@ -69,7 +68,7 @@
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { UserError } from "../../../logic/util/util";
-  import { EventEditFlow, type SeriesChoice } from "./EventEditFlow";
+  import { EventEditFlow } from "./EventEditFlow";
   import { EventTimeEditor } from "./EventTimeEditor";
   import { eventTabLabel, eventInfoMessages, type InfoMessage } from "./EventFormInfo";
   import EventFormRibbon from "./EventFormRibbon.svelte";
@@ -114,8 +113,6 @@
   let seriesChoice: {
     title: string,
     okLabel: string,
-    choices: SeriesChoice[],
-    onChoose: (choice: SeriesChoice) => Promise<void>,
   } = null;
 
   $: participants = event.participants;
@@ -140,10 +137,12 @@
   let messages: InfoMessage[] = [];
   let hasChanges = false;
   let saveDisabled: string | false = false;
+  let needsSeriesChoice = false;
   function updateState(_editor: Editor) {
     messages = eventInfoMessages(event, shownCalendarEvents.contents, new Date(), flow.pattern);
     hasChanges = flow.hasChanges;
     saveDisabled = flow.missingPropsReason ?? false;
+    needsSeriesChoice = flow.needsSeriesChoice;
   }
 
   let canSchedule = false;
@@ -179,8 +178,6 @@
       seriesChoice = {
         title: flow.isMeeting ? $t`Recurring Meeting` : $t`Recurring Appointment`,
         okLabel: flow.willSend ? $t`Send` : $t`Save`,
-        choices: flow.seriesChoices(),
-        onChoose: choice => flow.saveWith(choice),
       };
       return;
     }

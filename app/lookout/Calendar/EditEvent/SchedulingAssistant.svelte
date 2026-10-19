@@ -1,6 +1,8 @@
 <vbox flex class="scheduling-assistant">
   <hbox class="header">
-    <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
+    <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} hasMenu={needsSeriesChoice}>
+      <SeriesChoiceMenuItems {flow} />
+    </SendButton>
     <grid class="fields">
       <TimeBox {event} editor={timeEditor} {flow} showSummary={false} />
     </grid>
@@ -13,6 +15,7 @@
   import type { EventEditFlow } from "./EventEditFlow";
   import type { EventTimeEditor } from "./EventTimeEditor";
   import SendButton from "./SendButton.svelte";
+  import SeriesChoiceMenuItems from "./SeriesChoiceMenuItems.svelte";
   import TimeBox from "./TimeBox.svelte";
   import AvailabilityGrid from "./AvailabilityGrid.svelte";
 
@@ -21,6 +24,7 @@
   export let timeEditor: EventTimeEditor;
   export let sendLabel: string;
   export let sendDisabled: string | false = false;
+  export let needsSeriesChoice = false;
   export let onSend: () => Promise<void>;
 </script>
 

@@ -52,7 +52,12 @@
       {/if}
     {:else}
       <RibbonGroup label={$t`Actions`}>
-        {#if !isMeeting}
+        {#if !isMeeting && needsSeriesChoice}
+          <RibbonMenuButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`}
+            disabled={saveDisabled}>
+            <SeriesChoiceMenuItems {flow} />
+          </RibbonMenuButton>
+        {:else if !isMeeting}
           <RibbonButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`}
             disabled={saveDisabled}
             onClick={onSave} />
@@ -187,6 +192,7 @@
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { openSelectAttendees } from "./EditEvent.svelte";
   import { openRecurrence } from "./RecurrenceDialog.svelte";
+  import SeriesChoiceMenuItems from "./SeriesChoiceMenuItems.svelte";
   import { checkNamesOf } from "./ParticipantsBox.svelte";
   import { refreshAvailabilityOf } from "./AvailabilityGrid.svelte";
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
@@ -235,6 +241,7 @@
   export let trackingLabel: string;
   export let isSchedulingSelected = false;
   export let isTrackingSelected = false;
+  export let needsSeriesChoice = false;
   export let onSave: () => Promise<void>;
   export let onDelete: () => Promise<void>;
 

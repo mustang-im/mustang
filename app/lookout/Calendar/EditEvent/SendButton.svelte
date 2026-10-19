@@ -1,21 +1,34 @@
 <button class="send" class:disabled={!!disabled} class:running={isRunning}
   title={disabled || label}
   aria-disabled={!!disabled}
+  aria-haspopup={hasMenu ? "menu" : undefined}
+  aria-expanded={hasMenu ? isMenuOpen : undefined}
+  bind:this={buttonEl}
   on:click={onSend}>
   <SendIcon size={24} strokeWidth={1.5} />
-  <span>{label}</span>
+  <span>{label}{#if hasMenu}<ChevronDownIcon size={12} />{/if}</span>
 </button>
+{#if hasMenu}
+  <Menu bind:isMenuOpen anchor={buttonEl} placement="bottom-start">
+    <slot />
+  </Menu>
+{/if}
 
 <script lang="ts">
   import { showError } from "../../../frontend/Util/error";
   import { UserError } from "../../../logic/util/util";
+  import Menu from "../../Shared/Menu/Menu.svelte";
   import SendIcon from "lucide-svelte/icons/send";
+  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
 
   export let label: string;
   export let disabled: string | false = false;
+  export let hasMenu = false;
   export let onClick: () => Promise<void>;
 
   let isRunning = false;
+  let isMenuOpen = false;
+  let buttonEl: HTMLButtonElement;
 
   async function onSend() {
     if (isRunning) {
@@ -24,6 +37,10 @@
     try {
       if (disabled) {
         throw new UserError(disabled);
+      }
+      if (hasMenu) {
+        isMenuOpen = !isMenuOpen;
+        return;
       }
       isRunning = true;
       await onClick();
