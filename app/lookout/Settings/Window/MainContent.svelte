@@ -38,7 +38,4 @@
     font-family: var(--lo-font);
     font-size: var(--lo-font-size);
   }
-  .settings-content :global(input[type="number"]) {
-    min-width: 64px;
-  }
 </style>

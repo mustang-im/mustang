@@ -309,3 +309,23 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   --left-pane-bg: transparent;
   --left-pane-shadow: none;
 }
+
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) :is(input[type="number"], input[type="password"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="tel"], input[type="text"]),
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)) {
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--input-line);
+  border-radius: var(--lo-radius-small);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) :is(input[type="number"], input[type="password"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="tel"], input[type="text"]):focus,
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)):focus {
+  border-color: var(--input-focus);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)) {
+  background-color: var(--input-bg);
+  color: var(--input-fg);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) input[type="number"] {
+  min-width: 64px;
+}
