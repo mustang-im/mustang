@@ -1,5 +1,5 @@
 <Dialog title={copy ? $t`Copy Items` : $t`Move Items`} bind:this={dialog}
-  okLabel={$t`OK`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={!target && $t`Select a folder first`}
   onOK={onMove}
   on:close>
@@ -7,12 +7,12 @@
     <span class="caption">
       {copy ? $t`Copy the selected items to the folder` : $t`Move the selected items to the folder`}
     </span>
-    <FolderPicker label={$t`Folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
+    <FolderPicker label={$t`Folders *=> List of the folders`} bind:selectedFolder={target} bind:selectedAccount={targetAccount}
       disableFolder={folder => !copy && (messages.contents.length > 0 && messages.contents.every(message => message.folder == folder)) && $t`The items are already in this folder`}
       on:choose={() => dialog.submit()} />
   </vbox>
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`New…`} onClick={() => { isCreating = true; }}
+    <DialogButton label={$t`New… *=> Create a new folder`} onClick={() => { isCreating = true; }}
       disabled={!targetAccount && $t`Select an account or a folder first`}
       tooltip={target ? $t`Create a subfolder of ${target.name}` : $t`Create a new folder`} />
   </svelte:fragment>

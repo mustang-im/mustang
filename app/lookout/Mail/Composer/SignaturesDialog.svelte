@@ -1,5 +1,5 @@
 <Dialog title={$t`Signatures and Stationery`} on:close={onCancel} width="700px" height="640px"
-  okLabel={$t`OK`} onOK={onOK}>
+  okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK}>
   <hbox class="tab-strip" role="tablist">
     <button type="button" class="tab selected" role="tab" aria-selected="true">{$t`E-mail Signature`}</button>
   </hbox>
@@ -21,7 +21,7 @@
               <span class="realname lo-secondary">{identity.realname}</span>
             {/if}
             {#if !hasSignature(identity, edits)}
-              <span class="empty lo-secondary">{$t`(none)`}</span>
+              <span class="empty lo-secondary">{$t`(none) *=> This identity has no signature`}</span>
             {/if}
           </button>
         {/each}
@@ -30,20 +30,20 @@
     <vbox flex class="section edit">
       <hbox class="caption">{$t`Edit signature`}</hbox>
       <hbox class="toolbar">
-        <button type="button" class="tool" class:pressed={isActive("bold")} title={$t`Bold`} aria-label={$t`Bold`}
+        <button type="button" class="tool" class:pressed={isActive("bold")} title={$t`Bold *=> Text formatting: bold font`} aria-label={$t`Bold *=> Text formatting: bold font`}
           disabled={!editor} on:click={() => run(chain => chain.toggleBold())}>
           <BoldIcon size={16} />
         </button>
-        <button type="button" class="tool" class:pressed={isActive("italic")} title={$t`Italic`} aria-label={$t`Italic`}
+        <button type="button" class="tool" class:pressed={isActive("italic")} title={$t`Italic *=> Text formatting: italic font`} aria-label={$t`Italic *=> Text formatting: italic font`}
           disabled={!editor} on:click={() => run(chain => chain.toggleItalic())}>
           <ItalicIcon size={16} />
         </button>
-        <button type="button" class="tool" class:pressed={isActive("underline")} title={$t`Underline`} aria-label={$t`Underline`}
+        <button type="button" class="tool" class:pressed={isActive("underline")} title={$t`Underline *=> Text formatting: underlined text`} aria-label={$t`Underline *=> Text formatting: underlined text`}
           disabled={!editor} on:click={() => run(chain => chain.toggleUnderline())}>
           <UnderlineIcon size={16} />
         </button>
         <hbox class="tool-separator" />
-        <button type="button" class="tool" class:pressed={isActive("link")} title={$t`Hyperlink`} aria-label={$t`Hyperlink`}
+        <button type="button" class="tool" class:pressed={isActive("link")} title={$t`Hyperlink *=> Insert or edit a link in the text`} aria-label={$t`Hyperlink *=> Insert or edit a link in the text`}
           disabled={!editor} on:click={() => showLinkDialog = true}>
           <LinkIcon size={16} />
         </button>
@@ -56,7 +56,7 @@
         {/if}
       </vbox>
       <hbox class="save-row">
-        <DialogButton label={$t`Save`} disabled={!isChanged(selected, edits) && $t`No changes`}
+        <DialogButton label={$t`Save *=> Save the changed signature`} disabled={!isChanged(selected, edits) && $t`No changes`}
           onClick={() => save(selected)} />
       </hbox>
     </vbox>

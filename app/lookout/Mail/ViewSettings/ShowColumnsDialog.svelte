@@ -1,4 +1,4 @@
-<Dialog title={$t`Show Columns`} okLabel={$t`OK`} onOK={() => { dispatch("change", shown); }} width="620px" on:close>
+<Dialog title={$t`Show Columns`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={() => { dispatch("change", shown); }} width="620px" on:close>
   <hbox class="columns-editor">
     <vbox flex class="list-box">
       <span class="list-label">{$t`Available columns`}</span>
@@ -20,8 +20,8 @@
         <span>{ColumnInfo.labelOf(item)}</span>
       </ListView>
       <hbox class="order-buttons">
-        <DialogButton label={$t`Move Up`} disabled={!canMove(-1, selectedShown, shown)} onClick={() => move(-1)} />
-        <DialogButton label={$t`Move Down`} disabled={!canMove(1, selectedShown, shown)} onClick={() => move(1)} />
+        <DialogButton label={$t`Move Up *=> Move the selected column up in the order`} disabled={!canMove(-1, selectedShown, shown)} onClick={() => move(-1)} />
+        <DialogButton label={$t`Move Down *=> Move the selected column down in the order`} disabled={!canMove(1, selectedShown, shown)} onClick={() => move(1)} />
       </hbox>
     </vbox>
   </hbox>

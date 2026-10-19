@@ -1,12 +1,12 @@
-<Dialog title={title} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="480px"
+<Dialog title={title} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSubmit} on:close={onClose} width="480px"
   okDisabled={!name.trim() && $t`Enter a name`}>
   <FormGrid columns="max-content minmax(0, 1fr)">
-    <span class="lo-form-label">{$t`Name`}</span>
-    <TextField label={$t`Name`} bind:value={name} />
-    <span class="lo-form-label">{$t`Criteria`}</span>
+    <span class="lo-form-label">{$t`Name *=> Name of the search folder`}</span>
+    <TextField label={$t`Name *=> Name of the search folder`} bind:value={name} />
+    <span class="lo-form-label">{$t`Criteria *=> Search criteria of the search folder`}</span>
     <hbox class="criteria">
       <span class="summary" title={summary}>{summary}</span>
-      <DialogButton label={$t`Criteria…`} onClick={() => { isEditingCriteria = true; }} />
+      <DialogButton label={$t`Criteria… *=> Change the search criteria`} onClick={() => { isEditingCriteria = true; }} />
     </hbox>
     <span class="lo-form-label">{$t`Search mail in`}</span>
     <ComboBox label={$t`Search mail in`} options={accountOptions} bind:value={account} width="100%" />
@@ -64,10 +64,10 @@
       parts.push($t`to ${search.includesPerson.name}`);
     }
     if (search.isRead === false) {
-      parts.push($t`unread`);
+      parts.push($t`unread *=> Search criteria summary: only unread emails`);
     }
     if (search.isStarred) {
-      parts.push($t`flagged`);
+      parts.push($t`flagged *=> Search criteria summary: only flagged emails`);
     }
     if (search.hasAttachment) {
       parts.push($t`with attachments`);

@@ -5,7 +5,7 @@
   on:click|stopPropagation={onConnect}>
   <ConnectIcon size={16} />
   {#if withLabel}
-    <span>{isConnecting ? $t`Connecting…` : $t`Connect`}</span>
+    <span>{isConnecting ? $t`Connecting… *=> Logging in to the account` : $t`Connect *=> Log in to this account`}</span>
   {/if}
 </button>
 

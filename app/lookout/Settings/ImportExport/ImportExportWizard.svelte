@@ -1,4 +1,4 @@
-<Dialog title={isExport ? $t`Export` : $t`Import`}
+<Dialog title={isExport ? $t`Export *=> Export data to a file` : $t`Import *=> Import data from a file or from another program`}
   width="680px"
   height="500px"
   on:close>
@@ -21,7 +21,7 @@
           {/each}
         </vbox>
         <fieldset class="description">
-          <legend>{$t`Description`}</legend>
+          <legend>{$t`Description *=> Description of the selected choice`}</legend>
           {actions.find(actionEntry => actionEntry.id == action)?.description}
         </fieldset>
       {:else if step == "source"}
@@ -68,7 +68,7 @@
         <hbox class="file-row">
           <input id="import-export-file" class="lo-text-field" type="text" readonly
             value={file?.name ?? ""} placeholder={$t`Click Browse… to choose a file`} />
-          <DialogButton label={$t`Browse…`} onClick={onBrowse} />
+          <DialogButton label={$t`Browse… *=> Choose a file on the computer`} onClick={onBrowse} />
         </hbox>
         <FileSelector bind:this={fileSelector}
           acceptFileTypes={action == "import-vcard" ? [ "text/vcard", ".vcf" ] : [ "text/calendar", ".ics", ".vcs" ]} />
@@ -99,11 +99,11 @@
     <hbox flex />
     <DialogButton label={$t`< Back`} disabled={stepIndex == 0} onClick={() => { step = steps[stepIndex - 1]; }} />
     {#if stepIndex == steps.length - 1}
-      <DialogButton label={$t`Finish`} primary disabled={!canGoNext} onClick={finish} />
+      <DialogButton label={$t`Finish *=> Complete the wizard`} primary disabled={!canGoNext} onClick={finish} />
     {:else}
       <DialogButton label={$t`Next >`} primary disabled={!canGoNext} onClick={next} />
     {/if}
-    <DialogButton label={$t`Cancel`} onClick={() => { dispatch("close"); }} />
+    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={() => { dispatch("close"); }} />
   </svelte:fragment>
 </Dialog>
 
@@ -175,11 +175,11 @@
   ] as { id: ImportExportAction, icon: ConstructorOfATypedSvelteComponent, label: string, description: string }[];
 
   $: sourceGroups = [
-    { label: $t`Calendars`, icon: CalendarIcon,
+    { label: $t`Calendars *=> Heading of the list of calendars`, icon: CalendarIcon,
       sources: $calendars.contents.map(calendar => ({ source: calendar, depth: 0, accountName: calendar.mainAccount?.name })) },
     { label: $t`Address books`, icon: AddressbookIcon,
       sources: $addressbooks.contents.map(addressbook => ({ source: addressbook, depth: 0, accountName: addressbook.mainAccount?.name })) },
-    { label: $t`Topics`, icon: TopicIcon,
+    { label: $t`Topics *=> Heading of the list of topics, which are pages with notes and links`, icon: TopicIcon,
       sources: $topicAccounts.contents.flatMap(topicAccount => topicTree(topicAccount.topics.contents.filter(topic => !topic.parent), 0)) },
   ] as { label: string, icon: ConstructorOfATypedSvelteComponent, sources: { source: Calendar | Addressbook | Topic, depth: number, accountName?: string }[] }[];
 

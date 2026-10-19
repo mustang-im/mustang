@@ -24,7 +24,7 @@ export function getAccountTypeLabel(account: Account): string {
     case "local":
       return gt`On this computer`;
     case "mail":
-      return gt`Email`;
+      return gt`Email *=> Account type: email account`;
     default:
       return account.protocol ?? "";
   }

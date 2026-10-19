@@ -28,7 +28,7 @@
     {/each}
   </div>
   <hbox class="buttons">
-    <button class="today-button" disabled={isBefore($now, min)} on:click={() => dispatch("pick", new Date($now))}>{$t`Today`}</button>
+    <button class="today-button" disabled={isBefore($now, min)} on:click={() => dispatch("pick", new Date($now))}>{$t`Today *=> Choose the date of today`}</button>
   </hbox>
 </vbox>
 

@@ -6,7 +6,7 @@
   </CalendarRibbon>
   <hbox flex class="panes">
     {#if $folderPaneSetting.value == CalendarFolderPane.Minimized}
-      <FolderPaneMinimized name={$currentCalendar?.name ?? $t`Calendar`}
+      <FolderPaneMinimized name={$currentCalendar?.name ?? $t`Calendar *=> Name of the Calendar app`}
         on:expand={() => { folderPaneSetting.value = CalendarFolderPane.Normal; }} />
     {/if}
     <Splitter name="lookout.calendar.folderPane" hasLeft={showFolderPane}

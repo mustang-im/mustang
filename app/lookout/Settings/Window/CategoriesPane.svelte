@@ -1,4 +1,4 @@
-<vbox class="settings-categories-pane" role="tree" aria-label={$t`Categories`}>
+<vbox class="settings-categories-pane" role="tree" aria-label={$t`Categories *=> List of the settings pages`}>
   {#if account}
     <AccountItem {account} category={null} />
   {:else}

@@ -33,7 +33,7 @@
   let viewButtonEl: HTMLButtonElement;
   let isViewMenuOpen = false;
 
-  $: viewLabels = { day: $t`Day`, workweek: $t`Work Week`, week: $t`Week`, month: $t`Month`, schedule: $t`Schedule View`, dual: $t`Day/Month` };
+  $: viewLabels = { day: $t`Day *=> Calendar view that shows one day`, workweek: $t`Work Week *=> Calendar view that shows Monday to Friday`, week: $t`Week *=> Calendar view that shows a whole week`, month: $t`Month *=> Calendar view that shows a whole month`, schedule: $t`Schedule View`, dual: $t`Day/Month *=> Calendar view with the day on the left and the month on the right` };
 
   // <copied to="ArrangeButtons.svelte, SlotMenu.svelte">
   function setView(viewType: CalendarViewType) {

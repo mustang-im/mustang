@@ -20,11 +20,11 @@
     onClick={onClose} />
 {/if}
 {#if $account.isLoggedIn}
-  <MenuItem label={$t`Disconnect`} icon={DisconnectIcon}
+  <MenuItem label={$t`Disconnect *=> Log out of this account`} icon={DisconnectIcon}
     tooltip={$t`Log out of this account`}
     onClick={() => account.logout()} />
 {:else}
-  <MenuItem label={$t`Connect`} icon={ConnectIcon}
+  <MenuItem label={$t`Connect *=> Log in to this account`} icon={ConnectIcon}
     onClick={() => account.loginAndStartup(true)} />
 {/if}
 

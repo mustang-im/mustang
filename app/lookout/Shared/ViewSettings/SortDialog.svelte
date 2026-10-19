@@ -1,10 +1,10 @@
-<Dialog title={title ?? $t`Sort`} okLabel={$t`OK`} onOK={() => { dispatch("change", { column: sortColumn, ascending: sortAscending }); }} width="420px" on:close>
+<Dialog title={title ?? $t`Sort *=> Sort the items in the list`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={() => { dispatch("change", { column: sortColumn, ascending: sortAscending }); }} width="420px" on:close>
   <GroupBox label={itemsLabel ?? $t`Sort items by`}>
     <hbox class="sort-row">
       <ComboBox options={columnOptions} bind:value={sortColumn} label={itemsLabel ?? $t`Sort items by`} width="200px" />
       <vbox class="order">
-        <Radio label={$t`Ascending`} bind:group={sortAscending} value={true} />
-        <Radio label={$t`Descending`} bind:group={sortAscending} value={false} />
+        <Radio label={$t`Ascending *=> Sort order: A to Z, 1 to 9`} bind:group={sortAscending} value={true} />
+        <Radio label={$t`Descending *=> Sort order: Z to A, 9 to 1`} bind:group={sortAscending} value={false} />
       </vbox>
     </hbox>
   </GroupBox>

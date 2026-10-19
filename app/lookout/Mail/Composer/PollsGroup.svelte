@@ -1,4 +1,4 @@
-<RibbonGroup label={$t`Polls`}>
+<RibbonGroup label={$t`Polls *=> Ribbon group to insert polls and bookings into the email`}>
   {#each types as type}
     <RibbonButton label={label(type)} icon={icon(type)}
       tooltip={tooltip(type)}
@@ -57,7 +57,7 @@
     if (identity.smlAccount) {
       return true;
     }
-    let create = await showMessageBox($t`Polls`,
+    let create = await showMessageBox($t`Polls *=> Polls and bookings in emails`,
       $t`Polls and bookings need a free SML account for ${identity.emailAddress}. The SML server sends a confirmation message to this address, which ${appName} processes automatically.` + "\n\n" +
       $t`Do you want to create the account now?`,
       $t`Create Account`);
@@ -75,9 +75,9 @@
   /* <copied from="SMLComposer.svelte"> */
   function label(type: string): string {
     switch (type) {
-      case "SimplePoll": return $t`Poll`;
+      case "SimplePoll": return $t`Poll *=> A poll in the email: recipients choose one of the options`;
       case "MeetingTimePoll": return $t`Scheduling Poll`;
-      case "BookMe": return $t`Bookings`;
+      case "BookMe": return $t`Bookings *=> Meeting times in the email that the recipient can book`;
       default: return "";
     }
   }

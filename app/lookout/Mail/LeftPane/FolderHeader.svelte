@@ -9,28 +9,28 @@
     {#if !isSearchResult}
       <button class="header-button" class:active={hasFilter} bind:this={filterEl}
         on:click|stopPropagation={() => isFilterMenuOpen = !isFilterMenuOpen}
-        title={$t`Filter`} aria-haspopup="menu">
+        title={$t`Filter *=> Show only some of the emails in the folder`} aria-haspopup="menu">
         <FilterIcon size={16} />
-        <span class="button-label">{$t`Filter`}</span>
+        <span class="button-label">{$t`Filter *=> Show only some of the emails in the folder`}</span>
       </button>
     {/if}
     <button class="header-button" bind:this={sortEl}
       on:click|stopPropagation={() => isSortMenuOpen = !isSortMenuOpen}
-      title={$t`Sort`} aria-haspopup="menu">
+      title={$t`Sort *=> Change the sort order of the email list`} aria-haspopup="menu">
       <SortIcon size={16} />
       <span class="button-label">{arrangeLabel}</span>
     </button>
   {:else if isSearchResult}
-    <span class="results-title">{$t`Results`}</span>
+    <span class="results-title">{$t`Results *=> Search results`}</span>
   {:else}
     <hbox class="pivots" role="tablist">
       <button class="pivot" role="tab" class:active={!isUnreadOnly} aria-selected={!isUnreadOnly}
         on:click={() => setUnreadOnly(false)}>
-        {$t`All`}
+        {$t`All *=> Show all emails in the folder`}
       </button>
       <button class="pivot" role="tab" class:active={isUnreadOnly} aria-selected={isUnreadOnly}
         on:click={() => setUnreadOnly(true)}>
-        {$t`Unread`}
+        {$t`Unread *=> State of the message that has not been read`}
       </button>
     </hbox>
     <hbox class="pivots quick-filters">
@@ -77,7 +77,7 @@
 </hbox>
 <Menu bind:isMenuOpen={isArrangeMenuOpen} anchor={arrangeEl} placement="bottom-end">
   {#if !isSearchResult}
-    <MenuLabel label={$t`Filter`} />
+    <MenuLabel label={$t`Filter *=> Show only some of the emails in the folder`} />
     <MenuItem label={$t`All Mail`} checked={!hasFilter} onClick={clearFilter} />
     <MenuItem label={$t`Unread Mail`} checked={$quickSearch.isRead === false}
       onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
@@ -90,10 +90,10 @@
   <ArrangeByMenuItems {folder} withLabel withSortOrder />
 </Menu>
 <Menu bind:isMenuOpen={isFilterMenuOpen} anchor={filterEl} placement="bottom-end">
-  <MenuItem label={$t`All`} icon={AllIcon} checkable checked={!hasFilter} onClick={clearFilter} />
-  <MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={$quickSearch.isRead === false}
+  <MenuItem label={$t`All *=> Show all emails in the folder`} icon={AllIcon} checkable checked={!hasFilter} onClick={clearFilter} />
+  <MenuItem label={$t`Unread *=> State of the message that has not been read`} icon={UnreadIcon} checkable checked={$quickSearch.isRead === false}
     onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
-  <MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={$quickSearch.isStarred}
+  <MenuItem label={$t`Flagged *=> State of the email that has been flagged for follow-up`} icon={FlagIcon} checkable checked={$quickSearch.isStarred}
     onClick={() => toggleQuickFilter(QuickFilter.Flagged)} />
   <MenuItem label={$t`Has files`} icon={AttachmentIcon} checkable checked={$quickSearch.hasAttachment}
     onClick={() => toggleQuickFilter(QuickFilter.Attachments)} />
@@ -147,7 +147,7 @@
   const ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
 
   $: isSimplified = $ribbonLayout.value == "simplified";
-  $: listTitle = isSearchResult ? $t`Results` : $folder?.name ?? "";
+  $: listTitle = isSearchResult ? $t`Results *=> Search results` : $folder?.name ?? "";
 
   $: settings = viewSettingsStore(folder);
   $: folderAccount = folder?.account;

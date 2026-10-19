@@ -61,11 +61,11 @@ export class DateGroups {
     if (!date) {
       return { id: "none", label: gt`No date` };
     } else if (date >= this.tomorrowStart) {
-      return { id: "future", label: gt`Future` };
+      return { id: "future", label: gt`Future *=> Group of emails with a date in the future` };
     } else if (date >= this.todayStart) {
-      return { id: "today", label: gt`Today` };
+      return { id: "today", label: gt`Today *=> The current day` };
     } else if (date >= this.yesterdayStart) {
-      return { id: "yesterday", label: gt`Yesterday` };
+      return { id: "yesterday", label: gt`Yesterday *=> The day before today` };
     } else if (date >= this.weekStart) {
       return {
         id: "weekday-" + date.getDay(),
@@ -82,7 +82,7 @@ export class DateGroups {
     } else if (date >= this.lastMonthStart) {
       return { id: "last-month", label: gt`Last Month` };
     } else {
-      return { id: "older", label: gt`Older` };
+      return { id: "older", label: gt`Older *=> Group of emails older than last month` };
     }
   }
 
@@ -198,7 +198,7 @@ export class MessageGrouping<T extends ArrangeableMessage> {
         let name = this.nameOf(message)?.trim();
         return name
           ? { id: "from:" + name.toLowerCase(), label: name }
-          : { id: "from:", label: gt`(none)` };
+          : { id: "from:", label: gt`(none) *=> Group of emails without a sender` };
       }
       case ArrangeBy.Subject: {
         let subject = message.baseSubject?.trim();
@@ -214,8 +214,8 @@ export class MessageGrouping<T extends ArrangeableMessage> {
           : { id: "importance-normal", label: gt`Importance: Normal` };
       case ArrangeBy.Flag:
         return message.isStarred
-          ? { id: "flagged", label: gt`Flagged` }
-          : { id: "unflagged", label: gt`Unflagged` };
+          ? { id: "flagged", label: gt`Flagged *=> State of the email that has been flagged for follow-up` }
+          : { id: "unflagged", label: gt`Unflagged *=> State of the email that is not flagged` };
       default:
         return this.dateGroups.groupOf(message.sent);
     }

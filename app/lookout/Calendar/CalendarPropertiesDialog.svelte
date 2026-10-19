@@ -1,5 +1,5 @@
 <Dialog title={$t`${calendar.name} Properties`}
-  okLabel={$t`OK`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={!name.trim() && $t`Enter a name for the calendar`}
   onOK={onOK}
   width="560px"
@@ -15,23 +15,23 @@
           <span class="calendar-icon" style:--calendar-color={color}>
             <CalendarIcon size="24" />
           </span>
-          <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name`} />
+          <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name *=> Name of the calendar or address book`} />
         </hbox>
         <hbox class="divider" />
         <div class="facts">
-          <span class="label">{$t`Type`}</span>
+          <span class="label">{$t`Type *=> Type of the folder`}</span>
           <span>{$t`Folder containing Calendar Items`}</span>
-          <span class="label">{$t`Location`}</span>
+          <span class="label">{$t`Location *=> Where the calendar or address book is stored`}</span>
           <span>{location}</span>
           {#if owner}
-            <span class="label">{$t`Owner`}</span>
+            <span class="label">{$t`Owner *=> Person who owns the calendar`}</span>
             <span>{owner}</span>
           {/if}
         </div>
         <hbox class="divider" />
         <vbox class="color-group">
-          <span class="label">{$t`Color`}</span>
-          <ColorPalette colors={calendarColors()} bind:selected={color} label={$t`Color`} columns={15} />
+          <span class="label">{$t`Color *=> Color of the calendar`}</span>
+          <ColorPalette colors={calendarColors()} bind:selected={color} label={$t`Color *=> Color of the calendar`} columns={15} />
         </vbox>
         {#if isShared || !calendar.mainAccount}
           <hbox class="divider" />
@@ -79,8 +79,8 @@
   let color = calendar.color;
 
   $: tabs = [
-    { id: "general", label: $t`General` },
-    ...(canShare(calendar) ? [ { id: "permissions", label: $t`Permissions` } ] : []),
+    { id: "general", label: $t`General *=> Tab with the general settings of the folder` },
+    ...(canShare(calendar) ? [ { id: "permissions", label: $t`Permissions *=> Who can access this folder` } ] : []),
   ];
   $: if (!tabs.some(listed => listed.id == tab)) {
     tab = "general";

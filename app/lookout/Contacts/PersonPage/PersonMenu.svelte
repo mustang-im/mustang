@@ -1,15 +1,15 @@
 <ContextMenu bind:this={contextMenu}>
   {#if contacts.length == 1}
     <MenuItem
-      label={$t`Open`}
+      label={$t`Open *=> Open the selected contact`}
       icon={OpenIcon}
-      shortCutInfo={$t`Enter`}
+      shortCutInfo={$t`Enter *=> RETURN key`}
       onClick={() => ContactActions.edit(contacts[0])} />
     <MenuDivider />
   {/if}
   {#if person}
     <MenuItem
-      label={$t`Copy`}
+      label={$t`Copy *=> Copy the contact information to the clipboard`}
       tooltip={$t`Copy the contact information to the clipboard`}
       icon={CopyIcon}
       onClick={() => navigator.clipboard.writeText(person.toPlaintext())} />
@@ -20,25 +20,25 @@
     disabled={!hasEmailAddress && $t`The contact has no email address`}
     onClick={() => ContactActions.writeMail(contacts)} />
   <MenuItem
-    label={$t`Meeting`}
+    label={$t`Meeting *=> Invite the contact to a new meeting`}
     icon={MeetingIcon}
     disabled={!hasEmailAddress && $t`The contact has no email address`}
     onClick={() => ContactActions.newMeeting(contacts)} />
   {#if person}
-    <SubMenu label={$t`Call`} icon={CallIcon} disabled={!phoneNumbers.length && $t`The contact has no phone number`}>
+    <SubMenu label={$t`Call *=> Make a phone call to the contact`} icon={CallIcon} disabled={!phoneNumbers.length && $t`The contact has no phone number`}>
       {#each phoneNumbers as entry}
-        <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone`})`} icon={CallIcon}
+        <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone *=> Phone number of unknown type`})`} icon={CallIcon}
           onClick={() => ContactActions.call(entry.value)} />
       {/each}
     </SubMenu>
   {/if}
   <MenuDivider />
   <MenuItem
-    label={$t`Delete`}
+    label={$t`Delete *=> Delete the selected contacts`}
     icon={DeleteIcon}
-    shortCutInfo={$t`Del`}
+    shortCutInfo={$t`Del *=> Delete key`}
     onClick={() => ContactActions.deleteContacts(contacts)} />
-  <SubMenu label={$t`Move`} icon={MoveIcon}>
+  <SubMenu label={$t`Move *=> Move the selected contacts to another address book`} icon={MoveIcon}>
     {#each sections as section}
       <MenuLabel label={section.mainAccount?.name ?? $t`My Contacts`} />
       {#each section.addressbooks as addressbook (addressbook.id)}
@@ -49,7 +49,7 @@
     {/each}
     {#if person}
       <MenuDivider />
-      <SubMenu label={$t`Copy to Folder`} icon={CopyIcon}>
+      <SubMenu label={$t`Copy to Folder *=> Copy the selected contacts to another address book`} icon={CopyIcon}>
         {#each sections as section}
           <MenuLabel label={section.mainAccount?.name ?? $t`My Contacts`} />
           {#each section.addressbooks as addressbook (addressbook.id)}

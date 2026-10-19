@@ -5,18 +5,18 @@
       <ComboBox label={$t`Search In`} options={scopeOptions} bind:value={draft.scope} width="100%" />
     {/if}
     {#if showSearchTerm}
-      <span class="label">{$t`Keywords`}</span>
-      <TextField label={$t`Keywords`} bind:value={draft.keywords} classes="underlined"
+      <span class="label">{$t`Keywords *=> Words to search for`}</span>
+      <TextField label={$t`Keywords *=> Words to search for`} bind:value={draft.keywords} classes="underlined"
         tooltip={$t`Words in the subject or the message text`}
         on:keydown={onEnter} />
     {/if}
-    <span class="label">{$t`From`}</span>
+    <span class="label">{$t`From *=> Sender of the email`}</span>
     <hbox class="person-field underlined">
       {#if from}
         <hbox class="person-chip">
           <PersonCircle name={from.name} picture={from.picture} size={20} />
           <span class="name">{from.name}</span>
-          <button type="button" class="chip-remove" title={$t`Remove`} aria-label={$t`Remove`}
+          <button type="button" class="chip-remove" title={$t`Remove *=> Remove this person from the search`} aria-label={$t`Remove *=> Remove this person from the search`}
             on:click={() => { draft.setFrom(null); draft = draft; }}>
             <RemoveIcon size={12} />
           </button>
@@ -28,13 +28,13 @@
         <AddressBookIcon size={16} />
       </button>
     </hbox>
-    <span class="label">{$t`To`}</span>
+    <span class="label">{$t`To *=> Main recipients of the email`}</span>
     <hbox class="person-field underlined">
       {#if to}
         <hbox class="person-chip">
           <PersonCircle name={to.name} picture={to.picture} size={20} />
           <span class="name">{to.name}</span>
-          <button type="button" class="chip-remove" title={$t`Remove`} aria-label={$t`Remove`}
+          <button type="button" class="chip-remove" title={$t`Remove *=> Remove this person from the search`} aria-label={$t`Remove *=> Remove this person from the search`}
             on:click={() => { draft.setTo(null); draft = draft; }}>
             <RemoveIcon size={12} />
           </button>
@@ -47,14 +47,14 @@
       </button>
     </hbox>
     <!-- {#if showDates}
-      <span class="label">{$t`Received`}</span>
+      <span class="label">{$t`Received *=> Date when the email was received`}</span>
       <hbox class="dates">
         <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:date={draft.startDate} />
-        <span class="lo-secondary">{$t`to`}</span>
+        <span class="lo-secondary">{$t`to *=> as in: Monday to Friday`}</span>
         <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:date={draft.endDate} />
       </hbox>
     {/if} -->
-    <span class="label">{$t`Categories`}</span>
+    <span class="label">{$t`Categories *=> Categories of the email`}</span>
     <hbox class="categories-field">
       <button type="button" class="lo-text-field combo" bind:this={categoriesButton}
         disabled={!$tags.hasItems}
@@ -63,7 +63,7 @@
           {#each draft.tags as tag (tag)}
             <hbox class="category"><CategorySquare {tag} />{tag.name}</hbox>
           {:else}
-            <span class="lo-secondary">{$tags.hasItems ? $t`Any` : $t`No categories yet`}</span>
+            <span class="lo-secondary">{$tags.hasItems ? $t`Any *=> Any category` : $t`No categories yet`}</span>
           {/each}
         </hbox>
         <ChevronIcon size={14} />
@@ -74,26 +74,26 @@
     </hbox>
     <span class="label">{$t`Read status`}</span>
     <ComboBox label={$t`Read status`} options={readOptions} bind:value={draft.readStatus} width="100%" />
-    <span class="label">{$t`Size`}</span>
-    <ComboBox label={$t`Size`} options={sizeOptions} bind:value={draft.size} width="100%" />
-    <span class="label">{$t`Attachments`}</span>
+    <span class="label">{$t`Size *=> Size of the email`}</span>
+    <ComboBox label={$t`Size *=> Size of the email`} options={sizeOptions} bind:value={draft.size} width="100%" />
+    <span class="label">{$t`Attachments *=> Whether the email has attachments`}</span>
     <Checkbox label={$t`Has Attachments`} bind:checked={draft.hasAttachment} />
-    <span class="label">{$t`Flagged`}</span>
+    <span class="label">{$t`Flagged *=> State of the email that has been flagged for follow-up`}</span>
     <Checkbox label={$t`Flagged for follow up`} bind:checked={draft.flagged} />
-    <span class="label">{$t`Replied`}</span>
+    <span class="label">{$t`Replied *=> State of the email that has been replied to`}</span>
     <Checkbox label={$t`I replied to it`} bind:checked={draft.replied} />
   </grid>
   {#if showButtons}
     <hbox class="buttons">
       <hbox flex />
-      <DialogButton label={$t`Search`} primary onClick={() => { dispatch("search"); }} />
+      <DialogButton label={$t`Search *=> Start the search`} primary onClick={() => { dispatch("search"); }} />
       <DialogButton label={$t`Clear filters`} onClick={() => { draft.clear(); draft = draft; }} />
     </hbox>
   {/if}
 </vbox>
 {#if picking}
   <SearchPersonDialog
-    fieldLabel={picking == Direction.To ? $t`To` : $t`From`}
+    fieldLabel={picking == Direction.To ? $t`To *=> Main recipients of the email` : $t`From *=> Sender of the email`}
     person={picking == Direction.To ? to : from}
     on:pick={event => onPicked(event.detail)}
     on:close={() => picking = null} />
@@ -145,9 +145,9 @@
       disabled: !isScopeAvailable(scope, account, folder),
     })) as ComboOption<SearchScope>[];
   const readOptions: ComboOption<ReadStatus>[] = [
-    { value: ReadStatus.All, label: $t`All` },
-    { value: ReadStatus.Read, label: $t`Read` },
-    { value: ReadStatus.Unread, label: $t`Unread` },
+    { value: ReadStatus.All, label: $t`All *=> Read status: all emails` },
+    { value: ReadStatus.Read, label: $t`Read *=> State of the message that has been read` },
+    { value: ReadStatus.Unread, label: $t`Unread *=> State of the message that has not been read` },
   ];
   const sizeOptions: ComboOption<SizeRange>[] = [SizeRange.Any, ...namedSizeRanges]
     .map(size => ({ value: size, label: sizeRangeLabel(size) }));

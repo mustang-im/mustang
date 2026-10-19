@@ -1,20 +1,20 @@
-<RibbonGroup label={$t`Encrypt`}>
+<RibbonGroup label={$t`Encrypt *=> Ribbon group with commands to encrypt and sign the email`}>
   {#if privateKey}
-    <RibbonToggleButton label={$t`Encrypt`} icon={EncryptIcon}
+    <RibbonToggleButton label={$t`Encrypt *=> Encrypt this email, so that only the recipients can read it`} icon={EncryptIcon}
       tooltip={$t`Only the recipients can read the email`}
       selected={!!$mail.shouldEncrypt}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
       onClick={toggleEncrypted} />
-    <RibbonToggleButton label={$t`Sign`} icon={SignIcon}
+    <RibbonToggleButton label={$t`Sign *=> Digitally sign this email`} icon={SignIcon}
       tooltip={$t`This proves that I wrote this email`}
       selected={!!$mail.signedByKeyID}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
       onClick={toggleSigned} />
   {:else}
-    <RibbonButton label={$t`Encrypt`} icon={EncryptIcon}
+    <RibbonButton label={$t`Encrypt *=> Encrypt this email, so that only the recipients can read it`} icon={EncryptIcon}
       tooltip={$t`You need a digital ID to encrypt messages. Set it up in the Trust Center.`}
       onClick={() => openTrustCenter(identity)} />
-    <RibbonButton label={$t`Sign`} icon={SignIcon}
+    <RibbonButton label={$t`Sign *=> Digitally sign this email`} icon={SignIcon}
       tooltip={$t`You need a digital ID to sign messages. Set it up in the Trust Center.`}
       onClick={() => openTrustCenter(identity)} />
   {/if}

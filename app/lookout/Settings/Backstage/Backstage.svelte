@@ -1,12 +1,12 @@
 <hbox flex class="backstage">
   <vbox class="backstage-nav">
-    <button class="nav-item back" title={$t`Back`} aria-label={$t`Back`} on:click={onBack}>
+    <button class="nav-item back" title={$t`Back *=> Close the File view and go back to the app`} aria-label={$t`Back *=> Close the File view and go back to the app`} on:click={onBack}>
       <BackIcon size="20" />
     </button>
     <button class="nav-item" class:selected={$backstagePage == "info"}
       on:click={() => $backstagePage = "info"}>
       <InfoIcon size="18" />
-      <hbox class="label">{$t`Info`}</hbox>
+      <hbox class="label">{$t`Info *=> Page with information and settings of the account`}</hbox>
     </button>
     <button class="nav-item" class:selected={$backstagePage == "open-export"}
       on:click={() => $backstagePage = "open-export"}>
@@ -19,7 +19,7 @@
     {#if area == "mail"}
       <button class="nav-item" disabled={!$selectedMessage} on:click={() => run(() => MessageActions.saveAs($selectedMessage))}>
         <SaveAsIcon size="18" />
-        <hbox class="label">{$t`Save As`}</hbox>
+        <hbox class="label">{$t`Save As *=> Save the selected item to a file`}</hbox>
       </button>
       <button class="nav-item" disabled={!attachments.length} on:click={() => isSavingAttachments = true}>
         <SaveAttachmentsIcon size="18" />
@@ -28,7 +28,7 @@
       <button class="nav-item" class:selected={$backstagePage == "print"}
         on:click={() => $backstagePage = "print"}>
         <PrintIcon size="18" />
-        <hbox class="label">{$t`Print`}</hbox>
+        <hbox class="label">{$t`Print *=> Print the selected email`}</hbox>
       </button>
     {:else if area == "calendar"}
       <button class="nav-item" disabled={!$selectedCalendar} on:click={() => run(() => saveCalendar($selectedCalendar))}>
@@ -38,7 +38,7 @@
     {:else if area == "people"}
       <button class="nav-item" disabled={!($selectedContact instanceof Person)} on:click={() => run(() => saveContact($selectedContact as Person))}>
         <SaveAsIcon size="18" />
-        <hbox class="label">{$t`Save As`}</hbox>
+        <hbox class="label">{$t`Save As *=> Save the selected item to a file`}</hbox>
       </button>
     {/if}
     <vbox flex class="spacer" />
@@ -49,11 +49,11 @@
     </button>
     <button class="nav-item" on:click={() => openOptions()}>
       <OptionsIcon size="18" />
-      <hbox class="label">{$t`Options`}</hbox>
+      <hbox class="label">{$t`Options *=> Open the settings of the app`}</hbox>
     </button>
     <button class="nav-item" on:click={onExit}>
       <ExitIcon size="18" />
-      <hbox class="label">{$t`Exit`}</hbox>
+      <hbox class="label">{$t`Exit *=> Close the app`}</hbox>
     </button>
   </vbox>
   <vbox flex class="backstage-page">
@@ -135,7 +135,7 @@
   }
 
   async function saveContact(person: Person) {
-    let file = personsToVCardFile(new ArrayColl([person]), person.name || $t`Contact`);
+    let file = personsToVCardFile(new ArrayColl([person]), person.name || $t`Contact *=> Default file name for a contact that has no name`);
     await saveBlobAsFile(file);
   }
 

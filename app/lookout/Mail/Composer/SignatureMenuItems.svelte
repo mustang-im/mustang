@@ -11,7 +11,7 @@
 {#if withSignature.length}
   <MenuDivider />
 {/if}
-<MenuItem label={$t`Signatures…`} onClick={() => dispatch("editSignatures")} />
+<MenuItem label={$t`Signatures… *=> Edit the email signatures`} onClick={() => dispatch("editSignatures")} />
 
 <script lang="ts">
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";

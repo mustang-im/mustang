@@ -20,19 +20,19 @@
       </vbox>
     {:else if step == "settings" && isLocal}
       <FormGrid columns="140px minmax(0, 1fr)">
-        <span>{$t`Name`}</span>
-        <TextField bind:value={config.name} label={$t`Name`} />
+        <span>{$t`Name *=> Name of the calendar or address book`}</span>
+        <TextField bind:value={config.name} label={$t`Name *=> Name of the calendar or address book`} />
         <span>{$t`Folder contains`}</span>
         <ComboBox options={contentOptions} value={kind} label={$t`Folder contains`} disabled />
-        <span>{$t`Location`}</span>
+        <span>{$t`Location *=> Where the calendar or address book is stored`}</span>
         <span class="value">{$t`On this computer`}</span>
       </FormGrid>
     {:else if step == "settings"}
       <span class="heading">{isCalendar ? $t`CalDAV Calendar Settings` : $t`CardDAV Address Book Settings`}</span>
       <FormGrid columns="140px minmax(0, 1fr)">
         <span class="section">{$t`Folder Information`}</span>
-        <span>{$t`Name`}</span>
-        <TextField bind:value={config.name} label={$t`Name`} />
+        <span>{$t`Name *=> Name of the calendar or address book`}</span>
+        <TextField bind:value={config.name} label={$t`Name *=> Name of the calendar or address book`} />
         <span class="section">{$t`Server Information`}</span>
         <span>{$t`Server URL`}</span>
         <TextField type="url" bind:value={config.url} label={$t`Server URL`}
@@ -40,8 +40,8 @@
         <span class="section">{$t`Logon Information`}</span>
         <span>{$t`User Name`}</span>
         <TextField bind:value={config.username} label={$t`User Name`} />
-        <span>{$t`Password`}</span>
-        <TextField type="password" bind:value={config.password} label={$t`Password`} />
+        <span>{$t`Password *=> Password for the login on the server`}</span>
+        <TextField type="password" bind:value={config.password} label={$t`Password *=> Password for the login on the server`} />
       </FormGrid>
     {:else if step == "choose"}
       <span class="heading">{isCalendar ? $t`Select the calendars to add` : $t`Select the address books to add`}</span>
@@ -61,11 +61,11 @@
       <DialogButton label={$t`< Back`} disabled={step == "type"} onClick={back} />
     {/if}
     {#if isLastStep}
-      <DialogButton label={localOnly ? $t`OK` : $t`Finish`} primary disabled={!canContinue} onClick={next} />
+      <DialogButton label={localOnly ? $t`OK *=> Confirm and close the dialog` : $t`Finish *=> Complete the wizard`} primary disabled={!canContinue} onClick={next} />
     {:else}
       <DialogButton label={$t`Next >`} primary disabled={!canContinue} onClick={next} />
     {/if}
-    <DialogButton label={$t`Cancel`} onClick={close} />
+    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={close} />
   </svelte:fragment>
 </Dialog>
 

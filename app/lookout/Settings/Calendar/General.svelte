@@ -4,10 +4,10 @@
       <CalendarWorkHours account={calendar}>
         <svelte:fragment slot="calendar">
           {#if $calendars.length > 1}
-            <span>{$t`Calendar`}</span>
+            <span>{$t`Calendar *=> Calendar whose work hours are shown`}</span>
             <hbox class="calendar-chooser">
               <ComboBox options={$calendars.contents.map(entry => ({ value: entry, label: entry.name }))}
-                bind:value={calendar} label={$t`Calendar`} width="280px" />
+                bind:value={calendar} label={$t`Calendar *=> Calendar whose work hours are shown`} width="280px" />
             </hbox>
           {/if}
         </svelte:fragment>
@@ -25,7 +25,7 @@
     </OptionsRow>
   </OptionsSection>
 
-  <OptionsSection title={$t`Display options`}>
+  <OptionsSection title={$t`Display options *=> Settings for how the calendar is shown`}>
     <OptionsRow icon={DisplayIcon}>
       <Checkbox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={$weekNumbers.value} />
       <Checkbox label={$t`Show declined meetings`} bind:checked={$showDeclined.value} />
@@ -35,15 +35,15 @@
   <OptionsSection title={$t`Time zones`}>
     <OptionsRow icon={TimeZoneIcon}>
       <grid class="time-zone">
-        <span>{$t`Label`}</span>
-        <TextField bind:value={$timeZoneLabel.value} label={$t`Label`} width="200px" />
+        <span>{$t`Label *=> Name shown for the time zone in the calendar`}</span>
+        <TextField bind:value={$timeZoneLabel.value} label={$t`Label *=> Name shown for the time zone in the calendar`} width="200px" />
         <span>{$t`Time zone`}</span>
         <ComboBox options={zoneChoices} value={systemZone} label={$t`Time zone`} width={kZoneWidth}
           disabled={$t`The calendar shows the time zone of the operating system`} />
       </grid>
       <Checkbox label={$t`Show a second time zone`} bind:checked={$secondTimeZoneShown.value} />
       <grid class="time-zone indented">
-        <span class:disabled={!$secondTimeZoneShown.value}>{$t`Label`}</span>
+        <span class:disabled={!$secondTimeZoneShown.value}>{$t`Label *=> Name shown for the time zone in the calendar`}</span>
         <TextField bind:value={$secondTimeZoneLabel.value} label={$t`Label of the second time zone`} width="200px"
           disabled={!$secondTimeZoneShown.value} />
         <span class:disabled={!$secondTimeZoneShown.value}>{$t`Time zone`}</span>
@@ -52,7 +52,7 @@
       </grid>
       <Checkbox label={$t`Show a third time zone`} bind:checked={$thirdTimeZoneShown.value} />
       <grid class="time-zone indented">
-        <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Label`}</span>
+        <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Label *=> Name shown for the time zone in the calendar`}</span>
         <TextField bind:value={$thirdTimeZoneLabel.value} label={$t`Label of the third time zone`} width="200px"
           disabled={!$thirdTimeZoneShown.value} />
         <span class:disabled={!$thirdTimeZoneShown.value}>{$t`Time zone`}</span>
@@ -62,7 +62,7 @@
     </OptionsRow>
   </OptionsSection>
 
-  <OptionsSection title={$t`Reminders`}>
+  <OptionsSection title={$t`Reminders *=> Reminders for appointments and meetings`}>
     <OptionsRow icon={RemindersIcon}>
       <Checkbox label={$t`Show reminders`} checked={$notifications.value.includes("popup")}
         on:change={event => setNotification("popup", event.detail)} />

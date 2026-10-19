@@ -134,20 +134,20 @@ export class FolderPermissions {
   static levelLabel(level: MailShareCombinedPermissions): string {
     switch (level) {
       case MailShareCombinedPermissions.Read:
-        return gt`Reviewer`;
+        return gt`Reviewer *=> Permission level: may only read the emails`;
       case MailShareCombinedPermissions.FlagChange:
         return gt`Reviewer, can flag and categorize`;
       case MailShareCombinedPermissions.Modify:
-        return gt`Editor`;
+        return gt`Editor *=> Permission level: may read, create, change and delete emails`;
       default:
-        return gt`Custom`;
+        return gt`Custom *=> Permission level: individually chosen rights`;
     }
   }
 
   static rightLabel(right: MailShareIndividualPermissions): string {
     switch (right) {
       case MailShareIndividualPermissions.Read:
-        return gt`Read items`;
+        return gt`Read items *=> Permission to read the emails`;
       case MailShareIndividualPermissions.FlagChange:
         return gt`Change flags and categories`;
       case MailShareIndividualPermissions.Create:

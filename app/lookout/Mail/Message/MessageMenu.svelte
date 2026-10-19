@@ -1,48 +1,48 @@
 {#if single}
-  <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo={$t`Ctrl+P`}
+  <MenuItem label={$t`Quick Print`} icon={PrintIcon} shortCutInfo={$t`Ctrl+P *=> Keyboard shortcut`}
     onClick={() => { $printMessage = single; }} />
   <MenuDivider />
-  <MenuItem label={$t`Reply`} icon={ReplyIcon} shortCutInfo={$t`Ctrl+R`}
+  <MenuItem label={$t`Reply *=> Reply to the sender of the selected email`} icon={ReplyIcon} shortCutInfo={$t`Ctrl+R *=> Keyboard shortcut`}
     onClick={() => MessageActions.respond(single, single.compose.replyToAuthor())} />
-  <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo={$t`Ctrl+Shift+R`}
+  <MenuItem label={$t`Reply All`} icon={ReplyAllIcon} shortCutInfo={$t`Ctrl+Shift+R *=> Keyboard shortcut`}
     disabled={!(single.allRecipients().length > 1 && !(single.bcc.hasItems && !single.outgoing)) && $t`There are no other recipients`}
     onClick={() => MessageActions.respond(single, single.compose.replyAll())} />
-  <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
+  <MenuItem label={$t`Forward *=> Forward the selected email to other people`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
     onClick={event => MessageActions.forward(single, event as MouseEvent)} />
   <MenuDivider />
 {/if}
 {#if allRead}
-  <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo={$t`Ctrl+U`}
+  <MenuItem label={$t`Mark as Unread`} icon={UnreadIcon} shortCutInfo={$t`Ctrl+U *=> Keyboard shortcut`}
     onClick={async () => { await Promise.all(messages.contents.map(message => message.markRead(false))); }} />
 {:else}
-  <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo={$t`Ctrl+Alt+U`}
+  <MenuItem label={$t`Mark as Read`} icon={ReadIcon} shortCutInfo={$t`Ctrl+Alt+U *=> Keyboard shortcut`}
     onClick={async () => { await Promise.all(messages.contents.map(message => message.markRead(true))); }} />
 {/if}
-<SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
+<SubMenu label={$t`Categorize *=> Assign a category to the selected emails`} icon={CategorizeIcon}>
   <CategorizeMenuItems messages={messages.contents} />
 </SubMenu>
-<SubMenu label={$t`Follow Up`} icon={FlagIcon}>
+<SubMenu label={$t`Follow Up *=> Flag the selected emails for follow-up`} icon={FlagIcon}>
   <FollowUpMenuItems messages={messages.contents} />
 </SubMenu>
 <MenuDivider />
 {#if single}
-  <SubMenu label={$t`Find Related`} icon={FindRelatedIcon}>
+  <SubMenu label={$t`Find Related *=> Find emails related to the selected email`} icon={FindRelatedIcon}>
     <FindRelatedMenuItems message={single} />
   </SubMenu>
-  <SubMenu label={$t`Rules`} icon={RulesIcon}>
+  <SubMenu label={$t`Rules *=> Criteria after which emails should be sorted`} icon={RulesIcon}>
     <RulesMenuItems message={single} account={single.folder?.account} />
   </SubMenu>
 {/if}
-<SubMenu label={$t`Move`} icon={MoveIcon}>
+<SubMenu label={$t`Move *=> Move the selected emails to another folder`} icon={MoveIcon}>
   <MoveMenuItems messages={messages.contents} />
 </SubMenu>
 <MenuDivider />
-<SubMenu label={$t`Junk`} icon={JunkIcon}>
+<SubMenu label={$t`Junk *=> Menu to mark the selected emails as junk or not junk`} icon={JunkIcon}>
   <JunkMenuItems messages={messages.contents} />
 </SubMenu>
-<MenuItem label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Del`}
+<MenuItem label={$t`Delete *=> Delete the selected emails`} icon={DeleteIcon} shortCutInfo={$t`Del *=> Delete key`}
   onClick={async () => { await Promise.all(messages.contents.map(message => message.deleteMessage())); }} />
-<MenuItem label={$t`Archive`} icon={ArchiveIcon} shortCutInfo={$t`Backspace`}
+<MenuItem label={$t`Archive *=> Move the selected emails to the archive folder`} icon={ArchiveIcon} shortCutInfo={$t`Backspace *=> Backspace key`}
   onClick={() => MessageActions.archive(messages.contents)} />
 {#if single}
   <MenuDivider />

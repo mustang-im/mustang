@@ -1,10 +1,10 @@
 <vbox class="all-fields-page">
   <hbox class="select-row">
-    <span>{$t`Select from`}</span>
-    <ComboBox options={fieldSets} bind:value={fieldSet} label={$t`Select from`} width="280px" />
+    <span>{$t`Select from *=> Choose which kind of fields to show`}</span>
+    <ComboBox options={fieldSets} bind:value={fieldSet} label={$t`Select from *=> Choose which kind of fields to show`} width="280px" />
   </hbox>
-  <ListView items={rows} bind:selected label={$t`Fields`} height="320px"
-    columns={[{ label: $t`Name`, width: "minmax(0, 2fr)" }, { label: $t`Value`, width: "minmax(0, 3fr)" }]}
+  <ListView items={rows} bind:selected label={$t`Fields *=> List of the fields of the contact`} height="320px"
+    columns={[{ label: $t`Name *=> Name of the field`, width: "minmax(0, 2fr)" }, { label: $t`Value *=> Value of the field`, width: "minmax(0, 3fr)" }]}
     let:item>
     <span class="cell">{item.name}</span>
     {#if item.kind != "address"}
@@ -18,19 +18,19 @@
       : $t`This contact has no fields of this kind`}</span>
   </ListView>
   <hbox class="buttons">
-    <DialogButton label={$t`New…`} onClick={() => { isNewOpen = true; }} />
-    <DialogButton label={$t`Delete`}
+    <DialogButton label={$t`New… *=> Add a new user-defined field`} onClick={() => { isNewOpen = true; }} />
+    <DialogButton label={$t`Delete *=> Delete the selected user-defined field`}
       disabled={selected?.kind != "custom" && $t`Select a user-defined field first`}
       onClick={onDelete} />
   </hbox>
 </vbox>
 
 {#if isNewOpen}
-  <Dialog title={$t`New Column`} okLabel={$t`OK`} okDisabled={!newName.trim() && $t`Enter a name`}
+  <Dialog title={$t`New Column`} okLabel={$t`OK *=> Confirm and close the dialog`} okDisabled={!newName.trim() && $t`Enter a name`}
     onOK={onAdd} width="360px" on:close={() => { isNewOpen = false; newName = ""; }}>
     <FormGrid>
-      <span>{$t`Name`}</span>
-      <TextField bind:value={newName} label={$t`Name`} />
+      <span>{$t`Name *=> Name of the field`}</span>
+      <TextField bind:value={newName} label={$t`Name *=> Name of the field`} />
     </FormGrid>
   </Dialog>
 {/if}

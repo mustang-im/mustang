@@ -1,5 +1,5 @@
-<Dialog title={$t`Save Search`}
-  okLabel={$t`OK`}
+<Dialog title={$t`Save Search *=> Save this search as a search folder`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={!name?.trim() && $t`Enter a name`}
   onOK={onSave}
   on:close>

@@ -104,7 +104,7 @@ export class CalendarActions {
     if (event.isOutgoingMeeting && event.participants.length > 1 &&
         !await showMessageBox(gt`Send Update`,
           gt`Would you like to move the meeting "${event.title ?? ""}" and send an update to the attendees?`,
-          gt`Send Update`, gt`Cancel`)) {
+          gt`Send Update`, gt`Cancel *=> Close the dialog without making changes`)) {
       return;
     }
     event.startEditing();
@@ -154,7 +154,7 @@ export class CalendarActions {
   static async deleteSeries(event: Event) {
     // <copied to="EditEvent/EventEditFlow.ts">
     let isConfirmed = event.isOutgoingMeeting
-      ? await askYesNo(gt`Cancel Series`,
+      ? await askYesNo(gt`Cancel Series *=> Call off all occurrences of the recurring meeting`,
       gt`Do you want to cancel all occurrences of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`)
       : await askYesNo(gt`Delete Series`, event.isIncomingMeeting
       ? gt`Do you want to delete all occurrences of the recurring meeting "${event.title ?? ""}"?`

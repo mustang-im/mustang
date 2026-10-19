@@ -4,13 +4,13 @@
       {isOrganizer ? $t`You proposed these meeting times` : $t`Choose a time to book a meeting with ${organizerName}`}
     </span>
     <DisplayList {options} duration={bookMe.duration} let:time>
-      <DialogButton label={$t`Book`} icon={BookIcon}
+      <DialogButton label={$t`Book *=> Confirm an appointmnet`} icon={BookIcon}
         disabled={isOrganizer ? $t`You proposed this time` : false}
         onClick={() => select(time)} />
     </DisplayList>
   {:else if state == TSMLBookMeState.UserConfirm}
     <vbox class="summary">
-      <span class="summary-label">{$t`Request meeting`}</span>
+      <span class="summary-label">{$t`Request meeting *=> Heading: the meeting time that you are about to request`}</span>
       <span class="summary-time">{pollDayLabel(time)}</span>
       <span class="summary-time">{timeOfDayLabel(time)} – {timeOfDayLabel(pollOptionEnd(time, bookMe.duration))}</span>
       <span class="summary-duration">{durationLabel(bookMe.duration)}</span>

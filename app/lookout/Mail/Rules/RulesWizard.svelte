@@ -3,7 +3,7 @@
     {#if page == RuleWizardPage.Templates}
       <span class="question">{$t`Start from a template or from a blank rule`}</span>
       <span class="step">{$t`Step 1: Select a template`}</span>
-      <vbox class="list" role="listbox" aria-label={$t`Templates`}>
+      <vbox class="list" role="listbox" aria-label={$t`Templates *=> List of templates for new rules`}>
         {#each groups as group}
           <div class="group-header" role="presentation">{group}</div>
           {#each model.templates.filter(template => template.group == group) as template (template.id)}
@@ -29,7 +29,7 @@
         {page == RuleWizardPage.Conditions ? $t`Step 1: Select condition(s)` : $t`Step 1: Select action(s)`}
       </span>
       <vbox class="list" role="group"
-        aria-label={page == RuleWizardPage.Conditions ? $t`Conditions` : $t`Actions`}>
+        aria-label={page == RuleWizardPage.Conditions ? $t`Conditions *=> Rule conditions: which emails the rule applies to` : $t`Actions *=> Rule actions: what the rule does with the email`}>
         {#each items as item (item.id)}
           <hbox class="row" class:selected={selectedItem == item}>
             <Checkbox checked={model.isChecked(item)} on:change={event => onCheck(item, event.detail)}>
@@ -55,11 +55,11 @@
     <hbox class="divider" />
   </vbox>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`Cancel`} onClick={onClose} />
+    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
     <DialogButton label={$t`< Back`} disabled={!model.canGoBack} onClick={onBack} />
     <DialogButton label={$t`Next >`} primary={page != RuleWizardPage.Finish}
       disabled={model.nextDisabledReason ?? false} onClick={onNext} />
-    <DialogButton label={$t`Finish`} primary={page == RuleWizardPage.Finish}
+    <DialogButton label={$t`Finish *=> Complete the wizard`} primary={page == RuleWizardPage.Finish}
       disabled={model.finishDisabledReason ?? false} onClick={onFinishClicked} />
   </svelte:fragment>
 </Dialog>

@@ -11,10 +11,10 @@
   </hbox>
   <svelte:fragment slot="footer">
     {#if isQuestion}
-      <DialogButton label={$t`Yes`} primary onClick={() => { dispatch("answer", true); }} />
-      <DialogButton label={$t`No`} onClick={() => { dispatch("answer", false); }} />
+      <DialogButton label={$t`Yes *=> Agree to the question in the dialog`} primary onClick={() => { dispatch("answer", true); }} />
+      <DialogButton label={$t`No *=> Disagree with the question in the dialog`} onClick={() => { dispatch("answer", false); }} />
     {:else}
-      <DialogButton label={$t`OK`} primary onClick={() => { dispatch("answer", true); }} />
+      <DialogButton label={$t`OK *=> Confirm and close the dialog`} primary onClick={() => { dispatch("answer", true); }} />
     {/if}
   </svelte:fragment>
 </Dialog>

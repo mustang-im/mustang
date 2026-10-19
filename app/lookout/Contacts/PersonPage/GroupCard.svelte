@@ -8,20 +8,20 @@
         <hbox class="description">{$group.description}</hbox>
       {/if}
       <hbox class="actions">
-        <CardButton label={$t`Email`} icon={MailIcon}
+        <CardButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([group])}
           disabled={!hasEmailAddress && $t`No member has an email address`} />
-        <CardButton label={$t`Meeting`} icon={MeetingIcon}
+        <CardButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon}
           onClick={() => ContactActions.newMeeting([group])}
           disabled={!hasEmailAddress && $t`No member has an email address`} />
-        <CardButton label={$t`Edit`} icon={EditIcon}
+        <CardButton label={$t`Edit *=> Edit the contact`} icon={EditIcon}
           onClick={() => ContactActions.edit(group)} />
       </hbox>
     </vbox>
   </hbox>
 
   <vbox flex class="members">
-    <h2>{$t`Members`} <span class="count">{$members.length}</span></h2>
+    <h2>{$t`Members *=> Members of the contact group`} <span class="count">{$members.length}</span></h2>
     {#each $members.each as member (member.id)}
       <GroupMemberLine person={member} />
     {:else}

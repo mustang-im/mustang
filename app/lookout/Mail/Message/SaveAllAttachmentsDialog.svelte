@@ -1,8 +1,8 @@
-<Dialog title={$t`Save All Attachments`} okLabel={$t`OK`} onOK={onSave} width="420px"
+<Dialog title={$t`Save All Attachments`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onSave} width="420px"
   okDisabled={!chosen.length && $t`Select at least one attachment`}
   on:close>
   <vbox class="save-all">
-    <span>{$t`Attachments`}</span>
+    <span>{$t`Attachments *=> List of the attachments of the email`}</span>
     <vbox class="list">
       {#each attachments as attachment (attachment)}
         <hbox class="row">

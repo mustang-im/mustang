@@ -3,7 +3,7 @@
     <OptionsRow icon={ComposeIcon}>
       <hbox class="field-row">
         <label for="options-compose-format">{$t`Compose messages in this format`}</label>
-        <ComboBox options={[ { value: "html", label: $t`HTML` }, { value: "plaintext", label: $t`Plain Text` } ]}
+        <ComboBox options={[ { value: "html", label: $t`HTML *=> Email format with formatted text` }, { value: "plaintext", label: $t`Plain Text` } ]}
           bind:value={$formatSetting.value} label={$t`Compose messages in this format`} width="200px" />
       </hbox>
     </OptionsRow>
@@ -17,19 +17,19 @@
       <hbox class="field-row">
         <label for="options-reading-pane">{$t`Reading Pane`}</label>
         <ComboBox options={[
-            { value: "right", label: $t`Right` },
-            { value: "bottom", label: $t`Bottom` },
-            { value: "off", label: $t`Off` },
+            { value: "right", label: $t`Right *=> Reading pane on the right side` },
+            { value: "bottom", label: $t`Bottom *=> Reading pane at the bottom` },
+            { value: "off", label: $t`Off *=> The pane is hidden` },
           ]}
           bind:value={$readingPaneSetting.value} label={$t`Reading Pane`} width="160px" />
       </hbox>
       <Checkbox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead}
         on:change={onSaveReadAfter} />
       <hbox class="delay indented" class:disabled={!isMarkingRead}>
-        <span>{$t`Wait`}</span>
-        <SpinBox label={$t`Seconds`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead}
+        <span>{$t`Wait *=> as in: Wait 5 seconds before marking item as read`}</span>
+        <SpinBox label={$t`Seconds *=> Number of seconds to wait`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead}
           on:change={onSaveReadAfter} />
-        <span>{$t`seconds before marking item as read`}</span>
+        <span>{$t`seconds before marking item as read *=> as in: Wait 5 seconds before marking item as read`}</span>
       </hbox>
     </OptionsRow>
     <OptionsRow icon={AccountListIcon}>
@@ -68,7 +68,7 @@
     </OptionsRow>
   </OptionsSection>
 
-  <OptionsSection title={$t`Categories`}>
+  <OptionsSection title={$t`Categories *=> Colored labels to organize emails and other items`}>
     <OptionsRow icon={CategoriesIcon}>
       <hbox>{$t`Mark your messages with categories, to organize them`}</hbox>
       <vbox class="categories">
@@ -78,13 +78,13 @@
             <span class="category-name">{tag.name}</span>
             <ComboBox label={$t`Color of ${tag.name}`} options={colorOptions} value={tag.color}
               on:change={event => catchErrors(async () => { tag.color = event.detail; await saveTagsList(); })} width="160px" swatchColumns={5} />
-            <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain" onClick={() => onDeleteCategory(tag)} />
+            <DialogButton label={$t`Delete *=> Delete the category`} icon={DeleteIcon} classes="plain" onClick={() => onDeleteCategory(tag)} />
           </hbox>
         {/each}
         <hbox class="category new">
           <TextField label={$t`New category`} placeholder={$t`New category`} bind:value={newCategoryName} width="220px" />
           <ComboBox label={$t`Color of the new category`} options={colorOptions} bind:value={newCategoryColor} width="160px" swatchColumns={5} />
-          <DialogButton label={$t`Add`} icon={AddIcon} disabled={!newCategoryName.trim() && $t`Please enter a name for the category`} onClick={onAddCategory} />
+          <DialogButton label={$t`Add *=> Add the new category`} icon={AddIcon} disabled={!newCategoryName.trim() && $t`Please enter a name for the category`} onClick={onAddCategory} />
         </hbox>
       </vbox>
     </OptionsRow>
@@ -159,7 +159,7 @@
   }
 
   async function onDeleteCategory(tag: Tag) {
-    if (!await askYesNo($t`Categories`, $t`Are you sure that you want to delete the category ${tag.name}? This removes it from the list of categories, but not from the items that have it.`)) {
+    if (!await askYesNo($t`Categories *=> Colored labels to organize emails and other items`, $t`Are you sure that you want to delete the category ${tag.name}? This removes it from the list of categories, but not from the items that have it.`)) {
       return;
     }
     availableTags.remove(tag);

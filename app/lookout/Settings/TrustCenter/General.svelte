@@ -12,16 +12,16 @@
             <span class="hint">{$t`You don't have a Digital ID for ${identity.emailAddress} yet. Import one or get a new one below.`}</span>
           {/if}
           {#if key}
-            <span>{$t`Issued to`}</span>
+            <span>{$t`Issued to *=> Owner of the Digital ID`}</span>
             <span class="value">{key.userIDs.contents.join(", ") || "-"}</span>
-            <span>{$t`Issued by`}</span>
+            <span>{$t`Issued by *=> Certificate authority that certified the Digital ID`}</span>
             <span class="value">{key.caName || $t`Not certified by a certification authority`}</span>
-            <span>{$t`Valid to`}</span>
+            <span>{$t`Valid to *=> Date until which the Digital ID is valid`}</span>
             <span class="value">{key.expires ? getDateString(key.expires) : $t`No end date`}</span>
-            <span>{$t`Verification code`}</span>
+            <span>{$t`Verification code *=> Fingerprint of the Digital ID`}</span>
             <span class="value code">{key.fingerprintDisplay}</span>
             {#if key instanceof SMIMEPrivateKey}
-              <span>{$t`Certificate`}</span>
+              <span>{$t`Certificate *=> Status of the certificate of this Digital ID`}</span>
               <vbox class="status">
                 {#await statusAsync then status}
                   <span class="value">{keyStatusText(status)}</span>
@@ -55,7 +55,7 @@
     <OptionsRow icon={CertificateIcon}>
       <span>{$t`Digital IDs or Certificates are documents that allow you to prove your identity in electronic transactions`}</span>
       <hbox class="buttons">
-        <DialogButton label={$t`Import/Export…`} onClick={() => { isImportExportOpen = true; }}
+        <DialogButton label={$t`Import/Export… *=> Import a Digital ID from a file or export it to a file`} onClick={() => { isImportExportOpen = true; }}
           disabled={!identity && $t`Add an email account first`} />
         <DialogButton label={$t`Get a Digital ID…`} onClick={() => { isGetOpen = true; }}
           disabled={!identity && $t`Add an email account first`} />

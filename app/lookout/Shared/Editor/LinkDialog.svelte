@@ -1,10 +1,10 @@
 <Dialog title={isLink ? $t`Edit Hyperlink` : $t`Insert Hyperlink`} on:close={onClose} width="600px"
-  okLabel={$t`OK`}
-  okDisabled={!href && (linkTo == LinkTarget.Email ? $t`Please enter an email address` : $t`Please enter an address`)}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
+  okDisabled={!href && (linkTo == LinkTarget.Email ? $t`Please enter an email address` : $t`Please enter an address *=> Enter the web address of the link`)}
   onOK={onOK}>
   <hbox class="hyperlink">
-    <vbox class="link-to" role="radiogroup" aria-label={$t`Link to`}>
-      <span class="link-to-label">{$t`Link to`}</span>
+    <vbox class="link-to" role="radiogroup" aria-label={$t`Link to *=> Kind of target of the link: web page or email address`}>
+      <span class="link-to-label">{$t`Link to *=> Kind of target of the link: web page or email address`}</span>
       <button type="button" class="target" class:selected={linkTo == LinkTarget.Web}
         role="radio" aria-checked={linkTo == LinkTarget.Web}
         on:click={() => { linkTo = LinkTarget.Web; }}>
@@ -24,13 +24,13 @@
         <TextField label={$t`Text to display`} bind:value={linkText}
           disabled={hasSelection && $t`The selected text becomes the link`} />
         {#if linkTo == LinkTarget.Web}
-          <span class="lo-form-label">{$t`Address`}</span>
-          <TextField label={$t`Address`} type="url" bind:value={webAddress} placeholder="https://" />
+          <span class="lo-form-label">{$t`Address *=> Web address (URL) that the link points to`}</span>
+          <TextField label={$t`Address *=> Web address (URL) that the link points to`} type="url" bind:value={webAddress} placeholder="https://" />
         {:else}
           <span class="lo-form-label">{$t`E-mail address`}</span>
           <TextField label={$t`E-mail address`} type="email" bind:value={emailAddress} />
-          <span class="lo-form-label">{$t`Subject`}</span>
-          <TextField label={$t`Subject`} bind:value={emailSubject} />
+          <span class="lo-form-label">{$t`Subject *=> Subject of the email that the link starts`}</span>
+          <TextField label={$t`Subject *=> Subject of the email that the link starts`} bind:value={emailSubject} />
         {/if}
       </FormGrid>
     </vbox>

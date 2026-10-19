@@ -1,19 +1,19 @@
 <OptionsPage {icon} description={$t`Change the settings of ${$account.name}`}>
-  <OptionsSection title={$t`Account`}>
+  <OptionsSection title={$t`Account *=> Section with the name, color and type of the account`}>
     <OptionsRow icon={AccountIcon}>
       <grid class="fields">
         <label for="account-name">{$t`Account name`}</label>
         <hbox class="name-row">
           <input id="account-name" class="lo-text-field" type="text" bind:value={account.name} on:input={onChange} required />
           <input type="color" class="color" bind:value={account.color} on:change={onChange} list="proposed-colors"
-            title={$t`Color`} aria-label={$t`Color`} />
+            title={$t`Color *=> Color of the account`} aria-label={$t`Color *=> Color of the account`} />
         </hbox>
         {#if account instanceof MailAccount || account instanceof ChatAccount || account instanceof MeetAccount}
           <label for="account-realname" title={$t`Your real name, as shown to other people when you are sending messages`}>{$t`Your name`}</label>
           <input id="account-realname" class="lo-text-field" type="text" bind:value={account.realname} on:input={onChange}
             title={$t`Your real name, as shown to other people when you are sending messages`} />
         {/if}
-        <label for="account-workspace">{$t`Workspace`}</label>
+        <label for="account-workspace">{$t`Workspace *=> Workspace that the account belongs to`}</label>
         <select id="account-workspace" class="lo-text-field" bind:value={account.workspace} on:change={onChange}>
           {#each $workspaces.each as workspace}
             <option value={workspace}>{workspace.name}</option>

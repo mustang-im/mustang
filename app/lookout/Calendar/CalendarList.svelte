@@ -5,7 +5,7 @@
     <hbox class="group-header">
       <button class="expander"
         aria-expanded={!collapsed.has(group.id)}
-        title={collapsed.has(group.id) ? $t`Expand` : $t`Collapse`}
+        title={collapsed.has(group.id) ? $t`Expand *=> Show the entries under this one` : $t`Collapse *=> Hide the entries under this one`}
         on:click={() => toggleGroup(group.id)}>
         <ChevronIcon size={14} class="chevron {collapsed.has(group.id) ? 'collapsed' : ''}" />
       </button>

@@ -145,11 +145,11 @@ export function contactColumnLabel(column: ContactColumn): string {
   case ContactColumn.JobTitle:
     return gt`Job Title`;
   case ContactColumn.Company:
-    return gt`Company`;
+    return gt`Company *=> Company where the person works`;
   case ContactColumn.Department:
-    return gt`Department`;
+    return gt`Department *=> Department of the person in the company`;
   case ContactColumn.EMail:
-    return gt`E-mail`;
+    return gt`E-mail *=> Email address of the person`;
   case ContactColumn.EMail2:
     return gt`E-mail 2`;
   case ContactColumn.EMail3:
@@ -203,9 +203,9 @@ export function contactColumnLabel(column: ContactColumn): string {
   case ContactColumn.IMAddress:
     return gt`IM Address`;
   case ContactColumn.Notes:
-    return gt`Notes`;
+    return gt`Notes *=> Notes about the contact`;
   case ContactColumn.InFolder:
-    return gt`In Folder`;
+    return gt`In Folder *=> Column with the folder that contains the item`;
   }
   return column;
 }
@@ -305,9 +305,9 @@ export function contactColumnValue(column: ContactColumn, contact: Contact): str
 
 export function businessCardLines(person: Person): string[] {
   const kPhones = [
-    { column: ContactColumn.BusinessPhone, label: gt`Work` },
-    { column: ContactColumn.MobilePhone, label: gt`Mobile` },
-    { column: ContactColumn.HomePhone, label: gt`Home` },
+    { column: ContactColumn.BusinessPhone, label: gt`Work *=> Business address or phone number` },
+    { column: ContactColumn.MobilePhone, label: gt`Mobile *=> Cell phone number` },
+    { column: ContactColumn.HomePhone, label: gt`Home *=> Private address or phone number` },
   ];
   let lines = kPhones
     .map(phone => ({ value: contactColumnValue(phone.column, person), label: phone.label }))
@@ -326,13 +326,13 @@ export function businessCardLines(person: Person): string[] {
 
 export function addressCardFields(person: Person): { label: string, value: string }[] {
   const kFields = [
-    { column: ContactColumn.Company, label: gt`Company` },
+    { column: ContactColumn.Company, label: gt`Company *=> Company where the person works` },
     { column: ContactColumn.JobTitle, label: gt`Job Title` },
-    { column: ContactColumn.BusinessPhone, label: gt`Business` },
-    { column: ContactColumn.HomePhone, label: gt`Home` },
-    { column: ContactColumn.MobilePhone, label: gt`Mobile` },
+    { column: ContactColumn.BusinessPhone, label: gt`Business *=> Business address or phone number` },
+    { column: ContactColumn.HomePhone, label: gt`Home *=> Private address or phone number` },
+    { column: ContactColumn.MobilePhone, label: gt`Mobile *=> Cell phone number` },
     { column: ContactColumn.BusinessFax, label: gt`Business Fax` },
-    { column: ContactColumn.EMail, label: gt`E-mail` },
+    { column: ContactColumn.EMail, label: gt`E-mail *=> Email address of the person` },
     { column: ContactColumn.BusinessAddress, label: gt`Business Address` },
   ];
   return kFields

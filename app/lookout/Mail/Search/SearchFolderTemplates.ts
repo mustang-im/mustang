@@ -37,14 +37,14 @@ export class SearchFolderTemplate {
 
   static all(): SearchFolderTemplate[] {
     return [
-      new SearchFolderTemplate(SearchFolderTemplateID.Unread, gt`Unread mail`, gt`Reading Mail`),
+      new SearchFolderTemplate(SearchFolderTemplateID.Unread, gt`Unread mail`, gt`Reading Mail *=> Group of search folder templates for reading emails`),
       new SearchFolderTemplate(SearchFolderTemplateID.Flagged, gt`Mail flagged for follow up`),
       new SearchFolderTemplate(SearchFolderTemplateID.Person, gt`Mail from and to specific people`, gt`Mail from People and Lists`),
-      new SearchFolderTemplate(SearchFolderTemplateID.Categorized, gt`Categorized mail`, gt`Organizing Mail`),
+      new SearchFolderTemplate(SearchFolderTemplateID.Categorized, gt`Categorized mail`, gt`Organizing Mail *=> Group of search folder templates for organizing emails`),
       new SearchFolderTemplate(SearchFolderTemplateID.Large, gt`Large mail`),
       new SearchFolderTemplate(SearchFolderTemplateID.Attachments, gt`Mail with attachments`),
       new SearchFolderTemplate(SearchFolderTemplateID.Words, gt`Mail with specific words`),
-      new SearchFolderTemplate(SearchFolderTemplateID.Custom, gt`Create a custom Search Folder`, gt`Custom`),
+      new SearchFolderTemplate(SearchFolderTemplateID.Custom, gt`Create a custom Search Folder`, gt`Custom *=> Group of search folder templates with your own criteria`),
     ];
   }
 

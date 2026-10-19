@@ -18,7 +18,7 @@
   {#if $event.isOnline && $event.onlineMeetingURL}
     <hbox class="row">
       <OnlineMeetingIcon size="16" />
-      <button class="join" on:click={onJoin}>{$t`Join`}</button>
+      <button class="join" on:click={onJoin}>{$t`Join *=> Join the online meeting`}</button>
     </hbox>
   {/if}
   {#if organizer}
@@ -26,7 +26,7 @@
       <PersonCircle name={organizer.name || organizer.emailAddress} colorKey={organizer.emailAddress} size={24} />
       <vbox class="person-text">
         <span class="person-name">{organizer.name || organizer.emailAddress}</span>
-        <span class="secondary">{$t`Organizer`}</span>
+        <span class="secondary">{$t`Organizer *=> The person who invited to this meeting`}</span>
       </vbox>
     </hbox>
   {/if}

@@ -1,13 +1,13 @@
-<OptionsSection title={workspace ? $workspace.name || $t`New` : $t`Unassigned`}>
+<OptionsSection title={workspace ? $workspace.name || $t`New *=> Name shown for a new workspace without a name` : $t`Unassigned *=> Accounts that are not in any workspace`}>
   <OptionsRow icon={workspace ? $workspace.icon : UnassignedIcon}>
     {#if workspace}
       <hbox class="name-row">
-        <label for="workspace-name-{index}">{$t`Name`}</label>
+        <label for="workspace-name-{index}">{$t`Name *=> Name of the workspace`}</label>
         <input id="workspace-name-{index}" class="lo-text-field" type="text" bind:value={workspace.name} on:change required />
         <input type="color" class="color" bind:value={workspace.color} on:change list="proposed-workspace-colors"
-          title={$t`Color`} aria-label={$t`Color`} />
+          title={$t`Color *=> Color of the workspace`} aria-label={$t`Color *=> Color of the workspace`} />
         {#if $workspaces.length > 1}
-          <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain" onClick={onDelete} />
+          <DialogButton label={$t`Delete *=> Delete this workspace`} icon={DeleteIcon} classes="plain" onClick={onDelete} />
         {/if}
       </hbox>
     {/if}
@@ -64,7 +64,7 @@
   const allAccounts: Collection<Account>[] = [ appGlobal.emailAccounts, appGlobal.chatAccounts, appGlobal.meetAccounts, appGlobal.calendars, appGlobal.addressbooks ];
 
   $: index = $workspaces.contents.indexOf(workspace);
-  $: workspaceOptions = $changedWorkspace && $workspaces.contents.map(listed => ({ value: listed, label: listed.name || $t`New` }));
+  $: workspaceOptions = $changedWorkspace && $workspaces.contents.map(listed => ({ value: listed, label: listed.name || $t`New *=> Name shown for a new workspace without a name` }));
   $: accounts = $changedWorkspace && allAccounts
     .flatMap(list => list.contents)
     .filter(account => (account.workspace ?? null) == workspace);

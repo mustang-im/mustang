@@ -1,12 +1,12 @@
 <Dialog title={view == ContactView.Phone ? $t`Advanced View Settings: Phone` : $t`Advanced View Settings: List`}
-  okLabel={$t`OK`} onOK={save} width="600px" on:close>
-  <GroupBox label={$t`Description`}>
+  okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="600px" on:close>
+  <GroupBox label={$t`Description *=> Summary of the view settings`}>
     <div class="rows">
-      <DialogButton label={$t`Columns…`} classes="settings-button" onClick={() => { open = "columns"; }} />
+      <DialogButton label={$t`Columns… *=> Choose the columns of the list`} classes="settings-button" onClick={() => { open = "columns"; }} />
       <span class="summary" title={columnsSummary}>{columnsSummary}</span>
       <DialogButton label={$t`Group By…`} classes="settings-button" onClick={() => { open = "group-by"; }} />
       <span class="summary">{groupBySummary}</span>
-      <DialogButton label={$t`Sort…`} classes="settings-button" onClick={() => { open = "sort"; }} />
+      <DialogButton label={$t`Sort… *=> Choose how the items are sorted`} classes="settings-button" onClick={() => { open = "sort"; }} />
       <span class="summary">{sortSummary}</span>
     </div>
   </GroupBox>
@@ -21,7 +21,7 @@
     on:change={event => columns = shownContactColumns(event.detail)} on:close={closeSub} />
 {:else if open == "group-by"}
   <SortDialog title={$t`Group By`} itemsLabel={$t`Group items by`}
-    columnOptions={[ { value: kNoGrouping, label: $t`(none)` }, ...sortOptions ]}
+    columnOptions={[ { value: kNoGrouping, label: $t`(none) *=> No field for grouping` }, ...sortOptions ]}
     column={groupBy?.column ?? kNoGrouping} ascending={groupBy?.ascending ?? true}
     on:change={event => groupBy = event.detail.column == kNoGrouping ? null
       : { column: event.detail.column as ContactColumn, ascending: event.detail.ascending }}
@@ -58,7 +58,7 @@
   $: sortLabel = contactColumnLabel(sort.column);
   $: sortSummary = sort.ascending ? $t`${sortLabel} (ascending)` : $t`${sortLabel} (descending)`;
   $: groupByLabel = groupBy ? contactColumnLabel(groupBy.column) : null;
-  $: groupBySummary = !groupBy ? $t`None`
+  $: groupBySummary = !groupBy ? $t`None *=> No grouping of the items`
     : groupBy.ascending ? $t`${groupByLabel} (ascending)` : $t`${groupByLabel} (descending)`;
 
   function closeSub() {

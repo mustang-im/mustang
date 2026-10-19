@@ -7,7 +7,7 @@ export function certificateStatus(key: PublicKey): string {
     return gt`Not trusted`;
   }
   if (key.obsolete) {
-    return key.expires && key.expires.getTime() < Date.now() ? gt`Expired` : gt`Not used`;
+    return key.expires && key.expires.getTime() < Date.now() ? gt`Expired *=> No longer valid` : gt`Not used *=> Status: the certificate is outdated and no longer used`;
   }
-  return key.encryptByDefault ? gt`Default` : "";
+  return key.encryptByDefault ? gt`Default *=> Status: the certificate is used for encryption by default` : "";
 }

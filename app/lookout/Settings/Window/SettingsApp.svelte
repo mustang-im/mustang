@@ -1,5 +1,5 @@
 <Dialog title={showOnlyAccount ? $t`Account Settings` : $t`${appName} Options`}
-  cancelLabel={$t`Close`}
+  cancelLabel={$t`Close *=> Close the dialog`}
   width="1040px"
   height="720px"
   on:close={onClose}>

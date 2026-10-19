@@ -7,14 +7,14 @@
     </hbox>
     <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: levelLabel(permission) }))}
       bind:value={level} label={$t`Permission Level`} width="210px" />
-    <DialogButton label={$t`Share`} primary onClick={onShare}
+    <DialogButton label={$t`Share *=> Give the entered people access to the calendar`} primary onClick={onShare}
       disabled={!$newPersons.hasItems && $t`Enter the person first`} />
   </hbox>
   <hbox class="divider" />
   <div class="list-heading">{$t`People with access`}</div>
   <vbox class="persons" role="list">
     {#if isLoading}
-      <hbox class="message lo-secondary">{$t`Loading…`}</hbox>
+      <hbox class="message lo-secondary">{$t`Loading… *=> Waiting for the data to load`}</hbox>
     {:else}
       {#each sharedWith as person (person.emailAddress)}
         <hbox class="person" role="listitem">
@@ -25,7 +25,7 @@
               <span class="person-address">{person.emailAddress}</span>
             {/if}
           </vbox>
-          <button type="button" class="remove" title={$t`Remove`} aria-label={$t`Remove ${person.name || person.emailAddress}`}
+          <button type="button" class="remove" title={$t`Remove *=> Stop sharing the calendar with this person`} aria-label={$t`Remove ${person.name || person.emailAddress}`}
             on:click={() => catchErrors(() => onRemove(person))}>
             <RemoveIcon size="16" />
           </button>
@@ -102,7 +102,7 @@
   }
 
   async function onRemove(person: PersonUID) {
-    if (!await askYesNo($t`Permissions`, $t`Do you want to stop sharing the calendar "${calendar.name}" with ${person.name || person.emailAddress}?`)) {
+    if (!await askYesNo($t`Permissions *=> Who can access this folder`, $t`Do you want to stop sharing the calendar "${calendar.name}" with ${person.name || person.emailAddress}?`)) {
       return;
     }
     await calendar.deleteSharedPerson(person);

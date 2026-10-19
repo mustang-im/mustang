@@ -1,4 +1,4 @@
-<MenuItem label={$t`From Address Book…`} icon={AddressBookIcon}
+<MenuItem label={$t`From Address Book… *=> Open the calendar of a person from the address book`} icon={AddressBookIcon}
   disabled={!sharingAccounts.length && $t`None of your accounts can open the calendars of colleagues`}
   onClick={() => $openSharedCalendar = { fromAddressBook: true }} />
 <MenuItem label={$t`Open Shared Calendar…`} icon={SharedCalendarIcon}

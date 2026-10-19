@@ -1,9 +1,9 @@
 <Dialog title={appName} on:close={onClose} width="420px">
   <hbox class="question">{$t`Do you want to save changes to this message?`}</hbox>
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`Yes`} primary onClick={onYes} disabled={yesDisabled ?? false} />
-    <DialogButton label={$t`No`} onClick={onNo} />
-    <DialogButton label={$t`Cancel`} onClick={onClose} />
+    <DialogButton label={$t`Yes *=> Save the changes to the email`} primary onClick={onYes} disabled={yesDisabled ?? false} />
+    <DialogButton label={$t`No *=> Discard the changes to the email`} onClick={onNo} />
+    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 

@@ -1,5 +1,5 @@
 <Dialog title={$t`New Search Folder`}
-  okLabel={$t`OK`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={selected.missingValue(values)}
   onOK={onCreate}
   width="480px"
@@ -25,7 +25,7 @@
     <GroupBox label={$t`Customize Search Folder`}>
       <hbox class="customize">
         <span class="description" title={selected.description(values)}>{selected.description(values)}</span>
-        <DialogButton label={$t`Choose…`} disabled={!selected.canChoose && $t`This Search Folder needs no choice`}
+        <DialogButton label={$t`Choose… *=> Choose the value for the selected search folder template`} disabled={!selected.canChoose && $t`This Search Folder needs no choice`}
           onClick={choose} />
       </hbox>
     </GroupBox>
@@ -36,7 +36,7 @@
   </vbox>
 </Dialog>
 {#if choosing == SearchFolderTemplateID.Person}
-  <SearchPersonDialog fieldLabel={$t`From`} person={values.person}
+  <SearchPersonDialog fieldLabel={$t`From *=> Sender of the email`} person={values.person}
     on:pick={event => { values.person = event.detail; }} on:close={closeChooser} />
 {:else if choosing == SearchFolderTemplateID.Categorized}
   <ColorCategoriesDialog isChooseMode chosen={values.tags}

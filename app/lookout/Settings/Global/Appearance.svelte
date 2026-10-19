@@ -3,18 +3,18 @@
     <OptionsRow icon={UserInterfaceIcon}>
       <hbox class="field-row">
         <label for="options-frontend" class="field-label">{$t`User interface`}</label>
-        <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Lookout` } ]}
+        <ComboBox options={[ { value: "classic", label: appName }, { value: "lookout", label: $t`Lookout *=> Name of the Outlook-like user interface, a brand name` } ]}
           bind:value={frontend} label={$t`User interface`} width="200px" />
         {#if frontend != $frontendSetting.value}
-          <DialogButton label={$t`Switch`} icon={SwitchIcon} onClick={onSaveFrontend} />
+          <DialogButton label={$t`Switch *=> Switch to the chosen user interface`} icon={SwitchIcon} onClick={onSaveFrontend} />
         {/if}
       </hbox>
     </OptionsRow>
     <OptionsRow icon={ThemeIcon}>
       <hbox class="field-row">
-        <label for="options-theme" class="field-label">{$t`Theme`}</label>
-        <ComboBox options={[ { value: "system", label: $t`Use system setting` }, { value: "light", label: $t`Light` }, { value: "dark", label: $t`Dark` } ]}
-          value={$themeSetting.value} on:change={event => onSwitchTheme(event.detail)} label={$t`Theme`} width="200px" />
+        <label for="options-theme" class="field-label">{$t`Theme *=> Color scheme of the app`}</label>
+        <ComboBox options={[ { value: "system", label: $t`Use system setting` }, { value: "light", label: $t`Light *=> Light color scheme` }, { value: "dark", label: $t`Dark *=> Dark color scheme` } ]}
+          value={$themeSetting.value} on:change={event => onSwitchTheme(event.detail)} label={$t`Theme *=> Color scheme of the app`} width="200px" />
       </hbox>
     </OptionsRow>
   </OptionsSection>

@@ -1,4 +1,4 @@
-<SelectNamesDialog title={$t`Rule Address`} persons={picks} label={$t`From`} single on:ok={onPicked} on:close={onClose} />
+<SelectNamesDialog title={$t`Rule Address`} persons={picks} label={$t`From *=> Sender of the email`} single on:ok={onPicked} on:close={onClose} />
 
 <script lang="ts">
   import type { Person } from "../../../logic/Abstract/Person";

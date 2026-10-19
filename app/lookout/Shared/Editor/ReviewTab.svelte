@@ -1,6 +1,6 @@
-<RibbonTab label={$t`Review`}>
-  <RibbonGroup label={$t`Proofing`}>
-    <RibbonToggleButton label={$t`Spelling & Grammar`} shortLabel={$t`Spelling`} icon={SpellingIcon}
+<RibbonTab label={$t`Review *=> Ribbon tab with commands to check the text, e.g. the spelling`}>
+  <RibbonGroup label={$t`Proofing *=> Ribbon group with commands to check the text`}>
+    <RibbonToggleButton label={$t`Spelling & Grammar`} shortLabel={$t`Spelling *=> Check the spelling while typing`} icon={SpellingIcon}
       tooltip={$t`Check spelling while typing`}
       selected={$spellcheck.value}
       onClick={() => { $spellcheck.value = !$spellcheck.value; }} />

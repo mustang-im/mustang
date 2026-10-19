@@ -36,7 +36,7 @@ export function eventTabLabel(event: Event): string {
   if (event.recurrenceRule) {
     return isMeeting ? gt`Meeting Series` : gt`Appointment Series`;
   }
-  return isMeeting ? gt`Meeting` : gt`Appointment`;
+  return isMeeting ? gt`Meeting *=> Type of calendar item: with invited attendees` : gt`Appointment *=> Type of calendar item: without attendees`;
 }
 
 export function responseCounts(event: Event): ResponseCounts {
@@ -96,11 +96,11 @@ export function responseLabel(participant: Participant): string {
 export function responseText(response: InvitationResponse): string {
   switch (response) {
   case InvitationResponse.Accept:
-    return gt`Accepted`;
+    return gt`Accepted *=> Agreed to join this business meeting`;
   case InvitationResponse.Tentative:
-    return gt`Tentative`;
+    return gt`Tentative *=> Not sure to join this business meeting`;
   case InvitationResponse.Decline:
-    return gt`Declined`;
+    return gt`Declined *=> Refused to join this business meeting`;
   default:
     return gt`None *=> No response`;
   }

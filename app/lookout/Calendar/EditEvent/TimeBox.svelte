@@ -1,5 +1,5 @@
 {#if showSummary && isSeriesMaster}
-  <span class="row-label">{$t`Recurrence`}</span>
+  <span class="row-label">{$t`Recurrence *=> Repetition of the event`}</span>
   <vbox class="recurrence-summary">
     <span>{summary}</span>
     {#if !readOnly}

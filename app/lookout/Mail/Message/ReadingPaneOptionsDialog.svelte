@@ -1,14 +1,14 @@
 <Dialog title={$t`Reading Pane`}
-  okLabel={$t`OK`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={isMarkingRead && !isValidDelay && $t`Enter 0 to 20 seconds`}
   onOK={onSave}
   on:close>
   <vbox class="dialog-content">
     <Checkbox label={$t`Mark items as read when viewed in the Reading Pane`} bind:checked={isMarkingRead} />
     <hbox class="delay" class:disabled={!isMarkingRead}>
-      <span>{$t`Wait`}</span>
-      <SpinBox label={$t`Seconds`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead} />
-      <span>{$t`seconds before marking item as read`}</span>
+      <span>{$t`Wait *=> as in: Wait 5 seconds before marking item as read`}</span>
+      <SpinBox label={$t`Seconds *=> Number of seconds to wait`} bind:value={delay} min={0} max={20} width="72px" disabled={!isMarkingRead} />
+      <span>{$t`seconds before marking item as read *=> as in: Wait 5 seconds before marking item as read`}</span>
     </hbox>
   </vbox>
 </Dialog>

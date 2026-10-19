@@ -1,5 +1,5 @@
 <Dialog title={$t`${FolderTreeActions.displayName(folder)} Properties`}
-  okLabel={$t`OK`} onOK={onApply}
+  okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onApply}
   onApply={onApply} applyDisabled={!isChanged}
   width="520px"
   on:close>
@@ -50,9 +50,9 @@
   let permissionsVersion = 0;
 
   $: tabs = [
-    { id: FolderPropertiesTab.General, label: $t`General` },
-    ...(permissions ? [{ id: FolderPropertiesTab.Permissions, label: $t`Permissions` }] : []),
-    { id: FolderPropertiesTab.Synchronization, label: $t`Synchronization` },
+    { id: FolderPropertiesTab.General, label: $t`General *=> Settings page with the general settings` },
+    ...(permissions ? [{ id: FolderPropertiesTab.Permissions, label: $t`Permissions *=> Who can access this folder` }] : []),
+    { id: FolderPropertiesTab.Synchronization, label: $t`Synchronization *=> Tab with the sync status of the folder` },
   ];
   $: isChanged = isDirty(name, specialFolder, countMode, permissionsVersion);
 

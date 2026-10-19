@@ -1,13 +1,13 @@
-<Dialog title={$t`Symbol`} on:close={onClose} width="620px" height="560px">
-  <DialogTabs tabs={[{ id: "symbols", label: $t`Symbols` }, { id: "special", label: $t`Special Characters` }]}
+<Dialog title={$t`Symbol *=> Insert a special character, e.g. the copyright sign`} on:close={onClose} width="620px" height="560px">
+  <DialogTabs tabs={[{ id: "symbols", label: $t`Symbols *=> Characters to insert, e.g. arrows or currency signs` }, { id: "special", label: $t`Special Characters` }]}
     bind:selected={tab} />
   {#if tab == "symbols"}
     <vbox flex class="page">
       <hbox class="subset-row">
-        <span>{$t`Subset`}</span>
-        <ComboBox label={$t`Subset`} options={subsetOptions} bind:value={subset} width="260px" />
+        <span>{$t`Subset *=> Unicode block to choose the symbols from, e.g. Arrows`}</span>
+        <ComboBox label={$t`Subset *=> Unicode block to choose the symbols from, e.g. Arrows`} options={subsetOptions} bind:value={subset} width="260px" />
       </hbox>
-      <grid class="symbols" role="grid" aria-label={$t`Symbols`}>
+      <grid class="symbols" role="grid" aria-label={$t`Symbols *=> Characters to insert, e.g. arrows or currency signs`}>
         {#each characters as character (character)}
           <button type="button" class="symbol" class:selected={character == selected}
             title={"U+" + characterCode(character)}
@@ -38,7 +38,7 @@
   {:else}
     <vbox flex class="page special">
       <hbox class="special-header">
-        <span class="special-character">{$t`Character`}</span>
+        <span class="special-character">{$t`Character *=> Column header: the special character`}</span>
       </hbox>
       <vbox flex class="special-list" role="listbox" aria-label={$t`Special Characters`}>
         {#each specialCharacters() as special (special.character)}
@@ -55,10 +55,10 @@
     </vbox>
   {/if}
   <svelte:fragment slot="footer">
-    <DialogButton label={$t`Insert`} primary
+    <DialogButton label={$t`Insert *=> Insert the selected symbol into the text`} primary
       disabled={!(tab == "symbols" ? selected : selectedSpecial) && $t`Select a symbol`}
       onClick={() => insert(tab == "symbols" ? selected : selectedSpecial)} />
-    <DialogButton label={hasInserted ? $t`Close` : $t`Cancel`} onClick={onClose} />
+    <DialogButton label={hasInserted ? $t`Close *=> Close the dialog` : $t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
   </svelte:fragment>
 </Dialog>
 

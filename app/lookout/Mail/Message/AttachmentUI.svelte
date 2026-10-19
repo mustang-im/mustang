@@ -18,7 +18,7 @@
   </button>
 </hbox>
 <Menu bind:isMenuOpen anchor={menuButton} placement="bottom-end">
-  <MenuItem label={$t`Open`} icon={OpenIcon} disabled={executable ?? false} onClick={onOpen} />
+  <MenuItem label={$t`Open *=> Open the attachment`} icon={OpenIcon} disabled={executable ?? false} onClick={onOpen} />
   {#if !isComposing}
     <MenuItem label={$t`Show in Folder`} icon={FolderIcon}
       disabled={!$attachment.filepathLocal && $t`The attachment is not saved on this computer yet`}

@@ -1,4 +1,4 @@
-<vbox class="nav-rail" role="navigation" aria-label={$t`Apps`}>
+<vbox class="nav-rail" role="navigation" aria-label={$t`Apps *=> Bar to switch between mail, calendar, contacts and the other apps`}>
   {#each railApps as app (app.id)}
     <AppButton {app} selected={isSelected(app, selectedApp)}
       on:click={() => catchErrors(() => onSelectApp(app))} />

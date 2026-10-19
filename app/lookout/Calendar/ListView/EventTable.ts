@@ -112,15 +112,15 @@ export class EventTable {
   static frequencyLabel(frequency: Frequency): string {
     switch (frequency) {
     case Frequency.Daily:
-      return gt`Daily`;
+      return gt`Daily *=> Repeats every day`;
     case Frequency.Weekly:
-      return gt`Weekly`;
+      return gt`Weekly *=> Repeats every week`;
     case Frequency.Monthly:
-      return gt`Monthly`;
+      return gt`Monthly *=> Repeats every month`;
     case Frequency.Yearly:
-      return gt`Yearly`;
+      return gt`Yearly *=> Repeats every year`;
     default:
-      return gt`(none)`;
+      return gt`(none) *=> Recurrence: the event does not repeat`;
     }
   }
 
@@ -147,17 +147,17 @@ export class EventTable {
   static columnLabel(column: EventTableColumn): string {
     switch (column) {
     case EventTableColumn.Subject:
-      return gt`Subject`;
+      return gt`Subject *=> Title of the event`;
     case EventTableColumn.Location:
-      return gt`Location`;
+      return gt`Location *=> Where the event takes place`;
     case EventTableColumn.Start:
-      return gt`Start`;
+      return gt`Start *=> Start time of the event`;
     case EventTableColumn.End:
-      return gt`End`;
+      return gt`End *=> End time of the event`;
     case EventTableColumn.Recurrence:
       return gt`Recurrence Pattern`;
     case EventTableColumn.Calendar:
-      return gt`In Folder`;
+      return gt`In Folder *=> Column with the folder that contains the item`;
     }
   }
 }

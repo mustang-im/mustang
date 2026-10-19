@@ -1,13 +1,13 @@
 <button type="button" class="field-button" bind:this={buttonEl} tabindex={-1}
   aria-haspopup="menu" aria-expanded={isMenuOpen}
   on:click|stopPropagation={() => isMenuOpen = !isMenuOpen}>
-  {$t`From`} <ChevronDownIcon size={14} />
+  {$t`From *=> Sender of the email`} <ChevronDownIcon size={14} />
 </button>
 <hbox class="from-text">
   {#if selectedIdentity?.isCatchAll}
     <span>{beforeCustom}</span>
     <input type="text" class="custom" bind:value={editableCustom} spellcheck="false"
-      aria-label={$t`From`} size={Math.max(editableCustom?.length ?? 0, 6)}
+      aria-label={$t`From *=> Sender of the email`} size={Math.max(editableCustom?.length ?? 0, 6)}
       on:change={onCustomEdited} />
     <span>{afterCustom}</span>
   {:else}

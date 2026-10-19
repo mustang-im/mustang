@@ -1,6 +1,6 @@
-<RibbonTab label={$t`View`}>
+<RibbonTab label={$t`View *=> Ribbon tab with layout and display settings`}>
   <RibbonGroup label={$t`Current View`}>
-    <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
+    <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views *=> Choose another view of the items`} icon={ChangeViewIcon}>
       {#each viewTypes as viewType}
         <MenuItem label={viewType.label} tooltip={viewType.tooltip} icon={viewType.icon}
           checked={$settings.type == viewType.id}
@@ -17,11 +17,11 @@
       tooltip={$t`Reset the message list and the layout to the default settings`}
       onClick={onResetView} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Messages`}>
+  <RibbonGroup label={$t`Messages *=> Ribbon group with settings for the message list`}>
     <RibbonCheckBox label={$t`Show as Conversations`}
       bind:checked={conversationsChecked}
       on:change={event => catchErrors(() => onShowAsConversations(event.detail))} />
-    <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings`} icon={ConversationSettingsIcon} size="small"
+    <RibbonMenuButton label={$t`Conversation Settings`} shortLabel={$t`Settings *=> Settings for the conversation view`} icon={ConversationSettingsIcon} size="small"
       disabled={!$settings.showAsConversations && $t`Turn on Show as Conversations first`}>
       <MenuItem label={$t`Show Senders Above the Subject`} checked={$settings.showSendersAboveSubject} checkable
         onClick={() => changeViewSettings(folder, { showSendersAboveSubject: !$settings.showSendersAboveSubject }, ApplyScope.AllFolders)} />
@@ -31,14 +31,14 @@
         onClick={() => changeViewSettings(folder, { classicIndented: !$settings.classicIndented }, ApplyScope.AllFolders)} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Arrangement`}>
+  <RibbonGroup label={$t`Arrangement *=> Ribbon group for how the items are arranged`}>
     <RibbonMenuButton label={$t`Message Preview`} icon={PreviewIcon}>
       {#each previewOptions as option}
         <MenuItem label={option.label} checked={$settings.previewLines == option.lines}
           onClick={() => onPreviewLines(option.lines)} />
       {/each}
     </RibbonMenuButton>
-    <RibbonMenuButton label={$t`Arrange By`} shortLabel={$t`Arrange`} icon={ArrangeIcon}>
+    <RibbonMenuButton label={$t`Arrange By`} shortLabel={$t`Arrange *=> Choose how the items are sorted`} icon={ArrangeIcon}>
       <ArrangeByMenuItems {folder} />
     </RibbonMenuButton>
     <RibbonToggleButton label={$t`Reverse Sort`} icon={ReverseIcon} size="small"
@@ -47,7 +47,7 @@
     <RibbonButton label={$t`Add Columns`} icon={AddColumnsIcon} size="small"
       tooltip={$t`Choose the columns of the single-line view`}
       onClick={onAddColumns} />
-    <RibbonMenuButton label={$t`Expand/Collapse`} icon={ExpandCollapseIcon} size="small"
+    <RibbonMenuButton label={$t`Expand/Collapse *=> Expand or collapse the groups in the message list`} icon={ExpandCollapseIcon} size="small"
       disabled={!$settings.showInGroups && $t`Turn on Show in Groups first`}>
       <MenuItem label={$t`Collapse This Group`} icon={CollapseIcon} onClick={() => { dispatch("collapsegroup", true); }} />
       <MenuItem label={$t`Expand This Group`} icon={ExpandIcon} onClick={() => { dispatch("collapsegroup", false); }} />
@@ -56,38 +56,38 @@
       <MenuItem label={$t`Expand All Groups`} icon={ExpandAllIcon} onClick={() => { dispatch("collapseall", false); }} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Layout`}>
+  <RibbonGroup label={$t`Layout *=> Ribbon group with settings for the window panes`}>
     <RibbonToggleButton label={$t`Use Tighter Spacing`} icon={SpacingIcon}
       selected={!!$settings.tighterSpacing}
       onClick={() => changeViewSettings(folder, { tighterSpacing: !$settings.tighterSpacing }, ApplyScope.AllFolders)} />
-    <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
-      <MenuItem label={$t`Normal`} checked={$folderPane.value == FolderPaneMode.Normal}
+    <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders *=> Folder pane: show or hide the list of folders`} icon={FolderPaneIcon}>
+      <MenuItem label={$t`Normal *=> Folder pane at full width`} checked={$folderPane.value == FolderPaneMode.Normal}
         onClick={() => { $folderPane.value = FolderPaneMode.Normal; }} />
-      <MenuItem label={$t`Minimized`} checked={$folderPane.value == FolderPaneMode.Minimized}
+      <MenuItem label={$t`Minimized *=> Folder pane as a narrow bar`} checked={$folderPane.value == FolderPaneMode.Minimized}
         onClick={() => { $folderPane.value = FolderPaneMode.Minimized; }} />
-      <MenuItem label={$t`Off`} checked={$folderPane.value == FolderPaneMode.Off}
+      <MenuItem label={$t`Off *=> The pane is hidden`} checked={$folderPane.value == FolderPaneMode.Off}
         onClick={() => { $folderPane.value = FolderPaneMode.Off; }} />
       <MenuDivider />
-      <MenuItem label={$t`Favorites`} checked={$showFavorites.value} checkable
+      <MenuItem label={$t`Favorites *=> Section of the folder pane with the favorite folders`} checked={$showFavorites.value} checkable
         onClick={() => { $showFavorites.value = !$showFavorites.value; }} />
     </RibbonMenuButton>
-    <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}>
-      <MenuItem label={$t`Right`} icon={RightIcon} checked={$readingPane.value == "right"}
+    <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading *=> Reading pane: where the selected item is shown`} icon={ReadingPaneIcon}>
+      <MenuItem label={$t`Right *=> Reading pane on the right side`} icon={RightIcon} checked={$readingPane.value == "right"}
         onClick={() => { $readingPane.value = "right"; }} />
-      <MenuItem label={$t`Bottom`} icon={BottomIcon} checked={$readingPane.value == "bottom"}
+      <MenuItem label={$t`Bottom *=> Reading pane at the bottom`} icon={BottomIcon} checked={$readingPane.value == "bottom"}
         onClick={() => { $readingPane.value = "bottom"; }} />
-      <MenuItem label={$t`Off`} icon={OffIcon} checked={$readingPane.value == "off"}
+      <MenuItem label={$t`Off *=> The pane is hidden`} icon={OffIcon} checked={$readingPane.value == "off"}
         onClick={() => { $readingPane.value = "off"; }} />
       <MenuDivider />
-      <MenuItem label={$t`Options…`} onClick={() => { $openReadingPaneOptions = true; }} />
+      <MenuItem label={$t`Options… *=> Options for the reading pane`} onClick={() => { $openReadingPaneOptions = true; }} />
     </RibbonMenuButton>
     <RibbonMenuButton label={$t`To-Do Bar`} icon={ToDoBarIcon}>
-      <MenuItem label={$t`Calendar`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
+      <MenuItem label={$t`Calendar *=> To-Do bar section with the upcoming appointments`} icon={CalendarIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.Calendar)}
         onClick={() => setToDoBarPart(ToDoBarPart.Calendar, !$toDoBar.value?.includes(ToDoBarPart.Calendar))} />
-      <MenuItem label={$t`People`} icon={PeopleIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.People)}
+      <MenuItem label={$t`People *=> To-Do bar section with your frequent contacts`} icon={PeopleIcon} checkable checked={$toDoBar.value?.includes(ToDoBarPart.People)}
         onClick={() => setToDoBarPart(ToDoBarPart.People, !$toDoBar.value?.includes(ToDoBarPart.People))} />
       <MenuDivider />
-      <MenuItem label={$t`Off`} checked={!$toDoBar.value?.length}
+      <MenuItem label={$t`Off *=> The pane is hidden`} checked={!$toDoBar.value?.length}
         onClick={() => { $toDoBar.value = []; }} />
     </RibbonMenuButton>
   </RibbonGroup>
@@ -203,12 +203,12 @@
   }
 
   const viewTypes = [
-    { id: ViewType.Compact, label: $t`Compact`, icon: CompactIcon, tooltip: $t`Sender, subject and preview in a narrow list` },
-    { id: ViewType.Single, label: $t`Single`, icon: SingleIcon, tooltip: $t`One line per message, in columns` },
-    { id: ViewType.Preview, label: $t`Preview`, icon: PreviewViewIcon, tooltip: $t`One line per message in columns, with a preview of the text` },
+    { id: ViewType.Compact, label: $t`Compact *=> View with sender, subject and preview in a narrow list`, icon: CompactIcon, tooltip: $t`Sender, subject and preview in a narrow list` },
+    { id: ViewType.Single, label: $t`Single *=> View with one line per email, in columns`, icon: SingleIcon, tooltip: $t`One line per message, in columns` },
+    { id: ViewType.Preview, label: $t`Preview *=> View with one line per email and a preview of the text`, icon: PreviewViewIcon, tooltip: $t`One line per message in columns, with a preview of the text` },
   ];
   const previewOptions = [
-    { lines: 0, label: $t`Off` },
+    { lines: 0, label: $t`Off *=> No preview text in the message list` },
     { lines: 1, label: $t`1 Line` },
     { lines: 2, label: $t`2 Lines` },
     { lines: 3, label: $t`3 Lines` },

@@ -6,13 +6,13 @@
       <MinimizeIcon size={16} />
     </button>
   </hbox>
-  <vbox flex class="scroll" role="tree" aria-label={$t`Folders`}>
+  <vbox flex class="scroll" role="tree" aria-label={$t`Folders *=> List of the folders`}>
     {#if $separateAccountList.value}
-      <SectionHeader id="accounts" label={$t`Accounts`} />
+      <SectionHeader id="accounts" label={$t`Accounts *=> List of the email accounts`} />
       {#if !isCollapsed("accounts", $collapsedIDs.value)}
-        <vbox class="account-list" role="listbox" aria-label={$t`Accounts`}>
+        <vbox class="account-list" role="listbox" aria-label={$t`Accounts *=> List of the email accounts`}>
           {#if $showFavorites.value}
-            <FolderGroupListItem label={$t`Favorites`} icon={FavoritesIcon} inbox={allAccountsAccount.inbox}
+            <FolderGroupListItem label={$t`Favorites *=> Section of the folder pane with the favorite folders`} icon={FavoritesIcon} inbox={allAccountsAccount.inbox}
               selected={shownEntry == FolderGroup.Favorites} on:click={() => onSelectGroup(FolderGroup.Favorites)} />
           {/if}
           {#if allAccountSearches.length}
@@ -26,7 +26,7 @@
       {/if}
     {/if}
     {#if $showFavorites.value && (!$separateAccountList.value || shownEntry == FolderGroup.Favorites)}
-      <SectionHeader id={FolderGroup.Favorites} label={$t`Favorites`} />
+      <SectionHeader id={FolderGroup.Favorites} label={$t`Favorites *=> Section of the folder pane with the favorite folders`} />
       {#if !isCollapsed(FolderGroup.Favorites, $collapsedIDs.value)}
         {#each $favorites.each as folder (folder)}
           <FolderNode {folder} depth={0} isFavorite bind:selectedFolder />

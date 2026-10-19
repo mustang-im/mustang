@@ -1,11 +1,11 @@
 <Dialog title={$t`Go to Folder`} bind:this={dialog}
-  okLabel={$t`OK`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={!target && $t`Select a folder first`}
   onOK={onGo}
   on:close>
   <vbox class="dialog-content">
-    <span class="caption">{$t`Folders`}</span>
-    <FolderPicker label={$t`Folders`} bind:selectedFolder={target} on:choose={() => dialog.submit()} />
+    <span class="caption">{$t`Folders *=> List of the folders`}</span>
+    <FolderPicker label={$t`Folders *=> List of the folders`} bind:selectedFolder={target} on:choose={() => dialog.submit()} />
   </vbox>
 </Dialog>
 

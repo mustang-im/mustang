@@ -1,4 +1,4 @@
-<Dialog title={$t`Get a Digital ID`} okLabel={type == "smime" ? $t`Create and Save Request…` : $t`Create`}
+<Dialog title={$t`Get a Digital ID`} okLabel={type == "smime" ? $t`Create and Save Request…` : $t`Create *=> Create the Digital ID`}
   onOK={onOK} width="560px" on:close>
   <vbox class="get-digital-id">
     <span>{$t`A Digital ID lets you add a digital signature to your messages, and lets others send you encrypted messages`}</span>
@@ -6,7 +6,7 @@
       <span>{$t`E-mail address`}</span>
       <ComboBox options={identityOptions} bind:value={identity} on:change={event => onIdentityChanged(event.detail)} label={$t`E-mail address`} />
     </FormGrid>
-    <GroupBox label={$t`Type`}>
+    <GroupBox label={$t`Type *=> Kind of Digital ID: OpenPGP key or S/MIME certificate`}>
       <vbox class="types">
         <Radio label={$t`OpenPGP key, created on this computer`} bind:group={type} value="openpgp" />
         <Radio label={$t`S/MIME certificate from a certificate authority`} bind:group={type} value="smime" />

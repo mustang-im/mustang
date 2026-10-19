@@ -1,10 +1,10 @@
 <vbox flex class="contact-form-page" bind:this={pageEl}>
   <Ribbon>
-    <RibbonTab label={$t`Contact`}>
-      <RibbonGroup label={$t`Actions`}>
+    <RibbonTab label={$t`Contact *=> Ribbon tab with commands for this contact`}>
+      <RibbonGroup label={$t`Actions *=> Ribbon group with commands for the open item`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
-          onClick={saveAndClose} shortCutInfo={$t`Alt+S`} />
-        <RibbonButton label={$t`Delete`} icon={DeleteIcon}
+          onClick={saveAndClose} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`} />
+        <RibbonButton label={$t`Delete *=> Delete this contact`} icon={DeleteIcon}
           onClick={deleteIt} />
         <RibbonSplitButton label={$t`Save & New`} icon={SaveNewIcon} size="small"
           onClick={saveAndNew}>
@@ -13,34 +13,34 @@
             onClick={saveAndNewFromSameCompany} />
         </RibbonSplitButton>
       </RibbonGroup>
-      <RibbonGroup label={$t`Show`}>
-        <RibbonToggleButton label={$t`General`} icon={GeneralIcon}
+      <RibbonGroup label={$t`Show *=> Ribbon group to choose which page of the form is shown`}>
+        <RibbonToggleButton label={$t`General *=> Page with the general information of the contact`} icon={GeneralIcon}
           selected={page == "general"} onClick={() => { page = "general"; }} />
-        <RibbonToggleButton label={$t`Details`} icon={DetailsIcon}
+        <RibbonToggleButton label={$t`Details *=> Page with more details of the contact`} icon={DetailsIcon}
           selected={page == "details"} onClick={() => { page = "details"; }} />
-        <RibbonToggleButton label={$t`Certificates`} icon={CertificatesIcon}
+        <RibbonToggleButton label={$t`Certificates *=> Page with the certificates (Digital IDs) of the contact`} icon={CertificatesIcon}
           selected={page == "certificates"} onClick={() => { page = "certificates"; }} />
         <RibbonToggleButton label={$t`All Fields`} icon={AllFieldsIcon}
           selected={page == "all-fields"} onClick={() => { page = "all-fields"; }} />
       </RibbonGroup>
-      <RibbonGroup label={$t`Communicate`}>
-        <RibbonButton label={$t`Email`} icon={MailIcon} size="small"
+      <RibbonGroup label={$t`Communicate *=> Ribbon group with commands to contact the person`}>
+        <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon} size="small"
           onClick={() => ContactActions.writeMail([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
-        <RibbonButton label={$t`Meeting`} icon={MeetingIcon} size="small"
+        <RibbonButton label={$t`Meeting *=> Invite the contact to a new meeting`} icon={MeetingIcon} size="small"
           onClick={() => ContactActions.newMeeting([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
-        <RibbonMenuButton label={$t`More`} icon={MoreIcon} size="small">
-          <SubMenu label={$t`Call`} icon={CallIcon} disabled={!$phoneNumbers.hasItems && $t`Enter a phone number first`}>
+        <RibbonMenuButton label={$t`More *=> More ways to contact the person`} icon={MoreIcon} size="small">
+          <SubMenu label={$t`Call *=> Make a phone call to the contact`} icon={CallIcon} disabled={!$phoneNumbers.hasItems && $t`Enter a phone number first`}>
             {#each $phoneNumbers.each as entry}
-              <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone`})`} icon={CallIcon}
+              <MenuItem label={`${entry.value} (${entry.purposeLabel || $t`Phone *=> Phone number of unknown type`})`} icon={CallIcon}
                 onClick={() => ContactActions.call(entry.value)} />
             {/each}
           </SubMenu>
         </RibbonMenuButton>
       </RibbonGroup>
-      <RibbonGroup label={$t`Options`}>
-        <RibbonMenuButton label={$t`Picture`} icon={PictureIcon}>
+      <RibbonGroup label={$t`Options *=> Ribbon group with more options for the contact`}>
+        <RibbonMenuButton label={$t`Picture *=> Change or remove the picture of the contact`} icon={PictureIcon}>
           <MenuItem label={$person.picture ? $t`Change Picture…` : $t`Add Picture…`} icon={ChangePictureIcon}
             onClick={onSelectPicture} />
           <MenuItem label={$t`Remove Picture`} icon={RemovePictureIcon}
@@ -51,7 +51,7 @@
     </RibbonTab>
   </Ribbon>
 
-  <FormCard title={$person.name || $t`Untitled`} kind={$t`Contact`}>
+  <FormCard title={$person.name || $t`Untitled *=> Placeholder for a contact or group without a name`} kind={$t`Contact *=> Type of item: a person in the address book`}>
     <hbox flex class="form-body">
       {#if page == "certificates"}
         <vbox class="column main">
@@ -64,7 +64,7 @@
       {:else if page == "details"}
         <vbox class="column main">
           <div class="fields">
-            <label for="contact-department">{$t`Department`}</label>
+            <label for="contact-department">{$t`Department *=> Department of the person in the company`}</label>
             <input id="contact-department" type="text" class="lo-text-field" bind:value={person.department} />
           </div>
         </vbox>
@@ -78,12 +78,12 @@
                   aria-label={$t`Full Name`} />
               </vbox>
             </hbox>
-            <label for="contact-company">{$t`Company`}</label>
+            <label for="contact-company">{$t`Company *=> Company where the person works`}</label>
             <input id="contact-company" type="text" class="lo-text-field" bind:value={person.company} />
             <label for="contact-position">{$t`Job title`}</label>
             <input id="contact-position" type="text" class="lo-text-field" bind:value={person.position} />
 
-            <span class="section">{$t`Internet`}</span>
+            <span class="section">{$t`Internet *=> Section with the email, web page and chat addresses`}</span>
             <SlotButton slots={emailSlots} bind:slot={emailSlot} entries={emailAddresses} />
             <SlotField slots={emailSlots} bind:slot={emailSlot} entries={emailAddresses} type="email" />
             <label for="contact-web">{$t`Web page address`}</label>
@@ -99,7 +99,7 @@
               <SlotField slots={phoneSlots} bind:slot={phoneRows[i]} entries={phoneNumbers} type="tel" />
             {/each}
 
-            <span class="section">{$t`Addresses`}</span>
+            <span class="section">{$t`Addresses *=> Section with the postal addresses of the contact`}</span>
             <div class="top-aligned">
               <SlotButton slots={addressSlots} bind:slot={addressSlot} entries={streetAddresses}
                 onClick={() => { isAddressOpen = true; }} />
@@ -124,7 +124,7 @@
             <hbox class="card-top">
               <PersonPicture {person} size={56} />
               <vbox class="card-text">
-                <span class="card-name">{$person.name || $t`Untitled`}</span>
+                <span class="card-name">{$person.name || $t`Untitled *=> Placeholder for a contact or group without a name`}</span>
                 {#if $person.company}<span>{$person.company}</span>{/if}
                 {#if $person.position}<span>{$person.position}</span>{/if}
               </vbox>
@@ -132,7 +132,7 @@
             {#if preferredPhone}<span class="card-detail">{preferredPhone}</span>{/if}
             {#if preferredEmail}<span class="card-detail link">{preferredEmail}</span>{/if}
           </vbox>
-          <label for="contact-notes" class="notes-label">{$t`Notes`}</label>
+          <label for="contact-notes" class="notes-label">{$t`Notes *=> Notes about the contact`}</label>
           <textarea id="contact-notes" class="lo-text-field" bind:value={person.notes} />
         </vbox>
       {/if}

@@ -2,7 +2,7 @@
   <InfoBar {messages} />
   <grid class="fields">
     {#if organizer}
-      <span class="row-label">{$t`Organizer`}</span>
+      <span class="row-label">{$t`Organizer *=> The person who invited to this meeting`}</span>
       <hbox class="value organizer">
         <span class="name">{organizer.name || organizer.emailAddress}</span>
         {#if organizer.name && organizer.emailAddress}
@@ -10,21 +10,21 @@
         {/if}
       </hbox>
     {/if}
-    <span class="row-label">{$t`Required`}</span>
+    <span class="row-label">{$t`Required *=> Attendees who must attend the meeting`}</span>
     <hbox class="value attendees">
       <ParticipantsDisplay {event} />
     </hbox>
-    <span class="row-label">{$t`When`}</span>
+    <span class="row-label">{$t`When *=> Date and time of the meeting`}</span>
     <span class="value">{when}</span>
     {#if $event.location}
-      <span class="row-label">{$t`Location`}</span>
+      <span class="row-label">{$t`Location *=> Where the event takes place`}</span>
       <span class="value">{$event.location}</span>
     {/if}
     {#if $event.isOnline && $event.onlineMeetingURL}
       <span class="row-label">{$t`Online meeting`}</span>
       <hbox class="value online">
         <button class="join" on:click={() => catchErrors(() => openExternalURL(event.onlineMeetingURL))}>
-          <JoinIcon size={16} /> {$t`Join`}
+          <JoinIcon size={16} /> {$t`Join *=> Join the online meeting`}
         </button>
         <span class="url lo-secondary">{$event.onlineMeetingURL}</span>
       </hbox>

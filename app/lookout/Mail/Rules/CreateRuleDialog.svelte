@@ -1,7 +1,7 @@
 {#if wizardRule}
   <RulesWizard rule={wizardRule} on:finish={event => catchErrors(() => onWizardFinish(event.detail))} on:close={onClose} />
 {:else if createdRule}
-  <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created`}
+  <RuleMessageBox title={$t`Success *=> The rule has been created`} message={$t`The rule "${createdRule.name}" has been created`}
     on:answer={onClose} />
 {:else}
   <Dialog title={$t`Create Rule`} on:close={onClose} width="540px">
@@ -20,7 +20,7 @@
         <Checkbox label={$t`Move the item to folder`} bind:checked={quickRule.moveToFolder} classes="check" />
         <hbox class="folder-row">
           <input type="text" class="value folder lo-text-field" readonly value={quickRule.folder?.name ?? ""}
-            aria-label={$t`Folder`} />
+            aria-label={$t`Folder *=> Folder to which the email is moved`} />
           <DialogButton label={$t`Select Folder…`} onClick={() => { isChoosingFolder = true; }} />
         </hbox>
         <Checkbox label={$t`Mark it as read`} bind:checked={quickRule.markAsRead} classes="check wide" />
@@ -28,8 +28,8 @@
       </grid>
     </GroupBox>
     <svelte:fragment slot="footer">
-      <DialogButton label={$t`OK`} primary onClick={onOK} disabled={quickRule.disabledReason ?? false} />
-      <DialogButton label={$t`Cancel`} onClick={onClose} />
+      <DialogButton label={$t`OK *=> Confirm and close the dialog`} primary onClick={onOK} disabled={quickRule.disabledReason ?? false} />
+      <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={onClose} />
       <DialogButton label={$t`Advanced Options…`} onClick={onAdvanced}
         tooltip={$t`Choose more conditions and actions in the Rules Wizard`} />
     </svelte:fragment>

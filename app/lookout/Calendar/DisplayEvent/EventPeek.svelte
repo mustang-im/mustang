@@ -6,13 +6,13 @@
         <span class="dot" />
         <span class="name">{$calendar?.name ?? ""}</span>
       </hbox>
-      <button class="icon-button" title={$t`Open`} on:click={onOpen}>
+      <button class="icon-button" title={$t`Open *=> Open the selected event`} on:click={onOpen}>
         <OpenIcon size="16" />
       </button>
       <button class="icon-button" title={deleteLabel} on:click={onDelete}>
         <DeleteIcon size="16" />
       </button>
-      <button class="icon-button" title={$t`Close`} on:click={onClose}>
+      <button class="icon-button" title={$t`Close *=> Close the event preview`} on:click={onClose}>
         <CloseIcon size="16" />
       </button>
     </hbox>
@@ -29,20 +29,20 @@
       <hbox class="buttons">
         <button class="peek-button accept" class:chosen={$event.myParticipation == InvitationResponse.Accept}
           on:click={() => respond(InvitationResponse.Accept)}>
-          <AcceptIcon size="14" /> {$t`Accept`}
+          <AcceptIcon size="14" /> {$t`Accept *=> Accept the invitation to the meeting`}
         </button>
         <button class="peek-button tentative" class:chosen={$event.myParticipation == InvitationResponse.Tentative}
           on:click={() => respond(InvitationResponse.Tentative)}>
-          <TentativeIcon size="14" /> {$t`Tentative`}
+          <TentativeIcon size="14" /> {$t`Tentative *=> Respond to the invitation: maybe attend the meeting`}
         </button>
         <button class="peek-button decline" class:chosen={$event.myParticipation == InvitationResponse.Decline}
           on:click={() => respond(InvitationResponse.Decline)}>
-          <DeclineIcon size="14" /> {$t`Decline`}
+          <DeclineIcon size="14" /> {$t`Decline *=> Decline the invitation to the meeting`}
         </button>
       </hbox>
     {:else}
       <hbox class="buttons">
-        <button class="peek-button primary" on:click={onOpen}>{$t`Open`}</button>
+        <button class="peek-button primary" on:click={onOpen}>{$t`Open *=> Open the selected event`}</button>
       </hbox>
     {/if}
   </vbox>
@@ -80,7 +80,7 @@
   $: deleteLabel = $event.isCancelled ? $t`Remove from Calendar`
     : $event.isOutgoingMeeting ? $t`Cancel Meeting`
     : isRecurring ? $t`Delete Occurrence`
-    : $t`Delete`;
+    : $t`Delete *=> Delete the selected event`;
 
   function onClose() {
     $eventPeek = null;

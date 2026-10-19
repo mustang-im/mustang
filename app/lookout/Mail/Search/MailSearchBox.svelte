@@ -10,13 +10,13 @@
     <hbox class="divider" />
     <SearchIcon size={16} />
     <input type="search" bind:value={typed} bind:this={inputEl}
-      placeholder={$t`Search`} spellcheck={false}
+      placeholder={$t`Search *=> Search in the current app`} spellcheck={false}
       role="combobox" aria-expanded={suggestions.length > 0} aria-autocomplete="list"
       on:input={onInput} on:keydown={onKeyDown}
       on:focus={() => { isInputFocused = true; }}
       on:blur={() => { isInputFocused = false; }} />
     {#if typed}
-      <button type="button" class="icon-button" title={$t`Clear`} aria-label={$t`Clear`}
+      <button type="button" class="icon-button" title={$t`Clear *=> Clear the search field`} aria-label={$t`Clear *=> Clear the search field`}
         on:click={onClear}>
         <ClearIcon size={16} />
       </button>
@@ -37,8 +37,8 @@
     {/each}
   </Menu>
   {#if suggestions.length && !$isAdvancedSearchOpen}
-    <vbox class="suggestions" role="listbox" aria-label={$t`Suggestions`}>
-      <hbox class="suggestions-header">{$t`People`}</hbox>
+    <vbox class="suggestions" role="listbox" aria-label={$t`Suggestions *=> List of suggested persons for the search`}>
+      <hbox class="suggestions-header">{$t`People *=> Heading of the list of suggested persons`}</hbox>
       {#each suggestions as person, index (person)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <hbox class="suggestion" class:active={index == activeSuggestion}

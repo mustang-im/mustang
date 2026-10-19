@@ -15,19 +15,19 @@
       </hbox>
       {#if $to.hasItems}
         <hbox class="recipients">
-          <span class="recipients-label">{$t`To`}</span>
+          <span class="recipients-label">{$t`To *=> Main recipients of the email`}</span>
           <RecipientsList recipients={to} />
         </hbox>
       {/if}
       {#if $cc.hasItems}
         <hbox class="recipients">
-          <span class="recipients-label">{$t`Cc`}</span>
+          <span class="recipients-label">{$t`Cc *=> Recipients who get a copy of the email`}</span>
           <RecipientsList recipients={cc} />
         </hbox>
       {/if}
       {#if $bcc.hasItems}
         <hbox class="recipients">
-          <span class="recipients-label">{$t`Bcc`}</span>
+          <span class="recipients-label">{$t`Bcc *=> Recipients who get a hidden copy of the email`}</span>
           <RecipientsList recipients={bcc} />
         </hbox>
       {/if}
@@ -36,7 +36,7 @@
       <hbox class="respond-group">
         <hbox class="button-group">
           <button class="respond" on:click={() => catchErrors(() => MessageActions.respond(message, message.compose.replyToAuthor()))}
-            title={$t`Reply`} aria-label={$t`Reply`}>
+            title={$t`Reply *=> Reply to the sender of the selected email`} aria-label={$t`Reply *=> Reply to the sender of the selected email`}>
             <ReplyIcon size={18} />
           </button>
           <button class="respond" on:click={() => catchErrors(() => MessageActions.respond(message, message.compose.replyAll()))}
@@ -45,7 +45,7 @@
             <ReplyAllIcon size={18} />
           </button>
           <button class="respond" on:click={event => catchErrors(() => MessageActions.forward(message, event))}
-            title={$t`Forward`} aria-label={$t`Forward`}>
+            title={$t`Forward *=> Forward the selected email to other people`} aria-label={$t`Forward *=> Forward the selected email to other people`}>
             <ForwardIcon size={18} />
           </button>
         </hbox>
@@ -86,13 +86,13 @@
 </vbox>
 <EncryptionDetails {message} bind:isExpanded={isEncryptionExpanded} />
 <Menu bind:isMenuOpen={isMoreOpen} anchor={moreEl} placement="bottom-end">
-  <MenuItem label={$t`Reply`} icon={ReplyIcon} onClick={() => MessageActions.respond(message, message.compose.replyToAuthor())} />
+  <MenuItem label={$t`Reply *=> Reply to the sender of the selected email`} icon={ReplyIcon} onClick={() => MessageActions.respond(message, message.compose.replyToAuthor())} />
   <MenuItem label={$t`Reply All`} icon={ReplyAllIcon}
     disabled={!(message.allRecipients().length > 1 && !(message.bcc.hasItems && !message.outgoing)) && $t`There are no other recipients`}
     onClick={() => MessageActions.respond(message, message.compose.replyAll())} />
-  <MenuItem label={$t`Forward`} icon={ForwardIcon} onClick={event => MessageActions.forward(message, event as MouseEvent)} />
+  <MenuItem label={$t`Forward *=> Forward the selected email to other people`} icon={ForwardIcon} onClick={event => MessageActions.forward(message, event as MouseEvent)} />
   <MenuItem label={$t`Forward as Attachment`} icon={ForwardAttachmentIcon} onClick={async () => mailMustangApp.writeMail(await message.compose.forwardAsAttachment())} />
-  <MenuItem label={$t`Redirect`} icon={RedirectIcon}
+  <MenuItem label={$t`Redirect *=> Send the selected email on to somebody else, who can reply to the original sender`} icon={RedirectIcon}
     tooltip={$t`Send this message to somebody else, who can reply to the original sender`}
     onClick={async () => mailMustangApp.writeMail(await message.compose.redirect())} />
   {#if $message.outgoing}
@@ -102,22 +102,22 @@
     tooltip={$t`Send a new, unrelated message to all recipients`}
     onClick={() => mailMustangApp.writeMail(message.compose.newToAll())} />
   <MenuDivider />
-  <MenuItem label={$t`Delete`} icon={DeleteIcon} onClick={() => message.deleteMessage()} />
+  <MenuItem label={$t`Delete *=> Delete the selected emails`} icon={DeleteIcon} onClick={() => message.deleteMessage()} />
   <MenuItem label={$message.isRead ? $t`Mark as Unread` : $t`Mark as Read`} icon={$message.isRead ? UnreadIcon : ReadIcon}
     onClick={() => message.markRead(!message.isRead)} />
-  <SubMenu label={$t`Follow Up`} icon={FlagIcon}>
+  <SubMenu label={$t`Follow Up *=> Flag the selected emails for follow-up`} icon={FlagIcon}>
     <FollowUpMenuItems messages={[message]} />
   </SubMenu>
-  <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
+  <SubMenu label={$t`Categorize *=> Assign a category to the selected emails`} icon={CategorizeIcon}>
     <CategorizeMenuItems messages={[message]} />
   </SubMenu>
-  <SubMenu label={$t`Junk`} icon={JunkIcon}>
+  <SubMenu label={$t`Junk *=> Menu to mark the selected emails as junk or not junk`} icon={JunkIcon}>
     <JunkMenuItems messages={[message]} />
   </SubMenu>
   <MenuDivider />
-  <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => { $printMessage = message; }} />
+  <MenuItem label={$t`Print *=> Print the selected email`} icon={PrintIcon} onClick={() => { $printMessage = message; }} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon} onClick={() => MessageActions.saveAs(message)} />
-  <SubMenu label={$t`View`} icon={SourceIcon}>
+  <SubMenu label={$t`View *=> Choose how the email is displayed`} icon={SourceIcon}>
     <DisplayModeSwitcher />
   </SubMenu>
   <MenuItem label={$t`Message Properties…`} icon={PropertiesIcon}

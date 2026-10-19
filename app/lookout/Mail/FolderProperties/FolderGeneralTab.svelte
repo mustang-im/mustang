@@ -1,17 +1,17 @@
 <vbox class="general">
   <hbox class="name-row">
     <span class="folder-icon"><FolderIcon size={32} strokeWidth={1.5} /></span>
-    <TextField label={$t`Name`} bind:value={name} disabled={$folder.disableRename()} />
+    <TextField label={$t`Name *=> Name of the folder`} bind:value={name} disabled={$folder.disableRename()} />
   </hbox>
   <hbox class="separator" />
   <FormGrid columns="90px minmax(0, 1fr)">
-    <span class="lo-form-label">{$t`Type`}</span>
+    <span class="lo-form-label">{$t`Type *=> Type of the folder`}</span>
     <span>{$t`Folder containing Mail Items`}</span>
-    <span class="lo-form-label">{$t`Location`}</span>
+    <span class="lo-form-label">{$t`Location *=> Where the folder is in the folder tree`}</span>
     <span class="location" title={location}>{location}</span>
-    <span class="lo-form-label">{$t`Use as`}</span>
+    <span class="lo-form-label">{$t`Use as *=> Use this folder as a special folder, e.g. Sent or Trash`}</span>
     <hbox>
-      <ComboBox label={$t`Use as`} options={specialFolderOptions} bind:value={specialFolder}
+      <ComboBox label={$t`Use as *=> Use this folder as a special folder, e.g. Sent or Trash`} options={specialFolderOptions} bind:value={specialFolder}
         disabled={$folder.disableChangeSpecial()} width="220px" />
     </hbox>
   </FormGrid>

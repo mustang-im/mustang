@@ -1,9 +1,9 @@
-<Dialog title={$t`Properties`} okLabel={$t`OK`} onOK={onOK} width="560px" on:close>
+<Dialog title={$t`Properties *=> Properties of the email`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="560px" on:close>
   <vbox class="properties">
-    <GroupBox label={$t`Settings`}>
+    <GroupBox label={$t`Settings *=> Settings of the email`}>
       <hbox class="setting">
-        <span>{$t`Importance`}</span>
-        <ComboBox label={$t`Importance`} options={importanceOptions} bind:value={isImportant} width="160px" />
+        <span>{$t`Importance *=> Importance of the email`}</span>
+        <ComboBox label={$t`Importance *=> Importance of the email`} options={importanceOptions} bind:value={isImportant} width="160px" />
       </hbox>
     </GroupBox>
     <span>{$t`Internet headers`}</span>
@@ -25,8 +25,8 @@
   export let message: EMail;
 
   const importanceOptions: ComboOption<boolean>[] = [
-    { value: false, label: $t`Normal` },
-    { value: true, label: $t`High` },
+    { value: false, label: $t`Normal *=> Importance of the email: normal` },
+    { value: true, label: $t`High *=> Importance of the email: high` },
   ];
   let isImportant = !!message.isImportant;
   let headers = "";

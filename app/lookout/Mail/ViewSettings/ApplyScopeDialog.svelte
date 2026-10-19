@@ -7,7 +7,7 @@
     <hbox flex />
     <DialogButton label={$t`All Folders`} primary onClick={() => choose(ApplyScope.AllFolders)} />
     <DialogButton label={$t`This Folder`} onClick={() => choose(ApplyScope.ThisFolder)} />
-    <DialogButton label={$t`Cancel`} onClick={() => { dispatch("close"); }} />
+    <DialogButton label={$t`Cancel *=> Close the dialog without making changes`} onClick={() => { dispatch("close"); }} />
   </svelte:fragment>
 </Dialog>
 

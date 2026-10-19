@@ -1,17 +1,17 @@
 <vbox class="open-export-page">
-  <h1>{$t`Open`}</h1>
+  <h1>{$t`Open *=> Heading of the page with commands to import, export and open shared folders`}</h1>
   <vbox class="commands">
     <button class="command" on:click={() => openSettingsDialog({ kind: "import-export", action: "import" })}>
       <hbox class="command-icon"><ImportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
-        <span class="command-title">{$t`Import`}</span>
+        <span class="command-title">{$t`Import *=> Import data from a file or from another program`}</span>
         <span class="command-description">{$t`Import contacts or appointments from a file, or accounts from another program`}</span>
       </vbox>
     </button>
     <button class="command" on:click={() => openSettingsDialog({ kind: "import-export", action: "export" })}>
       <hbox class="command-icon"><ExportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
-        <span class="command-title">{$t`Export`}</span>
+        <span class="command-title">{$t`Export *=> Export data to a file`}</span>
         <span class="command-description">{$t`Save a calendar, an address book or other data to a file, for use in other programs`}</span>
       </vbox>
     </button>

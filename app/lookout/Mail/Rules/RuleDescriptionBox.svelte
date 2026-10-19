@@ -1,7 +1,7 @@
 <vbox class="rule-description" class:empty={!lines.length} class:fill>
   {#each lines as line, i}
     <div class="line" class:continued={isContinued(i)}>
-      {#if isContinued(i)}{$t`and`}{/if}
+      {#if isContinued(i)}{$t`and *=> as in: from Ben and with Hello in the subject`}{/if}
       {#each line.parts as part}
         {#if part.isValue && line.item}
           <button type="button" class="value" class:placeholder={part.isPlaceholder}

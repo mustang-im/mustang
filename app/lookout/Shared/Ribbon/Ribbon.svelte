@@ -4,8 +4,8 @@
   on:contextmenu={onContextMenu}
   bind:this={ribbonEl}>
   <hbox class="tab-row">
-    <button class="tab file-tab" on:click={onFile} title={$t`File`}>
-      {$t`File`}
+    <button class="tab file-tab" on:click={onFile} title={$t`File *=> Ribbon tab that opens the File view with Save, Print and Options`}>
+      {$t`File *=> Ribbon tab that opens the File view with Save, Print and Options`}
     </button>
     <hbox class="tabs" role="tablist" tabindex="-1" on:keydown={onTabRowKeyDown}>
       {#each shownTabs as tab}
@@ -32,7 +32,7 @@
       {/if}
       <MenuDivider />
       <MenuItem label={$t`Customize the Ribbon…`} onClick={() => $isCustomizing = true} />
-      <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} shortCutInfo={$t`Ctrl+F1`} onClick={onToggleCollapsed} />
+      <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} shortCutInfo={$t`Ctrl+F1 *=> Keyboard shortcut`} onClick={onToggleCollapsed} />
     </ContextMenu>
   </hbox>
   <hbox class="ribbon-content" on:click|capture={onClickContent}>

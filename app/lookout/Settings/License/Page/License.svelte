@@ -2,7 +2,7 @@
   {#if $emailAccounts.isEmpty}
     <span class="lo-secondary">{$t`Add an email account to buy or check your license`}</span>
   {:else if isChecking}
-    <span class="lo-secondary">{$t`Checking…`}</span>
+    <span class="lo-secondary">{$t`Checking… *=> The license is being checked`}</span>
   {:else if error}
     <span>{$t`Failed to contact the license server`}</span>
     <span class="lo-secondary error">{error.message ?? String(error)}</span>

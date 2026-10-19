@@ -1,7 +1,7 @@
 <vbox class="poll-editor" bind:this={editorEl}>
-  <span class="field-label">{$t`Question`}</span>
-  <TextField bind:value={poll.name} label={$t`Question`} placeholder={$t`Ask a question`} />
-  <span class="field-label">{$t`Options`}</span>
+  <span class="field-label">{$t`Question *=> The question of the poll`}</span>
+  <TextField bind:value={poll.name} label={$t`Question *=> The question of the poll`} placeholder={$t`Ask a question`} />
+  <span class="field-label">{$t`Options *=> The answer options of the poll`}</span>
   {#each poll.options as option, i}
     <hbox class="option-row">
       <span class="radio-mark" aria-hidden="true"></span>

@@ -1,4 +1,4 @@
-<MenuItem label={$t`Unread`} icon={UnreadIcon} checkable checked={isUnread}
+<MenuItem label={$t`Unread *=> State of the message that has not been read`} icon={UnreadIcon} checkable checked={isUnread}
   onClick={() => toggleQuickFilter(QuickFilter.Unread)} />
 <MenuItem label={$t`Has Attachments`} icon={AttachmentIcon} checkable checked={hasAttachments}
   onClick={() => toggleQuickFilter(QuickFilter.Attachments)} />
@@ -6,15 +6,15 @@
   <ReceivedMenuItems selected={$searchOptions.received}
     on:select={event => searchInFolder({ received: event.detail, receivedStart: null, receivedEnd: null })} />
 </SubMenu> -->
-<SubMenu label={$t`Categorized`} icon={CategorizeIcon}
+<SubMenu label={$t`Categorized *=> Only emails with a certain category`} icon={CategorizeIcon}
   disabled={!$tags.hasItems && $t`There are no categories yet`}>
   <CategoryMenuItems selected={$searchOptions.tags}
     on:select={event => searchInFolder({ tags: [...$searchOptions.tags, event.detail] })}
     on:unselect={event => searchInFolder({ tags: $searchOptions.tags.filter(tag => tag != event.detail) })} />
 </SubMenu>
-<MenuItem label={$t`Flagged`} icon={FlagIcon} checkable checked={isFlagged}
+<MenuItem label={$t`Flagged *=> State of the email that has been flagged for follow-up`} icon={FlagIcon} checkable checked={isFlagged}
   onClick={() => toggleQuickFilter(QuickFilter.Flagged)} />
-<SubMenu label={$t`Sent To`} icon={SentToIcon}>
+<SubMenu label={$t`Sent To *=> Only emails that you sent to a certain person`} icon={SentToIcon}>
   <MenuItem label={$t`Sent To Another Recipient…`} checkable checked={isSentTo}
     onClick={onSentTo} />
   <MenuItem label={$t`Sent by Me`} checkable checked={isSentByMe}
@@ -87,7 +87,7 @@
 
   function onSentTo() {
     $openSearchPerson = {
-      fieldLabel: $t`To`,
+      fieldLabel: $t`To *=> Main recipients of the email`,
       person: isSentTo ? $searchOptions.person : null,
       onPick: person => person && searchInFolder({ person, isOutgoing: true }),
     };

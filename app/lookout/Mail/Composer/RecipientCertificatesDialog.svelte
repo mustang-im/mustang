@@ -1,15 +1,15 @@
-<Dialog title={$t`Recipient Certificates`} cancelLabel={$t`Close`} width="520px" on:close>
+<Dialog title={$t`Recipient Certificates`} cancelLabel={$t`Close *=> Close the dialog`} width="520px" on:close>
   <vbox class="certificates">
     <span>{$t`These recipients have no certificate for encryption. Import their certificate, or remove them from the message.`}</span>
     <ListView items={$recipientsWithoutKeys.contents} bind:selected
-      columns={[{ label: $t`Name` }, { label: $t`E-mail Address` }]}
-      label={$t`Recipients`} height="160px" let:item>
+      columns={[{ label: $t`Name *=> Name of the person` }, { label: $t`E-mail Address` }]}
+      label={$t`Recipients *=> Recipients of the email`} height="160px" let:item>
       <span>{item.name ?? ""}</span>
       <span>{item.emailAddress}</span>
       <span slot="empty">{$t`All recipients have a certificate now`}</span>
     </ListView>
     <hbox class="buttons">
-      <DialogButton label={$t`Import…`} disabled={!selected && $t`Select a recipient first`} onClick={onImport} />
+      <DialogButton label={$t`Import… *=> Import the certificate of the selected recipient from a file`} disabled={!selected && $t`Select a recipient first`} onClick={onImport} />
       {#if hasKeyServers}
         <DialogButton label={$t`Query Key Server`} disabled={!selected && $t`Select a recipient first`} onClick={onQuery} />
       {/if}

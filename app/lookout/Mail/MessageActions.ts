@@ -115,7 +115,7 @@ export class MessageActions {
     let question = messages.length == 1
       ? gt`Do you want to permanently delete the selected message?`
       : gt`Do you want to permanently delete the ${messages.length} selected messages?`;
-    if (!await showMessageBox(gt`Delete`, question)) {
+    if (!await showMessageBox(gt`Delete *=> Permanently delete the selected emails`, question)) {
       return;
     }
     await Promise.all(messages.map(message => message.deleteMessage(DeleteStrategy.DeleteImmediately)));

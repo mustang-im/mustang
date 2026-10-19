@@ -8,7 +8,7 @@
         {$t`Encrypted, but not signed`}
       {/if}
     </span>
-    <button class="link" on:click={() => { isExpanded = true; }}>{$t`Details…`}</button>
+    <button class="link" on:click={() => { isExpanded = true; }}>{$t`Details… *=> Show the security details of the email`}</button>
   </hbox>
 {/if}
 

@@ -23,7 +23,7 @@
     {/each}
 
     {#if $searchOnlyAddressbooks.hasItems}
-      <CollapsibleHeader label={$t`Directory`}
+      <CollapsibleHeader label={$t`Directory *=> Address book on the server with all people of the organization`}
         collapsed={collapsedSections.has("directory")}
         on:click={() => toggleSection("directory")} />
       {#if !collapsedSections.has("directory")}

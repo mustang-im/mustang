@@ -59,7 +59,7 @@
         <FlagIcon size={16} />
       </button>
       <button class="action" tabindex="-1"
-        title={$t`Delete`}
+        title={$t`Delete *=> Delete this email`}
         on:click|stopPropagation={() => catchErrors(() => message.deleteMessage())}>
         <DeleteIcon size={16} />
       </button>
@@ -67,7 +67,7 @@
   </hbox>
   <hbox class="line second-line">
     {#if isDraft || hasInlineReply}
-      <span class="draft">{$t`[Draft]`}</span>
+      <span class="draft">{$t`[Draft] *=> Marks an email that has not been sent yet`}</span>
     {/if}
     <span class="subject" title={$message.subject}>
       {#if $message.subject}
@@ -79,7 +79,7 @@
     <hbox flex />
     <hbox class="status-icons">
       {#if $message.isSending}
-        <span title={$t`Sending…`}><SendingIcon size={14} class="sending" /></span>
+        <span title={$t`Sending… *=> The email is being sent`}><SendingIcon size={14} class="sending" /></span>
       {/if}
       {#if $message.isImportant}
         <span title={$t`High importance`}><ImportantIcon size={14} class="important" /></span>
@@ -88,7 +88,7 @@
         <span title={$t`Meeting request`}><MeetingIcon size={14} /></span>
       {/if}
       {#if $message.wasEncrypted || $message.signedByKeyID}
-        <span title={$message.wasEncrypted ? $t`Encrypted` : $t`Signed`}><SecureIcon size={14} /></span>
+        <span title={$message.wasEncrypted ? $t`Encrypted *=> The email was sent encrypted` : $t`Signed *=> The email has a digital signature, but is not encrypted`}><SecureIcon size={14} /></span>
       {/if}
       {#if $message.hasVisibleAttachments}
         <span title={$t`Has attachments`}><AttachmentIcon size={14} /></span>
@@ -99,7 +99,7 @@
         <span title={$t`You replied to this message`}><RepliedIcon size={14} class="replied" /></span>
       {/if}
       {#if $message.isStarred}
-        <span title={$t`Flagged`}><FlagIcon size={14} class="flag" /></span>
+        <span title={$t`Flagged *=> State of the email that has been flagged for follow-up`}><FlagIcon size={14} class="flag" /></span>
       {/if}
     </hbox>
     {#if folderName && previewLines == 0}

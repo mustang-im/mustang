@@ -1,5 +1,5 @@
 {#if $subAccounts.hasItems || account.mayHaveSubAccounts}
-  <OptionsSection title={$t`Sub-Accounts`}>
+  <OptionsSection title={$t`Sub-Accounts *=> Calendars, address books and other accounts that are part of this account`}>
     <OptionsRow icon={SubAccountsIcon}>
       {#if $subAccounts.hasItems}
         <vbox class="accounts">
@@ -20,7 +20,7 @@
         <vbox class="accounts">
           {#each $newAccounts.each as subAccount}
             <hbox class="account">
-              <DialogButton label={$t`Add`} icon={PlusIcon} onClick={() => onAddAccount(subAccount)} />
+              <DialogButton label={$t`Add *=> Add this sub-account`} icon={PlusIcon} onClick={() => onAddAccount(subAccount)} />
               <span class="name">{subAccount.name}</span>
               <span class="type">{getAccountMainTypeLabel(subAccount)}</span>
               <hbox class="color" style:background-color={account.color} />

@@ -350,7 +350,7 @@
     let items = [];
     if (results) {
       items.push({ label: searching
-        ? $t`Searching…`
+        ? $t`Searching… *=> The search is running`
         : results.length > kSearchLimit && !isShowingAllResults
           ? $t`More than ${kSearchLimit} results`
           : $t`Results: ${results.length}`, busy: searching });
@@ -376,8 +376,8 @@
   $: statusViews = viewButtons($folderPane.value == FolderPaneMode.Minimized && !!$ribbonCollapsed.value);
   function viewButtons(isReading: boolean): StatusBarView[] {
     return [
-      { label: $t`Normal`, icon: NormalViewIcon, isActive: !isReading, onClick: () => setReadingView(false) },
-      { label: $t`Reading`, icon: ReadingViewIcon, isActive: isReading, onClick: () => setReadingView(true) },
+      { label: $t`Normal *=> View with the folder pane and the ribbon`, icon: NormalViewIcon, isActive: !isReading, onClick: () => setReadingView(false) },
+      { label: $t`Reading *=> View with minimized folder pane and ribbon, for reading`, icon: ReadingViewIcon, isActive: isReading, onClick: () => setReadingView(true) },
     ];
   }
   function setReadingView(isReading: boolean) {
@@ -400,11 +400,11 @@
     }
     if (offline.length) {
       items.push({
-        label: states.length == 1 ? $t`Disconnected` : $t`Disconnected: ${offline.map(account => account.name).join(", ")}`,
+        label: states.length == 1 ? $t`Disconnected *=> Status: the account is not logged in` : $t`Disconnected: ${offline.map(account => account.name).join(", ")}`,
         icon: DisconnectedIcon,
       });
     } else if (states.length && !failed.length) {
-      items.push({ label: $t`Connected`, icon: ConnectedIcon });
+      items.push({ label: $t`Connected *=> Status: the account is logged in`, icon: ConnectedIcon });
     }
     return items;
   }

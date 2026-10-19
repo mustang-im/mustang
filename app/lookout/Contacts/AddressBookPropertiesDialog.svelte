@@ -1,23 +1,23 @@
 <Dialog title={$t`${addressbook.name} Properties`}
-  okLabel={$t`OK`}
+  okLabel={$t`OK *=> Confirm and close the dialog`}
   okDisabled={isWritable && !name.trim() && $t`Enter a name for the address book`}
   onOK={onOK}
   width="480px"
   on:close>
   <vbox class="properties">
-    <DialogTabs tabs={[ { id: "general", label: $t`General` } ]} selected="general" />
+    <DialogTabs tabs={[ { id: "general", label: $t`General *=> Tab with the general settings of the folder` } ]} selected="general" />
     <hbox class="name-row">
       <span class="folder-icon"><AddressbookIcon size="24" /></span>
-      <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name`}
+      <input type="text" class="lo-text-field name" bind:value={name} aria-label={$t`Name *=> Name of the calendar or address book`}
         disabled={!isWritable} />
     </hbox>
     <hbox class="divider" />
     <div class="facts">
-      <span class="label">{$t`Type`}</span>
-      <span>{isWritable ? $t`Folder containing Contact Items` : $t`Directory`}</span>
-      <span class="label">{$t`Location`}</span>
+      <span class="label">{$t`Type *=> Type of the folder`}</span>
+      <span>{isWritable ? $t`Folder containing Contact Items` : $t`Directory *=> Address book on the server with all people of the organization`}</span>
+      <span class="label">{$t`Location *=> Where the calendar or address book is stored`}</span>
       <span>{addressbook.mainAccount?.name ?? addressbook.name}</span>
-      <span class="label">{$t`Items`}</span>
+      <span class="label">{$t`Items *=> Number of contacts in the address book`}</span>
       <span>{$contacts.length}</span>
     </div>
   </vbox>

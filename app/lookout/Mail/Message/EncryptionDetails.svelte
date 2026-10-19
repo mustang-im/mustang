@@ -1,8 +1,8 @@
 {#if isExpanded}
-  <Dialog title={$t`Message Security Properties`} cancelLabel={$t`Close`} width="560px" on:close={() => { isExpanded = false; }}>
+  <Dialog title={$t`Message Security Properties`} cancelLabel={$t`Close *=> Close the dialog`} width="560px" on:close={() => { isExpanded = false; }}>
     <vbox class="security">
       <FormGrid columns="max-content minmax(0, 1fr)">
-        <span class="lo-form-label">{$t`Subject`}</span>
+        <span class="lo-form-label">{$t`Subject *=> Subject of the email`}</span>
         <span class="value">{$message.subject ?? ""}</span>
       </FormGrid>
       <span>{$t`Messages may contain encryption and digital signature layers. Each digital signature layer may contain multiple signatures.`}</span>
@@ -13,7 +13,7 @@
           <span>{item.label}</span>
         </hbox>
       </ListView>
-      <span class="caption">{$t`Description`}</span>
+      <span class="caption">{$t`Description *=> Description of the selected choice`}</span>
       <div class="description">
         <div class="description-title">{title}</div>
         <div>{msg}</div>
@@ -21,11 +21,11 @@
       {#if signingKey && !mySigningKey}
         <GroupBox label={$t`Signing key`}>
           <FormGrid columns="max-content minmax(0, 1fr)">
-            <span class="lo-form-label">{$t`Signer`}</span>
+            <span class="lo-form-label">{$t`Signer *=> Person who signed the email`}</span>
             <span class="value">{$signingKey.name ?? fromName}</span>
-            <span class="lo-form-label">{$t`System`}</span>
+            <span class="lo-form-label">{$t`System *=> Encryption system of the key, e.g. PGP or S/MIME`}</span>
             <span class="value">{signingKey.system}</span>
-            <span class="lo-form-label">{$t`Fingerprint`}</span>
+            <span class="lo-form-label">{$t`Fingerprint *=> Unique identifier of the encryption key`}</span>
             <span class="value fingerprint">{signingKey.fingerprintDisplay}</span>
             <span class="lo-form-label">{$t`Valid from`}</span>
             <span class="value">{signingKey.created ? getDateString(signingKey.created) : "–"}</span>
@@ -84,7 +84,7 @@
   $: title = isSigned && isEncrypted
       ? $t`End-to-end encrypted and signed`
       : isSigned
-        ? $t`Signed`
+        ? $t`Signed *=> The email has a digital signature, but is not encrypted`
         : $t`End-to-end-encrypted, but not signed`;
   $: fromName = $message.from?.findPerson()?.name ?? $message.from?.nameOrEMail;
   $: msg = mySigningKey

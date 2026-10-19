@@ -1,11 +1,11 @@
-<Dialog title={$t`Other Settings`} okLabel={$t`OK`} onOK={save} width="580px" on:close
+<Dialog title={$t`Other Settings`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={save} width="580px" on:close
   okDisabled={useCompactLayout && !isValidChars && $t`Enter 10 to 999 characters`}>
   <vbox class="other-settings">
     <GroupBox label={$t`Column Headings and Rows`}>
       <hbox class="compact-row">
         <Checkbox label={$t`Use compact layout in widths smaller than`} bind:checked={useCompactLayout} />
-        <SpinBox label={$t`Characters`} bind:value={compactLayoutChars} min={10} max={999} width="72px" disabled={!useCompactLayout} />
-        <span class:disabled={!useCompactLayout}>{$t`characters`}</span>
+        <SpinBox label={$t`Characters *=> Number of characters`} bind:value={compactLayoutChars} min={10} max={999} width="72px" disabled={!useCompactLayout} />
+        <span class:disabled={!useCompactLayout}>{$t`characters *=> as in: Use compact layout in widths smaller than 80 characters`}</span>
       </hbox>
       <Checkbox label={$t`Use tighter spacing`} bind:checked={tighterSpacing} />
     </GroupBox>
@@ -21,9 +21,9 @@
     </GroupBox>
     <GroupBox label={$t`Reading Pane`}>
       <hbox class="radios">
-        <Radio label={$t`Right`} bind:group={readingPane} value="right" />
-        <Radio label={$t`Bottom`} bind:group={readingPane} value="bottom" />
-        <Radio label={$t`Off`} bind:group={readingPane} value="off" />
+        <Radio label={$t`Right *=> Reading pane on the right side`} bind:group={readingPane} value="right" />
+        <Radio label={$t`Bottom *=> Reading pane at the bottom`} bind:group={readingPane} value="bottom" />
+        <Radio label={$t`Off *=> The pane is hidden`} bind:group={readingPane} value="off" />
       </hbox>
     </GroupBox>
   </vbox>
@@ -53,7 +53,7 @@
   let readingPane = readingPanePosition;
 
   const previewOptions = [
-    { lines: 0, label: $t`Off` },
+    { lines: 0, label: $t`Off *=> No preview text in the message list` },
     { lines: 1, label: $t`1 Line` },
     { lines: 2, label: $t`2 Lines` },
     { lines: 3, label: $t`3 Lines` },

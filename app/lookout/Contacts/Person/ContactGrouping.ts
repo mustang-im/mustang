@@ -43,7 +43,7 @@ export class ContactGrouping {
     return keys.map(key => {
       let contacts = byValue.get(key);
       let value = contactColumnValue(column, contacts[0]).trim();
-      let label = gt`${columnLabel}: ${value || gt`(none)`}`;
+      let label = gt`${columnLabel}: ${value || gt`(none) *=> Group for the contacts that have no value in this column`}`;
       return new ContactGroupHeader(key, label, contacts, collapsedIDs.has(key));
     });
   }

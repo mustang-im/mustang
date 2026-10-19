@@ -1,22 +1,22 @@
-<Dialog title={$t`Certificate Properties`} okLabel={$t`OK`} onOK={onOK} width="520px" on:close>
+<Dialog title={$t`Certificate Properties`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="520px" on:close>
   <vbox class="certificate">
     <FormGrid columns="150px minmax(0, 1fr)">
-      <span>{$t`Name`}</span>
-      <TextField bind:value={name} label={$t`Name`} placeholder={key.defaultName} />
-      <span>{$t`Issued to`}</span>
+      <span>{$t`Name *=> Name of the certificate`}</span>
+      <TextField bind:value={name} label={$t`Name *=> Name of the certificate`} placeholder={key.defaultName} />
+      <span>{$t`Issued to *=> Owner of the Digital ID`}</span>
       <span class="value">{key.userIDs.contents.join(", ") || "-"}</span>
-      <span>{$t`Issued by`}</span>
+      <span>{$t`Issued by *=> Certificate authority that certified the Digital ID`}</span>
       <span class="value">{key.caName || $t`Not certified by a certification authority`}</span>
-      <span>{$t`Valid from`}</span>
+      <span>{$t`Valid from *=> Date from which the Digital ID is valid`}</span>
       <span class="value">{key.created ? getDateString(key.created) : "-"}</span>
-      <span>{$t`Valid to`}</span>
+      <span>{$t`Valid to *=> Date until which the Digital ID is valid`}</span>
       <span class="value">{key.expires ? getDateString(key.expires) : $t`No end date`}</span>
-      <span>{$t`Type`}</span>
+      <span>{$t`Type *=> Kind of Digital ID: OpenPGP key or S/MIME certificate`}</span>
       <span class="value">{[key.system, key.cipher, key.keyLengthInBits ? $t`${key.keyLengthInBits} bits` : null].filter(Boolean).join(", ")}</span>
-      <span>{$t`Verification code`}</span>
+      <span>{$t`Verification code *=> Fingerprint of the Digital ID`}</span>
       <span class="value code">{key.fingerprintDisplay}</span>
     </FormGrid>
-    <GroupBox label={$t`Trust`}>
+    <GroupBox label={$t`Trust *=> How much you trust this certificate`}>
       <vbox class="trust">
         <Radio label={$t`I have personally checked the verification code with ${personName}`}
           name="certificate-trust" value={TrustLevel.Personal} bind:group={trustLevel} />
@@ -24,7 +24,7 @@
           <Radio label={$t`${key.caName} claims that this is correct *=> A company claims this`}
             name="certificate-trust" value={TrustLevel.ThirdParty} bind:group={trustLevel} />
         {:else}
-          <Radio label={$t`Not checked`}
+          <Radio label={$t`Not checked *=> Trust level: the certificate has not been verified`}
             name="certificate-trust" value={TrustLevel.Sender} bind:group={trustLevel} />
         {/if}
         <Radio label={$t`This certificate is bad`}

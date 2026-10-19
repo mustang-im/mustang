@@ -1,10 +1,10 @@
-<Dialog title={$t`Open Other User's Folder`} okLabel={$t`OK`} onOK={onOK} width="460px" bind:this={dialog}
+<Dialog title={$t`Open Other User's Folder`} okLabel={$t`OK *=> Confirm and close the dialog`} onOK={onOK} width="460px" bind:this={dialog}
   okDisabled={!$recipients.hasItems && $t`Enter the name of your colleague first`}
   on:close>
   <FormGrid columns="max-content minmax(0, 1fr)">
-    <DialogButton label={$t`Name…`} onClick={() => { isPicking = true; }} />
+    <DialogButton label={$t`Name… *=> Choose the colleague from the address book`} onClick={() => { isPicking = true; }} />
     <hbox class="name-field">
-      <MailAutocomplete addresses={recipients} label={$t`Name`} />
+      <MailAutocomplete addresses={recipients} label={$t`Name *=> Name of the person`} />
     </hbox>
     <span class="lo-form-label">{$t`Folder type`}</span>
     <ComboBox label={$t`Folder type`} options={typeOptions} bind:value={type} width="100%" />
@@ -21,7 +21,7 @@
   {/if}
 </Dialog>
 {#if isPicking}
-  <SelectNamesDialog title={$t`Select Name`} persons={picked} label={$t`Name`} single
+  <SelectNamesDialog title={$t`Select Name`} persons={picked} label={$t`Name *=> Name of the person`} single
     on:ok={onPicked} on:close={() => { isPicking = false; }} />
 {/if}
 
@@ -107,11 +107,11 @@
   function typeLabel(type: SharedFolderType): string {
     switch (type) {
       case SharedFolderType.Calendar:
-        return $t`Calendar`;
+        return $t`Calendar *=> Type of shared folder: calendar`;
       case SharedFolderType.Contacts:
-        return $t`Contacts`;
+        return $t`Contacts *=> Type of shared folder: address book`;
       default:
-        return $t`Inbox`;
+        return $t`Inbox *=> Folder for incoming emails`;
     }
   }
 
