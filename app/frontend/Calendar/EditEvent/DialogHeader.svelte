@@ -101,10 +101,11 @@
                 iconSize="16px"
                 />
 
-              {#if canSaveSingle}
+              {#if canSaveSingle || isRecurrenceChanged}
                 <MenuItem
                   label={$t`Change only this instance`}
                   onClick={onSaveException}
+                  disabled={isRecurrenceChanged && $t`You changed the recurrence pattern`}
                   classes="font-normal" />
               {/if}
               {#if $event.seriesStatus == "middle"}
@@ -168,6 +169,7 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+  export let isRecurrenceChanged = false;
 
   let newCalendar = event.calendar; // Don't listen to $event #730
   $: hasMinimalProps = event && $event.title && $event.startTime && $event.endTime &&
