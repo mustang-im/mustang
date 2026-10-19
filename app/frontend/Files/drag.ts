@@ -5,7 +5,6 @@ import { assert } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
-import mailsIconURL from "/icon/mails.png?url";
 
 export function onDragStartFile(event: DragEvent, file: File) {
   selectedFile.set(file);
@@ -17,7 +16,7 @@ export function onDragStartFile(event: DragEvent, file: File) {
   }
   event.dataTransfer.effectAllowed = "copyMove";
   let icon = new Image();
-  icon.src = mailsIconURL; // TODO Loads too late
+  icon.src = "icon/mails.png"; // TODO Loads too late
   event.dataTransfer.setDragImage(icon, 8, 8);
 }
 
