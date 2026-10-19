@@ -15,7 +15,7 @@ import { getComputerOn } from './util/backend-wrapper';
 import JPCWebSocket from '../../lib/jpc-ws';
 import { production, webMail } from './build';
 import { retryOnTransientError } from './util/netUtil';
-import { catchErrors, logError, showError } from '../frontend/Util/error';
+import { catchErrors, logErrorToServer, showError } from './util/error';
 import { assert, sleep } from './util/util';
 
 // Set before anything reads it. Not in `app.ts` to break import cycle.
@@ -156,7 +156,7 @@ function errorWithAccountName(account: Account, errorCallback: (ex: Error) => vo
 function backgroundErrorInAccount(ex: Error, account: Account) {
   account.errors.add(ex);
   addAccountName(ex, account);
-  logError(ex);
+  logErrorToServer(ex);
 }
 
 /** The account name is shown to the user, but must not end up in `ex.message`:
