@@ -2,7 +2,11 @@
   {#await filterPersons()}
     <hbox class="progress">{$t`Searching...`}</hbox>
   {:then}
-  <PersonsList {persons} bind:selected={$selectedPerson} />
+  <PersonsList {persons} bind:selected={$selectedPerson}>
+    <hbox class="email" slot="second-row" let:person>
+      {person instanceof Person ? person.emailAddresses.sortBy(entry => entry.preference).first?.value ?? "" : ""}
+    </hbox>
+  </PersonsList>
   {:catch ex}
     <ErrorMessageInline {ex} />
   {/await}
@@ -119,6 +123,9 @@
 <style>
   .persons-file-pane {
     margin-block-start: 8px;
+  }
+  .email {
+    display: var(--persons-pane-email-display, none);
   }
   .progress {
     align-self: center;
