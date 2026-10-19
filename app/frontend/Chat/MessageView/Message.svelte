@@ -294,8 +294,8 @@
     justify-content: end;
     overflow: hidden;
     text-overflow: ellipsis;
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     padding: 0px 4px;
     border: 2px solid transparent;
     border-radius: 20px;

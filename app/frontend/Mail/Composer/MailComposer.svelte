@@ -479,8 +479,8 @@
   }
   .sml-add-dialog {
     padding: 16px 24px;
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     z-index: 1000;
   }
 </style>

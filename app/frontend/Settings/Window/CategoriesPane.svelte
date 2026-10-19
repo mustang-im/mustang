@@ -20,7 +20,7 @@
 <style>
   .settings-categories-pane {
     background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    color: var(--leftbar-fg);
     box-shadow: var(--left-pane-shadow, 1px 0px 3px 0px rgba(22, 12, 39, 20%)); /* #160C27 */
     margin: var(--pane-margin);
     padding-block-start: 24px;

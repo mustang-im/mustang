@@ -52,8 +52,8 @@
   .accounts-pane {
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%); /* Also on MessageList */
     z-index: 2;
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
   }
 
   .accounts-pane :global(.account-list) {

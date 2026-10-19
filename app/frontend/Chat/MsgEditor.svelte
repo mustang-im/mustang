@@ -139,8 +139,8 @@
 
 <style>
   .msg-editor {
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     padding: 4px 4px 10px 10px;
   }
   .emojis {

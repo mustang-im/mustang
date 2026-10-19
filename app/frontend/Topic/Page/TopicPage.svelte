@@ -212,8 +212,8 @@
     position: relative;
   }
   .toolbar {
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     padding-block-end: 2px;
     justify-content: end;
   }

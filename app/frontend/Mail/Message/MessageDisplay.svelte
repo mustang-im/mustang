@@ -38,15 +38,15 @@
 
 <style>
   .message-with-thread {
-    background-color: var(--left-pane-bg);
+    background-color: var(--leftbar-bg);
   }
   /* On mobile, the thread bar lies across the top of the message */
   .message-with-thread.mobile {
     flex-direction: column;
   }
   .message-display {
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     min-width: 0;
   }
   .body {

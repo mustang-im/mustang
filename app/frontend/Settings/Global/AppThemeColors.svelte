@@ -41,7 +41,7 @@
   const cssVars = {
     "bg": $t`Background`,
     "main-bg": $t`Center`,
-    "left-pane-bg": $t`Left bar`,
+    "leftbar-bg": $t`Left bar`,
     "appbar-bg": $t`App bar`,
     "selected-bg": $t`Selection`,
   };

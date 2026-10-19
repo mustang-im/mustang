@@ -56,7 +56,7 @@
   }
   .categories {
     background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    color: var(--leftbar-fg);
     padding-block: 24px;
     padding-block-start: 40px;
     box-shadow: var(--left-pane-shadow, 3px 1px 8px 0px rgba(22, 12, 39, 8%)); /* #160C27 */

@@ -40,8 +40,8 @@
 
 <style>
   .attachment {
-    background-color: var(--left-pane-bg);
-    color: var(--left-pane-fg);
+    background-color: var(--leftbar-bg);
+    color: var(--leftbar-fg);
     box-shadow: -1px 0px 5px 0.5px rgb(0, 0, 0, 10%);
     border-radius: 5px;
     margin: 4px 6px 4px 12px;
