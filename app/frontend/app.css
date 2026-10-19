@@ -66,6 +66,8 @@
   --button-filled-border: var(--button-border);
   --button-filled-hover-bg: var(--hover-bg);
   --button-filled-hover-fg: var(--hover-fg);
+  --search-field-radius: 100px;
+  --search-field-bg: field;
   --chat-bubble-incoming-bg: #fdfefe;
   --chat-bubble-incoming-fg: inherit;
   --chat-bubble-outgoing-bg: #CDECE1;

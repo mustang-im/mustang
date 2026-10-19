@@ -294,4 +294,6 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   --button-filled-border: var(--lo-accent);
   --button-filled-hover-bg: var(--lo-accent-hover);
   --button-filled-hover-fg: var(--lo-accent-fg);
+  --search-field-radius: var(--lo-radius-small);
+  --search-field-bg: var(--lo-input-bg);
 }
