@@ -18,9 +18,9 @@
       }
     </style>
   </defs>
-  <line class="cls-2" x1="45.81" y1="72.05" x2="82.24" y2="93.28"/>
-  <line class="cls-2" x1="82.19" y1="34.72" x2="45.81" y2="55.95"/>
-  <circle class="cls-1" cx="96" cy="26.67" r="16"/>
-  <circle class="cls-1" cx="32" cy="64" r="16"/>
-  <circle class="cls-1" cx="96" cy="101.33" r="16"/>
+  <line class="cls-1" x1="45.81" y1="72.05" x2="82.24" y2="93.28"/>
+  <line class="cls-1" x1="82.19" y1="34.72" x2="45.81" y2="55.95"/>
+  <circle class="cls-2" cx="96" cy="26.67" r="16"/>
+  <circle class="cls-2" cx="32" cy="64" r="16"/>
+  <circle class="cls-2" cx="96" cy="101.33" r="16"/>
 </svg>
