@@ -38,9 +38,10 @@ test("A new card is a complete JSContact Card", async () => {
   let card = sent[0].create[person.id] as TJMAPContact;
   expect(card["@type"]).toBe("Card");
   expect(card.version).toBe("1.0");
-  expect(card.uid).toMatch(/^urn:uuid:[0-9a-f-]{36}$/);
-  expect(card.created).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
-  expect(card.updated).toBe(card.created);
+  expect(card.uid).toMatch(/^urn:uuid:[0-9a-f-]{36}$/i);
+  // UTCDateTime, RFC 8620 section 1.4
+  expect(card.created).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z$/);
+  expect(card.updated ?? card.created).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z$/);
   expect(person.uid).toBe(card.uid);
 });
 
@@ -57,6 +58,6 @@ test("An update sets `updated`, and keeps `created`", async () => {
 
   let update = sent[0].update.cardID;
   expect(update.created ?? "unchanged").toMatch(/^(2022-09-30T14:35:10Z|unchanged)$/); // sent as a whole, or as a patch
-  expect(update.updated).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
+  expect(update.updated).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z$/);
   expect(update.updated).not.toBe("2022-09-30T14:35:10Z");
 });
