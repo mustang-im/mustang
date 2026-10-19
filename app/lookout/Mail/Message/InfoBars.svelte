@@ -23,16 +23,17 @@
     <ForwardedIcon size={16} />
     <span>{$t`You forwarded this message.`}</span>
   </hbox>
-{:else if $message.isReplied && reply}
+<!-- {:else if $message.isReplied && reply}
   <button type="button" class="info-bar clickable" title={$t`Open your reply`}
     on:click={() => catchErrors(() => openEMailMessage(reply))}>
     <RepliedIcon size={16} />
     <span>{reply.sent
       ? $t`You replied to this message on ${getFullDateString(reply.sent)}.`
       : $t`You replied to this message.`}</span>
-  </button>
+  </button> -->
 {:else if $message.isReplied}
-  <hbox class="info-bar" title={isSearching ? null : $t`Your reply was not found in your folders`}>
+  <!-- <hbox class="info-bar" title={isSearching ? null : $t`Your reply was not found in your folders`}> -->
+  <hbox class="info-bar">
     <RepliedIcon size={16} />
     <span>{$t`You replied to this message.`}</span>
   </hbox>
@@ -62,8 +63,8 @@
   import { DisplayMode } from "../../../frontend/Mail/Message/MessageBody.svelte";
   import { MessageActions } from "../MessageActions";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
-  import { getFullDateString } from "../3pane/MessageDates";
-  import { openEMailMessage } from "../../../frontend/Mail/open";
+  // import { getFullDateString } from "../3pane/MessageDates";
+  // import { openEMailMessage } from "../../../frontend/Mail/open";
   import { appName } from "../../../logic/build";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -75,7 +76,7 @@
   import ForwardedIcon from "lucide-svelte/icons/forward";
   import PicturesIcon from "lucide-svelte/icons/image-off";
   import PlainTextIcon from "lucide-svelte/icons/file-text";
-  import { catchErrors, minorError } from "../../../frontend/Util/error";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
 
@@ -87,29 +88,27 @@
   $: isDraft = $message && (message.isDraft || message.folder?.specialFolder == SpecialFolder.Drafts);
   $: isJunk = $message && MessageActions.isJunk([message]);
 
-  // <copied from="../../../frontend/Mail/Message/RepliedInfo.svelte">
-  let reply: EMail | null = null;
-  let isSearching = false;
-  $: isReplied = $message.isReplied;
-  $: catchErrors(() => findReply(message, isReplied), minorError);
-  async function findReply(original: EMail, isReplied: boolean) {
-    reply = null;
-    if (!isReplied) {
-      return;
-    }
-    isSearching = true;
-    try {
-      let found = await original.findMyReply();
-      if (original == message) {
-        reply = found;
-      }
-    } finally {
-      if (original == message) {
-        isSearching = false;
-      }
-    }
-  }
-  // </copied>
+  // let reply: EMail | null = null;
+  // let isSearching = false;
+  // $: isReplied = $message.isReplied;
+  // $: catchErrors(() => findReply(message, isReplied), minorError);
+  // async function findReply(original: EMail, isReplied: boolean) {
+  //   reply = null;
+  //   if (!isReplied) {
+  //     return;
+  //   }
+  //   isSearching = true;
+  //   try {
+  //     let found = await original.findMyReply();
+  //     if (original == message) {
+  //       reply = found;
+  //     }
+  //   } finally {
+  //     if (original == message) {
+  //       isSearching = false;
+  //     }
+  //   }
+  // }
 
   function hasExternalContent(html: string | null | undefined): boolean {
     if (!html) {
