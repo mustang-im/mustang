@@ -9,29 +9,44 @@ import { expect, test } from "vitest";
 
 appGlobal.remoteApp ??= { kyCreate: () => null } as any;
 
-/** Responses as Stalwart returns them
+/** A server with one email, answering like Stalwart
  * @param mailboxIDsOnServer what the server has for the email, or null if the email is gone */
 function newAccount(mailboxIDsOnServer: Record<string, boolean> | null) {
   let account = new JMAPAccount();
   account.accountID = "e";
   account.session = { capabilities: {}, accounts: {}, primaryAccounts: {} } as any as TJMAPSession;
-  let calls: [string, Record<string, any>, string?][] = [];
-  account.makeCalls = async (requests: [string, Record<string, any>, string?][]) => {
-    calls.push(...requests);
-    return requests.map(call => [call[0], call[0] == "Email/get"
-      ? {
+  let server = { mailboxIds: mailboxIDsOnServer ? { ...mailboxIDsOnServer } : null };
+  account.makeCalls = async (requests: [string, Record<string, any>, string?][]) => requests.map(([method, args, callID]) => {
+    let result: Record<string, any>;
+    if (method == "Email/get") {
+      result = {
         accountId: "e", state: "spi",
-        list: mailboxIDsOnServer ? [{ mailboxIds: mailboxIDsOnServer, id: "eaaaaab" }] : [],
-        notFound: mailboxIDsOnServer ? [] : ["eaaaaab"],
+        list: server.mailboxIds ? [{ mailboxIds: server.mailboxIds, id: "eaaaaab" }] : [],
+        notFound: server.mailboxIds ? [] : ["eaaaaab"],
+      };
+    } else if (!server.mailboxIds) {
+      let notFound = { eaaaaab: { type: "notFound" } };
+      result = { accountId: "e", oldState: "spi", newState: "spi", ...(args.destroy ? { notDestroyed: notFound } : { notUpdated: notFound }) };
+    } else if (args.destroy) {
+      server.mailboxIds = null;
+      result = { accountId: "e", oldState: "spi", newState: "spm", destroyed: ["eaaaaab"] };
+    } else {
+      for (let [path, value] of Object.entries(args.update.eaaaaab as Record<string, any>)) {
+        if (path == "mailboxIds") {
+          server.mailboxIds = { ...value };
+        } else if (path.startsWith("mailboxIds/") && value) {
+          server.mailboxIds[path.substring(11)] = true;
+        } else if (path.startsWith("mailboxIds/")) {
+          delete server.mailboxIds[path.substring(11)];
+        }
       }
-      : call[1].destroy
-        ? { accountId: "e", oldState: "spi", newState: "spm", destroyed: ["eaaaaab"] }
-        : { accountId: "e", oldState: "spi", newState: "spm", updated: { eaaaaab: null } },
-    call[2] ?? "c1"] as TJMAPMethodResponse);
-  };
+      result = { accountId: "e", oldState: "spi", newState: "spm", updated: { eaaaaab: null } };
+    }
+    return [method, result, callID ?? "c1"] as TJMAPMethodResponse;
+  });
   let inbox = newFolder(account, "a", SpecialFolder.Inbox);
   let trash = newFolder(account, "d", SpecialFolder.Trash);
-  return { account, calls, inbox, trash };
+  return { account, server, inbox, trash };
 }
 
 function newFolder(account: JMAPAccount, id: string, specialFolder: SpecialFolder): JMAPFolder {
@@ -48,38 +63,34 @@ function newEMail(folder: JMAPFolder): JMAPEMail {
   return email;
 }
 
-function emailSet(calls: [string, Record<string, any>, string?][]) {
-  return calls.filter(call => call[0] == "Email/set").map(call => call[1]);
-}
-
 test("Deleting an email from Trash keeps it in its other folder", async () => {
-  let { calls, trash } = newAccount({ a: true, d: true });
+  let { server, trash } = newAccount({ a: true, d: true });
 
   await newEMail(trash).deleteMessageOnServer();
 
-  expect(emailSet(calls)).toEqual([{ accountId: "e", update: { eaaaaab: { "mailboxIds/d": null } } }]);
+  expect(server.mailboxIds).toEqual({ a: true });
 });
 
 test("Deleting an email from Trash destroys it when it is in no other folder", async () => {
-  let { calls, trash } = newAccount({ d: true });
+  let { server, trash } = newAccount({ d: true });
 
   await newEMail(trash).deleteMessageOnServer();
 
-  expect(emailSet(calls)).toEqual([{ accountId: "e", destroy: ["eaaaaab"] }]);
+  expect(server.mailboxIds).toBeNull();
 });
 
 test("Deleting immediately keeps the email in its other folder", async () => {
-  let { calls, inbox } = newAccount({ a: true, x: true });
+  let { server, inbox } = newAccount({ a: true, x: true });
 
   await newEMail(inbox).deleteMessageOnServer(DeleteStrategy.DeleteImmediately);
 
-  expect(emailSet(calls)).toEqual([{ accountId: "e", update: { eaaaaab: { "mailboxIds/a": null } } }]);
+  expect(server.mailboxIds).toEqual({ x: true });
 });
 
 test("Deleting an email that is already gone on the server succeeds", async () => {
-  let { calls, trash } = newAccount(null);
+  let { server, trash } = newAccount(null);
 
   await newEMail(trash).deleteMessageOnServer();
 
-  expect(emailSet(calls)).toEqual([]);
+  expect(server.mailboxIds).toBeNull();
 });
