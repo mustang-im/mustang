@@ -1,40 +1,29 @@
 import type { Addressbook } from "../../logic/Contacts/Addressbook";
-import { ContactsActions } from "./ContactsActions";
-import { GlobalKeyboard } from "../MainWindow/GlobalKeyboard";
-import { Keyboard } from "../Util/Keyboard";
+import { createNewPerson } from "./person";
+import { focusSearch } from "../MainWindow/GlobalKeyboard";
+import { isTextField } from "../Util/util";
 
-export enum ContactsKeyAction {
-  NewContact = "new-contact",
-  Search = "search",
-}
+// <https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values>
 
-export class ContactsKeyboard {
-  static onKey(event: KeyboardEvent, addressbook: Addressbook | null) {
-    if (event.defaultPrevented || Keyboard.isTextField(event.target)) {
-      return;
-    }
-    let action = ContactsKeyboard.actionFor(event);
-    if (!action) {
-      return;
-    }
-    Keyboard.consume(event);
-    if (action == ContactsKeyAction.NewContact) {
-      ContactsActions.newPerson(addressbook);
-    } else if (action == ContactsKeyAction.Search) {
-      GlobalKeyboard.focusSearch();
-    }
+/** Keys of the contacts app
+ * @param addressbook The address book that the contacts list shows */
+export function onKeyOnContacts(event: KeyboardEvent, addressbook: Addressbook | null) {
+  if (event.defaultPrevented || isTextField(event.target)) {
+    return;
   }
-
-  static actionFor(event: KeyboardEvent): ContactsKeyAction | null {
-    if (!Keyboard.isCtrl(event) || event.altKey || event.shiftKey) {
-      return null;
-    }
+  // Ctrl+ (or Cmd+)
+  if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey) {
     let key = event.key.toLowerCase();
-    if (key == "n") {
-      return ContactsKeyAction.NewContact;
-    } else if (key == "e") {
-      return ContactsKeyAction.Search;
+    if (key == "n") { // Outlook
+      event.preventDefault();
+      event.stopPropagation();
+      createNewPerson(addressbook);
+      return;
+    } else if (key == "e") { // Outlook
+      event.preventDefault();
+      event.stopPropagation();
+      focusSearch();
+      return;
     }
-    return null;
   }
 }

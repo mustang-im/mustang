@@ -1,5 +1,3 @@
-<svelte:window on:keydown={(event) => catchErrors(() => CalendarKeyboard.onKey(event))} />
-
 <vbox flex class="calendar-app">
   <hbox flex>
     {#if $isCalendarListOpen}
@@ -34,6 +32,8 @@
   {/if}
 </vbox>
 
+<svelte:window on:keydown={(event) => catchErrors(() => onKeyOnCalendar(event))} />
+
 <script lang="ts">
   import { isCalendarListOpen, selectedCalendar, selectedEvent, shownCalendarEvents, startDate, type DateInterval } from "./selected";
   import { appGlobal } from "../../logic/app";
@@ -44,7 +44,7 @@
   import TitleBarRight from "./TitleBarRight.svelte";
   import ShowEvent from "./DisplayEvent/ShowEvent.svelte";
   import Splitter from "../Shared/Splitter.svelte";
-  import { CalendarKeyboard } from "./CalendarKeyboard";
+  import { onKeyOnCalendar } from "./CalendarKeyboard";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { catchErrors } from "../Util/error";
 

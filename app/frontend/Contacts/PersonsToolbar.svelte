@@ -37,7 +37,7 @@
 <script lang="ts">
   import type { Person } from "../../logic/Abstract/Person";
   import { newPerson, selectedPerson } from "./Person/Selected";
-  import { ContactsActions } from "./ContactsActions";
+  import { createNewPerson } from "./person";
   import type { Addressbook } from "../../logic/Contacts/Addressbook";
   import { appGlobal } from "../../logic/app";
   import PersonLine from "./Person/PersonLine.svelte";
@@ -59,7 +59,7 @@
   let pictureSize = appGlobal.isMobile ? 32 : 20;
 
   function addPerson() {
-    ContactsActions.newPerson(selectedAddressbook);
+    createNewPerson(selectedAddressbook);
   }
 
   async function sync() {

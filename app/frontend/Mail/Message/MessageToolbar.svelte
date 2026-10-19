@@ -122,7 +122,7 @@
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
   import { appGlobal } from "../../../logic/app";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   export let message: EMail;
 
@@ -168,15 +168,21 @@
   }
 
   onMount(() => {
-    let onMoveRequest = () => popupOpen = true;
-    let onPrintRequest = () => catchErrors(() => printE.print());
-    window.addEventListener("mail-move-popup", onMoveRequest);
-    window.addEventListener("mail-print", onPrintRequest);
-    return () => {
-      window.removeEventListener("mail-move-popup", onMoveRequest);
-      window.removeEventListener("mail-print", onPrintRequest);
-    };
+    window.addEventListener("mail-move-popup", onMoveKey);
+    window.addEventListener("mail-print", onPrintKey);
   });
+  onDestroy(() => {
+    window.removeEventListener("mail-move-popup", onMoveKey);
+    window.removeEventListener("mail-print", onPrintKey);
+  });
+
+  function onMoveKey() {
+    popupOpen = true;
+  }
+
+  function onPrintKey() {
+    catchErrors(() => printE.print());
+  }
 </script>
 
 <style>

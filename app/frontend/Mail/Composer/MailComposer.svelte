@@ -196,8 +196,7 @@
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
   import { minorError, catchErrors, showUserError } from "../../Util/error";
-  import { ComposerKeyboard, ComposerKeyAction } from "./ComposerKeyboard";
-  import { Keyboard } from "../../Util/Keyboard";
+  import { getOSName } from "../../Util/util";
   import CloseButton from "./CloseButton.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
@@ -376,19 +375,37 @@
   }
 
   async function onKey(event: KeyboardEvent) {
-    let action = ComposerKeyboard.actionFor(event);
-    if (!action) {
-      return;
-    }
-    Keyboard.consume(event);
-    if (action == ComposerKeyAction.Send) {
-      if (sendDisabledTooltip) {
-        throw new UserError(sendDisabledTooltip);
+    let isCtrl = event.ctrlKey || event.metaKey;
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (event.key == "Enter") { // Outlook
+        event.preventDefault();
+        event.stopPropagation();
+        await onSendKey();
+        return;
+      } else if (event.key.toLowerCase() == "s") { // Outlook
+        event.preventDefault();
+        event.stopPropagation();
+        await mail.compose.saveAsDraft();
+        return;
       }
-      await onSend();
-    } else if (action == ComposerKeyAction.SaveDraft) {
-      await mail.compose.saveAsDraft();
     }
+    // Alt+ (Option+ types characters on macOS)
+    if (event.altKey && !isCtrl && !event.shiftKey && getOSName() != "macintosh") {
+      if (event.code == "KeyS") { // Outlook
+        event.preventDefault();
+        event.stopPropagation();
+        await onSendKey();
+        return;
+      }
+    }
+  }
+
+  async function onSendKey() {
+    if (sendDisabledTooltip) {
+      throw new UserError(sendDisabledTooltip);
+    }
+    await onSend();
   }
 
   let closing = false;

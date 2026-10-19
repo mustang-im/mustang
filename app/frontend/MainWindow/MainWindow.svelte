@@ -8,7 +8,7 @@
   on:visibilitychange={() => catchErrors(saveWindowSettings)}
   on:beforeunload={() => catchErrors(saveWindowSettings)}
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))}
-  on:keydown={(event) => catchErrors(() => GlobalKeyboard.onKey(event))} />
+  on:keydown={(event) => catchErrors(() => onKeyOnWindow(event))} />
 
 <vbox flex class="main-window"
   dir={rtl}
@@ -63,7 +63,7 @@
   import { getStartObjects, loginOnStartup } from "../../logic/WebMail/startup";
   // #endif
   import { notifications } from "../../logic/util/Notification";
-  import { GlobalKeyboard } from "./GlobalKeyboard";
+  import { onKeyOnWindow } from "./GlobalKeyboard";
   import { selectedAccount } from "../Mail/Selected";
   import { getLocalStorage } from "../Util/LocalStorage";
   import { loadMustangApps, disableAppsBasedOnFeaturesXML } from "../AppsBar/loadMustangApps";
