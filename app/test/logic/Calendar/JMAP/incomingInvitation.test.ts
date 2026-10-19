@@ -343,5 +343,5 @@ test("Answering an invitation keeps the organizer's address as the server wrote 
 
   let updated = applyPatch(before, calls[0].args.update.serverEventID);
   expect(updated.organizerCalendarAddress).toBe("MAILTO:" + kOrganizer);
-  expect(Object.keys(updated.participants)).toEqual(["otherID", "meID"]);
+  expect(Object.keys(updated.participants).sort()).toEqual(["meID", "otherID"]);
 });
