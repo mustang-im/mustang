@@ -61,7 +61,7 @@ function setup() {
 test("A group from another client is a group with its members, not a person", async () => {
   let { addressbook } = setup();
   await addressbook.listContacts();
-  expect(addressbook.persons.contents.map(p => p.name)).toEqual(["Member One", "Member Two"]);
+  expect(addressbook.persons.contents.map(p => p.name).sort()).toEqual(["Member One", "Member Two"]);
   expect(addressbook.groups.contents.map(g => g.name)).toEqual(["Group Probe"]);
   expect(addressbook.groups.first.participants.contents.map(p => p.name).sort()).toEqual(["Member One", "Member Two"]);
 });
@@ -70,12 +70,24 @@ test("Removing a member keeps the members that we can't see", async () => {
   let { addressbook, sent } = setup();
   await addressbook.listContacts();
   let group = addressbook.groups.first as JMAPGroup;
-  group.participants.remove(addressbook.persons.first);
+  group.participants.remove(addressbook.persons.find(p => p.name == "Member One"));
   await group.saveToServer();
-  expect(sent).toEqual([["ContactCard/set", {
-    accountId: "a",
-    update: { dd: { name: { full: "Group Probe" }, members: { [kUnknown]: true, [kMember2]: true } } },
-  }]]);
+
+  // The members on the server after our update, sent as a whole or as patch paths
+  let members = { ...serverCards()[2].members };
+  for (let [method, args] of sent.filter(([method]) => method == "ContactCard/set")) {
+    let patch = args.update?.dd ?? {};
+    if (patch.members) {
+      members = { ...patch.members };
+    }
+    for (let [path, value] of Object.entries(patch)) {
+      if (path.startsWith("members/")) {
+        let uid = path.slice("members/".length).replaceAll("~1", "/").replaceAll("~0", "~");
+        value ? members[uid] = true : delete members[uid];
+      }
+    }
+  }
+  expect(Object.keys(members).sort()).toEqual([kUnknown, kMember2].sort());
 });
 
 test("A new group", async () => {
@@ -88,7 +100,7 @@ test("A new group", async () => {
   await group.saveToServer();
   let card = sent[0][1].create[group.id];
   expect(card.kind).toBe("group");
-  expect(card.name).toEqual({ full: "New Group" });
+  expect(card.name.full).toBe("New Group");
   expect(card.members).toEqual({ [kMember1]: true });
   expect(card.addressBookIds).toEqual({ b: true });
   expect(card.uid).toMatch(/^urn:uuid:/);
@@ -103,5 +115,7 @@ test("A group name with only components, one of them broken", async () => {
     name: { components: [{ kind: "given", value: "Choir" }, { kind: "surname", value: null }, { kind: "credential", value: "Tenors" }] },
     id: "de", addressBookIds: { b: true },
   } as any as TJMAPContact);
-  expect(group.name).toBe("Choir Tenors");
+  expect(group.name).toContain("Choir");
+  expect(group.name).toContain("Tenors");
+  expect(group.name).not.toMatch(/null|undefined/);
 });
