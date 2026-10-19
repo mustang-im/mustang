@@ -230,6 +230,7 @@ export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStar
     if (this.weekdays) {
       return this.weekdays;
     }
+    // A weekly rule without explicit weekdays recurs on the series start weekday.
     return this.frequency == Frequency.Weekly ? [this.seriesStartTime.getUTCDay()] : kAllWeekdays;
   }
 
