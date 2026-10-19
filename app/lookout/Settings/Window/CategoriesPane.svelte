@@ -57,6 +57,7 @@
     font-weight: 600;
   }
   .settings-categories-pane :global(.entry.selected::before) {
+    /* <copied to="../../app.css"> */
     content: "";
     position: absolute;
     inset-inline-start: 0;
@@ -65,6 +66,7 @@
     width: 3px;
     border-radius: 2px;
     background-color: var(--lo-accent);
+    /* </copied> */
   }
   .settings-categories-pane :global(.entry svg) {
     flex-shrink: 0;

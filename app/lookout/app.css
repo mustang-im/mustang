@@ -251,3 +251,21 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
 .lookout-window .checkbox > .state-icon-wrapper {
   color: var(--lo-accent-fg);
 }
+
+.lookout-window .app-store .category {
+  position: relative;
+  margin-inline: 4px;
+  border-radius: var(--lo-radius-small);
+}
+.lookout-window .app-store .category.selected::before {
+  /* <copied from="Settings/Window/CategoriesPane.svelte"> */
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background-color: var(--lo-accent);
+  /* </copied> */
+}
