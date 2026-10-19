@@ -338,7 +338,9 @@
     if (selectedItems.isEmpty) {
       let newItem = items.includes(wantedItem)
         ? wantedItem
-        : isSameList ? items.getIndex(lastSelectedIndex) ?? items.first : null;
+        : isSameList
+          ? items.getIndex(lastSelectedIndex) ?? items.first
+          : null;
       if (!newItem) {
         return;
       }
