@@ -6,8 +6,8 @@
         <span class="label">{$t`Start`}</span>
         <TimeInput time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
           on:change={ev => setStartTime(ev.detail)} />
-        <span class="label">{$t`End`}</span>
-        <TimeInput time={endTime} options={endOptions} label={$t`End`} disabled={allDay}
+        <span class="label">{$t`End *=> End time of the event`}</span>
+        <TimeInput time={endTime} options={endOptions} label={$t`End *=> End time of the event`} disabled={allDay}
           on:change={ev => setEndTime(ev.detail)} />
         <span class="label">{$t`Duration`}</span>
         <ComboBox options={durationOptions} value={durationMinutes} label={$t`Duration`} width="132px"
@@ -26,7 +26,7 @@
           {#if pattern.frequency == Frequency.Daily}
             <hbox class="line">
               <Radio label={$t`Every`} name="daily" value="interval" bind:group={pattern.dailyMode} />
-              <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval`}
+              <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval *=> Number of days, weeks, months or years between the repetitions`}
                 on:change={() => { pattern.dailyMode = "interval"; }} />
               {$plural(pattern.interval, { one: "day", other: "days" })}
             </hbox>
@@ -36,9 +36,9 @@
             </hbox>
           {:else if pattern.frequency == Frequency.Weekly}
             <hbox class="line">
-              {$t`Recur every`}
-              <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval`} />
-              {$plural(pattern.interval, { one: "week", other: "weeks" })} {$t`on`}
+              {$t`Recur every *=> as in: Recur every 2 weeks`}
+              <SpinBox bind:value={pattern.interval} min={1} max={999} width="64px" label={$t`Interval *=> Number of days, weeks, months or years between the repetitions`} />
+              {$plural(pattern.interval, { one: "week", other: "weeks" })} {$t`on *=> as in: Every week, on Thursday`}
             </hbox>
             <grid class="weekdays">
               {#each kAllWeekdays as weekday}
@@ -52,7 +52,7 @@
             <hbox class="line">
               <Radio label={$t`Day ${rangeStart.getDate()} of every *=> as in: Day 15 of every 2 months`}
                 name="monthly" value="day" bind:group={pattern.monthlyMode} />
-              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`}
+              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval *=> Number of days, weeks, months or years between the repetitions`}
                 on:change={() => { pattern.monthlyMode = "day"; }} />
               {$plural(pattern.interval, { one: "month", other: "months" })}
             </hbox>
@@ -64,13 +64,13 @@
                 on:change={ev => setWeekMode(ev.detail)} />
               {weekdayName}
               {$t`of every *=> as in: The third Thursday of every 2 months`}
-              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`} />
+              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval *=> Number of days, weeks, months or years between the repetitions`} />
               {$plural(pattern.interval, { one: "month", other: "months" })}
             </hbox>
           {:else if pattern.frequency == Frequency.Yearly}
             <hbox class="line">
-              {$t`Recur every`}
-              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval`} />
+              {$t`Recur every *=> as in: Recur every 2 weeks`}
+              <SpinBox bind:value={pattern.interval} min={1} max={99} width="64px" label={$t`Interval *=> Number of days, weeks, months or years between the repetitions`} />
               {$plural(pattern.interval, { one: "year", other: "years" })}
             </hbox>
             <hbox class="line">
@@ -98,12 +98,12 @@
         </hbox>
         <vbox class="range-end">
           <hbox class="line">
-            <Radio label={$t`End by`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
+            <Radio label={$t`End by *=> as in: End by October 15`} name="end" value="date" bind:group={pattern.end} classes="end-label" />
             <DateField required date={pattern.endDate} label={$t`End of the series`}
               on:change={ev => { pattern.endDate = ev.detail; pattern.end = "date"; }} />
           </hbox>
           <hbox class="line">
-            <Radio label={$t`End after`} name="end" value="count" bind:group={pattern.end} classes="end-label" />
+            <Radio label={$t`End after *=> as in: End after 10 occurrences`} name="end" value="count" bind:group={pattern.end} classes="end-label" />
             <SpinBox bind:value={pattern.count} min={1} max={999} width="64px" label={$t`Number of occurrences`}
               on:change={() => { pattern.end = "count"; }} />
             {$plural(pattern.count, { one: "occurrence", other: "occurrences" })}
@@ -165,10 +165,10 @@
   let timesChanged = false;
 
   const frequencies = [
-    { value: Frequency.Daily, label: $t`Daily` },
-    { value: Frequency.Weekly, label: $t`Weekly` },
-    { value: Frequency.Monthly, label: $t`Monthly` },
-    { value: Frequency.Yearly, label: $t`Yearly` },
+    { value: Frequency.Daily, label: $t`Daily *=> Repeats every day` },
+    { value: Frequency.Weekly, label: $t`Weekly *=> Repeats every week` },
+    { value: Frequency.Monthly, label: $t`Monthly *=> Repeats every month` },
+    { value: Frequency.Yearly, label: $t`Yearly *=> Repeats every year` },
   ];
 
   $: endTime = new Date(startTime.getTime() + durationMinutes * 60000);

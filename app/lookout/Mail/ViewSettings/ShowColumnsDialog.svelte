@@ -20,8 +20,8 @@
         <span>{ColumnInfo.labelOf(item)}</span>
       </ListView>
       <hbox class="order-buttons">
-        <DialogButton label={$t`Move Up`} disabled={!canMove(-1, selectedShown, shown)} onClick={() => move(-1)} />
-        <DialogButton label={$t`Move Down`} disabled={!canMove(1, selectedShown, shown)} onClick={() => move(1)} />
+        <DialogButton label={$t`Move Up *=> Move the selected column up in the order`} disabled={!canMove(-1, selectedShown, shown)} onClick={() => move(-1)} />
+        <DialogButton label={$t`Move Down *=> Move the selected column down in the order`} disabled={!canMove(1, selectedShown, shown)} onClick={() => move(1)} />
       </hbox>
     </vbox>
   </hbox>

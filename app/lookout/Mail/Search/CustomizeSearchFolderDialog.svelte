@@ -6,7 +6,7 @@
     <span class="lo-form-label">{$t`Criteria`}</span>
     <hbox class="criteria">
       <span class="summary" title={summary}>{summary}</span>
-      <DialogButton label={$t`Criteria…`} onClick={() => { isEditingCriteria = true; }} />
+      <DialogButton label={$t`Criteria… *=> Change the search criteria`} onClick={() => { isEditingCriteria = true; }} />
     </hbox>
     <span class="lo-form-label">{$t`Search mail in`}</span>
     <ComboBox label={$t`Search mail in`} options={accountOptions} bind:value={account} width="100%" />
@@ -67,7 +67,7 @@
       parts.push($t`unread`);
     }
     if (search.isStarred) {
-      parts.push($t`flagged`);
+      parts.push($t`flagged *=> Search criteria summary: only flagged emails`);
     }
     if (search.hasAttachment) {
       parts.push($t`with attachments`);

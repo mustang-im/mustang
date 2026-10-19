@@ -1,35 +1,35 @@
 <RibbonTab label={$t`Message`} contextual={isInline} isSelected={isInline}>
-  <RibbonGroup label={$t`Clipboard`} icon={PasteIcon}>
-    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V`}
+  <RibbonGroup label={$t`Clipboard *=> Ribbon group with Cut, Copy and Paste`} icon={PasteIcon}>
+    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => pasteClipboard(editor)}>
       <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => pasteClipboard(editor)} />
       <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => pasteClipboardAsText(editor)} />
     </RibbonSplitButton>
-    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X`}
+    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => cutSelection(editor)} />
-    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C`}
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => copySelection(editor)} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Basic Text`} icon={BoldIcon}>
+  <RibbonGroup label={$t`Basic Text *=> Ribbon group with the basic text formatting`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
-      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B`}
+      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B *=> Keyboard shortcut`}
         selected={!!editor?.isActive("bold")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBold())} />
-      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I`}
+      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I *=> Keyboard shortcut`}
         selected={!!editor?.isActive("italic")} disabled={!editor}
         onClick={() => run(chain => chain.toggleItalic())} />
-      <RibbonToggleButton label={$t`Underline`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U`}
+      <RibbonToggleButton label={$t`Underline *=> Text formatting: underlined text`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U *=> Keyboard shortcut`}
         selected={!!editor?.isActive("underline")} disabled={!editor}
         onClick={() => run(chain => chain.toggleUnderline())} />
-      <RibbonToggleButton label={$t`Strikethrough`} icon={StrikethroughIcon}
+      <RibbonToggleButton label={$t`Strikethrough *=> Text formatting: crossed-out text`} icon={StrikethroughIcon}
         selected={!!editor?.isActive("strike")} disabled={!editor}
         onClick={() => run(chain => chain.toggleStrike())} />
     </RibbonButtonRow>
-    <RibbonButtonRow label={$t`Paragraph`}>
-      <RibbonToggleButton label={$t`Bullets`} icon={BulletsIcon}
+    <RibbonButtonRow label={$t`Paragraph *=> Buttons for paragraph formatting`}>
+      <RibbonToggleButton label={$t`Bullets *=> Format the paragraphs as a bulleted list`} icon={BulletsIcon}
         selected={!!editor?.isActive("bulletList")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBulletList())} />
-      <RibbonToggleButton label={$t`Numbering`} icon={NumberingIcon}
+      <RibbonToggleButton label={$t`Numbering *=> Format the paragraphs as a numbered list`} icon={NumberingIcon}
         selected={!!editor?.isActive("orderedList")} disabled={!editor}
         onClick={() => run(chain => chain.toggleOrderedList())} />
       <RibbonButton label={$t`Decrease Indent`} icon={OutdentIcon}
@@ -43,16 +43,16 @@
         onClick={() => run(chain => chain.clearNodes().unsetAllMarks())} />
     </RibbonButtonRow>
   </RibbonGroup>
-  <RibbonGroup label={$t`Names`}>
+  <RibbonGroup label={$t`Names *=> Ribbon group with commands for the recipient names`}>
     <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
       onClick={() => { $openSelectNames = { mail, field: RecipientField.To }; }} />
     <RibbonButton label={$t`Check Names`} icon={CheckNamesIcon}
       tooltip={$t`Check the names you typed in the To, Cc and Bcc boxes against your address books`}
       onClick={() => { $checkNamesOf = mail; }} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Include`} icon={AttachIcon}>
+  <RibbonGroup label={$t`Include *=> Ribbon group to add files, links and signatures to the email`} icon={AttachIcon}>
     <RibbonButton label={$t`Attach File`} icon={AttachIcon} size="small" onClick={onAddAttachment} />
-    <RibbonButton label={$t`Link`} icon={LinkIcon} size="small" shortCutInfo={$t`Ctrl+K`}
+    <RibbonButton label={$t`Link *=> Insert or edit a link in the text`} icon={LinkIcon} size="small" shortCutInfo={$t`Ctrl+K *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { $openEditorTool = { mail, tool: EditorTool.Link }; }} />
     <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon} size="small">
       <SignatureMenuItems {identity} {editor} on:editSignatures={() => { $openSignatures = mail; }} />
@@ -62,8 +62,8 @@
     <ShowFieldsGroup {mail} />
     <EncryptionButtons {mail} {identity} />
   {/if}
-  <RibbonGroup label={$t`Editor`}>
-    <RibbonToggleButton label={$t`Spelling`} icon={SpellingIcon}
+  <RibbonGroup label={$t`Editor *=> Ribbon group with settings of the text editor`}>
+    <RibbonToggleButton label={$t`Spelling *=> Check the spelling while typing`} icon={SpellingIcon}
       tooltip={$t`Check spelling while typing`}
       selected={$spellcheck.value}
       onClick={() => { $spellcheck.value = !$spellcheck.value; }} />

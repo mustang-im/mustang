@@ -10,7 +10,7 @@
       on:choose={() => dialog.submit()} />
   </vbox>
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`New…`} onClick={() => { isCreating = true; }}
+    <DialogButton label={$t`New… *=> Create a new folder`} onClick={() => { isCreating = true; }}
       tooltip={folder ? $t`Create a subfolder of ${folder.name}` : $t`Create a new folder`} />
   </svelte:fragment>
 </Dialog>

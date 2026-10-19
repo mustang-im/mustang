@@ -5,7 +5,7 @@
     <hbox class="empty">{emptyText}</hbox>
   {/each}
   {#if maxCount && $entries.length > maxCount}
-    <button class="more" on:click={() => dispatch("showall")}>{$t`Show all`}</button>
+    <button class="more" on:click={() => dispatch("showall")}>{$t`Show all *=> Show all entries of the contact history`}</button>
   {:else if !maxCount && $entries.length >= activities.limit}
     <button class="more" on:click={() => dispatch("showmore")}>{$t`Show more`}</button>
   {/if}

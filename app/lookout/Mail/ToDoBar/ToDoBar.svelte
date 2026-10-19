@@ -36,7 +36,7 @@
   {#if parts.includes(ToDoBarPart.People)}
     <vbox class="section people">
       <hbox class="section-header">
-        <span>{$t`People`}</span>
+        <span>{$t`People *=> or Persons - Short word, less than 10 characters`}</span>
         <hbox flex />
         <button type="button" class="close" title={$t`Remove from the To-Do Bar`} aria-label={$t`Remove from the To-Do Bar`}
           on:click={() => onClosePart(ToDoBarPart.People)}>
@@ -109,7 +109,7 @@
     if (diff == 0) {
       return $t`Today`;
     } else if (diff == 1) {
-      return $t`Tomorrow`;
+      return $t`Tomorrow *=> The day after today`;
     }
     return day.toLocaleDateString(getDateTimeLocale(), { weekday: "long", day: "numeric", month: "long" });
   }

@@ -154,7 +154,7 @@ export class CalendarActions {
   static async deleteSeries(event: Event) {
     // <copied to="EditEvent/EventEditFlow.ts">
     let isConfirmed = event.isOutgoingMeeting
-      ? await askYesNo(gt`Cancel Series`,
+      ? await askYesNo(gt`Cancel Series *=> Call off all occurrences of the recurring meeting`,
       gt`Do you want to cancel all occurrences of the meeting "${event.title ?? ""}" and send a cancellation to all attendees?`)
       : await askYesNo(gt`Delete Series`, event.isIncomingMeeting
       ? gt`Do you want to delete all occurrences of the recurring meeting "${event.title ?? ""}"?`

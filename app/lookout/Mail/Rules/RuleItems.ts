@@ -125,7 +125,7 @@ function conditionSpecs(): RuleItemSpec[] {
     {
       id: "from",
       phrase: value => gt`from ${value}`,
-      placeholder: gt`people or public group`,
+      placeholder: gt`people or public group *=> Placeholder link to choose a person, as in: from people or public group`,
       picker: RulePicker.Person,
       value: rule => {
         let person = rule.criteria.includesPerson;
@@ -145,7 +145,7 @@ function conditionSpecs(): RuleItemSpec[] {
     {
       id: "words",
       phrase: value => gt`with ${value} in the subject or body`,
-      placeholder: gt`specific words`,
+      placeholder: gt`specific words *=> Placeholder link to choose words, as in: with specific words in the subject or body`,
       picker: RulePicker.Words,
       value: rule => rule.criteria.bodyText ? `"${rule.criteria.bodyText}"` : null,
       isActive: rule => !!rule.criteria.bodyText,
@@ -154,7 +154,7 @@ function conditionSpecs(): RuleItemSpec[] {
     {
       id: "category",
       phrase: value => gt`assigned to ${value} category`,
-      placeholder: gt`category`,
+      placeholder: gt`category *=> Placeholder link to choose a category in a rule`,
       picker: RulePicker.Category,
       value: rule => tagNames(rule.criteria.tags),
       isActive: rule => rule.criteria.tags.hasItems,
@@ -179,7 +179,7 @@ function conditionSpecs(): RuleItemSpec[] {
     {
       id: "size",
       phrase: value => gt`with a size ${value}`,
-      placeholder: gt`in a specific range`,
+      placeholder: gt`in a specific range *=> Placeholder link to choose a size, as in: with a size in a specific range`,
       picker: RulePicker.Size,
       value: rule => sizeRangeText(rule.criteria.sizeMin, rule.criteria.sizeMax),
       isActive: rule => !!rule.criteria.sizeMin || !!rule.criteria.sizeMax,
@@ -191,7 +191,7 @@ function conditionSpecs(): RuleItemSpec[] {
     {
       id: "date",
       phrase: value => gt`received ${value}`,
-      placeholder: gt`in a specific date span`,
+      placeholder: gt`in a specific date span *=> Placeholder link to choose dates, as in: received in a specific date span`,
       picker: RulePicker.Date,
       value: rule => dateSpanText(rule.criteria.sentDateMin, rule.criteria.sentDateMax),
       isActive: rule => !!rule.criteria.sentDateMin || !!rule.criteria.sentDateMax,
@@ -203,9 +203,9 @@ function conditionSpecs(): RuleItemSpec[] {
     {
       id: "folder",
       phrase: value => gt`in the ${value} folder`,
-      placeholder: gt`specified`,
+      placeholder: gt`specified *=> Placeholder link to choose a folder, as in: move it to the specified folder`,
       picker: RulePicker.Folder,
-      value: rule => rule.criteria.folderID ? rule.criteria.folder?.name ?? gt`missing` : null,
+      value: rule => rule.criteria.folderID ? rule.criteria.folder?.name ?? gt`missing *=> The chosen folder no longer exists, as in: move it to the missing folder` : null,
       isActive: rule => !!rule.criteria.folderID,
       uncheck: rule => { rule.criteria.folder = null; },
     },
@@ -285,9 +285,9 @@ function actionSpecs(): RuleItemSpec[] {
     {
       id: "move",
       phrase: value => gt`move it to the ${value} folder`,
-      placeholder: gt`specified`,
+      placeholder: gt`specified *=> Placeholder link to choose a folder, as in: move it to the specified folder`,
       picker: RulePicker.Folder,
-      value: rule => rule.toFolderID ? rule.toFolder?.name ?? gt`missing` : null,
+      value: rule => rule.toFolderID ? rule.toFolder?.name ?? gt`missing *=> The chosen folder no longer exists, as in: move it to the missing folder` : null,
       isActive: rule => !!rule.toFolderID && !rule.copy && !isDeleted(rule),
       uncheck: rule => {
         if (!rule.copy) {
@@ -299,7 +299,7 @@ function actionSpecs(): RuleItemSpec[] {
     {
       id: "assign-category",
       phrase: value => gt`assign it to the ${value} category`,
-      placeholder: gt`category`,
+      placeholder: gt`category *=> Placeholder link to choose a category in a rule`,
       picker: RulePicker.Category,
       value: rule => tagNames(rule.addTags),
       isActive: rule => rule.addTags.hasItems,
@@ -324,9 +324,9 @@ function actionSpecs(): RuleItemSpec[] {
     {
       id: "copy",
       phrase: value => gt`move a copy to the ${value} folder`,
-      placeholder: gt`specified`,
+      placeholder: gt`specified *=> Placeholder link to choose a folder, as in: move it to the specified folder`,
       picker: RulePicker.Folder,
-      value: rule => rule.toFolderID && rule.copy ? rule.toFolder?.name ?? gt`missing` : null,
+      value: rule => rule.toFolderID && rule.copy ? rule.toFolder?.name ?? gt`missing *=> The chosen folder no longer exists, as in: move it to the missing folder` : null,
       isActive: rule => !!rule.toFolderID && !!rule.copy && !isDeleted(rule),
       uncheck: rule => {
         if (rule.copy) {

@@ -26,7 +26,7 @@
       <PersonCircle name={organizer.name || organizer.emailAddress} colorKey={organizer.emailAddress} size={24} />
       <vbox class="person-text">
         <span class="person-name">{organizer.name || organizer.emailAddress}</span>
-        <span class="secondary">{$t`Organizer`}</span>
+        <span class="secondary">{$t`Organizer *=> The person who invited to this meeting`}</span>
       </vbox>
     </hbox>
   {/if}

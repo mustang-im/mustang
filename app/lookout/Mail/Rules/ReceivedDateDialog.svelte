@@ -1,12 +1,12 @@
-<Dialog title={$t`Received`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="360px"
+<Dialog title={$t`Received *=> Date when the email was received`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="360px"
   okDisabled={(!hasAfter && !hasBefore && $t`Choose After, Before or both`) ||
     (hasAfter && !after && $t`Enter the date for After`) ||
     (hasBefore && !before && $t`Enter the date for Before`)}>
   <grid class="received">
-    <Checkbox label={$t`After`} bind:checked={hasAfter} />
-    <DateField label={$t`After`} bind:date={after} disabled={!hasAfter} on:change={() => { hasAfter = true; }} />
-    <Checkbox label={$t`Before`} bind:checked={hasBefore} />
-    <DateField label={$t`Before`} bind:date={before} disabled={!hasBefore} on:change={() => { hasBefore = true; }} />
+    <Checkbox label={$t`After *=> Received after this date`} bind:checked={hasAfter} />
+    <DateField label={$t`After *=> Received after this date`} bind:date={after} disabled={!hasAfter} on:change={() => { hasAfter = true; }} />
+    <Checkbox label={$t`Before *=> Received before this date`} bind:checked={hasBefore} />
+    <DateField label={$t`Before *=> Received before this date`} bind:date={before} disabled={!hasBefore} on:change={() => { hasBefore = true; }} />
   </grid>
 </Dialog>
 

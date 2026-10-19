@@ -1,9 +1,9 @@
 <ContextMenu bind:this={contextMenu}>
-  <MenuItem label={$t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N`}
+  <MenuItem label={$t`New Appointment`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
     onClick={() => CalendarActions.newEventAtSelection(null)} />
   <MenuItem label={$t`New All Day Event`} icon={AllDayIcon}
     onClick={() => CalendarActions.newEventAtSelection(null, "all-day")} />
-  <MenuItem label={$t`New Meeting Request`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q`}
+  <MenuItem label={$t`New Meeting Request`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
     onClick={() => CalendarActions.newEventAtSelection(null, "meeting")} />
   <MenuItem label={$t`New Recurring Appointment`} icon={RecurringIcon}
     onClick={() => CalendarActions.newEventAtSelection(null, "recurring")} />
@@ -13,11 +13,11 @@
   <MenuItem label={$t`Today`} icon={TodayIcon} onClick={goToToday} />
   <MenuItem label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={showNext7Days} />
   <MenuDivider />
-  <MenuItem label={$t`Day`} icon={DayIcon} shortCutInfo={$t`Ctrl+Alt+1`} onClick={() => setView("day")} />
-  <MenuItem label={$t`Work Week`} icon={WorkWeekIcon} shortCutInfo={$t`Ctrl+Alt+2`} onClick={() => setView("workweek")} />
-  <MenuItem label={$t`Week`} icon={WeekIcon} shortCutInfo={$t`Ctrl+Alt+3`} onClick={() => setView("week")} />
-  <MenuItem label={$t`Month`} icon={MonthIcon} shortCutInfo={$t`Ctrl+Alt+4`} onClick={() => setView("month")} />
-  <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo={$t`Ctrl+Alt+5`} onClick={() => setView("schedule")} />
+  <MenuItem label={$t`Day`} icon={DayIcon} shortCutInfo={$t`Ctrl+Alt+1 *=> Keyboard shortcut`} onClick={() => setView("day")} />
+  <MenuItem label={$t`Work Week *=> Calendar view that shows Monday to Friday`} icon={WorkWeekIcon} shortCutInfo={$t`Ctrl+Alt+2 *=> Keyboard shortcut`} onClick={() => setView("workweek")} />
+  <MenuItem label={$t`Week`} icon={WeekIcon} shortCutInfo={$t`Ctrl+Alt+3 *=> Keyboard shortcut`} onClick={() => setView("week")} />
+  <MenuItem label={$t`Month`} icon={MonthIcon} shortCutInfo={$t`Ctrl+Alt+4 *=> Keyboard shortcut`} onClick={() => setView("month")} />
+  <MenuItem label={$t`Schedule View`} icon={ScheduleIcon} shortCutInfo={$t`Ctrl+Alt+5 *=> Keyboard shortcut`} onClick={() => setView("schedule")} />
   <MenuItem label={$t`Day/Month`} icon={DualIcon} onClick={() => setView("dual")} />
   <MenuDivider />
   <MenuItem label={$t`View Settings…`} icon={ViewSettingsIcon} onClick={() => isViewSettingsOpen = true} />

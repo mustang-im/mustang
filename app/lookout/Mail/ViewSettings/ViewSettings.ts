@@ -65,18 +65,18 @@ export class ColumnInfo {
   }
 
   static readonly all: ColumnInfo[] = [
-    new ColumnInfo(Column.Importance, gt`Importance`, 24, true, ArrangeBy.Importance),
-    new ColumnInfo(Column.Icon, gt`Icon`, 24, true, null),
+    new ColumnInfo(Column.Importance, gt`Importance *=> Importance of the email`, 24, true, ArrangeBy.Importance),
+    new ColumnInfo(Column.Icon, gt`Icon *=> Column with an icon for the type and state of the email`, 24, true, null),
     new ColumnInfo(Column.Attachment, gt`Attachment`, 24, true, null),
     new ColumnInfo(Column.From, gt`From`, 160, false, ArrangeBy.From),
     new ColumnInfo(Column.To, gt`To`, 160, false, null),
     new ColumnInfo(Column.Subject, gt`Subject`, 0, false, ArrangeBy.Subject),
-    new ColumnInfo(Column.Received, gt`Received`, 132, false, ArrangeBy.Date),
+    new ColumnInfo(Column.Received, gt`Received *=> Date when the email was received`, 132, false, ArrangeBy.Date),
     new ColumnInfo(Column.Sent, gt`Sent`, 132, false, ArrangeBy.Date),
-    new ColumnInfo(Column.Size, gt`Size`, 72, false, ArrangeBy.Size),
-    new ColumnInfo(Column.Categories, gt`Categories`, 104, false, null),
+    new ColumnInfo(Column.Size, gt`Size *=> Size of the file`, 72, false, ArrangeBy.Size),
+    new ColumnInfo(Column.Categories, gt`Categories *=> Categories of the email`, 104, false, null),
     new ColumnInfo(Column.Flag, gt`Flag Status`, 28, true, ArrangeBy.Flag),
-    new ColumnInfo(Column.Folder, gt`In Folder`, 120, false, null),
+    new ColumnInfo(Column.Folder, gt`In Folder *=> Column with the folder that contains the item`, 120, false, null),
   ];
 
   static of(id: Column): ColumnInfo | null {
@@ -97,14 +97,14 @@ export function arrangeFields(): { id: ArrangeBy, label: string, button: string 
     { id: ArrangeBy.Date, label: gt`Date`, button: gt`By Date` },
     { id: ArrangeBy.From, label: gt`From`, button: gt`By From` },
     { id: ArrangeBy.Subject, label: gt`Subject`, button: gt`By Subject` },
-    { id: ArrangeBy.Size, label: gt`Size`, button: gt`By Size` },
-    { id: ArrangeBy.Importance, label: gt`Importance`, button: gt`By Importance` },
+    { id: ArrangeBy.Size, label: gt`Size *=> Size of the file`, button: gt`By Size` },
+    { id: ArrangeBy.Importance, label: gt`Importance *=> Importance of the email`, button: gt`By Importance` },
     { id: ArrangeBy.Flag, label: gt`Flag Status`, button: gt`By Flag Status` },
   ];
 }
 
 export function arrangeFieldLabel(field: ArrangeBy | null): string {
-  return arrangeFields().find(candidate => candidate.id == field)?.label ?? gt`None`;
+  return arrangeFields().find(candidate => candidate.id == field)?.label ?? gt`None *=> No field chosen for grouping or sorting`;
 }
 
 export const allFoldersView = getLocalStorage<Partial<ViewSettings>>("lookout.mail.view", {});
@@ -228,11 +228,11 @@ function differences(settings: ViewSettings, base: ViewSettings): Partial<ViewSe
 export function viewTypeLabel(type: ViewType): string {
   switch (type) {
     case ViewType.Single:
-      return gt`Single`;
+      return gt`Single *=> View with one line per email, in columns`;
     case ViewType.Preview:
       return gt`Preview`;
     default:
-      return gt`Compact`;
+      return gt`Compact *=> View with sender, subject and preview in a narrow list`;
   }
 }
 

@@ -51,8 +51,8 @@
 
   $: tabs = [
     { id: FolderPropertiesTab.General, label: $t`General` },
-    ...(permissions ? [{ id: FolderPropertiesTab.Permissions, label: $t`Permissions` }] : []),
-    { id: FolderPropertiesTab.Synchronization, label: $t`Synchronization` },
+    ...(permissions ? [{ id: FolderPropertiesTab.Permissions, label: $t`Permissions *=> Who can access this folder` }] : []),
+    { id: FolderPropertiesTab.Synchronization, label: $t`Synchronization *=> Tab with the sync status of the folder` },
   ];
   $: isChanged = isDirty(name, specialFolder, countMode, permissionsVersion);
 

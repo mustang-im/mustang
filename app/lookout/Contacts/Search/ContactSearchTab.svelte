@@ -1,5 +1,5 @@
 <RibbonTab label={$t`Search`} isSelected>
-  <RibbonGroup label={$t`Scope`}>
+  <RibbonGroup label={$t`Scope *=> Ribbon group to choose where to search`}>
     <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon}
       selected={$options.scope == ContactSearchScope.CurrentFolder}
       disabled={!hasSelectedAddressbook && $t`Select an address book first`}
@@ -10,7 +10,7 @@
       tooltip={$t`Search all address books and directories`}
       onClick={() => update({ scope: ContactSearchScope.AllContactItems })} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Refine`}>
+  <RibbonGroup label={$t`Refine *=> Ribbon group to narrow down the search results`}>
     <RibbonToggleButton label={$t`Has Phone Number`} icon={PhoneIcon}
       selected={$options.hasPhoneNumber}
       onClick={() => update({ hasPhoneNumber: !$options.hasPhoneNumber })} />
@@ -22,7 +22,7 @@
       onClick={() => update({ hasEMailAddress: !$options.hasEMailAddress })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
-    <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc`}
+    <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc *=> Escape key`}
       onClick={closeSearch} />
   </RibbonGroup>
 </RibbonTab>

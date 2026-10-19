@@ -1,5 +1,5 @@
 <RibbonTab label={$t`Search`} isSelected>
-  <RibbonGroup label={$t`Scope`}>
+  <RibbonGroup label={$t`Scope *=> Ribbon group to choose where to search`}>
     <RibbonToggleButton label={$t`Current Folder`} icon={CurrentFolderIcon}
       selected={$options.scope == CalendarSearchScope.CurrentFolder}
       disabled={!hasSelectedCalendar && $t`Select a calendar first`}
@@ -10,7 +10,7 @@
       tooltip={$t`Search all calendars`}
       onClick={() => update({ scope: CalendarSearchScope.AllCalendarItems })} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Refine`}>
+  <RibbonGroup label={$t`Refine *=> Ribbon group to narrow down the search results`}>
     <RibbonMenuButton label={organizerLabel} icon={OrganizerIcon}
       disabled={!organizers.length && !$options.organizerEMail && $t`None of the found items has an organizer`}>
       <MenuItem label={$t`Any Organizer`} icon={AnyOrganizerIcon} checked={!$options.organizerEMail}
@@ -25,12 +25,12 @@
     <RibbonToggleButton label={$t`Has Attachments`} icon={AttachmentIcon}
       selected={$options.hasAttachments}
       onClick={() => update({ hasAttachments: !$options.hasAttachments })} />
-    <RibbonToggleButton label={$t`Recurring`} icon={RecurringIcon}
+    <RibbonToggleButton label={$t`Recurring *=> Search only for recurring events`} icon={RecurringIcon}
       selected={$options.isRecurring}
       onClick={() => update({ isRecurring: !$options.isRecurring })} />
   </RibbonGroup>
   <RibbonGroup label={$t`Close`}>
-    <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc`}
+    <RibbonButton label={$t`Close Search`} icon={CloseIcon} shortCutInfo={$t`Esc *=> Escape key`}
       onClick={closeSearch} />
   </RibbonGroup>
 </RibbonTab>
@@ -62,7 +62,7 @@
   $: chosenOrganizer = organizers.find(organizer => organizer.emailAddress == $options.organizerEMail);
   $: organizerLabel = $options.organizerEMail
     ? chosenOrganizer?.name || $options.organizerEMail
-    : $t`Organizer`;
+    : $t`Organizer *=> The person who invited to this meeting`;
 
   function update(change: Partial<CalendarSearchOptions>) {
     $options = { ...$options, ...change };

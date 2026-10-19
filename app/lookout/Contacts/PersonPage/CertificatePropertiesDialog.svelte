@@ -3,20 +3,20 @@
     <FormGrid columns="150px minmax(0, 1fr)">
       <span>{$t`Name`}</span>
       <TextField bind:value={name} label={$t`Name`} placeholder={key.defaultName} />
-      <span>{$t`Issued to`}</span>
+      <span>{$t`Issued to *=> Owner of the Digital ID`}</span>
       <span class="value">{key.userIDs.contents.join(", ") || "-"}</span>
-      <span>{$t`Issued by`}</span>
+      <span>{$t`Issued by *=> Certificate authority that certified the Digital ID`}</span>
       <span class="value">{key.caName || $t`Not certified by a certification authority`}</span>
-      <span>{$t`Valid from`}</span>
+      <span>{$t`Valid from *=> Date from which the Digital ID is valid`}</span>
       <span class="value">{key.created ? getDateString(key.created) : "-"}</span>
-      <span>{$t`Valid to`}</span>
+      <span>{$t`Valid to *=> Date until which the Digital ID is valid`}</span>
       <span class="value">{key.expires ? getDateString(key.expires) : $t`No end date`}</span>
-      <span>{$t`Type`}</span>
+      <span>{$t`Type *=> Kind of Digital ID: OpenPGP key or S/MIME certificate`}</span>
       <span class="value">{[key.system, key.cipher, key.keyLengthInBits ? $t`${key.keyLengthInBits} bits` : null].filter(Boolean).join(", ")}</span>
       <span>{$t`Verification code`}</span>
       <span class="value code">{key.fingerprintDisplay}</span>
     </FormGrid>
-    <GroupBox label={$t`Trust`}>
+    <GroupBox label={$t`Trust *=> How much you trust this certificate`}>
       <vbox class="trust">
         <Radio label={$t`I have personally checked the verification code with ${personName}`}
           name="certificate-trust" value={TrustLevel.Personal} bind:group={trustLevel} />

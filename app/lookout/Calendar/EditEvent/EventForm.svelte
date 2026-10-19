@@ -12,7 +12,7 @@
         {#if isMeeting}
           <button class="field-button" on:click={() => $openSelectAttendees = event}
             title={$t`Select attendees from the address book`}>
-            {$t`Required`}
+            {$t`Required *=> Attendees who must attend the meeting`}
           </button>
           <hbox class="field attendees">
             <ParticipantsBox {event} {flow} autofocus={(!!event.title || isShown) && !flow.attendees.length} />

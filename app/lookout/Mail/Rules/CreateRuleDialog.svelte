@@ -1,7 +1,7 @@
 {#if wizardRule}
   <RulesWizard rule={wizardRule} on:finish={event => catchErrors(() => onWizardFinish(event.detail))} on:close={onClose} />
 {:else if createdRule}
-  <RuleMessageBox title={$t`Success`} message={$t`The rule "${createdRule.name}" has been created`}
+  <RuleMessageBox title={$t`Success *=> The rule has been created`} message={$t`The rule "${createdRule.name}" has been created`}
     on:answer={onClose} />
 {:else}
   <Dialog title={$t`Create Rule`} on:close={onClose} width="540px">

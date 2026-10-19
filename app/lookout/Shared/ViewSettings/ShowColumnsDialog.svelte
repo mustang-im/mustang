@@ -16,9 +16,9 @@
         </ListView>
       </vbox>
       <vbox class="middle">
-        <DialogButton label={$t`Add ->`} onClick={() => add(availableSelected)}
+        <DialogButton label={$t`Add -> *=> Add the selected column to the shown columns`} onClick={() => add(availableSelected)}
           disabled={!availableSelected && $t`Choose a column on the left`} />
-        <DialogButton label={$t`<- Remove`} onClick={remove}
+        <DialogButton label={$t`<- Remove *=> Remove the selected column from the shown columns`} onClick={remove}
           disabled={!order.canRemove(shownSelected) && (shownSelected == requiredColumn && requiredReason || $t`Choose a column on the right`)} />
       </vbox>
       <vbox class="list">
@@ -28,8 +28,8 @@
           <span>{labelOf(item)}</span>
         </ListView>
         <hbox class="order-buttons">
-          <DialogButton label={$t`Move Up`} onClick={() => move(-1)} disabled={!order.canMove(shownSelected, -1)} />
-          <DialogButton label={$t`Move Down`} onClick={() => move(1)} disabled={!order.canMove(shownSelected, 1)} />
+          <DialogButton label={$t`Move Up *=> Move the selected column up in the order`} onClick={() => move(-1)} disabled={!order.canMove(shownSelected, -1)} />
+          <DialogButton label={$t`Move Down *=> Move the selected column down in the order`} onClick={() => move(1)} disabled={!order.canMove(shownSelected, 1)} />
         </hbox>
       </vbox>
     </hbox>

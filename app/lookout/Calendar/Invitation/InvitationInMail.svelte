@@ -44,14 +44,14 @@
           onClick={onRemove} />
       </hbox>
     {:else if canRespond}
-      <hbox class="respond" role="group" aria-label={$t`Respond`}>
-        <ResponseButton label={$t`Accept`} icon={AcceptIcon} classes="accept"
+      <hbox class="respond" role="group" aria-label={$t`Respond *=> Buttons to answer the meeting invitation`}>
+        <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
           pressed={response == InvitationResponse.Accept}
           onClick={() => onRespond(InvitationResponse.Accept)} />
-        <ResponseButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative"
+        <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
           pressed={response == InvitationResponse.Tentative}
           onClick={() => onRespond(InvitationResponse.Tentative)} />
-        <ResponseButton label={$t`Decline`} icon={DeclineIcon} classes="decline"
+        <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
           pressed={response == InvitationResponse.Decline}
           onClick={() => onRespond(InvitationResponse.Decline)} />
       </hbox>

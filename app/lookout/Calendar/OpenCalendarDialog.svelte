@@ -14,7 +14,7 @@
       </hbox>
     {/if}
     <hbox class="field">
-      <DialogButton label={$t`Name…`} tooltip={$t`Choose the person from the address book`}
+      <DialogButton label={$t`Name… *=> Choose the colleague from the address book`} tooltip={$t`Choose the person from the address book`}
         onClick={onPick} />
       <hbox class="person-field">
         <MailAutocomplete addresses={persons} label={$t`Name`} />

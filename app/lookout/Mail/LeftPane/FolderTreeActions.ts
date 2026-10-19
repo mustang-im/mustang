@@ -128,7 +128,7 @@ export class FolderTreeActions {
   }
 
   static async deleteAll(folder: Folder) {
-    if (!await askYesNo(gt`Delete All`, gt`All items in ${FolderTreeActions.displayName(folder)} will be permanently deleted. Continue?`)) {
+    if (!await askYesNo(gt`Delete All *=> Delete all emails in the selected folder`, gt`All items in ${FolderTreeActions.displayName(folder)} will be permanently deleted. Continue?`)) {
       return;
     }
     // <copied from="../../../frontend/Mail/LeftPane/FolderMenu.svelte">

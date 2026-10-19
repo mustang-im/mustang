@@ -2,7 +2,7 @@
   <InfoBar {messages} />
   <grid class="fields">
     {#if organizer}
-      <span class="row-label">{$t`Organizer`}</span>
+      <span class="row-label">{$t`Organizer *=> The person who invited to this meeting`}</span>
       <hbox class="value organizer">
         <span class="name">{organizer.name || organizer.emailAddress}</span>
         {#if organizer.name && organizer.emailAddress}
@@ -10,11 +10,11 @@
         {/if}
       </hbox>
     {/if}
-    <span class="row-label">{$t`Required`}</span>
+    <span class="row-label">{$t`Required *=> Attendees who must attend the meeting`}</span>
     <hbox class="value attendees">
       <ParticipantsDisplay {event} />
     </hbox>
-    <span class="row-label">{$t`When`}</span>
+    <span class="row-label">{$t`When *=> Date and time of the meeting`}</span>
     <span class="value">{when}</span>
     {#if $event.location}
       <span class="row-label">{$t`Location`}</span>

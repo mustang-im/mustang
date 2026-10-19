@@ -1,5 +1,5 @@
 <Dialog title={$t`Find and Replace`} on:close={onClose} width="520px">
-  <DialogTabs tabs={[{ id: "find", label: $t`Find` }, { id: "replace", label: $t`Replace` }]}
+  <DialogTabs tabs={[{ id: "find", label: $t`Find *=> Find a word in the text` }, { id: "replace", label: $t`Replace *=> Replace a word in the text with another one` }]}
     bind:selected={tab} />
   <grid class="fields">
     <span>{$t`Find what`}</span>
@@ -13,15 +13,15 @@
   {#if showOptions}
     <vbox class="options">
       <hbox class="caption">{$t`Search Options`}</hbox>
-      <Checkbox label={$t`Match case`} bind:checked={matchCase} />
+      <Checkbox label={$t`Match case *=> Search option: only find text with the same upper and lower case`} bind:checked={matchCase} />
     </vbox>
   {/if}
   <hbox class="status" role="status">{status}</hbox>
   <svelte:fragment slot="footer">
-    <DialogButton label={showOptions ? $t`<< Less` : $t`More >>`} onClick={toggleOptions} />
+    <DialogButton label={showOptions ? $t`<< Less *=> Show fewer search options` : $t`More >> *=> Show more search options`} onClick={toggleOptions} />
     <hbox flex />
     {#if tab == "replace"}
-      <DialogButton label={$t`Replace`} disabled={!term} onClick={onReplace} />
+      <DialogButton label={$t`Replace *=> Replace the found text`} disabled={!term} onClick={onReplace} />
       <DialogButton label={$t`Replace All`} disabled={!term} onClick={onReplaceAll} />
     {/if}
     <DialogButton label={$t`Find Next`} primary disabled={!term} onClick={onFindNext} />

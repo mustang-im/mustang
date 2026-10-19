@@ -1,10 +1,10 @@
 <Dialog title={$t`Check Full Name`} okLabel={$t`OK`} onOK={onOK} width="420px" on:close>
   <GroupBox label={$t`Name details`}>
     <FormGrid>
-      <span>{$t`First`}</span>
-      <TextField bind:value={firstName} label={$t`First`} />
-      <span>{$t`Last`}</span>
-      <TextField bind:value={lastName} label={$t`Last`} />
+      <span>{$t`First *=> First name of the person`}</span>
+      <TextField bind:value={firstName} label={$t`First *=> First name of the person`} />
+      <span>{$t`Last *=> Last name of the person`}</span>
+      <TextField bind:value={lastName} label={$t`Last *=> Last name of the person`} />
     </FormGrid>
   </GroupBox>
 </Dialog>

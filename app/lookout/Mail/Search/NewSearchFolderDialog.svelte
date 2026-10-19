@@ -25,7 +25,7 @@
     <GroupBox label={$t`Customize Search Folder`}>
       <hbox class="customize">
         <span class="description" title={selected.description(values)}>{selected.description(values)}</span>
-        <DialogButton label={$t`Choose…`} disabled={!selected.canChoose && $t`This Search Folder needs no choice`}
+        <DialogButton label={$t`Choose… *=> Choose the value for the selected search folder template`} disabled={!selected.canChoose && $t`This Search Folder needs no choice`}
           onClick={choose} />
       </hbox>
     </GroupBox>

@@ -16,8 +16,8 @@
   let chosen = grouping;
 
   $: groupOptions = [
-    { value: EventTableGrouping.None, label: $t`(none)` },
-    { value: EventTableGrouping.Recurrence, label: $t`Recurrence` },
+    { value: EventTableGrouping.None, label: $t`(none) *=> No field for grouping` },
+    { value: EventTableGrouping.Recurrence, label: $t`Recurrence *=> Group the events by how often they repeat` },
   ];
 
   function save() {

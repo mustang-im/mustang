@@ -3,9 +3,9 @@
   <FormGrid>
     <span class="lo-form-label">{$t`Name`}</span>
     <TextField label={$t`Name`} bind:value={name} />
-    <span class="lo-form-label">{$t`Color`}</span>
+    <span class="lo-form-label">{$t`Color *=> Color of the category`}</span>
     <hbox>
-      <ComboBox label={$t`Color`} options={colorOptions} bind:value={color} width="180px" swatchColumns={5} />
+      <ComboBox label={$t`Color *=> Color of the category`} options={colorOptions} bind:value={color} width="180px" swatchColumns={5} />
     </hbox>
   </FormGrid>
 </Dialog>

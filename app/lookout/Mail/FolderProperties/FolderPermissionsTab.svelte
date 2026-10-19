@@ -4,7 +4,7 @@
   {/if}
   <ListView items={permissions.entries} bind:selected
     columns={[{ label: $t`Name` }, { label: $t`Permission Level`, width: "200px" }]}
-    label={$t`Permissions`} height="150px" let:item>
+    label={$t`Permissions *=> Who can access this folder`} height="150px" let:item>
     <span title={item.person.emailAddress}>{item.name}</span>
     <span title={item.level ? null : $t`The server doesn't tell the permission level of existing permissions`}>
       {item.level ? FolderPermissions.levelLabel(item.level) : "–"}
@@ -12,10 +12,10 @@
     <span slot="empty">{$t`You have not given anybody access yet`}</span>
   </ListView>
   <hbox class="list-buttons">
-    <DialogButton label={$t`Add…`} onClick={() => { isAdding = true; }} />
+    <DialogButton label={$t`Add… *=> Give another person access to this folder`} onClick={() => { isAdding = true; }} />
     <DialogButton label={$t`Remove`} disabled={!selected && $t`Select a person first`} onClick={onRemove} />
   </hbox>
-  <GroupBox label={$t`Permissions`} disabled={!selected}>
+  <GroupBox label={$t`Permissions *=> Rights of the selected person for this folder`} disabled={!selected}>
     <hbox class="level-row">
       <span>{$t`Permission Level`}</span>
       <ComboBox label={$t`Permission Level`} options={levelOptions} value={selected?.level ?? null}
@@ -24,13 +24,13 @@
         on:change={event => { permissions.setLevel(selected, event.detail); changed(); }} width="100%" />
     </hbox>
     <grid class="rights">
-      <GroupBox label={$t`Read`} disabled={!canEditRights}>
+      <GroupBox label={$t`Read *=> in the sense of to read emails`} disabled={!canEditRights}>
         {#each [Right.Read] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />
         {/each}
       </GroupBox>
-      <GroupBox label={$t`Write`} disabled={!canEditRights}>
+      <GroupBox label={$t`Write *=> Permissions to create and change items`} disabled={!canEditRights}>
         {#each [Right.Create, Right.CreateSubfolders, Right.FlagChange] as right}
           <Checkbox label={FolderPermissions.rightLabel(right)} checked={has(selected, right, version)}
             disabled={!canEditRights} on:change={event => setRight(right, event.detail)} />

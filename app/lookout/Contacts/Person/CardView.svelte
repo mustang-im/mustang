@@ -1,4 +1,4 @@
-<div class="address-cards" role="listbox" aria-label={$t`Cards`} aria-multiselectable="true">
+<div class="address-cards" role="listbox" aria-label={$t`Cards *=> List of contacts shown as address cards`} aria-multiselectable="true">
   {#each $shownContacts as contact (contact.id)}
     {@const person = contact instanceof Person ? contact : null}
     <!-- svelte-ignore a11y-click-events-have-key-events -->

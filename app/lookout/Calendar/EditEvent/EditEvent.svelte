@@ -6,7 +6,7 @@
   <vbox flex class="form-card lo-card">
     <hbox class="title-row">
       <h1>
-        <span class="title">{$event.title || $t`Untitled`}</span>
+        <span class="title">{$event.title || $t`Untitled *=> Placeholder for an event without a title`}</span>
         <span class="kind">– {kindLabel}</span>
       </h1>
       <hbox class="calendar-name lo-secondary" title={$t`Calendar`}>
@@ -51,7 +51,7 @@
     on:close={() => showSaveChanges = false} />
 {/if}
 {#if attendeesPicks}
-  <SelectNamesDialog title={$t`Select Attendees and Resources`} persons={attendeesPicks} label={$t`Required`}
+  <SelectNamesDialog title={$t`Select Attendees and Resources`} persons={attendeesPicks} label={$t`Required *=> Attendees who must attend the meeting`}
     on:ok={() => flow.setAttendees(attendeesPicks.contents)} on:close={() => $openSelectAttendees = null} />
 {/if}
 {#if $openSignatures == event}
@@ -103,7 +103,7 @@
   const flow = new EventEditFlow(event);
   const timeEditor = new EventTimeEditor(event);
   const schedulingLabel = $t`Scheduling Assistant`;
-  const trackingLabel = $t`Tracking`;
+  const trackingLabel = $t`Tracking *=> Ribbon tab with the responses of the attendees`;
 
   let editor: Editor = null;
   let openedTool: EditorTool | null = null;

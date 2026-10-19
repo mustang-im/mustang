@@ -24,7 +24,7 @@
   let choice: SeriesChoice = choices[0];
 
   const labels: Record<SeriesChoice, string> = {
-    occurrence: $t`Just this one`,
+    occurrence: $t`Just this one *=> Only this occurrence of the recurring event`,
     following: $t`This and all following occurrences`,
     series: $t`The entire series`,
   };

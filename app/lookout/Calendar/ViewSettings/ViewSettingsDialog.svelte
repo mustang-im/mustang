@@ -2,13 +2,13 @@
   okLabel={$t`OK`} onOK={save} width="600px" on:close>
   <GroupBox label={$t`Description`}>
     <div class="rows">
-      <DialogButton label={$t`Columns…`} classes="settings-button" onClick={() => { open = "columns"; }}
+      <DialogButton label={$t`Columns… *=> Choose the columns of the list`} classes="settings-button" onClick={() => { open = "columns"; }}
         disabled={!isTable && tableOnly} />
       <span class="summary" class:disabled={!isTable} title={columnsSummary}>{columnsSummary}</span>
       <DialogButton label={$t`Group By…`} classes="settings-button" onClick={() => { open = "group-by"; }}
         disabled={!isTable && tableOnly} />
       <span class="summary" class:disabled={!isTable}>{groupSummary}</span>
-      <DialogButton label={$t`Sort…`} classes="settings-button" onClick={() => { open = "sort"; }}
+      <DialogButton label={$t`Sort… *=> Choose how the items are sorted`} classes="settings-button" onClick={() => { open = "sort"; }}
         disabled={!isTable && tableOnly} />
       <span class="summary" class:disabled={!isTable}>{sortSummary}</span>
       <DialogButton label={$t`Other Settings…`} classes="settings-button" onClick={() => { open = "other"; }} />
@@ -66,7 +66,7 @@
   let open: "columns" | "group-by" | "sort" | "other" | null = null;
   $: tableOnly = $t`Available in the List and Active views`;
   $: columnsSummary = columns.map(column => EventTable.columnLabel(column)).join(", ");
-  $: groupSummary = grouping == EventTableGrouping.Recurrence ? $t`Recurrence (ascending)` : $t`None`;
+  $: groupSummary = grouping == EventTableGrouping.Recurrence ? $t`Recurrence (ascending)` : $t`None *=> No grouping of the items`;
   $: sortLabel = EventTable.columnLabel(sortColumn);
   $: sortSummary = sortAscending ? $t`${sortLabel} (ascending)` : $t`${sortLabel} (descending)`;
 

@@ -3,28 +3,28 @@
     <RibbonTab label={$t`Contact Group`}>
       <RibbonGroup label={$t`Actions`}>
         <RibbonButton label={$t`Save & Close`} icon={SaveCloseIcon}
-          onClick={saveAndClose} shortCutInfo={$t`Alt+S`} />
+          onClick={saveAndClose} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`} />
         <RibbonButton label={$t`Delete Group`} icon={DeleteIcon}
           onClick={deleteIt} />
       </RibbonGroup>
-      <RibbonGroup label={$t`Show`}>
-        <RibbonToggleButton label={$t`Members`} icon={MembersIcon}
+      <RibbonGroup label={$t`Show *=> Ribbon group to choose which page of the form is shown`}>
+        <RibbonToggleButton label={$t`Members *=> Page with the members of the contact group`} icon={MembersIcon}
           selected={page == "members"} onClick={() => { page = "members"; }} />
         <RibbonToggleButton label={$t`Notes`} icon={NotesIcon}
           selected={page == "notes"} onClick={() => { page = "notes"; }} />
       </RibbonGroup>
-      <RibbonGroup label={$t`Members`}>
+      <RibbonGroup label={$t`Members *=> Ribbon group with commands for the members of the contact group`}>
         <RibbonMenuButton label={$t`Add Members`} icon={AddMembersIcon}>
-          <MenuItem label={$t`From Contacts…`} icon={ContactsIcon} onClick={() => openSelectMembers()} />
-          <MenuItem label={$t`From Address Book…`} icon={AddressbookIcon} onClick={() => openSelectMembers()} />
+          <MenuItem label={$t`From Contacts… *=> Add members from your contacts`} icon={ContactsIcon} onClick={() => openSelectMembers()} />
+          <MenuItem label={$t`From Address Book… *=> Add members from the address book`} icon={AddressbookIcon} onClick={() => openSelectMembers()} />
           <MenuItem label={$t`New E-mail Contact…`} icon={NewContactIcon} onClick={() => { isNewContactOpen = true; }} />
         </RibbonMenuButton>
         <RibbonButton label={$t`Remove Member`} icon={RemoveIcon}
           disabled={!selectedMember && $t`Select a member first`}
           onClick={removeSelected} />
       </RibbonGroup>
-      <RibbonGroup label={$t`Communicate`}>
-        <RibbonButton label={$t`Email`} icon={MailIcon}
+      <RibbonGroup label={$t`Communicate *=> Ribbon group with commands to contact the person`}>
+        <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([group])}
           disabled={!hasEmailAddress && $t`Add members with an email address first`} />
         <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
@@ -34,7 +34,7 @@
     </RibbonTab>
   </Ribbon>
 
-  <FormCard title={$group.name || $t`Untitled`} kind={$t`Contact Group`}>
+  <FormCard title={$group.name || $t`Untitled *=> Placeholder for a contact or group without a name`} kind={$t`Contact Group`}>
     <vbox flex class="form-body">
       <hbox class="name-row">
         <label for="group-name">{$t`Name`}</label>
@@ -44,7 +44,7 @@
         <textarea class="lo-text-field notes" bind:value={group.description} aria-label={$t`Notes`} />
       {:else}
         <ListView items={sortedMembers} columns={memberColumns} bind:selected={selectedMember}
-          label={$t`Members`} height="auto" classes="members"
+          label={$t`Members *=> Members of the contact group`} height="auto" classes="members"
           on:open={event => catchErrors(() => ContactActions.edit(event.detail))} let:item>
           <hbox class="cell name">
             <PersonPicture person={item} size={20} />
@@ -59,7 +59,7 @@
 </vbox>
 
 {#if memberPicks}
-  <SelectNamesDialog title={$t`Select Members: Contacts`} persons={memberPicks} label={$t`Members`}
+  <SelectNamesDialog title={$t`Select Members: Contacts`} persons={memberPicks} label={$t`Members *=> Members of the contact group`}
     on:ok={onMembersPicked} on:close={() => { memberPicks = null; }} />
 {/if}
 {#if isNewContactOpen}
@@ -114,7 +114,7 @@
 
   $: members = group.participants;
   $: sortedMembers = [...$members.contents].sort(LetterIndex.compareByName);
-  $: memberColumns = [ { label: $t`Name`, width: "minmax(0, 1fr)" }, { label: $t`E-mail`, width: "minmax(0, 1fr)" } ];
+  $: memberColumns = [ { label: $t`Name`, width: "minmax(0, 1fr)" }, { label: $t`E-mail *=> Email address of the person`, width: "minmax(0, 1fr)" } ];
   $: hasEmailAddress = ContactActions.hasEmailAddress([$group]) && $members.hasItems;
 
   onMount(async () => {

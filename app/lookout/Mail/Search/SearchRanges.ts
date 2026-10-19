@@ -28,7 +28,7 @@ export function receivedRangeLabel(range: ReceivedRange): string {
   switch (range) {
     case ReceivedRange.Any: return gt`Any Time`;
     case ReceivedRange.Today: return gt`Today`;
-    case ReceivedRange.Yesterday: return gt`Yesterday`;
+    case ReceivedRange.Yesterday: return gt`Yesterday *=> The day before today`;
     case ReceivedRange.ThisWeek: return gt`This Week`;
     case ReceivedRange.LastWeek: return gt`Last Week`;
     case ReceivedRange.ThisMonth: return gt`This Month`;

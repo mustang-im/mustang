@@ -21,7 +21,7 @@
               <span class="realname lo-secondary">{identity.realname}</span>
             {/if}
             {#if !hasSignature(identity, edits)}
-              <span class="empty lo-secondary">{$t`(none)`}</span>
+              <span class="empty lo-secondary">{$t`(none) *=> This identity has no signature`}</span>
             {/if}
           </button>
         {/each}
@@ -38,12 +38,12 @@
           disabled={!editor} on:click={() => run(chain => chain.toggleItalic())}>
           <ItalicIcon size={16} />
         </button>
-        <button type="button" class="tool" class:pressed={isActive("underline")} title={$t`Underline`} aria-label={$t`Underline`}
+        <button type="button" class="tool" class:pressed={isActive("underline")} title={$t`Underline *=> Text formatting: underlined text`} aria-label={$t`Underline *=> Text formatting: underlined text`}
           disabled={!editor} on:click={() => run(chain => chain.toggleUnderline())}>
           <UnderlineIcon size={16} />
         </button>
         <hbox class="tool-separator" />
-        <button type="button" class="tool" class:pressed={isActive("link")} title={$t`Hyperlink`} aria-label={$t`Hyperlink`}
+        <button type="button" class="tool" class:pressed={isActive("link")} title={$t`Hyperlink *=> Insert or edit a link in the text`} aria-label={$t`Hyperlink *=> Insert or edit a link in the text`}
           disabled={!editor} on:click={() => showLinkDialog = true}>
           <LinkIcon size={16} />
         </button>

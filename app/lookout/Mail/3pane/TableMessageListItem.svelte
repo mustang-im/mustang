@@ -48,7 +48,7 @@
           <span class="text" title={recipients}>{recipients}</span>
         {:else if column == Column.Subject}
           {#if isDraft || hasInlineReply}
-            <span class="draft">{$t`[Draft]`}</span>
+            <span class="draft">{$t`[Draft] *=> Marks an email that has not been sent yet`}</span>
           {/if}
           <span class="text subject" title={$message.subject}>
             {#if $message.subject}
@@ -157,11 +157,11 @@
     : $message.isForwarded ? ForwardedIcon
     : $message.isReplied ? RepliedIcon
     : $message.isRead ? ReadIcon : UnreadIcon;
-  $: stateLabel = isDraft ? $t`Draft`
+  $: stateLabel = isDraft ? $t`Draft *=> State of the email that has not been sent yet`
     : $message.invitationMessage ? $t`Meeting request`
-    : $message.isForwarded ? $t`Forwarded`
-    : $message.isReplied ? $t`Replied`
-    : $message.isRead ? $t`Read` : $t`Unread`;
+    : $message.isForwarded ? $t`Forwarded *=> State of the email that has been forwarded`
+    : $message.isReplied ? $t`Replied *=> State of the email that has been replied to`
+    : $message.isRead ? $t`Read *=> State of the message that has been read` : $t`Unread *=> State of the message that has not been read`;
 
   // <copied to="../Vertical/VerticalMessageListItem.svelte">
   let contextMenu: ContextMenu;

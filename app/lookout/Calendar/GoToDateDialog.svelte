@@ -7,8 +7,8 @@
   <FormGrid>
     <span>{$t`Date`}</span>
     <DateField required bind:date={selectedDate} label={$t`Date`} width="100%" />
-    <span>{$t`Show in`}</span>
-    <ComboBox options={viewOptions} bind:value={view} label={$t`Show in`} />
+    <span>{$t`Show in *=> Calendar view in which the date is shown`}</span>
+    <ComboBox options={viewOptions} bind:value={view} label={$t`Show in *=> Calendar view in which the date is shown`} />
   </FormGrid>
 </Dialog>
 

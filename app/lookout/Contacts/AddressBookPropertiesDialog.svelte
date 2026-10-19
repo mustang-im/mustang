@@ -13,11 +13,11 @@
     </hbox>
     <hbox class="divider" />
     <div class="facts">
-      <span class="label">{$t`Type`}</span>
-      <span>{isWritable ? $t`Folder containing Contact Items` : $t`Directory`}</span>
-      <span class="label">{$t`Location`}</span>
+      <span class="label">{$t`Type *=> Type of the folder`}</span>
+      <span>{isWritable ? $t`Folder containing Contact Items` : $t`Directory *=> Address book on the server with all people of the organization`}</span>
+      <span class="label">{$t`Location *=> Where the calendar or address book is stored`}</span>
       <span>{addressbook.mainAccount?.name ?? addressbook.name}</span>
-      <span class="label">{$t`Items`}</span>
+      <span class="label">{$t`Items *=> Number of contacts in the address book`}</span>
       <span>{$contacts.length}</span>
     </div>
   </vbox>

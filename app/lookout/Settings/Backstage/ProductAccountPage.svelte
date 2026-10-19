@@ -17,10 +17,10 @@
       {:else}
         <span class="lo-secondary">{$t`No email account is set up yet`}</span>
       {/if}
-      <h2>{$t`License`}</h2>
+      <h2>{$t`License *=> Section about the license that you bought for the app`}</h2>
       <License />
-      <h2>{$t`${appName} Theme`}</h2>
-      <ComboBox options={themeOptions} bind:value={$theme.value} label={$t`${appName} Theme`} width="240px" />
+      <h2>{$t`${appName} Theme *=> Color scheme of the app`}</h2>
+      <ComboBox options={themeOptions} bind:value={$theme.value} label={$t`${appName} Theme *=> Color scheme of the app`} width="240px" />
     </vbox>
     <vbox class="column">
       <h2>{$t`Product Information`}</h2>
@@ -31,7 +31,7 @@
           <span class="lo-secondary">{$t`Version ${appVersion}`}</span>
         </vbox>
       </hbox>
-      <BackstageTile label={$t`Update Options`} icon={UpdateIcon}
+      <BackstageTile label={$t`Update Options *=> Menu with the options for updates of the app`} icon={UpdateIcon}
         title={$t`${appName} Updates`} description={updateText}>
         <MenuItem label={$t`Update Now`} icon={UpdateIcon} onClick={checkForUpdate} />
         {#if hasUpdate}

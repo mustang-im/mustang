@@ -2,14 +2,14 @@
   okLabel={$t`OK`} onOK={save} width="600px" on:close>
   <GroupBox label={$t`Description`}>
     <div class="rows">
-      <DialogButton label={$t`Columns…`} classes="settings-button" onClick={() => { open = "columns"; }} />
+      <DialogButton label={$t`Columns… *=> Choose the columns of the list`} classes="settings-button" onClick={() => { open = "columns"; }} />
       <span class="summary" title={columnsSummary}>{columnsSummary}</span>
       <DialogButton label={$t`Group By…`} classes="settings-button" onClick={() => { open = "group-by"; }} />
       <span class="summary">{groupSummary}</span>
-      <DialogButton label={$t`Sort…`} classes="settings-button" onClick={() => { open = "sort"; }} />
+      <DialogButton label={$t`Sort… *=> Choose how the items are sorted`} classes="settings-button" onClick={() => { open = "sort"; }} />
       <span class="summary">{sortSummary}</span>
-      <DialogButton label={$t`Filter…`} classes="settings-button" onClick={() => { open = "filter"; }} />
-      <span class="summary">{$quickSearch && quickSearch.hasSearch() ? $t`On` : $t`Off`}</span>
+      <DialogButton label={$t`Filter… *=> Show only some of the emails in the folder`} classes="settings-button" onClick={() => { open = "filter"; }} />
+      <span class="summary">{$quickSearch && quickSearch.hasSearch() ? $t`On *=> The filter is turned on` : $t`Off *=> The filter is turned off`}</span>
       <DialogButton label={$t`Other Settings…`} classes="settings-button" onClick={() => { open = "other"; }} />
       <span class="summary">{$t`Groups, spacing, message preview and reading pane`}</span>
     </div>
@@ -64,12 +64,12 @@
 
   $: columnsSummary = draft.columns.map(column => ColumnInfo.labelOf(column)).join(", ");
   $: groupSummary = !draft.showInGroups
-    ? $t`None`
+    ? $t`None *=> The emails are not grouped`
     : $t`${arrangeFieldLabel(draft.groupBy ?? draft.arrangeBy)} (${orderLabel(draft.groupBy ?? draft.arrangeBy, draft.groupBy ? draft.groupReverse : draft.reverseSort)})`;
   $: sortSummary = $t`${arrangeFieldLabel(draft.arrangeBy)} (${orderLabel(draft.arrangeBy, draft.reverseSort)})`;
 
   function orderLabel(field: ViewSettings["arrangeBy"], reverse: boolean): string {
-    return MessageGrouping.isDescendingByDefault(field) == !!reverse ? $t`ascending` : $t`descending`;
+    return MessageGrouping.isDescendingByDefault(field) == !!reverse ? $t`ascending *=> Sort order, as in: Date (ascending)` : $t`descending *=> Sort order, as in: Date (descending)`;
   }
 
   function closeSub() {

@@ -5,22 +5,22 @@
     <span title={$t`Mark as unread`}><UnreadIcon size={14} /></span>
   {/if}
   {#if $rule.markAsStarred}
-    <span title={$t`Flag`}><FlagIcon size={14} /></span>
+    <span title={$t`Flag *=> Rule action: flag the email`}><FlagIcon size={14} /></span>
   {/if}
   {#if $addTags.hasItems}
-    <span title={$t`Categorize`}><CategoryIcon size={14} /></span>
+    <span title={$t`Categorize *=> Rule action: assign a category`}><CategoryIcon size={14} /></span>
   {/if}
   {#if $rule.markAsSpam === true}
-    <span title={$t`Junk`}><JunkIcon size={14} /></span>
+    <span title={$t`Junk *=> Rule action: mark as junk`}><JunkIcon size={14} /></span>
   {/if}
   {#if $rule.deleteImmediately}
     <span title={$t`Permanently delete`}><PermanentDeleteIcon size={14} /></span>
   {:else if $rule.deleteTrash}
     <span title={$t`Delete`}><DeleteIcon size={14} /></span>
   {:else if $rule.toFolderID && $rule.copy}
-    <span title={$t`Copy to folder`}><CopyIcon size={14} /></span>
+    <span title={$t`Copy to folder *=> Rule action: copy the email to a folder`}><CopyIcon size={14} /></span>
   {:else if $rule.toFolderID}
-    <span title={$t`Move to folder`}><MoveIcon size={14} /></span>
+    <span title={$t`Move to folder *=> Rule action: move the email to a folder`}><MoveIcon size={14} /></span>
   {/if}
 </hbox>
 

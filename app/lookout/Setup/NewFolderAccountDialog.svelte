@@ -24,7 +24,7 @@
         <TextField bind:value={config.name} label={$t`Name`} />
         <span>{$t`Folder contains`}</span>
         <ComboBox options={contentOptions} value={kind} label={$t`Folder contains`} disabled />
-        <span>{$t`Location`}</span>
+        <span>{$t`Location *=> Where the calendar or address book is stored`}</span>
         <span class="value">{$t`On this computer`}</span>
       </FormGrid>
     {:else if step == "settings"}
@@ -61,7 +61,7 @@
       <DialogButton label={$t`< Back`} disabled={step == "type"} onClick={back} />
     {/if}
     {#if isLastStep}
-      <DialogButton label={localOnly ? $t`OK` : $t`Finish`} primary disabled={!canContinue} onClick={next} />
+      <DialogButton label={localOnly ? $t`OK` : $t`Finish *=> Complete the wizard`} primary disabled={!canContinue} onClick={next} />
     {:else}
       <DialogButton label={$t`Next >`} primary disabled={!canContinue} onClick={next} />
     {/if}

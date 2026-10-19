@@ -3,7 +3,7 @@
     <MenuItem
       label={$t`Open`}
       icon={OpenIcon}
-      shortCutInfo={$t`Enter`}
+      shortCutInfo={$t`Enter *=> RETURN key`}
       onClick={() => ContactActions.edit(contacts[0])} />
     <MenuDivider />
   {/if}
@@ -36,7 +36,7 @@
   <MenuItem
     label={$t`Delete`}
     icon={DeleteIcon}
-    shortCutInfo={$t`Del`}
+    shortCutInfo={$t`Del *=> Delete key`}
     onClick={() => ContactActions.deleteContacts(contacts)} />
   <SubMenu label={$t`Move`} icon={MoveIcon}>
     {#each sections as section}
@@ -49,7 +49,7 @@
     {/each}
     {#if person}
       <MenuDivider />
-      <SubMenu label={$t`Copy to Folder`} icon={CopyIcon}>
+      <SubMenu label={$t`Copy to Folder *=> Copy the selected contacts to another address book`} icon={CopyIcon}>
         {#each sections as section}
           <MenuLabel label={section.mainAccount?.name ?? $t`My Contacts`} />
           {#each section.addressbooks as addressbook (addressbook.id)}

@@ -1,6 +1,6 @@
-<vbox class="expressions-pane" role="complementary" aria-label={$t`Expressions`}>
+<vbox class="expressions-pane" role="complementary" aria-label={$t`Expressions *=> Pane with emojis to insert into the text`}>
   <hbox class="pane-header">
-    <span class="pane-title">{$t`Expressions`}</span>
+    <span class="pane-title">{$t`Expressions *=> Pane with emojis to insert into the text`}</span>
     <hbox flex />
     <button type="button" class="icon-button" title={$t`Close`} aria-label={$t`Close`}
       on:click={() => isOpen = false}>
@@ -20,8 +20,8 @@
       </button>
     {/if}
   </hbox>
-  <hbox class="pivot" role="tablist" aria-label={$t`Expressions`}>
-    <span class="pivot-tab" role="tab" aria-selected="true">{$t`Emojis`}</span>
+  <hbox class="pivot" role="tablist" aria-label={$t`Expressions *=> Pane with emojis to insert into the text`}>
+    <span class="pivot-tab" role="tab" aria-selected="true">{$t`Emojis *=> Tab with the list of emojis`}</span>
   </hbox>
   {#if !isSearching}
     <hbox class="categories" role="tablist" aria-label={$t`Emoji categories`}>
@@ -95,15 +95,15 @@
 
   function categoryLabel(id: string): string {
     switch (id) {
-      case "smileys-emotion": return $t`Smileys`;
-      case "people-body": return $t`People`;
+      case "smileys-emotion": return $t`Smileys *=> Emoji category: smileys and emotions`;
+      case "people-body": return $t`People *=> or Persons - Short word, less than 10 characters`;
       case "animals-nature": return $t`Animals and nature`;
       case "food-drink": return $t`Food and drink`;
       case "travel-places": return $t`Travel and places`;
-      case "activities": return $t`Activities`;
-      case "objects": return $t`Objects`;
-      case "symbols": return $t`Symbols`;
-      case "flags": return $t`Flags`;
+      case "activities": return $t`Activities *=> Emoji category: sports and activities`;
+      case "objects": return $t`Objects *=> Emoji category: objects`;
+      case "symbols": return $t`Symbols *=> Emoji category: symbols`;
+      case "flags": return $t`Flags *=> Emoji category: flags of countries`;
       default: return emojiCategories.find(category => category.id == id)?.title ?? id;
     }
   }

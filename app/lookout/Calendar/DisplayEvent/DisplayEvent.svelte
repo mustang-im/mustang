@@ -14,13 +14,13 @@
         </hbox>
       {:else if $event.isIncomingMeeting}
         <hbox class="buttons">
-          <ResponseButton label={$t`Accept`} icon={AcceptIcon} classes="accept"
+          <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
             pressed={$event.myParticipation == InvitationResponse.Accept}
             onClick={() => event.respondToInvitation(InvitationResponse.Accept)} />
-          <ResponseButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative"
+          <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
             pressed={$event.myParticipation == InvitationResponse.Tentative}
             onClick={() => event.respondToInvitation(InvitationResponse.Tentative)} />
-          <ResponseButton label={$t`Decline`} icon={DeclineIcon} classes="decline"
+          <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
             pressed={$event.myParticipation == InvitationResponse.Decline}
             onClick={() => event.respondToInvitation(InvitationResponse.Decline)} />
         </hbox>

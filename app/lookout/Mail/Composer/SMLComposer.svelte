@@ -53,7 +53,7 @@
     switch (type) {
       case "SimplePoll": return $t`Poll`;
       case "MeetingTimePoll": return $t`Scheduling Poll`;
-      case "BookMe": return $t`Bookings`;
+      case "BookMe": return $t`Bookings *=> Meeting times in the email that the recipient can book`;
       default: return "";
     }
   }

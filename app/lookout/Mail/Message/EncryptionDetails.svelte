@@ -21,7 +21,7 @@
       {#if signingKey && !mySigningKey}
         <GroupBox label={$t`Signing key`}>
           <FormGrid columns="max-content minmax(0, 1fr)">
-            <span class="lo-form-label">{$t`Signer`}</span>
+            <span class="lo-form-label">{$t`Signer *=> Person who signed the email`}</span>
             <span class="value">{$signingKey.name ?? fromName}</span>
             <span class="lo-form-label">{$t`System`}</span>
             <span class="value">{signingKey.system}</span>

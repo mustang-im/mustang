@@ -1,6 +1,6 @@
 <vbox flex class="event-table" style:--columns={gridColumns}>
   <div class="column-headers" role="row">
-    <span class="column-header icon-column" role="columnheader" aria-label={$t`Icon`}>
+    <span class="column-header icon-column" role="columnheader" aria-label={$t`Icon *=> Column with the icon of the event type`}>
       <CalendarIcon size="14" />
     </span>
     {#each columns as column (column)}

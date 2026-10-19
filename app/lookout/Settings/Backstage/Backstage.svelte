@@ -1,6 +1,6 @@
 <hbox flex class="backstage">
   <vbox class="backstage-nav">
-    <button class="nav-item back" title={$t`Back`} aria-label={$t`Back`} on:click={onBack}>
+    <button class="nav-item back" title={$t`Back *=> Close the File view and go back to the app`} aria-label={$t`Back *=> Close the File view and go back to the app`} on:click={onBack}>
       <BackIcon size="20" />
     </button>
     <button class="nav-item" class:selected={$backstagePage == "info"}
@@ -19,7 +19,7 @@
     {#if area == "mail"}
       <button class="nav-item" disabled={!$selectedMessage} on:click={() => run(() => MessageActions.saveAs($selectedMessage))}>
         <SaveAsIcon size="18" />
-        <hbox class="label">{$t`Save As`}</hbox>
+        <hbox class="label">{$t`Save As *=> Save the selected item to a file`}</hbox>
       </button>
       <button class="nav-item" disabled={!attachments.length} on:click={() => isSavingAttachments = true}>
         <SaveAttachmentsIcon size="18" />
@@ -38,7 +38,7 @@
     {:else if area == "people"}
       <button class="nav-item" disabled={!($selectedContact instanceof Person)} on:click={() => run(() => saveContact($selectedContact as Person))}>
         <SaveAsIcon size="18" />
-        <hbox class="label">{$t`Save As`}</hbox>
+        <hbox class="label">{$t`Save As *=> Save the selected item to a file`}</hbox>
       </button>
     {/if}
     <vbox flex class="spacer" />
@@ -49,11 +49,11 @@
     </button>
     <button class="nav-item" on:click={() => openOptions()}>
       <OptionsIcon size="18" />
-      <hbox class="label">{$t`Options`}</hbox>
+      <hbox class="label">{$t`Options *=> Open the settings of the app`}</hbox>
     </button>
     <button class="nav-item" on:click={onExit}>
       <ExitIcon size="18" />
-      <hbox class="label">{$t`Exit`}</hbox>
+      <hbox class="label">{$t`Exit *=> Close the app`}</hbox>
     </button>
   </vbox>
   <vbox flex class="backstage-page">
@@ -135,7 +135,7 @@
   }
 
   async function saveContact(person: Person) {
-    let file = personsToVCardFile(new ArrayColl([person]), person.name || $t`Contact`);
+    let file = personsToVCardFile(new ArrayColl([person]), person.name || $t`Contact *=> Default file name for a contact that has no name`);
     await saveBlobAsFile(file);
   }
 

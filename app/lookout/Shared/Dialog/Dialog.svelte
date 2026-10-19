@@ -23,7 +23,7 @@
         {/if}
         <DialogButton label={cancelLabel ?? $t`Cancel`} onClick={onCancel} />
         {#if onApply}
-          <DialogButton label={applyLabel ?? $t`Apply`} disabled={applyDisabled || isRunning} onClick={apply} />
+          <DialogButton label={applyLabel ?? $t`Apply *=> Save the changes and keep the dialog open`} disabled={applyDisabled || isRunning} onClick={apply} />
         {/if}
       {/if}
     </hbox>

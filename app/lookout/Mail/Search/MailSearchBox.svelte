@@ -37,8 +37,8 @@
     {/each}
   </Menu>
   {#if suggestions.length && !$isAdvancedSearchOpen}
-    <vbox class="suggestions" role="listbox" aria-label={$t`Suggestions`}>
-      <hbox class="suggestions-header">{$t`People`}</hbox>
+    <vbox class="suggestions" role="listbox" aria-label={$t`Suggestions *=> List of suggested persons for the search`}>
+      <hbox class="suggestions-header">{$t`People *=> or Persons - Short word, less than 10 characters`}</hbox>
       {#each suggestions as person, index (person)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <hbox class="suggestion" class:active={index == activeSuggestion}

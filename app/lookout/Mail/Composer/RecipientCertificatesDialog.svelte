@@ -3,7 +3,7 @@
     <span>{$t`These recipients have no certificate for encryption. Import their certificate, or remove them from the message.`}</span>
     <ListView items={$recipientsWithoutKeys.contents} bind:selected
       columns={[{ label: $t`Name` }, { label: $t`E-mail Address` }]}
-      label={$t`Recipients`} height="160px" let:item>
+      label={$t`Recipients *=> Recipients of the email`} height="160px" let:item>
       <span>{item.name ?? ""}</span>
       <span>{item.emailAddress}</span>
       <span slot="empty">{$t`All recipients have a certificate now`}</span>

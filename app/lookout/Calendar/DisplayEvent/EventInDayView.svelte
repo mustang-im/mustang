@@ -5,7 +5,7 @@
     {#if onShowInCalendar}
       <button class="open" on:click={onShowInCalendar} title={$t`Show this day in the calendar`}>
         <CalendarIcon size={14} />
-        {$t`Calendar…`}
+        {$t`Calendar… *=> Show this day in the calendar`}
       </button>
     {/if}
   </hbox>

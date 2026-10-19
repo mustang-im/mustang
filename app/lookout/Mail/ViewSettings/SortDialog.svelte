@@ -1,10 +1,10 @@
-<Dialog title={$t`Sort`} okLabel={$t`OK`} onOK={save} width="440px" on:close>
+<Dialog title={$t`Sort *=> Change the sort order of the email list`} okLabel={$t`OK`} onOK={save} width="440px" on:close>
   <GroupBox label={$t`Sort items by`}>
     <hbox class="field-row">
       <ComboBox label={$t`Sort items by`} options={fieldOptions} bind:value={field} width="100%" />
       <vbox class="order">
-        <Radio label={$t`Ascending`} bind:group={isAscending} value={true} />
-        <Radio label={$t`Descending`} bind:group={isAscending} value={false} />
+        <Radio label={$t`Ascending *=> Sort order: A to Z, 1 to 9`} bind:group={isAscending} value={true} />
+        <Radio label={$t`Descending *=> Sort order: Z to A, 9 to 1`} bind:group={isAscending} value={false} />
       </vbox>
     </hbox>
   </GroupBox>

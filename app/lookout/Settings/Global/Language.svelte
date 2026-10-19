@@ -14,16 +14,16 @@
   <OptionsSection title={$t`Date and time format`}>
     <OptionsRow icon={DateFormatIcon}>
       <hbox class="field-row">
-        <label for="options-date-format" class="field-label">{$t`Format`}</label>
+        <label for="options-date-format" class="field-label">{$t`Format *=> Format of dates and times, by language and region`}</label>
         <ComboBox options={[ { value: "", label: $t`Same as the display language` }, ...languages.map(code => ({ value: code, label: localeNames[code] })) ]}
-          bind:value={dateTimeFormat} on:change={onSaveDateTimeFormat} label={$t`Format`} width="240px" />
+          bind:value={dateTimeFormat} on:change={onSaveDateTimeFormat} label={$t`Format *=> Format of dates and times, by language and region`} width="240px" />
       </hbox>
       <grid class="samples">
-        <span class="lo-secondary">{$t`Short date`}</span>
+        <span class="lo-secondary">{$t`Short date *=> Example of the short date format`}</span>
         <span>{sampleDate.toLocaleDateString(dateTimeFormatDisplayed, { year: "numeric", month: "2-digit", day: "2-digit" })}</span>
-        <span class="lo-secondary">{$t`Long date`}</span>
+        <span class="lo-secondary">{$t`Long date *=> Example of the long date format`}</span>
         <span>{sampleDate.toLocaleDateString(dateTimeFormatDisplayed, { dateStyle: "long" })}</span>
-        <span class="lo-secondary">{$t`Time`}</span>
+        <span class="lo-secondary">{$t`Time *=> Example of the time format`}</span>
         <span>{sampleDate.toLocaleTimeString(dateTimeFormatDisplayed, { hour: "numeric", minute: "numeric" })}</span>
       </grid>
     </OptionsRow>

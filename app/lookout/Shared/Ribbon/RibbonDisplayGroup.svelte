@@ -1,11 +1,11 @@
-<RibbonGroup label={$t`Ribbon`}>
-  <RibbonToggleButton label={$t`Simplified Ribbon`} shortLabel={$t`Simplified`} icon={SimplifiedIcon}
+<RibbonGroup label={$t`Ribbon *=> Ribbon group with settings for how the ribbon is shown`}>
+  <RibbonToggleButton label={$t`Simplified Ribbon`} shortLabel={$t`Simplified *=> Short for: Simplified Ribbon, show the commands in one row`} icon={SimplifiedIcon}
     tooltip={$t`Show the commands in one row`}
     selected={$layout.value == "simplified"}
     onClick={() => { $layout.value = $layout.value == "simplified" ? "classic" : "simplified"; }} />
   <RibbonToggleButton label={$t`Show Tabs Only`} icon={TabsOnlyIcon} size="small"
     tooltip={$t`Show only the tab names. Click a tab to see its commands.`}
-    shortCutInfo={$t`Ctrl+F1`}
+    shortCutInfo={$t`Ctrl+F1 *=> Keyboard shortcut`}
     selected={!!$collapsed.value}
     onClick={() => { $collapsed.value = !$collapsed.value; }} />
   <RibbonToggleButton label={$t`Quick Access Toolbar`} icon={QuickAccessIcon} size="small"

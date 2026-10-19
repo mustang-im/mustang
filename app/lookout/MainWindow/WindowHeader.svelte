@@ -93,15 +93,15 @@
   const noSingle = derived(selectedArray, messages => messages.length != 1 && $t`Select one message first`);
   const mailCommands: QuickAccessCommand[] = [
     sendReceiveAll,
-    { id: "mail.reply", label: $t`Reply`, icon: ReplyIcon, shortCutInfo: $t`Ctrl+R`, disabled: noSingle,
+    { id: "mail.reply", label: $t`Reply`, icon: ReplyIcon, shortCutInfo: $t`Ctrl+R *=> Keyboard shortcut`, disabled: noSingle,
       run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyToAuthor()) },
-    { id: "mail.replyAll", label: $t`Reply All`, icon: ReplyAllIcon, shortCutInfo: $t`Ctrl+Shift+R`, disabled: noSingle,
+    { id: "mail.replyAll", label: $t`Reply All`, icon: ReplyAllIcon, shortCutInfo: $t`Ctrl+Shift+R *=> Keyboard shortcut`, disabled: noSingle,
       run: () => MessageActions.respond(get(selectedArray)[0], get(selectedArray)[0].compose.replyAll()) },
-    { id: "mail.forward", label: $t`Forward`, icon: ForwardIcon, shortCutInfo: $t`Ctrl+F`, disabled: noSingle,
+    { id: "mail.forward", label: $t`Forward`, icon: ForwardIcon, shortCutInfo: $t`Ctrl+F *=> Keyboard shortcut`, disabled: noSingle,
       run: () => MessageActions.forward(get(selectedArray)[0]) },
-    { id: "mail.delete", label: $t`Delete`, icon: DeleteIcon, shortCutInfo: $t`Del`, disabled: noSelection,
+    { id: "mail.delete", label: $t`Delete`, icon: DeleteIcon, shortCutInfo: $t`Del *=> Delete key`, disabled: noSelection,
       run: async () => { await Promise.all(get(selectedArray).map(message => message.deleteMessage())); } },
-    { id: "mail.print", label: $t`Print`, icon: PrintIcon, shortCutInfo: $t`Ctrl+P`, disabled: noSingle,
+    { id: "mail.print", label: $t`Print`, icon: PrintIcon, shortCutInfo: $t`Ctrl+P *=> Keyboard shortcut`, disabled: noSingle,
       run: () => { $printMessage = get(selectedArray)[0]; } },
   ];
   $: $quickAccessCommands = isMail ? mailCommands : [sendReceiveAll];

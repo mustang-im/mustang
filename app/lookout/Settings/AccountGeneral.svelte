@@ -6,7 +6,7 @@
         <hbox class="name-row">
           <input id="account-name" class="lo-text-field" type="text" bind:value={account.name} on:input={onChange} required />
           <input type="color" class="color" bind:value={account.color} on:change={onChange} list="proposed-colors"
-            title={$t`Color`} aria-label={$t`Color`} />
+            title={$t`Color *=> Color of the account`} aria-label={$t`Color *=> Color of the account`} />
         </hbox>
         {#if account instanceof MailAccount || account instanceof ChatAccount || account instanceof MeetAccount}
           <label for="account-realname" title={$t`Your real name, as shown to other people when you are sending messages`}>{$t`Your name`}</label>

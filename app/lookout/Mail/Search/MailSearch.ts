@@ -96,9 +96,9 @@ export function scopeLabel(scope: SearchScope): string {
 
 export function scopeShortLabel(scope: SearchScope): string {
   switch (scope) {
-    case SearchScope.AllAccounts: return gt`All *=> All accounts`;
-    case SearchScope.CurrentAccount: return gt`Account *=> Current account`;
-    case SearchScope.CurrentFolder: return gt`Folder *=> Current folder`;
+    case SearchScope.AllAccounts: return gt`All`;
+    case SearchScope.CurrentAccount: return gt`Account`;
+    case SearchScope.CurrentFolder: return gt`Folder`;
   }
 }
 

@@ -4,7 +4,7 @@
       {isOrganizer ? $t`You proposed these meeting times` : $t`Choose a time to book a meeting with ${organizerName}`}
     </span>
     <DisplayList {options} duration={bookMe.duration} let:time>
-      <DialogButton label={$t`Book`} icon={BookIcon}
+      <DialogButton label={$t`Book *=> Confirm an appointmnet`} icon={BookIcon}
         disabled={isOrganizer ? $t`You proposed this time` : false}
         onClick={() => select(time)} />
     </DisplayList>

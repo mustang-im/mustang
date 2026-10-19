@@ -7,7 +7,7 @@
     </hbox>
     <ComboBox options={calendar.sharePermissionLevels.map(permission => ({ value: permission, label: levelLabel(permission) }))}
       bind:value={level} label={$t`Permission Level`} width="210px" />
-    <DialogButton label={$t`Share`} primary onClick={onShare}
+    <DialogButton label={$t`Share *=> Give the entered people access to the calendar`} primary onClick={onShare}
       disabled={!$newPersons.hasItems && $t`Enter the person first`} />
   </hbox>
   <hbox class="divider" />
@@ -102,7 +102,7 @@
   }
 
   async function onRemove(person: PersonUID) {
-    if (!await askYesNo($t`Permissions`, $t`Do you want to stop sharing the calendar "${calendar.name}" with ${person.name || person.emailAddress}?`)) {
+    if (!await askYesNo($t`Permissions *=> Who can access this folder`, $t`Do you want to stop sharing the calendar "${calendar.name}" with ${person.name || person.emailAddress}?`)) {
       return;
     }
     await calendar.deleteSharedPerson(person);

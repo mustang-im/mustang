@@ -12,13 +12,13 @@
           <DialogButton label={$t`Discard`} icon={DiscardIcon} classes="plain"
             tooltip={$t`Discard this response`}
             onClick={onDiscard} />
-          <DialogButton label={$t`Pop Out`} icon={PopOutIcon} classes="plain"
+          <DialogButton label={$t`Pop Out *=> Open this reply in its own message page`} icon={PopOutIcon} classes="plain"
             tooltip={$t`Open this response in its own message page`}
             onClick={onPopOut} />
         </hbox>
       {:else}
         <hbox class="title-row">
-          <h1>{$mail.subject || $t`Untitled`}<span class="kind">– {$sendFormat.value == "html" ? $t`Message (HTML)` : $t`Message (Plain Text)`}</span></h1>
+          <h1>{$mail.subject || $t`Untitled *=> Title for an email that has no subject yet`}<span class="kind">– {$sendFormat.value == "html" ? $t`Message (HTML)` : $t`Message (Plain Text)`}</span></h1>
           <hbox flex />
           <hbox class="title-buttons">
             <UndoRedoButtons {editor} />
@@ -40,7 +40,7 @@
           title={sendDisabledTooltip ?? $t`Send (Ctrl+Enter)`}
           tabindex={2}>
           <SendIcon size={24} strokeWidth={1.5} />
-          <span>{$t`Send`}</span>
+          <span>{$t`Send *=> send emails`}</span>
         </button>
         <grid class="fields">
           {#if showFromRow}

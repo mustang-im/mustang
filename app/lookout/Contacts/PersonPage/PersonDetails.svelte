@@ -10,7 +10,7 @@
         <hbox class="company">{$person.company}</hbox>
       {/if}
       <hbox class="actions">
-        <CardButton label={$t`Email`} icon={MailIcon}
+        <CardButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([person])}
           disabled={$emailAddresses.isEmpty && $t`This contact has no email address`} />
         <CardButton label={$t`Meeting`} icon={MeetingIcon}
@@ -47,7 +47,7 @@
         <h2>{$t`Contact information`}</h2>
         <grid class="fields">
           {#each $emailAddresses.each as entry}
-            <CardField icon={MailIcon} label={entryLabel(entry, $t`Email`)} copyValue={entry.value}>
+            <CardField icon={MailIcon} label={entryLabel(entry, $t`Email *=> Email address of unknown type`)} copyValue={entry.value}>
               <a class="link" href="mailto:{entry.value}">{entry.value}</a>
             </CardField>
           {/each}
@@ -67,7 +67,7 @@
             </CardField>
           {/each}
           {#each $streetAddresses.each as entry}
-            <CardField icon={AddressIcon} label={entryLabel(entry, $t`Address`)}
+            <CardField icon={AddressIcon} label={entryLabel(entry, $t`Address *=> Postal address of unknown type`)}
               copyValue={addressText(entry.value)}>
               <span class="address">{addressText(entry.value)}</span>
             </CardField>
@@ -174,10 +174,10 @@
 
   let shownPivot: "overview" | ActivityKind = "overview";
   $: pivots = [
-    { id: "overview", label: $t`Overview`, emptyText: "" },
+    { id: "overview", label: $t`Overview *=> Tab with a summary of the contact`, emptyText: "" },
     { id: ActivityKind.Messages, label: $t`Messages`, emptyText: $t`No messages with this person` },
     { id: ActivityKind.Files, label: $t`Files`, emptyText: $t`No files shared with this person` },
-    { id: ActivityKind.Meetings, label: $t`Meetings`, emptyText: $t`No meetings with this person` },
+    { id: ActivityKind.Meetings, label: $t`Meetings *=> Tab with the meetings with this person`, emptyText: $t`No meetings with this person` },
   ] as { id: "overview" | ActivityKind, label: string, emptyText: string }[];
   $: activities = new ContactActivities(person);
   $: recentMessages = activities.of(ActivityKind.Messages);

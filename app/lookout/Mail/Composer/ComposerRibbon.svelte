@@ -10,7 +10,7 @@
       <PollsGroup {mail} />
     </svelte:fragment>
   </InsertTab>
-  <RibbonTab label={$t`Options`}>
+  <RibbonTab label={$t`Options *=> Ribbon tab with options for the email being written`}>
     <ShowFieldsGroup {mail} />
     <EncryptionButtons {mail} {identity} />
   </RibbonTab>

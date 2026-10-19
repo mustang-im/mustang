@@ -30,7 +30,7 @@
     </vbox>
   </vbox>
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`Reset`} tooltip={$t`Show all tabs and groups again`} onClick={reset} />
+    <DialogButton label={$t`Reset *=> Show all ribbon tabs and groups again`} tooltip={$t`Show all tabs and groups again`} onClick={reset} />
   </svelte:fragment>
 </Dialog>
 

@@ -1,14 +1,14 @@
 <Dialog title={$t`Word Count`} on:close={onClose} width="360px" cancelLabel={$t`Close`}>
   <vbox class="statistics">
-    <hbox class="caption">{$t`Statistics`}</hbox>
+    <hbox class="caption">{$t`Statistics *=> Heading of the counts of words and characters`}</hbox>
     <grid class="rows">
-      <span>{$t`Words`}</span>
+      <span>{$t`Words *=> Number of words in the text`}</span>
       <span class="value">{statistics.words.toLocaleString(getDateTimeLocale())}</span>
       <span>{$t`Characters (no spaces)`}</span>
       <span class="value">{statistics.charactersWithoutSpaces.toLocaleString(getDateTimeLocale())}</span>
       <span>{$t`Characters (with spaces)`}</span>
       <span class="value">{statistics.charactersWithSpaces.toLocaleString(getDateTimeLocale())}</span>
-      <span>{$t`Paragraphs`}</span>
+      <span>{$t`Paragraphs *=> Number of paragraphs in the text`}</span>
       <span class="value">{statistics.paragraphs.toLocaleString(getDateTimeLocale())}</span>
     </grid>
     {#if isSelection}

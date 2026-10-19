@@ -1,4 +1,4 @@
-<Dialog title={$t`Search Text`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="440px">
+<Dialog title={$t`Search Text *=> Words that the rule searches for`} okLabel={$t`OK`} onOK={onSubmit} on:close={onClose} width="440px">
   <vbox class="search-text">
     <label for="search-text-new">{$t`Specify words or phrases to search for in the subject or body`}</label>
     <hbox class="row">

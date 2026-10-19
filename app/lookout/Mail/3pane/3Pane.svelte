@@ -30,7 +30,7 @@
               {#if hasMoreResults && $messages.hasItems}
                 <hbox class="more-results">
                   <span>{$t`Showing recent results…`}</span>
-                  <button type="button" class="more-link" on:click={() => dispatch("moreresults")}>{$t`More`}</button>
+                  <button type="button" class="more-link" on:click={() => dispatch("moreresults")}>{$t`More *=> Show more search results`}</button>
                 </hbox>
               {/if}
             </vbox>

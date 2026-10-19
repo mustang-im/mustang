@@ -9,7 +9,7 @@
     <hbox class="search">
       <input id="select-names-search" class="lo-text-field" type="text" bind:value={typedTerm} autofocus
         on:input={onTyped} on:keydown={onSearchKey} />
-      <button type="button" class="icon-button" title={$t`Go`} aria-label={$t`Go`} on:click={onGo}>
+      <button type="button" class="icon-button" title={$t`Go *=> Start the search`} aria-label={$t`Go *=> Start the search`} on:click={onGo}>
         <GoIcon size={14} />
       </button>
       <button type="button" class="icon-button" title={$t`Clear`} aria-label={$t`Clear`}
@@ -24,7 +24,7 @@
     <FastList items={foundPersons} bind:selectedItems columns="minmax(150px, 1.4fr) minmax(90px, 1fr) minmax(110px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) minmax(170px, 1.5fr)">
       <svelte:fragment slot="header">
         <hbox class="column-header">{$t`Name`}</hbox>
-        <hbox class="column-header">{$t`Title`}</hbox>
+        <hbox class="column-header">{$t`Title *=> Job title of the person`}</hbox>
         <hbox class="column-header">{$t`Business Phone`}</hbox>
         <hbox class="column-header">{$t`Department`}</hbox>
         <hbox class="column-header">{$t`Company`}</hbox>

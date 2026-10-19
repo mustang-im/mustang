@@ -1,5 +1,5 @@
 {#if needsConnect}
-  <MenuItem label={$t`Connect`} icon={ConnectIcon}
+  <MenuItem label={$t`Connect *=> Log in to this account`} icon={ConnectIcon}
     tooltip={$t`Log in to this account`}
     onClick={() => account.loginAndStartup(true)} />
   <MenuDivider />
@@ -27,7 +27,7 @@
   disabled={!$folder.countUnread && !isVirtual && $t`There are no unread messages`}
   onClick={() => FolderTreeActions.markAllRead(folder)} />
 {#if FolderTreeActions.canDeleteAll(folder)}
-  <MenuItem label={$t`Delete All`} icon={DeleteAllIcon} classes="danger"
+  <MenuItem label={$t`Delete All *=> Delete all emails in the selected folder`} icon={DeleteAllIcon} classes="danger"
     disabled={!$folder.countTotal && !$messages.hasItems && $t`The folder is empty`}
     onClick={() => FolderTreeActions.deleteAll(folder)} />
 {/if}
@@ -42,7 +42,7 @@
 {/if}
 {#if !isVirtual}
   <MenuDivider />
-  <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
+  <MenuItem label={$t`Properties… *=> Show the settings of the selected folder`} icon={PropertiesIcon}
     onClick={() => { $openFolderProperties = { folder }; }} />
 {/if}
 

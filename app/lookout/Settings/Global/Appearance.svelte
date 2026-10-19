@@ -12,9 +12,9 @@
     </OptionsRow>
     <OptionsRow icon={ThemeIcon}>
       <hbox class="field-row">
-        <label for="options-theme" class="field-label">{$t`Theme`}</label>
+        <label for="options-theme" class="field-label">{$t`Theme *=> Color scheme of the app`}</label>
         <ComboBox options={[ { value: "system", label: $t`Use system setting` }, { value: "light", label: $t`Light` }, { value: "dark", label: $t`Dark` } ]}
-          value={$themeSetting.value} on:change={event => onSwitchTheme(event.detail)} label={$t`Theme`} width="200px" />
+          value={$themeSetting.value} on:change={event => onSwitchTheme(event.detail)} label={$t`Theme *=> Color scheme of the app`} width="200px" />
       </hbox>
     </OptionsRow>
   </OptionsSection>

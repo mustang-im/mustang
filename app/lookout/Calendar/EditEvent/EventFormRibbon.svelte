@@ -1,22 +1,22 @@
 <Ribbon>
   <RibbonTab label={tabLabel}>
     {#if isIncoming}
-      <RibbonGroup label={$t`Respond`}>
+      <RibbonGroup label={$t`Respond *=> Ribbon group with commands to answer the meeting invitation`}>
         {#if $event.isCancelled}
           <RibbonButton label={$t`Remove from Calendar`} icon={RemoveIcon}
             onClick={onDelete} />
         {:else}
-          <RibbonMenuButton label={$t`Accept`} icon={AcceptIcon} classes="accept">
+          <RibbonMenuButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Accept}
               onClick={() => respond(InvitationResponse.Accept)} />
           </RibbonMenuButton>
-          <RibbonMenuButton label={$t`Tentative`} icon={TentativeIcon} classes="tentative">
+          <RibbonMenuButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Tentative}
               onClick={() => respond(InvitationResponse.Tentative)} />
           </RibbonMenuButton>
-          <RibbonMenuButton label={$t`Decline`} icon={DeclineIcon} classes="decline">
+          <RibbonMenuButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Decline}
               onClick={() => respond(InvitationResponse.Decline)} />
@@ -35,11 +35,11 @@
             tooltip={$t`Delete the meeting and decline it`}
             onClick={onDelete} />
         {/if}
-        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
+        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
           onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
       <RibbonGroup label={$t`Calendar`}>
-        <RibbonButton label={$t`Calendar…`} icon={CalendarIcon}
+        <RibbonButton label={$t`Calendar… *=> Show this day in the calendar`} icon={CalendarIcon}
           tooltip={$t`Show this day in the calendar`}
           onClick={showInCalendar} />
       </RibbonGroup>
@@ -53,19 +53,19 @@
     {:else}
       <RibbonGroup label={$t`Actions`}>
         {#if !isMeeting}
-          <RibbonButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo={$t`Alt+S`}
+          <RibbonButton label={$t`Save & Close`} icon={SaveIcon} shortCutInfo={$t`Alt+S *=> Keyboard shortcut`}
             disabled={saveDisabled}
             onClick={onSave} />
         {/if}
         {#if isInstance}
           <RibbonMenuButton label={isSent ? $t`Cancel Meeting` : $t`Delete`} icon={isSent ? CancelIcon : DeleteIcon}>
-            <MenuItem label={isSent ? $t`Cancel Occurrence` : $t`Delete Occurrence`} icon={isSent ? CancelIcon : DeleteIcon}
+            <MenuItem label={isSent ? $t`Cancel Occurrence *=> Call off this occurrence of the recurring meeting` : $t`Delete Occurrence`} icon={isSent ? CancelIcon : DeleteIcon}
               onClick={onDelete} />
             {#if $event.seriesStatus == "middle" && !isSent}
               <MenuItem label={$t`Delete This and Following`} icon={DeleteIcon}
                 onClick={() => flow.deleteRemainder()} />
             {/if}
-            <MenuItem label={isSent ? $t`Cancel Series` : $t`Delete Series`} icon={isSent ? CancelIcon : DeleteIcon}
+            <MenuItem label={isSent ? $t`Cancel Series *=> Call off all occurrences of the recurring meeting` : $t`Delete Series`} icon={isSent ? CancelIcon : DeleteIcon}
               onClick={deleteSeries} />
           </RibbonMenuButton>
         {:else if isSent}
@@ -73,10 +73,10 @@
             tooltip={$t`Send a cancellation to all attendees and delete the meeting`}
             onClick={onDelete} />
         {:else}
-          <RibbonButton label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Ctrl+D`}
+          <RibbonButton label={$t`Delete`} icon={DeleteIcon} shortCutInfo={$t`Ctrl+D *=> Keyboard shortcut`}
             onClick={onDelete} />
         {/if}
-        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F`}
+        <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
           disabled={!flow.isSaved && (isMeeting ? $t`Send the meeting first` : $t`Save the appointment first`)}
           onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
@@ -103,7 +103,7 @@
           </RibbonMenuButton>
         {/if}
       </RibbonGroup>
-      <RibbonGroup label={$t`Attendees`}>
+      <RibbonGroup label={$t`Attendees *=> Ribbon group with commands for the attendees of the meeting`}>
         {#if isMeeting}
           <RibbonButton label={$t`Address Book`} icon={AddressBookIcon}
             tooltip={$t`Select attendees from the address book`}
@@ -117,7 +117,7 @@
             onClick={() => flow.inviteAttendees()} />
         {/if}
       </RibbonGroup>
-      <RibbonGroup label={$t`Options`}>
+      <RibbonGroup label={$t`Options *=> Ribbon group with the reminder and recurrence of the event`}>
         <RibbonMenuButton label={$t`Reminder: ${reminderLabel.replaceAll(" ", "\u00A0")}`} shortLabel={reminderMinutes == null ? $t`Reminder` : reminderLabel} icon={ReminderIcon}
           tooltip={$t`Reminder: ${reminderLabel}`}>
           {#each reminderChoices as minutes}
@@ -125,7 +125,7 @@
               onClick={() => setReminderMinutesBefore(event, minutes)} />
           {/each}
         </RibbonMenuButton>
-        <RibbonButton label={$t`Recurrence`} icon={RecurrenceIcon} shortCutInfo={$t`Ctrl+G`}
+        <RibbonButton label={$t`Recurrence *=> Repetition of the event`} icon={RecurrenceIcon} shortCutInfo={$t`Ctrl+G *=> Keyboard shortcut`}
           onClick={() => { $openRecurrence = event; }} />
       </RibbonGroup>
     {/if}
@@ -133,11 +133,11 @@
 
   {#if canSchedule && isMeeting && !isIncoming}
     <RibbonTab label={schedulingLabel} bind:isSelected={isSchedulingSelected}>
-      <RibbonGroup label={$t`Scheduling`}>
+      <RibbonGroup label={$t`Scheduling *=> Ribbon group to find a time when all attendees are available`}>
         <RibbonButton label={$t`Refresh Availability`} icon={RefreshIcon}
           onClick={() => { $refreshAvailabilityOf = event; }} />
       </RibbonGroup>
-      <RibbonGroup label={$t`Attendees`}>
+      <RibbonGroup label={$t`Attendees *=> Ribbon group with commands for the attendees of the meeting`}>
         <RibbonButton label={$t`Add Attendees`} icon={AddAttendeesIcon}
           tooltip={$t`Select attendees from the address book`}
           onClick={() => { $openSelectAttendees = event; }} />
@@ -146,7 +146,7 @@
   {/if}
   {#if isSent}
     <RibbonTab label={trackingLabel} bind:isSelected={isTrackingSelected}>
-      <RibbonGroup label={$t`Tracking`}>
+      <RibbonGroup label={$t`Tracking *=> Ribbon group with the responses of the attendees`}>
         <RibbonButton label={$t`Copy Status to Clipboard`} icon={CopyIcon}
           onClick={copyTrackingStatus} />
       </RibbonGroup>

@@ -13,7 +13,7 @@
     <vbox class="styles" role="listbox" aria-label={$t`Print style`}>
       <hbox class="style selected" role="option" aria-selected="true">
         <hbox class="style-icon"><MemoStyleIcon size={28} strokeWidth={1.25} /></hbox>
-        <span>{$t`Memo Style`}</span>
+        <span>{$t`Memo Style *=> Print layout with the header fields and the text of the email`}</span>
       </hbox>
     </vbox>
   </vbox>

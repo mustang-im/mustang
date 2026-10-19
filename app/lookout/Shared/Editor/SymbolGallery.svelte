@@ -1,4 +1,4 @@
-<grid class="gallery" role="group" aria-label={$t`Symbol`}>
+<grid class="gallery" role="group" aria-label={$t`Symbol *=> Insert a special character, e.g. the copyright sign`}>
   {#each symbolGallery() as character (character)}
     <button type="button" class="symbol" role="menuitem" title={"U+" + characterCode(character)}
       disabled={!editor}

@@ -8,7 +8,7 @@
     {#if hasKeyServers}
       <button class="link" on:click={() => catchErrors(() => queryKeyServers(recipientsWithoutKeys))}>{$t`Query Key Servers`}</button>
     {/if}
-    <button class="link" on:click={() => { isDialogOpen = true; }}>{$t`Certificates…`}</button>
+    <button class="link" on:click={() => { isDialogOpen = true; }}>{$t`Certificates… *=> Manage the encryption certificates of the recipients`}</button>
     <button class="link" on:click={() => removeRecipients(recipientsWithoutKeys.contents)}>{$t`Remove These Recipients`}</button>
   </hbox>
 {/if}

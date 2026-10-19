@@ -78,9 +78,9 @@ accountSettings.add(new AccSetting(MailAccount, "mail-connected", gt`Connected a
 accountSettings.add(new AccSetting(MailAccount, "mail-server", gt`Server`, AccountMailServer));
 // #endif
 accountSettings.add(new AccSetting(MailAccount, "mail-folders", gt`Folders`, AccountFolders));
-accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identities`, AccountIdentity));
-accountSettings.add(new AccSetting(MailAccount, "mail-rules", gt`Rules`, MailRules));
-accountSettings.add(new AccSetting(MailAccount, "mail-sharing", gt`Sharing`, MailSharing));
+accountSettings.add(new AccSetting(MailAccount, "mail-identity", gt`Identities *=> Settings page for the sender names and email addresses of the account`, AccountIdentity));
+accountSettings.add(new AccSetting(MailAccount, "mail-rules", gt`Rules *=> Criteria after which emails should be sorted`, MailRules));
+accountSettings.add(new AccSetting(MailAccount, "mail-sharing", gt`Sharing *=> Accessing mail account of team mates`, MailSharing));
 // </copied>
 
 const calendarSettings = new SettingsCategory("calendar", gt`Calendar`, CalendarGeneral, true);
@@ -97,7 +97,7 @@ accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export
 accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 // </copied>
 
-const contactsSettings = new SettingsCategory("contacts", gt`People`, ContactsGeneral, true);
+const contactsSettings = new SettingsCategory("contacts", gt`People *=> or Persons - Short word, less than 10 characters`, ContactsGeneral, true);
 contactsSettings.accounts = appGlobal.addressbooks;
 // #if [!WEBMAIL]
 contactsSettings.newAccountURL = "/setup/contacts";

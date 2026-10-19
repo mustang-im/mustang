@@ -27,7 +27,7 @@
         onClick={() => ContactActions.sync(addressbook)} />
     {/if}
     <MenuDivider />
-    <MenuItem label={$t`Properties…`} icon={PropertiesIcon}
+    <MenuItem label={$t`Properties… *=> Show the settings of the selected folder`} icon={PropertiesIcon}
       onClick={() => isPropertiesOpen = true} />
   </ContextMenu>
   {#if isRenaming}

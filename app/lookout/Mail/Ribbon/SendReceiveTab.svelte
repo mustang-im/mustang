@@ -1,17 +1,17 @@
 <RibbonTab label={$t`Send / Receive`}>
   <RibbonGroup label={$t`Send & Receive`}>
-    <RibbonButton label={$t`Send/Receive All Folders`} shortLabel={$t`Send/Receive`} icon={SendReceiveIcon}
+    <RibbonButton label={$t`Send/Receive All Folders`} shortLabel={$t`Send/Receive *=> Send and get the emails of all folders`} icon={SendReceiveIcon}
       onClick={() => MessageActions.sendReceiveAll()}
       disabled={!$accounts.hasItems && $t`Please set up a mail account first`}
       shortCutInfo="F9" />
-    <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update`} icon={UpdateFolderIcon} size="small"
+    <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update *=> Get the latest items of the selected folder from the server`} icon={UpdateFolderIcon} size="small"
       tooltip={$t`Get new mail for the current folder`}
       onClick={() => MessageActions.getNewMail(folder)}
       disabled={MessageActions.disableGetNewMail(folder)}
-      shortCutInfo={$t`Shift+F9`} />
+      shortCutInfo={$t`Shift+F9 *=> Keyboard shortcut`} />
   </RibbonGroup>
   <RibbonGroup label={$t`Server`}>
-    <RibbonButton label={$t`Download All Messages`} shortLabel={$t`Download`} icon={DownloadAllIcon} size="small"
+    <RibbonButton label={$t`Download All Messages`} shortLabel={$t`Download *=> Download all emails of the selected folder`} icon={DownloadAllIcon} size="small"
       tooltip={$t`Download all messages of the current folder, for offline use and search`}
       onClick={() => MessageActions.downloadAll(folder)}
       disabled={!folder && $t`Select a folder first`} />

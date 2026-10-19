@@ -30,7 +30,7 @@
 
   $: isMonth = range.view == "month";
   $: stepsByDay = (range.view == "day" || range.view == "schedule") && range.days.length == 1 || range.view == "dual";
-  $: previousLabel = isMonth ? $t`Previous month` : stepsByDay ? $t`Previous day` : $t`Previous`;
+  $: previousLabel = isMonth ? $t`Previous month` : stepsByDay ? $t`Previous day` : $t`Previous *=> Show the previous week or days in the calendar`;
   $: nextLabel = isMonth ? $t`Next month` : stepsByDay ? $t`Next day` : $t`Next`;
 
   function goToToday() {

@@ -51,27 +51,27 @@ export class ContactSlot {
 }
 
 export const emailSlots: readonly ContactSlot[] = [
-  new ContactSlot("email1", gt`E-mail`, null, false, 0),
+  new ContactSlot("email1", gt`E-mail *=> Email address of the person`, null, false, 0),
   new ContactSlot("email2", gt`E-mail 2`, null, false, 1),
   new ContactSlot("email3", gt`E-mail 3`, null, false, 2),
 ];
 
 export const phoneSlots: readonly ContactSlot[] = [
-  new ContactSlot("business", gt`Business`, "work", false, 0),
+  new ContactSlot("business", gt`Business *=> Business address or phone number`, "work", false, 0),
   new ContactSlot("business2", gt`Business 2`, "work", false, 1),
   new ContactSlot("business-fax", gt`Business Fax`, "work", true, 0),
-  new ContactSlot("home", gt`Home`, "home", false, 0),
+  new ContactSlot("home", gt`Home *=> Private address or phone number`, "home", false, 0),
   new ContactSlot("home2", gt`Home 2`, "home", false, 1),
   new ContactSlot("home-fax", gt`Home Fax`, "home", true, 0),
-  new ContactSlot("mobile", gt`Mobile`, "mobile", false, 0),
-  new ContactSlot("other", gt`Other`, "other", false, 0),
+  new ContactSlot("mobile", gt`Mobile *=> Cell phone number`, "mobile", false, 0),
+  new ContactSlot("other", gt`Other *=> Email address or phone number that is not home or work`, "other", false, 0),
   new ContactSlot("other-fax", gt`Other Fax`, "other", true, 0),
 ];
 
 export const addressSlots: readonly ContactSlot[] = [
-  new ContactSlot("business", gt`Business`, "work", false, 0),
-  new ContactSlot("home", gt`Home`, "home", false, 0),
-  new ContactSlot("other", gt`Other`, "other", false, 0),
+  new ContactSlot("business", gt`Business *=> Business address or phone number`, "work", false, 0),
+  new ContactSlot("home", gt`Home *=> Private address or phone number`, "home", false, 0),
+  new ContactSlot("other", gt`Other *=> Email address or phone number that is not home or work`, "other", false, 0),
 ];
 
 export function phoneSlot(id: string): ContactSlot {

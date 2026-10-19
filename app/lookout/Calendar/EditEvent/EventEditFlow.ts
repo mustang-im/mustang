@@ -142,7 +142,7 @@ export class EventEditFlow {
       }
     } else if (master.recurrenceRule && master.unedited?.recurrenceRule &&
         !master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)) {
-      if (!await showMessageBox(gt`Recurrence`,
+      if (!await showMessageBox(gt`Recurrence *=> Repetition of the event`,
           gt`Any exceptions associated with this recurring appointment will be lost. Is this OK?`)) {
         return false;
       }

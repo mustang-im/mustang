@@ -14,21 +14,21 @@
       <MenuItem label={$t`Edit Rule Settings…`} icon={EditIcon} onClick={onEdit} />
       <MenuItem label={$t`Rename Rule`} icon={RenameIcon} onClick={() => renaming = selected} />
       <MenuDivider />
-      <MenuItem label={$t`Move to Folder…`} icon={MoveIcon} onClick={() => folderAction = "move"} />
-      <MenuItem label={$t`Copy to Folder…`} icon={CopyToFolderIcon} onClick={() => folderAction = "copy"} />
-      <MenuItem label={$t`Delete Message`} icon={DeleteMessageIcon} onClick={onDeleteMessage} />
+      <MenuItem label={$t`Move to Folder… *=> Change the rule so that it moves the emails to a folder`} icon={MoveIcon} onClick={() => folderAction = "move"} />
+      <MenuItem label={$t`Copy to Folder… *=> Change the rule so that it copies the emails to a folder`} icon={CopyToFolderIcon} onClick={() => folderAction = "copy"} />
+      <MenuItem label={$t`Delete Message *=> Change the rule so that it deletes the emails`} icon={DeleteMessageIcon} onClick={onDeleteMessage} />
     </Menu>
-    <DialogButton label={$t`Copy…`} icon={CopyIcon} classes="plain"
+    <DialogButton label={$t`Copy… *=> Copy the selected rule to another account`} icon={CopyIcon} classes="plain"
       disabled={!selected && noSelection} onClick={() => { isCopying = true; }} />
     <DialogButton label={$t`Delete`} icon={DeleteIcon} classes="plain"
       disabled={!selected && noSelection} onClick={onDelete} />
     <hbox class="separator" />
     <DialogButton label="" icon={MoveUpIcon} classes="plain"
-      tooltip={$t`Move Up`}
+      tooltip={$t`Move Up *=> Move the selected rule up in the list`}
       disabled={!canMoveUp && $t`This rule runs first`}
       onClick={() => onMove(-1)} />
     <DialogButton label="" icon={MoveDownIcon} classes="plain"
-      tooltip={$t`Move Down`}
+      tooltip={$t`Move Down *=> Move the selected rule down in the list`}
       disabled={!canMoveDown && $t`This rule runs last`}
       onClick={() => onMove(1)} />
   </hbox>
@@ -55,7 +55,7 @@
   <svelte:fragment slot="footer">
     <DialogButton label={$t`OK`} primary onClick={onOK} />
     <DialogButton label={$t`Cancel`} onClick={onClose} />
-    <DialogButton label={$t`Apply`} onClick={onApply} disabled={!isChanged && $t`There are no changes to apply`} />
+    <DialogButton label={$t`Apply *=> Save the changes and keep the dialog open`} onClick={onApply} disabled={!isChanged && $t`There are no changes to apply`} />
   </svelte:fragment>
 </Dialog>
 {#if isWizardOpen}

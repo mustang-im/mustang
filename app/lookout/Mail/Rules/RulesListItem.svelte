@@ -1,10 +1,10 @@
 <hbox class="cell name" class:broken={isBroken} on:dblclick={() => dispatch("edit")}>
   <span class="text">{$rule.name}</span>
   {#if $rule.when == FilterMoment.Outgoing}
-    <span class="suffix lo-secondary">{$t`(outgoing)`}</span>
+    <span class="suffix lo-secondary">{$t`(outgoing) *=> The rule applies to emails that you send`}</span>
   {/if}
   {#if isBroken}
-    <span class="suffix" title={$t`The target folder does not exist anymore`}>{$t`(Error)`}</span>
+    <span class="suffix" title={$t`The target folder does not exist anymore`}>{$t`(Error) *=> The rule has an error`}</span>
   {/if}
 </hbox>
 <hbox class="cell actions" on:dblclick={() => dispatch("edit")}>

@@ -29,15 +29,15 @@
       <hbox class="buttons">
         <button class="peek-button accept" class:chosen={$event.myParticipation == InvitationResponse.Accept}
           on:click={() => respond(InvitationResponse.Accept)}>
-          <AcceptIcon size="14" /> {$t`Accept`}
+          <AcceptIcon size="14" /> {$t`Accept *=> Accept the invitation to the meeting`}
         </button>
         <button class="peek-button tentative" class:chosen={$event.myParticipation == InvitationResponse.Tentative}
           on:click={() => respond(InvitationResponse.Tentative)}>
-          <TentativeIcon size="14" /> {$t`Tentative`}
+          <TentativeIcon size="14" /> {$t`Tentative *=> Not sure to join this business meeting`}
         </button>
         <button class="peek-button decline" class:chosen={$event.myParticipation == InvitationResponse.Decline}
           on:click={() => respond(InvitationResponse.Decline)}>
-          <DeclineIcon size="14" /> {$t`Decline`}
+          <DeclineIcon size="14" /> {$t`Decline *=> Decline the invitation to the meeting`}
         </button>
       </hbox>
     {:else}

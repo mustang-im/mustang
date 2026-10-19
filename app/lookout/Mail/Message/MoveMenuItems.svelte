@@ -9,9 +9,9 @@
 {#if recent.length}
   <MenuDivider />
 {/if}
-<MenuItem label={$t`Other Folder…`} icon={MoveIcon} shortCutInfo={$t`Ctrl+Shift+V`}
+<MenuItem label={$t`Other Folder… *=> Move the selected emails to another folder`} icon={MoveIcon} shortCutInfo={$t`Ctrl+Shift+V *=> Keyboard shortcut`}
   onClick={() => { $openMoveMessages = { messages, copy: false }; }} />
-<MenuItem label={$t`Copy to Folder…`} icon={CopyIcon} shortCutInfo={$t`Ctrl+Shift+Y`}
+<MenuItem label={$t`Copy to Folder… *=> Copy the selected emails to another folder`} icon={CopyIcon} shortCutInfo={$t`Ctrl+Shift+Y *=> Keyboard shortcut`}
   onClick={() => { $openMoveMessages = { messages, copy: true }; }} />
 
 <script lang="ts">

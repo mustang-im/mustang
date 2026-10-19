@@ -2,7 +2,7 @@
   okDisabled={!$recipients.hasItems && $t`Enter the name of your colleague first`}
   on:close>
   <FormGrid columns="max-content minmax(0, 1fr)">
-    <DialogButton label={$t`Name…`} onClick={() => { isPicking = true; }} />
+    <DialogButton label={$t`Name… *=> Choose the colleague from the address book`} onClick={() => { isPicking = true; }} />
     <hbox class="name-field">
       <MailAutocomplete addresses={recipients} label={$t`Name`} />
     </hbox>

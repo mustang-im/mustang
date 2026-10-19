@@ -1,10 +1,10 @@
 <hbox class="undo-redo">
-  <button class="quick-access" title={$t`Undo (Ctrl+Z)`} aria-label={$t`Undo`}
+  <button class="quick-access" title={$t`Undo (Ctrl+Z)`} aria-label={$t`Undo *=> Undo the last change in the text`}
     disabled={!editor?.can().undo()}
     on:click={() => editor.chain().focus().undo().run()}>
     <UndoIcon size={16} />
   </button>
-  <button class="quick-access" title={$t`Redo (Ctrl+Y)`} aria-label={$t`Redo`}
+  <button class="quick-access" title={$t`Redo (Ctrl+Y)`} aria-label={$t`Redo *=> Redo the last undone change in the text`}
     disabled={!editor?.can().redo()}
     on:click={() => editor.chain().focus().redo().run()}>
     <RedoIcon size={16} />

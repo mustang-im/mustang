@@ -10,9 +10,9 @@
         <vbox class="mode-content">
           <span class="hint">{$t`Import the Digital ID from the file to your computer. You must use the password you entered while exporting the certificate to this file.`}</span>
           <FormGrid columns="150px minmax(0, 1fr) 104px">
-            <span>{$t`Import File`}</span>
-            <TextField value={file?.name ?? ""} readonly label={$t`Import File`} disabled={mode != "import"} />
-            <DialogButton label={$t`Browse…`} onClick={onBrowse} disabled={mode != "import"} />
+            <span>{$t`Import File *=> File that contains the Digital ID to import`}</span>
+            <TextField value={file?.name ?? ""} readonly label={$t`Import File *=> File that contains the Digital ID to import`} disabled={mode != "import"} />
+            <DialogButton label={$t`Browse… *=> Choose a file on the computer`} onClick={onBrowse} disabled={mode != "import"} />
             <span>{$t`Password`}</span>
             <TextField type="password" bind:value={passphrase} label={$t`Password`} disabled={mode != "import"} />
             <span />

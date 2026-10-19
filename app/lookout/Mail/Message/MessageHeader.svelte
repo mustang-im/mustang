@@ -105,19 +105,19 @@
   <MenuItem label={$t`Delete`} icon={DeleteIcon} onClick={() => message.deleteMessage()} />
   <MenuItem label={$message.isRead ? $t`Mark as Unread` : $t`Mark as Read`} icon={$message.isRead ? UnreadIcon : ReadIcon}
     onClick={() => message.markRead(!message.isRead)} />
-  <SubMenu label={$t`Follow Up`} icon={FlagIcon}>
+  <SubMenu label={$t`Follow Up *=> Flag the selected emails for follow-up`} icon={FlagIcon}>
     <FollowUpMenuItems messages={[message]} />
   </SubMenu>
-  <SubMenu label={$t`Categorize`} icon={CategorizeIcon}>
+  <SubMenu label={$t`Categorize *=> Assign a category to the selected emails`} icon={CategorizeIcon}>
     <CategorizeMenuItems messages={[message]} />
   </SubMenu>
-  <SubMenu label={$t`Junk`} icon={JunkIcon}>
+  <SubMenu label={$t`Junk *=> Menu to mark the selected emails as junk or not junk`} icon={JunkIcon}>
     <JunkMenuItems messages={[message]} />
   </SubMenu>
   <MenuDivider />
   <MenuItem label={$t`Print`} icon={PrintIcon} onClick={() => { $printMessage = message; }} />
   <MenuItem label={$t`Save As…`} icon={SaveIcon} onClick={() => MessageActions.saveAs(message)} />
-  <SubMenu label={$t`View`} icon={SourceIcon}>
+  <SubMenu label={$t`View *=> Choose how the email is displayed`} icon={SourceIcon}>
     <DisplayModeSwitcher />
   </SubMenu>
   <MenuItem label={$t`Message Properties…`} icon={PropertiesIcon}

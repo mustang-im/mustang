@@ -10,7 +10,7 @@
     <hbox class="main">
       <vbox flex class="list">
         <ListView items={$tags} columns={[{ label: $t`Name` }]} bind:selected
-          label={$t`Categories`} height="240px" let:item>
+          label={$t`Categories *=> Colored labels to organize emails and other items`} height="240px" let:item>
           <hbox class="category">
             <Checkbox checked={stateOf(item, choiceVersion) == TagState.All}
               indeterminate={stateOf(item, choiceVersion) == TagState.Some}
@@ -23,11 +23,11 @@
         </ListView>
       </vbox>
       <vbox class="commands">
-        <DialogButton label={$t`New…`} onClick={() => { isAdding = true; }} />
+        <DialogButton label={$t`New… *=> Create a new category`} onClick={() => { isAdding = true; }} />
         <DialogButton label={$t`Delete`} disabled={!selected && $t`Select a category first`} onClick={onDelete} />
         <vbox class="color-field">
-          <span>{$t`Color`}</span>
-          <ComboBox label={$t`Color`} options={colorOptions(selected)} value={selected?.color ?? null}
+          <span>{$t`Color *=> Color of the category`}</span>
+          <ComboBox label={$t`Color *=> Color of the category`} options={colorOptions(selected)} value={selected?.color ?? null}
             disabled={!selected && $t`Select a category first`}
             on:change={event => catchErrors(() => onColor(event.detail))} width="100%" swatchColumns={5} />
         </vbox>

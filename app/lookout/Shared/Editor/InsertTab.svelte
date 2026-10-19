@@ -1,16 +1,16 @@
-<RibbonTab label={$t`Insert`}>
-  <RibbonGroup label={$t`Include`}>
+<RibbonTab label={$t`Insert *=> Ribbon tab with commands to insert pictures, links and symbols into the text`}>
+  <RibbonGroup label={$t`Include *=> Ribbon group to add files, links and signatures to the email`}>
     <RibbonButton label={$t`Attach File`} icon={AttachIcon} onClick={onAttachFile} />
     <slot name="include" />
   </RibbonGroup>
   {#if onInsertPicture}
-    <RibbonGroup label={$t`Illustrations`}>
+    <RibbonGroup label={$t`Illustrations *=> Ribbon group with commands to insert pictures`}>
       <RibbonButton label={$t`Pictures`} icon={PictureIcon}
         disabled={!editor} onClick={onInsertPicture} />
     </RibbonGroup>
   {/if}
-  <RibbonGroup label={$t`Links`}>
-    <RibbonButton label={$t`Link`} icon={LinkIcon} shortCutInfo={$t`Ctrl+K`}
+  <RibbonGroup label={$t`Links *=> Ribbon group with commands for links`}>
+    <RibbonButton label={$t`Link *=> Insert or edit a link in the text`} icon={LinkIcon} shortCutInfo={$t`Ctrl+K *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.Link; }} />
   </RibbonGroup>
   <RibbonGroup label={$t`Text`}>
@@ -18,11 +18,11 @@
       tooltip={$t`Insert the current date or time`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.DateTime; }} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Symbols`}>
-    <RibbonMenuButton label={$t`Symbol`} icon={SymbolIcon} disabled={!editor}>
+  <RibbonGroup label={$t`Symbols *=> Ribbon group with commands to insert special characters`}>
+    <RibbonMenuButton label={$t`Symbol *=> Insert a special character, e.g. the copyright sign`} icon={SymbolIcon} disabled={!editor}>
       <SymbolGallery {editor} bind:openedTool />
     </RibbonMenuButton>
-    <RibbonButton label={$t`Horizontal Line`} shortLabel={$t`Line`} icon={HorizontalLineIcon} size="small"
+    <RibbonButton label={$t`Horizontal Line`} shortLabel={$t`Line *=> Short for: Horizontal Line, insert a dividing line into the text`} icon={HorizontalLineIcon} size="small"
       disabled={!editor}
       onClick={() => { editor.chain().focus().setHorizontalRule().run(); }} />
   </RibbonGroup>

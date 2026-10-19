@@ -5,8 +5,8 @@
       <ComboBox label={$t`Search In`} options={scopeOptions} bind:value={draft.scope} width="100%" />
     {/if}
     {#if showSearchTerm}
-      <span class="label">{$t`Keywords`}</span>
-      <TextField label={$t`Keywords`} bind:value={draft.keywords} classes="underlined"
+      <span class="label">{$t`Keywords *=> Words to search for`}</span>
+      <TextField label={$t`Keywords *=> Words to search for`} bind:value={draft.keywords} classes="underlined"
         tooltip={$t`Words in the subject or the message text`}
         on:keydown={onEnter} />
     {/if}
@@ -47,14 +47,14 @@
       </button>
     </hbox>
     <!-- {#if showDates}
-      <span class="label">{$t`Received`}</span>
+      <span class="label">{$t`Received *=> Date when the email was received`}</span>
       <hbox class="dates">
         <DateField label={$t`Start Date`} placeholder={$t`Start Date`} bind:date={draft.startDate} />
-        <span class="lo-secondary">{$t`to`}</span>
+        <span class="lo-secondary">{$t`to *=> as in: Monday to Friday`}</span>
         <DateField label={$t`End Date`} placeholder={$t`End Date`} bind:date={draft.endDate} />
       </hbox>
     {/if} -->
-    <span class="label">{$t`Categories`}</span>
+    <span class="label">{$t`Categories *=> Categories of the email`}</span>
     <hbox class="categories-field">
       <button type="button" class="lo-text-field combo" bind:this={categoriesButton}
         disabled={!$tags.hasItems}
@@ -63,7 +63,7 @@
           {#each draft.tags as tag (tag)}
             <hbox class="category"><CategorySquare {tag} />{tag.name}</hbox>
           {:else}
-            <span class="lo-secondary">{$tags.hasItems ? $t`Any` : $t`No categories yet`}</span>
+            <span class="lo-secondary">{$tags.hasItems ? $t`Any *=> Any category` : $t`No categories yet`}</span>
           {/each}
         </hbox>
         <ChevronIcon size={14} />
@@ -74,13 +74,13 @@
     </hbox>
     <span class="label">{$t`Read status`}</span>
     <ComboBox label={$t`Read status`} options={readOptions} bind:value={draft.readStatus} width="100%" />
-    <span class="label">{$t`Size`}</span>
-    <ComboBox label={$t`Size`} options={sizeOptions} bind:value={draft.size} width="100%" />
+    <span class="label">{$t`Size *=> Size of the file`}</span>
+    <ComboBox label={$t`Size *=> Size of the file`} options={sizeOptions} bind:value={draft.size} width="100%" />
     <span class="label">{$t`Attachments`}</span>
     <Checkbox label={$t`Has Attachments`} bind:checked={draft.hasAttachment} />
-    <span class="label">{$t`Flagged`}</span>
+    <span class="label">{$t`Flagged *=> State of the email that has been flagged for follow-up`}</span>
     <Checkbox label={$t`Flagged for follow up`} bind:checked={draft.flagged} />
-    <span class="label">{$t`Replied`}</span>
+    <span class="label">{$t`Replied *=> State of the email that has been replied to`}</span>
     <Checkbox label={$t`I replied to it`} bind:checked={draft.replied} />
   </grid>
   {#if showButtons}
@@ -146,8 +146,8 @@
     })) as ComboOption<SearchScope>[];
   const readOptions: ComboOption<ReadStatus>[] = [
     { value: ReadStatus.All, label: $t`All` },
-    { value: ReadStatus.Read, label: $t`Read` },
-    { value: ReadStatus.Unread, label: $t`Unread` },
+    { value: ReadStatus.Read, label: $t`Read *=> State of the message that has been read` },
+    { value: ReadStatus.Unread, label: $t`Unread *=> State of the message that has not been read` },
   ];
   const sizeOptions: ComboOption<SizeRange>[] = [SizeRange.Any, ...namedSizeRanges]
     .map(size => ({ value: size, label: sizeRangeLabel(size) }));

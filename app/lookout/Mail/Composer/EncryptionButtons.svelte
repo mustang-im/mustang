@@ -5,7 +5,7 @@
       selected={!!$mail.shouldEncrypt}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
       onClick={toggleEncrypted} />
-    <RibbonToggleButton label={$t`Sign`} icon={SignIcon}
+    <RibbonToggleButton label={$t`Sign *=> Digitally sign this email`} icon={SignIcon}
       tooltip={$t`This proves that I wrote this email`}
       selected={!!$mail.signedByKeyID}
       disabled={$mail.mustEncrypt && $t`Policy requires that this email stays encrypted, to keep protect secret information`}
@@ -14,7 +14,7 @@
     <RibbonButton label={$t`Encrypt`} icon={EncryptIcon}
       tooltip={$t`You need a digital ID to encrypt messages. Set it up in the Trust Center.`}
       onClick={() => openTrustCenter(identity)} />
-    <RibbonButton label={$t`Sign`} icon={SignIcon}
+    <RibbonButton label={$t`Sign *=> Digitally sign this email`} icon={SignIcon}
       tooltip={$t`You need a digital ID to sign messages. Set it up in the Trust Center.`}
       onClick={() => openTrustCenter(identity)} />
   {/if}

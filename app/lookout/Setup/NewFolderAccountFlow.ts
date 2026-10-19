@@ -45,7 +45,7 @@ export async function findServerFolders(config: Calendar | Addressbook, kind: Fo
 
 export async function saveServerFolders(config: Calendar | Addressbook, available: ServerFolder[], chosen: ServerFolder[]) {
   let primary = available.find(folder => chosen.includes(folder));
-  assert(primary, gt`Please choose at least one`);
+  assert(primary, gt`Please choose at least one *=> Choose at least one calendar or address book`);
   // <copied from="../../frontend/Setup/Calendar/CalDAVSelectCalendar.svelte" onContinue()> and Contacts/CardDAVSelectAddressbook.svelte
   if (config instanceof CalDAVCalendar) {
     config.calendarURL = sanitize.url(primary.url);

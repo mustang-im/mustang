@@ -1,30 +1,30 @@
-<RibbonTab label={$t`Format Text`}>
-  <RibbonGroup label={$t`Clipboard`} icon={PasteIcon}>
-    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V`}
+<RibbonTab label={$t`Format Text *=> Ribbon tab with commands to format the text`}>
+  <RibbonGroup label={$t`Clipboard *=> Ribbon group with Cut, Copy and Paste`} icon={PasteIcon}>
+    <RibbonSplitButton label={$t`Paste`} icon={PasteIcon} shortCutInfo={$t`Ctrl+V *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => pasteClipboard(editor)}>
       <MenuItem label={$t`Keep Source Formatting`} icon={PasteIcon} onClick={() => pasteClipboard(editor)} />
       <MenuItem label={$t`Keep Text Only`} icon={PasteTextIcon} onClick={() => pasteClipboardAsText(editor)} />
     </RibbonSplitButton>
-    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X`}
+    <RibbonButton label={$t`Cut`} icon={CutIcon} size="small" shortCutInfo={$t`Ctrl+X *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => cutSelection(editor)} />
-    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C`}
+    <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small" shortCutInfo={$t`Ctrl+C *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => copySelection(editor)} />
   </RibbonGroup>
-  <RibbonGroup label={$t`Font`} icon={BoldIcon}>
+  <RibbonGroup label={$t`Font *=> Ribbon group with commands for the font, e.g. bold`} icon={BoldIcon}>
     <RibbonButtonRow label={$t`Font style`}>
-      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B`}
+      <RibbonToggleButton label={$t`Bold`} icon={BoldIcon} shortCutInfo={$t`Ctrl+B *=> Keyboard shortcut`}
         selected={!!editor?.isActive("bold")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBold())} />
-      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I`}
+      <RibbonToggleButton label={$t`Italic`} icon={ItalicIcon} shortCutInfo={$t`Ctrl+I *=> Keyboard shortcut`}
         selected={!!editor?.isActive("italic")} disabled={!editor}
         onClick={() => run(chain => chain.toggleItalic())} />
-      <RibbonToggleButton label={$t`Underline`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U`}
+      <RibbonToggleButton label={$t`Underline *=> Text formatting: underlined text`} icon={UnderlineIcon} shortCutInfo={$t`Ctrl+U *=> Keyboard shortcut`}
         selected={!!editor?.isActive("underline")} disabled={!editor}
         onClick={() => run(chain => chain.toggleUnderline())} />
-      <RibbonToggleButton label={$t`Strikethrough`} icon={StrikethroughIcon}
+      <RibbonToggleButton label={$t`Strikethrough *=> Text formatting: crossed-out text`} icon={StrikethroughIcon}
         selected={!!editor?.isActive("strike")} disabled={!editor}
         onClick={() => run(chain => chain.toggleStrike())} />
-      <RibbonToggleButton label={$t`Code`} icon={CodeIcon}
+      <RibbonToggleButton label={$t`Code *=> Text formatting: code in a fixed-width font`} icon={CodeIcon}
         tooltip={$t`Code word, within a phrase`}
         selected={!!editor?.isActive("code")} disabled={!editor}
         onClick={() => run(chain => chain.toggleCode())} />
@@ -35,12 +35,12 @@
         onClick={() => run(chain => chain.clearNodes().unsetAllMarks())} />
     </RibbonButtonRow>
   </RibbonGroup>
-  <RibbonGroup label={$t`Paragraph`} icon={BulletsIcon}>
-    <RibbonButtonRow label={$t`Lists`}>
-      <RibbonToggleButton label={$t`Bullets`} icon={BulletsIcon}
+  <RibbonGroup label={$t`Paragraph *=> Buttons for paragraph formatting`} icon={BulletsIcon}>
+    <RibbonButtonRow label={$t`Lists *=> Group with the commands for lists`}>
+      <RibbonToggleButton label={$t`Bullets *=> Format the paragraphs as a bulleted list`} icon={BulletsIcon}
         selected={!!editor?.isActive("bulletList")} disabled={!editor}
         onClick={() => run(chain => chain.toggleBulletList())} />
-      <RibbonToggleButton label={$t`Numbering`} icon={NumberingIcon}
+      <RibbonToggleButton label={$t`Numbering *=> Format the paragraphs as a numbered list`} icon={NumberingIcon}
         selected={!!editor?.isActive("orderedList")} disabled={!editor}
         onClick={() => run(chain => chain.toggleOrderedList())} />
       <RibbonButton label={$t`Decrease Indent`} icon={OutdentIcon}
@@ -57,9 +57,9 @@
         onClick={() => run(chain => chain.toggleBlockquote())} />
     </RibbonButtonRow>
   </RibbonGroup>
-  <RibbonGroup label={$t`Styles`}>
-    <RibbonMenuButton label={$t`Styles`} icon={StylesIcon} disabled={!editor}>
-      <MenuItem label={$t`Normal`} icon={NormalIcon}
+  <RibbonGroup label={$t`Styles *=> Paragraph styles, e.g. headings`}>
+    <RibbonMenuButton label={$t`Styles *=> Paragraph styles, e.g. headings`} icon={StylesIcon} disabled={!editor}>
+      <MenuItem label={$t`Normal *=> Paragraph style for normal text`} icon={NormalIcon}
         checked={!!editor?.isActive("paragraph")}
         onClick={() => run(chain => chain.setParagraph())} />
       <MenuItem label={$t`Heading 1`} icon={Heading1Icon}
@@ -77,13 +77,13 @@
         onClick={() => run(chain => chain.toggleCodeBlock())} />
     </RibbonMenuButton>
   </RibbonGroup>
-  <RibbonGroup label={$t`Editing`} icon={FindIcon}>
-    <RibbonButton label={$t`Find`} icon={FindIcon} size="small" shortCutInfo="F4"
+  <RibbonGroup label={$t`Editing *=> Ribbon group with commands to find, replace and select text`} icon={FindIcon}>
+    <RibbonButton label={$t`Find *=> Find a word in the text`} icon={FindIcon} size="small" shortCutInfo="F4"
       disabled={!editor} onClick={() => { openedTool = EditorTool.Find; }} />
-    <RibbonButton label={$t`Replace`} icon={ReplaceIcon} size="small" shortCutInfo={$t`Ctrl+H`}
+    <RibbonButton label={$t`Replace *=> Replace a word in the text with another one`} icon={ReplaceIcon} size="small" shortCutInfo={$t`Ctrl+H *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { openedTool = EditorTool.Replace; }} />
-    <RibbonMenuButton label={$t`Select`} icon={SelectIcon} size="small" disabled={!editor}>
-      <MenuItem label={$t`Select All`} icon={SelectAllIcon} shortCutInfo={$t`Ctrl+A`}
+    <RibbonMenuButton label={$t`Select *=> Menu with commands to select text`} icon={SelectIcon} size="small" disabled={!editor}>
+      <MenuItem label={$t`Select All`} icon={SelectAllIcon} shortCutInfo={$t`Ctrl+A *=> Keyboard shortcut`}
         onClick={() => run(chain => chain.selectAll())} />
     </RibbonMenuButton>
   </RibbonGroup>

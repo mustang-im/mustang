@@ -12,7 +12,7 @@
       on:choose={() => dialog.submit()} />
   </vbox>
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`New…`} onClick={() => { isCreating = true; }}
+    <DialogButton label={$t`New… *=> Create a new folder`} onClick={() => { isCreating = true; }}
       disabled={!targetAccount && $t`Select an account or a folder first`}
       tooltip={target ? $t`Create a subfolder of ${target.name}` : $t`Create a new folder`} />
   </svelte:fragment>

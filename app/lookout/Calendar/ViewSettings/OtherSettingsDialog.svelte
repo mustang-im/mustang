@@ -2,14 +2,14 @@
   <vbox class="other-settings">
     <GroupBox label={$t`Day and Week`}>
       <hbox class="field-row">
-        <span>{$t`Time scale`}</span>
-        <ComboBox options={timeScaleOptions} bind:value={chosenTimeScale} label={$t`Time scale`} width="260px" />
+        <span>{$t`Time scale *=> Minutes per row in the day and week views`}</span>
+        <ComboBox options={timeScaleOptions} bind:value={chosenTimeScale} label={$t`Time scale *=> Minutes per row in the day and week views`} width="260px" />
       </hbox>
     </GroupBox>
     <GroupBox label={$t`Month and Date Navigator`}>
       <Checkbox label={$t`Show week numbers in the Month View and in the Date Navigator`} bind:checked={chosenWeekNumbers} />
     </GroupBox>
-    <GroupBox label={$t`Meetings`}>
+    <GroupBox label={$t`Meetings *=> Settings for meetings in the calendar`}>
       <Checkbox label={$t`Show declined meetings`} bind:checked={chosenShowDeclined} />
     </GroupBox>
   </vbox>

@@ -11,7 +11,7 @@
     <button class="command" on:click={() => openSettingsDialog({ kind: "import-export", action: "export" })}>
       <hbox class="command-icon"><ExportIcon size={32} strokeWidth={1.25} /></hbox>
       <vbox class="command-text">
-        <span class="command-title">{$t`Export`}</span>
+        <span class="command-title">{$t`Export *=> Export data to a file`}</span>
         <span class="command-description">{$t`Save a calendar, an address book or other data to a file, for use in other programs`}</span>
       </vbox>
     </button>

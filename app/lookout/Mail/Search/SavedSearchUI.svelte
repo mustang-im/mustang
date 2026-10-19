@@ -1,4 +1,4 @@
-<Dialog title={$t`Save Search`}
+<Dialog title={$t`Save Search *=> Save this search as a search folder`}
   okLabel={$t`OK`}
   okDisabled={!name?.trim() && $t`Enter a name`}
   onOK={onSave}

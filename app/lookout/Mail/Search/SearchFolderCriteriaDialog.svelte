@@ -2,7 +2,7 @@
   <!-- <SearchCriteria bind:draft={criteria.draft} showAccount={false} showDates={false} showButtons={false} on:search={() => dialog.submit()} /> -->
   <SearchCriteria bind:draft={criteria.draft} showAccount={false} showButtons={false} on:search={() => dialog.submit()} />
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`Clear All`} onClick={onClear} />
+    <DialogButton label={$t`Clear All *=> Remove all criteria`} onClick={onClear} />
   </svelte:fragment>
 </Dialog>
 

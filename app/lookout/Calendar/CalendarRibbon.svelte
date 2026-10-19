@@ -1,10 +1,10 @@
 <Ribbon>
-  <RibbonTab label={$t`Home`}>
+  <RibbonTab label={$t`Home *=> Ribbon tab with the most-used commands`}>
     <RibbonGroup label={$t`New`}>
-      <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N`}
+      <RibbonButton label={$t`New Appointment`} shortLabel={$t`New Event`} icon={NewAppointmentIcon} shortCutInfo={$t`Ctrl+N *=> Keyboard shortcut`}
         onClick={() => CalendarActions.newEventAtSelection(null)}
         disabled={noCalendar} />
-      <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q`}
+      <RibbonButton label={$t`New Meeting`} icon={NewMeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
         onClick={() => CalendarActions.newEventAtSelection(null, "meeting")}
         disabled={noCalendar} />
       <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon} disabled={noCalendar}>
@@ -17,14 +17,14 @@
         onClick={() => CalendarActions.newEventAtSelection(null, "online-meeting")}
         disabled={noCalendar} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Go To`} onLauncher={openGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
+    <RibbonGroup label={$t`Go To *=> Ribbon group to jump to a date in the calendar`} onLauncher={openGoToDate} launcherTooltip={$t`Go To Date (Ctrl+G)`}>
       <RibbonButton label={$t`Today`} icon={TodayIcon} onClick={() => { goToToday(); showCalendar(); }} />
       <RibbonButton label={$t`Next 7 Days`} icon={NextDaysIcon} onClick={() => { showNext7Days(); showCalendar(); }} />
       {#if isSimplified}
-        <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo={$t`Ctrl+G`} onClick={openGoToDate} />
+        <RibbonButton label={$t`Go To Date`} icon={GoToDateIcon} shortCutInfo={$t`Ctrl+G *=> Keyboard shortcut`} onClick={openGoToDate} />
       {/if}
     </RibbonGroup>
-    <RibbonGroup label={$t`Arrange`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
+    <RibbonGroup label={$t`Arrange *=> Ribbon group to choose the day, week or month view`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
       <ArrangeButtons bind:view bind:dayCount bind:currentView />
     </RibbonGroup>
     <RibbonGroup label={$t`Manage Calendars`}>
@@ -32,7 +32,7 @@
         <OpenCalendarMenuItems />
       </RibbonMenuButton>
     </RibbonGroup>
-    <RibbonGroup label={$t`Share`}>
+    <RibbonGroup label={$t`Share *=> Ribbon group with commands to share the calendar`}>
       <RibbonButton label={$t`Share Calendar`} icon={ShareIcon}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!isShareable && $t`This calendar cannot be shared`} />
@@ -40,19 +40,19 @@
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!isShareable && $t`This calendar cannot be shared`} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Find`}>
+    <RibbonGroup label={$t`Find *=> Ribbon group with search commands`}>
       <SearchPeopleBox on:select={event => ContactActions.show(event.detail)} />
-      <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo={$t`Ctrl+Shift+B`} size="small"
+      <RibbonButton label={$t`Address Book`} icon={AddressBookIcon} shortCutInfo={$t`Ctrl+Shift+B *=> Keyboard shortcut`} size="small"
         onClick={() => openApp(contactsMustangApp, {})} />
     </RibbonGroup>
   </RibbonTab>
   <RibbonTab label={$t`Send / Receive`}>
     <RibbonGroup label={$t`Send & Receive`}>
-      <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update`} icon={SyncIcon}
+      <RibbonButton label={$t`Update Folder`} shortLabel={$t`Update *=> Get the latest items of the selected folder from the server`} icon={SyncIcon}
         tooltip={$t`Get the latest events of the selected calendar`}
         onClick={() => CalendarActions.update([ $selectedCalendar ])}
         disabled={noSelection} />
-      <RibbonButton label={$t`Update All`} icon={SyncAllIcon}
+      <RibbonButton label={$t`Update All *=> Get the latest items of all folders from the server`} icon={SyncAllIcon}
         tooltip={$t`Get the latest events of all calendars`}
         onClick={() => CalendarActions.update($calendars.contents)}
         disabled={noCalendar} />
@@ -75,29 +75,29 @@
         disabled={!canDelete && $t`Only calendars that you added or opened yourself can be removed here`} />
     </RibbonGroup>
     <RibbonGroup label={$t`Open & Share`}>
-      <RibbonMenuButton label={$t`Open Calendar`} shortLabel={$t`Open *=> Open calendar`} icon={OpenCalendarIcon}
+      <RibbonMenuButton label={$t`Open Calendar`} shortLabel={$t`Open`} icon={OpenCalendarIcon}
         tooltip={$t`Open Calendar`}>
         <OpenCalendarMenuItems />
       </RibbonMenuButton>
-      <RibbonButton label={$t`Share Calendar`} shortLabel={$t`Share`} icon={ShareIcon}
+      <RibbonButton label={$t`Share Calendar`} shortLabel={$t`Share *=> Share the selected calendar with other people`} icon={ShareIcon}
         tooltip={$t`Share Calendar`}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!isShareable && $t`This calendar cannot be shared`} />
-      <RibbonButton label={$t`Calendar Permissions`} shortLabel={$t`Permissions`} icon={PermissionsIcon}
+      <RibbonButton label={$t`Calendar Permissions`} shortLabel={$t`Permissions *=> Set who can access the selected folder`} icon={PermissionsIcon}
         tooltip={$t`Calendar Permissions`}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "permissions" }; }}
         disabled={!isShareable && $t`This calendar cannot be shared`} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Properties`}>
-      <RibbonButton label={$t`Calendar Properties`} shortLabel={$t`Properties`} icon={PropertiesIcon}
+    <RibbonGroup label={$t`Properties *=> Ribbon group with the settings of the selected folder`}>
+      <RibbonButton label={$t`Calendar Properties`} shortLabel={$t`Properties *=> Show the settings of the selected folder`} icon={PropertiesIcon}
         tooltip={$t`Calendar Properties`}
         onClick={() => { $openCalendarProperties = { calendar: $selectedCalendar, tab: "general" }; }}
         disabled={noSelection} />
     </RibbonGroup>
   </RibbonTab>
-  <RibbonTab label={$t`View`}>
+  <RibbonTab label={$t`View *=> Ribbon tab with layout and display settings`}>
     <RibbonGroup label={$t`Current View`}>
-      <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views`} icon={ChangeViewIcon}>
+      <RibbonMenuButton label={$t`Change View`} shortLabel={$t`Views *=> Choose another view of the items`} icon={ChangeViewIcon}>
         <ChangeViewGallery views={calendarViews} {currentView} on:change={event => setCurrentView(event.detail)} />
       </RibbonMenuButton>
       <RibbonButton label={$t`View Settings`} icon={ViewSettingsIcon}
@@ -106,23 +106,23 @@
         tooltip={$t`Reset the view and the table columns to the default settings`}
         onClick={resetView} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Arrangement`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
+    <RibbonGroup label={$t`Arrangement *=> Ribbon group for how the items are arranged`} onLauncher={onCalendarOptions} launcherTooltip={$t`Calendar Options`}>
       <ArrangeButtons bind:view bind:dayCount bind:currentView />
-      <RibbonMenuButton label={$t`Time Scale`} icon={TimeScaleIcon} size="small"
+      <RibbonMenuButton label={$t`Time Scale *=> Minutes per row in the day and week views`} icon={TimeScaleIcon} size="small"
         disabled={view == "month" && $t`The time scale applies to the Day, Work Week, Week and Schedule views`}>
         {#each [60, 30, 15, 10, 6, 5] as scale}
           <MenuItem label={timeScaleLabel(scale)} checked={scale == timeScale}
             onClick={() => onTimeScale(scale)} />
         {/each}
       </RibbonMenuButton>
-      <RibbonToggleButton label={$t`Overlay`} icon={OverlayIcon} size="small"
+      <RibbonToggleButton label={$t`Overlay *=> Show the calendars on top of each other`} icon={OverlayIcon} size="small"
         tooltip={$t`Show the calendars on top of each other, instead of side by side`}
         selected={!splitView}
         disabled={overlayDisabled}
         onClick={onOverlay} />
     </RibbonGroup>
-    <RibbonGroup label={$t`Color`}>
-      <RibbonMenuButton label={$t`Color`} icon={ColorIcon}
+    <RibbonGroup label={$t`Color *=> Ribbon group to set the color of the calendar`}>
+      <RibbonMenuButton label={$t`Color *=> Choose the color of the selected calendar`} icon={ColorIcon}
         disabled={noSelection}>
         {#if $selectedCalendar}
           <ColorPalette colors={calendarColors()} selected={$selectedCalendar.color} label={$t`Calendar color`}
@@ -130,21 +130,21 @@
         {/if}
       </RibbonMenuButton>
     </RibbonGroup>
-    <RibbonGroup label={$t`Layout`}>
+    <RibbonGroup label={$t`Layout *=> Ribbon group with settings for the window panes`}>
       <RibbonMenuButton label={$t`Folder Pane`} shortLabel={$t`Folders`} icon={FolderPaneIcon}>
-        <MenuItem label={$t`Normal`} checked={$folderPane.value == CalendarFolderPane.Normal}
+        <MenuItem label={$t`Normal *=> Folder pane at full width`} checked={$folderPane.value == CalendarFolderPane.Normal}
           onClick={() => onFolderPane(CalendarFolderPane.Normal)} />
-        <MenuItem label={$t`Minimized`} checked={$folderPane.value == CalendarFolderPane.Minimized}
+        <MenuItem label={$t`Minimized *=> Folder pane as a narrow bar`} checked={$folderPane.value == CalendarFolderPane.Minimized}
           onClick={() => onFolderPane(CalendarFolderPane.Minimized)} />
-        <MenuItem label={$t`Off`} checked={$folderPane.value == CalendarFolderPane.Off}
+        <MenuItem label={$t`Off *=> The pane is hidden`} checked={$folderPane.value == CalendarFolderPane.Off}
           onClick={() => onFolderPane(CalendarFolderPane.Off)} />
       </RibbonMenuButton>
-      <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading`} icon={ReadingPaneIcon}>
-        <MenuItem label={$t`Right`} checked={$readingPane.value == "right"}
+      <RibbonMenuButton label={$t`Reading Pane`} shortLabel={$t`Reading *=> Reading pane: where the selected item is shown`} icon={ReadingPaneIcon}>
+        <MenuItem label={$t`Right *=> Reading pane on the right side`} checked={$readingPane.value == "right"}
           onClick={() => { $readingPane.value = "right"; }} />
-        <MenuItem label={$t`Bottom`} checked={$readingPane.value == "bottom"}
+        <MenuItem label={$t`Bottom *=> Reading pane at the bottom`} checked={$readingPane.value == "bottom"}
           onClick={() => { $readingPane.value = "bottom"; }} />
-        <MenuItem label={$t`Off`} checked={$readingPane.value == "off"}
+        <MenuItem label={$t`Off *=> The pane is hidden`} checked={$readingPane.value == "off"}
           onClick={() => { $readingPane.value = "off"; }} />
       </RibbonMenuButton>
     </RibbonGroup>
@@ -235,7 +235,7 @@
     { id: CalendarCurrentView.Calendar, label: $t`Calendar`, icon: CalendarViewIcon, tooltip: $t`Day, week and month calendar` },
     { id: CalendarCurrentView.Preview, label: $t`Preview`, icon: PreviewViewIcon, tooltip: $t`Calendar with location and notes in the appointments` },
     { id: CalendarCurrentView.List, label: $t`List`, icon: ListViewIcon, tooltip: $t`All appointments and meetings in a table` },
-    { id: CalendarCurrentView.Active, label: $t`Active`, icon: ActiveViewIcon, tooltip: $t`Appointments and meetings that are still to come` },
+    { id: CalendarCurrentView.Active, label: $t`Active *=> View that shows the upcoming events`, icon: ActiveViewIcon, tooltip: $t`Appointments and meetings that are still to come` },
   ];
   const folderPane = getLocalStorage<CalendarFolderPane>("lookout.calendar.folderPaneMode", CalendarFolderPane.Normal);
   const readingPane = getLocalStorage<ReadingPanePosition>("lookout.calendar.readingPane", "off");
