@@ -270,6 +270,35 @@ test("Making an occurrence all-day makes the entire series all-day, one day long
   expect(master.instances.get(5).endTime.getTime()).toBe(new Date(2027, 1, 9).getTime());
 });
 
+/** A series without time zone, e.g. from a server that sent floating times */
+function weeklySeriesWithoutTimezone(): Event {
+  let master = weeklySeries();
+  master.timezone = null;
+  master.newRecurrenceRule(Frequency.Weekly, 1, 0, [Weekday.Monday]);
+  expect(master.recurrenceRule.timezone).toBeUndefined();
+  return master;
+}
+
+test("Opening an occurrence of a series without time zone doesn't change the series", () => {
+  let master = weeklySeriesWithoutTimezone();
+  openOccurrence(master, 5);
+  expect(master.hasChanged()).toBe(false);
+});
+
+test("Changing only the title of a series without time zone keeps the exceptions", async () => {
+  let master = weeklySeriesWithoutTimezone();
+  let exception = addException(master, 2);
+  let occurrence = openOccurrence(master, 5);
+  occurrence.title = "Renamed";
+  // The dialog asks whether to remove the exceptions when this is false
+  expect(master.unedited.recurrenceRule.timesMatch(master.recurrenceRule)).toBe(true);
+  await saveForSeries(occurrence);
+
+  expect(master.title).toBe("Renamed");
+  expect(master.startTime.getTime()).toBe(new Date(2027, 0, 4, 9, 0).getTime());
+  expect(master.exceptions.contents).toEqual([exception]);
+});
+
 test("A series that ends after a number of times keeps the same occurrences", async () => {
   let master = weeklySeries();
   await master.setRecurrenceCount(10);
