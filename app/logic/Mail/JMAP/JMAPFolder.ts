@@ -64,10 +64,10 @@ export class JMAPFolder extends Folder {
    * But doesn't download their contents. @see downloadMessages() */
   protected async listAllMessages(): Promise<ArrayColl<JMAPEMail>> {
     const batchSize = 200;
-    const kMaxRounds = 5000; // 1,000,000 emails
     let state: string;
     let allNewMessages = new ArrayColl<JMAPEMail>();
     let position = 0;
+    const kMaxRounds = 5000; // 1,000,000 emails
     let previousIDs: string | null = null;
     let isComplete = false;
     for (let round = 1; round <= kMaxRounds; round++) {
