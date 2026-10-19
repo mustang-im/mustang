@@ -94,3 +94,14 @@ test("A new group", async () => {
   expect(card.uid).toMatch(/^urn:uuid:/);
   expect(group.jmapID).toBe("newGroupID");
 });
+
+test("A group name with only components, one of them broken", async () => {
+  let { addressbook } = setup();
+  let group = addressbook.newGroup();
+  group.fromJMAP({
+    "@type": "Card", version: "1.0", kind: "group", uid: "urn:uuid:5a1f0e3c-8d2b-4c6a-9e7f-0b1c2d3e4f5a",
+    name: { components: [{ kind: "given", value: "Choir" }, { kind: "surname", value: null }, { kind: "credential", value: "Tenors" }] },
+    id: "de", addressBookIds: { b: true },
+  } as any as TJMAPContact);
+  expect(group.name).toBe("Choir Tenors");
+});

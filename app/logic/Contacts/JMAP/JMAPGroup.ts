@@ -22,14 +22,14 @@ export class JMAPGroup extends Group {
   fromJMAP(jmap: TJMAPContact) {
     this.jmapID = sanitize.alphanumdash(jmap.id);
     this.uid = sanitize.nonemptystring(jmap.uid, null);
-    this.name = sanitize.nonemptystring(jmap.name?.full, null) ??
-      (jmap.name?.components ?? []).map(component => component.value).join(" ");
-    this.description = sanitize.string(Object.values(jmap.notes ?? {})[0]?.note, "");
+    this.name = sanitize.nonemptylabel(jmap.name?.full, null) ??
+      sanitize.nonemptylabel((jmap.name?.components ?? []).map(component => sanitize.label(component.value, "")).filter(value => value).join(" "), "");
+    this.description = sanitize.label(Object.values(jmap.notes ?? {})[0]?.note, "");
     this.original = jmap;
   }
 
-  /** Members are other cards, by UID, from any JMAP address book.
-   * A card that is in several address books is still one member. */
+  /** Members are persons, by UID, from any JMAP address book.
+   * A person that is in several address books is still one member. */
   findMembers() {
     let memberUIDs = Object.keys(this.original?.members ?? {});
     let members = new Map<string, JMAPPerson>();

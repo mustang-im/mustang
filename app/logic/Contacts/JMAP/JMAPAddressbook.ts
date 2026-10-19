@@ -63,28 +63,28 @@ export class JMAPAddressbook extends Addressbook {
   /** Lists all persons in this addressbook. */
   protected async listAllPersons(): Promise<ArrayColl<JMAPPerson>> {
     const batchSize = 200;
-    const maxRounds = 1000;
+    const kMaxContacts = 200000;
+    let maxRounds = Math.ceil(kMaxContacts / batchSize);
     let state: string;
     let hasMore = true;
     let previousIDs: string | null = null;
     let allNewPersons = new ArrayColl<JMAPPerson>();
-    for (let round = 0; hasMore; round++) {
-      if (round >= maxRounds) {
-        this.errorCallback(new Error(gt`The address book ${this.name} has more than ${maxRounds * batchSize} contacts. Only those were read.`));
-        break;
-      }
+    for (let round = 1; hasMore && round <= maxRounds; round++) {
       let { newPersons, syncState, ids } = await retryOnTransientError(() =>
-        this.fetchPersons(round * batchSize, batchSize + 1));
-      if (ids.join() == previousIDs) {
-        this.errorCallback(new Error(gt`The server sent the same contacts of the address book ${this.name} again, so we stopped reading it`));
+        this.fetchPersons((round - 1) * batchSize, batchSize + 1));
+      let idsJoined = ids.join(" ");
+      if (idsJoined == previousIDs) {
         break;
       }
-      previousIDs = ids.join();
+      previousIDs = idsJoined;
       state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
       hasMore = ids.length > batchSize;
+    }
+    if (hasMore) {
+      this.errorCallback(new Error(`${this.name}: List contacts: The server keeps returning contacts. Stopped.`));
     }
     await this.saveGroups();
     if (state) {
