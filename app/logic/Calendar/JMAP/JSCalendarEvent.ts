@@ -193,6 +193,9 @@ export class JSCalendarEvent {
         let ro = jmap.recurrenceOverrides ??= {};
         this.fromEvent(exception, ro[this.fromDate(exception.recurrenceStartTime, event)] ??= {} as TJMAPCalendarEvent);
       }
+    } else if (jmap.recurrenceRule) { // The user removed the repetition
+      jmap.recurrenceRule = null;
+      jmap.recurrenceOverrides = null;
     }
 
     // Location
