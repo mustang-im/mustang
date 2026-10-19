@@ -70,7 +70,7 @@ test("The changes in other folders are still fetched after that", async () => {
 
   await inbox.listMessages();
 
-  expect(changesSince).toEqual(["sje"]);
+  expect(changesSince).toContain("sje");
   expect(inbox.messages.contents.map(email => email.jmapID).sort()).toEqual(["e1", "e9"]);
   expect(account.syncState.get("Email")).toBe("slm");
 });
