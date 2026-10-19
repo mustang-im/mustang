@@ -8,14 +8,15 @@ import type { TJMAPMethodResponse, TJMAPSession } from "../../../../logic/Mail/J
 import { ArrayColl } from "svelte-collections";
 import { expect, test } from "vitest";
 
-/** Records whether the backend was asked to keep the Bcc header */
-let keepBccCalls: boolean[] = [];
-const kMIME = new TextEncoder().encode("From: mail-alice@example.com\r\nBcc: secret@example.com\r\n\r\nHi\r\n");
+/** Like `getMIMENodemailer()` in the backends: nodemailer leaves out the Bcc header, unless told to keep it */
 appGlobal.remoteApp = {
   kyCreate: () => { throw new Error("The test should not talk to a real server") },
-  getMIMENodemailer: async (mail: any, keepBcc: boolean) => {
-    keepBccCalls.push(keepBcc);
-    return kMIME;
+  getMIMENodemailer: async (mail: any, keepBcc = false) => {
+    let lines = [`From: ${mail.from.address}`, `To: ${mail.to.map(to => to.address).join(", ")}`];
+    if (keepBcc && mail.bcc?.length) {
+      lines.push(`Bcc: ${mail.bcc.map(bcc => bcc.address).join(", ")}`);
+    }
+    return new TextEncoder().encode(lines.join("\r\n") + "\r\n\r\n" + mail.text + "\r\n");
   },
 } as any;
 
@@ -24,10 +25,14 @@ function newDraft() {
   account.accountID = "e";
   account.emailAddress = "mail-alice@example.com";
   account.session = { capabilities: {}, accounts: {}, primaryAccounts: {} } as any as TJMAPSession;
-  account.uploadBlob = async () => ({ accountId: "e", blobId: "blob1", type: "message/rfc822", size: kMIME.length });
+  let uploaded: string[] = [];
+  account.uploadBlob = async (blob: Buffer) => {
+    uploaded.push(blob.toString());
+    return { accountId: "e", blobId: "blob1", type: "message/rfc822", size: blob.length };
+  };
   // Recorded from Stalwart
   account.makeCalls = async (requests: [string, Record<string, any>, string?][]) => [
-    ["Email/import", { accountId: "e", oldState: "spi", newState: "spm", created: { addMessage: { id: "eaaaaab", blobId: "blob1", threadId: "b", size: kMIME.length } } }, requests[0][2]],
+    ["Email/import", { accountId: "e", oldState: "spi", newState: "spm", created: { addMessage: { id: "eaaaaab", blobId: "blob1", threadId: "b", size: 120 } } }, requests[0][2]],
   ] as TJMAPMethodResponse[];
   let drafts = account.newFolder() as JMAPFolder;
   drafts.id = "d";
@@ -38,23 +43,22 @@ function newDraft() {
   email.to.add(new PersonUID("mail-bob@example.com", "Bob"));
   email.bcc.add(new PersonUID("secret@example.com", "Secret"));
   email.text = "Hi";
-  return { drafts, email };
+  return { drafts, email, uploaded };
 }
 
 test("A saved draft keeps its Bcc recipients", async () => {
-  keepBccCalls = [];
-  let { drafts, email } = newDraft();
+  let { drafts, email, uploaded } = newDraft();
 
   await drafts.addMessage(email);
 
-  expect(keepBccCalls).toEqual([true]);
+  expect(uploaded.length).toBe(1);
+  expect(uploaded[0]).toMatch(/^Bcc:.*secret@example\.com/m);
 });
 
 test("The MIME that is sent or encrypted has no Bcc header", async () => {
-  keepBccCalls = [];
   let { email } = newDraft();
 
-  await CreateMIME.getMIME(email);
+  let mime = new TextDecoder().decode(await CreateMIME.getMIME(email));
 
-  expect(keepBccCalls).toEqual([false]);
+  expect(mime).not.toMatch(/^Bcc:/m);
 });
