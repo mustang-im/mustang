@@ -1,5 +1,3 @@
-<svelte:window on:keydown|capture={onKeyDownCapture} />
-
 <vbox flex class="main-window desktop lookout-window" dir={rtl}>
   <WindowHeader selectedApp={$selectedApp} bind:this={windowHeader} />
   <vbox flex class="below-title">
@@ -30,15 +28,17 @@
   <MessageBoxHost />
 </vbox>
 
+<svelte:window on:keydown|capture={onKeyDownCapture} />
+
 <script lang="ts">
   import lookoutCSS from "../app.css?inline";
   import { selectedApp, sidebarApp, history, openApp, mustangApps } from "../../frontend/AppsBar/selectedApp";
   import { notifications } from "../../logic/util/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { isBackstageOpen } from "../Settings/Backstage/selected";
-  import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-  import { Keyboard } from "../Util/keyboard";
+  import { getKeyDigit } from "../Util/util";
+  import { getOSName } from "../../frontend/Util/util";
   import { MessageActions } from "../Mail/MessageActions";
   import { ContactActions } from "../Contacts/ContactActions";
   import { selectedFolder } from "../../frontend/Mail/Selected";
@@ -93,45 +93,98 @@
   onDestroy(() => window.removeEventListener("keydown", onKeyDown));
 
   function onKeyDown(event: KeyboardEvent) {
-    if (event.defaultPrevented || event.cancelBubble || Keyboard.isEditor(event.target) ||
-        document.querySelector("dialog:modal")) {
-      return;
-    }
-    let action = GlobalKeys.actionFor(event);
-    if (!action) {
-      return;
-    }
-    event.preventDefault();
-    catchErrors(() => runAction(action));
+    catchErrors(() => onKeyOnWindow(event));
   }
 
-  function runAction(action: GlobalKeyAction) {
-    switch (action) {
-      case GlobalKeyAction.Mail:
-        return openApp(mailMustangApp, mailMustangApp.windowParams);
-      case GlobalKeyAction.Calendar:
-        return openApp(calendarMustangApp, calendarMustangApp.windowParams);
-      case GlobalKeyAction.People:
-        return openApp(contactsMustangApp, contactsMustangApp.windowParams);
-      case GlobalKeyAction.NewMail:
-        return mailMustangApp.writeMail(MessageActions.accountForNewMail($selectedFolder).newEMailFrom());
-      case GlobalKeyAction.NewAppointment:
-        return createNewEvent(get(selectedCalendar), new Date(), false);
-      case GlobalKeyAction.NewMeeting:
-        return MessageActions.newMeeting();
-      case GlobalKeyAction.NewContact:
-        return MessageActions.newContact();
-      case GlobalKeyAction.NewContactGroup:
-        return ContactActions.newGroup(null);
-      case GlobalKeyAction.AddressBook:
-        return openApp(contactsMustangApp, {});
-      case GlobalKeyAction.Search:
-        return windowHeader?.focusSearch();
-      case GlobalKeyAction.TellMe:
-        return openTellMe();
-      case GlobalKeyAction.CollapseRibbon:
+  function onKeyOnWindow(event: KeyboardEvent) {
+    let target = event.target as HTMLElement;
+    if (event.defaultPrevented || event.cancelBubble || document.querySelector("dialog:modal") ||
+        target?.closest?.("[contenteditable]:not([contenteditable='false'])")) {
+      return;
+    }
+    let isCtrl = event.ctrlKey || event.metaKey;
+    let key = event.key.length == 1 ? event.key.toLowerCase() : event.key;
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      let digit = getKeyDigit(event);
+      if (digit == 1) {
+        event.preventDefault();
+        event.stopPropagation();
+        openApp(mailMustangApp, mailMustangApp.windowParams);
+        return;
+      } else if (digit == 2) {
+        event.preventDefault();
+        event.stopPropagation();
+        openApp(calendarMustangApp, calendarMustangApp.windowParams);
+        return;
+      } else if (digit == 3 || digit == 4) {
+        event.preventDefault();
+        event.stopPropagation();
+        openApp(contactsMustangApp, contactsMustangApp.windowParams);
+        return;
+      } else if (key == "e") {
+        event.preventDefault();
+        event.stopPropagation();
+        windowHeader?.focusSearch();
+        return;
+      } else if (key == "F1") {
+        event.preventDefault();
+        event.stopPropagation();
         $ribbonCollapsed.value = !$ribbonCollapsed.value;
         return;
+      }
+    }
+    // Ctrl+Shift+
+    if (isCtrl && event.shiftKey && !event.altKey) {
+      if (key == "m") {
+        event.preventDefault();
+        event.stopPropagation();
+        mailMustangApp.writeMail(MessageActions.accountForNewMail($selectedFolder).newEMailFrom());
+        return;
+      } else if (key == "a") {
+        event.preventDefault();
+        event.stopPropagation();
+        createNewEvent(get(selectedCalendar), new Date(), false);
+        return;
+      } else if (key == "q") {
+        event.preventDefault();
+        event.stopPropagation();
+        MessageActions.newMeeting();
+        return;
+      } else if (key == "c") {
+        event.preventDefault();
+        event.stopPropagation();
+        MessageActions.newContact();
+        return;
+      } else if (key == "l") {
+        event.preventDefault();
+        event.stopPropagation();
+        ContactActions.newGroup(null);
+        return;
+      } else if (key == "b") {
+        event.preventDefault();
+        event.stopPropagation();
+        openApp(contactsMustangApp, {});
+        return;
+      }
+    }
+    // Alt+ (Option+Q types a character on macOS)
+    if (event.altKey && !isCtrl && !event.shiftKey && getOSName() != "macintosh") {
+      if (event.code == "KeyQ") {
+        event.preventDefault();
+        event.stopPropagation();
+        openTellMe();
+        return;
+      }
+    }
+    // No modifier
+    if (!isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "F3") {
+        event.preventDefault();
+        event.stopPropagation();
+        windowHeader?.focusSearch();
+        return;
+      }
     }
   }
 
