@@ -18,7 +18,7 @@ import { appName } from "../../logic/build";
 import { openExternalURL } from "../../logic/util/os-integration";
 import { goTo, openApp } from "../../frontend/AppsBar/selectedApp";
 import { contactsMustangApp } from "../../frontend/Contacts/ContactsMustangApp";
-import { URLPart } from "../../frontend/Util/util";
+import { URLPart } from "../../logic/util/blob";
 import { assert } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { get } from "svelte/store";

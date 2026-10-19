@@ -22,7 +22,8 @@ import { selectedFolder, selectedMessage, selectedMessages } from "../../fronten
 import { openPersonFromOtherApp } from "../../frontend/Contacts/open";
 import { goTo, openApp, selectedApp } from "../../frontend/AppsBar/selectedApp";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
-import { saveBlobAsFile, URLPart } from "../../frontend/Util/util";
+import { saveBlobAsFile } from "../../frontend/Util/util";
+import { URLPart } from "../../logic/util/blob";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../logic/util/util";
 import { ArrayColl } from "svelte-collections";
