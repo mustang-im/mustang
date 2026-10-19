@@ -72,3 +72,11 @@ test("New chat accounts get a URI, where the protocol has one", () => {
     ["+49 170 1234567", "signal"],
   ]);
 });
+
+test("A chat account with an empty user name shows the URI", () => {
+  let person = new Person();
+  let jscontact = serverCard();
+  jscontact.onlineServices = { k1: { user: "", uri: "xmpp:erika@chat.example" } };
+  JSContact.toPerson(jscontact, person);
+  expect(person.chatAccounts.contents.map(entry => [entry.value, entry.protocol])).toEqual([["erika@chat.example", "xmpp"]]);
+});

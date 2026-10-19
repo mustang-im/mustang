@@ -80,16 +80,16 @@ export class JSContact {
   protected static readonly chatURISchemes = ["xmpp", "sip", "sips"];
 
   protected static fromOnlineServiceToValue(service: TOnlineService): string | null {
-    let scheme = JSContact.uriScheme(service.uri);
-    let value = service.user ?? (JSContact.chatURISchemes.includes(scheme)
-      ? service.uri.slice(scheme.length + 1)
-      : service.uri);
-    return sanitize.nonemptystring(value, null);
+    let uri = sanitize.nonemptystring(service.uri, null);
+    let scheme = JSContact.uriScheme(uri);
+    return sanitize.nonemptystring(service.user, null) ?? (JSContact.chatURISchemes.includes(scheme)
+      ? sanitize.nonemptystring(uri.slice(scheme.length + 1), null)
+      : uri);
   }
 
   protected static fromOnlineServiceToProtocol(service: TOnlineService): string | null {
-    let scheme = JSContact.uriScheme(service.uri);
-    return sanitize.nonemptystring(service.service, null)?.toLowerCase() ??
+    let scheme = JSContact.uriScheme(sanitize.nonemptystring(service.uri, null));
+    return sanitize.nonemptylabel(service.service, null)?.toLowerCase() ??
       (scheme == "http" || scheme == "https" ? null : scheme);
   }
 
