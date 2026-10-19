@@ -186,41 +186,18 @@ export class EventEditFlow {
     let before = master.calendar.newEvent();
     before.copyFrom(master);
     master.startEditing();
-    this.applyOccurrenceToSeries();
+    let isEndChanged = this.seriesEndChanged;
+    master.copyEditableFieldsFromOccurrence(event);
     if (!await this.confirmAndChangeRecurrenceRule()) {
       master.copyFrom(before);
       return;
     }
-    await this.pattern.applyEndTo(master);
+    if (isEndChanged) {
+      await this.pattern.applyEndTo(master);
+    }
     await master.save();
     master.finishEditing();
     this.close();
-  }
-
-  // Unlike frontend, the series keeps its first occurrence. A changed day or time of the occurrence moves all occurrences.
-  protected applyOccurrenceToSeries() {
-    let event = this.event;
-    let master = event.parentEvent;
-    let original = event.unedited ?? event;
-    let dayShift = EventEditFlow.daysBetween(original.startTime, event.startTime);
-    let start = EventEditFlow.shift(master.startTime, dayShift, EventEditFlow.minutesOfDayBetween(original.startTime, event.startTime));
-    let duration = event.duration != original.duration ? event.duration : master.duration;
-    let timesChanged = start.getTime() != master.startTime.getTime() || duration != master.duration ||
-      event.allDay != master.allDay || event.timezone != original.timezone;
-    let { startTime, endTime, timezone, recurrenceRule: rule } = master;
-    master.copyEditableFieldsFrom(event);
-    if (timesChanged) {
-      master.startTime = start;
-      master.duration = duration;
-    } else {
-      master.startTime = startTime;
-      master.endTime = endTime;
-      master.timezone = timezone;
-    }
-    Reminder.setMinutesBefore(master, Reminder.minutesBefore(event));
-    if (timesChanged && rule) {
-      EventEditFlow.moveRecurrence(master, rule, dayShift);
-    }
   }
 
   // The Scheduling Assistant changes the times of a series directly, without the recurrence dialog
