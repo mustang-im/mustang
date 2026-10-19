@@ -76,7 +76,7 @@
   import ForwardedIcon from "lucide-svelte/icons/forward";
   import PicturesIcon from "lucide-svelte/icons/image-off";
   import PlainTextIcon from "lucide-svelte/icons/file-text";
-  import { catchErrors, backgroundError } from "../../../frontend/Util/error";
+  import { catchErrors, minorError } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
 
@@ -92,7 +92,7 @@
   let reply: EMail | null = null;
   let isSearching = false;
   $: isReplied = $message.isReplied;
-  $: catchErrors(() => findReply(message, isReplied), backgroundError);
+  $: catchErrors(() => findReply(message, isReplied), minorError);
   async function findReply(original: EMail, isReplied: boolean) {
     reply = null;
     if (!isReplied) {

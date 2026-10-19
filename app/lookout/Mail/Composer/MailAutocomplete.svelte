@@ -52,7 +52,7 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { searchContacts } from "../../../logic/Contacts/Search";
   import { UserError } from "../../../logic/util/util";
-  import { showError, backgroundError } from "../../../frontend/Util/error";
+  import { showError, minorError } from "../../../frontend/Util/error";
   import { RecipientText } from "./RecipientText";
   import AutocompleteList from "./AutocompleteList.svelte";
   import PersonCircle from "../../Contacts/Person/PersonCircle.svelte";
@@ -182,7 +182,7 @@
 
   function onInput() {
     selected = null;
-    updateSuggestions().catch(backgroundError);
+    updateSuggestions().catch(minorError);
   }
 
   function onKeyDown(event: KeyboardEvent) {

@@ -33,7 +33,7 @@
 <script lang="ts">
   import lookoutCSS from "../app.css?inline";
   import { selectedApp, sidebarApp, history, openApp, mustangApps } from "../../frontend/AppsBar/selectedApp";
-  import { notifications } from "../../frontend/MainWindow/Notification";
+  import { notifications } from "../../logic/util/Notification";
   import { meetMustangApp } from "../../frontend/Meet/MeetMustangApp";
   import { isBackstageOpen } from "../Settings/Backstage/selected";
   import { GlobalKeyAction, GlobalKeys } from "./GlobalKeys";

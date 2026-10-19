@@ -1,7 +1,7 @@
 import { HourLabel } from "./DayView/HourLabel";
 import { WindowsToIANATimezone } from "../../logic/Calendar/ICal/WindowsTimezone";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
-import { logError } from "../../frontend/Util/error";
+import { logErrorToServer } from "../../frontend/Util/error";
 
 export class ZoneClock {
   readonly zone: string | undefined;
@@ -124,7 +124,7 @@ export class TimeZoneRuler {
       try {
         rulers.push(new TimeZoneRuler(extra.zone, extra.label, locale));
       } catch (ex) {
-        logError(ex);
+        logErrorToServer(ex);
       }
     }
     rulers.push(new TimeZoneRuler(null, label, locale));
@@ -180,7 +180,7 @@ export class TimeZoneChoice {
       try {
         choices.push(new TimeZoneChoice(zone, locale));
       } catch (ex) {
-        logError(ex);
+        logErrorToServer(ex);
       }
     }
     return choices.sort((a, b) => a.standardOffset - b.standardOffset || a.label.localeCompare(b.label));

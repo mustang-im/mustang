@@ -1,6 +1,6 @@
 import type { EMail } from "../../../logic/Mail/EMail";
 import { EMailCollection } from "../../../logic/Mail/Store/EMailCollection";
-import { backgroundError } from "../../../frontend/Util/error";
+import { minorError } from "../../../frontend/Util/error";
 
 export class MessageMetadata {
   // Does what `EMailCollection.getIndexRange()` does for the frontend's list, which shows the collection in its own order
@@ -17,7 +17,7 @@ export class MessageMetadata {
     }
     for (let [collection, list] of byCollection) {
       collection.readMessagesFromDB_parallel(list)
-        .catch(backgroundError);
+        .catch(minorError);
     }
   }
 }

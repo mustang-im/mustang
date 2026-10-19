@@ -158,7 +158,7 @@
   import { get } from "svelte/store";
   import { MessageActions } from "../MessageActions";
   import { goBack } from "../../../frontend/AppsBar/selectedApp";
-  import { backgroundError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
+  import { minorError, catchErrors, showError, showUserError } from "../../../frontend/Util/error";
   import { ComposerShortcuts, ComposerCommand } from "./ComposerShortcuts";
   import { Keyboard } from "../../Util/keyboard";
   import { ComposerEncryption } from "./ComposerEncryption";
@@ -245,7 +245,7 @@
     }
 
     loadText()
-      .catch(backgroundError);
+      .catch(minorError);
   }
 
   let loading = false;

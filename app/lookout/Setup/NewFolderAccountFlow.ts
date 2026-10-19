@@ -6,7 +6,7 @@ import { newCalendarForProtocol } from "../../logic/Calendar/AccountsList/Calend
 import { newAddressbookForProtocol } from "../../logic/Contacts/AccountsList/Addressbooks";
 import { AuthMethod } from "../../logic/Abstract/Account";
 import { appGlobal } from "../../logic/app";
-import { backgroundError } from "../../frontend/Util/error";
+import { minorError } from "../../frontend/Util/error";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { assert } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
@@ -74,7 +74,7 @@ export class NewFolderAccountFlow {
         appGlobal.calendars.add(sub);
         await sub.save();
         sub.listEvents()
-          .catch(backgroundError);
+          .catch(minorError);
       } else if (config instanceof CardDAVAddressbook) {
         let sub = newAddressbookForProtocol(config.protocol) as CardDAVAddressbook;
         sub.initFromMainAccount(config);
@@ -83,7 +83,7 @@ export class NewFolderAccountFlow {
         appGlobal.addressbooks.add(sub);
         await sub.save();
         sub.listContacts()
-          .catch(backgroundError);
+          .catch(minorError);
       }
     }
     // </copied>

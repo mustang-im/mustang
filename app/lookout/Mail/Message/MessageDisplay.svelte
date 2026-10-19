@@ -43,7 +43,7 @@
   import SMLDisplayKinds from "../SML/SMLDisplayKinds.svelte";
   import InvitationInMail from "../../Calendar/Invitation/InvitationInMail.svelte";
   import MessageBody from "../../../frontend/Mail/Message/MessageBody.svelte";
-  import { catchErrors, backgroundError } from "../../../frontend/Util/error";
+  import { catchErrors, minorError } from "../../../frontend/Util/error";
   import { onDestroy } from "svelte";
 
   export let message: EMail;
@@ -56,7 +56,7 @@
     shownMessage = message;
     catchErrors(onMessageChanged);
   }
-  $: catchErrors(() => markMessageAsRead(shownMessage, readDelay), backgroundError);
+  $: catchErrors(() => markMessageAsRead(shownMessage, readDelay), minorError);
 
   let reply: InlineReply | null = null;
   let focusReply = false;
