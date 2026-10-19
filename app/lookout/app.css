@@ -283,3 +283,8 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   border-radius: 2px;
   background-color: var(--lo-accent);
 }
+
+:root {
+  --island-radius: var(--lo-radius-small);
+  --island-overlap: 0;
+}
