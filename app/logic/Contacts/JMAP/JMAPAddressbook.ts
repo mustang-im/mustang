@@ -63,17 +63,28 @@ export class JMAPAddressbook extends Addressbook {
   /** Lists all persons in this addressbook. */
   protected async listAllPersons(): Promise<ArrayColl<JMAPPerson>> {
     const batchSize = 200;
+    const maxRounds = 1000;
     let state: string;
     let hasMore = true;
+    let previousIDs: string | null = null;
     let allNewPersons = new ArrayColl<JMAPPerson>();
-    for (let i = 0; hasMore; i += batchSize) {
-      let { newPersons, syncState, count } = await retryOnTransientError(() =>
-        this.fetchPersons(i, batchSize + 1));
+    for (let round = 0; hasMore; round++) {
+      if (round >= maxRounds) {
+        this.errorCallback(new Error(gt`The address book ${this.name} has more than ${maxRounds * batchSize} contacts. Only those were read.`));
+        break;
+      }
+      let { newPersons, syncState, ids } = await retryOnTransientError(() =>
+        this.fetchPersons(round * batchSize, batchSize + 1));
+      if (ids.join() == previousIDs) {
+        this.errorCallback(new Error(gt`The server sent the same contacts of the address book ${this.name} again, so we stopped reading it`));
+        break;
+      }
+      previousIDs = ids.join();
       state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
-      hasMore = count > batchSize;
+      hasMore = ids.length > batchSize;
     }
     await this.saveGroups();
     if (state) {
@@ -82,7 +93,7 @@ export class JMAPAddressbook extends Addressbook {
     return allNewPersons;
   }
 
-  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string, count: number }> {
+  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string, ids: TID[] }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPContact>;
     let lock = await this.account.stateLock.lock();
@@ -119,7 +130,7 @@ export class JMAPAddressbook extends Addressbook {
       return {
         ...this.parsePersonsList(listResponse.list),
         syncState: listResponse.state,
-        count: listResponse.list.length,
+        ids: listResponse.list.map(card => card.id),
       };
     } finally {
       lock.release();
