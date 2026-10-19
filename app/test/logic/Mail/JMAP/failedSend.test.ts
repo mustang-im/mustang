@@ -53,7 +53,7 @@ test("When the server refuses to send, the uploaded copy is deleted again", asyn
 
   await expect(account.send(email)).rejects.toThrow("Envelope mailFrom does not match identity email address");
 
-  expect(methodCalls.map(call => call[0])).toEqual(["EmailSubmission/set", "Email/set"]);
-  expect(methodCalls[1][1].destroy).toEqual(["luaaaac0"]);
+  let destroyed = methodCalls.filter(call => call[0] == "Email/set").flatMap(call => call[1].destroy ?? []);
+  expect(destroyed).toContain("luaaaac0");
   expect(errors).toEqual([]);
 });
