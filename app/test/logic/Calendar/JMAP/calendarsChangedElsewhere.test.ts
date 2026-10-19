@@ -37,11 +37,15 @@ function newAccount(accountID: string, mainAccount?: JMAPAccount) {
     account.initFromMainAccount(mainAccount);
   }
   account.accountID = accountID;
-  let server = { calendars: [] as TJMAPCalendar[] | null };
+  let server = { calendars: [] as TJMAPCalendar[] | "forbidden" | "fails" };
   account.makeSingleCall = async (method: string, args: any) => {
     expect(method).toBe("Calendar/get");
-    if (!server.calendars) {
-      throw Object.assign(new Error("You are not an owner of account " + accountID), { code: "forbidden" });
+    if (server.calendars == "forbidden") {
+      // What Stalwart answers when the other user shares no calendar (any more)
+      throw Object.assign(new Error("You do not have access to account " + accountID), { code: "forbidden" });
+    }
+    if (server.calendars == "fails") {
+      throw Object.assign(new Error("HTTP POST <http://127.0.0.1:18080/jmap/> failed with 503 Service Unavailable"), { httpCode: 503 });
     }
     return { accountId: args.accountId, state: "s" + Math.random(), list: server.calendars, notFound: [] };
   };
@@ -78,15 +82,31 @@ test("A calendar deleted elsewhere is removed here", async () => {
   expect(appGlobal.calendars.contents.map(cal => (cal as JMAPCalendar).jmapID)).toEqual(["b"]);
 });
 
-test("Calendars that are no longer shared with us are removed", async () => {
+test("A calendar that is no longer shared with us is removed, when the server lists the others", async () => {
+  let { account: bob } = newAccount("v");
+  let { account: alice, server } = newAccount("u", bob);
+  server.calendars = [calendar("b", "Stalwart Calendar (alice@example.com)", true), calendar("c", "Alice Team")];
+  await alice.listCalendars();
+  expect(calendarNames(alice)).toEqual(["Stalwart Calendar (alice@example.com)", "Alice Team"]);
+
+  server.calendars = [calendar("b", "Stalwart Calendar (alice@example.com)", true)];
+  await alice.listCalendars();
+
+  expect(calendarNames(alice)).toEqual(["Stalwart Calendar (alice@example.com)"]);
+});
+
+test("When the server doesn't list the calendars, ours and their events stay", async () => {
   let { account: bob } = newAccount("v");
   let { account: alice, server } = newAccount("u", bob);
   server.calendars = [calendar("c", "Alice Team")];
   await alice.listCalendars();
+
+  // A refusal or an error is no list of calendars, so it's no reason to delete ours
+  server.calendars = "forbidden";
+  await alice.listCalendars();
   expect(calendarNames(alice)).toEqual(["Alice Team"]);
 
-  server.calendars = null; // Stalwart: `forbidden` when nothing is shared any more
-  await alice.listCalendars();
-
-  expect(calendarNames(alice)).toEqual([]);
+  server.calendars = "fails";
+  await expect(alice.listCalendars()).rejects.toThrow("503");
+  expect(calendarNames(alice)).toEqual(["Alice Team"]);
 });

@@ -787,7 +787,6 @@ export class JMAPAccount extends MailAccount {
       accountId: this.accountID,
     });
     if (!response) {
-      await this.updateCalendars([]);
       return; // Another user's account, and they did not share their calendars with us
     }
     let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
