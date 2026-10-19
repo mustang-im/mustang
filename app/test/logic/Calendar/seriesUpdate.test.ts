@@ -107,3 +107,25 @@ test("A new series end keeps the exceptions within the series", async () => {
   expect(master.exceptions.contains(early)).toBe(true);
   expect(master.exceptions.contains(late)).toBe(false);
 });
+
+// "This and following" and "Delete this and following" shortened the old series
+// outside of an editing session, so `hasChanged()` was false, and the attendees
+// kept the removed occurrences in their calendars.
+test.each([
+  ["no end"],
+  ["10 times"],
+  ["1 March"],
+])("Attendees get an update when a series with %s is truncated", async (before) => {
+  let master = meetingSeries();
+  await kSeriesEnds[before](master);
+  let early = addException(master, 1);
+  let sendInvitations = spyOnInvitations();
+
+  let instance = master.getOccurrenceByDate(master.recurrenceRule.getOccurrenceByIndex(3));
+  await instance.truncateRecurrence();
+
+  expect(sendInvitations).toHaveBeenCalledTimes(1);
+  expect(master.recurrenceRule.count).toBe(3);
+  expect(master.unedited).toBeNull();
+  expect(master.exceptions.contains(early)).toBe(true);
+});

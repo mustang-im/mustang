@@ -1013,6 +1013,7 @@ export class Event extends Observable {
   async truncateRecurrence() {
     let master = this.parentEvent;
     assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must a Recurrence.Master");
+    master.startEditing();
     let lastException = this.recurrenceStartTime;
     for (let exception of master.exceptions) {
       if (exception.recurrenceStartTime > lastException) {
@@ -1035,6 +1036,7 @@ export class Event extends Observable {
       await this.calendar.storage.deleteEvent(this);
     }
     await master.save();
+    master.finishEditing();
   }
 }
 
