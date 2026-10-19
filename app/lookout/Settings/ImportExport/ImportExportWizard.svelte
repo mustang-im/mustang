@@ -184,9 +184,9 @@
   ] as { label: string, icon: ConstructorOfATypedSvelteComponent, sources: { source: Calendar | Addressbook | Topic, depth: number, accountName?: string }[] }[];
 
   $: fileTypes = (source instanceof Calendar
-    ? [ { id: "text/calendar", icon: CalendarIcon, label: $t`iCalendar (.ics)` } ]
+    ? [ { id: "text/calendar", icon: CalendarIcon, label: "iCalendar (.ics)" } ]
     : source instanceof Addressbook
-    ? [ { id: "text/vcard", icon: AddressbookIcon, label: $t`vCard (.vcf)` } ]
+    ? [ { id: "text/vcard", icon: AddressbookIcon, label: "vCard (.vcf)" } ]
     : source
     ? [
       { id: "text/html", icon: HTMLIcon, label: $t`Web page (.html)` },

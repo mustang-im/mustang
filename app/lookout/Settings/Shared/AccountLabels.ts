@@ -5,9 +5,9 @@ export function getAccountTypeLabel(account: Account): string {
   let protocol = account.protocol?.replace(/^(calendar|addressbook|gal)-/, "");
   switch (protocol) {
     case "imap":
-      return "IMAP/SMTP";
+      return "IMAP";
     case "pop3":
-      return "POP/SMTP";
+      return "POP3";
     case "ews":
     case "owa":
       return "Microsoft Exchange";
