@@ -16,6 +16,7 @@ import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
 import { checkChangeError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
+import { minorError } from "../../util/error";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions, type Folder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
@@ -29,7 +30,6 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
-import { minorError } from "../../util/error";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
 
