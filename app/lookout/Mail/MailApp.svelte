@@ -89,7 +89,7 @@
   <ApplyScopeDialog question={$askedScope.question} onChoice={$askedScope.onChoice} on:close={onScopeClosed} />
 {/if}
 <MessagePrint />
-<svelte:window on:keydown={onKeyDown} on:focusin={onFocusChange} on:focusout={onFocusChange} />
+<svelte:window on:keydown={(event) => catchErrors(() => onKeyOnMail(event))} on:focusin={onFocusChange} on:focusout={onFocusChange} />
 
 <script lang="ts">
   import type { EMail } from "../../logic/Mail/EMail";
@@ -106,9 +106,8 @@
   import { getLocalStorage } from "../../frontend/Util/LocalStorage";
   import NormalViewIcon from "lucide-svelte/icons/layout-panel-left";
   import ReadingViewIcon from "lucide-svelte/icons/book-open";
-  import { MailKeyAction, MailKeys } from "./MailKeys";
   import { mailSearchInput } from "./Search/MailSearchBox.svelte";
-  import { Keyboard } from "../Util/keyboard";
+  import { isTextField } from "../Util/util";
   import { MessageActions } from "./MessageActions";
   import { kSearchLimit, hasRefiners, isRealFolder, isRealAccount, newMailSearch, SearchScope, defaultSearchOptions } from "./Search/MailSearch";
   import { FolderTreeActions } from "./LeftPane/FolderTreeActions";
@@ -458,118 +457,247 @@
     $askedScope = null;
   });
 
-  function onKeyDown(event: KeyboardEvent) {
-    if (event.defaultPrevented || document.querySelector("dialog:modal")) {
-      return;
-    }
+  async function onKeyOnMail(event: KeyboardEvent) {
     let target = event.target as HTMLElement;
     let isInSearchBox = target == $mailSearchInput;
-    if (!pageEl?.contains(target) && target != document.body && !isInSearchBox) {
+    if (event.defaultPrevented || document.querySelector("dialog:modal") ||
+        !pageEl?.contains(target) && target != document.body && !isInSearchBox) {
       return;
     }
-    if (event.key == "Escape" && isSearchActive && (isInSearchBox || !Keyboard.isTextField(target))) {
+    let messages = $selectedArray;
+    let message = messages.length == 1 ? messages[0] : null;
+    let folder = $selectedFolder;
+    let isCtrl = event.ctrlKey || event.metaKey;
+    let key = event.key.length == 1 ? event.key.toLowerCase() : event.key;
+    // With AltGr layouts, Ctrl+Alt+letter types another character
+    let letter = event.code.startsWith("Key") ? event.code.slice(3).toLowerCase() : key;
+    if (key == "Escape" && isSearchActive && (isInSearchBox || !isTextField(target))) {
       event.preventDefault();
+      event.stopPropagation();
       closeSearch();
       return;
     }
-    let action = MailKeys.actionFor(event);
-    if (!action) {
-      return;
-    }
-    if (Keyboard.isTextField(target) && !MailKeys.worksInTextFields(action)) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    catchErrors(() => runAction(action, event));
-  }
-
-  async function runAction(action: MailKeyAction, event: KeyboardEvent) {
-    let messages = $selectedArray;
-    let single = messages.length == 1 ? messages[0] : null;
-    let folder = $selectedFolder;
-    switch (action) {
-      case MailKeyAction.NewMail:
-        return mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom());
-      case MailKeyAction.SendReceiveAll:
-        return await MessageActions.sendReceiveAll();
-      case MailKeyAction.UpdateFolder:
-        return await MessageActions.getNewMail(folder);
-      case MailKeyAction.Search:
-        return $mailSearchInput?.focus();
-      case MailKeyAction.ScopeCurrentFolder:
+    // Ctrl+Alt+
+    if (isCtrl && event.altKey && !event.shiftKey) {
+      if (letter == "k") {
+        event.preventDefault();
+        event.stopPropagation();
         $searchOptions = { ...$searchOptions, scope: SearchScope.CurrentFolder };
-        return $mailSearchInput?.focus();
-      case MailKeyAction.ScopeAllAccounts:
-        $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts };
-        return $mailSearchInput?.focus();
-      case MailKeyAction.AdvancedFind:
-        $isAdvancedSearchOpen = true;
+        $mailSearchInput?.focus();
         return;
-      case MailKeyAction.NewFolder:
+      } else if (letter == "a") {
+        event.preventDefault();
+        event.stopPropagation();
+        $searchOptions = { ...$searchOptions, scope: SearchScope.AllAccounts };
+        $mailSearchInput?.focus();
+        return;
+      }
+    }
+    // Ctrl+Shift+
+    if (isCtrl && event.shiftKey && !event.altKey) {
+      if (key == "m") {
+        event.preventDefault();
+        event.stopPropagation();
+        mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom());
+        return;
+      }
+    }
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "n") {
+        event.preventDefault();
+        event.stopPropagation();
+        mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom());
+        return;
+      } else if (key == "m" && event.ctrlKey) { // Cmd+M is Minimize on macOS
+        event.preventDefault();
+        event.stopPropagation();
+        await MessageActions.sendReceiveAll();
+        return;
+      } else if (key == "e") {
+        event.preventDefault();
+        event.stopPropagation();
+        $mailSearchInput?.focus();
+        return;
+      }
+    }
+    // Shift+
+    if (event.shiftKey && !isCtrl && !event.altKey) {
+      if (key == "F9") {
+        event.preventDefault();
+        event.stopPropagation();
+        await MessageActions.getNewMail(folder);
+        return;
+      }
+    }
+    // No modifier
+    if (!isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "F9") {
+        event.preventDefault();
+        event.stopPropagation();
+        await MessageActions.sendReceiveAll();
+        return;
+      } else if (key == "F3") {
+        event.preventDefault();
+        event.stopPropagation();
+        $mailSearchInput?.focus();
+        return;
+      }
+    }
+
+    if (isTextField(target)) {
+      return;
+    }
+    // Ctrl+Alt+
+    if (isCtrl && event.altKey && !event.shiftKey) {
+      if (letter == "f") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (message) {
+          mailMustangApp.writeMail(await message.compose.forwardAsAttachment());
+        }
+        return;
+      } else if (letter == "j") {
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.treatSpam(false)));
+        return;
+      } else if (letter == "u") {
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.markRead(true)));
+        return;
+      }
+    }
+    // Ctrl+Shift+
+    if (isCtrl && event.shiftKey && !event.altKey) {
+      if (key == "r") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (message) {
+          await MessageActions.respond(message, message.compose.replyAll());
+        }
+        return;
+      } else if (key == "v" || key == "y") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (messages.length) {
+          $openMoveMessages = { messages, copy: key == "y" };
+        }
+        return;
+      } else if (key == "e") {
+        event.preventDefault();
+        event.stopPropagation();
         if (isRealFolder(folder)) {
           $openNewFolder = { account: folder.account, parent: folder };
         } else if (isRealAccount($selectedAccount) || $accounts.hasItems) {
           $openNewFolder = { account: isRealAccount($selectedAccount) ? $selectedAccount : $accounts.first, parent: null };
         }
         return;
-      case MailKeyAction.NewSearchFolder:
+      } else if (key == "p") {
+        event.preventDefault();
+        event.stopPropagation();
         $openNewSearchFolder = { account: isRealAccount($selectedAccount) ? $selectedAccount : null };
         return;
-      case MailKeyAction.GoToFolder:
+      } else if (key == "b") {
+        event.preventDefault();
+        event.stopPropagation();
+        openApp(contactsMustangApp, {});
+        return;
+      } else if (key == "f") {
+        event.preventDefault();
+        event.stopPropagation();
+        $isAdvancedSearchOpen = true;
+        return;
+      }
+    }
+    // Ctrl+ (or Cmd+)
+    if (isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "r") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (message) {
+          await MessageActions.respond(message, message.compose.replyToAuthor());
+        }
+        return;
+      } else if (key == "f") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (message) {
+          await MessageActions.forward(message, event);
+        }
+        return;
+      } else if (key == "d") {
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.deleteMessage()));
+        return;
+      } else if (key == "q" && event.ctrlKey) { // Cmd+Q is Quit on macOS
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.markRead(true)));
+        return;
+      } else if (key == "u") {
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.markRead(false)));
+        return;
+      } else if (key == "j") {
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.treatSpam(true)));
+        return;
+      } else if (key == "y") {
+        event.preventDefault();
+        event.stopPropagation();
         isGoToFolderOpen = true;
         return;
-      case MailKeyAction.AddressBook:
-        return openApp(contactsMustangApp, {});
-      case MailKeyAction.NextMessage:
-        return messageList?.selectRelative(1);
-      case MailKeyAction.PreviousMessage:
-        return messageList?.selectRelative(-1);
-    }
-    if (!messages.length) {
-      return;
-    }
-    switch (action) {
-      case MailKeyAction.Delete:
-        return await Promise.all(messages.map(message => message.deleteMessage()));
-      case MailKeyAction.DeletePermanently:
-        return await MessageActions.deletePermanently(messages);
-      case MailKeyAction.Archive:
-        return await MessageActions.archive(messages);
-      case MailKeyAction.MarkRead:
-        return await Promise.all(messages.map(message => message.markRead(true)));
-      case MailKeyAction.MarkUnread:
-        return await Promise.all(messages.map(message => message.markRead(false)));
-      case MailKeyAction.ToggleFlag: {
-        let flagged = !messages.every(message => message.isStarred);
-        return await Promise.all(messages.map(message => message.markStarred(flagged)));
+      } else if (key == "." || key == ",") {
+        event.preventDefault();
+        event.stopPropagation();
+        messageList?.selectRelative(key == "." ? 1 : -1);
+        return;
+      } else if (key == "p") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (message) {
+          $printMessage = message;
+        }
+        return;
       }
-      case MailKeyAction.MarkJunk:
-        return await Promise.all(messages.map(message => message.treatSpam(true)));
-      case MailKeyAction.NotJunk:
-        return await Promise.all(messages.map(message => message.treatSpam(false)));
-      case MailKeyAction.MoveToFolder:
-        $openMoveMessages = { messages, copy: false };
-        return;
-      case MailKeyAction.CopyToFolder:
-        $openMoveMessages = { messages, copy: true };
-        return;
     }
-    if (!single) {
-      return;
-    }
-    switch (action) {
-      case MailKeyAction.Reply:
-        return MessageActions.respond(single, single.compose.replyToAuthor());
-      case MailKeyAction.ReplyAll:
-        return MessageActions.respond(single, single.compose.replyAll());
-      case MailKeyAction.Forward:
-        return await MessageActions.forward(single, event);
-      case MailKeyAction.ForwardAsAttachment:
-        return mailMustangApp.writeMail(await single.compose.forwardAsAttachment());
-      case MailKeyAction.Print:
-        $printMessage = single;
+    // Shift+
+    if (event.shiftKey && !isCtrl && !event.altKey) {
+      if (key == "Delete") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (messages.length) {
+          await MessageActions.deletePermanently(messages);
+        }
         return;
+      }
+    }
+    // No modifier
+    if (!isCtrl && !event.altKey && !event.shiftKey) {
+      if (key == "Delete") {
+        event.preventDefault();
+        event.stopPropagation();
+        await Promise.all(messages.map(msg => msg.deleteMessage()));
+        return;
+      } else if (key == "Backspace") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (messages.length) {
+          await MessageActions.archive(messages);
+        }
+        return;
+      } else if (key == "Insert") {
+        event.preventDefault();
+        event.stopPropagation();
+        let isFlagged = !messages.every(msg => msg.isStarred);
+        await Promise.all(messages.map(msg => msg.markStarred(isFlagged)));
+        return;
+      }
     }
   }
 </script>
