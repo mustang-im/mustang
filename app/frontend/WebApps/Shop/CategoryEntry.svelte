@@ -1,4 +1,4 @@
-<hbox class="category">
+<hbox class="category" class:selected={category == selected}>
   <Clickable onClick={onSelect}>
     <hbox flex class="name">{category.nameTranslated}</hbox>
   </Clickable>
@@ -41,9 +41,22 @@
 
 <style>
   .category {
-    margin-block-end: 12px;
+    padding-block: 6px;
+    padding-inline: 24px;
   }
   .sub-categories {
     margin-inline-start: 24px;
+  }
+  .category.selected {
+    background-color: var(--selected-bg);
+    color: var(--selected-fg);
+  }
+  .category:not(.selected):hover {
+    background-color: var(--hover-bg);
+    color: var(--hover-fg);
+  }
+  .category.selected:hover {
+    background-color: var(--selected-hover-bg);
+    color: var(--selected-hover-fg);
   }
 </style>
