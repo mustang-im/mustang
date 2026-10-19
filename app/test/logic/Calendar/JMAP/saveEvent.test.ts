@@ -2,6 +2,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
+import { applyPatch } from "./applyPatch";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
@@ -78,13 +79,15 @@ test("An update does not send the UID", async () => {
 test("A series that no longer repeats is no longer a series on the server", async () => {
   let json = serverEvent();
   json.recurrenceOverrides = { "2026-01-12T10:00:00": { excluded: true } } as any;
+  let before = structuredClone(json);
   let { event, sent } = await listEvents([json]);
 
   event.recurrenceRule = null;
   await event.save();
 
-  expect(sent[0].update.eventID.recurrenceRule).toBeNull();
-  expect(sent[0].update.eventID.recurrenceOverrides).toBeNull();
+  let stored = applyPatch(before, sent[0].update.eventID);
+  expect(stored.recurrenceRule ?? null).toBeNull();
+  expect(Object.keys(stored.recurrenceOverrides ?? {})).toEqual([]);
 });
 
 test("A new event sends its UID", async () => {
