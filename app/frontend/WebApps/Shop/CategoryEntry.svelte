@@ -1,4 +1,4 @@
-<hbox class="category" class:selected={category == selected}>
+<hbox class="category nav-entry" class:selected={category == selected}>
   <Clickable onClick={onSelect}>
     <hbox flex class="name">{category.nameTranslated}</hbox>
   </Clickable>

@@ -1,5 +1,5 @@
 <vbox flex class="addressbook-pane">
-  <vbox class="scroll">
+  <vbox class="scroll nav-list">
     <AddressbookItem
       label={$t`All contacts`}
       icon={AllContactsIcon}
@@ -72,7 +72,7 @@
 <style>
   .addressbook-pane {
     min-height: 0;
-    padding: 4px 4px 8px 8px;
+    padding: 4px 0 8px 4px;
   }
   .scroll {
     overflow-y: auto;

@@ -252,13 +252,22 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   color: var(--lo-accent-fg);
 }
 
-.lookout-window .app-store .category {
+.lookout-window .nav-list {
+  padding-inline: 4px;
+}
+.lookout-window .nav-list .nav-entry {
   position: relative;
-  margin-inline: 4px;
   border-radius: var(--lo-radius-small);
 }
-.lookout-window .app-store .category.selected::before {
-  /* <copied from="Settings/Window/CategoriesPane.svelte"> */
+.lookout-window .nav-list .nav-entry:not(.selected):hover {
+  background-color: var(--lo-hover-bg);
+}
+.lookout-window .nav-list .nav-entry.selected,
+.lookout-window .nav-list .nav-entry.selected:hover {
+  background-color: var(--lo-selected-bg);
+  font-weight: 600;
+}
+.lookout-window .nav-list .nav-entry.selected::before {
   content: "";
   position: absolute;
   inset-inline-start: 0;
@@ -267,5 +276,4 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   width: 3px;
   border-radius: 2px;
   background-color: var(--lo-accent);
-  /* </copied> */
 }

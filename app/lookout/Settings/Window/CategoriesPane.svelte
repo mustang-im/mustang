@@ -1,4 +1,4 @@
-<vbox class="settings-categories-pane" role="tree" aria-label={$t`Categories *=> List of the settings pages`}>
+<vbox class="settings-categories-pane nav-list" role="tree" aria-label={$t`Categories *=> List of the settings pages`}>
   {#if account}
     <AccountItem {account} category={null} />
   {:else}
@@ -24,14 +24,13 @@
   .settings-categories-pane {
     flex-shrink: 0;
     width: 240px;
-    padding: 4px;
+    padding-block: 4px;
     border: 1px solid var(--lo-border);
     border-radius: var(--lo-radius-small);
     background-color: var(--lo-pane-alt-bg);
     overflow-y: auto;
   }
-  .settings-categories-pane :global(.entry) {
-    position: relative;
+  .settings-categories-pane :global(.nav-entry) {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -42,33 +41,13 @@
     padding-block: 0;
     padding-inline-end: 12px;
     border: none;
-    border-radius: var(--lo-radius-small);
     background: none;
     color: var(--lo-fg);
     font: inherit;
     text-align: start;
     cursor: pointer;
   }
-  .settings-categories-pane :global(.entry:hover) {
-    background-color: var(--lo-hover-bg);
-  }
-  .settings-categories-pane :global(.entry.selected) {
-    background-color: var(--lo-selected-bg);
-    font-weight: 600;
-  }
-  .settings-categories-pane :global(.entry.selected::before) {
-    /* <copied to="../../app.css"> */
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 8px;
-    bottom: 8px;
-    width: 3px;
-    border-radius: 2px;
-    background-color: var(--lo-accent);
-    /* </copied> */
-  }
-  .settings-categories-pane :global(.entry svg) {
+  .settings-categories-pane :global(.nav-entry svg) {
     flex-shrink: 0;
     color: var(--lo-accent-text);
   }

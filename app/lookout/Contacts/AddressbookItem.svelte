@@ -1,4 +1,4 @@
-<button class="addressbook-item"
+<button class="addressbook-item nav-entry"
   class:selected={isSelected}
   class:indented
   on:click
@@ -85,11 +85,9 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    position: relative;
     min-height: 32px;
     padding: 4px 8px;
     border: none;
-    border-radius: var(--lo-radius-small);
     background: none;
     color: var(--lo-fg);
     font: inherit;
@@ -98,26 +96,6 @@
   }
   .addressbook-item.indented {
     padding-inline-start: 28px;
-  }
-  .addressbook-item:hover {
-    background-color: var(--lo-hover-bg);
-  }
-  .addressbook-item.selected {
-    background-color: var(--lo-selected-bg);
-    font-weight: 600;
-  }
-  .addressbook-item.selected:hover {
-    background-color: var(--lo-selected-hover-bg);
-  }
-  .addressbook-item.selected::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 8px;
-    bottom: 8px;
-    width: 3px;
-    border-radius: 2px;
-    background-color: var(--lo-accent);
   }
   .addressbook-item :global(.icon) {
     flex-shrink: 0;
