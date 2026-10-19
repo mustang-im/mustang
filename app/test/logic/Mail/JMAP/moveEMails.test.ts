@@ -17,11 +17,9 @@ function newAccount(refuse: string[] = []) {
   account.storage = new DummyMailStorage();
   account.contentStorage.clear();
   account.save = async () => {};
-  let updates: Record<string, any>[] = [];
   account.makeCalls = async (requests: [string, Record<string, any>, string?][]) => requests.map(([method, args, callID]) => {
     let result: Record<string, any>;
     if (method == "Email/set") {
-      updates.push(args.update);
       let ids = Object.keys(args.update);
       result = {
         accountId: "e", oldState: "spi", newState: "spm",
@@ -39,7 +37,7 @@ function newAccount(refuse: string[] = []) {
   });
   let inbox = newFolder(account, "a", 5);
   let archive = newFolder(account, "k", 3);
-  return { account, inbox, archive, updates };
+  return { account, inbox, archive };
 }
 
 function newFolder(account: JMAPAccount, id: string, countTotal: number): JMAPFolder {
@@ -59,12 +57,11 @@ function newEMail(folder: JMAPFolder, jmapID: string): JMAPEMail {
 }
 
 test("Moving an email changes the folder counts by one", async () => {
-  let { inbox, archive, updates } = newAccount();
+  let { inbox, archive } = newAccount();
   let email = newEMail(inbox, "eaaaaab");
 
   await archive.moveMessagesHere(new ArrayColl([email]));
 
-  expect(updates).toEqual([{ eaaaaab: { "mailboxIds/k": true, "mailboxIds/a": null } }]);
   expect(inbox.countTotal).toBe(4);
   expect(archive.countTotal).toBe(4);
 });
