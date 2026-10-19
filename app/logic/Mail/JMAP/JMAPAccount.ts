@@ -712,10 +712,14 @@ export class JMAPAccount extends MailAccount {
       let watchdog: Timeout | null = null;
       // A dead connection, e.g. after sleep or a network change, doesn't always end the stream,
       // and a half-open VPN tunnel may accept a new connection, but never answer
-      let expectAnswer = () => {
+      function expectAnswer() {
         watchdog?.fulfilled();
-        watchdog = new Timeout(2 * pingSeconds, () => connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError")));
-      };
+        watchdog = new Timeout(2 * pingSeconds, () => {
+          // A `DOMException` named "TimeoutError", like `fetch()` throws for its own timeouts, so that the `catch`
+          // below takes it as transient (`isTransientError()`), and the `while` loop reconnects
+          connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError"));
+        });
+      }
       try {
         expectAnswer();
         let stream = await fetch(url, {
@@ -735,7 +739,7 @@ export class JMAPAccount extends MailAccount {
             try {
               pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 3600, pingSeconds);
             } catch (ex) {
-              console.error(ex);
+              this.dataError(new Error("JMAP push: The server sent an invalid ping: " + ex.message));
             }
           }
           if (event.name == "state") {
