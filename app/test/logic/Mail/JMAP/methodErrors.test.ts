@@ -27,7 +27,7 @@ test("A method error names the method, the error type and the server's descripti
 
   let promise = account.makeSingleCall("Mailbox/get", { accountId: "zz" });
 
-  await expect(promise).rejects.toThrow("JMAP Mailbox/get failed: forbidden: You do not have access to account zz");
+  await expect(promise).rejects.toThrow("You do not have access to account zz - JMAP Mailbox/get failed: forbidden");
   await expect(promise).rejects.toBeInstanceOf(JMAPCommandError);
   await expect(promise).rejects.toHaveProperty("code", "forbidden");
 });
