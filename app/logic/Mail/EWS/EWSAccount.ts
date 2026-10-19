@@ -35,7 +35,7 @@ import { isNetworkError } from "../../util/netUtil";
 import { logErrorToServer } from "../../util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
-import { base64ToUint8Array, uint8ArrayToBase64 } from "../../util/blob";
+import { base64ToUint8Array } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -957,19 +957,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Json | null> {
-    let xml = await this.getUserConfigurationXMLText(name, distinguishedFolderID);
-    if (!xml) {
-      return null;
-    }
-    let root = this.parseXML(xml)?.documentElement;
-    if (!root) {
-      return null;
-    }
-    return { [root.localName]: XML2JSON(root) };
-  }
-
-  /** @returns null, if the user configuration does not exist */
-  async getUserConfigurationXMLText(name: string, distinguishedFolderID: string): Promise<string | null> {
     let request = {
       m$GetUserConfiguration: {
         m$UserConfigurationName: {
@@ -991,26 +978,15 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       throw ex;
     }
     let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
-    return xmlData ? new TextDecoder().decode(base64ToUint8Array(xmlData)) : "";
-  }
-
-  /** @param isNew The user configuration does not exist yet */
-  async saveUserConfigurationXMLText(name: string, distinguishedFolderID: string, xml: string, isNew: boolean): Promise<void> {
-    let userConfiguration = {
-      m$UserConfiguration: {
-        t$UserConfigurationName: {
-          Name: name,
-          t$DistinguishedFolderId: {
-            Id: distinguishedFolderID,
-          },
-        },
-        t$XmlData: uint8ArrayToBase64(new TextEncoder().encode(xml)),
-      },
-    };
-    let request = isNew
-      ? { m$CreateUserConfiguration: userConfiguration }
-      : { m$UpdateUserConfiguration: userConfiguration };
-    await this.callEWS(request);
+    if (!xmlData) {
+      return null;
+    }
+    let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
+    let root = this.parseXML(xml)?.documentElement;
+    if (!root) {
+      return null;
+    }
+    return { [root.localName]: XML2JSON(root) };
   }
 
   get mayHaveSubAccounts(): boolean {

@@ -28,17 +28,9 @@
   export let events: Collection<Event>;
 
   let futureEvents = events.filterObservable(event => event.startTime.getTime() > Date.now());
-  let foundEvents = futureEvents.filterObservable(isFound);
-  $: $globalSearchTerm, findEvents();
-  $: filteredEvents = $globalSearchTerm ? foundEvents : futureEvents;
-
-  function findEvents() {
-    foundEvents.replaceAll(futureEvents.contents.filter(isFound));
-  }
-
-  function isFound(event: Event): boolean {
-    return !!$globalSearchTerm && event.matchesSearch($globalSearchTerm);
-  }
+  $: filteredEvents = $globalSearchTerm
+    ? futureEvents.filterObservable(event => event.matchesSearch($globalSearchTerm))
+    : futureEvents;
 </script>
 
 <style>

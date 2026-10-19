@@ -10,7 +10,7 @@
     <hbox flex />
     <slot name="top-right" />
   </hbox>
-  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} {enlargeSelectedDay} workHours={$shownWorkHours}
+  <DayViewGrid {start} {events} {showDays} {showHours} {defaultFocusHour} {enlargeSelectedDay}
     on:celldblclick={(param) => newEventMenu.openMenu(param.detail.mouseEvent, param.detail.start)} />
 </vbox>
 
@@ -18,7 +18,7 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { shownWorkHours, type DateInterval } from "../selected";
+  import { type DateInterval } from "../selected";
   import { getToday } from "../../../logic/util/date";
   import DayViewGrid from "./DayViewGrid.svelte";
   import NewEventMenu from "../NewEventMenu.svelte";

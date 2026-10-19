@@ -30,7 +30,7 @@
         </hbox>
       {/each}
       {#each days as day, i}
-        <DayColumn {day} column={i + 2} {startHour} {endHour} events={visibleEvents} {overlayEvents} {workHours} on:celldblclick>
+        <DayColumn {day} column={i + 2} {startHour} {endHour} events={visibleEvents} {overlayEvents} on:celldblclick>
           <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} />
           <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} />
         </DayColumn>
@@ -41,7 +41,6 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import type { WorkHours } from "../../../logic/Calendar/WorkHours";
   import { selectedCalendar, type DateInterval } from "../selected";
   import { kRowsPerHour } from "./DayColumn";
   import { appGlobal } from "../../../logic/app";
@@ -64,8 +63,6 @@
   export let showHours = 10;
   export let defaultFocusHour: number | null = null;
   export let enlargeSelectedDay = false;
-  /** Shades the time when none of them works */
-  export let workHours: WorkHours[] = [];
 
   let startHour = 0;
   let endHour = 24;
@@ -97,27 +94,22 @@
   }
 
   let days: Date[] = [];
-  let filterStart: Date;
-  let filterEnd: Date;
-  $: filtered = events.filterObservable(isShown);
-  $: visibleEvents = filtered.filterObservable(ev => !ev.allDay);
-  $: allDayEvents = filtered.filterObservable(ev => ev.allDay);
+  let visibleEvents: Collection<Event>;
+  let allDayEvents: Collection<Event>;
   $: start, showDays, setDays();
   function setDays() {
     let startTime = showDays > 3 ? getWeekStart(start) : new Date(start);
     startTime.setHours(startHour, 0, 0, 0);
-    filterStart = new Date(startTime);
+    let filterStart = new Date(startTime);
     days = [];
     for (let i = 0; i < showDays; i++) {
       days.push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1);
     }
-    filterEnd = startTime;
-    filtered.replaceAll(events.contents.filter(isShown));
-  }
-
-  function isShown(ev: Event): boolean {
-    return ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime;
+    let filterEnd = startTime;
+    let filtered = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
+    visibleEvents = filtered.filterObservable(ev => !ev.allDay);
+    allDayEvents = filtered.filterObservable(ev => ev.allDay);
   }
 
   let today = getToday();

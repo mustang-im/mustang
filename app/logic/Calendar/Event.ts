@@ -6,7 +6,7 @@ import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
-import { k1DayS, k1DayMS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
+import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
@@ -407,51 +407,6 @@ export class Event extends Observable {
     this.startTime = original.startTime ? new Date(original.startTime) : null;
     this.endTime = original.endTime ? new Date(original.endTime) : null;
     this.alarm = original.alarm ? new Date(original.alarm) : null;
-  }
-
-  /**
-   * Applies the changes that the user made to an occurrence to this entire series.
-   * Unlike `copyEditableFieldsFrom()`, this keeps the start of the series.
-   * @see moveSeriesWithOccurrence()
-   */
-  copyEditableFieldsFromOccurrence(occurrence: Event) {
-    this.copyFromRecurrenceMaster(occurrence);
-    this.moveSeriesWithOccurrence(occurrence);
-  }
-
-  /**
-   * Moves all occurrences of this series by as much as the user moved the `occurrence`,
-   * so the series keeps its first and last occurrence.
-   * Keeps the time of day in the time zone of the series, also across clock changes.
-   * Assumes that `startEditing()` was called before.
-   */
-  moveSeriesWithOccurrence(occurrence: Event) {
-    assert(occurrence.parentEvent == this, "Must be an occurrence of this series");
-    let original = this.unedited ?? this;
-    this.allDay = occurrence.allDay;
-    this.timezone = occurrence.timezone;
-    let timeZone = this.timezone ?? undefined;
-    let localTime = (time: Date) => new Date(time.toLocaleString("lt", { timeZone }).replace(" ", "T") + "Z").getTime();
-    let moveBy = (time: Date, shift: number) => {
-      let moved = new Date(time.getTime() + shift);
-      return new Date(moved.getTime() + localTime(time) + shift - localTime(moved));
-    };
-    let startTime = moveBy(original.startTime, localTime(occurrence.startTime) - localTime(occurrence.recurrenceStartTime));
-    let shift = localTime(startTime) - localTime(this.startTime);
-    let days = Math.floor(localTime(startTime) / k1DayMS) - Math.floor(localTime(this.startTime) / k1DayMS);
-    let rule = this.recurrenceRule;
-    this.startTime = startTime;
-    // The `duration` getter rounds all-day events up to whole days, so setting the same duration would keep a stale end time
-    this.endTime = new Date(startTime);
-    this.duration = occurrence.duration;
-    this.alarm = occurrence.alarm ? new Date(startTime.getTime() - occurrence.startTime.getTime() + occurrence.alarm.getTime()) : null;
-    if (!rule) {
-      return;
-    }
-    let { count, frequency, interval, week, first } = rule;
-    let seriesEndTime = rule.seriesEndTime && moveBy(rule.seriesEndTime, shift);
-    let weekdays = rule.weekdays?.map(weekday => (weekday + days % 7 + 7) % 7);
-    this.recurrenceRule = new RecurrenceRule({ masterDuration: this.duration, timezone: this.timezone, seriesStartTime: startTime, seriesEndTime, count, frequency, interval, weekdays, week, first }, true);
   }
 
   /**

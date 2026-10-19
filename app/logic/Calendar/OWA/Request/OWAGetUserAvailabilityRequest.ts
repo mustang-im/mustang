@@ -1,3 +1,5 @@
+import type { Participant } from "../../Participant";
+
 export class OWAGetUserAvailabilityRequest {
   /** Free/Busy requests are wrapped in an additional object for some reason. */
   readonly request: any = {
@@ -25,14 +27,12 @@ export class OWAGetUserAvailabilityRequest {
     },
   };
 
-  /** @param windowsTimezone The time zone of the work hours in the response */
-  constructor(emailAddresses: string[], from: Date, to: Date, windowsTimezone = "UTC") {
-    this.request.Header.TimeZoneContext.TimeZoneDefinition.Id = windowsTimezone;
-    this.request.Body.MailboxDataArray = emailAddresses.map(emailAddress => ({
+  constructor(participants: Participant[], from: Date, to: Date) {
+    this.request.Body.MailboxDataArray = participants.map(participant => ({
       __type: "MailboxData:#Exchange",
       Email: {
         __type: "EmailAddress:#Exchange",
-        Address: emailAddress,
+        Address: participant.emailAddress,
       },
     }));
     this.request.Body.FreeBusyViewOptions.TimeWindow.StartTime = from.toISOString();

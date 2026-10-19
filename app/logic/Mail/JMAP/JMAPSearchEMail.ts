@@ -87,9 +87,6 @@ export class JMAPSearchEMail extends SearchEMail {
     if (this.messageID) {
       conditions.push({ header: [ "Message-ID", this.messageID ] });
     }
-    if (this.inReplyTo) {
-      conditions.push({ header: [ "In-Reply-To", this.inReplyTo ] });
-    }
     if (booleanHasValue(this.isRead)) {
       conditions.push(this.isRead ? { hasKeyword: "$seen" } : { notKeyword: "$seen" });
     }

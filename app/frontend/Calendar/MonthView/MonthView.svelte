@@ -45,10 +45,8 @@
 
   let weeks: Date[][] = [];
   let weekDays: Date[] = [];
-  let filterStart: Date;
-  let filterEnd: Date;
+  let filteredEvents: Collection<Event>;
   let newEventMenu: NewEventMenu;
-  $: filteredEvents = events.filterObservable(isShown);
   $: start, showDays, setDays();
   function setDays() {
     weekDays = getWeekDays(start);
@@ -59,7 +57,7 @@
       }
     }
     let startTime = weekDays[0]; // Always start with Monday
-    filterStart = new Date(startTime);
+    let filterStart = new Date(startTime);
     weeks = [];
     for (let i = 0; i < showDays; i++) {
       if (i % 7 == 0) {
@@ -68,12 +66,8 @@
       weeks[weeks.length - 1].push(new Date(startTime));
       startTime.setDate(startTime.getDate() + 1)
     }
-    filterEnd = startTime;
-    filteredEvents.replaceAll(events.contents.filter(isShown));
-  }
-
-  function isShown(ev: Event): boolean {
-    return ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime;
+    let filterEnd = startTime;
+    filteredEvents = events.filterObservable(ev => ev.startTime && ev.startTime < filterEnd && filterStart < ev.endTime);
   }
 
   function onScrollWheel(event: WheelEvent) {

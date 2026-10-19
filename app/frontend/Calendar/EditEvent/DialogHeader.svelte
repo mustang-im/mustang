@@ -242,7 +242,7 @@
     }
     let master = event.parentEvent;
     master.startEditing(); // #701
-    master.copyEditableFieldsFromOccurrence(event);
+    master.copyEditableFieldsFrom(event);
     await master.save();
     master.finishEditing(); // #701
     onClose();

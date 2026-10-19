@@ -71,9 +71,6 @@ class TimezoneObservance {
   /** The yearly repetition of the change, without the `RRULE:` prefix.
    * null, if the timezone has no daylight saving time. */
   readonly recurrenceRule: string | null = null;
-  readonly month: number | null = null;
-  readonly weekday: number | null = null;
-  readonly nth: number | null = null;
 
   /** @param change When the offset changes, or null for no daylight saving time */
   constructor(isDaylight: boolean, offsetFrom: number, offsetTo: number, change: Date | null) {
@@ -86,9 +83,9 @@ class TimezoneObservance {
     }
     // The local time at the change is still the one before it, RFC 5545 3.6.5
     let local = new Date(change.getTime() + offsetFrom * k1MinuteMS);
-    let month = this.month = local.getUTCMonth() + 1;
-    let weekday = this.weekday = local.getUTCDay();
-    let nth = this.nth = nthWeekdayOfMonth(local);
+    let month = local.getUTCMonth() + 1;
+    let weekday = local.getUTCDay();
+    let nth = nthWeekdayOfMonth(local);
     this.recurrenceRule = `FREQ=YEARLY;BYMONTH=${month};BYDAY=${nth}${iCalWeekday[weekday]}`;
     // Start in the past, so that the rule also covers events before this year
     this.start = new Date(Date.UTC(kStartYear, local.getUTCMonth(),
@@ -157,7 +154,7 @@ function findUTCOffsetChange(before: Date, after: Date, timezone: string): Date 
 }
 
 /** How many minutes the local time in `timezone` is ahead of UTC, at `time` */
-export function utcOffset(time: Date, timezone: string): number {
+function utcOffset(time: Date, timezone: string): number {
   // "lt" locale has date format YYYY-MM-DD hh:mm:ss,
   // which we can easily read as UTC.
   let local = new Date(time.toLocaleString("lt", { timeZone: timezone }).replace(" ", "T") + "Z");

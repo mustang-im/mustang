@@ -48,9 +48,6 @@ export class IMAPSearchEMail extends SearchEMail {
     if (this.messageID) {
       conditions.push({ header: { "message-id": this.messageID } });
     }
-    if (this.inReplyTo) {
-      conditions.push({ header: { "in-reply-to": this.inReplyTo } });
-    }
     if (booleanHasValue(this.isRead)) {
       conditions.push({ seen: this.isRead });
     }

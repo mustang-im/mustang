@@ -1,7 +1,6 @@
 import { Calendar } from "../Calendar";
 import type { Participant } from "../Participant";
 import { CalDAVEvent } from "./CalDAVEvent";
-import { CalDAVAvailability } from "./CalDAVAvailability";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import { OAuth2 } from "../../Auth/OAuth2";
 import { newCalendarForProtocol } from "../AccountsList/Calendars";
@@ -9,7 +8,6 @@ import { appGlobal } from "../../app";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { Lock } from "../../util/flow/Lock";
 import { RunOnce } from "../../util/flow/RunOnce";
-import { notifyChangedProperty } from "../../util/Observable";
 import { NotReached, UserError, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection } from "svelte-collections";
@@ -26,13 +24,6 @@ export class CalDAVCalendar extends Calendar {
   protected clientAccessToken: string | null = null;
   protected readonly syncLock = new Lock();
   protected readonly loginRunOnce = new RunOnce();
-  /** Where the server stores the work hours: The scheduling inbox of the user, RFC 6638 and 7953.
-   * null, if the server has none */
-  @notifyChangedProperty
-  protected availabilityURL: URLString | null = null;
-  /** The server says that another person owns this calendar */
-  @notifyChangedProperty
-  protected ownerIsOtherPerson = false;
 
   newEvent(parentEvent?: CalDAVEvent): CalDAVEvent {
     return new CalDAVEvent(this, parentEvent);
@@ -98,120 +89,6 @@ export class CalDAVCalendar extends Calendar {
     davAB.displayName = this.name;
     return davAB;
   };
-
-  get isOtherPersonsCalendar(): boolean {
-    return this.ownerIsOtherPerson;
-  }
-
-  get canSaveWorkHoursOnServer(): boolean {
-    return !!this.availabilityURL && !this.ownerIsOtherPerson;
-  }
-
-  async readWorkHoursFromServer(): Promise<void> {
-    await this.findAvailabilityURL();
-    if (this.ownerIsOtherPerson) {
-      await this.setWorkHoursFromServer(null);
-      return;
-    }
-    let ical = await this.fetchAvailability();
-    if (!ical) {
-      return;
-    }
-    await this.setWorkHoursFromServer(CalDAVAvailability.fromICal(ical).toWorkHours());
-  }
-
-  protected async saveWorkHoursToServer(): Promise<void> {
-    if (!this.availabilityURL) {
-      await this.findAvailabilityURL();
-    }
-    if (!this.canSaveWorkHoursOnServer || !this.workHours) {
-      return;
-    }
-    let previousICal = await this.fetchAvailability();
-    let previous = previousICal ? CalDAVAvailability.fromICal(previousICal) : null;
-    let ical = CalDAVAvailability.fromWorkHours(this.workHours, previous).toICal();
-    let [response] = await this.client.davRequest({
-      url: this.availabilityURL,
-      init: {
-        method: "PROPPATCH",
-        namespace: "d",
-        body: {
-          propertyupdate: {
-            _attributes: {
-              "xmlns:d": "DAV:",
-              "xmlns:c": "urn:ietf:params:xml:ns:caldav",
-            },
-            set: {
-              prop: {
-                "c:calendar-availability": { _cdata: ical },
-              },
-            },
-          },
-        },
-      },
-    });
-    if (!response?.ok || !("calendarAvailability" in (response.props ?? {}))) {
-      // The server has a scheduling inbox, but doesn't store the work hours
-      this.availabilityURL = null;
-      await this.save();
-    }
-  }
-
-  /** Finds the scheduling inbox of the user, and whether this calendar belongs to another person */
-  protected async findAvailabilityURL(): Promise<void> {
-    if (!this.calendarURL) {
-      return;
-    }
-    await this.login(false);
-    let [calendarResponse] = await this.client.propfind({
-      url: this.calendarURL,
-      props: {
-        "d:current-user-principal": {},
-        "d:owner": {},
-      },
-      depth: "0",
-    });
-    let principal = this.absoluteURL(calendarResponse?.props?.currentUserPrincipal?.href);
-    let owner = this.absoluteURL(calendarResponse?.props?.owner?.href);
-    let withoutSlash = (url: string) => url.replace(/\/$/, "");
-    this.ownerIsOtherPerson = !!principal && !!owner && withoutSlash(principal) != withoutSlash(owner);
-    if (!principal) {
-      this.availabilityURL = null;
-      return;
-    }
-    let [principalResponse] = await this.client.propfind({
-      url: principal,
-      props: {
-        "c:schedule-inbox-URL": {},
-      },
-      depth: "0",
-    });
-    this.availabilityURL = this.absoluteURL(principalResponse?.props?.scheduleInboxURL?.href);
-  }
-
-  /** @returns null, if the server has no work hours */
-  protected async fetchAvailability(): Promise<string | null> {
-    if (!this.availabilityURL) {
-      return null;
-    }
-    let [response] = await this.client.propfind({
-      url: this.availabilityURL,
-      props: {
-        "c:calendar-availability": {},
-      },
-      depth: "0",
-    });
-    let value = response?.props?.calendarAvailability;
-    let ical = typeof value == "string" ? value : value?._cdata ?? value?._text;
-    return typeof ical == "string" && ical.includes("VAVAILABILITY") ? ical : null;
-  }
-
-  protected absoluteURL(href: string | undefined): URLString | null {
-    if (typeof href != "string" || !href) {
-      return null;
-    }
-    return new URL(href, this.calendarURL).href;
-  }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
     return [];
@@ -372,8 +249,6 @@ export class CalDAVCalendar extends Calendar {
     super.fromConfigJSON(json);
     this.calendarURL = sanitize.url(json.calendarURL);
     this.ctag = sanitize.string(json.ctag, null);
-    this.availabilityURL = sanitize.url(json.availabilityURL, null);
-    this.ownerIsOtherPerson = sanitize.boolean(json.ownerIsOtherPerson, false);
     if (json.oAuth2) {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
@@ -383,8 +258,6 @@ export class CalDAVCalendar extends Calendar {
     let json = super.toConfigJSON();
     json.calendarURL = this.calendarURL;
     json.ctag = this.ctag;
-    json.availabilityURL = this.availabilityURL;
-    json.ownerIsOtherPerson = this.ownerIsOtherPerson;
     json.oAuth2 = this.oAuth2?.toConfigJSON();
     return json;
   }

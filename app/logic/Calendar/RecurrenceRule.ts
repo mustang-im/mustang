@@ -1,5 +1,5 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { kAllWeekdays, myTimezone, weekdayLabel } from "../util/date";
+import { kAllWeekdays, weekdayLabel } from "../util/date";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { assert } from "../util/util";
 
@@ -264,7 +264,7 @@ export class RecurrenceRule implements Readonly<Omit<RecurrenceInit, "seriesStar
     let thisWeekdays = this.weekdays || kAllWeekdays;
     let ruleWeekdays = rule.weekdays || kAllWeekdays;
     return rule.masterDuration == this.masterDuration &&
-      (rule.timezone == this.timezone || (rule.timezone ?? myTimezone()) == (this.timezone ?? myTimezone())) &&
+      rule.timezone == this.timezone &&
       rule.seriesStartTime.getTime() == this.seriesStartTime.getTime() &&
       rule.frequency == this.frequency &&
       rule.interval == this.interval &&

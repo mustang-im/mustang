@@ -180,7 +180,7 @@ export async function eventsToICalFile(events: Collection<Event>, filenameWithou
   return file;
 }
 
-export function line2ical(line: string | string[]): string {
+function line2ical(line: string | string[]): string {
   if (typeof line == "string") {
     return line;
   }

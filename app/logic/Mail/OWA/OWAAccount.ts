@@ -19,7 +19,6 @@ import { OWARequest } from "./Request/OWARequest";
 import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
-import { OWAGetUserConfigurationRequest, OWASaveUserConfigurationRequest } from "./Request/OWAUserConfigurationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
 import { OWACalendarShortcut } from "../../Calendar/OWA/OWACalendarShortcut";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
@@ -37,7 +36,6 @@ import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
-import { base64ToUint8Array, uint8ArrayToBase64 } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -714,27 +712,6 @@ export class OWAAccount extends ExchangeMailAccount {
    * the specified known folders of another user given their email address,
    * for example, msgfolderroot (entire mailbox), inbox, calendar, contacts.
    */
-  /** @returns null, if the user configuration does not exist */
-  async getUserConfigurationXMLText(name: string, distinguishedFolderID: string): Promise<string | null> {
-    let response: any;
-    try {
-      response = await this.callOWA(new OWAGetUserConfigurationRequest(name, distinguishedFolderID));
-    } catch (ex) {
-      if (ex.type == "ErrorItemNotFound") {
-        return null;
-      }
-      throw ex;
-    }
-    let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
-    return xmlData ? new TextDecoder().decode(base64ToUint8Array(xmlData)) : "";
-  }
-
-  /** @param isNew The user configuration does not exist yet */
-  async saveUserConfigurationXMLText(name: string, distinguishedFolderID: string, xml: string, isNew: boolean): Promise<void> {
-    let xmlData = uint8ArrayToBase64(new TextEncoder().encode(xml));
-    await this.callOWA(new OWASaveUserConfigurationRequest(name, distinguishedFolderID, xmlData, isNew));
-  }
-
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
     if (this.mainAccount) {
       throw new NotReached();
