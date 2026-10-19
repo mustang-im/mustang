@@ -265,7 +265,7 @@
 
   .tab-row {
     align-items: stretch;
-    height: 36px;
+    height: var(--lo-ribbon-tab-row-height);
     padding: 0 8px;
   }
   .tabs {
@@ -327,7 +327,7 @@
   .collapsed.temp-open .ribbon-content {
     display: flex;
     position: absolute;
-    top: 36px;
+    top: var(--lo-ribbon-tab-row-height);
     left: 0;
     right: 0;
     box-shadow: var(--lo-shadow-popup);
