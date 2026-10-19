@@ -29,11 +29,11 @@
 
   let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
   let foundEvents = events.filterObservable(isFound);
-  $: $globalSearchTerm, findEvents();
-  $: filteredEvents = $globalSearchTerm ? foundEvents : events;
+  $: filteredEvents = $globalSearchTerm ? findEvents() : events;
 
   function findEvents() {
     foundEvents.replaceAll(events.contents.filter(isFound));
+    return foundEvents;
   }
 
   function isFound(event: Event): boolean {

@@ -141,3 +141,39 @@ test("Moving an event into the shown week shows it", () => {
   flushSync();
   expect(document.body.textContent).toContain("Meeting 20");
 });
+
+test("A new search term after clearing the search finds only its own matches", () => {
+  let events = newEvents();
+  view = mount(ListViewWithSearch, { target: document.body, props: { events } });
+  globalSearchTerm.set("trip");
+  flushSync();
+  expect(document.querySelector(".result-count").textContent).toMatch(/\b6\b/);
+
+  globalSearchTerm.set(null);
+  flushSync();
+  globalSearchTerm.set("meeting 4");
+  flushSync();
+  // Meeting 4, 40 and 41
+  expect(document.querySelector(".result-count").textContent).toMatch(/\b3\b/);
+});
+
+test("An event added or removed during a search appears in or disappears from the results", () => {
+  let events = newEvents();
+  view = mount(ListViewWithSearch, { target: document.body, props: { events } });
+  globalSearchTerm.set("lunch");
+  flushSync();
+  expect(document.body.textContent).not.toContain("Lunch with Anna");
+
+  let monday = nextMonday();
+  let lunch = new Event();
+  lunch.title = "Lunch with Anna";
+  lunch.startTime = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 3, 12, 0);
+  lunch.endTime = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 3, 13, 0);
+  events.add(lunch);
+  flushSync();
+  expect(document.body.textContent).toContain("Lunch with Anna");
+
+  events.remove(lunch);
+  flushSync();
+  expect(document.body.textContent).not.toContain("Lunch with Anna");
+});

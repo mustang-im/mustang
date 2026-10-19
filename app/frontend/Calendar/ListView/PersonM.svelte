@@ -18,11 +18,11 @@
 
   let events = appGlobal.calendarEvents.filterObservable(event => event.startTime.getTime() > Date.now());
   let personEvents = events.filterObservable(isWithPerson);
-  $: person, findEvents();
-  $: filteredEvents = person ? personEvents : events;
+  $: filteredEvents = person ? findEvents() : events;
 
   function findEvents() {
     personEvents.replaceAll(events.contents.filter(isWithPerson));
+    return personEvents;
   }
 
   function isWithPerson(event: Event): boolean {

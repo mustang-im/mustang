@@ -29,11 +29,11 @@
 
   let futureEvents = events.filterObservable(event => event.startTime.getTime() > Date.now());
   let foundEvents = futureEvents.filterObservable(isFound);
-  $: $globalSearchTerm, findEvents();
-  $: filteredEvents = $globalSearchTerm ? foundEvents : futureEvents;
+  $: filteredEvents = $globalSearchTerm ? findEvents() : futureEvents;
 
   function findEvents() {
     foundEvents.replaceAll(futureEvents.contents.filter(isFound));
+    return foundEvents;
   }
 
   function isFound(event: Event): boolean {
