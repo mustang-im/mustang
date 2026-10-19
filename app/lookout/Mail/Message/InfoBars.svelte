@@ -63,7 +63,6 @@
   import { MessageActions } from "../MessageActions";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { MessageDates } from "../3pane/MessageDates";
-  import { MyReply } from "../../../logic/Mail/Store/MyReply";
   import { openEMailMessage } from "../../../frontend/Mail/open";
   import { appName } from "../../../logic/build";
   import Menu from "../../Shared/Menu/Menu.svelte";
@@ -100,7 +99,7 @@
     }
     isSearching = true;
     try {
-      let found = await MyReply.find(original);
+      let found = await original.findMyReply();
       if (original == message) {
         reply = found;
       }
