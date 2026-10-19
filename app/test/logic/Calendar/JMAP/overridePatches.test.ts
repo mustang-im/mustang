@@ -2,7 +2,6 @@
 import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
-import { JSCalendarEvent } from "../../../../logic/Calendar/JMAP/JSCalendarEvent";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
@@ -92,6 +91,19 @@ test("A patch inside a property of an occurrence is applied", async () => {
   expect(master.participants.find(p => p.emailAddress == "tom@example.com").response).toBe(InvitationResponse.Accept);
 });
 
+/** The pointers in `override` that make it an invalid PatchObject
+ * (draft-ietf-calext-jscalendarbis §1.5.9, §3.3.4) */
+function invalidPatches(override: Record<string, any>): string[] {
+  let tokens = (path: string) => path.split("/");
+  let isPrefix = (a: string, b: string) => a != b && tokens(b).slice(0, tokens(a).length).join("/") == a;
+  let forbidden = ["@type", "method", "organizerCalendarAddress", "privacy", "prodId", "recurrenceId", "recurrenceIdTimeZone", "sentBy", "uid"];
+  return Object.keys(override).filter(path =>
+    Object.keys(override).some(other => isPrefix(other, path)) ||
+    forbidden.includes(path) ||
+    /^participants\/[^/]+\/calendarAddress$/.test(path) ||
+    ["recurrenceOverrides", "recurrenceRule"].includes(tokens(path)[0]));
+}
+
 test("A changed occurrence is a valid patch", async () => {
   let { master, sent } = await setup();
 
@@ -101,11 +113,14 @@ test("A changed occurrence is a valid patch", async () => {
 
   let stored = applyPatch(series(), sent[0].update.x);
   let override = stored.recurrenceOverrides["2026-11-09T10:00:00"];
-  // No property and also a patch inside it, and no organizer (draft-ietf-calext-jscalendarbis §1.5.9, §3.3.4)
-  expect(Object.keys(override).filter(path => path.includes("/"))).toEqual([]);
-  expect(override).not.toHaveProperty("organizerCalendarAddress");
-  let read = JSCalendarEvent.applyOverride(stored, "2026-11-09T10:00:00", override);
+  expect(invalidPatches(override)).toEqual([]);
+  // The occurrence: the series with the override applied as PatchObject
+  let read = structuredClone(stored);
+  delete read.recurrenceRule;
+  delete read.recurrenceOverrides;
+  read.start = "2026-11-09T10:00:00";
+  read = applyPatch(read, override);
   expect(read.title).toBe("Team meeting, in room B");
   expect(Object.values(read.locations).map(location => location.name)).toEqual(["Room B"]);
-  expect(Object.values(read.participants).find(p => p.calendarAddress == "mailto:tom@example.com").participationStatus).toBe("declined");
+  expect(Object.values(read.participants).find(p => p.calendarAddress.toLowerCase() == "mailto:tom@example.com").participationStatus).toBe("declined");
 });
