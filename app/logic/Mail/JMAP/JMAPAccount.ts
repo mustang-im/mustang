@@ -13,7 +13,7 @@ import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, typ
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
 import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
-import { checkChangeError } from "./JMAPError";
+import { checkChangeError, JMAPCommandError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions, type Folder } from "../Folder";
@@ -313,9 +313,8 @@ export class JMAPAccount extends MailAccount {
     }
     let errorResult = responsesJSON?.methodResponses.find(method => method[0] == "error");
     if (errorResult) {
-      let error = errorResult[1];
-      let ex = new Error(error.description) as any;
-      ex.code = error.type;
+      let method = requestJSON.methodCalls.find(call => call[2] == errorResult[2])?.[0];
+      let ex = new JMAPCommandError(method, errorResult[1] as any) as any;
       ex.call = requestJSON;
       ex.response = responsesJSON?.methodResponses;
       ex.debug = log.join(" ");
@@ -326,14 +325,6 @@ export class JMAPAccount extends MailAccount {
     let callNumbers = requestJSON.methodCalls.map(call => call[2]);
     for (let resp of responsesJSON.methodResponses) {
       assert(callNumbers.includes(resp[2]), "Method in response does not match");
-      if (resp[0] == "error") {
-        let ex = new Error(resp[1] as any);
-        (ex as any).debug = {
-          requests: calls,
-          responses: responsesJSON.methodResponses,
-        };
-        throw ex;
-      }
     }
     return responsesJSON.methodResponses;
   }
