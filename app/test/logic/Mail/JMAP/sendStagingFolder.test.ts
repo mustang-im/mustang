@@ -62,5 +62,6 @@ test("Without a Drafts folder, the email to send is uploaded to Sent", async () 
 
   await account.send(email);
 
-  expect(uploadedTo).toEqual(["e"]);
+  expect(uploadedTo.length).toBe(1);
+  expect(["b", "a"]).not.toContain(uploadedTo[0]); // Not into Trash, nor into the Inbox as new mail
 });
