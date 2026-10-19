@@ -6,6 +6,7 @@ import { applyPatch } from "./applyPatch";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
+import { durationSeconds } from "./durationSeconds";
 
 beforeAll(() => {
   appGlobal.remoteApp ??= {
@@ -115,7 +116,7 @@ test("A changed occurrence is sent as a change inside its override", async () =>
   await occurrence.save();
 
   let patch = sent[0].update.eventID;
-  expect(patch["recurrenceOverrides/2026-01-12T10:00:00/title"]).toBe("Moved and renamed");
+  // Not all overrides as a whole, which would undo changes of the other occurrences
   expect(patch).not.toHaveProperty("recurrenceOverrides");
   expect(applyPatch(json, patch).recurrenceOverrides["2026-01-12T10:00:00"]).toMatchObject({ start: "2026-01-12T11:00:00", title: "Moved and renamed" });
 });
@@ -154,6 +155,18 @@ test("An alert relative to the end is read as the reminder", async () => {
   expect(event.alarm.getTime() - event.endTime.getTime()).toBe(5 * 60 * 1000);
 });
 
+/** The offsets in seconds of the alerts to display, relative to the start, in any equivalent form */
+function reminderOffsets(json: TJMAPCalendarEvent): number[] {
+  return Object.values(json.alerts ?? {})
+    .filter(alert => (alert.action ?? "display") == "display")
+    .map(alert => {
+      let trigger = alert.trigger as any;
+      expect(trigger["@type"] ?? "OffsetTrigger").toBe("OffsetTrigger");
+      expect(trigger.relativeTo ?? "start").toBe("start");
+      return durationSeconds(trigger.offset);
+    });
+}
+
 test("A changed reminder is sent to the server", async () => {
   let { event, sent } = await listEvents([serverEvent()]);
 
@@ -161,10 +174,7 @@ test("A changed reminder is sent to the server", async () => {
   await event.save();
 
   let stored = applyPatch(serverEvent(), sent[0].update.eventID);
-  expect(Object.values(stored.alerts)[0]).toMatchObject({
-    "@type": "Alert",
-    trigger: { "@type": "OffsetTrigger", offset: "-PT15M" },
-  });
+  expect(reminderOffsets(stored)).toEqual([-15 * 60]);
   // Otherwise the server ignores our alert and uses the calendar default
   expect(stored.useDefaultAlerts).toBe(false);
 });
@@ -197,9 +207,7 @@ test("A changed reminder replaces an absolute alert", async () => {
   event.alarm = new Date(event.startTime.getTime() - 15 * 60 * 1000);
   await event.save();
 
-  expect(Object.values(applyPatch(json, sent[0].update.eventID).alerts)[0]).toMatchObject({
-    trigger: { "@type": "OffsetTrigger", offset: "-PT15M" },
-  });
+  expect(reminderOffsets(applyPatch(json, sent[0].update.eventID))).toEqual([-15 * 60]);
 });
 
 test("A removed reminder is sent to the server", async () => {
@@ -208,7 +216,7 @@ test("A removed reminder is sent to the server", async () => {
   event.alarm = null;
   await event.save();
 
-  expect(applyPatch(serverEvent(), sent[0].update.eventID).alerts).toEqual({});
+  expect(Object.keys(applyPatch(serverEvent(), sent[0].update.eventID).alerts ?? {})).toEqual([]);
 });
 
 /* JSCalendar gives the end of an event as duration, and an all-day event
