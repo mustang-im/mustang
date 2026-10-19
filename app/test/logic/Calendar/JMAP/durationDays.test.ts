@@ -4,6 +4,7 @@ import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
+import { applyPatch } from "./applyPatch";
 import { afterAll, beforeAll, expect, test, vi } from "vitest";
 
 /* A JSCalendar duration in days means calendar days in the event's time zone
@@ -25,6 +26,17 @@ function serverEvent(duration: string, timeZone: string | undefined = "Europe/Be
     start: "2026-10-24T10:00:00", duration, ...(timeZone ? { timeZone } : {}),
     calendarIds: { calendarID: true },
   } as any as TJMAPCalendarEvent;
+}
+
+/** The end of an event in Europe/Berlin (the time zone of these tests), as JSCalendar defines it:
+ * the days of the duration are calendar days, the hours, minutes and seconds absolute time. */
+function endPerSpec(start: Date, duration: string): Date {
+  let match = duration.match(/^P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/);
+  expect(match, "JSCalendar duration " + duration).toBeTruthy();
+  let [, weeks, days, hours, minutes, seconds] = match.map(part => Number(part || 0));
+  let end = new Date(start);
+  end.setDate(end.getDate() + weeks * 7 + days);
+  return new Date(end.getTime() + (hours * 3600 + minutes * 60 + seconds) * 1000);
 }
 
 function setup(events: TJMAPCalendarEvent[]) {
@@ -72,14 +84,15 @@ test("A floating event takes the days in the local time zone", async () => {
   expect(event.endTime.getTime()).toBe(new Date(2026, 9, 26, 10).getTime());
 });
 
-test("An unchanged duration in days is sent back as it is", async () => {
+test("An unchanged duration in days keeps its end on the server", async () => {
   let { event, sent } = await listEvent(serverEvent("P2D"));
   event.title = "Conference 2026";
   await event.save();
-  expect(sent[0].update.eventID.duration ?? "P2D").toBe("P2D");
+  let stored = applyPatch(serverEvent("P2D"), sent[0].update.eventID);
+  expect(endPerSpec(new Date("2026-10-24T08:00:00Z"), stored.duration).toISOString()).toBe("2026-10-26T09:00:00.000Z");
 });
 
-test("An event of exactly 24 hours over the night when the clocks go back is not sent as a day", async () => {
+test("An event of exactly 24 hours over the night when the clocks go back keeps its end on the server", async () => {
   let { calendar, sent } = setup([]);
   let event = calendar.newEvent();
   event.title = "24 hours";
@@ -88,5 +101,6 @@ test("An event of exactly 24 hours over the night when the clocks go back is not
   event.endTime = new Date("2026-10-25T08:00:00Z");
   calendar.events.add(event);
   await event.save();
-  expect(sent[0].create[event.id].duration).toBe("PT24H");
+  // Not "P1D", which is 25 hours that day
+  expect(endPerSpec(event.startTime, sent[0].create[event.id].duration).toISOString()).toBe("2026-10-25T08:00:00.000Z");
 });
