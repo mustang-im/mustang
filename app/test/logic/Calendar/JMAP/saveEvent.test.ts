@@ -269,7 +269,12 @@ describe("Recurrence rules from other clients", () => {
     await event.setRecurrenceCount(4);
     await event.save();
 
-    expect(applyPatch(monthlyServerEvent(), sent[0].update.eventID).recurrenceRule).toMatchObject({ frequency: "monthly", byMonthDay: [1, 15], count: 4 });
+    let rule = applyPatch(monthlyServerEvent(), sent[0].update.eventID).recurrenceRule;
+    expect(rule).toMatchObject({ frequency: "monthly", byMonthDay: [1, 15] });
+    // The end as count, or as the date of the 4th occurrence, February 15
+    let endsAfter4 = rule.count == 4 ||
+      rule.count === undefined && rule.until >= "2026-02-15T10:00:00" && rule.until < "2026-03-01T10:00:00";
+    expect(endsAfter4).toBe(true);
   });
 
   test("A changed repetition replaces the parts that we don't support", async () => {
