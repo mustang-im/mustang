@@ -51,24 +51,39 @@
         <RibbonButton label={$t`Rename`} icon={RenameIcon}
           onClick={() => { renaming = selected; }}
           disabled={!selected && $t`Select a file or folder first`} />
-        <RibbonMenuButton label={$t`Move`} icon={MoveIcon}
-          disabled={!movableFile && $t`Select a file first`}>
-          {#each targetFolders as target (target.dir)}
-            <MenuItem label={target.label} icon={FolderIcon}
-              disabled={movableFile?.parent == target.dir}
-              onClick={() => target.dir.moveFileHere(movableFile)} />
-          {:else}
-            <MenuLabel label={$t`There are no other folders`} />
-          {/each}
-          <MenuDivider />
-          <SubMenu label={$t`Copy to Folder *=> Copy the selected files to another folder`} icon={CopyIcon}>
+        {#if targetFolders.length > maxMenuFolders}
+          <RibbonButton label={$t`Move`} icon={MoveIcon}
+            tooltip={$t`Move the selected file to another folder`}
+            onClick={() => { moving = { file: movableFile, copy: false }; }}
+            disabled={!movableFile && $t`Select a file first`} />
+          <RibbonButton label={$t`Copy`} icon={CopyIcon} size="small"
+            tooltip={$t`Copy the selected file to another folder`}
+            onClick={() => { moving = { file: movableFile, copy: true }; }}
+            disabled={!movableFile && $t`Select a file first`} />
+        {:else}
+          <RibbonMenuButton label={$t`Move`} icon={MoveIcon}
+            tooltip={$t`Move the selected file to another folder`}
+            disabled={!movableFile && $t`Select a file first`}>
+            {#each targetFolders as target (target.dir)}
+              <MenuItem label={target.label} icon={FolderIcon}
+                disabled={movableFile?.parent == target.dir}
+                onClick={() => target.dir.moveFileHere(movableFile)} />
+            {:else}
+              <MenuLabel label={$t`There are no other folders`} />
+            {/each}
+          </RibbonMenuButton>
+          <RibbonMenuButton label={$t`Copy`} icon={CopyIcon} size="small"
+            tooltip={$t`Copy the selected file to another folder`}
+            disabled={!movableFile && $t`Select a file first`}>
             {#each targetFolders as target (target.dir)}
               <MenuItem label={target.label} icon={FolderIcon}
                 disabled={movableFile?.parent == target.dir}
                 onClick={() => target.dir.copyFileHere(movableFile)} />
+            {:else}
+              <MenuLabel label={$t`There are no other folders`} />
             {/each}
-          </SubMenu>
-        </RibbonMenuButton>
+          </RibbonMenuButton>
+        {/if}
         <RibbonButton label={$t`Delete`} icon={DeleteIcon}
           onClick={deleteSelected}
           disabled={!selected && $t`Select a file or folder first`}
@@ -127,6 +142,9 @@
 {#if renaming}
   <RenameDialog file={renaming} on:close={() => renaming = null} />
 {/if}
+{#if moving}
+  <MoveFileDialog file={moving.file} copy={moving.copy} rootDirs={folder.account.rootDirs} on:close={() => moving = null} />
+{/if}
 {#if newFolderParent}
   <NewFolderDialog parent={newFolderParent} on:close={() => newFolderParent = null} />
 {/if}
@@ -153,10 +171,9 @@
   import ChangeViewGallery from "../Shared/Ribbon/ChangeViewGallery.svelte";
   import MenuItem from "../Shared/Menu/MenuItem.svelte";
   import MenuLabel from "../Shared/Menu/MenuLabel.svelte";
-  import MenuDivider from "../Shared/Menu/MenuDivider.svelte";
-  import SubMenu from "../Shared/Menu/SubMenu.svelte";
   import RenameDialog from "./RenameDialog.svelte";
   import NewFolderDialog from "./NewFolderDialog.svelte";
+  import MoveFileDialog from "./MoveFileDialog.svelte";
   import FileSelector from "../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import UploadIcon from "lucide-svelte/icons/upload";
   import NewFolderIcon from "lucide-svelte/icons/folder-plus";
@@ -187,6 +204,8 @@
   let fileSelector: FileSelector;
   let renaming: FileOrDirectory | null = null;
   let newFolderParent: Directory | null = null;
+  let moving: { file: File, copy: boolean } | null = null;
+  const maxMenuFolders = 8;
 
   $: selected = $selectedFile;
   $: folder = $selectedFolder;
