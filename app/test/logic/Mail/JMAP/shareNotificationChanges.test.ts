@@ -88,3 +88,48 @@ test("A step without new share notifications continues with the next step", asyn
   expect(account.added).toEqual(["core-carol@example.com"]);
   expect(account.syncState.get("ShareNotification")).toBe("n3");
 });
+
+/** A buggy or hostile server that always says it has more changes */
+class EndlessJMAPAccount extends TestJMAPAccount {
+  rounds = 0;
+  errors: Error[] = [];
+  /** false: always the same state; true: a new state each time */
+  newStateEachTime = true;
+  async makeCombinedCall(calls: [string, Record<string, any>, string?][]): Promise<Record<string, any>> {
+    this.rounds++;
+    let newState = this.newStateEachTime ? "n" + (this.rounds + 1) : "n1";
+    return {
+      changes: { oldState: calls[0][1].sinceState, newState, hasMoreChanges: true, created: [], updated: [], destroyed: [] },
+      new: { list: [] },
+    };
+  }
+}
+
+function newEndlessAccount(newStateEachTime: boolean): EndlessJMAPAccount {
+  let account = new EndlessJMAPAccount();
+  account.accountID = "r";
+  account.session = kSession;
+  account.syncState.set("ShareNotification", "n1");
+  account.newStateEachTime = newStateEachTime;
+  account.errorCallback = ex => account.errors.push(ex);
+  return account;
+}
+
+test("A server that always has more share notifications doesn't keep us busy forever", async () => {
+  let account = newEndlessAccount(true);
+
+  await account.addNewlySharedAccounts();
+
+  expect(account.rounds).toBe(1000);
+  expect(account.errors.length).toBe(1);
+  expect(account.errors[0].message).toContain("Stopped");
+});
+
+test("A server that says it has more, but stays at the same state, is not asked again", async () => {
+  let account = newEndlessAccount(false);
+
+  await account.addNewlySharedAccounts();
+
+  expect(account.rounds).toBe(1);
+  expect(account.errors.length).toBe(1);
+});
