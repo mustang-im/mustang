@@ -91,8 +91,8 @@
     flex: 1 0 0;
   }
   .toolbar {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
     border-bottom: 1px solid var(--border);
     align-items: center;
     padding: 2px 12px;

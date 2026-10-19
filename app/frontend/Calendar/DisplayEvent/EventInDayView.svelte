@@ -60,7 +60,7 @@
     justify-content: end;
   }
   .calendar :global(.header) {
-    background-color: var(--leftbar-bg);
+    background-color: var(--left-pane-bg);
   }
   .calendar :global(.time.label) {
     width: 1.1em;

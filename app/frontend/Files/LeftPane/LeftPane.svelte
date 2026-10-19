@@ -50,7 +50,7 @@
   .left-pane {
     box-shadow: var(--left-pane-shadow, 2px 0px 6px 0px rgba(0, 0, 0, 10%));
     background-color: var(--left-pane-bg);
-    color: var(--leftbar-fg);
+    color: var(--left-pane-fg);
     padding-block-end: 16px;
     margin: var(--pane-margin);
   }

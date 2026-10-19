@@ -38,8 +38,8 @@
 <style>
   .header.box {
     align-items: center;
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
     border: 2px solid var(--border);
     border-radius: 5px;
     padding: 4px 8px;

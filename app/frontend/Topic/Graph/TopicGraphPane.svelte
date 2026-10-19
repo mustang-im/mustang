@@ -47,8 +47,8 @@
 
 <style>
   .topic-graph-pane {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
   }
   .tree-branch {
     padding: 6px 24px 6px 12px;

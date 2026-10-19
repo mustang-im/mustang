@@ -50,7 +50,7 @@
     height: 32px;
   }
   .message-list :global(.row.odd:not(.selected):not(:hover) .message) {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
   }
 </style>

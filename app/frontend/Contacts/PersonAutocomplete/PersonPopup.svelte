@@ -157,8 +157,8 @@
 
 <style>
   .person-popup {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
     border-radius: 5px;
     box-shadow: 2.281px 1.14px 9.123px 0px rgba(var(--shadow-color), 20%);
   }

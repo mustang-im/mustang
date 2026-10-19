@@ -85,8 +85,8 @@
 
 <style>
   .category {
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
     padding: 32px 24px;
   }
   .header {

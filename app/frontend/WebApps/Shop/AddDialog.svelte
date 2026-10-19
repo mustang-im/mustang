@@ -73,8 +73,8 @@
     margin: -6px 4px 4px 4px;
     padding: 12px;
     max-width: 192px; /* Same as the app entry above us, so that the text wraps */
-    background-color: var(--leftbar-bg);
-    color: var(--leftbar-fg);
+    background-color: var(--left-pane-bg);
+    color: var(--left-pane-fg);
   }
   .needs-account {
     flex-wrap: wrap;

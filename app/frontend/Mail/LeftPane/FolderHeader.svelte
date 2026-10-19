@@ -49,8 +49,8 @@
     justify-content: start;
     padding-block: 2px;
     padding-inline: 16px;
-    color: var(--leftbar-fg);
-    background-color: var(--leftbar-bg);
+    color: var(--left-pane-fg);
+    background-color: var(--left-pane-bg);
     box-shadow: 2px 0px 6px 0px rgba(0, 0, 0, 10%);
   }
   .folder-header :global(button) {

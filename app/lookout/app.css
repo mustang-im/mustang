@@ -133,8 +133,7 @@
   --icon-primary: var(--lo-accent);
   --offset-bg: var(--lo-accent-tint);
   --offset-fg: var(--lo-fg);
-  --leftbar-bg: var(--lo-pane-bg);
-  --leftbar-fg: var(--lo-fg);
+  --left-pane-fg: var(--lo-fg);
   --headerbar-bg: var(--lo-window-bg);
   --headerbar-fg: var(--lo-fg);
   --windowheader-bg: var(--lo-titlebar-bg);
@@ -306,7 +305,7 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
   --pane-radius: var(--lo-radius);
   --pane-shadow: var(--lo-shadow-card);
   --pane-bg: var(--lo-pane-bg);
-  --left-pane-bg: transparent;
+  --left-pane-bg: var(--lo-window-bg);
   --left-pane-shadow: none;
 }
 

@@ -52,7 +52,7 @@
     justify-content: center;
   }
   .calendar :global(.header) {
-    background-color: var(--leftbar-bg);
+    background-color: var(--left-pane-bg);
   }
   .calendar :global(.day-header) {
     max-height: 2em;
