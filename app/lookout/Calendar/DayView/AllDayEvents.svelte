@@ -20,6 +20,7 @@
     </div>
   {/each}
 </div>
+<NewEventCalendarMenu {calendar} bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
@@ -31,6 +32,7 @@
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "../MonthView/EventContainer.svelte";
   import InlineEventTitle from "../InlineEventTitle.svelte";
+  import NewEventCalendarMenu from "../NewEventCalendarMenu.svelte";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
   import { createEventDispatcher } from "svelte";
@@ -44,6 +46,7 @@
   const dispatch = createEventDispatcher<{ slotmenu: { slots: SlotSelection, mouseEvent: MouseEvent } }>();
 
   let stripEl: HTMLDivElement;
+  let newEventMenu: NewEventCalendarMenu;
 
   $: layout = derived([...$events.contents], allDayEvents => layoutDayRow(allDayEvents, days));
 
@@ -89,7 +92,7 @@
   function onDoubleClick(mouseEvent: MouseEvent) {
     let day = dayAt(mouseEvent.clientX);
     selectDay(day);
-    catchErrors(() => CalendarActions.newEvent(calendar, day, null, "all-day"));
+    catchErrors(() => newEventMenu.openMenu(mouseEvent, chosen => CalendarActions.newEvent(chosen, day, null, "all-day")));
   }
 
   function onContextMenu(mouseEvent: MouseEvent) {

@@ -27,8 +27,8 @@
         <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon} size="small"
           onClick={() => ContactActions.writeMail([person])}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
-        <RibbonButton label={$t`Meeting`} icon={MeetingIcon} size="small"
-          onClick={() => ContactActions.newMeeting([person])}
+        <NewEventRibbonButton label={$t`Meeting`} icon={MeetingIcon} size="small"
+          onCreate={calendar => ContactActions.newMeeting([person], calendar)}
           disabled={!hasEmailAddress && $t`Enter an email address first`} />
         <RibbonMenuButton label={$t`More *=> More ways to contact the person`} icon={MoreIcon} size="small">
           <SubMenu label={$t`Call`} icon={CallIcon} disabled={!$phoneNumbers.hasItems && $t`Enter a phone number first`}>
@@ -168,6 +168,7 @@
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import RibbonSplitButton from "../../Shared/Ribbon/RibbonSplitButton.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import NewEventRibbonButton from "../../Calendar/NewEventRibbonButton.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";

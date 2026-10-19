@@ -6,20 +6,33 @@
 {:else}
   <button type="button" class="card-button" disabled={!!disabled}
     title={typeof disabled == "string" ? disabled : label}
-    on:click={() => catchErrors(onClick)}>
+    aria-haspopup={hasMenu ? "menu" : undefined}
+    on:click={onClicked}>
     <svelte:component this={icon} size={16} />
     <span>{label}</span>
+    {#if hasMenu}
+      <span class="chevron"><ChevronDownIcon size={12} /></span>
+    {/if}
   </button>
 {/if}
 
 <script lang="ts">
   import { catchErrors } from "../../../frontend/Util/error";
+  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent;
-  export let onClick: () => void | Promise<void> = null;
+  export let onClick: (event: MouseEvent) => void | Promise<void> = null;
   export let href: string = null;
   export let disabled: boolean | string = false;
+  export let hasMenu = false;
+
+  function onClicked(event: MouseEvent) {
+    if (hasMenu) {
+      event.stopPropagation();
+    }
+    catchErrors(() => onClick(event));
+  }
 </script>
 
 <style>
@@ -41,6 +54,11 @@
   }
   .card-button > :global(svg) {
     color: var(--lo-accent-text);
+  }
+  .chevron {
+    display: flex;
+    margin-inline-start: -2px;
+    color: var(--lo-fg-secondary);
   }
   .card-button:hover:not(:disabled) {
     border-color: var(--lo-border-strong);

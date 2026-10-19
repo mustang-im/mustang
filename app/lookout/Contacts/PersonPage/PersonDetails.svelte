@@ -13,8 +13,8 @@
         <CardButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([person])}
           disabled={$emailAddresses.isEmpty && $t`This contact has no email address`} />
-        <CardButton label={$t`Meeting`} icon={MeetingIcon}
-          onClick={() => ContactActions.newMeeting([person])}
+        <CardButton label={$t`Meeting`} icon={MeetingIcon} hasMenu={$shownCalendars.length > 1}
+          onClick={event => newEventMenu.openMenu(event.currentTarget as HTMLElement, calendar => ContactActions.newMeeting([person], calendar))}
           disabled={$emailAddresses.isEmpty && $t`This contact has no email address`} />
         {#if preferredPhone}
           <CardButton label={$t`Call`} icon={CallIcon} href="tel:{preferredPhone}" />
@@ -138,6 +138,7 @@
   </vbox>
   {/if}
 </vbox>
+<NewEventCalendarMenu bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Person, ContactEntry } from "../../../logic/Abstract/Person";
@@ -148,6 +149,8 @@
   import PersonPicture from "../Person/PersonPicture.svelte";
   import CardField from "./CardField.svelte";
   import CardButton from "./CardButton.svelte";
+  import NewEventCalendarMenu from "../../Calendar/NewEventCalendarMenu.svelte";
+  import { shownCalendars } from "../../../frontend/Calendar/selected";
   import MailIcon from "lucide-svelte/icons/mail";
   import MeetingIcon from "lucide-svelte/icons/calendar-plus";
   import CallIcon from "lucide-svelte/icons/phone-outgoing";
@@ -172,6 +175,7 @@
   $: urls = person.urls;
   $: groups = person.groups;
 
+  let newEventMenu: NewEventCalendarMenu;
   let shownPivot: "overview" | ActivityKind = "overview";
   $: pivots = [
     { id: "overview", label: $t`Overview *=> Tab with a summary of the contact`, emptyText: "" },

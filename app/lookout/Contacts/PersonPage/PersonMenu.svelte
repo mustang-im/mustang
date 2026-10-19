@@ -19,11 +19,11 @@
     icon={MailIcon}
     disabled={!hasEmailAddress && $t`The contact has no email address`}
     onClick={() => ContactActions.writeMail(contacts)} />
-  <MenuItem
+  <NewEventSubMenu
     label={$t`Meeting`}
     icon={MeetingIcon}
     disabled={!hasEmailAddress && $t`The contact has no email address`}
-    onClick={() => ContactActions.newMeeting(contacts)} />
+    onCreate={calendar => ContactActions.newMeeting(contacts, calendar)} />
   {#if person}
     <SubMenu label={$t`Call`} icon={CallIcon} disabled={!phoneNumbers.length && $t`The contact has no phone number`}>
       {#each phoneNumbers as entry}
@@ -72,6 +72,7 @@
   import { AddressbookSections } from "../AddressbookSections";
   import ContextMenu from "../../Shared/Menu/ContextMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import NewEventSubMenu from "../../Calendar/NewEventSubMenu.svelte";
   import MenuLabel from "../../Shared/Menu/MenuLabel.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";

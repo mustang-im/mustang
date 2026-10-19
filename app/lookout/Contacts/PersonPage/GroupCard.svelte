@@ -11,8 +11,8 @@
         <CardButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([group])}
           disabled={!hasEmailAddress && $t`No member has an email address`} />
-        <CardButton label={$t`Meeting`} icon={MeetingIcon}
-          onClick={() => ContactActions.newMeeting([group])}
+        <CardButton label={$t`Meeting`} icon={MeetingIcon} hasMenu={$shownCalendars.length > 1}
+          onClick={event => newEventMenu.openMenu(event.currentTarget as HTMLElement, calendar => ContactActions.newMeeting([group], calendar))}
           disabled={!hasEmailAddress && $t`No member has an email address`} />
         <CardButton label={$t`Edit`} icon={EditIcon}
           onClick={() => ContactActions.edit(group)} />
@@ -29,12 +29,15 @@
     {/each}
   </vbox>
 </vbox>
+<NewEventCalendarMenu bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Group } from "../../../logic/Abstract/Group";
   import { ContactActions } from "../ContactActions";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import CardButton from "./CardButton.svelte";
+  import NewEventCalendarMenu from "../../Calendar/NewEventCalendarMenu.svelte";
+  import { shownCalendars } from "../../../frontend/Calendar/selected";
   import GroupMemberLine from "./GroupMemberLine.svelte";
   import MailIcon from "lucide-svelte/icons/mail";
   import MeetingIcon from "lucide-svelte/icons/calendar-plus";
@@ -42,6 +45,8 @@
   import { t } from "../../../l10n/l10n";
 
   export let group: Group;
+
+  let newEventMenu: NewEventCalendarMenu;
 
   $: members = group.participants;
   $: hasEmailAddress = ContactActions.hasEmailAddress($members.contents);
