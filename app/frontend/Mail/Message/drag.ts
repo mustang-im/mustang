@@ -5,7 +5,7 @@ import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
 import { assert } from "../../../logic/util/util";
 import { gt } from "../../../l10n/l10n";
-import mailsIconURL from "../../../public/icon/mails.png?url";
+import mailsIconURL from "/icon/mails.png?url";
 
 export function onDragStartMail(event: DragEvent, message: EMail) {
   selectedMessage.set(message);

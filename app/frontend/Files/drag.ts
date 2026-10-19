@@ -5,7 +5,7 @@ import { assert } from "../../logic/util/util";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 import { get } from "svelte/store";
-import mailsIconURL from "../../public/icon/mails.png?url";
+import mailsIconURL from "/icon/mails.png?url";
 
 export function onDragStartFile(event: DragEvent, file: File) {
   selectedFile.set(file);

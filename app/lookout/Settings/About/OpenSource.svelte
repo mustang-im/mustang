@@ -10,7 +10,7 @@
 </vbox>
 
 <script lang="ts">
-  import attributionURL from "../../../public/attribution.txt.gz?url";
+  import attributionURL from "/attribution.txt.gz?url";
   import { appName } from "../../../logic/build";
   import { fetchGzip } from "../../../frontend/Util/util";
   import { catchErrors } from "../../../frontend/Util/error";

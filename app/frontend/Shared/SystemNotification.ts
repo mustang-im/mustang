@@ -1,7 +1,7 @@
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { appGlobal } from "../../logic/app";
 import logo from '../asset/icon/general/logo.svg?raw';
-import newMessageSoundURL from "../../public/sound/new-message.mp3?url";
+import newMessageSoundURL from "/sound/new-message.mp3?url";
 import { backgroundError } from "../Util/error";
 
 /** Tells the user about a new mail, a meeting reminder etc.

@@ -180,7 +180,7 @@
   import { onKeyEnter } from "../../Util/util";
   import { catchErrors } from "../../Util/error";
   import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
-  import ringtoneURL from "../../../public/sound/ringtone1.mp3?url";
+  import ringtoneURL from "/sound/ringtone1.mp3?url";
 
   export let meeting: VideoConfMeeting;
 
