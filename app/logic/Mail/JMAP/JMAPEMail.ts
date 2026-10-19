@@ -199,6 +199,7 @@ export class JMAPEMail extends EMail {
   async markSpam(spam = true) {
     await super.markSpam(spam);
     await this.setFlagServer("$junk", spam);
+    await this.setFlagServer("$notjunk", !spam);
   }
 
   async markReplied() {
