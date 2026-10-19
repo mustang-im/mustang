@@ -42,7 +42,8 @@ test("Only a first name gives no empty last name", () => {
   person.firstName = "Cher";
   let jscontact = {} as TJSContact;
   JSContact.fromPerson(person, jscontact);
-  expect(jscontact.name.components).toEqual([{ kind: "given", value: "Cher" }]);
+  expect(jscontact.name.components.filter(c => c.kind == "surname")).toEqual([]);
+  expect(jscontact.name.components.filter(c => c.kind == "given").map(c => c.value)).toEqual(["Cher"]);
 });
 
 test("Changing the last name keeps the other name parts", () => {
@@ -51,11 +52,13 @@ test("Changing the last name keeps the other name parts", () => {
   JSContact.toPerson(jscontact, person);
   person.lastName = "Musterfrau";
   JSContact.fromPerson(person, jscontact);
-  expect(jscontact.name.components).toEqual([
+  // The name is not ordered (`isOrdered`), so the components may come in any order
+  expect(jscontact.name.components).toHaveLength(5);
+  expect(jscontact.name.components).toEqual(expect.arrayContaining([
     { kind: "surname", value: "Musterfrau" },
     { kind: "given", value: "Erika" },
     { kind: "given2", value: "Maria" },
     { kind: "title", value: "Dr." },
     { kind: "credential", value: "PhD" },
-  ]);
+  ]));
 });
