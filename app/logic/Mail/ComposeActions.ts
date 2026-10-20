@@ -375,6 +375,8 @@ export class ComposeActions {
     }
     await this.convertInlineAttachmentsURLs();
     const kSentByHTML = `<p style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></p>`;
+    // Sanitized, so that we send no http: images, e.g. in signatures,
+    // because they trigger warnings at all recipients. Images go inline.
     let body = new MailBody(this.email.html);
     body.prepareForSending(gLicense?.license ? null : kSentByHTML);
     this.email.html = body.html;
