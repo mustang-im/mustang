@@ -186,6 +186,7 @@
   import { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { insertImage } from "../../Shared/Editor/InsertImage";
+  import { addSignatureInEditor, changeSignatureInEditor, focusBeforeSignature } from "./SignatureInEditor";
   import { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { WriteMailMustangApp, mailMustangApp } from "../MailMustangApp";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
@@ -261,16 +262,19 @@
 
   let loading = false;
   async function loadText() {
-    if (!mail.hasHTML) {
-      return;
+    let hasHTML = mail.hasHTML;
+    if (hasHTML) {
+      loading = true;
+      await mail.loadBody();
+      loading = false;
     }
-    loading = true;
-    await mail.loadBody();
-    loading = false;
     if (!editor) {
       await tick();
     }
-    editor.commands.setContent(mail.html);
+    if (hasHTML) {
+      editor.commands.setContent(mail.html);
+    }
+    addSignatureInEditor(editor, mail, fromIdentity);
     setCursorDefault();
   }
 
@@ -280,12 +284,18 @@
     }
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let below = quoteSetting == "below";
-    editor.commands.focus(below ? 'start' : 'end');
+    if (below || !focusBeforeSignature(editor)) {
+      editor.commands.focus(below ? 'start' : 'end');
+    }
   }
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
+    let previousIdentity = mail.identity;
     mail.identity = fromIdentity;
+    if (previousIdentity && previousIdentity != fromIdentity && editor) {
+      changeSignatureInEditor(editor, mail, fromIdentity);
+    }
     mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
     if (fromIdentity == mail.identity) {

@@ -50,6 +50,14 @@
         <hbox />
       </vbox>
     </hbox>
+
+    <hbox class="strip-signatures">
+      <input type="checkbox" bind:checked={stripSignaturesSetting.value} id="strip-signatures"
+        disabled={quoteSetting.value == "none"} />
+      <label for="strip-signatures">
+        {$t`Remove signatures from the quoted message`}
+      </label>
+    </hbox>
   </vbox>
 </HeaderGroupBox>
 
@@ -112,11 +120,13 @@
 <script lang="ts">
   import HeaderGroupBox from "../../Shared/HeaderGroupBox.svelte";
   import { getLocalStorage } from "../../Util/LocalStorage";
+  import { kStripSignaturesSetting } from "../../../logic/Mail/Signature";
   import { t } from "../../../l10n/l10n";
   import Paper from "../../Shared/Paper.svelte";
 
   let formatSetting = getLocalStorage("mail.send.format", "html");
   let quoteSetting = getLocalStorage("mail.send.quote", "below");
+  let stripSignaturesSetting = getLocalStorage(kStripSignaturesSetting, true);
   let spellcheckEnabledSetting = getLocalStorage("mail.send.spellcheck.enabled", false);
 </script>
 
@@ -134,6 +144,10 @@
   }
   .format img {
     margin: 16px 32px 24px 28px;
+  }
+  .strip-signatures {
+    align-items: center;
+    margin-block-start: 16px;
   }
   label.spellcheck {
     text-decoration: underline;

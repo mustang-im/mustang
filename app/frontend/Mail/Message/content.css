@@ -15,3 +15,12 @@ img[src=""] {
 img {
   max-width: 100%;
 }
+
+/* Email signature.
+ * `footer[type="signature"]`: Standard marker. `footer.signature`: Older versions of this app.
+ * `.moz-signature`: Thunderbird. Keep in sync with `kSignatureSelector` in Signature.ts */
+footer[type="signature"],
+footer.signature,
+.moz-signature {
+  opacity: 70%;
+}

@@ -107,12 +107,17 @@ export class Message extends Observable {
           : sanitizeHTML(this._rawHTML);
       }
       if (this._text) {
-        return this._sanitizedHTML = convertTextToHTML(this._text);
+        return this._sanitizedHTML = this.convertTextToHTML(this._text);
       }
     } catch (ex) {
       dataError(ex);
     }
     return "";
+  }
+
+  /** For plaintext-only messages. Must return sanitized HTML. */
+  protected convertTextToHTML(text: string): string {
+    return convertTextToHTML(text);
   }
 
   /** Must also set `.text` (or at least get `.text` to auto-generate it),

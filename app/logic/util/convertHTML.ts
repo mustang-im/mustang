@@ -1,5 +1,6 @@
 import { getBaseDomainFromURL } from "./netUtil";
 import type { URLString } from "./util";
+import { kPlaintextSignatureSeparator, splitPlaintextSignature } from "../Mail/Signature";
 import DOMPurify from "dompurify"; // https://github.com/cure53/DOMPurify
 import { compile as makeHTMLToText } from "html-to-text";
 import markdownit from "markdown-it";
@@ -12,6 +13,21 @@ export function convertHTMLToText(html: string): string {
     const options = {
       formatters: {
         removeFormatter: () => { },
+        /** Plaintext signature marker `-- `, and the signature lines without empty lines between them */
+        signatureFormatter: (elem, walk, builder) => {
+          builder.openBlock({ leadingLineBreaks: 2 });
+          builder.addLiteral(kPlaintextSignatureSeparator);
+          builder.closeBlock({ trailingLineBreaks: 1 });
+          for (let child of elem.children ?? []) {
+            if (child.type == "tag" && child.name == "p") {
+              builder.openBlock({ leadingLineBreaks: 1 });
+              walk(child.children, builder);
+              builder.closeBlock({ trailingLineBreaks: 1 });
+            } else {
+              walk([child], builder);
+            }
+          }
+        },
       },
       selectors: [
         {
@@ -22,6 +38,15 @@ export function convertHTMLToText(html: string): string {
           selector: "style",
           format: "removeFormatter",
         },
+        {
+          // Not `.moz-signature`, which already contains the `-- `
+          selector: `footer[type="signature"]`,
+          format: "signatureFormatter",
+        },
+        {
+          selector: "footer.signature",
+          format: "signatureFormatter",
+        },
       ],
     };
     htmlToText = makeHTMLToText(options);
@@ -31,15 +56,29 @@ export function convertHTMLToText(html: string): string {
 }
 
 let markdownitInstance;
-export function convertTextToHTML(plaintext: string): string {
+function markdownToHTML(plaintext: string): string {
   if (!markdownitInstance) {
     markdownitInstance = markdownit({
       linkify: true,
       breaks: true,
     });
   }
-  let html = markdownitInstance.render(plaintext);
-  return sanitizeHTML(html);
+  return markdownitInstance.render(plaintext);
+}
+
+export function convertTextToHTML(plaintext: string): string {
+  return sanitizeHTML(markdownToHTML(plaintext));
+}
+
+/** Like `convertTextToHTML()`, but for email bodies:
+ * Marks the signature after the `-- ` line as `<footer type="signature">`. */
+export function convertMailTextToHTML(plaintext: string): string {
+  let split = splitPlaintextSignature(plaintext);
+  if (!split) {
+    return convertTextToHTML(plaintext);
+  }
+  return sanitizeHTML(markdownToHTML(split.body) +
+    `<footer type="signature">${markdownToHTML(split.signature)}</footer>`);
 }
 
 export function fixNewlines(text: string): string {

@@ -25,6 +25,7 @@ beforeAll(() => {
 let account: MailAccount;
 let mail: EMail;
 let compose: { send: () => Promise<void>, saveAsDraft: () => Promise<void> };
+let work: MailIdentity;
 let app: Record<string, any> | null = null;
 
 beforeEach(async () => {
@@ -37,7 +38,13 @@ beforeEach(async () => {
   let identity = new MailIdentity(account);
   identity.emailAddress = account.emailAddress;
   identity.realname = account.realname;
+  identity.signatureHTML = "<p>Test User</p>";
   account.identities.add(identity);
+  work = new MailIdentity(account);
+  work.emailAddress = "test@work.example.com";
+  work.realname = account.realname;
+  work.signatureHTML = "<p>Test User, Work Inc.</p>";
+  account.identities.add(work);
   for (let specialFolder of [SpecialFolder.Inbox, SpecialFolder.Sent, SpecialFolder.Drafts]) {
     let folder = new Folder(account);
     folder.name = folder.id = specialFolder;
@@ -49,7 +56,14 @@ beforeEach(async () => {
   mail.identity = identity;
   mail.subject = "Hello";
   mail.to.add(new PersonUID("fred@example.com", "Fred"));
-  compose = { send: vi.fn(async () => {}), saveAsDraft: vi.fn(async () => {}) };
+  let realCompose = mail.compose;
+  compose = {
+    send: vi.fn(async () => {}),
+    saveAsDraft: vi.fn(async () => {}),
+    addSignature: realCompose.addSignature.bind(realCompose),
+    changeSignature: realCompose.changeSignature.bind(realCompose),
+    putSignature: realCompose.putSignature.bind(realCompose),
+  } as any;
   vi.spyOn(mail, "compose", "get").mockReturnValue(compose as any);
 
   let target = document.createElement("div");
@@ -150,4 +164,35 @@ test("macOS: Option+S types ß, so it doesn't send", async () => {
   await sleep(0.01);
   expect(compose.send).toHaveBeenCalledTimes(1);
   expect(compose.saveAsDraft).toHaveBeenCalledTimes(1);
+});
+
+function signaturesInEditor(): string[] {
+  return Array.from(document.querySelectorAll(`.composer [contenteditable] footer[type="signature"]`))
+    .map(footer => footer.textContent);
+}
+
+async function selectFrom(emailAddress: string) {
+  (document.querySelector(".from-text button.address") as HTMLButtonElement).click();
+  flushSync();
+  let item = Array.from(document.querySelectorAll("button"))
+    .find(button => button.textContent.trim() == emailAddress && !button.closest(".from-text"));
+  expect(item).toBeTruthy();
+  item.click();
+  flushSync();
+}
+
+test("The composer shows the signature of the From identity", async () => {
+  await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test User"]));
+  expect(mail.rawHTMLDangerous).toContain("data-own-signature");
+});
+
+test("Changing From swaps the signature in the composer", async () => {
+  await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test User"]));
+  await selectFrom("test@work.example.com");
+  await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test User, Work Inc."]));
+  // The editor updated the mail
+  expect(mail.rawHTMLDangerous).toContain("Work Inc.");
+  expect(mail.rawHTMLDangerous).not.toContain("<p>Test User</p>");
+  await selectFrom("user@example.com");
+  await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test User"]));
 });

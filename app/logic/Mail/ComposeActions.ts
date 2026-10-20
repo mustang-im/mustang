@@ -3,6 +3,7 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
+import { ComposeSignature, hasOwnSignature, kStripSignaturesSetting, putOwnSignature, removeOwnSignatureMarkers, removeSignatures, signatureForSending } from "./Signature";
 import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { ExtraData } from "./ExtraData";
 import { appName, appVersion, siteRoot } from "../build";
@@ -16,6 +17,9 @@ import { UserError, assert, type URLString, ensureArray, getUserPreference } fro
 import { dataURLToBlob } from "../util/blob";
 import { getDateTimeLocale, gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
+
+/** Added to the signature for unlicensed users */
+const kSentByHTML = `<p style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></p>`;
 
 /** Functions based on the email, which are either
  * not changing the email itself, but are based on the email,
@@ -84,9 +88,12 @@ export class ComposeActions {
       .catch(original.folder.account.errorCallback);
 
     let quoteSetting = getUserPreference("mail.send.quote", "below");
+    let originalHTML = getUserPreference(kStripSignaturesSetting, true)
+      ? removeSignatures(original.html)
+      : original.html;
     let quote = `<p class="quote-header">${escapeHTML(this.quotePrefixLine())}</p>
     <blockquote cite="mid:${escapeAttr(original.id ?? "")}">
-      ${original.html}
+      ${originalHTML}
     </blockquote>`;
     reply.html = quoteSetting == "none" ? `<p></p>` :
       quoteSetting == "below" ? `<p></p>
@@ -172,7 +179,7 @@ export class ComposeActions {
       </div>
     </p>
     <p></p>
-    ${ this.email.html }`;
+    ${ removeOwnSignatureMarkers(this.email.html) }`;
     forward.attachments.addAll(this.email.attachments.map(a => a.cloneTo(forward)));
     return forward;
   }
@@ -193,6 +200,7 @@ export class ComposeActions {
   async redirect(): Promise<EMail> {
     await this.email.loadAttachments();
     let redirect = this.email.folder.account.newEMailFrom();
+    redirect.composeSignature = ComposeSignature.Keep; // Send the original as-is
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
     redirect.html = this.email.html;
@@ -203,6 +211,7 @@ export class ComposeActions {
   async editAsNew(): Promise<EMail> {
     await this.email.loadAttachments();
     let clone = this.email.folder.account.newEMailFrom();
+    clone.composeSignature = ComposeSignature.Keep; // Already has the signature from when it was sent
     clone.to.addAll(this.email.to);
     clone.cc.addAll(this.email.cc);
     clone.subject = this.email.subject;
@@ -302,11 +311,68 @@ export class ComposeActions {
     }*/
   }
 
+  /** The body as the composer has it, or for plaintext-only mails, converted to HTML */
+  protected currentHTML(): string {
+    return this.email.hasHTML ? this.email.rawHTMLDangerous : this.email.html;
+  }
+
+  /**
+   * Puts the signature of the From identity into the body of a new mail, reply or forward.
+   * The composer calls this when it opens the mail, so that the user sees the signature.
+   * (`send()` adds it for mails which did not go through the composer,
+   * e.g. a quick reply from a notification.)
+   * Does nothing for other mails, e.g. drafts and redirects, or if it was already done.
+   *
+   * @param html The current body, e.g. from the editor. Default: The body of the email.
+   * @returns The new body, or null, if nothing changed.
+   *   The caller sets it, e.g. into the editor, which then updates the email.
+   */
+  addSignature(identity: MailIdentity | null = this.email.identity, html = this.currentHTML()): string | null {
+    if (this.email.composeSignature != ComposeSignature.Add) {
+      return null;
+    }
+    return this.putSignature(identity, html);
+  }
+
+  /**
+   * The user changed the From identity: Swaps the signature in the body
+   * for the signature of the new identity.
+   * Does nothing for mails where we don't manage the signature, e.g. redirects.
+   *
+   * @param identity The new From identity
+   * @param html The current body, e.g. from the editor. Default: The body of the email.
+   * @returns The new body, or null, if nothing changed. @see addSignature()
+   */
+  changeSignature(identity: MailIdentity | null, html = this.currentHTML()): string | null {
+    let state = this.email.composeSignature;
+    if (state == ComposeSignature.Add) {
+      return null; // Will be added later, with the identity of that time
+    }
+    if (state == ComposeSignature.Keep && !hasOwnSignature(html)) {
+      return null; // E.g. a redirect, or a draft without signature
+    }
+    return this.putSignature(identity, html);
+  }
+
+  /**
+   * Replaces the signature in the body with the signature of `identity`,
+   * or adds it, if there is none yet.
+   * E.g. when the user explicitly picks a signature.
+   *
+   * @returns The new body, or null, if nothing changed. @see addSignature()
+   */
+  putSignature(identity: MailIdentity | null, html = this.currentHTML()): string | null {
+    this.email.composeSignature = ComposeSignature.Added;
+    let withSignature = putOwnSignature(html, identity?.signatureHTML ?? null);
+    return withSignature == html ? null : withSignature;
+  }
+
   /**
    * Sets up the email for sending, with all the headers, signature etc.
    *
+   * - Add the signature, if the composer didn't
    * - Insert inline images
-   * - Add footer signature
+   * - Prepare the signature for the recipients
    * - Encrypt
    * - Send
    * - Mark the message that we replied to or forwarded
@@ -326,14 +392,21 @@ export class ComposeActions {
     }
     let account = fromIdentity.account;
 
+    if (this.email.composeSignature == ComposeSignature.Add) {
+      // Did not go through the composer, e.g. a quick reply
+      let html = this.currentHTML();
+      let withSignature = putOwnSignature(html, fromIdentity.signatureHTML, false);
+      if (withSignature != html) {
+        this.email.html = withSignature;
+      }
+    }
     await this.convertInlineAttachmentsURLs();
-    let sig = fromIdentity.signatureHTML;
-    if (!gLicense?.license) {
-      this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
+    let html = this.currentHTML();
+    let forSending = signatureForSending(html, gLicense?.license ? null : kSentByHTML);
+    if (forSending != html) {
+      this.email.html = forSending;
     }
-    if (sig) {
-      this.email.html += `<footer class="signature">${sig}</footer>`;
-    }
+    this.email.composeSignature = ComposeSignature.Keep;
     this.email.regenerateTextFromHTML();
     this.email.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 

@@ -28,6 +28,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { kSignatureSelector } from "../../../logic/Mail/Signature";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
@@ -69,7 +70,8 @@
 
   function notQuote(): Document {
     let doc = new DOMParser().parseFromString(mail.html, "text/html");
-    for (let blockquote of doc.body.querySelectorAll("blockquote")) {
+    // The signature is in the composer from the start, so it's not text that the user wrote
+    for (let blockquote of doc.body.querySelectorAll("blockquote, " + kSignatureSelector)) {
       blockquote.remove();
     }
     return doc;

@@ -1,6 +1,8 @@
 import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
 import { ComposeActions } from "./ComposeActions";
+import { ComposeSignature } from "./Signature";
+import { convertMailTextToHTML } from "../util/convertHTML";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
@@ -95,6 +97,9 @@ export class EMail extends Message {
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
+  /** For composer/send only: Whether and when the signature of the From identity
+   * gets into the body. Not saved. */
+  composeSignature = ComposeSignature.Keep;
 
   /** PGP or S/MIME or none */
   system: EncryptionSystem | null = null;
@@ -603,6 +608,11 @@ export class EMail extends Message {
     }
     super.html = val;
     this.loadedBody = false;
+  }
+
+  /** Marks the plaintext signature as such, for display and for quoting */
+  protected convertTextToHTML(text: string): string {
+    return convertMailTextToHTML(text);
   }
 
   get loadExternalImages(): boolean {

@@ -144,6 +144,9 @@
   .html-editor :global(img) {
     max-width: 100%;
   }
+  .html-editor :global(footer[type="signature"]) {
+    opacity: 70%;
+  }
 
   /** Undo the default margin of first/last <p> */
   .html-editor :global(.tiptap) {
