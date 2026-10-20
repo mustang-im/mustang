@@ -97,6 +97,7 @@ export class AutoResponder extends Observable {
   }
 }
 
+/** The values are Graph's `externalAudience` */
 export enum AutoResponderAudience {
   None = "none",
   /** Only senders in the user's addressbook */
