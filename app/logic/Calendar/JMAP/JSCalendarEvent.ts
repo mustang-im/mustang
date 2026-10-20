@@ -287,8 +287,9 @@ export class JSCalendarEvent {
             "needs-action",
         };
       }
-      if (event.organizer?.emailAddress) {
-        jmap.organizerCalendarAddress = "mailto:" + event.organizer.emailAddress;
+      let organizer = event.organizer?.emailAddress;
+      if (organizer && organizer.toLowerCase() != toEmailAddress(jmap.organizerCalendarAddress)?.toLowerCase()) {
+        jmap.organizerCalendarAddress = "mailto:" + organizer;
       }
     } else {
       delete jmap.participants;

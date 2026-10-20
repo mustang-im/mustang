@@ -12,6 +12,7 @@ import type { EMail } from "../../../../logic/Mail/EMail";
 import { SpecialFolder } from "../../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../../logic/Mail/MailAccount";
 import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
+import { applyPatch } from "./applyPatch";
 import { afterEach, beforeAll, expect, test } from "vitest";
 
 const kMe = "user2@example.com";
@@ -321,4 +322,26 @@ test("Accepting an invitation that the JMAP server added keeps the server's part
   expect(sent.length).toEqual(1);
   expect(sent[0].iCalMethod).toEqual("REPLY");
   expect(sent[0].to.first.emailAddress).toEqual(kOrganizer);
+});
+
+test("Answering an invitation keeps the organizer's address as the server wrote it", async () => {
+  // Stalwart takes the addresses from the iMIP invitation, with "MAILTO:" in uppercase.
+  // Our "mailto:" made the server add the organizer a second time.
+  let { calendar, calls } = setup();
+  let json = serverMeeting("needs-action");
+  json.organizerCalendarAddress = "MAILTO:" + kOrganizer;
+  for (let participant of Object.values(json.participants)) {
+    participant.calendarAddress = participant.calendarAddress.replace("mailto:", "MAILTO:");
+  }
+  let before = structuredClone(json);
+  let event = calendar.newEvent();
+  event.fromJMAP(json);
+  calendar.events.add(event);
+
+  event.alarm = new Date(event.startTime.getTime() - 10 * 60 * 1000);
+  await event.save();
+
+  let updated = applyPatch(before, calls[0].args.update.serverEventID);
+  expect(updated.organizerCalendarAddress).toBe("MAILTO:" + kOrganizer);
+  expect(Object.keys(updated.participants).sort()).toEqual(["meID", "otherID"]);
 });
