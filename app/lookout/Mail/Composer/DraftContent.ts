@@ -1,3 +1,5 @@
+import { MailBody } from "../../../logic/Mail/MailBody";
+
 export function hasUserText(html: string): boolean {
   // <copied from="../../../frontend/Mail/Composer/CloseButton.svelte" checkDirty()>
   let text = withoutQuotes(html).body.textContent ?? "";
@@ -9,7 +11,7 @@ export function hasUserText(html: string): boolean {
 function withoutQuotes(html: string): Document {
   // <copied from="../../../frontend/Mail/Composer/CloseButton.svelte" notQuote()>
   let doc = new DOMParser().parseFromString(html, "text/html");
-  for (let blockquote of doc.body.querySelectorAll("blockquote, footer.signature")) {
+  for (let blockquote of doc.body.querySelectorAll("blockquote, " + MailBody.kSignatureSelector)) {
     blockquote.remove();
   }
   return doc;

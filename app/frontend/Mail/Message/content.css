@@ -16,7 +16,7 @@ img {
   max-width: 100%;
 }
 
-/* Keep in sync with `MailBody.removeSignatures()` */
+/* Keep in sync with `MailBody.kSignatureSelector` */
 footer.signature,
 .moz-signature,
 .gmail_signature {

@@ -166,6 +166,12 @@ test("Changing From keeps text that the user typed", () => {
   expect(doc(html).body.textContent).toBe("See you!Fred Miller, CTO");
 });
 
+test("Changing From to the same signature changes nothing", () => {
+  let mail = account.newEMailFrom();
+  let html = mail.compose.addSignature(personal, "<p></p>");
+  expect(mail.compose.changeSignature(personal, html)).toBeNull();
+});
+
 test("Changing From before the composer added the signature waits for it", () => {
   let mail = account.newEMailFrom();
   expect(mail.compose.changeSignature(work, "<p></p>")).toBeNull();
@@ -289,6 +295,14 @@ test("Send adds the signature, if the mail bypassed the composer, e.g. a quick r
   expect(reply.text).toMatch(/^Sounds good\n\n-- \nFred Miller/);
 });
 
+test("A quick reply gets the signature right after the text, without an empty line", async () => {
+  let reply = receivedMail("<p>Lunch at 12?</p>").compose.replyToAuthor();
+  reply.html = null;
+  reply.text = "Sounds good";
+  await send(reply);
+  expect(topLevel(reply.rawHTMLDangerous)).toEqual(["P", "FOOTER"]);
+});
+
 test("Send does not add the signature again, if the user removed it in the composer", async () => {
   let mail = newTestEMail(account);
   mail.identity = personal;
@@ -298,7 +312,7 @@ test("Send does not add the signature again, if the user removed it in the compo
   expect(mail.text).toBe("No signature, please");
 });
 
-test("Unlicensed: The Sent by line goes into our signature", async () => {
+test("Unlicensed: The Sent by line goes into our signature, and only once", async () => {
   gLicense.license = null;
   let mail = newTestEMail(account);
   mail.identity = personal;
@@ -309,6 +323,12 @@ test("Unlicensed: The Sent by line goes into our signature", async () => {
   expect(footers[0].textContent).toBe("Fred MillerExample Inc.Sent by © Parula");
   expect(mail.text.match(/^-- $/gm)).toHaveLength(1);
   expect(mail.text).toMatch(/^-- \nFred Miller\nExample Inc\.\nSent by © Parula/);
+
+  // Sending again, e.g. after a server error, doesn't add another one
+  let sentHTML = mail.rawHTMLDangerous;
+  let again = new MailBody(sentHTML);
+  again.prepareForSending(`<p>Sent by © <a href="https://parula.app">Parula</a></p>`);
+  expect(again.html).toBe(sentHTML);
 });
 
 test("Unlicensed without own signature: The Sent by line is a signature of its own", async () => {
@@ -329,6 +349,21 @@ test("putOwnSignature() changes nothing, if there's nothing to do", () => {
   expect(body.putOwnSignature(null)).toBe(false);
   expect(body.putOwnSignature("<p></p>")).toBe(false);
   expect(body.html).toBe("<p>Hi</p>");
+});
+
+test("A `-- ` that the user typed into the signature is not doubled", () => {
+  for (let signatureHTML of ["<p>-- </p><p>Fred</p>", "<p>-- <br>Fred</p>", "-- <br>Fred", "\n<p>--</p>\n<p>Fred</p>"]) {
+    let html = putOwnSignature("", signatureHTML);
+    expect(ownSignatureText(html).trim()).toBe("Fred");
+    expect(convertHTMLToText(html).match(/^-- ?$/gm)).toHaveLength(1);
+  }
+  // Only a separator line, not other text starting with dashes
+  expect(ownSignatureText(putOwnSignature("", "<p>-- Fred</p>"))).toBe("-- Fred");
+});
+
+test("A signature at the end gets an empty line before it, to type in", () => {
+  expect(topLevel(putOwnSignature("<p>Hi</p>", kFred))).toEqual(["P", "P", "FOOTER"]);
+  expect(topLevel(putOwnSignature("<p>Hi</p><p></p>", kFred))).toEqual(["P", "P", "FOOTER"]);
 });
 
 test("A signature of plain text without paragraph", () => {
