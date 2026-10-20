@@ -1,5 +1,4 @@
 import { mergeAttributes, Node } from "@tiptap/core";
-import { MailBody } from "../../../logic/Mail/MailBody";
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -38,8 +37,8 @@ export const Footer = Node.create<FooterOptions>({
       },
       ownSignature: {
         default: false,
-        parseHTML: el => el.hasAttribute(MailBody.kOwnSignatureAttribute),
-        renderHTML: attrs => attrs.ownSignature ? { [MailBody.kOwnSignatureAttribute]: "" } : {},
+        parseHTML: el => el.hasAttribute("data-own-signature"),
+        renderHTML: attrs => attrs.ownSignature ? { "data-own-signature": "" } : {},
       },
     }
   },

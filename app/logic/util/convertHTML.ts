@@ -49,17 +49,24 @@ export function convertHTMLToText(html: string): string {
 }
 
 let markdownitInstance;
-export function convertTextToHTML(plaintext: string, signature: string | null = null): string {
+export function convertTextToHTML(plaintext: string): string {
   if (!markdownitInstance) {
     markdownitInstance = markdownit({
       linkify: true,
       breaks: true,
     });
   }
-  let html = markdownitInstance.render(plaintext);
-  if (signature != null) {
-    html += `<footer class="signature">${markdownitInstance.render(signature)}</footer>`;
+  let body = plaintext;
+  let signatureHTML = "";
+  let lines = plaintext.split(/\r?\n/);
+  let separator = lines.lastIndexOf("-- ");
+  let signature = lines.slice(separator + 1);
+  // With a quote after it, we can't tell where the signature ends
+  if (separator >= 0 && !signature.some(line => line.startsWith(">"))) {
+    body = lines.slice(0, separator).join("\n");
+    signatureHTML = `<footer class="signature">${markdownitInstance.render(signature.join("\n"))}</footer>`;
   }
+  let html = markdownitInstance.render(body) + signatureHTML;
   return sanitizeHTML(html);
 }
 

@@ -369,7 +369,7 @@ export class ComposeActions {
 
     if (this.email.composeSignature == ComposeSignature.Add) {
       let body = new MailBody(this.email.html);
-      if (body.putOwnSignature(fromIdentity.signatureHTML, false)) {
+      if (body.putOwnSignature(fromIdentity.signatureHTML)) {
         this.email.html = body.html;
       }
     }
