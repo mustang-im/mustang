@@ -261,16 +261,19 @@
 
   let loading = false;
   async function loadText() {
-    if (!mail.hasHTML) {
-      return;
+    let hasHTML = mail.hasHTML;
+    if (hasHTML) {
+      loading = true;
+      await mail.loadBody();
+      loading = false;
     }
-    loading = true;
-    await mail.loadBody();
-    loading = false;
     if (!editor) {
       await tick();
     }
-    editor.commands.setContent(mail.html);
+    if (hasHTML) {
+      editor.commands.setContent(mail.html);
+    }
+    editor.commands.setContentWithSignature(mail.compose.addSignature(fromIdentity, editor.getHTML()));
     setCursorDefault();
   }
 
@@ -280,12 +283,18 @@
     }
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let below = quoteSetting == "below";
-    editor.commands.focus(below ? 'start' : 'end');
+    if (below || !editor.commands.focusBeforeSignature()) {
+      editor.commands.focus(below ? 'start' : 'end');
+    }
   }
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
+    let previousIdentity = mail.identity;
     mail.identity = fromIdentity;
+    if (previousIdentity && previousIdentity != fromIdentity && editor) {
+      editor.commands.setContentWithSignature(mail.compose.changeSignature(fromIdentity, editor.getHTML()));
+    }
     mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
     if (fromIdentity == mail.identity) {

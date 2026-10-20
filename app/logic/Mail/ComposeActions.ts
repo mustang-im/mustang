@@ -3,6 +3,7 @@ import { SpecialFolder } from "./Folder";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import { PersonUID, findOrCreatePersonUID } from "../Abstract/PersonUID";
 import { MailIdentity, findIdentityForEMailAddress } from "./MailIdentity";
+import { MailBody } from "./MailBody";
 import { SendEncrypted } from "./Encryption/SendEncrypted";
 import { ExtraData } from "./ExtraData";
 import { appName, appVersion, siteRoot } from "../build";
@@ -84,9 +85,15 @@ export class ComposeActions {
       .catch(original.folder.account.errorCallback);
 
     let quoteSetting = getUserPreference("mail.send.quote", "below");
+    let originalHTML = original.html;
+    if (getUserPreference("mail.send.quote.stripSignatures", true)) {
+      let originalBody = new MailBody(originalHTML);
+      originalBody.removeSignatures();
+      originalHTML = originalBody.html;
+    }
     let quote = `<p class="quote-header">${escapeHTML(this.quotePrefixLine())}</p>
     <blockquote cite="mid:${escapeAttr(original.id ?? "")}">
-      ${original.html}
+      ${originalHTML}
     </blockquote>`;
     reply.html = quoteSetting == "none" ? `<p></p>` :
       quoteSetting == "below" ? `<p></p>
@@ -193,6 +200,7 @@ export class ComposeActions {
   async redirect(): Promise<EMail> {
     await this.email.loadAttachments();
     let redirect = this.email.folder.account.newEMailFrom();
+    redirect.composeSignature = ComposeSignature.Keep;
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
     redirect.html = this.email.html;
@@ -203,6 +211,7 @@ export class ComposeActions {
   async editAsNew(): Promise<EMail> {
     await this.email.loadAttachments();
     let clone = this.email.folder.account.newEMailFrom();
+    clone.composeSignature = ComposeSignature.Keep;
     clone.to.addAll(this.email.to);
     clone.cc.addAll(this.email.cc);
     clone.subject = this.email.subject;
@@ -303,10 +312,42 @@ export class ComposeActions {
   }
 
   /**
+   * For a new mail, reply or forward, when the composer opens it.
+   * `send()` adds it for mails which skip the composer.
+   * @param html The body in the editor
+   * @returns The new body, or null, if nothing changed
+   */
+  addSignature(identity: MailIdentity, html: string): string | null {
+    if (this.email.composeSignature != ComposeSignature.Add) {
+      return null;
+    }
+    return this.putSignature(identity, html);
+  }
+
+  /** The user changed the From identity
+   * @returns The new body, or null, if nothing changed */
+  changeSignature(identity: MailIdentity, html: string): string | null {
+    let state = this.email.composeSignature;
+    if (state == ComposeSignature.Add ||
+        state == ComposeSignature.Keep && !new MailBody(html).ownSignature) {
+      return null;
+    }
+    return this.putSignature(identity, html);
+  }
+
+  /** @returns The new body, or null, if nothing changed */
+  putSignature(identity: MailIdentity, html: string): string | null {
+    this.email.composeSignature = ComposeSignature.Added;
+    let body = new MailBody(html);
+    return body.putOwnSignature(identity.signatureHTML) ? body.html : null;
+  }
+
+  /**
    * Sets up the email for sending, with all the headers, signature etc.
    *
+   * - Add the signature, if the composer didn't
    * - Insert inline images
-   * - Add footer signature
+   * - Sanitize
    * - Encrypt
    * - Send
    * - Mark the message that we replied to or forwarded
@@ -326,14 +367,18 @@ export class ComposeActions {
     }
     let account = fromIdentity.account;
 
+    if (this.email.composeSignature == ComposeSignature.Add) {
+      let body = new MailBody(this.email.html);
+      if (body.putOwnSignature(fromIdentity.signatureHTML, false)) {
+        this.email.html = body.html;
+      }
+    }
     await this.convertInlineAttachmentsURLs();
-    let sig = fromIdentity.signatureHTML;
-    if (!gLicense?.license) {
-      this.email.html += `<p></p><footer class="signature" style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></footer>`;
-    }
-    if (sig) {
-      this.email.html += `<footer class="signature">${sig}</footer>`;
-    }
+    const kSentByHTML = `<p style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></p>`;
+    let body = new MailBody(this.email.html);
+    body.prepareForSending(gLicense?.license ? null : kSentByHTML);
+    this.email.html = body.html;
+    this.email.composeSignature = ComposeSignature.Keep;
     this.email.regenerateTextFromHTML();
     this.email.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 
@@ -413,6 +458,15 @@ export class ComposeActions {
       await previousDraft.deleteMessage();
     }
   }
+}
+
+/** Whether the composer manages the signature of the From identity */
+export enum ComposeSignature {
+  /** When the composer opens the mail, or at the latest when sending */
+  Add = "add",
+  Added = "added",
+  /** Only an existing own signature, e.g. of a draft */
+  Keep = "keep",
 }
 
 /** What `send()` still has to do, once the mail went out.

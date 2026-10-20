@@ -12,6 +12,20 @@ export function convertHTMLToText(html: string): string {
     const options = {
       formatters: {
         removeFormatter: () => { },
+        signatureFormatter: (elem, walk, builder) => {
+          builder.openBlock({ leadingLineBreaks: 2 });
+          builder.addLiteral("-- ");
+          builder.closeBlock({ trailingLineBreaks: 1 });
+          for (let child of elem.children ?? []) {
+            if (child.type == "tag" && child.name == "p") {
+              builder.openBlock({ leadingLineBreaks: 1 });
+              walk(child.children, builder);
+              builder.closeBlock({ trailingLineBreaks: 1 });
+            } else {
+              walk([child], builder);
+            }
+          }
+        },
       },
       selectors: [
         {
@@ -22,6 +36,10 @@ export function convertHTMLToText(html: string): string {
           selector: "style",
           format: "removeFormatter",
         },
+        {
+          selector: "footer.signature",
+          format: "signatureFormatter",
+        },
       ],
     };
     htmlToText = makeHTMLToText(options);
@@ -31,7 +49,7 @@ export function convertHTMLToText(html: string): string {
 }
 
 let markdownitInstance;
-export function convertTextToHTML(plaintext: string): string {
+export function convertTextToHTML(plaintext: string, signature: string | null = null): string {
   if (!markdownitInstance) {
     markdownitInstance = markdownit({
       linkify: true,
@@ -39,6 +57,9 @@ export function convertTextToHTML(plaintext: string): string {
     });
   }
   let html = markdownitInstance.render(plaintext);
+  if (signature != null) {
+    html += `<footer class="signature">${markdownitInstance.render(signature)}</footer>`;
+  }
   return sanitizeHTML(html);
 }
 

@@ -9,7 +9,7 @@ export function hasUserText(html: string): boolean {
 function withoutQuotes(html: string): Document {
   // <copied from="../../../frontend/Mail/Composer/CloseButton.svelte" notQuote()>
   let doc = new DOMParser().parseFromString(html, "text/html");
-  for (let blockquote of doc.body.querySelectorAll("blockquote")) {
+  for (let blockquote of doc.body.querySelectorAll("blockquote, footer.signature")) {
     blockquote.remove();
   }
   return doc;

@@ -3,6 +3,7 @@ import { unusedAccountColor } from "../Abstract/Account";
 import { MailIdentity } from "./MailIdentity";
 import { Folder, SpecialFolder, type MailShareCombinedPermissions, type MailShareIndividualPermissions } from "./Folder";
 import type { EMail } from "./EMail";
+import { ComposeSignature } from "./ComposeActions";
 import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
 import type { PersonUID } from "../Abstract/PersonUID";
@@ -159,6 +160,7 @@ export class MailAccount extends TCPAccount {
     let email = folder.newEMail();
     email.compose.generateMessageID();
     email.loadedBody = true;
+    email.composeSignature = ComposeSignature.Add;
     email.from.emailAddress = this.emailAddress;
     email.from.name = this.realname;
     return email;

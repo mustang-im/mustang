@@ -1,6 +1,7 @@
 import { Message } from "../Abstract/Message";
 import { SpecialFolder, type Folder } from "./Folder";
-import { ComposeActions } from "./ComposeActions";
+import { ComposeActions, ComposeSignature } from "./ComposeActions";
+import { convertTextToHTML } from "../util/convertHTML";
 import { Attachment, ContentDisposition } from "../Abstract/Attachment";
 import type { Tag } from "../Abstract/Tag";
 import { DeleteStrategy, type MailAccountStorage } from "./MailAccount";
@@ -95,6 +96,8 @@ export class EMail extends Message {
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
+  /** For composer only */
+  composeSignature = ComposeSignature.Keep;
 
   /** PGP or S/MIME or none */
   system: EncryptionSystem | null = null;
@@ -603,6 +606,17 @@ export class EMail extends Message {
     }
     super.html = val;
     this.loadedBody = false;
+  }
+
+  protected convertTextToHTML(text: string): string {
+    let lines = text.split(/\r?\n/);
+    let separator = lines.lastIndexOf("-- ");
+    let signature = lines.slice(separator + 1);
+    // With a quote after it, we can't tell where the signature ends
+    if (separator < 0 || signature.some(line => line.startsWith(">"))) {
+      return super.convertTextToHTML(text);
+    }
+    return convertTextToHTML(lines.slice(0, separator).join("\n"), signature.join("\n"));
   }
 
   get loadExternalImages(): boolean {

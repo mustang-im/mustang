@@ -69,7 +69,7 @@
 
   function notQuote(): Document {
     let doc = new DOMParser().parseFromString(mail.html, "text/html");
-    for (let blockquote of doc.body.querySelectorAll("blockquote")) {
+    for (let blockquote of doc.body.querySelectorAll("blockquote, footer.signature")) {
       blockquote.remove();
     }
     return doc;
