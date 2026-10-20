@@ -68,6 +68,8 @@
   --button-filled-hover-fg: var(--hover-fg);
   --search-field-radius: 100px;
   --search-field-bg: field;
+  --group-box-border: 1px solid var(--border);
+  --group-box-margin-top: 24px;
   --group-box-radius: 6px;
   --group-box-header-bg: var(--headerbar-bg);
   --group-box-header-border: 1px solid var(--border);
