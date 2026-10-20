@@ -63,18 +63,30 @@ export class JMAPAddressbook extends Addressbook {
   /** Lists all persons in this addressbook. */
   protected async listAllPersons(): Promise<ArrayColl<JMAPPerson>> {
     const batchSize = 200;
+    const kMaxContacts = 200000;
+    let maxRounds = Math.ceil(kMaxContacts / batchSize);
     let state: string;
     let hasMore = true;
+    let previousIDs: string | null = null;
     let allNewPersons = new ArrayColl<JMAPPerson>();
-    for (let i = 0; hasMore; i += batchSize) {
-      let { newPersons, updatedPersons, syncState } = await retryOnTransientError(() =>
-        this.fetchPersons(i, batchSize + 1));
+    for (let round = 1; hasMore && round <= maxRounds; round++) {
+      let { newPersons, syncState, ids } = await retryOnTransientError(() =>
+        this.fetchPersons((round - 1) * batchSize, batchSize + 1));
+      let idsJoined = ids.join(" ");
+      if (idsJoined == previousIDs) {
+        break;
+      }
+      previousIDs = idsJoined;
       state ??= syncState;
       this.persons.addAll(newPersons);
       await this.savePersons(newPersons);
       allNewPersons.addAll(newPersons);
-      hasMore = newPersons.length + updatedPersons.length > batchSize;
+      hasMore = ids.length > batchSize;
     }
+    if (hasMore) {
+      this.errorCallback(new Error(`${this.name}: List contacts: The server keeps returning contacts. Stopped.`));
+    }
+    await this.saveGroups();
     if (state) {
       this.account.syncState.set("ContactCard", state);
     }
@@ -83,7 +95,7 @@ export class JMAPAddressbook extends Addressbook {
     return allNewPersons;
   }
 
-  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string }> {
+  protected async fetchPersons(start?: number, limit?: number, options?: any): Promise<UpdateResult<JMAPPerson> & { syncState: string, ids: TID[] }> {
     console.log("JMAP fetch", limit || start ? `start ${start} limit ${limit}` : "all");
     let listResponse: TJMAPGetResponse<TJMAPContact>;
     let lock = await this.account.stateLock.lock();
@@ -120,6 +132,7 @@ export class JMAPAddressbook extends Addressbook {
       return {
         ...this.parsePersonsList(listResponse.list),
         syncState: listResponse.state,
+        ids: listResponse.list.map(card => card.id),
       };
     } finally {
       lock.release();
@@ -222,6 +235,7 @@ export class JMAPAddressbook extends Addressbook {
         }
         await this.savePersons(changedResult.updatedPersons);
         await this.savePersons(addedResult.newPersons);
+        await addressbook.saveGroups();
         if (this === addressbook) {
           newPersonsOfThisAB = addedResult.newPersons;
         }
@@ -240,6 +254,9 @@ export class JMAPAddressbook extends Addressbook {
   }
 
   protected async parseRemovedPersons(jmapIDs: string[]): Promise<ArrayColl<JMAPPerson>> {
+    for (let group of this.groups.contents.filter(group => jmapIDs.includes(group.jmapID))) {
+      await group.deleteLocally();
+    }
     return new ArrayColl<JMAPPerson>(jmapIDs
       .map(jmapID => this.getPersonByJMAPID(jmapID))
       .filter(ev => ev));
@@ -274,6 +291,10 @@ export class JMAPAddressbook extends Addressbook {
         if (this.deletions.has(id)) {
           continue;
         }
+        if (json.kind == "group") {
+          this.parseGroup(json);
+          continue;
+        }
         let person = checkUpdates && this.getPersonByJMAPID(id);
         if (person) {
           person.fromJMAP(json);
@@ -288,6 +309,23 @@ export class JMAPAddressbook extends Addressbook {
       }
     }
     return { newPersons, updatedPersons };
+  }
+
+  protected parseGroup(json: TJMAPContact) {
+    let group = this.getGroupByJMAPID(json.id);
+    if (!group) {
+      group = this.newGroup();
+      this.groups.add(group);
+    }
+    group.fromJMAP(json);
+  }
+
+  /** After the persons, because they are the members */
+  protected async saveGroups() {
+    for (let group of this.groups) {
+      group.findMembers();
+      await group.saveLocally();
+    }
   }
 
   protected async savePersons(persons: Collection<JMAPPerson>) {
