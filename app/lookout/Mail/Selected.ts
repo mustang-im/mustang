@@ -4,7 +4,7 @@ import { defaultSearchOptions, type SearchOptions } from "./Search/MailSearch";
 import { ArrayColl } from "svelte-collections";
 import { writable } from "svelte/store";
 
-export const updatingFolders = writable<Folder[]>([]);
+export const updatingFolders = new ArrayColl<Folder>();
 
 export const inlineReplies = new ArrayColl<InlineReply>();
 

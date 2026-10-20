@@ -27,8 +27,8 @@
         <RibbonButton label={$t`Email *=> Write an email to the contact`} icon={MailIcon}
           onClick={() => ContactActions.writeMail([group])}
           disabled={!hasEmailAddress && $t`Add members with an email address first`} />
-        <RibbonButton label={$t`Meeting`} icon={MeetingIcon}
-          onClick={() => ContactActions.newMeeting([group])}
+        <NewEventRibbonButton label={$t`Meeting`} icon={MeetingIcon}
+          onCreate={calendar => ContactActions.newMeeting([group], calendar)}
           disabled={!hasEmailAddress && $t`Add members with an email address first`} />
       </RibbonGroup>
     </RibbonTab>
@@ -81,6 +81,7 @@
   import RibbonToggleButton from "../../Shared/Ribbon/RibbonToggleButton.svelte";
   import RibbonMenuButton from "../../Shared/Ribbon/RibbonMenuButton.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import NewEventRibbonButton from "../../Calendar/NewEventRibbonButton.svelte";
   import ListView from "../../Shared/Form/ListView.svelte";
   import PersonPicture from "../Person/PersonPicture.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";

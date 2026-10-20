@@ -63,6 +63,7 @@
 
   --lo-nav-rail-width: 64px;
   --lo-titlebar-height: 40px;
+  --lo-ribbon-tab-row-height: 36px;
   --lo-statusbar-height: 24px;
 }
 
@@ -132,7 +133,7 @@
   --icon-primary: var(--lo-accent);
   --offset-bg: var(--lo-accent-tint);
   --offset-fg: var(--lo-fg);
-  --leftbar-bg: var(--lo-pane-bg);
+  --leftbar-bg: var(--lo-window-bg);
   --leftbar-fg: var(--lo-fg);
   --headerbar-bg: var(--lo-window-bg);
   --headerbar-fg: var(--lo-fg);
@@ -200,6 +201,11 @@ input[type="checkbox"] {
   accent-color: var(--lo-accent);
 }
 
+/* The accent part of the Mustang icons. Their own <style> makes it turquoise for the whole document, and comes later. */
+:root .cls-2 {
+  stroke: var(--lo-accent-text);
+}
+
 .lo-card {
   background-color: var(--lo-pane-bg);
   border-radius: var(--lo-radius);
@@ -250,4 +256,81 @@ input[type="date"].lo-text-field::-webkit-calendar-picker-indicator {
 }
 .lookout-window .checkbox > .state-icon-wrapper {
   color: var(--lo-accent-fg);
+}
+
+.lookout-window .nav-list {
+  padding-inline: 4px;
+}
+.lookout-window .nav-list .nav-entry {
+  position: relative;
+  border-radius: var(--lo-radius-small);
+}
+.lookout-window .nav-list .nav-entry:not(.selected):hover {
+  background-color: var(--lo-hover-bg);
+}
+.lookout-window .nav-list .nav-entry.selected,
+.lookout-window .nav-list .nav-entry.selected:hover {
+  background-color: var(--lo-selected-bg);
+  font-weight: 600;
+}
+.lookout-window .nav-list .nav-entry.selected::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background-color: var(--lo-accent);
+}
+
+:root {
+  --island-radius: var(--lo-radius-small);
+  --island-overlap: 0;
+  --button-radius: var(--lo-radius-small);
+  --button-padding: 0 8px;
+  --button-label-padding: 4px;
+  --button-min-height: 32px;
+  --button-filled-border: var(--lo-accent);
+  --button-filled-hover-bg: var(--lo-accent-hover);
+  --button-filled-hover-fg: var(--lo-accent-fg);
+  --search-field-radius: var(--lo-radius-small);
+  --search-field-bg: var(--lo-input-bg);
+  --group-box-border: none;
+  --group-box-margin-top: 8px;
+  --group-box-radius: 0;
+  --group-box-header-bg: transparent;
+  --group-box-header-border: 1px solid var(--lo-divider);
+  --group-box-header-padding: 0 0 4px 0;
+  --group-box-header-weight: 600;
+  --group-box-content-padding: 8px 0 8px 44px;
+  --pane-margin: 0 4px 8px 4px;
+  --pane-radius: var(--lo-radius);
+  --pane-shadow: var(--lo-shadow-card);
+  --pane-bg: var(--lo-pane-bg);
+  --left-pane-shadow: none;
+}
+
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) :is(input[type="number"], input[type="password"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="tel"], input[type="text"]),
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)) {
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--input-line);
+  border-radius: var(--lo-radius-small);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) :is(input[type="number"], input[type="password"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="tel"], input[type="text"]):focus,
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)):focus {
+  border-color: var(--input-focus);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) select:where(:not(.lo-text-field)) {
+  background-color: var(--input-bg);
+  color: var(--input-fg);
+}
+:where(.frontend-page, .frontend-panes, .setup, .settings-content) input[type="number"] {
+  min-width: 64px;
+}
+
+.lookout-window .island button.selected {
+  font-weight: 600;
 }

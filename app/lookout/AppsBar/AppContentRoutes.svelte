@@ -4,7 +4,7 @@
     <MailRoutes />
   </Route>
   <Route path="chat/*">
-    <vbox flex class="frontend-page">
+    <vbox flex class="frontend-panes">
       <ChatRoutes />
     </vbox>
   </Route>
@@ -15,9 +15,11 @@
     <CalendarRoutes />
   </Route>
   <Route path="files/*">
-    <vbox flex class="frontend-page">
-      <FilesRoutes />
-    </vbox>
+    <FilesApp>
+      <vbox flex class="frontend-panes">
+        <FilesRoutes />
+      </vbox>
+    </FilesApp>
   </Route>
   <Route path="meet/*">
     <vbox flex class="frontend-page">
@@ -30,12 +32,12 @@
     </vbox>
   </Route>
   <Route path="webapp/*">
-    <vbox flex class="frontend-page">
+    <vbox flex class="frontend-panes">
       <WebAppsRoutes />
     </vbox>
   </Route>
   <Route path="settings/*">
-    <vbox flex class="frontend-page">
+    <vbox flex class="frontend-panes">
       <SettingsRoutes />
     </vbox>
   </Route>
@@ -64,6 +66,7 @@
   import MailRoutes from "../Mail/MailRoutes.svelte";
   import CalendarRoutes from "../Calendar/CalendarRoutes.svelte";
   import ContactsRoutes from "../Contacts/ContactsRoutes.svelte";
+  import FilesApp from "../Files/FilesApp.svelte";
   import AppMenu from "../../frontend/AppsBar/AppMenuM/AppMenu.svelte";
   import ChatRoutes from "../../frontend/Chat/ChatRoutes.svelte";
   import FilesRoutes from "../../frontend/Files/FilesRoutes.svelte";
@@ -96,5 +99,10 @@
     border-radius: var(--lo-radius);
     box-shadow: var(--lo-shadow-card);
     overflow: hidden;
+  }
+  .frontend-panes {
+    min-width: 0;
+    min-height: 0;
+    margin: 4px 4px 0 4px;
   }
 </style>

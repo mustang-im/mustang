@@ -142,7 +142,6 @@
   import AscendingIcon from "lucide-svelte/icons/chevron-up";
   import DescendingIcon from "lucide-svelte/icons/chevron-down";
   import { ArrayColl, type Collection } from "svelte-collections";
-  import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<Contact>;
@@ -160,10 +159,9 @@
   $: gridColumns = columns.map(column => contactColumnWidth(column)).join(" ");
   $: groupBySetting = getLocalStorage<ContactSort | null>(view == ContactView.Phone ? "lookout.contacts.phone.groupBy" : "lookout.contacts.list.groupBy", defaultContactGroupBy(view));
   $: grouping = $groupBySetting.value ? new ContactGrouping($groupBySetting.value) : null;
-  $: listedContacts = derived($persons.contents, () => persons.contents);
   let collapsed = new Set<string>();
   const rowItems = new ArrayColl<ContactRow>();
-  $: rowItems.replaceAll(grouping ? grouping.rows($listedContacts, collapsed) : []);
+  $: rowItems.replaceAll(grouping ? grouping.rows($persons.contents, collapsed) : []);
   let selectedRows = new ArrayColl<ContactRow>();
   let selectedRow: ContactRow = null;
   $: grouping && selectionToOutside($selectedRows);
@@ -202,7 +200,7 @@
   }
 
   function setAllCollapsed(isCollapsed: boolean) {
-    collapsed = new Set(isCollapsed ? grouping.groups($listedContacts).map(group => group.id) : []);
+    collapsed = new Set(isCollapsed ? grouping.groups(persons.contents).map(group => group.id) : []);
   }
 
   function groupBy(column: ContactColumn) {

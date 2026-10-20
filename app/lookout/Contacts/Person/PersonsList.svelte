@@ -33,7 +33,6 @@
   import PersonMenu from "../PersonPage/PersonMenu.svelte";
   import FastList from "../../../frontend/Shared/FastList.svelte";
   import type { ArrayColl, Collection } from "svelte-collections";
-  import { derived } from "svelte/store";
   import { t } from "../../../l10n/l10n";
 
   export let persons: Collection<Contact>;
@@ -45,8 +44,7 @@
   let scrollToItem: (contact: Contact) => void = null;
   let scrollToIndex: (index: number) => void = null;
 
-  $: observedContacts = derived($persons.contents, () => persons.contents);
-  $: letterIndex = new LetterIndex($observedContacts);
+  $: letterIndex = new LetterIndex($persons.contents);
 
   function onInit(event: CustomEvent<{ scrollToIndex: (index: number) => void, scrollToItem: (contact: Contact) => void }>) {
     scrollToItem = event.detail.scrollToItem;

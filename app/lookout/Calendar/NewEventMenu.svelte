@@ -1,17 +1,17 @@
-<MenuItem label={$t`Appointment *=> Create a new appointment in the calendar`} icon={NewAppointmentIcon}
-  onClick={() => CalendarActions.newEventAtSelection(null)} />
-<MenuItem label={$t`Meeting`} icon={NewMeetingIcon}
-  onClick={() => CalendarActions.newEventAtSelection(null, "meeting")} />
-<MenuItem label={$t`All Day Event`} icon={AllDayIcon}
-  onClick={() => CalendarActions.newEventAtSelection(null, "all-day")} />
-<MenuItem label={$t`Recurring Appointment`} icon={RecurringIcon}
-  onClick={() => CalendarActions.newEventAtSelection(null, "recurring")} />
-<MenuItem label={$t`Recurring Meeting`} icon={RecurringMeetingIcon}
-  onClick={() => CalendarActions.newEventAtSelection(null, "recurring-meeting")} />
+<NewEventSubMenu label={$t`Appointment *=> Create a new appointment in the calendar`} icon={NewAppointmentIcon}
+  onCreate={calendar => CalendarActions.newEventAtSelection(calendar)} />
+<NewEventSubMenu label={$t`Meeting`} icon={NewMeetingIcon}
+  onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "meeting")} />
+<NewEventSubMenu label={$t`All Day Event`} icon={AllDayIcon}
+  onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "all-day")} />
+<NewEventSubMenu label={$t`Recurring Appointment`} icon={RecurringIcon}
+  onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "recurring")} />
+<NewEventSubMenu label={$t`Recurring Meeting`} icon={RecurringMeetingIcon}
+  onCreate={calendar => CalendarActions.newEventAtSelection(calendar, "recurring-meeting")} />
 
 <script lang="ts">
   import { CalendarActions } from "./CalendarActions";
-  import MenuItem from "../Shared/Menu/MenuItem.svelte";
+  import NewEventSubMenu from "./NewEventSubMenu.svelte";
   import NewAppointmentIcon from "lucide-svelte/icons/calendar-plus";
   import NewMeetingIcon from "lucide-svelte/icons/users-round";
   import AllDayIcon from "lucide-svelte/icons/sun";

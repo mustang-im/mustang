@@ -50,7 +50,7 @@
   }
   .bar {
     flex: none;
-    width: 4px;
+    width: 6px;
     margin-block: -1px;
     margin-inline-start: -1px;
     background: var(--lo-event-bar);

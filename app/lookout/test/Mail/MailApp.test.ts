@@ -5,6 +5,8 @@ import { MailAccount } from "../../../logic/Mail/MailAccount";
 import { Folder, SpecialFolder } from "../../../logic/Mail/Folder";
 import type { EMail } from "../../../logic/Mail/EMail";
 import { DummyMailStorage } from "../../../logic/Mail/Store/DummyMailStorage";
+import { newSearchEMail } from "../../../logic/Mail/Store/setStorage";
+import { SavedSearchFolder, savedSearchFolders } from "../../../logic/Mail/Virtual/SavedSearchFolder";
 import { findOrCreatePersonUID } from "../../../logic/Abstract/PersonUID";
 import { sleep } from "../../../logic/util/util";
 import MailApp from "../../Mail/MailApp.svelte";
@@ -16,11 +18,13 @@ import { openMoveMessages } from "../../Mail/Message/MessageMovePopup.svelte";
 import { openNewFolder } from "../../Mail/LeftPane/NewFolderDialog.svelte";
 import { openNewSearchFolder } from "../../Mail/Search/NewSearchFolderDialog.svelte";
 import { printMessage } from "../../Mail/Message/MessagePrint.svelte";
+import { statusBarContent } from "../../MainWindow/StatusBar.svelte";
 import { selectedAccount, selectedFolder, selectedMessage, selectedMessages } from "../../../frontend/Mail/Selected";
 import { globalSearchTerm, openApp } from "../../../frontend/AppsBar/selectedApp";
 import { mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
 import { contactsMustangApp } from "../../../frontend/Contacts/ContactsMustangApp";
 import { ArrayColl } from "svelte-collections";
+import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { flushSync, mount, unmount } from "svelte";
 import { get, writable } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
@@ -322,4 +326,48 @@ test("Thunderbird keys of the frontend are not bound", () => {
   expect(handled("F5")).toBe(false);
   expect(handled("r", { altKey: true })).toBe(false);
   expect(done).toEqual([]);
+});
+
+test("The status bar shows the folder that is getting new mail", async () => {
+  let finish: () => void;
+  inbox.account.loginAndStartup = async () => {};
+  inbox.getNewMessages = () => new Promise(resolve => finish = () => resolve(new ArrayColl<EMail>()));
+  let getting = MessageActions.getNewMail(inbox);
+  flushSync();
+  expect(get(statusBarContent).right[0]).toMatchObject({ label: expect.stringContaining("Updating"), busy: true });
+  await vi.waitFor(() => expect(finish).toBeDefined());
+  finish();
+  await getting;
+  flushSync();
+  expect(get(statusBarContent).right.some(item => item.busy)).toBe(false);
+});
+
+test("A search folder shows under its account, and selecting folders doesn't pile up subscriptions on it", () => {
+  let search = newSearchEMail();
+  search.account = inbox.account;
+  let searchFolder = new SavedSearchFolder(search);
+  searchFolder.name = "From Alice";
+  let sent = new Folder(inbox.account);
+  sent.name = "Sent";
+  inbox.account.rootFolders.add(sent);
+  let separateAccountList = getLocalStorage<boolean>("lookout.mail.separateAccountList", false);
+  separateAccountList.value = true;
+  savedSearchFolders.add(searchFolder);
+  try {
+    flushSync();
+    expect(document.querySelectorAll(".search-folders-row").length).toBe(1);
+    let subscriptions = searchFolder._observers.length;
+    for (let i = 0; i < 3; i++) {
+      selectedFolder.set(sent);
+      flushSync();
+      selectedFolder.set(inbox);
+      flushSync();
+    }
+    expect(searchFolder._observers.length).toBe(subscriptions);
+  } finally {
+    savedSearchFolders.remove(searchFolder);
+    separateAccountList.value = false;
+  }
+  flushSync();
+  expect(document.querySelectorAll(".search-folders-row").length).toBe(0);
 });

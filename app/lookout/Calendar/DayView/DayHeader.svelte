@@ -5,15 +5,17 @@
     <span class="number">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</span>
     <span class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: width >= 90 ? "long" : "short" })}</span>
   </button>
-  <button class="add-button" title={$t`New appointment on this day`} on:click={onAdd}>
+  <button class="add-button" title={$t`New appointment on this day`} on:click|stopPropagation={onAdd} bind:this={addButton}>
     <AddIcon size="14" />
   </button>
 </div>
+<NewEventCalendarMenu {calendar} bind:this={newEventMenu} />
 
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { CalendarActions } from "../CalendarActions";
   import { WorkingHours } from "../WorkingHours";
+  import NewEventCalendarMenu from "../NewEventCalendarMenu.svelte";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
@@ -28,10 +30,12 @@
   const dispatch = createEventDispatcher<{ openday: Date }>();
 
   let width = 100;
+  let addButton: HTMLButtonElement;
+  let newEventMenu: NewEventCalendarMenu;
 
   function onAdd() {
-    let start = WorkingHours.workStartOf(calendar ?? $selectedCalendar, day);
-    catchErrors(() => CalendarActions.newEvent(calendar, start, null));
+    catchErrors(() => newEventMenu.openMenu(addButton, chosen =>
+      CalendarActions.newEvent(chosen, WorkingHours.workStartOf(chosen ?? $selectedCalendar, day), null)));
   }
 </script>
 

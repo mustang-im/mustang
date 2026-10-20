@@ -62,7 +62,9 @@
   $: dayWidth = pxPerHour * 24;
   $: rangeStart = days[0];
   $: rangeEnd = new Date(days[days.length - 1].getFullYear(), days[days.length - 1].getMonth(), days[days.length - 1].getDate() + 1);
-  $: inRange = events.filterObservable(isInRange);
+  let inRange: Collection<Event>;
+  let inRangeFrom: Collection<Event>;
+  $: filterEvents(events);
   $: rangeStart, rangeEnd, filterRange();
   $: layout = derived([...$inRange.contents], eventsInRange => new ScheduleLayout(eventsInRange, days));
   $: rowHeight = Math.max($layout.laneCount, 2) * kLaneHeight + 2 * kRowPadding;
@@ -71,6 +73,13 @@
     $selectedSlots.start < rangeEnd && $selectedSlots.end > rangeStart
     ? { from: $layout.minuteOf($selectedSlots.start), to: $layout.minuteOf($selectedSlots.end) }
     : null;
+
+  function filterEvents(source: Collection<Event>) {
+    if (source != inRangeFrom) {
+      inRangeFrom = source;
+      inRange = source.filterObservable(isInRange);
+    }
+  }
 
   function filterRange() {
     inRange.replaceAll(events.contents.filter(isInRange));

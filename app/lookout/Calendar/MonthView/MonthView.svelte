@@ -36,7 +36,15 @@
 
   let width = 1000;
 
-  $: inRange = events.filterObservable(isInRange);
+  let inRange: Collection<Event>;
+  let inRangeFrom: Collection<Event>;
+  $: filterEvents(events);
+  function filterEvents(source: Collection<Event>) {
+    if (source != inRangeFrom) {
+      inRangeFrom = source;
+      inRange = source.filterObservable(isInRange);
+    }
+  }
   $: range, filterRange();
   function filterRange() {
     inRange.replaceAll(events.contents.filter(isInRange));

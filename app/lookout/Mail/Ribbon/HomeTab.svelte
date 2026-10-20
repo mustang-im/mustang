@@ -7,10 +7,10 @@
     <RibbonMenuButton label={$t`New Items`} icon={NewItemsIcon}>
       <MenuItem label={$t`Email Message`} icon={NewMailIcon} shortCutInfo={$t`Ctrl+Shift+M *=> Keyboard shortcut`}
         onClick={() => mailMustangApp.writeMail(MessageActions.accountForNewMail(folder).newEMailFrom())} />
-      <MenuItem label={$t`Appointment *=> Create a new appointment in the calendar`} icon={AppointmentIcon} shortCutInfo={$t`Ctrl+Shift+A *=> Keyboard shortcut`}
-        onClick={() => createNewEvent(get(selectedCalendar), new Date(), false)} />
-      <MenuItem label={$t`Meeting`} icon={MeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
-        onClick={() => MessageActions.newMeeting()} />
+      <NewEventSubMenu label={$t`Appointment *=> Create a new appointment in the calendar`} icon={AppointmentIcon} shortCutInfo={$t`Ctrl+Shift+A *=> Keyboard shortcut`}
+        onCreate={calendar => createNewEvent(calendar ?? get(selectedCalendar), new Date(), false)} />
+      <NewEventSubMenu label={$t`Meeting`} icon={MeetingIcon} shortCutInfo={$t`Ctrl+Shift+Q *=> Keyboard shortcut`}
+        onCreate={calendar => MessageActions.newMeeting(calendar)} />
       <MenuItem label={$t`Contact *=> Create a new contact`} icon={ContactIcon} shortCutInfo={$t`Ctrl+Shift+C *=> Keyboard shortcut`}
         onClick={() => MessageActions.newContact()} />
       <MenuItem label={$t`Contact Group`} icon={ContactGroupIcon} shortCutInfo={$t`Ctrl+Shift+L *=> Keyboard shortcut`}
@@ -134,6 +134,7 @@
   import CategorizeMenuItems from "../Message/CategorizeMenuItems.svelte";
   import FilterMenuItems from "../LeftPane/FilterMenuItems.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import NewEventSubMenu from "../../Calendar/NewEventSubMenu.svelte";
   import NewMailIcon from "lucide-svelte/icons/mail-plus";
   import NewItemsIcon from "lucide-svelte/icons/square-plus";
   import AppointmentIcon from "lucide-svelte/icons/calendar-plus";

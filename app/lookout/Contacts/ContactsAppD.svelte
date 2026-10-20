@@ -83,7 +83,7 @@
   import NoSelectionIcon from "lucide-svelte/icons/contact-round";
   import { ArrayColl, mergeColls, type Collection } from "svelte-collections";
   import { onDestroy } from "svelte";
-  import { derived, get } from "svelte/store";
+  import { get } from "svelte/store";
   import { t } from "../../l10n/l10n";
 
   let addressbooks = appGlobal.addressbooks;
@@ -118,28 +118,25 @@
     ? new ArrayColl<Contact>()
     : $selectedAddressbook?.contacts ?? allContacts;
   $: searchTerm = $contactSearchOptions.term?.trim();
-  $: listedContacts = !isSearch
+  let listedContacts: Collection<Contact>;
+  $: showListed(!isSearch
     ? folderContacts
     : searchTerm
       ? findContacts(searchedAddressbooks, searchTerm)
-      : isCurrentFolder ? folderContacts : allContacts;
+      : isCurrentFolder ? folderContacts : allContacts);
+  function showListed(contacts: Collection<Contact>) {
+    if (contacts != listedContacts) {
+      listedContacts = contacts;
+    }
+  }
   $: refinedSearch = hasContactRefiners($contactSearchOptions) ? $contactSearchOptions : null;
+  $: refinedContacts = refinedSearch
+    ? listedContacts.filterObservable(contact => matchesContactRefiners(contact, refinedSearch))
+    : listedContacts;
   $: compareContacts = view == ContactView.List || view == ContactView.Phone
     ? contactComparator($sort.value)
     : LetterIndex.compareByName;
-  $: contactsInOrder = derived($listedContacts.contents, () => listedContacts.contents
-    .filter(contact => !refinedSearch || matchesContactRefiners(contact, refinedSearch))
-    .sort(compareContacts));
-  let sortedContacts = new ArrayColl<Contact>();
-  $: listedContacts, refinedSearch, compareContacts, sortedContacts = new ArrayColl<Contact>();
-  $: contactsInOrder && showInOrder(sortedContacts, $contactsInOrder);
-  function showInOrder(shown: ArrayColl<Contact>, contacts: Contact[]) {
-    if (contacts.length == shown.length && contacts.every((contact, i) => contact == shown.getIndex(i))) {
-      return;
-    }
-    shown.clear();
-    shown.addAll(contacts);
-  }
+  $: sortedContacts = refinedContacts.sort(compareContacts);
   $: shownAddressbook = $selectedAddressbook;
   $: searchPlaceholder = $shownAddressbook
     ? $t`Search ${$shownAddressbook.name}`
