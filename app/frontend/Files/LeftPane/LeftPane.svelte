@@ -58,6 +58,9 @@
   .left-pane :global(.persons) {
     margin-block-start: 8px;
   }
+  :global(.lookout-window) .left-pane :global(.persons) {
+    margin-block-start: 0;
+  }
   .left-pane :global(.account-list) {
     margin-block-start: -4px;
   }
