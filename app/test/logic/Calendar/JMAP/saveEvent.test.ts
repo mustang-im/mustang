@@ -7,6 +7,7 @@ import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCale
 import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
+import { durationSeconds } from "./durationSeconds";
 
 beforeAll(() => {
   appGlobal.remoteApp ??= {
@@ -95,6 +96,51 @@ test("The reminder is read from the server", async () => {
   let { event } = await listEvents([serverEvent()]);
 
   expect(event.startTime.getTime() - event.alarm.getTime()).toBe(10 * 60 * 1000);
+});
+
+/** Alerts as another client sets them: 2 reminders and an email from the server the day before */
+function severalAlerts(): TJMAPCalendarEvent["alerts"] {
+  return {
+    "a": { "@type": "Alert", trigger: { "@type": "OffsetTrigger", offset: "-PT15M" } },
+    "b": { "@type": "Alert", trigger: { "@type": "OffsetTrigger", offset: "-PT5M" } },
+    "c": { "@type": "Alert", action: "email", trigger: { "@type": "OffsetTrigger", offset: "-P1D" } },
+  };
+}
+
+test("Removing the reminder removes all alerts that we show, but not the email alert", async () => {
+  let json = serverEvent();
+  json.alerts = severalAlerts();
+  let before = structuredClone(json);
+  let { event, sent } = await listEvents([json]);
+  // One of the 2 reminders
+  expect([15, 5].map(minutes => minutes * 60 * 1000)).toContain(event.startTime.getTime() - event.alarm.getTime());
+
+  event.alarm = null;
+  await event.save();
+
+  let alerts = Object.values(applyPatch(before, sent[0].update.eventID).alerts ?? {});
+  expect(alerts.filter(alert => (alert.action ?? "display") == "display")).toEqual([]);
+  expect(alerts).toContainEqual(severalAlerts().c);
+});
+
+test("An email alert is not a reminder", async () => {
+  let json = serverEvent();
+  json.alerts = { c: severalAlerts().c };
+  let before = structuredClone(json);
+  let { event, sent } = await listEvents([json]);
+  expect(event.alarm).toBe(null);
+
+  event.alarm = new Date(event.startTime.getTime() - 10 * 60 * 1000);
+  await event.save();
+
+  let alerts = Object.values(applyPatch(before, sent[0].update.eventID).alerts);
+  expect(alerts).toContainEqual(severalAlerts().c);
+  let reminders = alerts.filter(alert => (alert.action ?? "display") == "display");
+  expect(reminders.length).toBe(1);
+  let trigger = reminders[0].trigger as any;
+  expect(trigger["@type"] ?? "OffsetTrigger").toBe("OffsetTrigger");
+  expect(trigger.relativeTo ?? "start").toBe("start");
+  expect(durationSeconds(trigger.offset)).toBe(-10 * 60);
 });
 
 test("An event without an alert has no reminder", async () => {
