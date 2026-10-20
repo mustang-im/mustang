@@ -137,6 +137,20 @@ test("Rules do not run on the mail in other folders", async () => {
   expect((await storedMails(account)).map(row => row.isRead)).toEqual([0]);
 });
 
+test("A rule that the server runs does not run here", async () => {
+  let account = await setupAccount();
+  let rule = new FilterRuleAction(account);
+  rule.server = true;
+  rule.markAsRead = true;
+  account.filterRuleActions.add(rule);
+
+  let email = newTestMail(account.inbox);
+  await email.saveCompleteMessage();
+
+  expect(account.serverActions.contents).toEqual([]);
+  expect(email.isRead).toBe(false);
+});
+
 test("A rule for mails that I send does not run on incoming mail", async () => {
   let account = await setupAccount();
   let rule = new FilterRuleAction(account);

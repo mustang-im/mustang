@@ -8,7 +8,7 @@ import { FilterRuleAction } from "../../../../logic/Mail/FilterRules/FilterRuleA
 import { availableTags, getTagByName } from "../../../../logic/Abstract/Tag";
 import Rules from "../../../../frontend/Settings/Mail/Rules.svelte";
 import { flushSync, mount, unmount } from "svelte";
-import { afterEach, beforeAll, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {
@@ -18,7 +18,27 @@ beforeAll(() => {
   };
 });
 
-let account: MailAccount;
+/** Optionally with a server that runs filter rules */
+class TestAccount extends MailAccount {
+  hasServerRules = false;
+  /** The names of the server rules, for each save */
+  readonly uploads: string[][] = [];
+
+  get canServerFilterRules(): boolean {
+    return this.hasServerRules;
+  }
+  protected async fetchServerFilterRules(): Promise<FilterRuleAction[]> {
+    return this.filterRuleActions.contents.filter(rule => rule.serverID).map(rule => rule.clone());
+  }
+  protected async uploadServerFilterRules(rules: FilterRuleAction[]): Promise<void> {
+    this.uploads.push(rules.map(rule => rule.name));
+    for (let rule of rules) {
+      rule.serverID ??= "id-" + rule.name;
+    }
+  }
+}
+
+let account: TestAccount;
 let target: HTMLElement;
 let app: any;
 
@@ -27,7 +47,7 @@ beforeEach(() => {
   getTagByName("Important");
   getTagByName("Later");
   appGlobal.remoteApp = {} as any;
-  account = new MailAccount();
+  account = new TestAccount();
   account.name = "Test";
   account.emailAddress = "user@example.com";
   account.storage = new DummyMailStorage();
@@ -183,4 +203,36 @@ test("A tag action is still shown after selecting another rule and back", () => 
 
   expect(checkboxState("Tags")).toBe(true);
   expect(target.textContent).toContain("Important");
+});
+
+function runByRadio(label: string): HTMLInputElement {
+  let found = [...target.querySelectorAll("hbox.run-by label.radio")]
+    .filter(el => el.textContent.trim() == label);
+  expect(found.length, `radio ${label}`).toBe(1);
+  return found[0].querySelector("input");
+}
+
+test("Only an account whose server runs rules offers to let the server run the rule", () => {
+  newRule("Newsletters");
+  showRulesPage();
+
+  expect(target.querySelector("hbox.run-by")).toBeNull();
+});
+
+test("The user lets the mail server run a rule", async () => {
+  account.hasServerRules = true;
+  let rule = newRule("Newsletters");
+  showRulesPage();
+  expect(runByRadio("The mail server").checked).toBe(false);
+
+  let radio = runByRadio("The mail server");
+  radio.checked = true;
+  radio.dispatchEvent(new Event("change", { bubbles: true }));
+  flushSync();
+  expect(rule.server).toBe(true);
+  let save = [...target.querySelectorAll("button")].find(button => button.textContent.includes("Save"));
+  click(save);
+
+  await vi.waitFor(() => expect(account.uploads).toEqual([["Newsletters"]]));
+  expect(rule.serverID).toBe("id-Newsletters");
 });

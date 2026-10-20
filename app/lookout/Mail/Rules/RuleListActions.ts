@@ -18,6 +18,8 @@ export class RuleListActions {
   static copy(rules: ArrayColl<FilterRuleAction>, rule: FilterRuleAction): FilterRuleAction {
     let copy = rule.clone();
     copy.name = gt`Copy of ${rule.name}`;
+    copy.serverID = null;
+    copy.serverJSON = null;
     let index = rules.indexOf(rule);
     if (index < 0) {
       rules.add(copy);
@@ -44,6 +46,9 @@ export class RuleListActions {
     let copy = new FilterRuleAction(account);
     copy.fromJSON(rule.toJSON());
     copy.name = rule.name;
+    copy.server = rule.server && account.canServerFilterRules;
+    copy.serverID = null;
+    copy.serverJSON = null;
     rules.add(copy);
     return copy;
   }

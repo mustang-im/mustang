@@ -48,9 +48,20 @@
   </vbox>
   <span class="description-label">{$t`Rule description (click an underlined value to edit)`}</span>
   <RuleDescriptionBox lines={descriptionLines} on:edit={event => onValueClick(event.detail)} />
+  {#if account.canServerFilterRules && selected}
+    <hbox class="run-by">
+      <span>{$t`Run by *=> Who runs the rule: this app, or the mail server`}</span>
+      <Radio label={appName} name="run-by" value={false} group={selected.server} on:change={() => onRunBy(false)} />
+      <Radio label={$t`The mail server`} name="run-by" value={true} group={selected.server} on:change={() => onRunBy(true)} />
+    </hbox>
+  {/if}
   <hbox class="hint lo-secondary">
     <InfoIcon size={14} />
-    {$t`Rules run in ${appName} when it downloads new messages`}
+    {#if selected?.server}
+      {$t`The mail server runs this rule, also while ${appName} is not running`}
+    {:else}
+      {$t`Rules run in ${appName} when it downloads new messages`}
+    {/if}
   </hbox>
   <svelte:fragment slot="footer">
     <DialogButton label={$t`OK`} primary onClick={onOK} />
@@ -96,6 +107,7 @@
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
   import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
+  import Radio from "../../Shared/Form/Radio.svelte";
   import type { ComboOption } from "../../Shared/Form/ComboOption";
   import RulesListItem from "./RulesListItem.svelte";
   import RuleDescriptionBox from "./RuleDescriptionBox.svelte";
@@ -120,6 +132,7 @@
   import MoveUpIcon from "lucide-svelte/icons/arrow-up";
   import MoveDownIcon from "lucide-svelte/icons/arrow-down";
   import InfoIcon from "lucide-svelte/icons/info";
+  import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
@@ -155,6 +168,7 @@
     shownAccount = account;
     selected = rules.first ?? null;
   }
+  $: account, catchErrors(() => refreshServerRules(account));
   $: noSelection = $t`Select a rule first`;
   $: canMoveUp = !!selected && $rules && rules.indexOf(selected) > 0;
   $: canMoveDown = !!selected && $rules && rules.indexOf(selected) >= 0 && rules.indexOf(selected) < rules.length - 1;
@@ -173,6 +187,24 @@
   function changed() {
     version++;
     isChanged = [...workingLists.values()].some(working => working.isChanged);
+  }
+
+  async function refreshServerRules(mailAccount: MailAccount) {
+    await mailAccount.refreshServerFilterRules();
+    let working = workingList(mailAccount);
+    if (working.isChanged) {
+      return;
+    }
+    working.reload();
+    if (working == list && !rules.contains(selected)) {
+      selected = rules.first ?? null;
+    }
+    changed();
+  }
+
+  function onRunBy(server: boolean) {
+    selected.server = server;
+    changed();
   }
 
   function onNew() {
@@ -311,6 +343,12 @@
   .description-label {
     flex-shrink: 0;
     margin-block: 10px 4px;
+  }
+  .run-by {
+    flex-shrink: 0;
+    align-items: center;
+    gap: 16px;
+    margin-block-start: 10px;
   }
   .hint {
     flex-shrink: 0;

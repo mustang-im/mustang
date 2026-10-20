@@ -47,6 +47,20 @@
                     <option value={FilterMoment.IncomingAfterSpam}>{$t`New mail arrives, after spam filtering`}</option>
                     <option value={FilterMoment.Outgoing}>{$t`I send mail`}</option>
                   </select>
+
+                  {#if account.canServerFilterRules}
+                    <label>{$t`Run by *=> Who runs the rule: this app, or the mail server`}</label>
+                    <hbox class="run-by">
+                      <label class="radio">
+                        <input type="radio" value={false} bind:group={rule.server} />
+                        {appName}
+                      </label>
+                      <label class="radio">
+                        <input type="radio" value={true} bind:group={rule.server} />
+                        {$t`The mail server`}
+                      </label>
+                    </hbox>
+                  {/if}
                 </grid>
               </vbox>
             </HeaderGroupBox>
@@ -94,6 +108,8 @@
   import AddIcon from "lucide-svelte/icons/plus";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import SaveIcon from "lucide-svelte/icons/save";
+  import { appName } from "../../../logic/build";
+  import { catchErrors } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
   export let account: MailAccount;
@@ -106,6 +122,8 @@
   function defaultSelect() {
     rule = account.filterRuleActions.first;
   }
+
+  $: account, catchErrors(() => account.refreshServerFilterRules());
 
   function onAdd() {
     rule = new FilterRuleAction(account);
@@ -120,6 +138,7 @@
     account.filterRuleActions.remove(rule);
     await account.save();
     rule = null;
+    await account.saveServerFilterRules();
   }
 
   async function onSave() {
@@ -127,6 +146,7 @@
       rule.account.filterRuleActions.add(rule);
     }
     await rule.account.save();
+    await rule.account.saveServerFilterRules();
   }
 </script>
 
@@ -149,6 +169,12 @@
   .name-grid {
     grid-template-columns: max-content auto;
     gap: 8px 24px;
+  }
+  .run-by {
+    gap: 24px;
+  }
+  .radio {
+    align-items: center;
   }
   .buttons {
     justify-content: end;

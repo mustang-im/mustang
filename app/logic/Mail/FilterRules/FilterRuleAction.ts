@@ -21,6 +21,14 @@ export class FilterRuleAction extends Observable {
   when: FilterMoment = FilterMoment.IncomingBeforeSpam;
   /** For which subset of emails the filter should run */
   readonly criteria = new SearchEMail();
+  /** The server runs this rule, not we. @see `MailAccount.canServerFilterRules` */
+  @notifyChangedProperty
+  server = false;
+  /** The ID of the rule on the server. null, if it's not on the server yet. */
+  serverID: string | null = null;
+  /** The rule as the server sent it, including the parts that we don't
+   * understand, so that saving the rule doesn't remove them. */
+  serverJSON: any = null;
 
   /** The following actions cannot be combined:
    * - Delete/spam actions with toFolder or markAsStarred
@@ -129,6 +137,9 @@ export class FilterRuleAction extends Observable {
     this.toFolderID = sanitize.nonemptystring(json.toFolder, null);
     this._toFolder = null;
     this.addTags.replaceAll(sanitize.array(json.addTags, [])?.map(name => getTagByName(name)));
+    this.server = json.server === true;
+    this.serverID = sanitize.nonemptystring(json.serverID, null);
+    this.serverJSON = json.serverJSON ?? null;
   }
 
   toJSON() {
@@ -145,6 +156,9 @@ export class FilterRuleAction extends Observable {
       // toFolderAccountID: this.toFolder?.account?.id,
       toFolder: this.toFolderID,
       addTags: this.addTags.contents.map(tag => tag.name),
+      server: this.server,
+      serverID: this.serverID,
+      serverJSON: this.serverJSON,
     };
   }
 

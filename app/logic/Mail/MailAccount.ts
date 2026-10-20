@@ -46,6 +46,8 @@ export class MailAccount extends TCPAccount {
   readonly identities = new ArrayColl<MailIdentity>();
   @notifyChangedProperty
   readonly filterRuleActions = new ArrayColl<FilterRuleAction>();
+  /** To find the server rules that the user removed */
+  protected knownServerFilterRuleIDs = new Set<string>();
   setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
@@ -263,6 +265,75 @@ export class MailAccount extends TCPAccount {
   async addSharedPerson(person: PersonUID, mailFolder: Folder | null, includeSubfolders: boolean, access: MailShareCombinedPermissions, ...permissions: MailShareIndividualPermissions[]) {
   }
 
+  /** Whether the server can run filter rules. @see `FilterRuleAction.server` */
+  get canServerFilterRules(): boolean {
+    return false;
+  }
+
+  /** Fetches the rules from the server, puts them into `filterRuleActions`
+   * in place of the server rules that we knew, and saves them locally. */
+  async refreshServerFilterRules(): Promise<void> {
+    if (!this.canServerFilterRules) {
+      return;
+    }
+    let fetched = (await this.fetchServerFilterRules()).map(serverRule => {
+      let known = this.filterRuleActions.find(rule => rule.server && rule.serverID == serverRule.serverID);
+      if (known) {
+        known.fromJSON(serverRule.toJSON());
+        return known;
+      }
+      return serverRule;
+    });
+    let remaining = [...fetched];
+    let rules: FilterRuleAction[] = [];
+    for (let rule of this.filterRuleActions) {
+      if (rule.server && rule.serverID) {
+        let next = remaining.shift();
+        if (next) {
+          rules.push(next);
+        }
+        continue;
+      }
+      rules.push(rule);
+    }
+    rules.push(...remaining);
+    this.filterRuleActions.replaceAll(rules);
+    this.knownServerFilterRuleIDs = new Set(fetched.map(rule => rule.serverID));
+    await this.save();
+  }
+
+  /** Creates, changes and deletes the rules on the server,
+   * as the server rules in `filterRuleActions` say. */
+  async saveServerFilterRules(): Promise<void> {
+    if (!this.canServerFilterRules) {
+      return;
+    }
+    let rules = this.filterRuleActions.contents.filter(rule => rule.server);
+    let deletedIDs = [...this.knownServerFilterRuleIDs].filter(id => !rules.some(rule => rule.serverID == id));
+    try {
+      await this.uploadServerFilterRules(rules, deletedIDs);
+    } finally {
+      await this.save(); // the IDs of the created rules
+    }
+    for (let rule of this.filterRuleActions.filterOnce(rule => !rule.server && !!rule.serverID)) {
+      rule.serverID = null;
+      rule.serverJSON = null;
+    }
+    await this.refreshServerFilterRules();
+  }
+
+  /** @returns The rules on the server, in the order in which the server runs them */
+  protected async fetchServerFilterRules(): Promise<FilterRuleAction[]> {
+    throw new AbstractFunction();
+  }
+
+  /** Changes only the rules that changed, and sets the `serverID` of the created rules.
+   * @param rules All server rules, in the order in which the server should run them
+   * @param deletedIDs The server rules that the user removed */
+  protected async uploadServerFilterRules(rules: FilterRuleAction[], deletedIDs: string[]): Promise<void> {
+    throw new AbstractFunction();
+  }
+
   fromConfigJSON(json: any) {
     super.fromConfigJSON(json);
     this.emailAddress = sanitize.emailAddress(json.emailAddress);
@@ -286,6 +357,9 @@ export class MailAccount extends TCPAccount {
         this.errorCallback(ex);
       }
     }
+    this.knownServerFilterRuleIDs = new Set(this.filterRuleActions.contents
+      .filter(rule => rule.server && rule.serverID)
+      .map(rule => rule.serverID));
     if (json.oAuth2) {
       this.oAuth2 = OAuth2.fromConfigJSON(json.oAuth2, this);
       this.oAuth2.subscribe(() => this.notifyObservers());
