@@ -44,7 +44,28 @@ export class JMAPCalendar extends Calendar {
   }
 
   async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
-    return [];
+    if (!this.account.haveAvailability) {
+      return [];
+    }
+    let availabilities = [];
+    for (let participant of participants) {
+      let principal = await this.account.findPrincipal(participant);
+      if (!principal) {
+        // Don't report unknown as Free
+        availabilities.push({ participant, availability: undefined });
+        continue;
+      }
+      try {
+        let busyTimes = await this.account.getBusyTimes(principal.id, from, to);
+        availabilities.push({ participant, availability: busyTimes.map(busy => ({ ...busy, free: false })) });
+      } catch (ex) {
+        if (ex.code != "forbidden") {
+          throw ex;
+        }
+        availabilities.push({ participant, availability: undefined });
+      }
+    }
+    return availabilities;
   }
 
   protected async listEventsFromServer() {

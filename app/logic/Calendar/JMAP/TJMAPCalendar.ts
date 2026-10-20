@@ -30,3 +30,12 @@ export interface TJMAPCalendarRights {
   mayShare: boolean;
   mayDelete: boolean;
 }
+
+/** <https://www.ietf.org/archive/id/draft-ietf-jmap-calendars-33.html#name-principal-getavailability> */
+export interface TJMAPBusyPeriod {
+  utcStart: string;
+  utcEnd: string;
+  busyStatus?: "confirmed" | "tentative" | "unavailable";
+  event?: any;
+  accountId?: string | null;
+}
