@@ -136,7 +136,7 @@ export class OutgoingInvitation {
       event.onlineMeetingURL != unedited.onlineMeetingURL ||
       event.recurrenceCase != unedited.recurrenceCase ||
       event.recurrenceRule != unedited.recurrenceRule ||
-      !event.exclusionsMatch(unedited)
+      event.exclusions.length != unedited.exclusions.length
     );
   }
 

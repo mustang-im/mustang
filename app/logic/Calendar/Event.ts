@@ -486,15 +486,9 @@ export class Event extends Observable {
         aThis.filename == other.attachments.get(i).filename)) &&
       !this.recurrenceRule == !other.recurrenceRule &&
       (!this.recurrenceRule || this.recurrenceRule.matches(other.recurrenceRule)) &&
-      this.exclusionsMatch(other) &&
+      this.exclusions.length == other.exclusions.length &&
       this.alarm?.getTime() == other.alarm?.getTime()
     );
-  }
-
-  exclusionsMatch(event: Event): boolean {
-    return this.exclusions.length == event.exclusions.length &&
-      (this.exclusions.isEmpty || this.exclusions.contents.every((exclusion, i) =>
-        exclusion.getTime() == event.exclusions.get(i).getTime()));
   }
 
   /**
