@@ -181,7 +181,7 @@ export class OWAPerson extends ExchangePerson {
       return;
     }
     try {
-      let response = await this.addressbook.account.callOWA(owaResolveNamesRequest(emailAddress));
+      let response = await this.addressbook.account.callOWA(owaResolveNamesRequest("smtp:" + emailAddress));
       let resolution = ensureArray(response.ResolutionSet).find(candidate =>
         candidate.Mailbox?.EmailAddress?.toLowerCase() == emailAddress.toLowerCase());
       // `UserSMIMECertificate` and `MSExchangeCertificate` are the AD

@@ -1,11 +1,10 @@
-import { SearchOnlyAddressbook } from "../Addressbook";
+import { ExchangeGAL } from "../EWS/ExchangeGAL";
 import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import type { ActiveSyncAccount } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { ensureArray, NotReached } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
 
-export class ActiveSyncGAL extends SearchOnlyAddressbook {
+export class ActiveSyncGAL extends ExchangeGAL {
   readonly protocol: string = "gal-activesync";
   account: ActiveSyncAccount;
 
@@ -22,7 +21,7 @@ export class ActiveSyncGAL extends SearchOnlyAddressbook {
     throw new NotReached();
   }
 
-  async quickSearchAsync(searchTerm: string, results: ArrayColl<ActiveSyncPerson>) {
+  protected async searchGAL(searchTerm: string): Promise<ActiveSyncPerson[]> {
     let query = {
       Store: {
         Name: "GAL",
@@ -33,6 +32,7 @@ export class ActiveSyncGAL extends SearchOnlyAddressbook {
     if (response.Response.Store.Status != "1") {
       throw new ActiveSyncError("Search", response.Response.Store.Status, this.account);
     }
+    let persons: ActiveSyncPerson[] = [];
     for (let result of ensureArray(response.Response.Store.Result)) {
       let properties = result.Properties;
       // Convert from GAL format to contact format
@@ -43,7 +43,8 @@ export class ActiveSyncGAL extends SearchOnlyAddressbook {
       properties.CompanyName = properties.Company;
       let person = this.newPerson();
       person.fromWBXML(properties);
-      results.add(person);
+      persons.push(person);
     }
+    return persons;
   }
 }
