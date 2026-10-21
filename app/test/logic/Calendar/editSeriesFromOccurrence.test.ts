@@ -183,6 +183,20 @@ test("Changing only the title keeps the times, the exceptions and the exclusions
   expect(master.exclusions.contents).toEqual([exclusion]);
 });
 
+test("Removing the recurrence keeps the edited occurrence as the only event", async () => {
+  let master = weeklySeries();
+  let occurrence = openOccurrence(master, 5);
+  // What "none" in the Repeat box does
+  master.recurrenceRule = null;
+  occurrence.title = "Once";
+  await saveForSeries(occurrence);
+
+  expect(master.recurrenceRule).toBeNull();
+  expect(master.title).toBe("Once");
+  expect(master.startTime.getTime()).toBe(new Date(2027, 1, 8, 9, 0).getTime());
+  expect(master.endTime.getTime()).toBe(new Date(2027, 1, 8, 10, 0).getTime());
+});
+
 test("Moving the occurrences removes the exceptions, as the dialog warns", async () => {
   let master = weeklySeries();
   addException(master, 2);

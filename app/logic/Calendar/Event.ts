@@ -412,9 +412,14 @@ export class Event extends Observable {
   /**
    * Applies the changes that the user made to an occurrence to this entire series.
    * Unlike `copyEditableFieldsFrom()`, this keeps the start of the series.
+   * If the user removed the recurrence, the occurrence stays as the only event.
    * @see moveSeriesWithOccurrence()
    */
   copyEditableFieldsFromOccurrence(occurrence: Event) {
+    if (!this.recurrenceRule) {
+      this.copyEditableFieldsFrom(occurrence);
+      return;
+    }
     this.copyFromRecurrenceMaster(occurrence);
     this.moveSeriesWithOccurrence(occurrence);
   }
@@ -436,12 +441,10 @@ export class Event extends Observable {
     this.endTime = new Date(startTime);
     this.duration = occurrence.duration;
     this.alarm = occurrence.alarm ? new Date(startTime.getTime() - occurrence.startTime.getTime() + occurrence.alarm.getTime()) : null;
-    if (this.recurrenceRule) {
-      let { count, frequency, interval, weekdays, week, first, seriesStartTime } = this.recurrenceRule;
-      let { seriesEndTime } = this.unedited.recurrenceRule;
-      weekdays = weekdays?.map(weekday => (weekday + localTime(startTime, timezone).getUTCDay() - seriesStartTime.getUTCDay() + 7) % 7);
-      this.recurrenceRule = new RecurrenceRule({ masterDuration: this.duration, timezone: this.timezone, seriesStartTime: startTime, seriesEndTime: seriesEndTime && moveLocalTime(seriesEndTime, shift, timezone), count, frequency, interval, weekdays, week, first }, true);
-    }
+    let { count, frequency, interval, weekdays, week, first, seriesStartTime } = this.recurrenceRule;
+    let { seriesEndTime } = this.unedited.recurrenceRule;
+    weekdays = weekdays?.map(weekday => (weekday + localTime(startTime, timezone).getUTCDay() - seriesStartTime.getUTCDay() + 7) % 7);
+    this.recurrenceRule = new RecurrenceRule({ masterDuration: this.duration, timezone: this.timezone, seriesStartTime: startTime, seriesEndTime: seriesEndTime && moveLocalTime(seriesEndTime, shift, timezone), count, frequency, interval, weekdays, week, first }, true);
   }
 
   /**

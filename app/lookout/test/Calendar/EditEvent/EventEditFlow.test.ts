@@ -442,6 +442,20 @@ test("Removing the recurrence of a saved series asks first, and No keeps the for
   expect(onClosed).toHaveBeenCalledOnce();
 });
 
+test("Removing the recurrence from an occurrence, for the entire series, keeps that occurrence as the only appointment", async () => {
+  let master = await savedWeeklySeries(); // Monday and Thursday at 10:00
+  let occurrence = master.instances.get(3);
+  expect(occurrence.startTime).toEqual(new Date(2026, 9, 26, 10, 0));
+  occurrence.startEditing();
+  let flow = new EventEditFlow(occurrence, () => {});
+  flow.removeRecurrence();
+  await flow.saveWith("series");
+  expect(messageBox.mock.calls[0][0]).toBe("Remove Recurrence");
+  expect(master.recurrenceRule).toBe(null);
+  expect(master.startTime).toEqual(new Date(2026, 9, 26, 10, 0));
+  expect(master.endTime).toEqual(new Date(2026, 9, 26, 10, 30));
+});
+
 test("A new pattern for the entire series warns that the exceptions are lost; Cancel keeps them and the form", async () => {
   let master = await savedWeeklySeries(); // Monday and Thursday at 10:00
   let exception = master.instances.get(2);
