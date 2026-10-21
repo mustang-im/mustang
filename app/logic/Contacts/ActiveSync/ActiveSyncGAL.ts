@@ -3,6 +3,7 @@ import { ActiveSyncPerson } from "./ActiveSyncPerson";
 import type { ActiveSyncAccount } from "../../Mail/ActiveSync/ActiveSyncAccount";
 import { ActiveSyncError } from "../../Mail/ActiveSync/ActiveSyncError";
 import { ensureArray, NotReached } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 
 export class ActiveSyncGAL extends ExchangeGAL {
   readonly protocol: string = "gal-activesync";
@@ -21,7 +22,7 @@ export class ActiveSyncGAL extends ExchangeGAL {
     throw new NotReached();
   }
 
-  protected async searchGAL(searchTerm: string): Promise<ActiveSyncPerson[]> {
+  protected async searchGAL(searchTerm: string): Promise<ArrayColl<ActiveSyncPerson>> {
     let query = {
       Store: {
         Name: "GAL",
@@ -32,7 +33,7 @@ export class ActiveSyncGAL extends ExchangeGAL {
     if (response.Response.Store.Status != "1") {
       throw new ActiveSyncError("Search", response.Response.Store.Status, this.account);
     }
-    let persons: ActiveSyncPerson[] = [];
+    let persons = new ArrayColl<ActiveSyncPerson>();
     for (let result of ensureArray(response.Response.Store.Result)) {
       let properties = result.Properties;
       // Convert from GAL format to contact format
@@ -43,7 +44,7 @@ export class ActiveSyncGAL extends ExchangeGAL {
       properties.CompanyName = properties.Company;
       let person = this.newPerson();
       person.fromWBXML(properties);
-      persons.push(person);
+      persons.add(person);
     }
     return persons;
   }

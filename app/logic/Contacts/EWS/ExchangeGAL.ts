@@ -14,19 +14,21 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
       this.searchGAL(searchTerm),
       this.searchGAL("smtp:" + searchTerm),
     ]);
-    for (let person of found.flat()) {
-      // Dedup
-      if (results.find(existing => existing.name == person.name &&
-          existing.emailAddresses.first?.value == person.emailAddresses.first?.value)) {
-        continue;
+    for (let persons of found) {
+      for (let person of persons) {
+        // Dedup
+        if (results.find(existing => existing.name == person.name &&
+            existing.emailAddresses.first?.value == person.emailAddresses.first?.value)) {
+          continue;
+        }
+        results.add(person);
       }
-      results.add(person);
     }
   }
 
   /** @returns the persons whose fields start with `searchTerm`,
    *   without their S/MIME certificates */
-  protected async searchGAL(searchTerm: string): Promise<Person[]> {
+  protected async searchGAL(searchTerm: string): Promise<ArrayColl<Person>> {
     throw new AbstractFunction();
   }
 }

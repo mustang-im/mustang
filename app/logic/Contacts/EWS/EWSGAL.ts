@@ -2,6 +2,7 @@ import { ExchangeGAL } from "./ExchangeGAL";
 import { EWSPerson } from "./EWSPerson";
 import type { EWSAccount } from "../../Mail/EWS/EWSAccount";
 import { ensureArray, NotReached } from "../../util/util";
+import { ArrayColl } from "svelte-collections";
 
 export class EWSGAL extends ExchangeGAL {
   readonly protocol: string = "gal-ews";
@@ -20,14 +21,14 @@ export class EWSGAL extends ExchangeGAL {
     throw new NotReached();
   }
 
-  protected async searchGAL(searchTerm: string): Promise<EWSPerson[]> {
+  protected async searchGAL(searchTerm: string): Promise<ArrayColl<EWSPerson>> {
     let query = {
       m$ResolveNames: {
         m$UnresolvedEntry: searchTerm,
         ReturnFullContactData: true,
       },
     };
-    let persons: EWSPerson[] = [];
+    let persons = new ArrayColl<EWSPerson>();
     try {
       let response = await this.account.callEWS(query);
       for (let resolution of ensureArray(response.ResolutionSet?.Resolution)) {
@@ -37,7 +38,7 @@ export class EWSGAL extends ExchangeGAL {
         resolution.Contact.EmailAddresses = { Entry: convertEmailAddresses(ensureArray(resolution.Contact.EmailAddresses?.Entry), resolution.Mailbox) };
         let person = this.newPerson();
         person.fromXML(resolution.Contact);
-        persons.push(person);
+        persons.add(person);
       }
     } catch (ex) {
       // This error is expected.
