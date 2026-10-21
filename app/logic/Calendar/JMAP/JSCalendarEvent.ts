@@ -377,7 +377,8 @@ export class JSCalendarEvent {
       let last = keys.pop();
       let parent = occurrence as Record<string, any>;
       for (let key of keys) {
-        parent = parent?.[key];
+        // Only own properties, so that a path like `__proto__/x` from the server can't change Object.prototype
+        parent = parent && Object.hasOwn(parent, key) ? parent[key] : null;
       }
       if (!parent) {
         continue; // invalid patch

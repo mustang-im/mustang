@@ -144,3 +144,17 @@ test("A patch path through a property that the series doesn't have is not applie
 
   expect(occurrence.links).toBeUndefined();
 });
+
+test("A patch path into the prototype changes no other object", () => {
+  let override = JSON.parse(`{
+    "__proto__/polluted": true,
+    "constructor/prototype/polluted": true,
+    "participants/__proto__/polluted": true
+  }`);
+  try {
+    JSCalendarEvent.applyOverride(series(), "2026-11-09T10:00:00", override);
+    expect(({} as any).polluted).toBeUndefined();
+  } finally {
+    delete (Object.prototype as any).polluted;
+  }
+});
