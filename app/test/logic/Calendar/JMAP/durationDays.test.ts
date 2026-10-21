@@ -47,10 +47,14 @@ function setup(events: TJMAPCalendarEvent[]) {
   calendar.jmapID = "calendarID";
   calendar.storage = new DummyCalendarStorage();
   calendar.errorCallback = ex => { throw ex; };
-  account.makeCombinedCall = async () => ({
-    list: { accountId: "jmapAccount", queryState: "s", ids: events.map(event => event.id), position: 0, canCalculateChanges: true },
-    events: { accountId: "jmapAccount", state: "s", list: events, notFound: [] },
-  });
+  account.makeCombinedCall = async (calls: [string, Record<string, any>, string?][]) => {
+    let { position = 0, limit = Infinity, calculateTotal } = calls[0][1];
+    let page = events.slice(position, position + limit);
+    return {
+      list: { accountId: "jmapAccount", queryState: "s", ids: page.map(event => event.id), position, total: calculateTotal ? events.length : undefined, canCalculateChanges: true },
+      events: { accountId: "jmapAccount", state: "s", list: page, notFound: [] },
+    };
+  };
   let sent: Record<string, any>[] = [];
   account.makeSingleCall = async (method: string, args: Record<string, any>) => {
     sent.push(args);
