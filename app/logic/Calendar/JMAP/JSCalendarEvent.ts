@@ -39,7 +39,7 @@ export class JSCalendarEvent {
     // Recurrence
     if (jmap.recurrenceRule) {
       event.recurrenceCase = RecurrenceCase.Master;
-      event.recurrenceRule = this.toRecurrenceRule(jmap, event.duration);
+      event.recurrenceRule = this.getRecurrenceRule(jmap, event.duration);
       // Exceptions and exclusions have to be handled by the caller,
       // once the event has been saved locally.
     }
@@ -91,9 +91,6 @@ export class JSCalendarEvent {
   static fromEvent(event: Event, jmap: TJMAPCalendarEvent) {
     // ID and metadata
     Object.assign(jmap, event.original);
-    let serverRule = event.recurrenceCase == RecurrenceCase.Master && jmap.recurrenceRule
-      ? this.toRecurrenceRule(jmap, toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S")))
-      : null;
     if (!event.parentEvent) {
       jmap.uid = event.calUID;
     }
@@ -133,10 +130,11 @@ export class JSCalendarEvent {
 
     // Recurrence
     if (event.recurrenceCase == RecurrenceCase.Master) {
-      let jr = jmap.recurrenceRule ??= {} as TJSCalendarRecurrenceRule;
       let er = event.recurrenceRule;
+      let jr = jmap.recurrenceRule;
       // Keep the parts of the rule that we don't support, unless the user changed the repetition
-      if (!this.isSameRepetition(serverRule, er)) {
+      if (!jr || !this.isSameRepetition(this.getRecurrenceRule(jmap, event.duration), er)) {
+        jr = jmap.recurrenceRule ??= {} as TJSCalendarRecurrenceRule;
         delete jr.byMonthDay;
         delete jr.byMonth;
         delete jr.byYearDay;
@@ -282,7 +280,7 @@ export class JSCalendarEvent {
   }
 
   /** @param masterDuration in seconds */
-  static toRecurrenceRule(jmap: TJMAPCalendarEvent, masterDuration: number): RecurrenceRule {
+  static getRecurrenceRule(jmap: TJMAPCalendarEvent, masterDuration: number): RecurrenceRule {
     let r = jmap.recurrenceRule;
     let rrinit: RecurrenceInit = {
       masterDuration,
@@ -309,14 +307,12 @@ export class JSCalendarEvent {
   }
 
   /** Whether `rule` repeats like `serverRule`, apart from the start and the end of the series */
-  protected static isSameRepetition(serverRule: RecurrenceRule | null, rule: RecurrenceRule): boolean {
-    let weekdays = (r: RecurrenceRule) => [...r.weekdays ?? []].sort().join();
-    return !!serverRule &&
-      serverRule.frequency == rule.frequency &&
+  protected static isSameRepetition(serverRule: RecurrenceRule, rule: RecurrenceRule): boolean {
+    return serverRule.frequency == rule.frequency &&
       serverRule.interval == rule.interval &&
       serverRule.week == rule.week &&
       serverRule.first == rule.first &&
-      weekdays(serverRule) == weekdays(rule);
+      [...serverRule.weekdays ?? []].sort().join() == [...rule.weekdays ?? []].sort().join();
   }
 
   /** When the alert fires. null, if there is none, or we don't know the trigger. */

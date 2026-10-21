@@ -314,3 +314,16 @@ describe("Recurrence rules from other clients", () => {
     expect(applyPatch(before, sent[0].update.eventID).recurrenceRule).toMatchObject({ frequency: "hourly", interval: 2, count: 5 });
   });
 });
+
+test("A single event that is made to repeat every year is sent with its rule", async () => {
+  // A rule read from an empty JSCalendar rule would also be "every year"
+  let json = serverEvent();
+  delete json.recurrenceRule;
+  let before = structuredClone(json);
+  let { event, sent } = await listEvents([json]);
+
+  event.newRecurrenceRule(Frequency.Yearly);
+  await event.save();
+
+  expect(applyPatch(before, sent[0].update.eventID).recurrenceRule).toMatchObject({ frequency: "yearly" });
+});
