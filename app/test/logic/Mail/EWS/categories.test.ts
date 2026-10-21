@@ -169,7 +169,9 @@ test("Tagging a message with a new tag adds it as category to the server", async
   // MS-OXOCFG 3.1.4.2.3: Keep the attributes that we don't know
   expect(account.categoryListXML).toContain(`futureAttribute="keep me"`);
   expect(account.categoryListXML).toContain(`renameOnFirstUse="1"`);
-  let category = parseCategoryListXML(utf8ToBase64(account.categoryListXML)).querySelector(`[name="Customer"]`);
+  let xml = parseCategoryListXML(utf8ToBase64(account.categoryListXML));
+  expect(xml.documentElement.namespaceURI).toBe("CategoryList.xsd");
+  let category = xml.querySelector(`[name="Customer"]`);
   expect(category.getAttribute("guid")).toMatch(/^\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}$/);
   expect(category.getAttribute("keyboardShortcut")).toBe("0");
   expect(category.getAttribute("lastTimeUsed")).toBeTruthy();

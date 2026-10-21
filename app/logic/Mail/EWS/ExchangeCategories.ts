@@ -1,5 +1,7 @@
 import type { Tag } from "../../Abstract/Tag";
+import { XML2JSON } from "./XML2JSON";
 import { base64ToUint8Array, uint8ArrayToBase64 } from "../../util/blob";
+import { ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export interface ExchangeCategory {
@@ -55,11 +57,11 @@ export function parseCategoryListXML(base64: string): Document {
 }
 
 export function categoriesFromXML(xml: Document): ExchangeCategory[] {
-  return [...xml.documentElement.children]
-    .filter(element => element.localName == "category")
-    .map(element => ({
-      name: sanitize.nonemptylabel(element.getAttribute("name"), null),
-      color: sanitizeCategoryColor(element.getAttribute("color")),
+  let categories = XML2JSON(xml.documentElement) as any;
+  return ensureArray(categories.category)
+    .map(category => ({
+      name: sanitize.nonemptylabel(category.name, null),
+      color: sanitizeCategoryColor(category.color),
     }))
     .filter(category => category.name);
 }
