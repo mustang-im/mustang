@@ -53,13 +53,11 @@ export class JMAPAddressbook extends Addressbook {
 
   async listContacts() {
     await super.listContacts();
-    if (!this.account.isLoggedIn) {
-      await this.account.login(false);
-    }
+    await this.account.ensureLoggedIn();
 
-    this.persons.isEmpty
-      ? await this.listAllPersons()
-      : await this.listChangedPersons();
+    this.syncState
+      ? await this.listChangedPersons()
+      : await this.listAllPersons();
   }
 
   /** Lists all persons in this addressbook. */
@@ -80,6 +78,8 @@ export class JMAPAddressbook extends Addressbook {
     if (state) {
       this.account.syncState.set("ContactCard", state);
     }
+    this.syncState = state;
+    await this.save();
     return allNewPersons;
   }
 
@@ -199,8 +199,8 @@ export class JMAPAddressbook extends Addressbook {
       let allAddressbooks = this.account.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       for (let addressbook of allAddressbooks) {
         await addressbook.readContactsFromDB();
-        if (addressbook.persons.isEmpty) {
-          continue; // Adding persons here would stop listAllPersons() from ever running
+        if (!addressbook.syncState) {
+          continue; // `listContacts()` will list all its persons
         }
         let removed = this.findMovedAway(changedResponse.list, addressbook);
         let addedThisAB = addedByAB.get(addressbook.jmapID);

@@ -7,7 +7,7 @@ import { getDatabase } from "./SQLDatabase";
 import { appGlobal } from "../../app";
 import { getFilesDir } from "../../util/backend-wrapper";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { backgroundError } from "../../../frontend/Util/error";
+import { dataError } from "../../util/error";
 import { assert, fileExtensionForMIMEType } from "../../util/util";
 import { ArrayColl, Collection } from "svelte-collections";
 import sql from "../../../../lib/rs-sqlite";
@@ -312,7 +312,7 @@ export class SQLEvent extends Event {
         participant.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
         event.participants.add(participant);
       } catch (ex) {
-        backgroundError(ex);
+        dataError(ex);
       }
     }
   }
@@ -337,7 +337,7 @@ export class SQLEvent extends Event {
         a.fromExtraJSON(sanitize.json(row.json, {}) as any);
         attachments.push(a);
       } catch (ex) {
-        backgroundError(ex);
+        dataError(ex);
       }
     }
     event.attachments.replaceAll(attachments);

@@ -17,7 +17,8 @@ import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, blobToBase64, type URLString } from "../../util/util";
+import { assert, type URLString } from "../../util/util";
+import { blobToBase64 } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 

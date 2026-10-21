@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import { Event } from "../../../../logic/Calendar/Event";
-  import { getToday } from "../../../Util/date";
+  import { getToday } from "../../../../logic/util/date";
   import { appGlobal } from "../../../../logic/app";
   import DayViewGrid from "../../DayView/DayViewGrid.svelte";
   import EventProposal from "./EventProposal.svelte";
@@ -51,8 +51,7 @@
   .range-header {
     justify-content: center;
   }
-  .calendar :global(.top-left.header),
-  .calendar :global(.day-header) {
+  .calendar :global(.header) {
     background-color: var(--leftbar-bg);
   }
   .calendar :global(.day-header) {

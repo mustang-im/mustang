@@ -149,8 +149,9 @@ test("Accepting an invitation adds the event to the JMAP calendar", async () => 
   expect(created.uid).toEqual(email.event.calUID);
   expect(created.calendarIds).toEqual({ calendarID: true });
   let participants = Object.values(created.participants);
-  expect(participants.find(participant => participant.email == kMe).participationStatus).toEqual("accepted");
-  expect(participants.find(participant => participant.email == kOrganizer).roles.owner).toEqual(true);
+  expect(participants.find(participant => participant.calendarAddress == "mailto:" + kMe).participationStatus).toEqual("accepted");
+  expect(participants.find(participant => participant.calendarAddress == "mailto:" + kOrganizer).roles.owner).toEqual(true);
+  expect(created.organizerCalendarAddress).toEqual("mailto:" + kOrganizer);
 
   expect(sent.length).toEqual(1);
   expect(sent[0].iCalMethod).toEqual("REPLY");
@@ -170,7 +171,7 @@ test("Declining an invitation tells the server and the organizer", async () => {
 
   let created = Object.values(calls[0].args.create)[0] as TJMAPCalendarEvent;
   let participants = Object.values(created.participants);
-  expect(participants.find(participant => participant.email == kMe).participationStatus).toEqual("declined");
+  expect(participants.find(participant => participant.calendarAddress == "mailto:" + kMe).participationStatus).toEqual("declined");
   expect(sent[0].event.participants.first.response).toEqual(InvitationResponse.Decline);
 });
 
@@ -200,4 +201,124 @@ test("The JMAP calendar accepts an invitation from another account's inbox", asy
   expect(imap.sent[0].from.emailAddress).toEqual(kMyIMAPAddress);
   expect(imap.sent[0].event.participants.first.emailAddress).toEqual(kMyIMAPAddress);
   expect(imap.sent[0].event.participants.first.response).toEqual(InvitationResponse.Accept);
+});
+
+/**
+ * A meeting as the JMAP server gives it to us, in JSCalendar-bis, like Stalwart does.
+ * When somebody else organizes it, the server put the invitation into our calendar
+ * by itself, and marks it with `isOrigin: false`.
+ * @param myStatus My `participationStatus`. JSCalendar-bis defaults it to "needs-action".
+ * @param organizer The email address of the organizer: `kOrganizer` or `kMe`
+ */
+function serverMeeting(myStatus: string | undefined, organizer = kOrganizer): TJMAPCalendarEvent {
+  let participant = (emailAddress: string, status: string | undefined) => ({
+    "@type": "Participant",
+    calendarAddress: "mailto:" + emailAddress,
+    roles: emailAddress == organizer ? { owner: true, attendee: true } : { attendee: true },
+    participationStatus: status,
+  });
+  return {
+    "@type": "Event",
+    id: "serverEventID",
+    uid: kCalUID,
+    calendarIds: { calendarID: true },
+    isOrigin: organizer == kMe,
+    title: "Phone call to discuss your last visit",
+    start: kStartTime.toISOString().replace(/\.\d+/, ""),
+    duration: "PT30M",
+    organizerCalendarAddress: "mailto:" + organizer,
+    participants: {
+      otherID: participant(kOrganizer, organizer == kOrganizer ? "accepted" : "needs-action"),
+      meID: participant(kMe, myStatus),
+    },
+  } as any as TJMAPCalendarEvent;
+}
+
+test("An invitation that the JMAP server added to the calendar by itself is unanswered", () => {
+  for (let myStatus of ["needs-action", undefined]) {
+    let { calendar } = setup();
+    let event = calendar.newEvent();
+    event.fromJMAP(serverMeeting(myStatus));
+
+    expect(event.participants.contents.map(p => p.emailAddress)).toEqual([kOrganizer, kMe]);
+    expect(event.organizer.emailAddress).toEqual(kOrganizer);
+    expect(event.myParticipation).toEqual(InvitationResponse.NoResponseReceived);
+    expect(event.isIncomingMeeting).toBe(true);
+  }
+});
+
+test("An invitation that I already answered is not unanswered", () => {
+  for (let [status, response] of [
+    ["accepted", InvitationResponse.Accept],
+    ["tentative", InvitationResponse.Tentative],
+    ["declined", InvitationResponse.Decline],
+  ] as [string, InvitationResponse][]) {
+    let { calendar } = setup();
+    let event = calendar.newEvent();
+    event.fromJMAP(serverMeeting(status));
+
+    expect(event.myParticipation).toEqual(response);
+    expect(event.isIncomingMeeting).toBe(true);
+  }
+});
+
+test("A meeting that I organize is not an incoming invitation", () => {
+  let { calendar } = setup();
+  let event = calendar.newEvent();
+  // The other person did not answer yet
+  event.fromJMAP(serverMeeting("accepted", kMe));
+
+  expect(event.organizer.emailAddress).toEqual(kMe);
+  expect(event.myParticipation).toEqual(InvitationResponse.Organizer);
+  expect(event.isOutgoingMeeting).toBe(true);
+  expect(event.isIncomingMeeting).toBe(false);
+});
+
+test("The organizer is who `organizerCalendarAddress` names, not everybody with the owner role", () => {
+  let { calendar } = setup();
+  let event = calendar.newEvent();
+  let json = serverMeeting(undefined);
+  json.participants.meID.roles.owner = true;
+  event.fromJMAP(json);
+
+  expect(event.organizer.emailAddress).toEqual(kOrganizer);
+  expect(event.myParticipation).toEqual(InvitationResponse.NoResponseReceived);
+});
+
+test("An event without other participants is not an invitation", () => {
+  let { calendar } = setup();
+  let event = calendar.newEvent();
+  let json = serverMeeting(undefined, kMe);
+  delete json.participants;
+  delete json.organizerCalendarAddress;
+  event.fromJMAP(json);
+
+  expect(event.myParticipation).toEqual(InvitationResponse.Unknown);
+  expect(event.isIncomingMeeting).toBe(false);
+});
+
+test("Accepting an invitation that the JMAP server added keeps the server's participants", async () => {
+  let { account, calendar, calls, sent } = setup();
+  appGlobal.emailAccounts.add(account);
+  let event = calendar.newEvent();
+  event.fromJMAP(serverMeeting("needs-action"));
+  calendar.events.add(event);
+
+  await event.respondToInvitation(InvitationResponse.Accept);
+
+  expect(event.myParticipation).toEqual(InvitationResponse.Accept);
+
+  expect(calls.length).toEqual(1);
+  expect(calls[0].method).toEqual("CalendarEvent/set");
+  let updated = calls[0].args.update.serverEventID as TJMAPCalendarEvent;
+  // The same participant entries as the server sent, not removed and added again
+  expect(Object.keys(updated.participants)).toEqual(["otherID", "meID"]);
+  expect(updated.participants.meID.calendarAddress).toEqual("mailto:" + kMe);
+  expect(updated.participants.meID.participationStatus).toEqual("accepted");
+  expect(updated.organizerCalendarAddress).toEqual("mailto:" + kOrganizer);
+
+  // The reply goes to the organizer, and not an invitation to everybody
+  expect(sent.length).toEqual(1);
+  expect(sent[0].iCalMethod).toEqual("REPLY");
+  expect(sent[0].to.first.emailAddress).toEqual(kOrganizer);
 });

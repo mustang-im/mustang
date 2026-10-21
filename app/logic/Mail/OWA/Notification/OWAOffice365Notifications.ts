@@ -1,7 +1,7 @@
 import { OWANotifications } from "./OWANotifications";
 import { EventDecoder } from "../../../util/eventSource";
 import { sleep } from "../../../util/util";
-import { URLPart } from "../../../../frontend/Util/util";
+import { URLPart } from "../../../util/blob";
 
 export class OWAOffice365Notifications extends OWANotifications {
   async start(): Promise<never> {

@@ -7,9 +7,8 @@ import { EMailFlag, EMailFlagPidTag, EMailFlagTimePidTag, IconIndex, IconIndexPi
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { PersonUID, findOrCreatePersonUID } from "../../Abstract/PersonUID";
 import type { TGraphEMail, TGraphPersonUID, TGraphEMailHeader, TGraphMailAttachment } from "./TGraphMail";
-import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { arrayRemove, assert, NotReached } from "../../util/util";
+import { arrayRemove, assert, NotReached, getUserPreference } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl, Collection } from "svelte-collections";
 import { ContentDisposition } from "../../Abstract/Attachment";
@@ -108,7 +107,7 @@ export class GraphEMail extends EMail {
 
   static async getGraphEmailObject(email: EMail, account: GraphAccount): Promise<any> {
     assert(email.folder.id, "need folder");
-    let doHTML = getLocalStorage("mail.send.format", "html").value == "html";
+    let doHTML = getUserPreference("mail.send.format", "html") == "html";
     let e: TGraphEMail = {
       id: undefined,
       subject: email.subject,

@@ -6,13 +6,13 @@ import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
-import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../../frontend/Util/date";
+import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { randomID, AbstractFunction, assert } from "../util/util";
-import { backgroundError } from "../../frontend/Util/error";
+import { dataError } from "../util/error";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -39,7 +39,7 @@ export class Event extends Observable {
         return this._text = convertHTMLToText(this._rawHTML);
       }
     } catch (ex) {
-      backgroundError(ex);
+      dataError(ex);
     }
     return "";
   }
@@ -82,7 +82,7 @@ export class Event extends Observable {
         return this._sanitizedHTML = convertTextToHTML(this._text);
       }
     } catch (ex) {
-      backgroundError(ex);
+      dataError(ex);
     }
     return "";
   }
@@ -267,7 +267,8 @@ export class Event extends Observable {
   get duration(): number {
     let seconds = Math.round((this.endTime?.getTime() - this.startTime?.getTime()) / 1000);
     if (this.allDay) {
-      return Math.round(Math.ceil(seconds / k1DayS) * k1DayS); // return entire days, not 1 second less
+      let clockChangeSeconds = (this.startTime?.getTimezoneOffset() - this.endTime?.getTimezoneOffset()) * k1MinuteS;
+      return Math.round(Math.ceil((seconds + clockChangeSeconds) / k1DayS) * k1DayS); // return entire days, not 1 second less
     }
     return seconds;
   }
@@ -607,6 +608,10 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.Organizer;
   }
 
+  get isUnanswered(): boolean {
+    return this.myParticipation == InvitationResponse.NoResponseReceived;
+  }
+
   async createOnlineMeeting() {
     if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
       return;
@@ -902,7 +907,7 @@ export class Event extends Observable {
       instance.recurrenceCase = RecurrenceCase.Instance;
       instance.recurrenceStartTime = occurrence;
       instance.startTime = new Date(occurrence); // Clone in case of exception
-      instance.endTime = new Date(this.endTime.getTime() + instance.startTime.getTime() - this.startTime.getTime());
+      instance.duration = this.duration;
       if (this.alarm) {
         instance.alarm = new Date(this.alarm.getTime() + instance.startTime.getTime() - this.startTime.getTime());
       }
@@ -965,6 +970,7 @@ export class Event extends Observable {
   async truncateRecurrence() {
     let master = this.parentEvent;
     assert(master.recurrenceCase == RecurrenceCase.Master, "parentEvent must a Recurrence.Master");
+    master.startEditing();
     let lastException = this.recurrenceStartTime;
     for (let exception of master.exceptions) {
       if (exception.recurrenceStartTime > lastException) {
@@ -987,6 +993,7 @@ export class Event extends Observable {
       await this.calendar.storage.deleteEvent(this);
     }
     await master.save();
+    master.finishEditing();
   }
 }
 

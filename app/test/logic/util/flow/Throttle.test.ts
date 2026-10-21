@@ -32,3 +32,16 @@ test("Wait for", async () => {
   await a.run();
   expect(Date.now()).toBeGreaterThanOrEqual(startTime + 100);
 });
+
+test("A task that had to wait counts from when it ran, not from when it asked", async () => {
+  // E.g. reconnecting while the network is down: each attempt fails at once
+  let throttle = new Throttle(1, 0.2);
+  let times: number[] = [];
+  for (let i = 0; i < 4; i++) {
+    await throttle.throttle();
+    times.push(Date.now());
+  }
+  for (let i = 1; i < times.length; i++) {
+    expect(times[i] - times[i - 1]).toBeGreaterThanOrEqual(190);
+  }
+});

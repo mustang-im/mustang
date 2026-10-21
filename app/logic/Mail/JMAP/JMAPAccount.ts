@@ -13,7 +13,7 @@ import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, typ
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
 import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
-import { checkChangeError } from "./JMAPError";
+import { checkChangeError, JMAPCommandError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions, type Folder } from "../Folder";
@@ -24,8 +24,10 @@ import { EventDecoder } from "../../util/eventSource";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty } from "../../util/Observable";
 import { Lock } from "../../util/flow/Lock";
+import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
+import { Timeout } from "../../util/flow/Timeout";
 import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
@@ -46,7 +48,9 @@ export class JMAPAccount extends MailAccount {
   readonly stateLock = new Lock(); /** Protects syncState */
   protected loginRunOnce = new RunOnce();
   protected startupRunOnce = new RunOnce();
+  protected readonly requestSemaphore = new Semaphore(4);
   protected pushAbort: AbortController | null = null;
+  protected isDisconnected = false;
   protected throttle = new Throttle(50, 1);
   logging = true;
 
@@ -64,6 +68,7 @@ export class JMAPAccount extends MailAccount {
 
   async login(interactive: boolean): Promise<void> {
     await this.loginRunOnce.runOnce(async () => {
+      this.isDisconnected = false;
       await super.login(interactive);
       if (this.isDependentAccount) {
         return; // `super.login()` logged in the main account, which starts us up
@@ -76,6 +81,28 @@ export class JMAPAccount extends MailAccount {
       await this.loginOAuth2(interactive);
       await this.getSession();
     });
+  }
+
+  /** After `disconnect()`, e.g. a logout, only an explicit `login()` logs in again,
+   * not the work that is still running.
+   * @throws LoginError after `disconnect()` */
+  async ensureLoggedIn(): Promise<void> {
+    if (this.isDisconnected) {
+      throw new LoginError(null, gt`Please login`);
+    }
+    if (this.isDependentAccount) {
+      await (this.mainAccount as JMAPAccount).ensureLoggedIn();
+      return;
+    }
+    if (this.isLoggedIn) {
+      return;
+    }
+    if (this.session) {
+      await this.oAuth2.login(false);
+    }
+    if (!this.isLoggedIn) {
+      await this.login(false);
+    }
   }
 
   async syncOnStartup() {
@@ -151,6 +178,10 @@ export class JMAPAccount extends MailAccount {
     assert(mailAccount, "JMAP Session: Account not found");
 
     this.session = session;
+    let maxConcurrentRequests = sanitize.integer(session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
+    if (maxConcurrentRequests > 0) {
+      this.requestSemaphore.maxParallel = maxConcurrentRequests;
+    }
   }
 
   /** An account shared with us may offer less than our own, e.g. a calendar, but no mail.
@@ -180,6 +211,11 @@ export class JMAPAccount extends MailAccount {
   get maxParallelRequests(): number {
     let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
     return serverMax ? Math.max(1, Math.min(serverMax - 1, 30)) : 5;
+  }
+  /** @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxObjectsInSet` */
+  get maxObjectsInSet(): number {
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInSet, null);
+    return serverMax > 0 ? serverMax : 500;
   }
   // <compat for="Cyrus">
   // Cyrus announces its core extension always, even when its non-standard extensions are off.
@@ -245,24 +281,10 @@ export class JMAPAccount extends MailAccount {
    *   One call may return multiple results, so the results array may be longer than the number of calls.
    *   The results will in the same order as the calls, though. */
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
-    if (!this.isLoggedIn) {
-      if (this.session) {
-        await this.oAuth2.login(false);
-      }
-      if (!this.isLoggedIn) {
-        await this.login(false);
-      }
-    }
-    let using = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission"];
-    if (this.haveContacts) {
-      using.push("urn:ietf:params:jmap:contacts");
-    }
-    if (this.haveCalendar) {
-      using.push("urn:ietf:params:jmap:calendars");
-    }
-    if (this.haveSharing) {
-      using.push("urn:ietf:params:jmap:principals");
-    }
+    await this.ensureLoggedIn();
+    const kOurCapabilities = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission",
+      "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars", "urn:ietf:params:jmap:principals"];
+    let using = kOurCapabilities.filter(capability => this.hasCapability(capability));
     let requestJSON: TJMAPAPIRequest = {
       using: using,
       methodCalls: [],
@@ -297,9 +319,8 @@ export class JMAPAccount extends MailAccount {
     }
     let errorResult = responsesJSON?.methodResponses.find(method => method[0] == "error");
     if (errorResult) {
-      let error = errorResult[1];
-      let ex = new Error(error.description) as any;
-      ex.code = error.type;
+      let method = requestJSON.methodCalls.find(call => call[2] == errorResult[2])?.[0];
+      let ex = new JMAPCommandError(method, errorResult[1] as any) as any;
       ex.call = requestJSON;
       ex.response = responsesJSON?.methodResponses;
       ex.debug = log.join(" ");
@@ -310,14 +331,6 @@ export class JMAPAccount extends MailAccount {
     let callNumbers = requestJSON.methodCalls.map(call => call[2]);
     for (let resp of responsesJSON.methodResponses) {
       assert(callNumbers.includes(resp[2]), "Method in response does not match");
-      if (resp[0] == "error") {
-        let ex = new Error(resp[1] as any);
-        (ex as any).debug = {
-          requests: calls,
-          responses: responsesJSON.methodResponses,
-        };
-        throw ex;
-      }
     }
     return responsesJSON.methodResponses;
   }
@@ -358,32 +371,50 @@ export class JMAPAccount extends MailAccount {
   }
 
   async httpGet(url: string, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpGet(url, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.get(url);
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
   async httpPost(url: string, sendJSON: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPost(url, sendJSON);
+    }
     let ky = await this.ky();
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { json: sendJSON });
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
   async httpPostBinary(url: string, body: any, options?: any): Promise<any> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).httpPostBinary(url, body, options);
+    }
     let ky = await this.ky(options);
     await this.throttle.throttle();
+    let lock = await this.requestSemaphore.lock();
     try {
       return await ky.post(url, { body: body });
     } catch (ex) {
       await this.httpError(ex);
+    } finally {
+      lock.release();
     }
   }
 
@@ -422,6 +453,75 @@ export class JMAPAccount extends MailAccount {
     return uploadResponse;
   }
 
+  /** Updates the folders that changed on the server, e.g. their counts.
+   * A change of the folder tree lists all folders again.
+   * <https://www.rfc-editor.org/rfc/rfc8621.html#section-2.2> */
+  async fetchChangedFolders(): Promise<void> {
+    const kMaxRounds = 1000;
+    for (let round = 1; round <= kMaxRounds; round++) {
+      let sinceState = this.syncState.get("Mailbox");
+      if (!sinceState) {
+        await this.listFolders();
+        return;
+      }
+      let response: Record<string, any>;
+      try {
+        response = await this.makeCombinedCall([
+          [
+            "Mailbox/changes", {
+              accountId: this.accountID,
+              sinceState: sinceState,
+            },
+            "changes",
+          ], [
+            "Mailbox/get", {
+              accountId: this.accountID,
+              "#ids": {
+                resultOf: "changes",
+                name: "Mailbox/changes",
+                path: "/updated",
+              },
+              properties: ["totalEmails", "unreadEmails"],
+            },
+            "updated",
+          ],
+        ]);
+      } catch (ex) {
+        if (ex.code == "cannotCalculateChanges") {
+          await this.listFolders();
+          return;
+        }
+        throw ex;
+      }
+      let changes = response["changes"];
+      if (changes.created?.length || changes.destroyed?.length || !changes.updatedProperties) {
+        await this.listFolders();
+        return;
+      }
+      let updatedFolders = response["updated"] as TJMAPGetResponse<TJMAPFolder>;
+      for (let json of updatedFolders.list) {
+        let folder = this.findFolder(folder => folder.id == json.id);
+        if (!folder) {
+          await this.listFolders();
+          return;
+        }
+        folder.countTotal = sanitize.integer(json.totalEmails, folder.countTotal);
+        folder.countUnread = sanitize.integer(json.unreadEmails, folder.countUnread);
+        await this.storage.saveFolderProperties(folder);
+      }
+      // With `hasMoreChanges`, an intermediate state, for the changes that we applied so far: An interrupted sync continues here
+      this.syncState.set("Mailbox", changes.newState);
+      await this.save();
+      if (!changes.hasMoreChanges) {
+        return;
+      }
+      if (changes.newState == sinceState) {
+        break;
+      }
+    }
+    this.errorCallback(new Error(`${this.name}: Folder changes: The server keeps reporting more changes. Stopped.`));
+  }
+
   async listFolders(): Promise<void> {
     await this.storage.readFolderHierarchy(this);
     let currentFolders = new Map<string, JMAPFolder>();
@@ -432,22 +532,32 @@ export class JMAPAccount extends MailAccount {
       "ids": null,
     }) as TJMAPGetResponse<TJMAPFolder>;
     for (let folderJSON of serverFoldersResponse.list) {
-      // If the server lists the parent only later, we move the folder there on the next listing
-      let parent = folderJSON.parentId
-        ? this.findFolder(folder => folder.id == folderJSON.parentId) as JMAPFolder
-        : null;
-      let parentFolders = parent ? parent.subFolders : this.rootFolders;
-      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as JMAPFolder;
-      if (!folder) {
-        // We may already have the folder from our database, or it moved
-        folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
-        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
-        oldParentFolders.remove(folder);
-        folder.parent = parent;
-        parentFolders.add(folder);
-      }
+      // We may already have the folder from our database
+      let folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
       folder.fromJMAP(folderJSON);
       currentFolders.set(folder.id, folder);
+    }
+    let parentIDs = new Map(serverFoldersResponse.list.map(folderJSON => [folderJSON.id, folderJSON.parentId]));
+    // Only now, because the server may list a folder before its parent
+    for (let folderJSON of serverFoldersResponse.list) {
+      let folder = currentFolders.get(folderJSON.id);
+      let parent = currentFolders.get(folderJSON.parentId) ?? null;
+      let ancestorID = folderJSON.parentId;
+      for (let i = 0; ancestorID && ancestorID != folder.id && i < parentIDs.size; i++) {
+        ancestorID = parentIDs.get(ancestorID);
+      }
+      if (ancestorID == folder.id) {
+        this.dataError(new Error(`Folder ${folder.name}: The server made the folder its own parent or a subfolder of itself. Showing it at the top level.`));
+        parent = null;
+      }
+      let parentFolders = parent ? parent.subFolders : this.rootFolders;
+      if (parentFolders.contains(folder)) {
+        continue;
+      }
+      let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+      oldParentFolders.remove(folder);
+      folder.parent = parent;
+      parentFolders.add(folder);
     }
 
     for (let folder of oldFolders) {
@@ -462,6 +572,7 @@ export class JMAPAccount extends MailAccount {
         await this.storage.saveFolder(folder);
       }
     }
+    this.syncState.set("Mailbox", serverFoldersResponse.state);
   }
 
   async createToplevelFolder(name: string): Promise<JMAPFolder> {
@@ -490,6 +601,7 @@ export class JMAPAccount extends MailAccount {
   }
 
   async disconnect(): Promise<void> {
+    this.isDisconnected = true;
     this.stopPolling();
     this.pushAbort?.abort();
     this.session = null;
@@ -501,6 +613,7 @@ export class JMAPAccount extends MailAccount {
     let sentFolder = email.folder ??
       this.getSpecialFolder(SpecialFolder.Sent);
 
+    email.isRead = true;
     await outboxFolder.addMessage(email);
 
     let recipients = new ArrayColl<PersonUID>();
@@ -510,7 +623,7 @@ export class JMAPAccount extends MailAccount {
     let recipientsAddrs = recipients.map(p => ({ email: p.emailAddress })).contents;
     let identityID = await this.findIdentityOnServer(email);
 
-    let sendResponse = await this.makeSingleCall("EmailSubmission/set", {
+    let responses = await this.makeCalls([["EmailSubmission/set", {
       accountId: this.accountID,
       create: {
         "sendMessage": {
@@ -527,16 +640,24 @@ export class JMAPAccount extends MailAccount {
           // Intentionally delete all other folders
           mailboxIds: {
             [sentFolder.id]: true,
-            [outboxFolder.id]: null,
           },
           ["keywords/$draft"]: null,
         }
       }
-    });
+    }]]);
+    let sendResponse = responses[0][1];
+    let moveToSentResponse = responses.find(response => response[0] == "Email/set")?.[1];
     let error = sendResponse["notCreated"] as any;
     if (error) {
       error = error["sendMessage"];
       throw new Error("Upload of message to server failed: " + (error?.description ?? "") + " " + (error?.properties?.join(", ") ?? ""));
+    }
+    if (moveToSentResponse) {
+      try {
+        checkChangeError(moveToSentResponse as TJMAPChangeResponse<any>);
+      } catch (ex) {
+        this.errorCallback(ex); // Not thrown: The email was sent, and the user should not send it again
+      }
     }
   }
 
@@ -611,6 +732,9 @@ export class JMAPAccount extends MailAccount {
       return;
     }
 
+    if (type == "Mailbox") {
+      await this.fetchChangedFolders();
+    }
     if (type == "Email") {
       await (this.inbox as JMAPFolder).fetchChangedMessagesForAllFolders();
     }
@@ -620,6 +744,9 @@ export class JMAPAccount extends MailAccount {
     if (type == "ContactCard") {
       let addressbooks = this.dependentAccounts().filterOnce(a => a instanceof JMAPAddressbook) as Collection<JMAPAddressbook>;
       await addressbooks.first?.fetchChangedPersonsForAllAddressbooks();
+    }
+    if (type == "Calendar") {
+      await this.listCalendars();
     }
     if (type == "CalendarEvent") {
       let calendars = this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar) as Collection<JMAPCalendar>;
@@ -635,31 +762,47 @@ export class JMAPAccount extends MailAccount {
   async startPushListener(): Promise<void> {
     let url = this.session.eventSourceUrl;
     assert(url, "Need event source URL");
-    let types = ["Email", "Identity"];
+    let types = ["Mailbox", "Email", "Identity"];
     if (this.haveContacts) {
       types.push("ContactCard");
     }
     if (this.haveCalendar) {
-      types.push("CalendarEvent");
+      types.push("Calendar", "CalendarEvent");
     }
     if (this.haveSharing) {
       types.push("ShareNotification");
     }
+    const kPingSeconds = 60;
     url = url
       .replace("{accountId}", this.accountID)
       .replace("{types}", types.join(","))
-      .replace("{ping}", "500")
+      .replace("{ping}", String(kPingSeconds))
       .replace("{closeafter}", "no");
+    this.pushAbort?.abort(); // e.g. after a new login, while the old listener still waits on a connection that died
+    let listener = this.pushAbort = new AbortController();
     let reconnectThrottle = new Throttle(1, 10);
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
+      let connection = new AbortController();
+      let pingSeconds = kPingSeconds;
+      let watchdog: Timeout | null = null;
+      // A dead connection, e.g. after sleep or a network change, doesn't always end the stream,
+      // and a half-open VPN tunnel may accept a new connection, but never answer
+      function expectAnswer() {
+        watchdog?.fulfilled();
+        watchdog = new Timeout(2 * pingSeconds, () => {
+          // A `DOMException` named "TimeoutError", like `fetch()` throws for its own timeouts, so that the `catch`
+          // below takes it as transient (`isTransientError()`), and the `while` loop reconnects
+          connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError"));
+        });
+      }
       try {
-        this.pushAbort = new AbortController();
+        expectAnswer();
         let stream = await fetch(url, {
           headers: {
             Authorization: this.authorizationHeader(),
           },
-          signal: this.pushAbort.signal,
+          signal: AbortSignal.any([listener.signal, connection.signal]),
         });
         if (!stream.ok) {
           reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
@@ -667,6 +810,14 @@ export class JMAPAccount extends MailAccount {
         }
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
         for await (let event of eventStream) {
+          watchdog?.fulfilled();
+          if (event.name == "ping") {
+            try {
+              pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 1500, pingSeconds);
+            } catch (ex) {
+              this.dataError(new Error("JMAP push: The server sent an invalid ping: " + ex.message));
+            }
+          }
           if (event.name == "state") {
             try {
               let json = JSON.parse(event.data);
@@ -689,9 +840,10 @@ export class JMAPAccount extends MailAccount {
               console.error(ex);
             }
           }
+          expectAnswer();
         }
       } catch (ex) {
-        if (ex.name == "AbortError") { // disconnect()
+        if (ex.name == "AbortError") { // disconnect(), or a newer listener took over
           return;
         }
         if (isTransientError(ex)) {
@@ -704,6 +856,8 @@ export class JMAPAccount extends MailAccount {
         } else {
           throw ex;
         }
+      } finally {
+        watchdog?.fulfilled();
       }
     }
   }
@@ -737,6 +891,8 @@ export class JMAPAccount extends MailAccount {
       return; // Another user's account, and they did not share their calendars with us
     }
     let listResponse = response as TJMAPGetResponse<TJMAPCalendar>;
+    await this.updateCalendars(listResponse.list);
+    this.syncState.set("Calendar", listResponse.state);
     for (let jmap of listResponse.list) {
       if (!jmap.isSubscribed && !jmap.isDefault ||
         this.dependentAccounts().filterOnce(a => a instanceof JMAPCalendar && a.jmapID == jmap.id).hasItems) {
@@ -747,6 +903,21 @@ export class JMAPAccount extends MailAccount {
       cal.fromJMAP(jmap)
       appGlobal.calendars.add(cal);
       await cal.save();
+    }
+  }
+
+  /** Takes over changes of our calendars, e.g. a new name, and removes
+   * those that were deleted on the server or are no longer shared with us. */
+  protected async updateCalendars(serverCalendars: TJMAPCalendar[]) {
+    let ourCalendars = this.dependentAccounts().filterOnce(account => account instanceof JMAPCalendar) as Collection<JMAPCalendar>;
+    for (let ourCalendar of ourCalendars) {
+      let jmap = serverCalendars.find(json => json.id == ourCalendar.jmapID);
+      if (jmap) {
+        ourCalendar.fromJMAP(jmap);
+        await ourCalendar.save();
+      } else {
+        await ourCalendar.deleteIt();
+      }
     }
   }
 

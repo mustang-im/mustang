@@ -57,10 +57,9 @@ async function savedName(): Promise<string> {
 let entry: Record<string, any> | null = null;
 let target: HTMLElement;
 
-/** A recipient that the user just typed, with a guessed name. Opens the popup. */
+/** A recipient who is not in any address book yet */
 async function addNewRecipient(): Promise<PersonUID> {
   let personUID = new PersonUID(kEMailAddress, kGuessedName);
-  personUID.nameIsUnknown = true;
   target = document.createElement("div");
   document.body.append(target);
   entry = mount(PersonEntry, { target, props: { person: personUID, onRemovePerson: () => {} } });
@@ -75,7 +74,6 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-/** `PersonEntry` opens the popup only after the click is through */
 async function settle() {
   await new Promise(resolve => setTimeout(resolve, 0));
   flushSync();
@@ -100,6 +98,7 @@ async function clickPill() {
 
 test("Saves the name that the user typed, when the popup closes", async () => {
   let personUID = await addNewRecipient();
+  await clickPill();
   typeName(kRealName);
 
   await clickElsewhere();
@@ -111,6 +110,7 @@ test("Saves the name that the user typed, when the popup closes", async () => {
 
 test("Saves the name that the user typed after re-opening the popup", async () => {
   let personUID = await addNewRecipient();
+  await clickPill();
   await clickElsewhere();
   await settle();
 
@@ -125,6 +125,7 @@ test("Saves the name that the user typed after re-opening the popup", async () =
 
 test("Saves the name that the user confirmed with ENTER", async () => {
   let personUID = await addNewRecipient();
+  await clickPill();
   typeName(kRealName);
 
   document.body.querySelector(".person-popup input.name")

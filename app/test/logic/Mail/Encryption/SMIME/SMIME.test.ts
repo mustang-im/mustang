@@ -1,7 +1,7 @@
 import { expect, test, describe } from "vitest";
 import { PrivateKeyInfo, RSAPrivateKey, RSAPublicKey, DigestInfo, Null, OctetString, ContentInfo, SignedData, EnvelopedData, AuthEnvelopedData, GCMParameters, Certificate, Oid, UTCTime, Attributes, SMIMECapabilities } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
 import { decryptAuthEnveloped } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEDecrypt";
-import { kOurCapabilities } from "../../../../../logic/Mail/Encryption/SMIME/SMIMESend";
+import { SMIMESend, kOurCapabilities } from "../../../../../logic/Mail/Encryption/SMIME/SMIMESend";
 import { BlockType, padFF, padRandom, encrypt, decrypt, unpadPKCS } from "../../../../../logic/Mail/Encryption/SMIME/SMIMERSAES";
 import { verifySignedData } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEVerify";
 import type { SMIMEPublicKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
@@ -470,5 +470,46 @@ describe("AES-GCM (authenticated-enveloped-data)", () => {
     let key = symmetricKey(content);
     content.authEncryptedContentInfo.encryptedContent[0] ^= 0xFF;
     await expect(decryptAuthEnveloped(content, key)).rejects.toThrow();
+  });
+});
+
+describe("Content to sign or encrypt", () => {
+  // A text-only mail, as nodemailer creates it
+  const mime = [
+    `From: a@example.com`,
+    `Subject: =?UTF-8?Q?Gr=C3=BC=C3=9Fe?=`,
+    `Content-Transfer-Encoding: quoted-printable`,
+    `MIME-Version: 1.0`,
+    `Content-Type: text/plain;`,
+    ` charset=utf-8`,
+    ``,
+    `Gr=C3=BC=C3=9Fe`,
+    ``,
+  ].join("\r\n");
+
+  test("keeps all Content-* headers with the body, e.g. the transfer encoding", async () => {
+    let { content } = await SMIMESend.splitOffContent(mime);
+    expect(content).toBe([
+      `Content-Transfer-Encoding: quoted-printable`,
+      `Content-Type: text/plain;`,
+      ` charset=utf-8`,
+      ``,
+      `Gr=C3=BC=C3=9Fe`,
+      ``,
+    ].join("\r\n"));
+  });
+
+  test("leaves the other headers for the outer message", async () => {
+    let { otherHeaders } = await SMIMESend.splitOffContent(mime);
+    expect(otherHeaders).toEqual([
+      `From: a@example.com`,
+      `Subject: =?UTF-8?Q?Gr=C3=BC=C3=9Fe?=`,
+      `MIME-Version: 1.0`,
+    ]);
+  });
+
+  test("adds a Content-Type, if the message has none", async () => {
+    let { content } = await SMIMESend.splitOffContent("Subject: Hi\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHello\r\n");
+    expect(content).toBe("Content-Type: text/plain\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHello\r\n");
   });
 });

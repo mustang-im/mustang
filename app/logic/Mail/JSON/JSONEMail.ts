@@ -8,7 +8,7 @@ import { SMLData } from "../SML/SMLData";
 import { EncryptionSystem } from "../Encryption/enums";
 import { assert, ensureArray } from "../../util/util";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { logError } from "../../../frontend/Util/error";
+import { internalError } from "../../util/error";
 import type { ArrayColl } from "svelte-collections";
 
 export class JSONEMail {
@@ -224,7 +224,7 @@ export class JSONEMail {
           data.fromJSON(extra);
           email.extraData.set(type, data);
         } catch (ex) {
-          logError(ex);
+          internalError(ex);
         }
       }
     }

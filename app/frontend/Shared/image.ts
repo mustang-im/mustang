@@ -1,4 +1,5 @@
-import { blobToDataURL, type URLString } from "../../logic/util/util";
+import { type URLString } from "../../logic/util/util";
+import { blobToDataURL } from "../../logic/util/blob";
 
 /** Scales an image down to `maxSize` pixels in each direction, and re-encodes
  * it as JPEG until its `data:` URL is at most `maxLength` characters long. */

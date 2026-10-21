@@ -18,6 +18,8 @@ import { Person, ContactEntry } from "../../../logic/Abstract/Person";
 import { getTagByName } from "../../../logic/Abstract/Tag";
 import { findOrCreatePersonUID } from "../../../logic/Abstract/PersonUID";
 import { Workspace } from "../../../logic/Abstract/Workspace";
+import { errorsForServer } from "../../../logic/util/error";
+import { notifications } from "../../../logic/util/Notification";
 import { InProcessSQLiteDatabase } from "../util/inProcessSQLite";
 import { ArrayColl } from "svelte-collections";
 import { mkdtempSync } from "node:fs";
@@ -136,6 +138,9 @@ test("A server search that fails still returns the database results", async () =
   await search.finished;
 
   expect(results.contents.map(email => email.subject)).toEqual(["Budget report"]);
+  // A minor error: Development builds show it as warning, but it's not logged to the server
+  expect(notifications.contents.map(notification => notification.ex)).toContain(account.serverError);
+  expect(errorsForServer.contents).not.toContain(account.serverError);
 });
 
 test("A search leaves its own criteria alone", async () => {

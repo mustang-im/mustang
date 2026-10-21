@@ -20,6 +20,7 @@ import { OWACreateItemRequest } from "./Request/OWACreateItemRequest";
 import { OWAUpdateItemRequest } from "./Request/OWAUpdateItemRequest";
 import { OWASubscribeToNotificationRequest } from "./Request/OWASubscribeToNotificationRequest";
 import { owaCreateNewTopLevelFolderRequest, owaFindFoldersRequest, owaSharedFolderRequest } from "./Request/OWAFolderRequests";
+import { OWACalendarShortcut } from "../../Calendar/OWA/OWACalendarShortcut";
 import { OWALoginBackground } from "./Login/OWALoginBackground";
 import { deleteExchangePermissions, setExchangePermissions } from "../EWS/ExchangePermission";
 import type { PersonUID } from "../../Abstract/PersonUID";
@@ -27,13 +28,14 @@ import { OWAAuth } from "../../Auth/OWAAuth";
 import { type Attachment, ContentDisposition } from "../../Abstract/Attachment";
 import { LoginError } from "../../Abstract/Account";
 import { ensureLicensed } from "../../util/LicenseClient";
+import { logErrorToServer } from "../../util/error";
 import { appGlobal } from "../../app";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { notifyChangedProperty } from "../../util/Observable";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, NotSupported, NotReached } from "../../util/util";
+import { assert, ensureArray, NotSupported, NotReached } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -219,11 +221,25 @@ export class OWAAccount extends ExchangeMailAccount {
     });
   }
 
+  /** The server ended our session. Unlike `logout()`, this keeps the cookies,
+   * e.g. "Stay signed in", so that the next login can reuse them. */
+  protected async sessionExpired(): Promise<void> {
+    this.hasLoggedIn = false;
+    if (this.oAuth2 instanceof OWAAuth) {
+      this.oAuth2.isLoggedIn = false;
+    }
+    if (!this.authorizationHeader) { // on-prem
+      await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
+    }
+    this.notifyObserversOfSubaccounts();
+    await this.disconnect();
+  }
+
   async logout(): Promise<void> {
     this.hasLoggedIn = false;
     this.notifyObserversOfSubaccounts();
     await super.logout();
-    if (!this.oAuth2) {
+    if (!this.authorizationHeader) { // on-prem
       await appGlobal.remoteApp.OWA.clearStorageData(this.partition);
     }
   }
@@ -408,13 +424,13 @@ export class OWAAccount extends ExchangeMailAccount {
       lock.release();
     }
     if ([401, 440].includes(response.status)) {
-      await this.logout();
+      await this.sessionExpired();
       throw new LoginError(null, gt`Please login`);
     }
     if (!response.ok) {
       this.throttle.waitForSecond(1);
       if (!response.json && response.url != url && response.contentType?.toLowerCase().split(";")[0].trim() == "text/html") {
-        await this.logout();
+        await this.sessionExpired();
         throw new Error(response.statusText);
       }
       throw new OWAError(response);
@@ -631,6 +647,16 @@ export class OWAAccount extends ExchangeMailAccount {
     }
     accounts.addAll(addressbooks.map((ab, i) => this.createAddressbookAccount(ab, i == 0, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
+    try {
+      for (let calendar of await OWACalendarShortcut.listCalendars(this)) {
+        if (!accounts.find(account => account.protocol == "calendar-owa" &&
+              (account as OWACalendar).folderID == calendar.folderID)) {
+          accounts.add(calendar);
+        }
+      }
+    } catch (ex) {
+      logErrorToServer(ex);
+    }
     return accounts;
   }
 
@@ -653,7 +679,7 @@ export class OWAAccount extends ExchangeMailAccount {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, dependentAcc?: OWAAccount): OWACalendar | null{
+  createCalendarAccount(folder: any, owner?: OWAAccount | { name: string, username: string, color: string }): OWACalendar | null{
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-owa" &&
           (account as OWACalendar).folderID == folder.FolderId.Id)) {
@@ -663,15 +689,22 @@ export class OWAAccount extends ExchangeMailAccount {
     calendar.initFromMainAccount(this);
     let isPrimary = folder.DistinguishedFolderId == "calendar";
     calendar.useForInvitations = isPrimary;
-    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
-      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if ((owner || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(owner || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (dependentAcc) {
-      calendar.username = dependentAcc.username;
-      calendar.color = dependentAcc.color;
+    if (owner) {
+      calendar.username = owner.username;
+      calendar.color = owner.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
+  }
+
+  async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
+    let response = await this.callOWA(new OWAGetOtherMailboxConfigurationRequest());
+    return ensureArray(response?.OtherMailboxEntries)
+      .map(entry => this.newSharedAccountPerson(entry?.PrincipalSMTPAddress, entry?.DisplayName))
+      .filter(Boolean);
   }
 
   /**
@@ -815,6 +848,12 @@ function addRecipients(aRequest: any, aType: string, aRecipients: PersonUID[]): 
     Name: recipient.name,
     EmailAddress: recipient.emailAddress,
   })), "message:" + aType);
+}
+
+class OWAGetOtherMailboxConfigurationRequest {
+  get action() {
+    return "GetOtherMailboxConfiguration";
+  }
 }
 
 class OWAGetPeopleFiltersRequest {
