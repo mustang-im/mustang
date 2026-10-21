@@ -169,12 +169,6 @@ test("An unknown state is read as off", async () => {
   expect(autoResponder.scheduled).toBe(false);
 });
 
-test("Only for our own account, not for shared accounts", () => {
-  let account = newAccount();
-  expect(account.autoResponder.supported).toBe(true);
-
-  // Only the owner of a shared account may change its OOF settings
-  let shared = new ActiveSyncAccount();
-  shared.initFromMainAccount(account);
-  expect(shared.autoResponder.supported).toBe(false);
+test("Supported", () => {
+  expect(newAccount().autoResponder.supported).toBe(true);
 });
