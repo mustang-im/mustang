@@ -1,8 +1,10 @@
 import { EMail } from "../EMail";
+import type { ExchangeFolder } from "./ExchangeFolder";
 import type { Tag } from "../../Abstract/Tag";
-import type { ExchangeMailAccount } from "./ExchangeMailAccount";
 
 export abstract class ExchangeEMail extends EMail {
+  declare folder: ExchangeFolder;
+
   async markReplied() {
     await super.markReplied();
     await this.setFlagOnServer(EMailFlag.ReplyToSender, IconIndex.Replied);
@@ -19,7 +21,7 @@ export abstract class ExchangeEMail extends EMail {
 
   async addTagOnServer(tag: Tag) {
     await this.updateTags();
-    let account = this.folder.account as ExchangeMailAccount;
+    let account = this.folder.account;
     account.addCategory(tag)
       .catch(account.errorCallback);
   }
