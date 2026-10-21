@@ -76,7 +76,7 @@ export class OWACalendarShortcut {
 
   protected async resolveOwner(): Promise<PersonUID> {
     try {
-      let response = await this.account.callOWA(owaResolveNamesRequest(this.ownerEmailAddress));
+      let response = await this.account.callOWA(owaResolveNamesRequest("smtp:" + this.ownerEmailAddress));
       let resolution = ensureArray(response.ResolutionSet).find(candidate =>
         candidate?.Mailbox?.EmailAddress?.toLowerCase() == this.ownerEmailAddress);
       return new PersonUID(this.ownerEmailAddress, sanitize.nonemptylabel(resolution?.Mailbox?.Name, null) ?? undefined);
