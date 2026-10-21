@@ -1,4 +1,4 @@
-import type { TJMAPChangeResponse, TJMAPSetError } from './TJMAPGeneric';
+import type { TJMAPAPIErrorResponse, TJMAPChangeResponse, TJMAPSetError } from './TJMAPGeneric';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { SpecificError } from "../../util/util";
 
@@ -28,6 +28,18 @@ export class JMAPChangeError extends Error {
     }
     super(msg);
     this.type = sanitize.alphanumdash(jmapError.type, null);
+  }
+}
+
+/** The server rejected the whole request, e.g. because it was too large
+ * <https://www.rfc-editor.org/rfc/rfc8620#section-3.6.1> */
+export class JMAPRequestError extends Error {
+  type: string;
+  httpCode: number;
+  constructor(problem: TJMAPAPIErrorResponse) {
+    super(sanitize.nonemptylabel(problem.detail, null) ?? sanitize.nonemptylabel(problem.type, "JMAP request failed"));
+    this.type = sanitize.nonemptystring(problem.type, null);
+    this.httpCode = sanitize.integer(problem.status, null);
   }
 }
 

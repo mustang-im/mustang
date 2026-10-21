@@ -170,4 +170,6 @@ export interface TJMAPUpload {
 export interface TJMAPStateChange {
   "@type": string,
   changed: Record<string, Record<TJMAPObjectType, string>>,
+  /** Only over WebSocket <https://www.rfc-editor.org/rfc/rfc8887#section-4.3.5.1> */
+  pushState?: string,
 }

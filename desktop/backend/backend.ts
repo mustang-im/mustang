@@ -101,6 +101,7 @@ async function createSharedAppObject() {
     newTCPSocket,
     startTLS,
     newWebSocket,
+    setWebSocketAuthorization,
     gunzip,
     getCACertificates,
     readFile,
@@ -299,6 +300,25 @@ function startTLS(socket: net.Socket, hostname: string, tlsOptions?: tls.Connect
  * listeners over JPC. */
 function newWebSocket(url: string, options?: { headers?: Record<string, string>, ca?: string }): NodeWebSocket {
   return new NodeWebSocket(url, { headers: options?.headers, ca: options?.ca });
+}
+
+/** The WebSocket of the renderer can't set the `Authorization` header,
+ * so `onBeforeSendHeaders()` in the main process adds it to the handshake.
+ * URL -> `Authorization` header */
+const webSocketAuthorizations = new Map<string, string>();
+
+/** @param authorization null = remove */
+function setWebSocketAuthorization(url: string, authorization: string | null) {
+  url = new URL(url).href;
+  if (authorization) {
+    webSocketAuthorizations.set(url, authorization);
+  } else {
+    webSocketAuthorizations.delete(url);
+  }
+}
+
+export function webSocketAuthorization(url: string): string | undefined {
+  return webSocketAuthorizations.get(new URL(url).href);
 }
 
 /** Decompresses a gzip (or zlib) buffer — used for the WhatsApp history-sync

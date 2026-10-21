@@ -10,6 +10,9 @@
   {#if account instanceof POP3Account}
     <ServerPOP3Advanced {account} />
   {/if}
+  {#if account instanceof JMAPAccount}
+    <ServerJMAPAdvanced {account} />
+  {/if}
   {#if account instanceof EWSAccount && $account.authMethod == AuthMethod.NTLM}
     <!-- Mobile has no Chromium network stack, so there is nothing to choose -->
     // #if [!MOBILE]
@@ -24,11 +27,13 @@
   import type { MailAccount } from "../../../../logic/Mail/MailAccount";
   import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
   import { POP3Account } from "../../../../logic/Mail/POP3/POP3Account";
+  import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
   import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
   import { catchErrors } from "../../../Util/error";
   import ManualConfig from "../Manual/ManualConfig.svelte";
   import ServerIMAPAdvanced from "./ServerIMAPAdvanced.svelte";
   import ServerPOP3Advanced from "./ServerPOP3Advanced.svelte";
+  import ServerJMAPAdvanced from "./ServerJMAPAdvanced.svelte";
   // #if [!MOBILE]
   import ServerEWSAdvanced from "./ServerEWSAdvanced.svelte";
   // #endif

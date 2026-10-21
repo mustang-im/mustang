@@ -1,5 +1,6 @@
 import { MailAccount, DeleteStrategy } from "../MailAccount";
 import { JMAPFolder } from "./JMAPFolder";
+import { JMAPWebSocket } from "./JMAPWebSocket";
 import { JMAPIdentity } from "./JMAPIdentity";
 import { JMAPSearchEMail } from "./JMAPSearchEMail";
 import type { EMail } from "../EMail";
@@ -9,13 +10,14 @@ import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
-import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPUpload } from "./TJMAPGeneric";
+import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPStateChange, type TJMAPUpload } from "./TJMAPGeneric";
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
 import type { TJMAPAddressbook } from "../../Contacts/JMAP/TJMAPAddressbook";
 import { checkChangeError, JMAPCommandError } from "./JMAPError";
 import { AuthMethod } from "../../Abstract/Account";
 import { ConnectError, LoginError } from "../../Abstract/Account";
+import { minorError } from "../../util/error";
 import { SpecialFolder, MailShareCombinedPermissions, MailShareIndividualPermissions, type Folder } from "../Folder";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
@@ -52,6 +54,18 @@ export class JMAPAccount extends MailAccount {
   protected pushAbort: AbortController | null = null;
   protected isDisconnected = false;
   protected throttle = new Throttle(50, 1);
+  /** User setting: API calls over WebSocket, if the server has it, otherwise over HTTP */
+  @notifyChangedProperty
+  callsOverWebSocket = true;
+  /** User setting: Push over WebSocket, if the server has it, otherwise over EventSource */
+  @notifyChangedProperty
+  pushOverWebSocket = true;
+  /** null, if we don't use the WebSocket in this session */
+  protected webSocket: JMAPWebSocket | null = null;
+  /** null, until push over WebSocket started */
+  protected webSocketPushTypes: string[] | null = null;
+  /** From the last push over WebSocket */
+  protected pushState: string | undefined;
   logging = true;
 
   constructor() {
@@ -80,6 +94,7 @@ export class JMAPAccount extends MailAccount {
 
       await this.loginOAuth2(interactive);
       await this.getSession();
+      await this.connectWebSocket();
     });
   }
 
@@ -181,6 +196,10 @@ export class JMAPAccount extends MailAccount {
     let maxConcurrentRequests = sanitize.integer(session.capabilities["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
     if (maxConcurrentRequests > 0) {
       this.requestSemaphore.maxParallel = maxConcurrentRequests;
+    }
+    if (this.webSocket?.sessionState != session.state && this.webSocket?.isOpen) {
+      this.webSocket.closeWhenIdle()
+        .catch(this.errorCallback);
     }
   }
 
@@ -301,7 +320,7 @@ export class JMAPAccount extends MailAccount {
 
     let responsesJSON: TJMAPAPIResponse | TJMAPAPIErrorResponse;
     try {
-      responsesJSON = await this.httpPost(this.session.apiUrl, requestJSON) as TJMAPAPIResponse;
+      responsesJSON = await this.sendRequest(requestJSON);
     } catch (ex) {
       if ((ex as any).httpCode) { // HTTPFetchError from backend.ts
         console.error("POST", this.session.apiUrl, "with payload\n" + JSON.stringify(requestJSON, null, 2), "\nfailed with", ex?.message ?? ex, "while", ...log);
@@ -333,6 +352,20 @@ export class JMAPAccount extends MailAccount {
       assert(callNumbers.includes(resp[2]), "Method in response does not match");
     }
     return responsesJSON.methodResponses;
+  }
+
+  /** Over the WebSocket, if it's open, otherwise HTTP POST */
+  protected async sendRequest(request: TJMAPAPIRequest): Promise<TJMAPAPIResponse> {
+    if (this.isDependentAccount) {
+      return await (this.mainAccount as JMAPAccount).sendRequest(request);
+    }
+    if (this.callsOverWebSocket && this.webSocket?.sessionState == this.session.state && this.webSocket?.isOpen) {
+      let response = await this.webSocket.request(request);
+      if (response) { // else the connection closed while the request waited for a free slot, so it wasn't sent
+        return response;
+      }
+    }
+    return await this.httpPost(this.session.apiUrl, request);
   }
 
   protected authorizationHeader(): string {
@@ -604,6 +637,7 @@ export class JMAPAccount extends MailAccount {
     this.isDisconnected = true;
     this.stopPolling();
     this.pushAbort?.abort();
+    this.webSocket?.close();
     this.session = null;
   }
 
@@ -758,10 +792,9 @@ export class JMAPAccount extends MailAccount {
   }
 
   /** Starts push mail
+   * Over WebSocket if the server has it, otherwise over EventSource.
    * Runs as long as we're logged in, so don't `await` it */
   async startPushListener(): Promise<void> {
-    let url = this.session.eventSourceUrl;
-    assert(url, "Need event source URL");
     let types = ["Mailbox", "Email", "Identity"];
     if (this.haveContacts) {
       types.push("ContactCard");
@@ -772,76 +805,20 @@ export class JMAPAccount extends MailAccount {
     if (this.haveSharing) {
       types.push("ShareNotification");
     }
-    const kPingSeconds = 60;
-    url = url
-      .replace("{accountId}", this.accountID)
-      .replace("{types}", types.join(","))
-      .replace("{ping}", String(kPingSeconds))
-      .replace("{closeafter}", "no");
+    if (this.pushOverWebSocket && this.webSocket?.supportsPush) {
+      this.webSocketPushTypes = types;
+      if (this.webSocket.isOpen) {
+        this.webSocket.enablePush(types, this.pushState);
+      } // else `openWebSocket()` enables it when it reconnects
+      return;
+    }
     this.pushAbort?.abort(); // e.g. after a new login, while the old listener still waits on a connection that died
     let listener = this.pushAbort = new AbortController();
     let reconnectThrottle = new Throttle(1, 10);
     while (this.isLoggedIn) {
       await reconnectThrottle.throttle();
-      let connection = new AbortController();
-      let pingSeconds = kPingSeconds;
-      let watchdog: Timeout | null = null;
-      // A dead connection, e.g. after sleep or a network change, doesn't always end the stream,
-      // and a half-open VPN tunnel may accept a new connection, but never answer
-      function expectAnswer() {
-        watchdog?.fulfilled();
-        watchdog = new Timeout(2 * pingSeconds, () => {
-          // A `DOMException` named "TimeoutError", like `fetch()` throws for its own timeouts, so that the `catch`
-          // below takes it as transient (`isTransientError()`), and the `while` loop reconnects
-          connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError"));
-        });
-      }
       try {
-        expectAnswer();
-        let stream = await fetch(url, {
-          headers: {
-            Authorization: this.authorizationHeader(),
-          },
-          signal: AbortSignal.any([listener.signal, connection.signal]),
-        });
-        if (!stream.ok) {
-          reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
-          throw new HTTPError(stream);
-        }
-        let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
-        for await (let event of eventStream) {
-          watchdog?.fulfilled();
-          if (event.name == "ping") {
-            try {
-              pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 1500, pingSeconds);
-            } catch (ex) {
-              this.dataError(new Error("JMAP push: The server sent an invalid ping: " + ex.message));
-            }
-          }
-          if (event.name == "state") {
-            try {
-              let json = JSON.parse(event.data);
-              assert(json.changed, "Need state changes");
-              for (let accountID in json.changed) {
-                let account = this.accountForID(accountID); // Incl. accounts shared with us
-                if (!account) {
-                  continue;
-                }
-                for (let typename in json.changed[accountID]) {
-                  let newState = json.changed[accountID][typename];
-                  let type = typename as TJMAPObjectType;
-                  if (newState == account.syncState.get(type)) {
-                    continue;
-                  }
-                  await account.sync(type, newState);
-                }
-              }
-            } catch (ex) {
-              console.error(ex);
-            }
-          }
-          expectAnswer();
-        }
+        await this.listenOnEventSource(types, listener.signal, reconnectThrottle);
       } catch (ex) {
         if (ex.name == "AbortError") { // disconnect(), or a newer listener took over
           return;
@@ -856,9 +833,176 @@ export class JMAPAccount extends MailAccount {
         } else {
           throw ex;
         }
-      } finally {
-        watchdog?.fulfilled();
       }
+    }
+  }
+
+  /** <https://www.rfc-editor.org/rfc/rfc8887#section-3>
+   * @returns null, if we don't use a WebSocket */
+  protected get webSocketURL(): string | null {
+    let capability = this.session?.capabilities["urn:ietf:params:jmap:websocket"];
+    if (!(this.callsOverWebSocket || (this.pushOverWebSocket && capability?.supportsPush)) ||
+        !capability ||
+        !appGlobal.remoteApp.setWebSocketAuthorization) {
+      return null;
+    }
+    return JMAPWebSocket.allowedURL(capability.url);
+  }
+
+  /** Opens the WebSocket for API calls and push, if we use it, and keeps it open.
+   * If it fails, we use HTTP and EventSource in this session. */
+  protected async connectWebSocket(): Promise<void> {
+    this.webSocket?.close(); // A login while connected, e.g. after the OAuth2 token expired during sleep
+    this.webSocket = null;
+    if (!this.webSocketURL) {
+      return;
+    }
+    try {
+      let webSocket = await this.openWebSocket();
+      this.keepWebSocketOpen(webSocket)
+        .catch(this.errorCallback);
+    } catch (ex) {
+      this.webSocket = null;
+      this.errorCallback(ex);
+    }
+  }
+
+  protected async openWebSocket(): Promise<JMAPWebSocket> {
+    let webSocket = this.webSocket = new JMAPWebSocket(this, this.webSocketURL);
+    await webSocket.connect(this.authorizationHeader());
+    if (this.webSocketPushTypes) {
+      webSocket.enablePush(this.webSocketPushTypes, this.pushState);
+    }
+    return webSocket;
+  }
+
+  /** Reconnects, when the connection closed, as long as we're logged in.
+   * If the WebSocket keeps failing, but HTTP works, e.g. because a proxy
+   * blocks WebSockets, we use HTTP and EventSource for the rest of the session. */
+  protected async keepWebSocketOpen(webSocket: JMAPWebSocket): Promise<void> {
+    const kFailuresBeforeHTTP = 5;
+    let reconnectThrottle = new Throttle(1, 10);
+    let failures = 0;
+    while (true) {
+      await webSocket.closed;
+      await waitUntilOnline(); // Computer sleep drops the network
+      await reconnectThrottle.throttle();
+      if (!this.isLoggedIn || this.webSocket != webSocket) {
+        return; // `disconnect()`, or `login()` opened another connection
+      }
+      try {
+        webSocket = await this.openWebSocket();
+      } catch (ex) {
+        webSocket = this.webSocket;
+        if (ex.name == "AbortError") { // disconnect()
+          return;
+        }
+        if (++failures < kFailuresBeforeHTTP) {
+          continue;
+        }
+        try {
+          await this.httpPost(this.session.apiUrl, {
+            using: ["urn:ietf:params:jmap:core"],
+            methodCalls: [["Core/echo", {}, "c1"]],
+          });
+        } catch (ex) {
+          if (ex instanceof LoginError) {
+            throw ex;
+          }
+          continue; // The network is down
+        }
+        this.errorCallback(new ConnectError(ex, "JMAP WebSocket keeps failing, but HTTP works, so using HTTP and EventSource"));
+        this.webSocket = null;
+        if (this.webSocketPushTypes) {
+          this.webSocketPushTypes = null;
+          this.startPushListener()
+            .catch(this.errorCallback);
+        }
+        return;
+      }
+      failures = 0;
+    }
+  }
+
+  /** <https://www.rfc-editor.org/rfc/rfc8620#section-7.3> */
+  protected async listenOnEventSource(types: string[], listening: AbortSignal, reconnectThrottle: Throttle): Promise<void> {
+    const kPingSeconds = 60;
+    let url = this.session.eventSourceUrl;
+    assert(url, "Need event source URL");
+    url = url
+      .replace("{accountId}", this.accountID)
+      .replace("{types}", types.join(","))
+      .replace("{ping}", String(kPingSeconds))
+      .replace("{closeafter}", "no");
+    let connection = new AbortController();
+    let pingSeconds = kPingSeconds;
+    let watchdog: Timeout | null = null;
+    // A dead connection, e.g. after sleep or a network change, doesn't always end the stream,
+    // and a half-open VPN tunnel may accept a new connection, but never answer
+    function expectAnswer() {
+      watchdog?.fulfilled();
+      watchdog = new Timeout(2 * pingSeconds, () => {
+        // A `DOMException` named "TimeoutError", like `fetch()` throws for its own timeouts, so that the `catch`
+        // in `startPushListener()` takes it as transient (`isTransientError()`), and its `while` loop reconnects
+        connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError"));
+      });
+    }
+    try {
+      expectAnswer();
+      let stream = await fetch(url, {
+        headers: {
+          Authorization: this.authorizationHeader(),
+        },
+        signal: AbortSignal.any([listening, connection.signal]),
+      });
+      if (!stream.ok) {
+        reconnectThrottle.waitForSecond(parseInt(stream.headers.get("Retry-After")) || 5);
+        throw new HTTPError(stream);
+      }
+      let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
+      for await (let event of eventStream) {
+        watchdog?.fulfilled();
+        if (event.name == "ping") {
+          try {
+            pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 1500, pingSeconds);
+          } catch (ex) {
+            this.dataError(new Error("JMAP push: The server sent an invalid ping: " + ex.message));
+          }
+        }
+        if (event.name == "state") {
+          try {
+            await this.syncStateChange(JSON.parse(event.data));
+          } catch (ex) {
+            minorError(ex);
+          }
+        }
+        expectAnswer();
+      }
+    } finally {
+      watchdog?.fulfilled();
+    }
+  }
+
+  /** The server pushed that data changed
+   * <https://www.rfc-editor.org/rfc/rfc8620#section-7.1> */
+  async syncStateChange(stateChange: TJMAPStateChange): Promise<void> {
+    assert(stateChange.changed, "Need state changes");
+    for (let accountID in stateChange.changed) {
+      let account = this.accountForID(accountID); // Incl. accounts shared with us
+      if (!account) {
+        continue;
+      }
+      for (let typename in stateChange.changed[accountID]) {
+        let newState = stateChange.changed[accountID][typename];
+        let type = typename as TJMAPObjectType;
+        if (newState == account.syncState.get(type)) {
+          continue;
+        }
+        await account.sync(type, newState);
+      }
+    }
+    if (stateChange.pushState) {
+      this.pushState = stateChange.pushState;
     }
   }
 
@@ -1224,6 +1368,8 @@ export class JMAPAccount extends MailAccount {
     super.fromConfigJSON(json);
     this.accountID = sanitize.alphanumdash(json.accountID, null);
     this.pollIntervalMinutes = sanitize.integer(json.pollIntervalMinutes, this.pollIntervalMinutes);
+    this.callsOverWebSocket = sanitize.boolean(json.callsOverWebSocket, this.callsOverWebSocket);
+    this.pushOverWebSocket = sanitize.boolean(json.pushOverWebSocket, this.pushOverWebSocket);
 
     if (json.syncState && json.syncState instanceof Object) {
       for (let typeName in json.syncState) {
@@ -1240,6 +1386,8 @@ export class JMAPAccount extends MailAccount {
     let json = super.toConfigJSON();
     json.accountID = this.accountID;
     json.pollIntervalMinutes = this.pollIntervalMinutes;
+    json.callsOverWebSocket = this.callsOverWebSocket;
+    json.pushOverWebSocket = this.pushOverWebSocket;
     json.syncState = this.syncState.contentKeyValues();
     return json;
   }
