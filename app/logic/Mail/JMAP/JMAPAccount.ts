@@ -1004,6 +1004,11 @@ export class JMAPAccount extends MailAccount {
     await this.getSession(); // The new account appears in the session only now
     for (let notification of notifications) {
       let granted = Object.values(notification.newRights ?? {}).some(right => right);
+      let known = this.accountForID(notification.objectAccountId);
+      if (known && known != this) {
+        await known.updateSharedAccount();
+        continue;
+      }
       let shared = this.session.accounts[notification.objectAccountId];
       let ownerEMail = shared && this.sharedAccountOwner(shared);
       if (!granted || !ownerEMail || shared.isPersonal || this.accountForID(notification.objectAccountId)) {
@@ -1011,6 +1016,17 @@ export class JMAPAccount extends MailAccount {
       }
       await this.addSharedFolders(new PersonUID(ownerEMail, sanitize.nonemptystring(shared.name)), "msgfolderroot");
     }
+  }
+
+  /** The other user shared more with us, or less */
+  protected async updateSharedAccount() {
+    if (this.haveContacts) {
+      await this.listAddressbooks();
+    }
+    if (this.haveCalendar) {
+      await this.listCalendars();
+    }
+    await this.startupDependentAccounts();
   }
 
   async findSharedFolders(person: PersonUID, distinguishedIDs: string[]): Promise<string[]> {
