@@ -2,7 +2,7 @@ import type { MustangApp } from "./MustangApp";
 import { createHashHistory } from "../Util/hashHistory";
 import type AnyObject from "svelte-navigator/types/AnyObject";
 import { appGlobal } from "../../logic/app";
-import { backgroundError } from "../Util/error";
+import { minorError } from "../Util/error";
 import { ArrayColl, MapColl } from "svelte-collections";
 import { writable, get, type Writable } from "svelte/store";
 import type RawLocation from "svelte-navigator/types/RawLocation";
@@ -60,7 +60,7 @@ history.listen(syncSelectedApp);
 export function bringAppToFront() {
   window.focus();
   appGlobal.remoteApp.unminimizeMainWindow()
-    .catch(backgroundError);
+    .catch(minorError);
 }
 
 

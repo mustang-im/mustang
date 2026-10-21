@@ -1,6 +1,7 @@
 {#if hasTop && hasBottom}
   <vbox class="splitter" bind:clientHeight={containerHeight} class:mobile={appGlobal.isMobile}>
-    <hbox class="top" bind:clientHeight={currentTopHeight}>
+    <hbox class="top" bind:clientHeight={currentTopHeight}
+      style="min-height: {topMinWidth}px;">
       <ErrorBoundary>
         <slot name="top" />
       </ErrorBoundary>
@@ -10,7 +11,7 @@
       on:pointerdown={onMouseDown}
       style="height: {barHeight}px;"
       />
-    <hbox class="bottom" style="flex: {bottomRatio} 0 0;">
+    <hbox class="bottom" style="flex: {bottomRatio} 0 0; min-height: {bottomMinWidth}px;">
       <ErrorBoundary>
         <slot name="bottom" />
       </ErrorBoundary>
@@ -121,5 +122,10 @@
   .top :global(> *:first-child),
   .bottom :global(> *:first-child) {
     flex: 1 0 0;
+  }
+
+  .top,
+  .bottom {
+    overflow-y: clip;
   }
 </style>

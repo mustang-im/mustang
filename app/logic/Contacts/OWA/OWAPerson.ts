@@ -10,7 +10,8 @@ import { owaGetPersonaRequest, owaResolveNamesRequest } from "./Request/OWAPerso
 import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { addDirectoryCertificatesToPerson } from "../../Mail/Encryption/SMIME/SMIMEDirectory";
-import { assert, blobToBase64, dataURLToBlob, ensureArray } from "../../util/util";
+import { assert, ensureArray } from "../../util/util";
+import { blobToBase64, dataURLToBlob } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 
 export class OWAPerson extends ExchangePerson {

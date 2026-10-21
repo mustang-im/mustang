@@ -193,7 +193,7 @@
   import { goBack } from "../../AppsBar/selectedApp";
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
-  import { backgroundError, catchErrors, showUserError } from "../../Util/error";
+  import { minorError, catchErrors, showUserError } from "../../Util/error";
   import CloseButton from "./CloseButton.svelte";
   import MailAutocomplete from "./MailAutocomplete.svelte";
   import AttachmentsPane from "./Attachments/AttachmentsPane.svelte";
@@ -256,7 +256,7 @@
     }
 
     loadText()
-      .catch(backgroundError);
+      .catch(minorError);
   }
 
   let loading = false;

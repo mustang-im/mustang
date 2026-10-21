@@ -2,35 +2,38 @@
   <Scroll bind:this={scrollE}>
     <grid flex class="week"
       columns={showDays}
-      style="min-height: {scrollHeight}px; {columnWidths}"
+      style="--rows: {(endHour - startHour) * kRowsPerHour}; --row-height: {pxPerHour / kRowsPerHour}px; --selected-calendar-color: {$selectedCalendar?.color ?? "black"}; {columnWidths}"
       class:enlargeSelectedDay
+      class:compact={scrollHeight <= 1000}
       on:swipeleft={onNextDay}
       on:swiperight={onPreviousDay}
       >
-      <hbox class="top-left header" /><!-- needed for grid -->
-      {#each days as day}
-        <vbox class="day-header header">
-          <slot name="day-header" {day}>
-            <vbox class="date-day">
-              <hbox class="date">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</hbox>
-              <hbox class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
-            </vbox>
-          </slot>
-          <vbox class="all-day-events" style="max-height: {visibleHeight / 3}px">
-            {#each $allDayEvents.contents.filter(ev => ev.startTime <= day && day < ev.endTime) as event (event.id)}
-              <AllDayEvent {event} {start} />
-            {/each}
+      <grid class="headers">
+        <hbox class="top-left header" /><!-- needed for grid -->
+        {#each days as day, i}
+          <vbox class="day-header header" style="grid-column: {i + 2}">
+            <slot name="day-header" {day}>
+              <vbox class="date-day">
+                <hbox class="date">{day.toLocaleDateString(getDateTimeLocale(), { day: "numeric" })}</hbox>
+                <hbox class="weekday">{day.toLocaleDateString(getDateTimeLocale(), { weekday: appGlobal.isSmall ? "short" : "long" })}</hbox>
+              </vbox>
+            </slot>
           </vbox>
-        </vbox>
+        {/each}
+        <AllDayEvents {days} events={allDayEvents} maxHeight={visibleHeight / 3} />
+      </grid>
+      {#each startTimes as time, i}
+        <hbox class="time-label" style="grid-row: {i * kRowsPerHour + 3} / span {kRowsPerHour}">
+          <slot name="time-label" {time}>
+            <TimeLabel {time} />
+          </slot>
+        </hbox>
       {/each}
-      {#each startTimes as time}
-        <slot name="time-label" {time}>
-          <TimeLabel {time} />
-        </slot>
-        <TimeDayRow {days} {time} events={visibleEvents} {overlayEvents} on:celldblclick>
-          <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} let:events {events} />
-          <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} let:events {events} />
-        </TimeDayRow>
+      {#each days as day, i}
+        <DayColumn {day} column={i + 2} {startHour} {endHour} events={visibleEvents} {overlayEvents} on:celldblclick>
+          <slot name="event-overlay" slot="event-overlay" let:start {start} let:end {end} let:event {event} />
+          <slot name="event-hover" slot="event-hover" let:start {start} let:end {end} let:empty {empty} />
+        </DayColumn>
       {/each}
     </grid>
   </Scroll>
@@ -38,13 +41,14 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import type { DateInterval } from "../selected";
+  import { selectedCalendar, type DateInterval } from "../selected";
+  import { kRowsPerHour } from "./DayColumn";
   import { appGlobal } from "../../../logic/app";
   import TimeLabel from "./TimeLabel.svelte";
-  import TimeDayRow from "./TimeDayRow.svelte";
-  import AllDayEvent from "./AllDayEvent.svelte";
+  import DayColumn from "./DayColumn.svelte";
+  import AllDayEvents from "./AllDayEvents.svelte";
   import Scroll from "../../Shared/Scroll.svelte";
-  import { getToday, getWeekStart } from "../../Util/date";
+  import { getToday, getWeekStart } from "../../../logic/util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
@@ -134,9 +138,7 @@
 <style>
   .week {
     display: grid;
-    grid-template-rows: max-content;
-    grid-auto-rows: 1fr;
-    container-type: size;
+    grid-template-rows: max-content max-content repeat(var(--rows), var(--row-height));
   }
   .week[columns="1"] {
     grid-template-columns: max-content auto;
@@ -155,20 +157,28 @@
     grid-template-columns: max-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     /* overridden by $: above */
   }
-  .header {
+  .headers {
+    grid-column: 1 / -1;
+    grid-row: 1 / span 2;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
     position: sticky;
     top: 0;
-    left: 0;
-    background-color: var(--bg);
     z-index: 2;
   }
+  .header {
+    background-color: var(--bg);
+  }
   .top-left {
+    grid-column: 1;
+    grid-row: 1 / span 2;
     height: calc(100% - 10px);
   }
   .day-header {
+    grid-row: 1;
     border-top: 1px dotted var(--border);
     border-left: 1px dotted var(--border);
-    border-bottom: 1px dotted var(--border);
     min-width: 0px; /* Long titles must not widen the column */
   }
   .date-day {
@@ -178,31 +188,27 @@
     font-size: 180%;
     overflow-wrap: break-word;
   }
-  .all-day-events {
-    margin: 0px -1px -2px 0px;
-    opacity: 85%;
-    overflow-y: auto;
-  }
   .weekday {
     margin-block-start: -4px;
     margin-block-end: 4px;
     max-height: 1.3em;
     overflow: hidden;
   }
-  @container (max-height: 1000px)  {
-    .day-header .date-day {
-      flex-direction: row;
-      padding: 4px 8px;
-    }
-    .day-header .date {
-      font-size: 120%;
-    }
-    .day-header .weekday {
-      font-size: 90%;
-      align-items: center;
-      flex: 1 0 0;
-      margin-block-start: 1px;
-      margin-inline-start: 8px;
-    }
+  .time-label {
+    grid-column: 1;
+  }
+  :where(.compact) .day-header .date-day {
+    flex-direction: row;
+    padding: 4px 8px;
+  }
+  :where(.compact) .day-header .date {
+    font-size: 120%;
+  }
+  :where(.compact) .day-header .weekday {
+    font-size: 90%;
+    align-items: center;
+    flex: 1 0 0;
+    margin-block-start: 1px;
+    margin-inline-start: 8px;
   }
 </style>

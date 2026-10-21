@@ -37,7 +37,7 @@
 <script lang="ts">
   import { Directory } from "../../../logic/Files/Directory";
   import { selectedFile } from "../selected";
-  import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeString } from "../../../logic/util/date";
   import FileOrDirLines from "./FileOrDirLines.svelte";
   import Clickable from "../../Shared/Clickable.svelte";
   import FolderClosedIcon from "lucide-svelte/icons/folder";

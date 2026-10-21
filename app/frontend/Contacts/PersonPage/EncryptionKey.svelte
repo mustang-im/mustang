@@ -237,7 +237,7 @@
   import InfoIcon from "lucide-svelte/icons/info";
   import ChevronUp from "lucide-svelte/icons/chevron-up";
   import ChevronDown from "lucide-svelte/icons/chevron-down";
-  import { getDateString, getDateTimeString } from "../../Util/date";
+  import { getDateString, getDateTimeString } from "../../../logic/util/date";
   import { saveBlobAsFile } from "../../Util/util";
   import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";

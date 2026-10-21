@@ -1,6 +1,6 @@
 import { OAuth2UI } from "./OAuth2UI";
 import { appGlobal } from "../../app";
-import { k1MinuteMS } from "../../../frontend/Util/date";
+import { k1MinuteMS } from "../../util/date";
 import { UserCancelled, UserError, assert, type URLString } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 

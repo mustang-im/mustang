@@ -133,7 +133,7 @@
   import MultipleDaysIcon from "lucide-svelte/icons/calendar-plus";
   import XIcon from "lucide-svelte/icons/x";
   // import TimezonePicker from "timezone-picker-svelte";
-  import { myTimezone, isSameTimezone } from "../../Util/date";
+  import { myTimezone, isSameTimezone } from "../../../logic/util/date";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let event: Event;

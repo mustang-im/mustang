@@ -39,7 +39,7 @@
   import { Account } from "../../../logic/Abstract/Account";
   import { appGlobal } from "../../../logic/app";
   import { goTo } from "../../AppsBar/selectedApp";
-  import { URLPart } from "../../Util/util";
+  import { URLPart } from "../../../logic/util/blob";
   import AccountBarM from "./AccountBarM.svelte";
   import RowButton from "./RowButton.svelte";
   import Scroll from "../../Shared/Scroll.svelte";

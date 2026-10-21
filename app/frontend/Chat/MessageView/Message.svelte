@@ -85,7 +85,7 @@
   import WebView from "../../Shared/WebView.svelte";
   import Attachments from "./Attachments.svelte";
   import { sanitizeHTMLWithoutStyleTag } from "../../../logic/util/convertHTML";
-  import { getDateTimeString } from "../../Util/date";
+  import { getDateTimeString } from "../../../logic/util/date";
 
   export let message: Message;
   export let previousMessage: Message = null;

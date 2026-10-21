@@ -6,7 +6,7 @@ import { SQLSearchEMail } from "../SQL/SQLSearchEMail";
 import type { EMail } from "../EMail";
 import type { MailAccount } from "../MailAccount";
 import { appGlobal } from "../../app";
-import { backgroundError } from "../../../frontend/Util/error";
+import { minorError } from "../../util/error";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 /** Runs the local database search and the server-side search of each account in
@@ -61,7 +61,7 @@ export class CombinedSearchEMail extends SearchEMail {
         let found = await search.startSearch(isDBSearch ? limit : serverLimit);
         addUnique(isDBSearch ? found : resultFilter.filter(found, true), allResults, foundMap, limit);
       } catch (ex) {
-        backgroundError(ex); // The other searches should still return their results
+        minorError(ex); // The other searches should still return their results
       }
     }));
 

@@ -248,7 +248,7 @@ export class MailAccount extends TCPAccount {
   }
 
   /** So that the user does not mistake another person's mails for ours */
-  protected colorForSharedAccount(person: PersonUID): string {
+  colorForSharedAccount(person: PersonUID): string {
     return this.dependentAccounts().find(acc => acc.username == person.emailAddress)?.color ??
       unusedAccountColor();
   }

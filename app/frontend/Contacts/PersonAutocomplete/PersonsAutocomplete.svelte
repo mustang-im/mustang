@@ -16,6 +16,7 @@
     <hbox flex class="input">
       <PersonAutocomplete
         {onAddPerson}
+        askForName
         skipPersons={$persons}
         {placeholder} {tabindex} {autofocus}
         bind:this={autocompleteEl}
@@ -68,6 +69,8 @@
 
 <style>
   .persons-autocomplete {
+    container-type: inline-size;
+    container-name: persons-autocomplete;
     flex-wrap: wrap;
     border-bottom: 1px solid rgb(0, 0, 0, 7%);
     align-items: center;

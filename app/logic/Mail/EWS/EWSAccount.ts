@@ -23,6 +23,7 @@ import { ContentDisposition } from "../../Abstract/Attachment";
 import { ConnectError, LoginError } from "../../Abstract/Account";
 import { appGlobal } from "../../app";
 import { XML2JSON, JSON2XML } from "./XML2JSON";
+import { EWSCalendarShortcut } from "../../Calendar/EWS/EWSCalendarShortcut";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
 import { Semaphore } from "../../util/flow/Semaphore";
@@ -32,9 +33,10 @@ import { Lock } from "../../util/flow/Lock";
 import { Timeout } from "../../util/flow/Timeout";
 import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError, isTransientError, waitUntilOnline } from "../../util/netUtil";
-import { logError } from "../../../frontend/Util/error";
+import { logErrorToServer } from "../../util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { base64ToUint8Array } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
@@ -395,7 +397,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
       let seconds = Math.round((Date.now() - startTime) / 100) / 10;
       if (purpose == ConnectionPurpose.Display && seconds > 3) {
-        logError(new Error(`Server needed ${seconds} seconds to answer`));
+        logErrorToServer(new Error(`Server needed ${seconds} seconds to answer`));
       }
     }
     try {
@@ -1000,6 +1002,39 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return folder;
   }
 
+  async getUserConfigurationXML(name: string, distinguishedFolderID: string): Promise<Json | null> {
+    let request = {
+      m$GetUserConfiguration: {
+        m$UserConfigurationName: {
+          Name: name,
+          t$DistinguishedFolderId: {
+            Id: distinguishedFolderID,
+          },
+        },
+        m$UserConfigurationProperties: "XmlData",
+      },
+    };
+    let response: any;
+    try {
+      response = await this.callEWS(request);
+    } catch (ex) {
+      if (ex.type == "ErrorItemNotFound") {
+        return null;
+      }
+      throw ex;
+    }
+    let xmlData = sanitize.string(response.UserConfiguration?.XmlData, null);
+    if (!xmlData) {
+      return null;
+    }
+    let xml = new TextDecoder().decode(base64ToUint8Array(xmlData));
+    let root = this.parseXML(xml)?.documentElement;
+    if (!root) {
+      return null;
+    }
+    return { [root.localName]: XML2JSON(root) };
+  }
+
   get mayHaveSubAccounts(): boolean {
     return true;
   }
@@ -1083,6 +1118,16 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
     accounts.addAll(addressbooks.map(ab => this.createAddressbookAccount(ab, ab.dependentAcc)).filter(Boolean));
     accounts.addAll(calendars.map(cal => this.createCalendarAccount(cal, cal.dependentAcc)).filter(Boolean));
+    try {
+      for (let calendar of await EWSCalendarShortcut.listCalendars(this)) {
+        if (!accounts.find(account => account.protocol == "calendar-ews" &&
+              (account as EWSCalendar).folderID == calendar.folderID)) {
+          accounts.add(calendar);
+        }
+      }
+    } catch (ex) {
+      logErrorToServer(ex);
+    }
     return accounts;
   }
 
@@ -1106,7 +1151,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return addressbook;
   }
 
-  private createCalendarAccount(folder: any, dependentAcc?: EWSAccount): EWSCalendar | null {
+  createCalendarAccount(folder: any, owner?: EWSAccount | { name: string, username: string, color: string }): EWSCalendar | null {
     assert(folder.FolderClass == "IPF.Appointment", "Need calendar");
     if (this.dependentAccounts().find(account => account.protocol == "calendar-ews" &&
           (account as EWSCalendar).folderID == folder.FolderId.Id)) {
@@ -1116,15 +1161,22 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     calendar.initFromMainAccount(this);
     let isPrimary = folder.DistinguishedFolderId == "calendar";
     calendar.useForInvitations = isPrimary;
-    if ((dependentAcc || !isPrimary) && folder.DisplayName) {
-      calendar.name = `${(dependentAcc || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
+    if ((owner || !isPrimary) && folder.DisplayName) {
+      calendar.name = `${(owner || this).name} ${sanitize.nonemptylabel(folder.DisplayName)}`;
     }
-    if (dependentAcc) {
-      calendar.username = dependentAcc.username;
-      calendar.color = dependentAcc.color;
+    if (owner) {
+      calendar.username = owner.username;
+      calendar.color = owner.color;
     }
     calendar.folderID = sanitize.nonemptystring(folder.FolderId.Id);
     return calendar;
+  }
+
+  async listSharedAccountsFromOutlook(): Promise<PersonUID[]> {
+    let config = await this.getUserConfigurationXML("OWA.OtherMailbox", "root") as any;
+    return ensureArray(config?.OtherMailbox?.entry)
+      .map(entry => this.newSharedAccountPerson(entry?.principalSMTPAddress, entry?.displayName))
+      .filter(Boolean);
   }
 
   async findSharedFolders(person: PersonUID, DistinguishedIDs: string[]): Promise<string[]> {

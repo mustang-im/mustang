@@ -28,6 +28,7 @@
 <script lang="ts">
   import type { Attachment } from "../../../logic/Abstract/Attachment";
   import { executableMessage } from "../../../logic/Files/FileType/ExecutableFile";
+  import { saveBlobAsFile } from "../../Util/util";
   import ButtonMenu from "../../Shared/Menu/ButtonMenu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import OpenIcon from "lucide-svelte/icons/external-link";
@@ -48,7 +49,7 @@
     await attachment.openOSFolder();
   }
   async function saveFile() {
-    await attachment.saveFile();
+    await saveBlobAsFile(await attachment.getContent());
   }
   async function deleteIt() {
     await attachment.deleteFile();

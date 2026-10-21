@@ -32,9 +32,9 @@
 
 import { gLicense } from "./License";
 import { siteRoot } from "../build";
-import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "../../frontend/Util/date";
+import { k1MinuteMS, k1DayMS, k1WeekMS, k1MonthMS } from "./date";
 import { appGlobal } from "../app";
-import { catchErrors, logError } from "../../frontend/Util/error";
+import { catchErrors, logErrorToServer } from "./error";
 import { getUILocale, gt } from "../../l10n/l10n";
 import { SetColl } from "svelte-collections";
 import { openExternalURL } from "./os-integration";
@@ -178,7 +178,7 @@ async function nextPoll() {
     }
     gLicense.license = ticket;
   } catch (ex) {
-    logError(ex);
+    logErrorToServer(ex);
   } finally {
     gPolling = false;
   }
@@ -286,7 +286,7 @@ async function startTrial(emailAddresses: string[], name: string) {
 
   if (isFirstRun()) {
     openPurchasePage(null, "welcome")
-      .catch(logError);
+      .catch(logErrorToServer);
   }
 }
 
@@ -313,7 +313,7 @@ export async function checkSavedLicense(): Promise<Ticket> {
     ticketJSON = await verifyTicketSignature(signedTicket);
   } catch (ex) {
     ex.parameters = signedTicket;
-    logError(ex);
+    logErrorToServer(ex);
     saveTicket(null);
     return new BadTicket();
   }
@@ -427,7 +427,7 @@ export function startFastPolling(paidCallback?: (license: Ticket) => void) {
         paidCallback = null;
       }
     } catch (ex) {
-      logError(ex);
+      logErrorToServer(ex);
     }
   }, kPurchasePollInterval);
 
@@ -455,9 +455,9 @@ async function startup() {
   });
 
   nextPoll()
-    .catch(logError);
+    .catch(logErrorToServer);
   const kSoonExpiringPollInterval = k1DayMS; // 1 day
-  setInterval(() => catchErrors(nextPoll, logError), kSoonExpiringPollInterval);
+  setInterval(() => catchErrors(nextPoll, logErrorToServer), kSoonExpiringPollInterval);
 }
 startup() // Hack, to avoid that Open-Source code depends on this file
-  .catch(logError);
+  .catch(logErrorToServer);
