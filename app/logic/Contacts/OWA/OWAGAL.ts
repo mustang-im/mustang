@@ -1,11 +1,11 @@
-import { SearchOnlyAddressbook } from "../Addressbook";
+import { ExchangeGAL } from "../EWS/ExchangeGAL";
 import { OWAPerson } from "./OWAPerson";
 import type { OWAAccount } from "../../Mail/OWA/OWAAccount";
 import { owaFindGALPersonsRequest } from "./Request/OWAPersonRequests";
 import { NotReached } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl } from "svelte-collections";
 
-export class OWAGAL extends SearchOnlyAddressbook {
+export class OWAGAL extends ExchangeGAL {
   readonly protocol: string = "gal-owa";
   account: OWAAccount;
 
@@ -22,12 +22,14 @@ export class OWAGAL extends SearchOnlyAddressbook {
     throw new NotReached();
   }
 
-  async quickSearchAsync(searchTerm: string, results: ArrayColl<OWAPerson>) {
+  protected async searchGAL(searchTerm: string): Promise<ArrayColl<OWAPerson>> {
     let response = await this.account.callOWA(owaFindGALPersonsRequest(searchTerm));
+    let persons = new ArrayColl<OWAPerson>();
     for (let result of response.ResultSet) {
       let person = this.newPerson();
       person.fromJSON(result);
-      results.add(person);
+      persons.add(person);
     }
+    return persons;
   }
 }

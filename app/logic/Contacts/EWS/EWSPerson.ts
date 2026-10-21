@@ -205,7 +205,7 @@ export class EWSPerson extends ExchangePerson {
     }
     let query = {
       m$ResolveNames: {
-        m$UnresolvedEntry: emailAddress,
+        m$UnresolvedEntry: "smtp:" + emailAddress,
         ReturnFullContactData: true,
         ContactDataShape: "AllProperties",
       },

@@ -21,8 +21,10 @@ const kPersons = [{
   EmailAddress: "sally@example.com",
 }];
 
-/** An account stub which returns the given GAL entries for any search term,
- * and the certificates for the recipients listed in `certificates`. */
+/** An account stub which searches the GAL like Exchange does: Without routing type
+ * prefix, it matches the start of the names, with an `smtp:` prefix, the start of
+ * the email address. It returns the certificates for the recipients listed in
+ * `certificates`. */
 function fakeAccount(certificates: Record<string, string[]> = { "ben@example.com": [kCertificate] }): any {
   return {
     errorCallback: (ex: Error) => { throw ex; },
@@ -36,8 +38,8 @@ function fakeAccount(certificates: Record<string, string[]> = { "ben@example.com
           Response: {
             Store: {
               Status: "1",
-              Result: kPersons.map(person => ({ Properties: person })),
-              Total: String(kPersons.length),
+              Result: matching(query.Store.Query).map(person => ({ Properties: { ...person } })),
+              Total: String(matching(query.Store.Query).length),
             },
           },
         };
@@ -68,6 +70,14 @@ function fakeAccount(certificates: Record<string, string[]> = { "ben@example.com
   };
 }
 
+function matching(searchTerm: string): typeof kPersons {
+  let term = searchTerm.toLowerCase();
+  return term.startsWith("smtp:")
+    ? kPersons.filter(person => person.EmailAddress.toLowerCase().startsWith(term.slice("smtp:".length)))
+    : kPersons.filter(person => [person.DisplayName, person.FirstName, person.LastName]
+      .some(field => field.toLowerCase().startsWith(term)));
+}
+
 async function search(searchTerm: string, account = fakeAccount()): Promise<ArrayColl<ActiveSyncPerson>> {
   let gal = new ActiveSyncGAL(account);
   let results = new ArrayColl<ActiveSyncPerson>();
@@ -75,19 +85,37 @@ async function search(searchTerm: string, account = fakeAccount()): Promise<Arra
   return results;
 }
 
-test("The search itself costs only 1 request, and returns no certificates", async () => {
+test("Find by last name", async () => {
+  let results = await search("bucksch");
+  expect(results.length).toBe(1);
+  expect(results.first.name).toBe("Ben Bucksch");
+});
+
+test("Find by the start of the email address", async () => {
+  let results = await search("ben@ex");
+  expect(results.length).toBe(1);
+  expect(results.first.name).toBe("Ben Bucksch");
+});
+
+test("Person matching both name and email address is returned only once", async () => {
+  let results = await search("sally");
+  expect(results.length).toBe(1);
+  expect(results.first.name).toBe("Sally Smith");
+});
+
+test("The search fetches no certificates", async () => {
   let account = fakeAccount();
   let results = await search("bucksch", account);
-  expect(account.commands).toEqual(["Search"]);
-  expect(results.length).toBe(2);
+  expect(account.commands).not.toContain("ResolveRecipients");
   expect(results.first.encryptionPublicKeys.length).toBe(0);
 });
 
 test("Read the S/MIME certificate of the person that the user picked", async () => {
   let account = fakeAccount();
   let person = (await search("bucksch", account)).first;
+  account.commands = [];
   await person.fetchEncryptionKeys();
-  expect(account.commands).toEqual(["Search", "ResolveRecipients"]);
+  expect(account.commands).toEqual(["ResolveRecipients"]);
   expect(account.lastQuery.To).toBe(person.emailAddresses.first.value);
   expect(account.lastQuery.Options.CertificateRetrieval).toBe("2");
   let key = person.encryptionPublicKeys.first;
@@ -96,7 +124,7 @@ test("Read the S/MIME certificate of the person that the user picked", async () 
 });
 
 test("Person without a certificate in the GAL", async () => {
-  let person = (await search("smith")).getIndex(1);
+  let person = (await search("smith")).first;
   expect(person.name).toBe("Sally Smith");
   await person.fetchEncryptionKeys();
   expect(person.encryptionPublicKeys.length).toBe(0);
