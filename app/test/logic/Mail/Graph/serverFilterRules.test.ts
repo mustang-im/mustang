@@ -129,3 +129,28 @@ test("Graph: A date span is not saved to the server, because Graph cannot check 
   await expect(account.saveServerFilterRules()).rejects.toThrow();
   expect(account.requests).toEqual([]);
 });
+
+test("Graph: The parts of a rule that we can't show are listed as text", async () => {
+  let account = new TestGraphAccount();
+  await account.refreshServerFilterRules();
+
+  let parts = rule(account, "Newsletters").serverRule.unknownParts;
+
+  expect(parts.length).toBe(3); // sent to me, the exception, stop processing
+  expect(parts.some(part => part.includes("urgent"))).toBe(true);
+});
+
+test("Graph: A read-only rule is neither changed nor moved", async () => {
+  let account = new TestGraphAccount();
+  account.rules[1].isReadOnly = true; // "Newsletters", which runs first
+  await account.refreshServerFilterRules();
+  let newsletters = rule(account, "Newsletters");
+  expect(newsletters.readOnlyReason).toBeTruthy();
+
+  account.filterRuleActions.replaceAll([rule(account, "Invoices"), newsletters]);
+  await account.saveServerFilterRules();
+  expect(account.requests.map(request => request.path)).toEqual(["mailFolders/inbox/messageRules/rule-2"]);
+
+  newsletters.markAsRead = true;
+  await expect(account.saveServerFilterRules()).rejects.toThrow();
+});

@@ -64,6 +64,8 @@ function newTestAccount(rules: string[]) {
   let updates: Document[] = [];
   let server = {
     rules,
+    /** Classic Outlook saved its own copy of the rules */
+    outlookRulesExist: false,
     /** What the server does with the update */
     onUpdate: () => {},
     updateResponse: `<UpdateInboxRulesResponse ResponseClass="Success" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
@@ -81,7 +83,7 @@ function newTestAccount(rules: string[]) {
       status: 200,
       text: async () => envelope(`<GetInboxRulesResponse ResponseClass="Success" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
         <ResponseCode>NoError</ResponseCode>
-        <OutlookRuleBlobExists>false</OutlookRuleBlobExists>
+        <OutlookRuleBlobExists>${server.outlookRulesExist}</OutlookRuleBlobExists>
         <InboxRules>${server.rules.join("")}</InboxRules>
       </GetInboxRulesResponse>`),
     };
@@ -229,4 +231,122 @@ test("EWS: Rules that Outlook runs are not deleted", async () => {
   rule(account, "Newsletters").markAsRead = true;
 
   await expect(account.saveServerFilterRules()).rejects.toThrow(/Outlook/);
+});
+
+const kTwoSendersRule = `
+  <Rule xmlns="http://schemas.microsoft.com/exchange/services/2006/types">
+    <RuleId>rule-4</RuleId>
+    <DisplayName>Family</DisplayName>
+    <Priority>1</Priority>
+    <IsEnabled>true</IsEnabled>
+    <Conditions>
+      <FromAddresses>
+        <Address><EmailAddress>mom@example.com</EmailAddress></Address>
+        <Address><EmailAddress>dad@example.com</EmailAddress></Address>
+      </FromAddresses>
+    </Conditions>
+    <Actions>
+      <AssignCategories><String>Family</String></AssignCategories>
+    </Actions>
+  </Rule>`;
+
+test("EWS: The parts of a rule that we can't show are listed as text", async () => {
+  let { account } = newTestAccount([kNewslettersRule]);
+  await account.refreshServerFilterRules();
+
+  let parts = rule(account, "Newsletters").serverRule.unknownParts;
+
+  expect(parts.length).toBe(3); // sent to me, the exception, stop processing
+  expect(parts.some(part => part.includes("urgent"))).toBe(true);
+  expect(parts.some(part => /stop processing/i.test(part))).toBe(true);
+  expect(parts.join()).not.toContain("news@acme.example"); // we show the sender
+});
+
+test("EWS: A condition with several senders is not shown as one sender, and stays", async () => {
+  let { account, updates } = newTestAccount([kTwoSendersRule]);
+  await account.refreshServerFilterRules();
+  let family = rule(account, "Family");
+
+  expect(family.criteria.includesPersonEMail).toBeNull();
+  expect(family.serverRule.unknownParts.join()).toContain("dad@example.com");
+
+  family.name = "Parents";
+  await account.saveServerFilterRules();
+  let addresses = [...updates[0].getElementsByTagName("t:EmailAddress")].map(element => element.textContent);
+  expect(addresses).toEqual(["mom@example.com", "dad@example.com"]);
+});
+
+test("EWS: The user cannot overwrite a condition that we can't show", async () => {
+  let { account, updates } = newTestAccount([kTwoSendersRule]);
+  await account.refreshServerFilterRules();
+  let family = rule(account, "Family");
+
+  family.criteria.includesPersonEMail = "mom@example.com";
+
+  await expect(account.saveServerFilterRules()).rejects.toThrow();
+  expect(updates).toEqual([]);
+});
+
+test("EWS: A rule that Exchange does not support is read-only, but can move", async () => {
+  let unsupported = kTwoSendersRule.replace("<IsEnabled>true</IsEnabled>", "<IsEnabled>true</IsEnabled><IsNotSupported>true</IsNotSupported>");
+  let { account, updates } = newTestAccount([kInvoicesRule.replace("<Priority>2", "<Priority>1"), unsupported.replace("<Priority>1", "<Priority>2")]);
+  await account.refreshServerFilterRules();
+  let family = rule(account, "Family");
+  expect(family.readOnlyReason).toBeTruthy();
+  expect(rule(account, "Invoices").readOnlyReason).toBeNull();
+  await account.saveServerFilterRules();
+  expect(updates).toEqual([]);
+
+  account.filterRuleActions.replaceAll([family, rule(account, "Invoices")]);
+  await account.saveServerFilterRules();
+  let set = [...updates[0].getElementsByTagName("t:SetRuleOperation")].map(operation => operation.getElementsByTagName("t:Rule")[0]);
+  let sentFamily = set.find(sent => sent.getElementsByTagName("t:RuleId")[0].textContent == "rule-4");
+  expect(sentFamily.getElementsByTagName("t:Priority")[0].textContent).toBe("1");
+  expect(sentFamily.getElementsByTagName("t:Conditions").length).toBe(0); // Exchange accepts only the order
+
+  family.markAsRead = true;
+  await expect(account.saveServerFilterRules()).rejects.toThrow();
+});
+
+test("EWS: While Outlook keeps its own copy of the rules, the server rules are read-only, and the local rules not", async () => {
+  let { account, server } = newTestAccount([kInvoicesRule]);
+  server.outlookRulesExist = true;
+  let local = localRule(account, "Local");
+
+  await account.refreshServerFilterRules();
+
+  expect(account.serverFilterRulesReadOnlyReason).toMatch(/Outlook/);
+  expect(rule(account, "Invoices").readOnlyReason).toBe(account.serverFilterRulesReadOnlyReason);
+  expect(local.readOnlyReason).toBeNull();
+
+  server.outlookRulesExist = false;
+  await account.refreshServerFilterRules();
+  expect(rule(account, "Invoices").readOnlyReason).toBeNull();
+});
+
+test("EWS: A copy of a server rule keeps the parts that we can't show", async () => {
+  let { account, updates } = newTestAccount([kNewslettersRule]);
+  await account.refreshServerFilterRules();
+  let copy = rule(account, "Newsletters").clone();
+  copy.name = "Copy of Newsletters";
+  copy.serverID = null;
+  account.filterRuleActions.add(copy);
+
+  await account.saveServerFilterRules();
+
+  let created = updates[0].getElementsByTagName("t:CreateRuleOperation")[0].getElementsByTagName("t:Rule")[0];
+  expect(created.getElementsByTagName("t:RuleId").length).toBe(0);
+  expect(created.getElementsByTagName("t:DisplayName")[0].textContent).toBe("Copy of Newsletters");
+  expect(created.getElementsByTagName("t:Exceptions")[0].textContent).toContain("urgent");
+  expect(created.getElementsByTagName("t:StopProcessingRules").length).toBe(1);
+});
+
+test("EWS: A rule with parts that we can't run does not move to us", async () => {
+  let { account, updates } = newTestAccount([kNewslettersRule]);
+  await account.refreshServerFilterRules();
+
+  rule(account, "Newsletters").server = false;
+
+  await expect(account.saveServerFilterRules()).rejects.toThrow();
+  expect(updates).toEqual([]);
 });

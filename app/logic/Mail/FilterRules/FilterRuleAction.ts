@@ -1,5 +1,6 @@
 import type { EMail } from "../EMail";
 import { FilterMoment } from "./FilterMoments";
+import type { ServerFilterRule } from "./ServerFilterRule";
 import { SearchEMail } from "../Store/SearchEMail";
 import { DeleteStrategy, type MailAccount } from "../MailAccount";
 import type { Folder } from "../Folder";
@@ -29,6 +30,20 @@ export class FilterRuleAction extends Observable {
   /** The rule as the server sent it, including the parts that we don't
    * understand, so that saving the rule doesn't remove them. */
   serverJSON: any = null;
+
+  /** null, if the rule is not on the server yet */
+  get serverRule(): ServerFilterRule | null {
+    return this.serverJSON ? this.account.newServerFilterRule(this.serverJSON) : null;
+  }
+
+  /** Why the user cannot change this rule. null, if they can. */
+  get readOnlyReason(): string | null {
+    if (!this.server) {
+      return null;
+    }
+    return this.account.serverFilterRulesReadOnlyReason ??
+      (this.serverRule?.isReadOnly ? gt`The mail server does not allow changes to this rule` : null);
+  }
 
   /** The following actions cannot be combined:
    * - Delete/spam actions with toFolder or markAsStarred

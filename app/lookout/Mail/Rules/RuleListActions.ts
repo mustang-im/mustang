@@ -1,6 +1,7 @@
 import { FilterRuleAction } from "../../../logic/Mail/FilterRules/FilterRuleAction";
 import type { Folder } from "../../../logic/Mail/Folder";
 import type { MailAccount } from "../../../logic/Mail/MailAccount";
+import { appName } from "../../../logic/build";
 import { gt } from "../../../l10n/l10n";
 import type { ArrayColl } from "svelte-collections";
 
@@ -19,7 +20,6 @@ export class RuleListActions {
     let copy = rule.clone();
     copy.name = gt`Copy of ${rule.name}`;
     copy.serverID = null;
-    copy.serverJSON = null;
     let index = rules.indexOf(rule);
     if (index < 0) {
       rules.add(copy);
@@ -35,6 +35,9 @@ export class RuleListActions {
     }
     if (rule.toFolderID || rule.criteria.folderID) {
       return gt`This rule uses a folder of ${rule.account.name}, so it can only be copied within that account`;
+    }
+    if (rule.server && rule.serverRule?.unknownParts.length) {
+      return gt`This rule has parts that ${appName} cannot show, so it can only be copied within ${rule.account.name}`;
     }
     return false;
   }

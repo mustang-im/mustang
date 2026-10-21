@@ -7,6 +7,7 @@ import type { SMTPAccount } from "./SMTP/SMTPAccount";
 import { ContactEntry } from "../Abstract/Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { FilterRuleAction } from "./FilterRules/FilterRuleAction";
+import type { ServerFilterRule } from "./FilterRules/ServerFilterRule";
 import { OAuth2 } from "../Auth/OAuth2";
 import { getProvider } from "../Auth/OAuth2Util";
 import type { Provider } from "../Auth/OAuth2URLs";
@@ -16,8 +17,9 @@ import type { Addressbook } from "../Contacts/Addressbook";
 import type { SetupInfo } from "./AutoConfig/SetupInfo";
 import type { SearchEMail } from "./Store/SearchEMail";
 import { appGlobal } from "../app";
+import { appName } from "../build";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { AbstractFunction, assert } from "../util/util";
+import { AbstractFunction, assert, NotSupported } from "../util/util";
 import { notifyChangedProperty } from "../util/Observable";
 import { RunOnce } from "../util/flow/RunOnce";
 import { Collection, ArrayColl } from 'svelte-collections';
@@ -48,6 +50,9 @@ export class MailAccount extends TCPAccount {
   readonly filterRuleActions = new ArrayColl<FilterRuleAction>();
   /** To find the server rules that the user removed */
   protected knownServerFilterRuleIDs = new Set<string>();
+  /** Why the user cannot change the rules on the server. null, if they can. */
+  @notifyChangedProperty
+  serverFilterRulesReadOnlyReason: string | null = null;
   setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();
@@ -270,6 +275,11 @@ export class MailAccount extends TCPAccount {
     return false;
   }
 
+  /** @param json As the server sent the rule. null for a new rule. */
+  newServerFilterRule(json: any): ServerFilterRule {
+    throw new AbstractFunction();
+  }
+
   /** Fetches the rules from the server, puts them into `filterRuleActions`
    * in place of the server rules that we knew, and saves them locally. */
   async refreshServerFilterRules(): Promise<void> {
@@ -309,6 +319,10 @@ export class MailAccount extends TCPAccount {
       return;
     }
     let rules = this.filterRuleActions.contents.filter(rule => rule.server);
+    let movedHere = this.filterRuleActions.find(rule => !rule.server && rule.serverRule?.unknownParts.length > 0);
+    if (movedHere) {
+      throw new NotSupported(gt`${appName} cannot run all parts of the rule ${movedHere.name}`);
+    }
     let deletedIDs = [...this.knownServerFilterRuleIDs].filter(id => !rules.some(rule => rule.serverID == id));
     try {
       await this.uploadServerFilterRules(rules, deletedIDs);

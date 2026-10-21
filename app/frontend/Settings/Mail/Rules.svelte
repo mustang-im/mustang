@@ -34,15 +34,16 @@
                   label={$t`Delete rule`}
                   icon={DeleteIcon}
                   onClick={onDelete}
+                  disabled={readOnlyReason}
                   />
               </hbox>
               <vbox class="content">
                 <grid class="name-grid">
                   <label for="name">{$t`Rule name`}</label>
-                  <input type="text" bind:value={rule.name} name="name" autofocus />
+                  <input type="text" bind:value={rule.name} name="name" autofocus inert={!!readOnlyReason} />
 
                   <label for="when">{$t`When`}</label>
-                  <select bind:value={rule.when}>
+                  <select bind:value={rule.when} inert={!!readOnlyReason}>
                     <option value={FilterMoment.IncomingBeforeSpam}>{$t`New mail arrives`}</option>
                     <option value={FilterMoment.IncomingAfterSpam}>{$t`New mail arrives, after spam filtering`}</option>
                     <option value={FilterMoment.Outgoing}>{$t`I send mail`}</option>
@@ -51,30 +52,45 @@
                   {#if account.canServerFilterRules}
                     <label>{$t`Run by *=> Who runs the rule: this app, or the mail server`}</label>
                     <hbox class="run-by">
-                      <label class="radio">
-                        <input type="radio" value={false} bind:group={rule.server} />
+                      <label class="radio" title={cannotRunHere || null}>
+                        <input type="radio" value={false} bind:group={rule.server} disabled={!!cannotRunHere} />
                         {appName}
                       </label>
-                      <label class="radio">
-                        <input type="radio" value={true} bind:group={rule.server} />
+                      <label class="radio" title={cannotRunOnServer || null}>
+                        <input type="radio" value={true} bind:group={rule.server} disabled={!!cannotRunOnServer} />
                         {$t`The mail server`}
                       </label>
                     </hbox>
                   {/if}
                 </grid>
+                {#if readOnlyReason || unknownParts.length}
+                  <vbox class="server-notes">
+                    {#if readOnlyReason}
+                      <hbox>{readOnlyReason}</hbox>
+                    {/if}
+                    {#if unknownParts.length}
+                      <hbox>{$t`Parts of this rule that ${appName} cannot show or change`}</hbox>
+                      <ul>
+                        {#each unknownParts as part}
+                          <li>{part}</li>
+                        {/each}
+                      </ul>
+                    {/if}
+                  </vbox>
+                {/if}
               </vbox>
             </HeaderGroupBox>
 
             <HeaderGroupBox>
               <hbox slot="header">{$t`Criteria`}</hbox>
-              <vbox class="content">
+              <vbox class="content" inert={!!readOnlyReason}>
                 <SearchCriteria search={rule.criteria} showAccount={false} />
               </vbox>
             </HeaderGroupBox>
 
             <HeaderGroupBox>
               <hbox slot="header">{$t`Action`}</hbox>
-              <vbox class="content">
+              <vbox class="content" inert={!!readOnlyReason}>
                 <RuleActions {rule} />
               </vbox>
             </HeaderGroupBox>
@@ -85,6 +101,7 @@
             icon={SaveIcon}
             label={$t`Save`}
             onClick={onSave}
+            disabled={readOnlyReason}
           />
         </hbox>
       {/if}
@@ -124,6 +141,10 @@
   }
 
   $: account, catchErrors(() => account.refreshServerFilterRules());
+  $: readOnlyReason = $account && $rule ? rule.readOnlyReason : null;
+  $: unknownParts = $rule?.server ? rule.serverRule?.unknownParts ?? [] : [];
+  $: cannotRunHere = readOnlyReason ?? (unknownParts.length ? $t`${appName} cannot run all parts of this rule` : null);
+  $: cannotRunOnServer = readOnlyReason ?? ($rule?.server ? null : $account.serverFilterRulesReadOnlyReason);
 
   function onAdd() {
     rule = new FilterRuleAction(account);
@@ -172,6 +193,14 @@
   }
   .run-by {
     gap: 24px;
+  }
+  .server-notes {
+    gap: 4px;
+    margin-block-start: 16px;
+  }
+  .server-notes ul {
+    margin: 0;
+    padding-inline-start: 20px;
   }
   .radio {
     align-items: center;

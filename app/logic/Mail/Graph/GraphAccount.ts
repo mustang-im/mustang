@@ -420,12 +420,16 @@ export class GraphAccount extends ExchangeMailAccount {
     return !this.mainAccount;
   }
 
+  newServerFilterRule(json: any): GraphFilterRule {
+    return new GraphFilterRule(this, json);
+  }
+
   protected async fetchServerFilterRules(): Promise<FilterRuleAction[]> {
     let rules = await this.graphGetAll<any>("mailFolders/inbox/messageRules");
     return rules
-      .map(json => new GraphFilterRule(json))
+      .map(json => this.newServerFilterRule(json))
       .sort((a, b) => a.priority - b.priority)
-      .map(serverRule => serverRule.toFilterRule(this));
+      .map(serverRule => serverRule.toFilterRule());
   }
 
   protected async uploadServerFilterRules(rules: FilterRuleAction[], deletedIDs: string[]): Promise<void> {
@@ -433,11 +437,11 @@ export class GraphAccount extends ExchangeMailAccount {
       await this.graphDelete("mailFolders/inbox/messageRules/" + id);
     }
     for (let [i, rule] of rules.entries()) {
-      let serverRule = new GraphFilterRule(rule.serverJSON);
-      let changed = serverRule.withChangesFrom(rule, i + 1);
+      let serverRule = this.newServerFilterRule(rule.serverJSON);
+      let changed = serverRule.withChangesFrom(rule, i + 1) as GraphFilterRule;
       if (!rule.serverID) {
         let created = await this.graphPost("mailFolders/inbox/messageRules", changed.newProperties);
-        rule.serverID = new GraphFilterRule(created).id;
+        rule.serverID = this.newServerFilterRule(created).id;
       } else if (changed.isChangedFrom(serverRule)) {
         await this.graphPatch("mailFolders/inbox/messageRules/" + rule.serverID, changed.changedProperties(serverRule));
       }

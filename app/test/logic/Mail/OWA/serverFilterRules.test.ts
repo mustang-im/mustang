@@ -146,3 +146,42 @@ test("OWA: The error that the server gives for a rule", async () => {
 
   await expect(account.saveServerFilterRules()).rejects.toThrow("The folder doesn't exist.");
 });
+
+test("OWA: The parts of a rule that we can't show are listed as text", async () => {
+  let account = newTestAccount();
+  await account.refreshServerFilterRules();
+
+  let parts = rule(account, "Newsletters").serverRule.unknownParts;
+
+  expect(parts.length).toBe(3); // my name in To, the exception, stop processing
+  expect(parts.some(part => part.includes("urgent"))).toBe(true);
+  expect(parts.some(part => /stop processing/i.test(part))).toBe(true);
+});
+
+test("OWA: A folder that we can't find by its name is not shown, and stays", async () => {
+  let account = newTestAccount();
+  account.rules[1].MoveToFolder.DisplayName = "Old newsletters";
+  await account.refreshServerFilterRules();
+  let newsletters = rule(account, "Newsletters");
+
+  expect(newsletters.toFolderID).toBeNull();
+  expect(newsletters.serverRule.unknownParts.join()).toContain("Old newsletters");
+
+  newsletters.criteria.bodyText = "acme";
+  await account.saveServerFilterRules();
+  expect(Object.keys(account.changes[0].json.InboxRule)).toEqual(["Identity", "SubjectOrBodyContainsWords"]);
+});
+
+test("OWA: While Outlook keeps its own copy of the rules, the server rules become read-only", async () => {
+  let account = newTestAccount();
+  await account.refreshServerFilterRules();
+  let callOWA = account.callOWA.bind(account);
+  account.callOWA = async (request: any) => request.action == "SetInboxRule"
+    ? { WasSuccessful: false, ErrorCode: 4, UserPrompt: "Using Outlook Web App to modify your rules will delete any rules that were previously created using Outlook." }
+    : await callOWA(request);
+
+  rule(account, "Invoices").markAsRead = null;
+
+  await expect(account.saveServerFilterRules()).rejects.toThrow(/Outlook/);
+  expect(rule(account, "Newsletters").readOnlyReason).toMatch(/Outlook/);
+});

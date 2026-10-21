@@ -1307,12 +1307,17 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     return !this.mainAccount;
   }
 
+  newServerFilterRule(json: any): EWSFilterRule {
+    return new EWSFilterRule(this, json);
+  }
+
   protected async fetchServerFilterRules(): Promise<FilterRuleAction[]> {
     let response = await this.callEWS({ m$GetInboxRules: {} });
+    this.setOutlookRulesExist(response.OutlookRuleBlobExists == "true");
     return ensureArray(response.InboxRules?.Rule)
-      .map(json => new EWSFilterRule(json))
+      .map(json => this.newServerFilterRule(json))
       .sort((a, b) => a.priority - b.priority)
-      .map(serverRule => serverRule.toFilterRule(this));
+      .map(serverRule => serverRule.toFilterRule());
   }
 
   protected async uploadServerFilterRules(rules: FilterRuleAction[], deletedIDs: string[]): Promise<void> {
@@ -1320,10 +1325,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let createOperations = [];
     let setOperations = [];
     for (let [i, rule] of rules.entries()) {
-      let serverRule = new EWSFilterRule(rule.serverJSON);
-      let changed = serverRule.withChangesFrom(rule, i + 1);
+      let serverRule = this.newServerFilterRule(rule.serverJSON);
+      let changed = serverRule.withChangesFrom(rule, i + 1) as EWSFilterRule;
       if (!rule.serverID) {
-        createOperations.push({ t$Rule: changed.toRequest() });
+        createOperations.push({ t$Rule: changed.toRequest(true) });
         created.push(rule);
       } else if (changed.isChangedFrom(serverRule)) {
         setOperations.push({ t$Rule: changed.toRequest() });
@@ -1346,7 +1351,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
       await this.callEWS(request);
     } catch (ex) {
       if (ex.type == "ErrorOutlookRuleBlobExists") {
-        throw new UserError(gt`This account has rules that only Outlook runs. Exchange allows changes to the server rules only after these Outlook rules are deleted.`);
+        this.setOutlookRulesExist(true);
+        throw new UserError(this.serverFilterRulesReadOnlyReason);
       }
       throw ex;
     }

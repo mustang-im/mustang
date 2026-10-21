@@ -2,13 +2,14 @@ import { ServerFilterRule } from "../FilterRules/ServerFilterRule";
 import type { FilterRuleAction } from "../FilterRules/FilterRuleAction";
 import { getTagByName } from "../../Abstract/Tag";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { ensureArray, NotSupported } from "../../util/util";
-import { gt } from "../../../l10n/l10n";
+import { ensureArray } from "../../util/util";
 
 /** A rule that the Exchange server runs on incoming mail, as EWS `RuleType`,
  * in the notation of `XML2JSON()`.
  * <https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/inbox-rules-in-ews-for-exchange> */
 export class EWSFilterRule extends ServerFilterRule {
+  protected readonly canReorderReadOnly = true;
+
   get id(): string | null {
     return sanitize.nonemptystring(this.json.RuleId, null);
   }
@@ -17,57 +18,109 @@ export class EWSFilterRule extends ServerFilterRule {
     return sanitize.integer(this.json.Priority, 0);
   }
 
-  /** Exchange allows to change only the name, priority and enabled state */
+  /** Exchange allows to change only the order */
   get isReadOnly(): boolean {
     return this.json.IsNotSupported == "true";
   }
 
-  protected fillFilterRule(rule: FilterRuleAction) {
-    rule.name = sanitize.nonemptylabel(this.json.DisplayName, "-");
-    let conditions = this.object(this.json.Conditions);
-    let criteria = rule.criteria;
-    criteria.bodyText = this.strings(conditions.ContainsSubjectOrBodyStrings)[0] ?? null;
-    criteria.includesPersonEMail = sanitize.emailAddress(ensureArray(conditions.FromAddresses?.Address)[0]?.EmailAddress, null);
-    criteria.tags.replaceAll(this.strings(conditions.Categories).map(name => getTagByName(name)));
-    criteria.hasAttachment = conditions.HasAttachments == "true" ? true : null;
-    criteria.isStarred = conditions.FlaggedForAction ? true : null;
-    let sizeMin = sanitize.integer(conditions.WithinSizeRange?.MinimumSize, null);
-    let sizeMax = sanitize.integer(conditions.WithinSizeRange?.MaximumSize, null);
-    criteria.sizeMin = sizeMin == null ? null : sizeMin * 1024;
-    criteria.sizeMax = sizeMax == null ? null : sizeMax * 1024;
-    criteria.sentDateMin = sanitize.date(conditions.WithinDateRange?.StartDateTime, null) ?? null;
-    criteria.sentDateMax = sanitize.date(conditions.WithinDateRange?.EndDateTime, null) ?? null;
-
-    let actions = this.object(this.json.Actions);
-    rule.markAsRead = actions.MarkAsRead == "true" ? true : null;
-    rule.deleteTrash = actions.Delete == "true" ? true : null;
-    rule.deleteImmediately = actions.PermanentDelete == "true" ? true : null;
-    rule.toFolderID = sanitize.nonemptystring(actions.MoveToFolder?.FolderId?.Id ?? actions.CopyToFolder?.FolderId?.Id, null);
-    rule.copy = !actions.MoveToFolder?.FolderId && actions.CopyToFolder?.FolderId ? true : null;
-    rule.addTags.replaceAll(this.strings(actions.AssignCategories).map(name => getTagByName(name)));
+  get isEnabled(): boolean {
+    return this.json.IsEnabled != "false";
   }
 
-  withChangesFrom(rule: FilterRuleAction, priority: number): EWSFilterRule {
-    this.checkSupported(rule);
-    let original = this.toFilterRule(rule.account);
-    let json = structuredClone(this.json);
+  get hasError(): boolean {
+    return this.json.IsInError == "true";
+  }
+
+  protected get sections(): Record<string, Record<string, any>> {
+    return {
+      Conditions: this.object(this.json.Conditions),
+      Exceptions: this.object(this.json.Exceptions),
+      Actions: this.object(this.json.Actions),
+    };
+  }
+
+  protected isUnderstood(section: string, key: string, value: any): boolean {
+    if (section == "Conditions") {
+      switch (key) {
+      case "ContainsSubjectOrBodyStrings":
+      case "Categories": // Exchange checks for any of the categories, we for all
+        return this.strings(value).length == 1;
+      case "FromAddresses": {
+        let addresses = ensureArray(value.Address);
+        return addresses.length == 1 && !!sanitize.emailAddress(addresses[0]?.EmailAddress, null);
+      }
+      case "HasAttachments":
+        return value == "true";
+      case "FlaggedForAction":
+        return value == "Any";
+      case "WithinSizeRange":
+        return Object.values(this.object(value)).every(size => sanitize.integer(size, null) != null);
+      case "WithinDateRange":
+        return Object.values(this.object(value)).every(date => sanitize.date(date, null));
+      }
+    }
+    if (section == "Actions") {
+      switch (key) {
+      case "AssignCategories":
+        return this.strings(value).length > 0;
+      case "MoveToFolder":
+        return !!value.FolderId?.Id;
+      case "CopyToFolder":
+        return !!value.FolderId?.Id && this.isEmpty(this.json.Actions.MoveToFolder);
+      case "Delete":
+      case "MarkAsRead":
+      case "PermanentDelete":
+        return value == "true";
+      }
+    }
+    return false;
+  }
+
+  protected fillFilterRule(rule: FilterRuleAction) {
+    rule.name = sanitize.nonemptylabel(this.json.DisplayName, "-");
+    let conditions = this.sections.Conditions;
+    let criteria = rule.criteria;
+    let condition = (key: string) => this.understood("Conditions", key);
+    criteria.bodyText = condition("ContainsSubjectOrBodyStrings") ? this.strings(conditions.ContainsSubjectOrBodyStrings)[0] : null;
+    criteria.includesPersonEMail = condition("FromAddresses") ? sanitize.emailAddress(ensureArray(conditions.FromAddresses.Address)[0].EmailAddress) : null;
+    criteria.tags.replaceAll(condition("Categories") ? this.strings(conditions.Categories).map(name => getTagByName(name)) : []);
+    criteria.hasAttachment = condition("HasAttachments") ? true : null;
+    criteria.isStarred = condition("FlaggedForAction") ? true : null;
+    let size = condition("WithinSizeRange") ? conditions.WithinSizeRange : {};
+    criteria.sizeMin = size.MinimumSize ? sanitize.integer(size.MinimumSize) * 1024 : null;
+    criteria.sizeMax = size.MaximumSize ? sanitize.integer(size.MaximumSize) * 1024 : null;
+    let dates = condition("WithinDateRange") ? conditions.WithinDateRange : {};
+    criteria.sentDateMin = dates.StartDateTime ? sanitize.date(dates.StartDateTime) : null;
+    criteria.sentDateMax = dates.EndDateTime ? sanitize.date(dates.EndDateTime) : null;
+
+    let actions = this.sections.Actions;
+    let action = (key: string) => this.understood("Actions", key);
+    rule.markAsRead = action("MarkAsRead") ? true : null;
+    rule.deleteTrash = action("Delete") ? true : null;
+    rule.deleteImmediately = action("PermanentDelete") ? true : null;
+    let folder = action("MoveToFolder") ? actions.MoveToFolder : action("CopyToFolder") ? actions.CopyToFolder : null;
+    rule.toFolderID = folder ? sanitize.nonemptystring(folder.FolderId.Id) : null;
+    rule.copy = !action("MoveToFolder") && action("CopyToFolder") ? true : null;
+    rule.addTags.replaceAll(action("AssignCategories") ? this.strings(actions.AssignCategories).map(name => getTagByName(name)) : []);
+  }
+
+  protected writeChanges(json: any, rule: FilterRuleAction, original: FilterRuleAction) {
     if (rule.name != original.name) {
       json.DisplayName = rule.name;
     }
     json.IsEnabled ??= "true";
-    let conditions = structuredClone(this.object(json.Conditions));
-    if (Object.keys(this.merge(conditions, this.conditionsOf(rule), this.conditionsOf(original))).length) {
+    let conditions = structuredClone(this.sections.Conditions);
+    if (this.merge("Conditions", conditions, this.conditionsOf(rule), this.conditionsOf(original), rule)) {
       json.Conditions = conditions;
     }
-    let actions = structuredClone(this.object(json.Actions));
-    if (Object.keys(this.merge(actions, this.actionsOf(rule), this.actionsOf(original))).length) {
+    let actions = structuredClone(this.sections.Actions);
+    if (this.merge("Actions", actions, this.actionsOf(rule), this.actionsOf(original), rule)) {
       json.Actions = actions;
     }
-    if (this.isReadOnly && new EWSFilterRule(json).isChangedFrom(this)) {
-      throw new NotSupported(gt`The mail server does not allow changes to the rule ${rule.name}`);
-    }
-    json.Priority = String(priority);
-    return new EWSFilterRule(json);
+  }
+
+  protected setPriority(priority: number) {
+    this.json.Priority = String(priority);
   }
 
   protected conditionsOf(rule: FilterRuleAction): Record<string, any> {
@@ -131,8 +184,9 @@ export class EWSFilterRule extends ServerFilterRule {
 
   /** For `UpdateInboxRules`: With namespace prefixes, and in the element order of the schema.
    * The server does not accept `IsNotSupported`, and of rules that it does not support,
-   * it accepts only the priority. */
-  toRequest(): any {
+   * it accepts only the priority.
+   * @param isNew For `CreateRuleOperation`, without the ID */
+  toRequest(isNew = false): any {
     const kRuleOrder = ["RuleId", "DisplayName", "Priority", "IsEnabled", "IsInError", "Conditions", "Exceptions", "Actions"];
     const kPredicatesOrder = ["Categories", "ContainsBodyStrings", "ContainsHeaderStrings", "ContainsRecipientStrings",
       "ContainsSenderStrings", "ContainsSubjectOrBodyStrings", "ContainsSubjectStrings", "FlaggedForAction", "FromAddresses",
@@ -147,6 +201,10 @@ export class EWSFilterRule extends ServerFilterRule {
       return this.withNamespaces(this.ordered(this.json, kRuleOrder.slice(0, 4), false));
     }
     let rule = this.ordered(this.json, kRuleOrder, false);
+    if (isNew) {
+      delete rule.RuleId;
+      delete rule.IsInError;
+    }
     for (let predicates of ["Conditions", "Exceptions"]) {
       if (typeof rule[predicates] == "object") {
         rule[predicates] = this.ordered(rule[predicates], kPredicatesOrder);

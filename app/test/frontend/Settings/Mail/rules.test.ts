@@ -5,6 +5,7 @@ import { MailAccount } from "../../../../logic/Mail/MailAccount";
 import { Folder, SpecialFolder } from "../../../../logic/Mail/Folder";
 import { DummyMailStorage } from "../../../../logic/Mail/Store/DummyMailStorage";
 import { FilterRuleAction } from "../../../../logic/Mail/FilterRules/FilterRuleAction";
+import { ServerFilterRule } from "../../../../logic/Mail/FilterRules/ServerFilterRule";
 import { availableTags, getTagByName } from "../../../../logic/Abstract/Tag";
 import Rules from "../../../../frontend/Settings/Mail/Rules.svelte";
 import { flushSync, mount, unmount } from "svelte";
@@ -18,6 +19,19 @@ beforeAll(() => {
   };
 });
 
+/** `json.readOnly`: The server doesn't allow changes. `json.parts`: The parts that we don't understand. */
+class TestServerRule extends ServerFilterRule {
+  get isReadOnly(): boolean {
+    return this.json.readOnly == true;
+  }
+  protected get sections(): Record<string, Record<string, any>> {
+    return { "": this.json.parts ?? {} };
+  }
+  protected isUnderstood(): boolean {
+    return false;
+  }
+}
+
 /** Optionally with a server that runs filter rules */
 class TestAccount extends MailAccount {
   hasServerRules = false;
@@ -26,6 +40,9 @@ class TestAccount extends MailAccount {
 
   get canServerFilterRules(): boolean {
     return this.hasServerRules;
+  }
+  newServerFilterRule(json: any): ServerFilterRule {
+    return new TestServerRule(this, json);
   }
   protected async fetchServerFilterRules(): Promise<FilterRuleAction[]> {
     return this.filterRuleActions.contents.filter(rule => rule.serverID).map(rule => rule.clone());
@@ -235,4 +252,33 @@ test("The user lets the mail server run a rule", async () => {
 
   await vi.waitFor(() => expect(account.uploads).toEqual([["Newsletters"]]));
   expect(rule.serverID).toBe("id-Newsletters");
+});
+
+test("A server rule that the server doesn't allow to change is read-only, and shows the parts that we can't show", () => {
+  account.hasServerRules = true;
+  let rule = newRule("Newsletters");
+  rule.server = true;
+  rule.serverID = "rule-1";
+  rule.serverJSON = { readOnly: true, parts: { StopProcessingRules: true } };
+  showRulesPage();
+
+  expect(target.textContent).toContain("Stop processing rules");
+  expect(target.querySelector("input[name=name]").hasAttribute("inert")).toBe(true);
+  let save = [...target.querySelectorAll("button")].find(button => button.textContent.includes("Save"));
+  expect(save.disabled).toBe(true);
+  expect(runByRadio("Mustang").disabled).toBe(true);
+});
+
+test("A server rule with parts that we can't show stays editable, but can't move to us", () => {
+  account.hasServerRules = true;
+  let rule = newRule("Newsletters");
+  rule.server = true;
+  rule.serverID = "rule-1";
+  rule.serverJSON = { parts: { StopProcessingRules: true } };
+  showRulesPage();
+
+  expect(target.textContent).toContain("Stop processing rules");
+  expect(target.querySelector("input[name=name]").hasAttribute("inert")).toBe(false);
+  expect(runByRadio("Mustang").disabled).toBe(true);
+  expect(runByRadio("The mail server").disabled).toBe(false);
 });

@@ -2,8 +2,6 @@ import { ServerFilterRule } from "../FilterRules/ServerFilterRule";
 import type { FilterRuleAction } from "../FilterRules/FilterRuleAction";
 import { getTagByName } from "../../Abstract/Tag";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { NotSupported } from "../../util/util";
-import { gt } from "../../../l10n/l10n";
 
 /** A rule that the Exchange server runs on incoming mail, as `messageRule` of MS Graph.
  * <https://learn.microsoft.com/en-us/graph/api/resources/messagerule> */
@@ -22,50 +20,97 @@ export class GraphFilterRule extends ServerFilterRule {
     return this.json.isReadOnly === true;
   }
 
-  protected fillFilterRule(rule: FilterRuleAction) {
-    rule.name = sanitize.nonemptylabel(this.json.displayName, "-");
-    let conditions = this.json.conditions ?? {};
-    let criteria = rule.criteria;
-    criteria.bodyText = this.strings(conditions.bodyOrSubjectContains)[0] ?? null;
-    criteria.includesPersonEMail = sanitize.emailAddress(conditions.fromAddresses?.[0]?.emailAddress?.address, null);
-    criteria.tags.replaceAll(this.strings(conditions.categories).map(name => getTagByName(name)));
-    criteria.hasAttachment = conditions.hasAttachments === true ? true : null;
-    criteria.isStarred = conditions.messageActionFlag ? true : null;
-    let sizeMin = sanitize.integer(conditions.withinSizeRange?.minimumSize, null);
-    let sizeMax = sanitize.integer(conditions.withinSizeRange?.maximumSize, null);
-    criteria.sizeMin = sizeMin ? sizeMin * 1024 : null;
-    criteria.sizeMax = sizeMax ? sizeMax * 1024 : null;
-
-    let actions = this.json.actions ?? {};
-    rule.markAsRead = actions.markAsRead === true ? true : null;
-    rule.deleteTrash = actions.delete === true ? true : null;
-    rule.deleteImmediately = actions.permanentDelete === true ? true : null;
-    rule.toFolderID = sanitize.nonemptystring(actions.moveToFolder ?? actions.copyToFolder, null);
-    rule.copy = !actions.moveToFolder && actions.copyToFolder ? true : null;
-    rule.addTags.replaceAll(this.strings(actions.assignCategories).map(name => getTagByName(name)));
+  get isEnabled(): boolean {
+    return this.json.isEnabled !== false;
   }
 
-  withChangesFrom(rule: FilterRuleAction, priority: number): GraphFilterRule {
-    this.checkSupported(rule);
-    let original = this.toFilterRule(rule.account);
-    let json = structuredClone(this.json);
+  get hasError(): boolean {
+    return this.json.hasError === true;
+  }
+
+  protected get sections(): Record<string, Record<string, any>> {
+    return {
+      conditions: this.json.conditions ?? {},
+      exceptions: this.json.exceptions ?? {},
+      actions: this.json.actions ?? {},
+    };
+  }
+
+  protected isUnderstood(section: string, key: string, value: any): boolean {
+    if (section == "conditions") {
+      switch (key) {
+      case "bodyOrSubjectContains":
+      case "categories": // Exchange checks for any of the categories, we for all
+        return this.strings(value).length == 1;
+      case "fromAddresses":
+        return Array.isArray(value) && value.length == 1 && !!sanitize.emailAddress(value[0]?.emailAddress?.address, null);
+      case "hasAttachments":
+        return value === true;
+      case "messageActionFlag":
+        return value == "any";
+      case "withinSizeRange":
+        return Object.values(value).every((size: any) => sanitize.integer(size, null) != null);
+      }
+    }
+    if (section == "actions") {
+      switch (key) {
+      case "assignCategories":
+        return this.strings(value).length > 0;
+      case "moveToFolder":
+        return typeof value == "string";
+      case "copyToFolder":
+        return typeof value == "string" && this.isEmpty(this.json.actions.moveToFolder);
+      case "markAsRead":
+      case "delete":
+      case "permanentDelete":
+        return value === true;
+      }
+    }
+    return false;
+  }
+
+  protected fillFilterRule(rule: FilterRuleAction) {
+    rule.name = sanitize.nonemptylabel(this.json.displayName, "-");
+    let conditions = this.sections.conditions;
+    let condition = (key: string) => this.understood("conditions", key);
+    let criteria = rule.criteria;
+    criteria.bodyText = condition("bodyOrSubjectContains") ? this.strings(conditions.bodyOrSubjectContains)[0] : null;
+    criteria.includesPersonEMail = condition("fromAddresses") ? sanitize.emailAddress(conditions.fromAddresses[0].emailAddress.address) : null;
+    criteria.tags.replaceAll(condition("categories") ? this.strings(conditions.categories).map(name => getTagByName(name)) : []);
+    criteria.hasAttachment = condition("hasAttachments") ? true : null;
+    criteria.isStarred = condition("messageActionFlag") ? true : null;
+    let size = condition("withinSizeRange") ? conditions.withinSizeRange : {};
+    criteria.sizeMin = size.minimumSize ? sanitize.integer(size.minimumSize) * 1024 : null;
+    criteria.sizeMax = size.maximumSize ? sanitize.integer(size.maximumSize) * 1024 : null;
+
+    let actions = this.sections.actions;
+    let action = (key: string) => this.understood("actions", key);
+    rule.markAsRead = action("markAsRead") ? true : null;
+    rule.deleteTrash = action("delete") ? true : null;
+    rule.deleteImmediately = action("permanentDelete") ? true : null;
+    let folderID = action("moveToFolder") ? actions.moveToFolder : action("copyToFolder") ? actions.copyToFolder : null;
+    rule.toFolderID = folderID ? sanitize.nonemptystring(folderID) : null;
+    rule.copy = !action("moveToFolder") && action("copyToFolder") ? true : null;
+    rule.addTags.replaceAll(action("assignCategories") ? this.strings(actions.assignCategories).map(name => getTagByName(name)) : []);
+  }
+
+  protected writeChanges(json: any, rule: FilterRuleAction, original: FilterRuleAction) {
     if (rule.name != original.name) {
       json.displayName = rule.name;
     }
     json.isEnabled ??= true;
-    let conditions = structuredClone(json.conditions ?? {});
-    if (Object.keys(this.merge(conditions, this.conditionsOf(rule), this.conditionsOf(original))).length) {
+    let conditions = structuredClone(this.sections.conditions);
+    if (this.merge("conditions", conditions, this.conditionsOf(rule), this.conditionsOf(original), rule)) {
       json.conditions = conditions;
     }
-    let actions = structuredClone(json.actions ?? {});
-    if (Object.keys(this.merge(actions, this.actionsOf(rule), this.actionsOf(original))).length) {
+    let actions = structuredClone(this.sections.actions);
+    if (this.merge("actions", actions, this.actionsOf(rule), this.actionsOf(original), rule)) {
       json.actions = actions;
     }
-    if (this.isReadOnly && new GraphFilterRule(json).isChangedFrom(this)) {
-      throw new NotSupported(gt`The mail server does not allow changes to the rule ${rule.name}`);
-    }
-    json.sequence = priority;
-    return new GraphFilterRule(json);
+  }
+
+  protected setPriority(priority: number) {
+    this.json.sequence = priority;
   }
 
   protected conditionsOf(rule: FilterRuleAction): Record<string, any> {
@@ -120,18 +165,7 @@ export class GraphFilterRule extends ServerFilterRule {
 
   /** For creating the rule */
   get newProperties(): Record<string, any> {
-    let { displayName, sequence, isEnabled, conditions, actions } = this.json;
-    return { displayName, sequence, isEnabled, conditions, actions };
-  }
-
-  /** For changing the rule. The server replaces the conditions and actions as a whole. */
-  changedProperties(original: GraphFilterRule): Record<string, any> {
-    let changes: Record<string, any> = {};
-    for (let key of ["displayName", "sequence", "conditions", "actions"]) {
-      if (JSON.stringify(this.json[key]) != JSON.stringify(original.json[key])) {
-        changes[key] = this.json[key] ?? null;
-      }
-    }
-    return changes;
+    let { displayName, sequence, isEnabled, conditions, exceptions, actions } = this.json;
+    return { displayName, sequence, isEnabled, conditions, exceptions, actions };
   }
 }
