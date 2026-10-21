@@ -3,6 +3,8 @@ import { JSCalendarEvent } from "./JSCalendarEvent";
 import type { TJMAPCalendarEvent } from "./TJSCalendar";
 import type { TID, TJMAPChangeResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import type { JMAPCalendar } from "./JMAPCalendar";
+import type { InvitationResponseInMessage } from "../Invitation/InvitationStatus";
+import type { MailAccount } from "../../Mail/MailAccount";
 import { JMAPOutgoingInvitation } from "./JMAPOutgoingInvitation";
 import { checkChangeError } from "../../Mail/JMAP/JMAPError";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -25,6 +27,10 @@ export class JMAPEvent extends Event {
 
   get account() {
     return this.calendar.account;
+  }
+
+  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount, save = true): Promise<void> {
+    await super.respondToInvitation(response, mailAccount ?? this.account, save);
   }
 
   fromJMAP(jmap: TJMAPCalendarEvent) {
