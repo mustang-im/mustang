@@ -966,6 +966,12 @@ export class Event extends Observable {
 
   /**
    * Deletes the event and any subsequent instances that are not exceptions.
+   *
+   * UI helper. Call it on an event that is not being edited, whose master is
+   * not being edited either: call `cancelEditing()` on both first. Otherwise,
+   * the pending UI changes of the master would be saved, too.
+   * It changes the master in its own editing session, so that `save()` sees
+   * the shortened series as a change and sends the update to the participants.
    */
   async truncateRecurrence() {
     let master = this.parentEvent;
