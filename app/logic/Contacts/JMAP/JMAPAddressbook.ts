@@ -76,7 +76,8 @@ export class JMAPAddressbook extends Addressbook {
       hasMore = newPersons.length + updatedPersons.length > batchSize;
     }
     if (state) {
-      this.account.syncState.set("ContactCard", state);
+      // The state is for all address books. Keep an older one, so that we still get the changes of the others since then.
+      this.account.syncState.set("ContactCard", this.account.syncState.get("ContactCard") ?? state);
     }
     this.syncState = state;
     await this.save();
