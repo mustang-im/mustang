@@ -1,5 +1,5 @@
 import type { Tag } from "../../Abstract/Tag";
-import { base64ToUint8Array } from "../../util/blob";
+import { base64ToUint8Array, uint8ArrayToBase64 } from "../../util/blob";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export interface ExchangeCategory {
@@ -87,5 +87,5 @@ export function addCategoryToXML(xml: Document | null, tag: Tag): Document {
 
 export function categoryListXMLToBase64(xml: Document): string {
   let text = `<?xml version="1.0"?>\n` + new XMLSerializer().serializeToString(xml.documentElement);
-  return btoa(unescape(encodeURIComponent(text)));
+  return uint8ArrayToBase64(new TextEncoder().encode(text));
 }
