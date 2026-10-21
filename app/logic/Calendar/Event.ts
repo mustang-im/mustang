@@ -6,7 +6,7 @@ import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
-import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
+import { k1DayS, k1HourS, k1MinuteS, localTime, moveLocalTime, myTimezone } from "../util/date";
 import { convertHTMLToText, convertTextToHTML, sanitizeHTML } from "../util/convertHTML";
 import { Observable, notifyChangedAccessor, notifyChangedProperty, notifyChangedObservable } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
@@ -426,14 +426,9 @@ export class Event extends Observable {
    * Assumes that `startEditing()` was called before.
    */
   moveSeriesWithOccurrence(occurrence: Event) {
-    let timeZone = occurrence.timezone ?? undefined;
-    let localTime = (time: Date) => new Date(time.toLocaleString("lt", { timeZone }).replace(" ", "T") + "Z").getTime();
-    let shift = localTime(occurrence.startTime) - localTime(occurrence.recurrenceStartTime);
-    let move = (time: Date) => {
-      let moved = new Date(time.getTime() + shift);
-      return new Date(moved.getTime() + localTime(time) + shift - localTime(moved));
-    };
-    let startTime = move(this.unedited.startTime);
+    let timezone = occurrence.timezone;
+    let shift = localTime(occurrence.startTime, timezone).getTime() - localTime(occurrence.recurrenceStartTime, timezone).getTime();
+    let startTime = moveLocalTime(this.unedited.startTime, shift, timezone);
     this.allDay = occurrence.allDay;
     this.timezone = occurrence.timezone;
     this.startTime = startTime;
@@ -444,8 +439,8 @@ export class Event extends Observable {
     if (this.recurrenceRule) {
       let { count, frequency, interval, weekdays, week, first, seriesStartTime } = this.recurrenceRule;
       let { seriesEndTime } = this.unedited.recurrenceRule;
-      weekdays = weekdays?.map(weekday => (weekday + new Date(localTime(startTime)).getUTCDay() - seriesStartTime.getUTCDay() + 7) % 7);
-      this.recurrenceRule = new RecurrenceRule({ masterDuration: this.duration, timezone: this.timezone, seriesStartTime: startTime, seriesEndTime: seriesEndTime && move(seriesEndTime), count, frequency, interval, weekdays, week, first }, true);
+      weekdays = weekdays?.map(weekday => (weekday + localTime(startTime, timezone).getUTCDay() - seriesStartTime.getUTCDay() + 7) % 7);
+      this.recurrenceRule = new RecurrenceRule({ masterDuration: this.duration, timezone: this.timezone, seriesStartTime: startTime, seriesEndTime: seriesEndTime && moveLocalTime(seriesEndTime, shift, timezone), count, frequency, interval, weekdays, week, first }, true);
     }
   }
 
