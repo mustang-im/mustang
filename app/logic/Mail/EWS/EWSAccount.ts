@@ -489,52 +489,49 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
-        const processChunk = async (chunk: string) => {
-          data += chunk;
-          while (data.includes(endEnvelope)) {
-            let pos = data.indexOf(endEnvelope) + endEnvelope.length;
-            chunk = data.slice(0, pos);
-            data = data.slice(pos);
-            try {
-              let document = this.parseXML(chunk);
-              if (!document) {
-                continue;
-              }
-              let messages = document.querySelector("ResponseMessages");
-              if (!messages) {
-                continue;
-              }
-              let message = Object.values(XML2JSON(messages))[0];
-              if (message.ResponseClass == "Error") {
-                throw new EWSItemError(message, request);
-              }
-              accepted = true;
-              if (message.ConnectionStatus == "Closed") {
-                continue; // Re-open connection
-              }
-              await responseCallback(message);
-            } catch (ex) {
-              if (signal.aborted) {
-                continue; // Server errors on cancel
-              }
-              if (ex.type == "ErrorSubscriptionNotFound" || ex.type == "ErrorMissedNotificationEvents") {
-                // The server dropped it, e.g. while the computer slept
-                await this.resubscribeNotifications(username);
-                return; // it restarted the stream, and aborted this one
-              }
-              if (!accepted) {
-                refusal = ex; // Reported below, once the server closed the stream
-                continue;
-              }
-              this.errorCallback(ex);
-            }
-          }
-        };
         /** Our own processing may take a while, which is not the server's fault */
         const onChunk = async (chunk: string) => {
           heartbeat?.fulfilled();
           try {
-            await processChunk(chunk);
+            data += chunk;
+            while (data.includes(endEnvelope)) {
+              let pos = data.indexOf(endEnvelope) + endEnvelope.length;
+              chunk = data.slice(0, pos);
+              data = data.slice(pos);
+              try {
+                let document = this.parseXML(chunk);
+                if (!document) {
+                  continue;
+                }
+                let messages = document.querySelector("ResponseMessages");
+                if (!messages) {
+                  continue;
+                }
+                let message = Object.values(XML2JSON(messages))[0];
+                if (message.ResponseClass == "Error") {
+                  throw new EWSItemError(message, request);
+                }
+                accepted = true;
+                if (message.ConnectionStatus == "Closed") {
+                  continue; // Re-open connection
+                }
+                await responseCallback(message);
+              } catch (ex) {
+                if (signal.aborted) {
+                  continue; // Server errors on cancel
+                }
+                if (ex.type == "ErrorSubscriptionNotFound" || ex.type == "ErrorMissedNotificationEvents") {
+                  // The server dropped it, e.g. while the computer slept
+                  await this.resubscribeNotifications(username);
+                  return; // it restarted the stream, and aborted this one
+                }
+                if (!accepted) {
+                  refusal = ex; // Reported below, once the server closed the stream
+                  continue;
+                }
+                this.errorCallback(ex);
+              }
+            }
           } finally {
             expectHeartbeat();
           }
