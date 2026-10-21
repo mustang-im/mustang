@@ -66,10 +66,14 @@ async function setup() {
   calendar.jmapID = "b";
   calendar.storage = new DummyCalendarStorage();
   calendar.errorCallback = ex => { throw ex; };
-  account.makeCombinedCall = async () => ({
-    list: { accountId: "u", queryState: "s1", canCalculateChanges: true, position: 0, ids: ["x"] },
-    events: { accountId: "u", state: "s1", list: [series()], notFound: [] },
-  });
+  account.makeCombinedCall = async (calls: [string, Record<string, any>, string?][]) => {
+    let { position = 0, limit = Infinity, calculateTotal } = calls[0][1];
+    let page = [series()].slice(position, position + limit);
+    return {
+      list: { accountId: "u", queryState: "s1", canCalculateChanges: true, position, ids: page.map(event => event.id), total: calculateTotal ? 1 : undefined },
+      events: { accountId: "u", state: "s1", list: page, notFound: [] },
+    };
+  };
   let sent: Record<string, any>[] = [];
   account.makeSingleCall = async (method: string, args: Record<string, any>) => {
     sent.push(args);
