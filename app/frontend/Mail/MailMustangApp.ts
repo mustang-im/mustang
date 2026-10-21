@@ -30,7 +30,6 @@ export class MailMustangApp extends MustangApp {
     let composerApp = new WriteMailMustangApp();
     composerApp.title = derived(mail, () => mail.subject ?? composerApp.name);
     composerApp.windowParams = { mail: mail };
-    composerApp.appWindow = appWindow;
     mailMustangApp.subApps.add(composerApp);
     openApp(composerApp, composerApp.windowParams);
   }
@@ -75,7 +74,9 @@ const tabsObserver = {
   },
   removed(tabs: OAuth2Tab[]) {
     for (let tab of tabs) {
-      mailMustangApp.subApps.remove(tab.mustangApp);
+      for (let appWindow of AppWindow.all) {
+        appWindow.uiState(mailMustangApp.subApps).remove(tab.mustangApp);
+      }
     }
     openApp(mailMustangApp, {});
   },

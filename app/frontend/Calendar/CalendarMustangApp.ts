@@ -14,22 +14,23 @@ export class CalendarMustangApp extends MustangApp {
   appURL = "/calendar";
 
   showEvent(event: Event) {
-    let appWindow = AppWindow.current().mainWindow;
-    let edit = calendarMustangApp.subApps.find(app => app.windowParams?.event == event && app.appWindow == appWindow);
+    let edit = calendarMustangApp.subApps.find(app => app.windowParams?.event == event);
     if (!edit) {
       edit = new CalendarEventMustangApp();
       edit.title = derived(event, event => event.title ?? edit.name);
       edit.windowParams = { event: event };
-      edit.appWindow = appWindow;
       calendarMustangApp.subApps.add(edit);
     }
     openApp(edit, edit.windowParams);
   }
 
-  /** Closes the full window that `showEvent()` opened, if any */
+  /** Closes the full window that `showEvent()` opened, if any, in all main windows */
   closeEvent(event: Event) {
-    let window = this.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
-    this.subApps.remove(window);
+    for (let appWindow of AppWindow.all) {
+      let subApps = appWindow.uiState(this.subApps);
+      let window = subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
+      subApps.remove(window);
+    }
   }
 }
 

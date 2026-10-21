@@ -14,7 +14,7 @@ import { getContext, mount, unmount, type Component } from "svelte";
  */
 export class AppWindow {
   readonly window: Window;
-  /** For the backend to find the window. Empty for the first main window. */
+  /** For the backend to find the window */
   readonly name: string;
   /**
    * The window where the apps show, e.g. when the user clicks on a person.
@@ -28,7 +28,7 @@ export class AppWindow {
   protected readonly uiStates = new Map<object, object>();
 
   /** The window that started with the app */
-  static readonly main = new AppWindow(window, "");
+  static readonly main = new AppWindow(window, "main");
   /** All windows that we opened, without the first main window */
   static readonly opened = new ArrayColl<AppWindow>();
   protected static lastUsed = AppWindow.main;

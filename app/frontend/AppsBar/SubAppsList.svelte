@@ -1,8 +1,8 @@
-{#if shownSubApps.hasItems}
+{#if $subApps.hasItems}
   <!-- A list of parts of the app,
     shown in the AppBar underneath the app button -->
   <hbox class="sub-app-bar" app={mainApp.id}>
-    {#each shownSubApps.each as app}
+    {#each $subApps.each as app}
       <SubAppButton selected={selectedApp == app} {app}
         on:click={() => catchErrors(() => onSelectApp(app))}>
         <AppIcon slot="icon" icon={app.icon} size="16px" />
@@ -27,11 +27,7 @@
   /* in/out */
   export let selectedApp: MustangApp | null;
 
-  $: subApps = $mainApp.subApps;
-  $: shownSubApps = $subApps.filterOnce(isInThisWindow);
-  function isInThisWindow(app: MustangApp): boolean {
-    return !app.appWindow || app.appWindow == appWindow;
-  }
+  $: subApps = appWindow.uiState($mainApp.subApps);
 
   function onSelectApp(app: MustangApp) {
     openApp(app, app.windowParams);
@@ -43,7 +39,7 @@
     removed(apps: MustangApp[]) {
       for (let app of apps) {
         if (selectedApp == app) {
-          selectedApp = mainApp.subApps.filterOnce(isInThisWindow).last ?? mainApp;
+          selectedApp = subApps.last ?? mainApp;
         }
       }
     }
