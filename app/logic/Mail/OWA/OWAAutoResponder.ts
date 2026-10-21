@@ -1,4 +1,5 @@
-import { ExchangeAutoResponder, OOFAudience, OOFState } from "../EWS/ExchangeAutoResponder";
+import { ExchangeAutoResponder, OOFState } from "../EWS/ExchangeAutoResponder";
+import { AutoResponderAudience } from "../AutoResponder";
 import type { OWAAccount } from "./OWAAccount";
 import { OWAGetMailboxAutoReplyConfigurationRequest, OWASetMailboxAutoReplyConfigurationRequest } from "./Request/OWAMailboxAutoReplyConfigurationRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -21,7 +22,7 @@ export class OWAAutoResponder extends ExchangeAutoResponder {
   fromOWA(options: any) {
     this.oofState = sanitize.integerRange(options.AutoReplyState, 0, 2, OOFState.Disabled);
     this.setTimes(sanitize.date(options.StartTime, null), sanitize.date(options.EndTime, null));
-    this.externalAudience = this.toAudience(sanitize.integerRange(options.ExternalAudience, 0, 2, OOFAudience.None));
+    this.externalAudience = this.sanitizeAudience(options.ExternalAudience, AutoResponderAudience.None);
     this.internalHTML = sanitizeHTML(options.InternalMessage);
     this.externalHTML = sanitizeHTML(options.ExternalMessage);
   }

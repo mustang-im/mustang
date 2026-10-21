@@ -1,5 +1,6 @@
 import { AutoResponder, AutoResponderAudience } from "../AutoResponder";
 import type { ExchangeMailAccount } from "./ExchangeMailAccount";
+import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 /** Exchange Out of Office (OOF), as EWS, OWA and ActiveSync have it.
  * Exchange replies only once per sender, and never to
@@ -34,8 +35,8 @@ export class ExchangeAutoResponder extends AutoResponder {
     return ExchangeAutoResponder.kAudiences.indexOf(this.externalAudience);
   }
 
-  protected toAudience(audience: OOFAudience): AutoResponderAudience {
-    return ExchangeAutoResponder.kAudiences[audience];
+  protected sanitizeAudience(audience: OOFAudience, fallback: AutoResponderAudience): AutoResponderAudience {
+    return sanitize.enum(ExchangeAutoResponder.kAudiences[audience], ExchangeAutoResponder.kAudiences, fallback);
   }
 
   protected static readonly kAudiences = [
