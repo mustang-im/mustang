@@ -57,9 +57,11 @@ test("A series whose repetition was removed elsewhere is a single event here", a
         changed: { accountId: "u", state: "s2", list: [serverEvent(false)], notFound: [] },
       };
     }
+    let { position = 0, limit = Infinity, calculateTotal } = calls[0][1];
+    let page = [serverEvent(true)].slice(position, position + limit);
     return {
-      list: { accountId: "u", queryState: "s1", canCalculateChanges: true, position: 0, ids: ["x"] },
-      events: { accountId: "u", state: "s1", list: [serverEvent(true)], notFound: [] },
+      list: { accountId: "u", queryState: "s1", canCalculateChanges: true, position, ids: page.map(event => event.id), total: calculateTotal ? 1 : undefined },
+      events: { accountId: "u", state: "s1", list: page, notFound: [] },
     };
   };
   await calendar.listEvents();
