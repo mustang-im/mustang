@@ -1,6 +1,6 @@
 <FileDropTarget on:add-files={(dropped) => catchErrors(() => onFilesDrop(dropped))}>
   <vbox flex class="event-edit-window">
-    <DialogHeader bind:event />
+    <DialogHeader bind:event isRecurrenceChanged={changedRecurrenceOf == event} />
     <hbox flex bind:offsetWidth={width}>
       <Scroll>
         <vbox class="columns" flex class:show-description={showDescription} class:show-attachments={showAttachments}>
@@ -24,7 +24,7 @@
             </Section>
             {#if showRepeat}
               <Section label={$t`Repeat`} icon={RepeatIcon}>
-                <RepeatBox {event} />
+                <RepeatBox {event} on:change={() => changedRecurrenceOf = event} />
               </Section>
             {/if}
             {#if showReminder}
@@ -115,7 +115,7 @@
   export let event: Event;
 
   $: attachments = event.attachments;
-  $: showRepeat = !!event.recurrenceRule || event.parentEvent && event.isNew;
+  $: showRepeat = !!event.recurrenceRule || !!event.parentEvent;
   $: showReminder = !!$event.alarm;
   $: showParticipants = $event.participants.hasItems;
   $: showLocation = !!$event.location;
@@ -124,6 +124,7 @@
   $: showAttachments = $attachments.hasItems;
 
   let width: number;
+  let changedRecurrenceOf: Event = null;
 
   function expandRepeat(): void {
     event.newRecurrenceRule(Frequency.Weekly);

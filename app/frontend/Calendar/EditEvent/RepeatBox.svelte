@@ -1,6 +1,6 @@
 <SectionTitle label={$t`Repeat`}>
   <hbox>
-    <select value={frequency} class="selector"
+    <select value={frequency} class="selector" disabled={isException}
       on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget?.value))}>
       <option value={Frequency.None}>{$t`none`}</option>
       <option value={Frequency.Daily}>{$t`daily`}</option>
@@ -16,7 +16,7 @@
     {#if frequency == Frequency.Daily }
       <RadioGroup bind:value={daily} items={dailyOptions} vertical={true}
         on:change={() => catchErrors(onDailyOptionChanged)}
-        disabled={$event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
+        disabled={isException || $event.startTime.getDay() == 0 || $event.startTime.getDay() == 6}
         />
     {:else if frequency == Frequency.Weekly }
       <hbox class="weekdays">
@@ -27,7 +27,7 @@
               label={weekday.tooltip}
               selected={weekdays.includes(weekday.value)}
               onClick={() => onWeekdayChanged(weekday.value)}
-              disabled={weekday.disabled}
+              disabled={isException || weekday.disabled}
               border={false}
               classes="plain weekday"
               >
@@ -37,25 +37,32 @@
         </hbox>
       </hbox>
     {:else if frequency == Frequency.Monthly }
-      <RadioGroup value={week} items={monthWeekOptions} vertical={true}
+      <RadioGroup value={week} items={monthWeekOptions} vertical={true} disabled={isException}
         on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
     {:else if frequency == Frequency.Yearly }
-      <RadioGroup value={week} items={yearWeekOptions} vertical={true}
+      <RadioGroup value={week} items={yearWeekOptions} vertical={true} disabled={isException}
         on:change={(ev) => catchErrors(() => onWeekChanged(ev.detail))} />
     {/if}
   </vbox>
 
   <hbox class="every">
     <label for="every">{$t`Every`}</label>
-    <input class="auto" type="number" min={1} max={99} value={interval} id="every"
+    <input class="auto" type="number" min={1} max={99} value={interval} id="every" disabled={isException}
       on:change={(ev) => catchErrors(() => onIntervalChanged(ev.currentTarget.value))} />
-    <select value={frequency} class="selector"
+    <select value={frequency} class="selector" disabled={isException}
       on:change={(ev) => catchErrors(() => onFrequencyChanged(ev.currentTarget.value))}>
       <option value={Frequency.Daily}>{$plural(interval, { one: 'day', other: 'days' })}</option>
       <option value={Frequency.Weekly}>{$plural(interval, { one: 'week', other: 'weeks' })}</option>
       <option value={Frequency.Monthly}>{$plural(interval, { one: 'month', other: 'months' })}</option>
       <option value={Frequency.Yearly}>{$plural(interval, { one: 'year', other: 'years' })}</option>
     </select>
+  </hbox>
+{/if}
+
+{#if isException}
+  <hbox class="exception">
+    <hbox>{$t`This is an exception to a recurring meeting`}</hbox>
+    <Button label={$t`Open series`} onClick={onOpenSeries} />
   </hbox>
 {/if}
 
@@ -77,19 +84,24 @@
 -->
 
 <script lang="ts">
-  import type { Event } from "../../../logic/Calendar/Event";
+  import { type Event, RecurrenceCase } from "../../../logic/Calendar/Event";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import SectionTitle from './SectionTitle.svelte';
   import RadioGroup, { type RadioOption } from "./RadioGroup.svelte";
   import RoundButton from '../../Shared/RoundButton.svelte';
+  import Button from '../../Shared/Button.svelte';
+  import { openEvent } from "../open";
   import { catchErrors } from "../../Util/error";
   import { kAllWeekdays, weekdayLabel } from "../../../logic/util/date";
-  import { arrayRemove, assert } from '../../../logic/util/util';
+  import { arrayRemove, assert, UserError } from '../../../logic/util/util';
   import { getDateTimeLocale, t, plural } from "../../../l10n/l10n";
+  import { createEventDispatcher } from 'svelte';
+  const dispatchEvent = createEventDispatcher<{ change: void }>();
 
   export let event: Event;
 
   $: master = $event.parentEvent ?? event;
+  $: isException = $event.recurrenceCase == RecurrenceCase.Exception;
   $: frequency = $master.recurrenceRule?.frequency ?? Frequency.None;
   $: interval = $master.recurrenceRule?.interval ?? 1;
   // end // let count = Number.isFinite(event.recurrenceRule?.count) ? event.recurrenceRule.count : 1;
@@ -112,11 +124,13 @@
   $: duration = $event.duration;
   $: startTime, timezone, duration, updateDateUI();
   function updateDateUI() {
-    master.startEditing();
-    master.startTime = event.startTime;
-    master.timezone = event.timezone;
-    master.duration = event.duration;
-    master.newRecurrenceRule(frequency, interval, week, weekdays);
+    if (!isException) {
+      master.startEditing();
+      master.startTime = event.startTime;
+      master.timezone = event.timezone;
+      master.duration = event.duration;
+      master.newRecurrenceRule(frequency, interval, week, weekdays);
+    }
     let localStartTime = master.recurrenceRule.seriesStartTime;
     week = master.recurrenceRule.week;
     weekdays = master.recurrenceRule.weekdays?.slice() ?? [localStartTime.getUTCDay()];
@@ -175,12 +189,14 @@
     daily = "everyday";
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, week, weekdays);
+    dispatchEvent("change");
   }
 
   function onWeekChanged(item: RadioOption) {
     let newWeek = item.value;
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, newWeek, weekdays);
+    dispatchEvent("change");
   }
 
   function onWeekdayChanged(weekday: number) {
@@ -191,12 +207,14 @@
     }
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, week, weekdays);
+    dispatchEvent("change");
   }
 
   function onIntervalChanged(newValue: string) {
     interval = Number(newValue);
     master.startEditing();
     master.newRecurrenceRule(frequency, interval, week, weekdays);
+    dispatchEvent("change");
   }
 
   async function onFrequencyChanged(newValue: string) {
@@ -205,10 +223,33 @@
     if (frequency == Frequency.None && master.recurrenceRule) {
       master.startEditing();
       master.recurrenceRule = null;
+      dispatchEvent("change");
     } else if (frequency != master.recurrenceRule?.frequency) {
       master.startEditing();
       master.newRecurrenceRule(frequency, interval, week, weekdays);
+      dispatchEvent("change");
     }
+  }
+
+  function onOpenSeries() {
+    let occurrence = regularOccurrenceNear(event);
+    if (!occurrence) {
+      throw new UserError($t`All occurrences of this series are exceptions`);
+    }
+    openEvent(occurrence);
+  }
+
+  function regularOccurrenceNear(exception: Event): Event | null {
+    let rule = exception.parentEvent.recurrenceRule;
+    for (let next of [(date: Date) => rule.getOccurrenceBefore(date), (date: Date) => rule.getOccurrenceAfter(date)]) {
+      for (let date = next(exception.recurrenceStartTime); date; date = next(date)) {
+        let occurrence = exception.parentEvent.getOccurrenceByDate(date, false);
+        if (occurrence?.recurrenceCase == RecurrenceCase.Instance) {
+          return occurrence;
+        }
+      }
+    }
+    return null;
   }
 </script>
 
@@ -258,5 +299,11 @@
   }
   :global(.inline) {
     display: inline-flex !important;
+  }
+  .exception {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-block-start: 14px;
   }
 </style>

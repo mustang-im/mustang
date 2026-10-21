@@ -1,7 +1,13 @@
 <Dialog title={isMeeting ? $t`Meeting Recurrence` : $t`Appointment Recurrence`}
-  okLabel={$t`OK`} okDisabled={okDisabled} onOK={onOK} width="640px" on:close={onClose}>
+  okLabel={isException ? null : $t`OK`} cancelLabel={isException ? $t`Close` : null}
+  okDisabled={okDisabled} onOK={onOK} width="640px" on:close={onClose}>
   <vbox class="groups">
-    <GroupBox label={$t`Appointment time`}>
+    {#if isException}
+      <p class="exception">
+        {isMeeting ? $t`This is an exception to a recurring meeting` : $t`This is an exception to a recurring appointment`}
+      </p>
+    {/if}
+    <GroupBox label={$t`Appointment time`} disabled={isException}>
       <grid class="appointment-time">
         <span class="label">{$t`Start`}</span>
         <TimeInput time={startTime} options={startOptions} label={$t`Start`} disabled={allDay}
@@ -15,7 +21,7 @@
       </grid>
     </GroupBox>
 
-    <GroupBox label={$t`Recurrence pattern`}>
+    <GroupBox label={$t`Recurrence pattern`} disabled={isException}>
       <hbox class="pattern">
         <vbox class="frequencies">
           {#each frequencies as choice}
@@ -90,7 +96,7 @@
       </hbox>
     </GroupBox>
 
-    <GroupBox label={$t`Range of recurrence`}>
+    <GroupBox label={$t`Range of recurrence`} disabled={isException}>
       <hbox class="range">
         <hbox class="range-start">
           <span class="label">{$t`Start`}</span>
@@ -117,7 +123,11 @@
   </vbox>
 
   <svelte:fragment slot="buttons-start">
-    <DialogButton label={$t`Remove Recurrence`} disabled={!hasRecurrence} onClick={onRemove} />
+    {#if isException}
+      <DialogButton label={$t`Open Series`} onClick={onOpenSeries} />
+    {:else}
+      <DialogButton label={$t`Remove Recurrence`} disabled={!hasRecurrence} onClick={onRemove} />
+    {/if}
   </svelte:fragment>
 </Dialog>
 
@@ -133,6 +143,7 @@
   import { EventTimeEditor } from "./EventTimeEditor";
   import { RecurrencePattern, type MonthlyMode } from "./RecurrencePattern";
   import { startTimeOptions, endTimeOptions, durationLabel } from "./TimeOptions";
+  import { RecurrenceCase } from "../../../logic/Calendar/Event";
   import { Frequency } from "../../../logic/Calendar/RecurrenceRule";
   import Dialog from "../../Shared/Dialog/Dialog.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
@@ -144,6 +155,8 @@
   import SpinBox from "../../Shared/Form/SpinBox.svelte";
   import ComboBox from "../../Shared/Form/ComboBox.svelte";
   import { kAllWeekdays, weekdayLabel } from "../../../logic/util/date";
+  import { UserError } from "../../../logic/util/util";
+  import { openEvent } from "../../../frontend/Calendar/open";
   import { createEventDispatcher } from "svelte";
   import { getDateTimeLocale, plural, t } from "../../../l10n/l10n";
 
@@ -156,6 +169,7 @@
   const series = flow.master;
   const seriesTimes = series == event ? timeEditor : new EventTimeEditor(series);
   const isMeeting = event.participants.hasItems;
+  const isException = event.recurrenceCase == RecurrenceCase.Exception;
   const allDay = series.allDay;
   const hasRecurrence = !!series.recurrenceRule;
   let pattern = flow.pattern.clone();
@@ -270,6 +284,31 @@
     onClose();
   }
 
+  // <copied from="../../../frontend/Calendar/EditEvent/RepeatBox.svelte">
+  function onOpenSeries() {
+    let occurrence = regularOccurrenceNear(event);
+    if (!occurrence) {
+      throw new UserError($t`All occurrences of this series are exceptions`);
+    }
+    // Lookout: Also closes the dialog
+    onClose();
+    openEvent(occurrence);
+  }
+
+  function regularOccurrenceNear(exception: Event): Event | null {
+    let rule = exception.parentEvent.recurrenceRule;
+    for (let next of [(date: Date) => rule.getOccurrenceBefore(date), (date: Date) => rule.getOccurrenceAfter(date)]) {
+      for (let date = next(exception.recurrenceStartTime); date; date = next(date)) {
+        let occurrence = exception.parentEvent.getOccurrenceByDate(date, false);
+        if (occurrence?.recurrenceCase == RecurrenceCase.Instance) {
+          return occurrence;
+        }
+      }
+    }
+    return null;
+  }
+  // </copied>
+
   function onClose() {
     dispatch("close");
   }
@@ -278,6 +317,9 @@
 <style>
   .groups {
     gap: 12px;
+  }
+  .exception {
+    margin: 0;
   }
   .label {
     color: var(--lo-fg);

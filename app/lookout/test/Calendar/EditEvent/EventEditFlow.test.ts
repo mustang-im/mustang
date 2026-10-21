@@ -115,10 +115,41 @@ test("A changed series end allows to save the series, from an occurrence", async
   flow.pattern.count = 5;
   expect(flow.seriesEndChanged).toBe(true);
   expect(flow.canSaveSeries).toBe(true);
-  expect(flow.seriesChoices()).toEqual(["following", "series"]);
+  expect(flow.seriesChoices()).toEqual(["occurrence", "following", "series"]);
+  expect(flow.seriesChoiceDisabled("occurrence")).toBe("You changed the recurrence pattern");
   await flow.saveWith("series");
   expect(master.recurrenceRule.count).toBe(5);
   expect(master.startTime).toEqual(new Date(2026, 9, 15, 10, 0));
+});
+
+test("A changed recurrence of an occurrence can't be saved for only this occurrence", async () => {
+  let calendar = newCalendar();
+  let master = newEvent(calendar);
+  master.newRecurrenceRule(Frequency.Weekly);
+  calendar.events.add(master);
+  await master.save();
+  let occurrence = master.instances.get(2);
+  occurrence.startEditing();
+  let flow = new EventEditFlow(occurrence, () => {});
+  occurrence.title = "Planning, moved";
+  expect(flow.isRecurrenceChanged).toBe(false);
+  expect(flow.seriesChoices().map(choice => flow.seriesChoiceDisabled(choice))).toEqual([false, false, false]);
+
+  // What the recurrence dialog does on OK
+  let pattern = flow.pattern.clone();
+  pattern.interval = 2;
+  flow.applyPattern(pattern);
+  expect(flow.isRecurrenceChanged).toBe(true);
+  expect(flow.seriesChoices()).toEqual(["occurrence", "following", "series"]);
+  expect(flow.seriesChoiceDisabled("occurrence")).toBe("You changed the recurrence pattern");
+  expect(flow.seriesChoiceDisabled("following")).toBe(false);
+  expect(flow.seriesChoiceDisabled("series")).toBe(false);
+
+  occurrence.title = "Planning";
+  expect(flow.canSaveSingle).toBe(false);
+  expect(flow.seriesChoices()).toEqual(["occurrence", "following", "series"]);
+  await flow.saveWith("series");
+  expect(master.recurrenceRule.interval).toBe(2);
 });
 
 async function savedWeeklySeries(): Promise<Event> {
