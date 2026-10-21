@@ -100,8 +100,7 @@
 
   const frontendSetting = getLocalStorage("appearance.frontend", "classic");
   $: frontend = $frontendSetting.value;
-  // The import must be in `<script>`: Vite looks for npm packages to pre-bundle only there.
-  // Otherwise, the dev server finds Lookout's packages only at runtime, and the window stays empty with "504 Outdated Optimize Dep".
+  // Vor vite, the import must be in `<script>` to pre-bundle, otherwise "504 Outdated Optimize Dep"
   $: lookoutWindow = frontend == "lookout" ? import("../../lookout/MainWindow/MainWindow.svelte") : null;
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
