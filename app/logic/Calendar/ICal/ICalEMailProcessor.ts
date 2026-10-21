@@ -32,8 +32,7 @@ export class ICalEMailProcessor extends EMailProcessor {
     }
     email.event = event;
 
-    if (email.invitationMessage == InvitationMessage.ParticipantReply ||
-        email.invitationMessage == InvitationMessage.CancelledEvent) {
+    if (email.invitationMessage != InvitationMessage.None) {
       let foundEventInCalendars = email.folder.account.calendarsAvailable.filterOnce(cal => cal.hasMatchingEvent(event));
       for (let calendar of foundEventInCalendars) {
         let incomingInvitation = calendar.getIncomingInvitationForEMail(email);
