@@ -537,10 +537,19 @@ export class JMAPAccount extends MailAccount {
       folder.fromJMAP(folderJSON);
       currentFolders.set(folder.id, folder);
     }
+    let parentIDs = new Map(serverFoldersResponse.list.map(folderJSON => [folderJSON.id, folderJSON.parentId]));
     // Only now, because the server may list a folder before its parent
     for (let folderJSON of serverFoldersResponse.list) {
       let folder = currentFolders.get(folderJSON.id);
       let parent = currentFolders.get(folderJSON.parentId) ?? null;
+      let ancestorID = folderJSON.parentId;
+      for (let i = 0; ancestorID && ancestorID != folder.id && i < parentIDs.size; i++) {
+        ancestorID = parentIDs.get(ancestorID);
+      }
+      if (ancestorID == folder.id) {
+        this.dataError(new Error(`Folder ${folder.name}: The server made the folder its own parent or a subfolder of itself. Showing it at the top level.`));
+        parent = null;
+      }
       let parentFolders = parent ? parent.subFolders : this.rootFolders;
       if (parentFolders.contains(folder)) {
         continue;
