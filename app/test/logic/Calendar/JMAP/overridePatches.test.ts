@@ -2,6 +2,7 @@
 import { appGlobal } from "../../../../logic/app";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { JMAPCalendar } from "../../../../logic/Calendar/JMAP/JMAPCalendar";
+import { JSCalendarEvent } from "../../../../logic/Calendar/JMAP/JSCalendarEvent";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
@@ -123,4 +124,23 @@ test("A changed occurrence is a valid patch", async () => {
   expect(read.title).toBe("Team meeting, in room B");
   expect(Object.values(read.locations).map(location => location.name)).toEqual(["Room B"]);
   expect(Object.values(read.participants).find(p => p.calendarAddress.toLowerCase() == "mailto:tom@example.com").participationStatus).toBe("declined");
+});
+
+test("A patch path with an escaped / or ~ applies to that key", () => {
+  let json = series();
+  json.keywords = { "a/b": true, "c~d": true };
+  let override = { "keywords/a~1b": null, "keywords/c~0d": null, "keywords/e~1f~0g": true } as any as TJMAPCalendarEvent;
+
+  let occurrence = JSCalendarEvent.applyOverride(json, "2026-11-09T10:00:00", override);
+
+  expect(Object.keys(occurrence.keywords)).toEqual(["e/f~g"]);
+});
+
+test("A patch path through a property that the series doesn't have is not applied", () => {
+  // RFC 8620 §5.3: All parts prior to the last must already exist
+  let override = { "links/l1/href": "https://example.com/agenda" } as any as TJMAPCalendarEvent;
+
+  let occurrence = JSCalendarEvent.applyOverride(series(), "2026-11-09T10:00:00", override);
+
+  expect(occurrence.links).toBeUndefined();
 });
