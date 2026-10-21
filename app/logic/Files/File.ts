@@ -36,7 +36,7 @@ export class File extends FileOrDirectory {
   protected readonly downloadRunOnce = new RunOnce<void>();
   protected readonly readFileRunOnce = new RunOnce<void>();
   protected readonly getURLRunOnce = new RunOnce<URLString | null>();
-  protected removingLocalFile: Promise<void> | null = null;
+  protected removingLocalFile: Promise<File | null> | null = null;
 
   /** If a File is GCed, the registered blob: URL is revoked automatically.
    * @see Abstract/Attachment. */
@@ -126,7 +126,11 @@ export class File extends FileOrDirectory {
 
   protected async saveAsLocalFile() {
     assert(this.contents, "Need contents");
-    await this.removingLocalFile;
+    try {
+      await this.removingLocalFile;
+    } catch (ex) {
+      // The caller of `deleteStaleLocalCache()` reports it
+    }
     this.filepathLocal ??= await this.getLocalFilePath();
     let contents = new Uint8Array(await this.contents.arrayBuffer());
     await appGlobal.remoteApp.writeFile(this.filepathLocal, 0o600, contents);
@@ -186,7 +190,8 @@ export class File extends FileOrDirectory {
       return;
     }
     this.removingLocalFile = this.deleteOrRenameLocalFile(filepathLocal, lastMod);
-    if (!await this.removingLocalFile) {
+    let conflictedCopy = await this.removingLocalFile;
+    if (!conflictedCopy) {
       return;
     }
     await conflictedCopy.upload();
