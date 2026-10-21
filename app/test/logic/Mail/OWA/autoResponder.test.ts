@@ -237,6 +237,30 @@ test("A server error is shown", async () => {
   await expect(account.autoResponder.save()).rejects.toThrow("The end time must be later than the start time.");
 });
 
+test("A server without the action says that it is too old", async () => {
+  let account = newAccount();
+  // Exchange 2013: WCF finds no operation with this name and answers with its "Endpoint not found" page
+  vi.stubGlobal("fetch", async (url: string) => ({
+    ok: false,
+    status: 404,
+    statusText: "Not Found",
+    url,
+    headers: new Headers({ "Content-Type": "text/html; charset=UTF-8" }),
+    text: async () => `<?xml version="1.0" encoding="utf-8"?><HTML><BODY><P class="heading1">Endpoint not found.</P></BODY></HTML>`,
+  }));
+
+  let error: any;
+  try {
+    await account.autoResponder.load();
+  } catch (ex) {
+    error = ex;
+  }
+  expect(error.isUserError).toBe(true);
+  expect(error.message).toContain("Exchange");
+  expect(error.message).not.toContain("404");
+  expect(error.message).not.toContain("JSON");
+});
+
 test("Only for our own account, not for shared accounts", () => {
   let account = newAccount();
   expect(account.autoResponder.supported).toBe(true);

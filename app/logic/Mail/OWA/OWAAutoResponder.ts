@@ -4,13 +4,23 @@ import type { OWAAccount } from "./OWAAccount";
 import { OWAGetMailboxAutoReplyConfigurationRequest, OWASetMailboxAutoReplyConfigurationRequest } from "./Request/OWAMailboxAutoReplyConfigurationRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { sanitizeHTML } from "../../util/convertHTML";
+import { UserError } from "../../util/util";
+import { gt } from "../../../l10n/l10n";
 
 export class OWAAutoResponder extends ExchangeAutoResponder {
   declare readonly account: OWAAccount;
 
   async load(): Promise<void> {
-    let response = await this.account.callOWA(new OWAGetMailboxAutoReplyConfigurationRequest());
-    this.fromOWA(response.Options);
+    try {
+      let response = await this.account.callOWA(new OWAGetMailboxAutoReplyConfigurationRequest());
+      this.fromOWA(response.Options);
+    } catch (ex) {
+      // Exchange 2013 does not know this action
+      if (ex.type == "HTTP 404") {
+        throw new UserError(gt`Your Exchange server is too old for automatic replies`);
+      }
+      throw ex;
+    }
   }
 
   async save(): Promise<void> {
