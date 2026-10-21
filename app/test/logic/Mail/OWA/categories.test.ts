@@ -18,6 +18,16 @@ class TestOWAAccount extends OWAAccount {
   ];
   readonly calls: { action: string, body: any, urlPostData?: any }[] = [];
   readonly reportedErrors: Error[] = [];
+  // <copied from="../EWS/categories.test.ts">
+  /** Tagging saves the category in the background */
+  readonly categorySaves: Promise<void>[] = [];
+
+  addCategory(tag: Tag): Promise<void> {
+    let save = super.addCategory(tag);
+    this.categorySaves.push(save);
+    return save;
+  }
+  // </copied>
 
   async callOWAShared(url: string, options: any): Promise<any> {
     let action = options.headers.Action;
@@ -109,6 +119,7 @@ test("Tagging a message with a new tag adds it as master category", async () => 
   account.calls.length = 0;
 
   await email.addTag(newTag("Project", "#4AB63F"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.calls.map(call => call.action)).toEqual(["UpdateItem", "UpdateMasterCategoryList"]);
   let update = account.calls[1];
@@ -128,6 +139,7 @@ test("Tagging a message with an existing category does not change the master lis
   account.calls.length = 0;
 
   await email.addTag(newTag("customer", "#FF0000"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.calls.map(call => call.action)).toEqual(["UpdateItem"]);
 });

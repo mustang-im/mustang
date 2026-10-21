@@ -23,6 +23,16 @@ class TestEWSAccount extends EWSAccount {
   categoryListXML: string | null = kCategoryListXML;
   readonly serverCalls: string[] = [];
   readonly reportedErrors: Error[] = [];
+  // <copied to="../OWA/categories.test.ts, ../Graph/categories.test.ts">
+  /** Tagging saves the category in the background */
+  readonly categorySaves: Promise<void>[] = [];
+
+  addCategory(tag: Tag): Promise<void> {
+    let save = super.addCategory(tag);
+    this.categorySaves.push(save);
+    return save;
+  }
+  // </copied>
 
   async callEWS(request: any): Promise<any> {
     let operation = Object.keys(request)[0].replace("m$", "");
@@ -158,6 +168,7 @@ test("Tagging a message with a new tag adds it as category to the server", async
   account.serverCalls.length = 0;
 
   await email.addTag(tag);
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.serverCalls).toEqual(["UpdateItem", "GetUserConfiguration", "UpdateUserConfiguration"]);
   expect(categoriesOnServer(account)).toEqual([
@@ -187,6 +198,7 @@ test("Tagging a message with an existing category does not change the category l
   await email.addTag(getTagByName("Projekt Größe"));
   // Exchange compares the category names case-insensitive
   await email.addTag(newTag("red category", "#FF0000"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.serverCalls).toEqual(["UpdateItem", "UpdateItem"]);
 });
@@ -200,6 +212,7 @@ test("A category that somebody else added meanwhile is not added twice", async (
   account.serverCalls.length = 0;
 
   await email.addTag(newTag("Customer", "#4AB63F"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.serverCalls).toEqual(["UpdateItem", "GetUserConfiguration"]);
   expect(categoriesOnServer(account).filter(category => category.name == "Customer")).toEqual([
@@ -215,6 +228,7 @@ test("Tagging creates the category list, if the user has none yet", async () => 
   account.serverCalls.length = 0;
 
   await email.addTag(newTag("Customer", "#108310"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.serverCalls).toEqual(["UpdateItem", "GetUserConfiguration", "UpdateUserConfiguration", "CreateUserConfiguration"]);
   expect(categoriesOnServer(account)).toEqual([{ name: "Customer", color: 19 }]);
@@ -231,6 +245,7 @@ test("Tagging several messages at once adds the category only once", async () =>
   account.serverCalls.length = 0;
 
   await Promise.all(account.inbox.messages.contents.map(email => email.addTag(tag)));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.serverCalls.filter(call => call == "UpdateUserConfiguration")).toHaveLength(1);
   expect(categoriesOnServer(account).filter(category => category.name == "Customer")).toHaveLength(1);
@@ -256,7 +271,32 @@ test("A failure to save the category does not fail the tagging", async () => {
   await email.addTag(tag);
 
   expect(email.tags.contents).toEqual([tag]);
+  await Promise.allSettled(account.categorySaves);
   expect(account.reportedErrors.map(ex => ex.message)).toEqual(["Access is denied."]);
+});
+
+test("Tagging does not wait until the category is saved", async () => {
+  let account = newTestAccount();
+  await account.readCategories();
+  let email = account.inbox.messages.first as EWSEMail;
+  let tag = newTag("Customer", "#4AB63F");
+  let resumeServer: () => void;
+  let serverPaused = new Promise<void>(resolve => resumeServer = resolve);
+  let callEWS = account.callEWS.bind(account);
+  account.callEWS = async (request: any) => {
+    if (request.m$GetUserConfiguration) {
+      await serverPaused;
+    }
+    return await callEWS(request);
+  };
+
+  await email.addTag(tag);
+
+  expect(email.tags.contents).toEqual([tag]);
+  expect(account.serverCalls).not.toContain("UpdateUserConfiguration");
+  resumeServer();
+  await Promise.allSettled(account.categorySaves);
+  expect(account.serverCalls).toContain("UpdateUserConfiguration");
 });
 
 test("Tag colors map to the nearest category color", () => {
@@ -278,6 +318,7 @@ test("A tag with a comma is not added as category, because Exchange does not all
   account.serverCalls.length = 0;
 
   await email.addTag(newTag("Smith, John", "#4AB63F"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(account.serverCalls).toEqual(["UpdateItem"]);
 });

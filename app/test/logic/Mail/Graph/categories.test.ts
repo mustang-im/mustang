@@ -10,12 +10,25 @@ import { beforeEach, expect, test } from "vitest";
 
 const kMasterCategoriesURL = "https://graph.microsoft.com/v1.0/me/outlook/masterCategories";
 
+class TestGraphAccount extends GraphAccount {
+  // <copied from="../EWS/categories.test.ts">
+  /** Tagging saves the category in the background */
+  readonly categorySaves: Promise<void>[] = [];
+
+  addCategory(tag: Tag): Promise<void> {
+    let save = super.addCategory(tag);
+    this.categorySaves.push(save);
+    return save;
+  }
+  // </copied>
+}
+
 /** The master categories on the server */
 let masterCategories: { id: string, displayName: string, color: string }[];
 /** The HTTP calls that the account made */
 let calls: { method: string, url: string, options: any }[];
 
-function setupAccount(scope = "Mail.ReadWrite MailboxSettings.ReadWrite offline_access"): GraphAccount {
+function setupAccount(scope = "Mail.ReadWrite MailboxSettings.ReadWrite offline_access"): TestGraphAccount {
   calls = [];
   masterCategories = [
     { id: "1", displayName: "Red category", color: "preset0" },
@@ -46,7 +59,7 @@ function setupAccount(scope = "Mail.ReadWrite MailboxSettings.ReadWrite offline_
     },
   };
   appGlobal.remoteApp = { kyCreate: () => ky } as any;
-  let account = new GraphAccount();
+  let account = new TestGraphAccount();
   account.name = "Test";
   account.emailAddress = "user@example.com";
   account.url = "https://graph.microsoft.com";
@@ -100,6 +113,7 @@ test("Tagging a message with a new tag adds it as master category", async () => 
   calls = [];
 
   await email.addTag(newTag("Project", "#4AB63F"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(calls.map(call => call.method + " " + call.url)).toEqual([
     "patch https://graph.microsoft.com/v1.0/me/messages/msg-1",
@@ -116,6 +130,7 @@ test("Tagging a message with an existing category does not add it again", async 
   calls = [];
 
   await email.addTag(newTag("customer", "#4AB63F"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(calls.map(call => call.method)).toEqual(["patch"]);
 });
@@ -126,6 +141,7 @@ test("A tag without color becomes a category without color", async () => {
   let email = newEMail(account);
 
   await email.addTag(newTag("Project", "invalid"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(masterCategories.at(-1)).toEqual({ id: "new", displayName: "Project", color: "none" });
 });
@@ -137,6 +153,7 @@ test("An account that was set up without permission for the categories leaves th
 
   await account.readCategories();
   await email.addTag(newTag("Project", "#4AB63F"));
+  await Promise.allSettled(account.categorySaves);
 
   expect(calls.map(call => call.method)).toEqual(["patch"]);
   expect(availableTags.contents.map(tag => tag.name)).toEqual(["Project"]);
