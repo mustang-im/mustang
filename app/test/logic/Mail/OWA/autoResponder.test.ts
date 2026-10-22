@@ -31,7 +31,10 @@ beforeEach(() => {
     };
   });
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 class TestOWAAccount extends OWAAccount {
   hasLoggedIn = true;
@@ -103,6 +106,26 @@ test("Reads the settings from the server", async () => {
   // The HTML, not the plaintext that Exchange derives from it
   expect(autoResponder.internalHTML).toBe("sanitized:<html><body><p>Back on the <b>19th</b>.</p></body></html>");
   expect(autoResponder.externalHTML).toBe("sanitized:<p>I am out of office.</p>");
+});
+
+test("Exchange 2013", async () => {
+  // When Neil captured the response. A disabled responder keeps only times that are not over yet.
+  vi.setSystemTime(new Date("2026-10-22T16:36:00Z"));
+  let account = newAccount();
+  // Exchange 2013 CU23, Neil's capture, unchanged
+  response = JSON.parse(String.raw`{"Header":{"ServerVersionInfo":{"MajorVersion":15,"MinorVersion":0,"MajorBuildNumber":1497,"MinorBuildNumber":0,"Version":"V2_23"}},"ErrorCode":0,"ErrorMessage":null,"UserPrompt":null,"WasSuccessful":true,"Options":{"AutoReplyState":0,"EndTime":"2026-10-23T16:00:00Z","ExternalAudience":2,"ExternalMessage":"","ExternalMessageText":"\u000d\u000a","InternalMessage":"","InternalMessageText":"\u000d\u000a","StartTime":"2026-10-22T16:00:00Z"}}`);
+  let autoResponder = account.autoResponder;
+  await autoResponder.load();
+
+  expect(calls.length).toBe(1);
+  expect(calls[0].action).toBe("GetMailboxAutoReplyConfiguration");
+  expect(autoResponder.enabled).toBe(false);
+  expect(autoResponder.scheduled).toBe(false);
+  expect(autoResponder.externalAudience).toBe(AutoResponderAudience.All);
+  expect(autoResponder.internalHTML.trim()).toBe("");
+  expect(autoResponder.externalHTML.trim()).toBe("");
+  expect(autoResponder.startTime.toISOString()).toBe("2026-10-22T16:00:00.000Z");
+  expect(autoResponder.endTime.toISOString()).toBe("2026-10-23T16:00:00.000Z");
 });
 
 test("Times with a time zone offset", async () => {
@@ -235,30 +258,6 @@ test("A server error is shown", async () => {
   };
 
   await expect(account.autoResponder.save()).rejects.toThrow("The end time must be later than the start time.");
-});
-
-test("A server without the action says that it is too old", async () => {
-  let account = newAccount();
-  // Exchange 2013: WCF finds no operation with this name and answers with its "Endpoint not found" page
-  vi.stubGlobal("fetch", async (url: string) => ({
-    ok: false,
-    status: 404,
-    statusText: "Not Found",
-    url,
-    headers: new Headers({ "Content-Type": "text/html; charset=UTF-8" }),
-    text: async () => `<?xml version="1.0" encoding="utf-8"?><HTML><BODY><P class="heading1">Endpoint not found.</P></BODY></HTML>`,
-  }));
-
-  let error: any;
-  try {
-    await account.autoResponder.load();
-  } catch (ex) {
-    error = ex;
-  }
-  expect(error.isUserError).toBe(true);
-  expect(error.message).toContain("Exchange");
-  expect(error.message).not.toContain("404");
-  expect(error.message).not.toContain("JSON");
 });
 
 test("Only for our own account, not for shared accounts", () => {
