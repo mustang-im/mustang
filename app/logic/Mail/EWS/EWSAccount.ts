@@ -35,7 +35,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { logErrorToServer } from "../../util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray, sleep, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
 import { base64ToUint8Array } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
@@ -461,6 +461,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   /** @param username stable ID per stream, e.g. the streamed account's username */
   async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
     let lastAttempt: number;
+    let reconnectThrottle = new Throttle(1, 10);
     let signal = abort.signal;
     // Exchange sends a heartbeat every 45 seconds. Without it, the connection is dead, e.g. after a VPN drop,
     // which doesn't always end the stream, or the stream below ended right away.
@@ -472,10 +473,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     });
     do {
       try {
-        lastAttempt = Date.now();
         if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
           await this.oAuth2.login(false); // e.g. the access token expired while the computer slept
         }
+        lastAttempt = Date.now();
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
@@ -547,6 +548,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
             await processChunk(chunk);
           }
         }
+        if (Date.now() - lastAttempt < 10000) {
+          break; // The stream ended right away. The watchdog tries again later.
+        }
       } catch (ex) {
         if (signal.aborted) {
           // Log only for development purposes.
@@ -555,18 +559,16 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         }
         if (isNetworkError(ex) || ex?.message == "terminated") { // `fetch()` says "terminated"
           // Connection broke down, which is normal after a while.
-          // Loop and re-open the connection.
+          // Loop and re-open the connection, at most every 10 s, e.g. while the VPN tunnel isn't up yet.
           watchdog.restart(); // e.g. it failed while we processed a chunk, which pauses the watchdog
-          if (Date.now() - lastAttempt < 10000) {
-            await sleep(10); // e.g. the VPN tunnel isn't up yet
-          }
+          await reconnectThrottle.throttle();
           continue;
         }
         this.errorCallback(ex);
         watchdog.fulfilled();
         break;
       }
-    } while (!signal.aborted && Date.now() - lastAttempt >= 10000) // quit when the stream ended within 10 seconds. The watchdog tries again later.
+    } while (!signal.aborted);
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */

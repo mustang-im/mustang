@@ -195,17 +195,17 @@ test("A stream that stopped sending heartbeats is opened again", async () => {
   await account.unsubscribeAllSubscriptions();
 });
 
-test("When the server isn't reachable yet, e.g. a late VPN, we try again every 10 s until it is", async () => {
+test("When the server isn't reachable yet, e.g. a late VPN, we try again, at most every 10 s, until it is", async () => {
   let account = newTestAccount();
-  let requests = serve([unreachable, unreachable, heartbeatStream()]);
+  let requests = serve([unreachable, unreachable, unreachable, heartbeatStream()]);
 
   await account.subscribeToNotifications();
   await vi.advanceTimersByTimeAsync(5 * 1000);
-  expect(requests.length).toBe(1);
-  await vi.advanceTimersByTimeAsync(20 * 1000);
+  expect(requests.length).toBeLessThanOrEqual(2); // not hammering the server
+  await vi.advanceTimersByTimeAsync(30 * 1000);
 
-  expect(requests.length).toBe(3);
-  expect(requests[2].signal.aborted).toBe(false);
+  expect(requests.length).toBe(4);
+  expect(requests[3].signal.aborted).toBe(false);
   await account.unsubscribeAllSubscriptions();
 });
 
@@ -289,5 +289,49 @@ test("When the access token expired while the computer slept, we get a new one b
   await vi.advanceTimersByTimeAsync(1000);
 
   expect(requests.map(request => request.authorization)).toEqual(["Bearer fresh"]);
+  await account.unsubscribeAllSubscriptions();
+});
+
+test("When getting a new access token fails, e.g. while the network is down, we try again at most every 10 s", async () => {
+  let account = newTestAccount();
+  account.authMethod = AuthMethod.OAuth2;
+  let tokenRequests = 0;
+  let oAuth2 = {
+    isLoggedIn: true,
+    authorizationHeader: "Bearer valid",
+    async login() {
+      tokenRequests++;
+      if (tokenRequests > 100) { // so that a busy loop fails the test, instead of hanging it
+        this.isLoggedIn = true;
+        return;
+      }
+      throw new TypeError("Failed to fetch");
+    },
+  };
+  account.oAuth2 = oAuth2 as any;
+  /** The server ends the stream normally after a minute, and meanwhile the access token expired */
+  function endsAfterAMinute() {
+    return {
+      ok: true,
+      status: 200,
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(kHeartbeat));
+          setTimeout(() => {
+            oAuth2.isLoggedIn = false;
+            controller.close();
+          }, 60 * 1000);
+        },
+      }),
+    };
+  }
+  serve([endsAfterAMinute]);
+
+  await account.subscribeToNotifications();
+  await vi.advanceTimersByTimeAsync(60 * 1000 + 30 * 1000);
+
+  expect(tokenRequests).toBeGreaterThanOrEqual(2); // keeps trying
+  expect(tokenRequests).toBeLessThanOrEqual(5); // not hammering the token server
+  oAuth2.isLoggedIn = true;
   await account.unsubscribeAllSubscriptions();
 });
