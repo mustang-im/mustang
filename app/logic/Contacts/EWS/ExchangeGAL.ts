@@ -1,11 +1,18 @@
 import { SearchOnlyAddressbook } from "../Addressbook";
 import { ContactEntry, type Person } from "../../Abstract/Person";
-import type { PublicKey } from "../../Mail/Encryption/PublicKey";
+import type { PersonUID } from "../../Abstract/PersonUID";
+import type { MailAccount } from "../../Mail/MailAccount";
+import { getMyPrivateKey, getPublicKeyForPersonUID } from "../../Mail/Encryption/KeyUtils";
+import { SMIMEPrivateKey } from "../../Mail/Encryption/SMIME/SMIMEPrivateKey";
+import { SMIMEPublicKey } from "../../Mail/Encryption/SMIME/SMIMEPublicKey";
+import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { AbstractFunction } from "../../util/util";
-import type { ArrayColl, Collection } from "svelte-collections";
+import type { ArrayColl } from "svelte-collections";
 
 /** The Global Address List (GAL) of an Exchange server */
 export class ExchangeGAL extends SearchOnlyAddressbook {
+  account: MailAccount;
+
   /** Exchange matches the start of first name, last name, display name,
    * alias and office, but not reliably the email addresses.
    * With an `smtp:` prefix, it matches the start of all email addresses instead.
@@ -33,19 +40,37 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
     throw new AbstractFunction();
   }
 
-  /** The entries that `findEncryptionKeys()` asked for, by lowercase email address */
+  /** The entries that `fetchCertificate()` asked for, by lowercase email address */
   protected readonly certificateLookups = new Map<string, Person>();
 
-  /** Costs a server round trip only once per email address */
-  async findEncryptionKeys(emailAddress: string): Promise<Collection<PublicKey>> {
-    emailAddress = emailAddress.toLowerCase();
-    let person = this.certificateLookups.get(emailAddress);
-    if (!person) {
-      person = this.newPerson();
-      person.emailAddresses.add(new ContactEntry(emailAddress, "work", "mailto"));
-      this.certificateLookups.set(emailAddress, person);
+  /** Asks only about a recipient without an S/MIME certificate, who has
+   * the same base domain as one of our identities, if that identity has an
+   * S/MIME certificate itself. Only then we may find one here, and need it.
+   * Costs a server round trip only once per email address. */
+  async fetchCertificate(recipient: PersonUID): Promise<void> {
+    if (getPublicKeyForPersonUID(recipient, SMIMEPublicKey)) {
+      return;
     }
-    await person.fetchEncryptionKeys();
-    return person.encryptionPublicKeys;
+    let domain = getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress));
+    if (!this.account.identities.some(identity => !!getMyPrivateKey(identity, SMIMEPrivateKey) &&
+        getBaseDomainFromHost(getDomainForEmailAddress(identity.emailAddress)) == domain)) {
+      return;
+    }
+    let emailAddress = recipient.emailAddress.toLowerCase();
+    let entry = this.certificateLookups.get(emailAddress);
+    if (!entry) {
+      entry = this.newPerson();
+      entry.emailAddresses.add(new ContactEntry(emailAddress, "work", "mailto"));
+      this.certificateLookups.set(emailAddress, entry);
+    }
+    await entry.fetchEncryptionKeys();
+    let person = recipient.findPerson();
+    for (let key of entry.encryptionPublicKeys) {
+      if (person) {
+        person.addEncryptionPublicKey(key);
+      } else if (!key.obsolete) {
+        recipient.encryptionPublicKey = key;
+      }
+    }
   }
 }

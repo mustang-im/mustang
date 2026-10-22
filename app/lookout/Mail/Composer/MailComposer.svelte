@@ -294,8 +294,10 @@
   function onRecipientAdded(recipient: PersonUID) {
     // <copied from="../../../frontend/Mail/Composer/MailAutocomplete.svelte" onAddPerson()>
     // Get the certificate now, so that we can show whether we can encrypt
-    fromIdentity.fetchCertificateFromDirectory(recipient)
-      .catch(showError);
+    for (let directory of appGlobal.searchOnlyAddressbooks) {
+      directory.fetchCertificate(recipient)
+        .catch(showError);
+    }
     // </copied>
   }
 

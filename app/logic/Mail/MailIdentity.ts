@@ -5,12 +5,7 @@ import { SMLHTTPAccount } from "./SML/SMLHTTPAccount";
 import type { PublicKey } from "./Encryption/PublicKey";
 import type { PrivateKey } from "./Encryption/PrivateKey";
 import { privateKeyFromJSON } from "./Encryption/KeyFromJSON";
-import { getMyPrivateKey, getPublicKeyForPersonUID } from "./Encryption/KeyUtils";
-import { SMIMEPrivateKey } from "./Encryption/SMIME/SMIMEPrivateKey";
-import { SMIMEPublicKey } from "./Encryption/SMIME/SMIMEPublicKey";
-import { SearchOnlyAddressbook } from "../Contacts/Addressbook";
 import { appGlobal } from "../app";
-import { getBaseDomainFromHost, getDomainForEmailAddress } from "../util/netUtil";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { assert } from "../util/util";
@@ -95,40 +90,6 @@ export class MailIdentity extends Observable {
       return emailAddress.startsWith(sp[0]) && emailAddress.endsWith(sp[1]);
     } else {
       return this.emailAddress.toLowerCase() == emailAddress;
-    }
-  }
-
-  /** Gets the S/MIME certificate of a recipient from the company directory,
-   * so that we can encrypt to them.
-   * Only if we have an S/MIME certificate ourselves, and the recipient has none yet.
-   * A person from a directory gets it from that directory. About everybody else,
-   * we ask the directory of this account, and only if their email address
-   * has the same base domain as ours.
-   * Reports errors, does not throw. */
-  async fetchCertificateFromDirectory(recipient: PersonUID): Promise<void> {
-    if (!getMyPrivateKey(this, SMIMEPrivateKey) || getPublicKeyForPersonUID(recipient, SMIMEPublicKey)) {
-      return;
-    }
-    let person = recipient.findPerson();
-    if (person?.addressbook instanceof SearchOnlyAddressbook) {
-      await person.fetchEncryptionKeys();
-      return;
-    }
-    if (getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress)) !=
-        getBaseDomainFromHost(getDomainForEmailAddress(this.emailAddress))) {
-      return;
-    }
-    let account = this.account.mainAccount ?? this.account;
-    let directory = appGlobal.searchOnlyAddressbooks.find(addressbook => addressbook.mainAccount == account);
-    if (!directory) {
-      return;
-    }
-    for (let key of await directory.findEncryptionKeys(recipient.emailAddress)) {
-      if (person) {
-        person.addEncryptionPublicKey(key);
-      } else if (!key.obsolete) {
-        recipient.encryptionPublicKey = key;
-      }
     }
   }
 

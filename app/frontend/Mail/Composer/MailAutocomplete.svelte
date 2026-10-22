@@ -10,7 +10,7 @@
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { appGlobal } from "../../../logic/app";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import AddressbookChanger from "../../Contacts/AddressbookChanger.svelte";
   import { showError } from "../../Util/error";
@@ -19,8 +19,6 @@
   /** E.g. to, cc or bcc list
    * in/out */
   export let addresses: ArrayColl<PersonUID>;
-  /** Who sends the email */
-  export let identity: MailIdentity;
   export let placeholder: string;
   export let tabindex = null;
   export let autofocus = false;
@@ -34,8 +32,10 @@
     // </copied>
 
     // Get the certificate now, so that we can show whether we can encrypt
-    identity.fetchCertificateFromDirectory(recipient)
-      .catch(showError);
+    for (let directory of appGlobal.searchOnlyAddressbooks) {
+      directory.fetchCertificate(recipient)
+        .catch(showError);
+    }
   }
 </script>
 

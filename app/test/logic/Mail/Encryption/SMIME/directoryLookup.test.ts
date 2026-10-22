@@ -11,6 +11,7 @@ import { SMIMEPrivateKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIM
 import { SMIMEPublicKey } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { PGPPrivateKey } from "../../../../../logic/Mail/Encryption/PGP/PGPPrivateKey";
 import { kSMIMECertificate } from "../../../Contacts/testCertificate";
+import { ArrayColl } from "svelte-collections";
 import { beforeEach, expect, test } from "vitest";
 
 /** The company directory has a certificate for each of these email addresses */
@@ -20,9 +21,10 @@ const kDirectory = [
   "partner@other.org",
 ];
 
-/** An Exchange account, which resolves names with an `smtp:` prefix */
-function fakeAccount(): any {
-  return {
+/** An Exchange account, which resolves names with an `smtp:` prefix.
+ * Its identities have S/MIME certificates. */
+function fakeAccount(...identityAddresses: string[]): any {
+  let account: any = {
     errorCallback: (ex: Error) => { throw ex; },
     queries: [] as string[],
     async callEWS(query: any) {
@@ -42,6 +44,14 @@ function fakeAccount(): any {
       };
     },
   };
+  account.identities = new ArrayColl(identityAddresses.map(emailAddress => {
+    let identity = new MailIdentity(account);
+    identity.emailAddress = emailAddress;
+    identity.encryptionPrivateKeys.add(smimeKey());
+    return identity;
+  }));
+  appGlobal.searchOnlyAddressbooks.add(new EWSGAL(account));
+  return account;
 }
 
 function smimeKey(): SMIMEPrivateKey {
@@ -53,18 +63,19 @@ function smimeKey(): SMIMEPrivateKey {
 
 let account: any;
 let gal: EWSGAL;
-let identity: MailIdentity;
 
 beforeEach(() => {
   appGlobal.searchOnlyAddressbooks.clear();
   appGlobal.addressbooks.clear();
-  account = fakeAccount();
-  gal = new EWSGAL(account);
-  appGlobal.searchOnlyAddressbooks.add(gal);
-  identity = new MailIdentity(account);
-  identity.emailAddress = "me@example.com";
-  identity.encryptionPrivateKeys.add(smimeKey());
+  account = fakeAccount("me@example.com");
+  gal = appGlobal.searchOnlyAddressbooks.first as EWSGAL;
 });
+
+/** As the composer does */
+async function askDirectories(recipient: PersonUID) {
+  await Promise.all(appGlobal.searchOnlyAddressbooks.contents.map(directory =>
+    directory.fetchCertificate(recipient)));
+}
 
 function personInAddressbook(emailAddress: string): Person {
   let addressbook = new Addressbook();
@@ -76,13 +87,20 @@ function personInAddressbook(emailAddress: string): Person {
   return person;
 }
 
+/** The user picked this person from the GAL search results */
+function galEntry(emailAddress: string): PersonUID {
+  let person = gal.newPerson();
+  person.emailAddresses.add(new ContactEntry(emailAddress, "work", "mailto"));
+  return PersonUID.fromPerson(person);
+}
+
 function canEncryptTo(recipient: PersonUID): boolean {
   return !!getPublicKeyForPersonUID(recipient, SMIMEPublicKey);
 }
 
 test("Recipient in our domain, who is in no address book", async () => {
   let recipient = new PersonUID("colleague@example.com", "Colleague");
-  await identity.fetchCertificateFromDirectory(recipient);
+  await askDirectories(recipient);
   expect(account.queries).toEqual(["smtp:colleague@example.com"]);
   expect(canEncryptTo(recipient)).toBe(true);
 });
@@ -90,14 +108,14 @@ test("Recipient in our domain, who is in no address book", async () => {
 test("Recipient in our domain, who is in a local address book", async () => {
   personInAddressbook("colleague@example.com");
   let recipient = new PersonUID("colleague@example.com", "Colleague");
-  await identity.fetchCertificateFromDirectory(recipient);
+  await askDirectories(recipient);
   expect(account.queries).toEqual(["smtp:colleague@example.com"]);
   expect(canEncryptTo(recipient)).toBe(true);
 });
 
 test("Recipient in a subdomain of our domain", async () => {
   let recipient = new PersonUID("colleague@sales.example.com", "Colleague");
-  await identity.fetchCertificateFromDirectory(recipient);
+  await askDirectories(recipient);
   expect(account.queries).toEqual(["smtp:colleague@sales.example.com"]);
   expect(canEncryptTo(recipient)).toBe(true);
 });
@@ -105,31 +123,60 @@ test("Recipient in a subdomain of our domain", async () => {
 test("Recipient in another domain is not sent to our server", async () => {
   personInAddressbook("partner@other.org");
   let recipient = new PersonUID("partner@other.org", "Partner");
-  await identity.fetchCertificateFromDirectory(recipient);
+  await askDirectories(recipient);
   expect(account.queries).toEqual([]);
   expect(canEncryptTo(recipient)).toBe(false);
 });
 
-test("Directory entry is asked in its own directory, whatever its domain", async () => {
-  let person = gal.newPerson();
-  person.emailAddresses.add(new ContactEntry("partner@other.org", "work", "mailto"));
-  let recipient = PersonUID.fromPerson(person);
-  await identity.fetchCertificateFromDirectory(recipient);
-  expect(account.queries).toEqual(["smtp:partner@other.org"]);
+test("GAL entry in our domain", async () => {
+  let recipient = galEntry("colleague@example.com");
+  await askDirectories(recipient);
+  expect(account.queries).toEqual(["smtp:colleague@example.com"]);
   expect(canEncryptTo(recipient)).toBe(true);
 });
 
-test("Without our own S/MIME certificate, we ask nothing, also not for directory entries", async () => {
+test("GAL entry in another domain", async () => {
+  let recipient = galEntry("partner@other.org");
+  await askDirectories(recipient);
+  expect(account.queries).toEqual([]);
+});
+
+test("Without our own S/MIME certificate, we ask nothing, also not about GAL entries", async () => {
+  let identity = account.identities.first as MailIdentity;
   identity.encryptionPrivateKeys.clear();
   let pgpKey = new PGPPrivateKey();
   pgpKey.id = "fedcba0987654321";
   pgpKey.obsolete = false;
   identity.encryptionPrivateKeys.add(pgpKey);
-  let galPerson = gal.newPerson();
-  galPerson.emailAddresses.add(new ContactEntry("colleague@example.com", "work", "mailto"));
-  await identity.fetchCertificateFromDirectory(PersonUID.fromPerson(galPerson));
-  await identity.fetchCertificateFromDirectory(new PersonUID("colleague@sales.example.com", "Colleague"));
+  await askDirectories(galEntry("colleague@example.com"));
+  await askDirectories(new PersonUID("colleague@sales.example.com", "Colleague"));
   expect(account.queries).toEqual([]);
+});
+
+test("Account with identities in two domains", async () => {
+  appGlobal.searchOnlyAddressbooks.clear();
+  account = fakeAccount("me@example.com", "me@other.org");
+  let recipient = new PersonUID("partner@other.org", "Partner");
+  await askDirectories(recipient);
+  expect(account.queries).toEqual(["smtp:partner@other.org"]);
+  expect(canEncryptTo(recipient)).toBe(true);
+});
+
+test("The identity in the domain of the recipient needs an S/MIME certificate", async () => {
+  appGlobal.searchOnlyAddressbooks.clear();
+  account = fakeAccount("me@example.com", "me@other.org");
+  (account.identities.get(1) as MailIdentity).encryptionPrivateKeys.clear();
+  await askDirectories(new PersonUID("partner@other.org", "Partner"));
+  expect(account.queries).toEqual([]);
+});
+
+test("With two Exchange accounts, only the directory of the domain of the recipient is asked", async () => {
+  let otherAccount = fakeAccount("me@other.org");
+  let recipient = new PersonUID("partner@other.org", "Partner");
+  await askDirectories(recipient);
+  expect(account.queries).toEqual([]);
+  expect(otherAccount.queries).toEqual(["smtp:partner@other.org"]);
+  expect(canEncryptTo(recipient)).toBe(true);
 });
 
 test("Recipient who already has an S/MIME certificate", async () => {
@@ -139,7 +186,7 @@ test("Recipient who already has an S/MIME certificate", async () => {
   saved.obsolete = false;
   person.addEncryptionPublicKey(saved);
   let recipient = new PersonUID("colleague@example.com", "Colleague");
-  await identity.fetchCertificateFromDirectory(recipient);
+  await askDirectories(recipient);
   expect(account.queries).toEqual([]);
   expect(getPublicKeyForPersonUID(recipient, SMIMEPublicKey)).toBe(saved);
 });
@@ -151,7 +198,7 @@ test("Recipient whose saved certificate expired gets the current one", async () 
   expired.obsolete = true;
   person.addEncryptionPublicKey(expired);
   let recipient = new PersonUID("colleague@example.com", "Colleague");
-  await identity.fetchCertificateFromDirectory(recipient);
+  await askDirectories(recipient);
   expect(account.queries).toEqual(["smtp:colleague@example.com"]);
   expect(canEncryptTo(recipient)).toBe(true);
 });
@@ -159,40 +206,16 @@ test("Recipient whose saved certificate expired gets the current one", async () 
 test("Ask the directory only once per email address", async () => {
   // Picking the recipient and then encrypting, then the same recipient in another email
   let first = new PersonUID("colleague@example.com", "Colleague");
-  await Promise.all([
-    identity.fetchCertificateFromDirectory(first),
-    identity.fetchCertificateFromDirectory(first),
-  ]);
+  await Promise.all([askDirectories(first), askDirectories(first)]);
   let second = new PersonUID("Colleague@example.com", "Colleague");
-  await identity.fetchCertificateFromDirectory(second);
+  await askDirectories(second);
   expect(account.queries.length).toBe(1);
   expect(canEncryptTo(second)).toBe(true);
 });
 
 test("Recipient who is not in the directory", async () => {
   let recipient = new PersonUID("newbie@example.com", "Newbie");
-  await identity.fetchCertificateFromDirectory(recipient); // the error callback would throw
+  await askDirectories(recipient); // the error callback would throw
   expect(account.queries).toEqual(["smtp:newbie@example.com"]);
-  expect(canEncryptTo(recipient)).toBe(false);
-});
-
-test("Shared account asks the directory of the account which logs in", async () => {
-  let sharedAccount: any = { mainAccount: account };
-  let sharedIdentity = new MailIdentity(sharedAccount);
-  sharedIdentity.emailAddress = "team@example.com";
-  sharedIdentity.encryptionPrivateKeys.add(smimeKey());
-  let recipient = new PersonUID("colleague@example.com", "Colleague");
-  await sharedIdentity.fetchCertificateFromDirectory(recipient);
-  expect(account.queries).toEqual(["smtp:colleague@example.com"]);
-  expect(canEncryptTo(recipient)).toBe(true);
-});
-
-test("Account without directory", async () => {
-  let otherIdentity = new MailIdentity({} as any);
-  otherIdentity.emailAddress = "me@example.com";
-  otherIdentity.encryptionPrivateKeys.add(smimeKey());
-  let recipient = new PersonUID("colleague@example.com", "Colleague");
-  await otherIdentity.fetchCertificateFromDirectory(recipient);
-  expect(account.queries).toEqual([]);
   expect(canEncryptTo(recipient)).toBe(false);
 });

@@ -3,7 +3,6 @@ import { Person } from "../Abstract/Person";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { Group } from "../Abstract/Group";
 import type { Contact } from "../Abstract/Contact";
-import type { PublicKey } from "../Mail/Encryption/PublicKey";
 import { SQLGroup } from "./SQL/SQLGroup";
 import { SQLPerson } from "./SQL/SQLPerson";
 import { appGlobal } from "../app";
@@ -168,11 +167,10 @@ export class SearchOnlyAddressbook extends Addressbook {
     throw new AbstractFunction();
   }
 
-  /** The certificates that this directory has for an email address,
-   * e.g. of a person in another address book.
+  /** Gets the certificate that this directory has for the recipient,
+   * who may be in another address book, or in none.
    * Reports errors, does not throw. */
-  async findEncryptionKeys(emailAddress: string): Promise<Collection<PublicKey>> {
-    return new ArrayColl<PublicKey>();
+  async fetchCertificate(recipient: PersonUID): Promise<void> {
   }
 }
 

@@ -21,6 +21,7 @@
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { EncryptionSystem } from "../../../logic/Mail/Encryption/enums";
+  import { appGlobal } from "../../../logic/app";
   import { getEncryptionSystem, getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { queryKeyServers } from "./RecipientKeys";
   import RecipientCertificatesDialog from "./RecipientCertificatesDialog.svelte";
@@ -44,14 +45,14 @@
   $: $recipientKeys, recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPersonUID(p));
   let hasKeyServers = false;
   $: identity, hasKeyServers = getEncryptionSystem(mail) == EncryptionSystem.PGP;
-  $: identity, $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
+  $: $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
     $t`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function autoFetchMissingKeys() {
     await Promise.all([
-      Promise.all(recipientsWithoutKeys.contents.map(recipient =>
-        identity.fetchCertificateFromDirectory(recipient))),
+      Promise.all(recipientsWithoutKeys.contents.flatMap(recipient =>
+        appGlobal.searchOnlyAddressbooks.contents.map(directory => directory.fetchCertificate(recipient)))),
       hasKeyServers ? queryKeyServers(recipientsWithoutKeys, true) : null,
     ]);
   }
