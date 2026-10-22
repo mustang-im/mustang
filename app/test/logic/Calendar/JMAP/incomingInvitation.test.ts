@@ -6,7 +6,7 @@ import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
 import type { JMAPEvent } from "../../../../logic/Calendar/JMAP/JMAPEvent";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { ICalEMailProcessor } from "../../../../logic/Calendar/ICal/ICalEMailProcessor";
-import { OutgoingInvitation } from "../../../../logic/Calendar/Invitation/OutgoingInvitation";
+import { IncomingInvitation } from "../../../../logic/Calendar/Invitation/IncomingInvitation";
 import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationMessage, InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
@@ -400,10 +400,10 @@ test("A mail about a meeting goes to the organizer, or to all attendees except m
   event.fromJMAP(serverMeeting("needs-action"));
   event.participants.add(new Participant(kOtherAttendee, "User 3", InvitationResponse.NoResponseReceived));
 
-  let toOrganizer = OutgoingInvitation.replyToEventByMail(event, false);
+  let toOrganizer = IncomingInvitation.replyToEventByMail(event, false);
   expect(toOrganizer.to.contents.map(person => person.emailAddress)).toEqual([kOrganizer]);
   expect(toOrganizer.subject).toContain(event.title);
 
-  let toAll = OutgoingInvitation.replyToEventByMail(event, true);
+  let toAll = IncomingInvitation.replyToEventByMail(event, true);
   expect(new Set(toAll.to.contents.map(person => person.emailAddress))).toEqual(new Set([kOrganizer, kOtherAttendee]));
 });

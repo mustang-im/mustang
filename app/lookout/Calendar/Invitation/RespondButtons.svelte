@@ -1,14 +1,16 @@
 <ResponseButton label={$t`Yes *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
+  tooltip={$t`Accept the invitation to the meeting`}
   pressed={response == InvitationResponse.Accept}
   onClick={() => onRespond(InvitationResponse.Accept, true)} />
 <ResponseButton label={$t`No *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
+  tooltip={$t`Decline the invitation to the meeting`}
   pressed={response == InvitationResponse.Decline}
   onClick={() => onRespond(InvitationResponse.Decline, true)} />
 <ResponseButton label={$t`More options *=> More ways to respond to the meeting invitation`} icon={MoreIcon} iconOnly
   pressed={response == InvitationResponse.Tentative}>
-  <MenuItem label={$t`Accept silently *=> Accept the meeting invitation without telling the organizer`} icon={AcceptIcon}
+  <MenuItem label={$t`Accept silently *=> Add the meeting invitation to my calendar without sending a reply to the organizer`} icon={AcceptIcon}
     onClick={() => onRespond(InvitationResponse.Accept, false)} />
-  <MenuItem label={$t`Decline silently *=> Decline the meeting invitation without telling the organizer`} icon={DeclineIcon}
+  <MenuItem label={$t`Decline silently *=> Decline the meeting invitation without sending a reply to the organizer`} icon={DeclineIcon}
     onClick={() => onRespond(InvitationResponse.Decline, false)} />
   <MenuItem label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon}
     checked={response == InvitationResponse.Tentative}

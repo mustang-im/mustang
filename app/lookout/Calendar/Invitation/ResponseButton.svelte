@@ -2,7 +2,7 @@
   <button class="response-button {classes}" class:pressed class:running class:icon-only={iconOnly} aria-pressed={pressed}
     aria-haspopup={hasMenu ? "menu" : undefined} aria-expanded={hasMenu ? isMenuOpen : undefined}
     aria-label={iconOnly ? label : undefined}
-    disabled={!!disabled || running} title={typeof disabled == "string" ? disabled : label}
+    disabled={!!disabled || running} title={typeof disabled == "string" ? disabled : tooltip ?? label}
     on:click={onClicked} bind:this={buttonEl}>
     <svelte:component this={icon} size={16} />
     {#if !iconOnly}
@@ -25,6 +25,7 @@
   export let onClick: () => Promise<void> | void = null;
   export let pressed = false;
   export let iconOnly = false;
+  export let tooltip: string = null;
   export let disabled: boolean | string = false;
   export let classes = "";
 

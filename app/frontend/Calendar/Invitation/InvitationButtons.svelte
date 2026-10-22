@@ -199,7 +199,7 @@
     if (invitation instanceof IncomingInvitation) {
       mail = invitation.message.compose.replyToAuthor();
     } else if (invitation instanceof Event) {
-      mail = OutgoingInvitation.replyToEventByMail(invitation, false);
+      mail = IncomingInvitation.replyToEventByMail(invitation, false);
     }
     openComposer(mail);
   }
@@ -209,7 +209,7 @@
     if (invitation instanceof IncomingInvitation) {
       mail = invitation.message.compose.replyAll();
     } else if (invitation instanceof Event) {
-      mail = OutgoingInvitation.replyToEventByMail(invitation, true);
+      mail = IncomingInvitation.replyToEventByMail(invitation, true);
     }
     openComposer(mail);
   }

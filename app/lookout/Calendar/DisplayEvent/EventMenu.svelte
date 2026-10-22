@@ -11,6 +11,12 @@
 {/if}
 {#if !event.isCancelled}
   <MenuDivider />
+  {#if event.isIncomingMeeting}
+    <MenuItem label={$t`Reply`} icon={ReplyIcon}
+      onClick={() => openComposer(IncomingInvitation.replyToEventByMail(event, false))} />
+    <MenuItem label={$t`Reply All`} icon={ReplyAllIcon}
+      onClick={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))} />
+  {/if}
   <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
     onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
 {/if}
@@ -53,6 +59,7 @@
   import { openEvent } from "../../../frontend/Calendar/open";
   import { openComposer } from "../../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
@@ -62,6 +69,8 @@
   import TentativeIcon from "lucide-svelte/icons/circle-help";
   import DeclineIcon from "lucide-svelte/icons/x";
   import ForwardIcon from "lucide-svelte/icons/forward";
+  import ReplyIcon from "lucide-svelte/icons/reply";
+  import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import CancelIcon from "lucide-svelte/icons/calendar-x-2";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import { t } from "../../../l10n/l10n";

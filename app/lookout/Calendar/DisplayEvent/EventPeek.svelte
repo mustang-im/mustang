@@ -6,6 +6,14 @@
         <span class="dot" />
         <span class="name">{$calendar?.name ?? ""}</span>
       </hbox>
+      {#if $event.isIncomingMeeting}
+        <button class="icon-button" title={$t`Reply`} on:click={() => catchErrors(() => reply(false))}>
+          <ReplyIcon size="16" />
+        </button>
+        <button class="icon-button" title={$t`Reply All`} on:click={() => catchErrors(() => reply(true))}>
+          <ReplyAllIcon size="16" />
+        </button>
+      {/if}
       <button class="icon-button" title={$t`Open`} on:click={onOpen}>
         <OpenIcon size="16" />
       </button>
@@ -62,10 +70,14 @@
   import { EventLook } from "./EventLook";
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
+  import { openComposer } from "../../../frontend/Mail/open";
+  import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { eventPeek } from "../selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import Popup from "../../../frontend/Shared/Popup.svelte";
   import OpenIcon from "lucide-svelte/icons/square-pen";
+  import ReplyIcon from "lucide-svelte/icons/reply";
+  import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CloseIcon from "lucide-svelte/icons/x";
   import AcceptIcon from "lucide-svelte/icons/check";
@@ -99,6 +111,11 @@
   function onOpen() {
     onClose();
     catchErrors(() => openEvent(event, true));
+  }
+
+  function reply(toAll: boolean) {
+    onClose();
+    openComposer(IncomingInvitation.replyToEventByMail(event, toAll));
   }
 
   function onDelete() {

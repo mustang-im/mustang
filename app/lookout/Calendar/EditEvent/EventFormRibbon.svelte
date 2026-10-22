@@ -32,6 +32,10 @@
             tooltip={$t`Delete the meeting and decline it`}
             onClick={onDelete} />
         {/if}
+        <RibbonButton label={$t`Reply`} icon={ReplyIcon}
+          onClick={() => openComposer(IncomingInvitation.replyToEventByMail(event, false))} />
+        <RibbonButton label={$t`Reply All`} icon={ReplyAllIcon}
+          onClick={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))} />
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
           onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
@@ -190,6 +194,7 @@
   import type { EventEditFlow } from "./EventEditFlow";
   import type { InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { appGlobal } from "../../../logic/app";
   import { openComposer } from "../../../frontend/Mail/open";
@@ -203,6 +208,8 @@
   import CancelIcon from "lucide-svelte/icons/calendar-x-2";
   import RemoveIcon from "lucide-svelte/icons/calendar-minus-2";
   import ForwardIcon from "lucide-svelte/icons/forward";
+  import ReplyIcon from "lucide-svelte/icons/reply";
+  import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import AcceptIcon from "lucide-svelte/icons/check";
   import TentativeIcon from "lucide-svelte/icons/circle-help";
   import DeclineIcon from "lucide-svelte/icons/x";

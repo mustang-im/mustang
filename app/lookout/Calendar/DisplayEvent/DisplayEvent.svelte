@@ -19,8 +19,8 @@
         <hbox class="buttons">
           <RespondButtons response={$event.myParticipation}
             onRespond={(response, sendReply) => event.respondToInvitation(response, sendReply)}
-            onReplyToOrganizer={() => openComposer(OutgoingInvitation.replyToEventByMail(event, false))}
-            onReplyToAll={() => openComposer(OutgoingInvitation.replyToEventByMail(event, true))}
+            onReplyToOrganizer={() => openComposer(IncomingInvitation.replyToEventByMail(event, false))}
+            onReplyToAll={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))}
             onForward={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
         </hbox>
       {/if}
@@ -48,6 +48,7 @@
   import DetailsGrid from "./DetailsGrid.svelte";
   import ResponseButton from "../Invitation/ResponseButton.svelte";
   import RespondButtons from "../Invitation/RespondButtons.svelte";
+  import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import { openComposer } from "../../../frontend/Mail/open";
   import WebView from "../../../frontend/Shared/WebView.svelte";
