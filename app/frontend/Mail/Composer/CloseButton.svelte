@@ -28,6 +28,7 @@
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
+  import { MailBody } from "../../../logic/Mail/MailBody";
   import RoundButton from "../../Shared/RoundButton.svelte";
   import Button from "../../Shared/Button.svelte";
   import CloseIcon from "lucide-svelte/icons/x";
@@ -69,7 +70,7 @@
 
   function notQuote(): Document {
     let doc = new DOMParser().parseFromString(mail.html, "text/html");
-    for (let blockquote of doc.body.querySelectorAll("blockquote")) {
+    for (let blockquote of doc.body.querySelectorAll("blockquote, " + MailBody.kSignatureSelector)) {
       blockquote.remove();
     }
     return doc;

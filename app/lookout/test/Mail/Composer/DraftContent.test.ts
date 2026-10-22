@@ -24,3 +24,13 @@ test("Whitespace does not count", () => {
   let spaced = "<p>" + "a ".repeat(60) + "</p>";
   expect(hasUserText(spaced)).toBe(false);
 });
+
+test("Signatures do not count", () => {
+  for (let signature of [
+    `<footer class="signature" data-own-signature=""><p>${kLongText}</p></footer>`,
+    `<div class="moz-signature">-- <br>${kLongText}</div>`,
+    `<div class="gmail_signature">${kLongText}</div>`,
+  ]) {
+    expect(hasUserText(`<p></p>${signature}`)).toBe(false);
+  }
+});

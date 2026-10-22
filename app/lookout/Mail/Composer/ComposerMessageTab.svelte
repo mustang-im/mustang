@@ -55,7 +55,7 @@
     <RibbonButton label={$t`Link *=> Insert or edit a link in the text`} icon={LinkIcon} size="small" shortCutInfo={$t`Ctrl+K *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { $openEditorTool = { mail, tool: EditorTool.Link }; }} />
     <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon} size="small">
-      <SignatureMenuItems {identity} {editor} on:editSignatures={() => { $openSignatures = mail; }} />
+      <SignatureMenuItems {identity} {editor} {mail} on:editSignatures={() => { $openSignatures = mail; }} />
     </RibbonMenuButton>
   </RibbonGroup>
   {#if isInline}
