@@ -161,7 +161,7 @@
   import JunkIcon from "lucide-svelte/icons/shield-x";
   import CategorizeIcon from "lucide-svelte/icons/tag";
   import PrintIcon from "lucide-svelte/icons/printer";
-  import { printMessage } from "./MessagePrint.svelte";
+  import { printMessage } from "../Selected";
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";

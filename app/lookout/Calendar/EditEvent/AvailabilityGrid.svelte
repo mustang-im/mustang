@@ -107,14 +107,8 @@
   </hbox>
 </vbox>
 
-<script lang="ts" context="module">
-  import type { Event } from "../../../logic/Calendar/Event";
-  import { writable } from "svelte/store";
-
-  export const refreshAvailabilityOf = writable<Event | null>(null);
-</script>
-
 <script lang="ts">
+  import type { Event } from "../../../logic/Calendar/Event";
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { FreeBusy, type AvailabilityStatus, type BusyInterval } from "./FreeBusy";
@@ -199,7 +193,7 @@
     scrollToMeeting();
   }
 
-  async function load() {
+  export async function load() {
     let count = ++loadCount;
     loading = true;
     errorText = null;
@@ -219,11 +213,6 @@
         loading = false;
       }
     }
-  }
-
-  $: if ($refreshAvailabilityOf == event) {
-    $refreshAvailabilityOf = null;
-    load();
   }
 
   function stepDay(days: number) {

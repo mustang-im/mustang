@@ -41,7 +41,7 @@
   <QuickAccessToolbarView placement="below" />
   <KeyTipsLayer {ribbonEl} />
   {#if $isCustomizing}
-    <CustomizeRibbonDialog tabs={$tabs} {ribbonID} on:close={() => $isCustomizing = false} />
+    <CustomizeRibbonDialog tabs={$tabs} ribbonID={id} on:close={() => $isCustomizing = false} />
   {/if}
   <div class="metrics-probe" aria-hidden="true" bind:this={probeEl}>
     <div class="probe-classic">
@@ -70,16 +70,14 @@
   import CustomizeRibbonDialog from "./CustomizeRibbonDialog.svelte";
   import ContextMenu from "../Menu/ContextMenu.svelte";
   import type { RibbonHiddenParts } from "./RibbonCustomization";
-  import { selectedApp } from "../../../frontend/AppsBar/selectedApp";
   import { get, writable } from "svelte/store";
   import type { QuickAccessPosition } from "../QuickAccess/QuickAccess";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { setContext, onMount, onDestroy, tick } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let id: string = null;
+  export let id: string;
 
-  const ribbonID = id ?? get(selectedApp)?.id ?? "main";
   const tabs = writable<RibbonTabInfo[]>([]);
   const selectedTab = writable<RibbonTabInfo>(null);
   const metrics = writable<RibbonMetrics>(null);
@@ -87,7 +85,7 @@
   const isCustomizing = writable(false);
   let isTellMeSurveying = false;
   $: $isSurveying = isTellMeSurveying || $isCustomizing;
-  setContext("ribbonID", ribbonID);
+  setContext("ribbonID", id);
   setContext("ribbonTabs", tabs);
   setContext("ribbonSelectedTab", selectedTab);
   setContext("ribbonMetrics", metrics);
@@ -115,7 +113,7 @@
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
   let contextMenu: ContextMenu;
 
-  $: shownTabs = $tabs.filter(tab => tab.isContextual || !($customization.value?.[ribbonID]?.tabs ?? []).includes(tab.label));
+  $: shownTabs = $tabs.filter(tab => tab.isContextual || !($customization.value?.[id]?.tabs ?? []).includes(tab.label));
   $: if ($selectedTab && shownTabs.length && !shownTabs.includes($selectedTab)) {
     $selectedTab = shownTabs[0];
   }

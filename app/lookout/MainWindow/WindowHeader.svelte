@@ -40,8 +40,9 @@
   import { appGlobal } from "../../logic/app";
   import { appName, webMail } from "../../logic/build";
   import SearchField from "../../frontend/Shared/SearchField.svelte";
-  import MailSearchBox, { mailSearchInput } from "../Mail/Search/MailSearchBox.svelte";
-  import QuickAccessToolbar, { quickAccessCommands } from "./QuickAccessToolbar.svelte";
+  import MailSearchBox from "../Mail/Search/MailSearchBox.svelte";
+  import { quickAccessCommands } from "./Selected";
+  import QuickAccessToolbar from "./QuickAccessToolbar.svelte";
   import type { QuickAccessCommand } from "../Shared/QuickAccess/QuickAccess";
   import type { EMail } from "../../logic/Mail/EMail";
   import { selectedMessages } from "../../frontend/Mail/Selected";
@@ -52,7 +53,7 @@
   import ForwardIcon from "lucide-svelte/icons/forward";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import PrintIcon from "lucide-svelte/icons/printer";
-  import { printMessage } from "../Mail/Message/MessagePrint.svelte";
+  import { printMessage, mailSearchInput } from "../Mail/Selected";
   import { derived, get, writable } from "svelte/store";
   import AppIcon from "../../frontend/AppsBar/AppIcon.svelte";
   import logo from "../../frontend/asset/icon/general/logo.svg?raw";
