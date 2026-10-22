@@ -45,15 +45,10 @@
       </hbox>
     {:else if canRespond}
       <hbox class="respond" role="group" aria-label={$t`Respond *=> Buttons to answer the meeting invitation`}>
-        <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
-          pressed={response == InvitationResponse.Accept}
-          onClick={() => onRespond(InvitationResponse.Accept)} />
-        <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
-          pressed={response == InvitationResponse.Tentative}
-          onClick={() => onRespond(InvitationResponse.Tentative)} />
-        <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
-          pressed={response == InvitationResponse.Decline}
-          onClick={() => onRespond(InvitationResponse.Decline)} />
+        <RespondButtons {response} onRespond={onRespond}
+          onReplyToOrganizer={() => MessageActions.respond(message, message.compose.replyToAuthor())}
+          onReplyToAll={() => MessageActions.respond(message, message.compose.replyAll())}
+          onForward={clickEvent => MessageActions.forward(message, clickEvent as MouseEvent)} />
       </hbox>
     {/if}
     <grid class="details">
@@ -93,14 +88,13 @@
   import { eventWhenText, eventConflict, myResponseText } from "../EditEvent/EventFormInfo";
   import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
   import ResponseButton from "./ResponseButton.svelte";
+  import RespondButtons from "./RespondButtons.svelte";
+  import { MessageActions } from "../../Mail/MessageActions";
   import { catchErrors } from "../../../frontend/Util/error";
   import InfoIcon from "lucide-svelte/icons/info";
   import WarningIcon from "lucide-svelte/icons/triangle-alert";
   import CancelledIcon from "lucide-svelte/icons/calendar-x-2";
   import RemoveIcon from "lucide-svelte/icons/calendar-minus-2";
-  import AcceptIcon from "lucide-svelte/icons/check";
-  import TentativeIcon from "lucide-svelte/icons/circle-help";
-  import DeclineIcon from "lucide-svelte/icons/x";
   import ClockIcon from "lucide-svelte/icons/clock-3";
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import OnlineIcon from "lucide-svelte/icons/video";
@@ -201,8 +195,8 @@
   }
   // </copied>
 
-  async function onRespond(newResponse: InvitationResponseInMessage) {
-    await incoming.respondToInvitationFromMail(newResponse);
+  async function onRespond(newResponse: InvitationResponseInMessage, sendReply: boolean) {
+    await incoming.respondToInvitationFromMail(newResponse, sendReply);
     response = newResponse;
   }
 

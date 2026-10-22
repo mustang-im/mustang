@@ -17,15 +17,11 @@
           <hbox class="notice">{$t`The organizer changed the time or place of this meeting. Please respond again.`}</hbox>
         {/if}
         <hbox class="buttons">
-          <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
-            pressed={$event.myParticipation == InvitationResponse.Accept}
-            onClick={() => event.respondToInvitation(InvitationResponse.Accept)} />
-          <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
-            pressed={$event.myParticipation == InvitationResponse.Tentative}
-            onClick={() => event.respondToInvitation(InvitationResponse.Tentative)} />
-          <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
-            pressed={$event.myParticipation == InvitationResponse.Decline}
-            onClick={() => event.respondToInvitation(InvitationResponse.Decline)} />
+          <RespondButtons response={$event.myParticipation}
+            onRespond={(response, sendReply) => event.respondToInvitation(response, sendReply)}
+            onReplyToOrganizer={() => openComposer(IncomingInvitation.replyToEventByMail(event, false))}
+            onReplyToAll={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))}
+            onForward={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
         </hbox>
       {/if}
     </vbox>
@@ -47,17 +43,17 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventLook } from "./EventLook";
   import { CalendarActions } from "../CalendarActions";
   import DetailsGrid from "./DetailsGrid.svelte";
   import ResponseButton from "../Invitation/ResponseButton.svelte";
+  import RespondButtons from "../Invitation/RespondButtons.svelte";
+  import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
+  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import { openComposer } from "../../../frontend/Mail/open";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
   import cssBody from "../../../frontend/Mail/Message/content-body.css?inline";
-  import AcceptIcon from "lucide-svelte/icons/check";
-  import TentativeIcon from "lucide-svelte/icons/circle-help";
-  import DeclineIcon from "lucide-svelte/icons/x";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../../l10n/l10n";

@@ -819,7 +819,7 @@ export class Event extends Observable {
       if (this.isOutgoingMeeting) {
         await this.outgoingInvitation.sendCancellations();
       } else if (this.isIncomingMeeting) {
-        await this.respondToInvitation(InvitationResponse.Decline, null, false);
+        await this.respondToInvitation(InvitationResponse.Decline, true, null, false);
       }
     } catch (ex) {
       this.calendar.errorCallback(ex);
@@ -896,10 +896,10 @@ export class Event extends Observable {
    *
    * TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation
    */
-  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount, save = true): Promise<void> {
+  async respondToInvitation(response: InvitationResponseInMessage, sendReply = true, mailAccount?: MailAccount, save = true): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
-    await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
+    await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, sendReply, mailAccount);
     if (save) { // `save == false` for deleted events and `InvitationEvent`
       await this.save();
     }

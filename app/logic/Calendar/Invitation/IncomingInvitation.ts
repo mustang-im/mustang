@@ -2,6 +2,8 @@ import type { Calendar } from "../Calendar";
 import { RecurrenceCase, type Event } from "../Event";
 import { Participant } from "../Participant";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
+import { identityForCalendar } from "./OutgoingInvitation";
+import { findIdentityForEMailAddress } from "../../Mail/MailIdentity";
 import type { EMail } from "../../Mail/EMail";
 import { AbstractFunction, NotReached, assert } from "../../util/util";
 
@@ -42,8 +44,21 @@ export class IncomingInvitation {
     // TODO What if you were only invited to a single exception?
   }
 
-  async respondToInvitationFromMail(response: InvitationResponseInMessage) {
+  async respondToInvitationFromMail(response: InvitationResponseInMessage, sendReply = true) {
     throw new AbstractFunction();
+  }
+
+  /**
+   * Writes an email about a meeting that I was invited to,
+   * to its organizer, or to the organizer and all attendees.
+   */
+  static replyToEventByMail(event: Event, toAll: boolean): EMail {
+    let identity = identityForCalendar(event.calendar);
+    let mail = identity.newEMailFrom();
+    mail.subject = "Re: " + event.title; // Do NOT translate "Re: "
+    let recipients = toAll ? event.participants.contents : [event.organizer];
+    mail.to.addAll(recipients.filter(participant => participant && !findIdentityForEMailAddress(participant.emailAddress)));
+    return mail;
   }
 
   /** CancelledEvent: the organiser cancelled an incoming meeting */
