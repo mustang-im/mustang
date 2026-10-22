@@ -21,7 +21,10 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
    * because the other search may be slow.
    * Logs errors, does not throw. */
   async quickSearchAsync(searchTerm: string, results: ArrayColl<Person>) {
-    await Promise.all([searchTerm, "smtp:" + searchTerm].map(async term => {
+    await Promise.all([ // Exchange can't search for both in a single server call :-(
+      searchTerm, // name
+      "smtp:" + searchTerm, // email address
+    ].map(async term => {
       try {
         let persons = await this.searchGAL(term);
         for (let person of persons) {
