@@ -53,6 +53,9 @@ export class MailAccount extends TCPAccount {
   /** Why the user cannot change the rules on the server. null, if they can. */
   @notifyChangedProperty
   serverFilterRulesReadOnlyReason: string | null = null;
+  /** What the user should know before changing the rules on the server */
+  @notifyChangedProperty
+  serverFilterRulesNotice: string | null = null;
   setup: SetupInfo;
 
   readonly rootFolders: Collection<Folder> = new ArrayColl<Folder>();

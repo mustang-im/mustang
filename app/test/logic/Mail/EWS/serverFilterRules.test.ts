@@ -4,6 +4,7 @@ import { EWSAccount } from "../../../../logic/Mail/EWS/EWSAccount";
 import { FilterRuleAction } from "../../../../logic/Mail/FilterRules/FilterRuleAction";
 import { AuthMethod } from "../../../../logic/Abstract/Account";
 import { Person } from "../../../../logic/Abstract/Person";
+import { outlookRulesStream, base64 } from "./outlookRulesStream";
 import { expect, test } from "vitest";
 
 appGlobal.me ??= new Person();
@@ -52,6 +53,19 @@ function envelope(body: string): string {
     <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"><Body>${body}</Body></Envelope>`;
 }
 
+const kTypes = `xmlns="http://schemas.microsoft.com/exchange/services/2006/types"`;
+
+function success(operation: string, content: string): string {
+  return envelope(`<${operation}Response xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+    <ResponseMessages>
+      <${operation}ResponseMessage ResponseClass="Success">
+        <ResponseCode>NoError</ResponseCode>
+        ${content}
+      </${operation}ResponseMessage>
+    </ResponseMessages>
+  </${operation}Response>`);
+}
+
 /** An Exchange server with inbox rules.
  * Answers `GetInboxRules` with `rules`, and remembers the `UpdateInboxRules` requests. */
 function newTestAccount(rules: string[]) {
@@ -66,6 +80,10 @@ function newTestAccount(rules: string[]) {
     rules,
     /** Classic Outlook saved its own copy of the rules */
     outlookRulesExist: false,
+    /** The copy, @see `OutlookRulesCopy`. Exchange says that it exists, but we can't find it, if empty. */
+    outlookRulesStreams: [] as Uint8Array[],
+    /** The names of the operations, in the order of the requests */
+    operations: [] as string[],
     /** What the server does with the update */
     onUpdate: () => {},
     updateResponse: `<UpdateInboxRulesResponse ResponseClass="Success" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
@@ -74,6 +92,22 @@ function newTestAccount(rules: string[]) {
   };
   globalThis.fetch = (async (_url: string, options: any) => {
     let request = new DOMParser().parseFromString(options.body, "text/xml");
+    server.operations.push(request.getElementsByTagName("s:Body")[0]?.firstElementChild?.localName);
+    if (request.getElementsByTagName("m:FindItem").length) {
+      expect(request.getElementsByTagName("m:FindItem")[0].getAttribute("Traversal")).toBe("Associated");
+      let copies = server.outlookRulesExist ? server.outlookRulesStreams : [];
+      return { status: 200, text: async () => success("FindItem", `<RootFolder TotalItemsInView="${copies.length}" IncludesLastItemInRange="true"><Items ${kTypes}>
+        ${copies.map((_stream, i) => `<Message><ItemId Id="copy-${i}" ChangeKey="AQAAAA=="/></Message>`).join("")}
+      </Items></RootFolder>`) };
+    }
+    if (request.getElementsByTagName("m:GetItem").length) {
+      let id = request.getElementsByTagName("t:ItemId")[0].getAttribute("Id");
+      let stream = server.outlookRulesStreams[Number(id.replace("copy-", ""))];
+      return { status: 200, text: async () => success("GetItem", `<Items><Message ${kTypes}>
+        <ItemId Id="${id}" ChangeKey="AQAAAA=="/>
+        <ExtendedProperty><ExtendedFieldURI PropertyTag="0x6802" PropertyType="Binary"/><Value>${base64(stream)}</Value></ExtendedProperty>
+      </Message></Items>`) };
+    }
     if (request.getElementsByTagName("m:UpdateInboxRules").length) {
       updates.push(request);
       server.onUpdate();
@@ -322,6 +356,71 @@ test("EWS: While Outlook keeps its own copy of the rules, the server rules are r
   server.outlookRulesExist = false;
   await account.refreshServerFilterRules();
   expect(rule(account, "Invoices").readOnlyReason).toBeNull();
+});
+
+test("EWS: When Outlook's copy of the rules has no rules of its own, the server rules stay editable, and Exchange may delete the copy", async () => {
+  let { account, updates, server } = newTestAccount([kNewslettersRule, kInvoicesRule]);
+  server.outlookRulesExist = true;
+  server.outlookRulesStreams = [outlookRulesStream([{ name: "Newsletters" }, { name: "Invoices" }])];
+
+  await account.refreshServerFilterRules();
+  expect(rule(account, "Invoices").readOnlyReason).toBeNull();
+  expect(account.serverFilterRulesNotice).toMatch(/Outlook/);
+
+  rule(account, "Invoices").criteria.bodyText = "bill";
+  server.operations.length = 0;
+  await account.saveServerFilterRules();
+
+  expect(updates.length).toBe(1);
+  expect(updates[0].getElementsByTagName("m:RemoveOutlookRuleBlob")[0].textContent).toBe("true");
+  // Outlook may have changed its copy in the meantime
+  expect(server.operations.slice(0, server.operations.indexOf("UpdateInboxRules"))).toContain("GetItem");
+});
+
+test("EWS: The rules that only Outlook's copy of the rules has keep the server rules read-only, and the user sees their names", async () => {
+  let { account, server } = newTestAccount([kNewslettersRule, kInvoicesRule]);
+  server.outlookRulesExist = true;
+  server.outlookRulesStreams = [outlookRulesStream([
+    { name: "Newsletters" },
+    { name: "Cc my boss", isForSentMail: true },
+    { name: "Invoices" },
+    { name: "Old", isEnabled: false },
+  ])];
+  let local = localRule(account, "Local");
+
+  await account.refreshServerFilterRules();
+
+  let reason = rule(account, "Invoices").readOnlyReason;
+  expect(reason).toContain("Cc my boss");
+  expect(reason).toContain("Old");
+  expect(reason).not.toContain("Newsletters");
+  expect(account.serverFilterRulesNotice).toBeNull();
+  expect(local.readOnlyReason).toBeNull();
+});
+
+test("EWS: When Outlook adds a rule for sent mail after we read its copy of the rules, the change is refused", async () => {
+  let { account, updates, server } = newTestAccount([kInvoicesRule]);
+  server.outlookRulesExist = true;
+  server.outlookRulesStreams = [outlookRulesStream([{ name: "Invoices" }])];
+  await account.refreshServerFilterRules();
+  rule(account, "Invoices").criteria.bodyText = "bill";
+
+  server.outlookRulesStreams = [outlookRulesStream([{ name: "Invoices" }, { name: "Cc my boss", isForSentMail: true }])];
+
+  await expect(account.saveServerFilterRules()).rejects.toThrow("Cc my boss");
+  expect(updates).toEqual([]);
+  expect(rule(account, "Invoices").readOnlyReason).toContain("Cc my boss");
+});
+
+test("EWS: A copy of the rules that we can't read keeps the server rules read-only", async () => {
+  let { account, server } = newTestAccount([kInvoicesRule]);
+  server.outlookRulesExist = true;
+  server.outlookRulesStreams = [new Uint8Array([1, 2, 3, 4])];
+
+  await account.refreshServerFilterRules();
+
+  expect(rule(account, "Invoices").readOnlyReason).toMatch(/Outlook/);
+  expect(account.dataErrors.length).toBe(1);
 });
 
 test("EWS: A copy of a server rule keeps the parts that we can't show", async () => {

@@ -57,10 +57,12 @@
         disabled={cannotRunOnServer ?? false} />
     </hbox>
   {/if}
-  {#if readOnlyReason || unknownParts.length}
+  {#if readOnlyReason || notice || unknownParts.length}
     <vbox class="server-notes lo-secondary">
       {#if readOnlyReason}
         <span>{readOnlyReason}</span>
+      {:else if notice}
+        <span>{notice}</span>
       {/if}
       {#if unknownParts.length}
         <span>{$t`Parts of this rule that ${appName} cannot show or change`}</span>
@@ -192,6 +194,7 @@
   $: descriptionLines = selected && version >= 0 ? ruleDescriptionLines(selected) : [];
   $: readOnlyReason = selected && version >= 0 && $account ? selected.readOnlyReason : null;
   $: unknownParts = selected?.server && version >= 0 ? selected.serverRule?.unknownParts ?? [] : [];
+  $: notice = selected?.server && version >= 0 ? $account.serverFilterRulesNotice : null;
   $: cannotRunHere = readOnlyReason ?? (unknownParts.length ? $t`${appName} cannot run all parts of this rule` : null);
   $: cannotRunOnServer = readOnlyReason ?? (selected?.server ? null : $account.serverFilterRulesReadOnlyReason);
 

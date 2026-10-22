@@ -63,10 +63,12 @@
                     </hbox>
                   {/if}
                 </grid>
-                {#if readOnlyReason || unknownParts.length}
+                {#if readOnlyReason || notice || unknownParts.length}
                   <vbox class="server-notes">
                     {#if readOnlyReason}
                       <hbox>{readOnlyReason}</hbox>
+                    {:else if notice}
+                      <hbox>{notice}</hbox>
                     {/if}
                     {#if unknownParts.length}
                       <hbox>{$t`Parts of this rule that ${appName} cannot show or change`}</hbox>
@@ -143,6 +145,7 @@
   $: account, catchErrors(() => account.refreshServerFilterRules());
   $: readOnlyReason = $account && $rule ? rule.readOnlyReason : null;
   $: unknownParts = $rule?.server ? rule.serverRule?.unknownParts ?? [] : [];
+  $: notice = $rule?.server ? $account.serverFilterRulesNotice : null;
   $: cannotRunHere = readOnlyReason ?? (unknownParts.length ? $t`${appName} cannot run all parts of this rule` : null);
   $: cannotRunOnServer = readOnlyReason ?? ($rule?.server ? null : $account.serverFilterRulesReadOnlyReason);
 
