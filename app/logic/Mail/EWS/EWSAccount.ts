@@ -460,6 +460,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   /** @param username stable ID per stream, e.g. the streamed account's username */
   async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
+    const kRetrySeconds = 10;
     let lastAttempt: number;
     let signal = abort.signal;
     // Exchange sends a heartbeat every 45 seconds. Without it, the connection is dead, e.g. after a VPN drop,
@@ -557,8 +558,8 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
           watchdog.restart(); // e.g. it failed while we processed a chunk, which pauses the watchdog
-          if (Date.now() - lastAttempt < 10000) {
-            await sleep(10); // e.g. the VPN tunnel isn't up yet
+          if (Date.now() - lastAttempt < kRetrySeconds * 1000) {
+            await sleep(kRetrySeconds); // e.g. the VPN tunnel isn't up yet
           }
           continue;
         }
@@ -566,7 +567,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         watchdog.fulfilled();
         break;
       }
-    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when the stream ended within 10 seconds. The watchdog tries again later.
+    } while (!signal.aborted && Date.now() - lastAttempt >= kRetrySeconds * 1000) // quit when the stream ended sooner. The watchdog tries again later.
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */
