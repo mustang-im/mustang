@@ -2,10 +2,21 @@
   <hbox class="option">
     <Checkbox
       label={$t`Only ask people with unknown availability`}
-      checked={$onlyUnknownSetting.value}
+      checked={onlyUnknown}
+      disabled={allKnown}
+      tooltip={allKnown ? $t`The availability of all participants is known` : null}
       allowIndetermined={false}
       on:change={ev => onlyUnknownSetting.value = ev.detail}
       />
+    {#if sml}
+      <Button
+        label={$t`Compose mail`}
+        icon={ComposeIcon}
+        classes="send"
+        onClick={onSend}
+        disabled={$recipients.isEmpty ? $t`Nobody is invited yet` : false}
+        />
+    {/if}
   </hbox>
   <hbox class="recipients">
     <hbox class="label">{$t`To *=> email to a person`}</hbox>
@@ -13,7 +24,7 @@
       <hbox class="names" class:none={$recipients.isEmpty}>
         {$recipients.hasItems
           ? $recipients.contents.map(participant => participant.name || participant.emailAddress).join(", ")
-          : noRecipientsReason}
+          : $t`Nobody is invited yet`}
       </hbox>
     </AvailabilityLoader>
   </hbox>
@@ -21,15 +32,6 @@
     <slot name="editor" {sml}>
       <EditPollTimes {event} {sml} />
     </slot>
-    <hbox class="buttons">
-      <Button
-        label={$t`Compose mail`}
-        icon={ComposeIcon}
-        classes="send"
-        onClick={onSend}
-        disabled={$recipients.isEmpty ? noRecipientsReason : false}
-        />
-    </hbox>
   {:else}
     <hbox class="error">{$t`No suitable email identity to organise this meeting`}</hbox>
   {/if}
@@ -76,12 +78,12 @@
 
   let freeBusy: FreeBusy | null = null;
   $: participants = event.participants;
-  $: recipients = pollRecipients($participants, freeBusy, $onlyUnknownSetting.value);
-  $: noRecipientsReason = noRecipientsText($participants);
-  function noRecipientsText(participants: Collection<Participant>): string {
-    return participants.find(participant => participant.response != InvitationResponse.Organizer)
-      ? $t`The availability of all participants is known`
-      : $t`Nobody is invited yet`;
+  $: allKnown = isAllKnown($participants, freeBusy);
+  $: onlyUnknown = $onlyUnknownSetting.value && !allKnown;
+  $: recipients = pollRecipients($participants, freeBusy, onlyUnknown);
+  function isAllKnown(participants: Collection<Participant>, freeBusy: FreeBusy | null): boolean {
+    let invitees = participants.filterOnce(participant => participant.response != InvitationResponse.Organizer);
+    return !!freeBusy && invitees.hasItems && !invitees.find(participant => !freeBusy.rowFor(participant)?.busy);
   }
   function pollRecipients(participants: Collection<Participant>, freeBusy: FreeBusy | null, onlyUnknown: boolean): Collection<Participant> {
     return participants.filterOnce(participant =>
@@ -109,6 +111,14 @@
     align-items: center;
     margin-block-end: 6px;
   }
+  .option {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+  .option :global(button.send) {
+    margin-inline-start: auto;
+    white-space: nowrap;
+  }
   .recipients .label {
     margin-inline-end: 12px;
     opacity: 70%;
@@ -118,10 +128,6 @@
   }
   .recipients :global(.checking) {
     margin: 0;
-  }
-  .buttons {
-    justify-content: end;
-    margin-block-start: 8px;
   }
   .error {
     margin: 12px;

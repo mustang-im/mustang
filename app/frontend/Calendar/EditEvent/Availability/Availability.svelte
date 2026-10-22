@@ -1,16 +1,14 @@
-<vbox class="availability" class:expanded class:enlarged>
-  <hbox class="header">
-    <Clickable onClick={toggleExpanded}>
-      <hbox class="title">{$t`Availability of participants`}</hbox>
-    </Clickable>
-    {#if expanded && $invitees.hasItems}
+{#if $invitees.hasItems}
+  <vbox class="availability" class:expanded class:enlarged>
+    <hbox class="header" class:short-labels={labels == "short"} bind:this={headerE} bind:clientWidth={headerWidth}>
       <IslandSwitcher faint={false}>
         <Button
           tooltip={$t`Free slots`}
           icon={FreeTimesIcon}
           iconSize="16px"
-          onClick={() => view = "free"}
-          selected={view == "free"}
+          iconOnly={labels == "none"}
+          onClick={() => showView("free")}
+          selected={expanded && view == "free"}
           disabled={noAvailabilityReason}
           >
           <hbox slot="label">
@@ -22,8 +20,9 @@
           tooltip={$t`Who is free when`}
           icon={ParticipantsIcon}
           iconSize="16px"
-          onClick={() => view = "participants"}
-          selected={view == "participants"}
+          iconOnly={labels == "none"}
+          onClick={() => showView("participants")}
+          selected={expanded && view == "participants"}
           disabled={noAvailabilityReason}
           >
           <hbox slot="label">
@@ -35,35 +34,34 @@
           label={$t`Poll *=> Ask the participants by email which times suit them`}
           icon={PollIcon}
           iconSize="16px"
-          onClick={() => view = "poll"}
-          selected={view == "poll"}
+          iconOnly={labels == "none"}
+          onClick={() => showView("poll")}
+          selected={expanded && view == "poll"}
           />
       </IslandSwitcher>
-    {/if}
-    <hbox flex />
-    {#if expanded && $invitees.hasItems}
-      <RoundButton
-        label={enlarged
-          ? $t`Shrink *=> Make the availability small again, and show the other fields of the event`
-          : $t`Enlarge *=> Let the availability fill the dialog`}
-        icon={enlarged ? ShrinkIcon : EnlargeIcon}
-        onClick={enlarged ? () => enlarged = false : onEnlarge}
-        classes="plain"
-        border={false}
+      <hbox flex />
+      {#if expanded}
+        <RoundButton
+          label={enlarged
+            ? $t`Shrink *=> Make the availability small again, and show the other fields of the event`
+            : $t`Enlarge *=> Let the availability fill the dialog`}
+          icon={enlarged ? ShrinkIcon : EnlargeIcon}
+          onClick={enlarged ? () => enlarged = false : onEnlarge}
+          classes="plain"
+          border={false}
+          iconSize="16px"
+          />
+      {/if}
+      <Button
+        plain
+        icon={expanded ? CollapseIcon : ExpandIcon}
+        label={expanded ? $t`Collapse` : $t`Expand`}
+        onClick={toggleExpanded}
+        iconOnly
         iconSize="16px"
         />
-    {/if}
-    <Button
-      plain
-      icon={expanded ? CollapseIcon : ExpandIcon}
-      label={expanded ? $t`Collapse` : $t`Expand`}
-      onClick={toggleExpanded}
-      iconOnly
-      iconSize="16px"
-      />
-  </hbox>
-  {#if expanded}
-    {#if $invitees.hasItems}
+    </hbox>
+    {#if expanded}
       <vbox class="view">
         {#if view == "free"}
           <FreeSlots {event} {showHours} />
@@ -73,11 +71,9 @@
           <AvailabilityPoll {event} bind:sml={poll} />
         {/if}
       </vbox>
-    {:else}
-      <hbox class="hint">{$t`Add some participants`}</hbox>
     {/if}
-  {/if}
-</vbox>
+  </vbox>
+{/if}
 
 <script lang="ts" context="module">
   import type { Event } from "../../../../logic/Calendar/Event";
@@ -101,7 +97,6 @@
   import IslandSwitcher from "../../../Shared/IslandSwitcher.svelte";
   import Button from "../../../Shared/Button.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
-  import Clickable from "../../../Shared/Clickable.svelte";
   import FreeTimesIcon from "lucide-svelte/icons/calendar-check";
   import ParticipantsIcon from "lucide-svelte/icons/users";
   import PollIcon from "lucide-svelte/icons/calendar-clock";
@@ -109,10 +104,11 @@
   import ShrinkIcon from "lucide-svelte/icons/minimize-2";
   import ExpandIcon from "lucide-svelte/icons/chevron-down";
   import CollapseIcon from "lucide-svelte/icons/chevron-up";
+  import { tick } from "svelte";
   import { t } from "../../../../l10n/l10n";
 
   export let event: Event;
-  /** Whether the availability is shown, or only its title
+  /** Whether the availability is shown, or only the view switcher
    * in/out */
   export let expanded = false;
   /** Whether the availability fills the dialog
@@ -121,10 +117,13 @@
 
   let view: AvailabilityView = "free";
   let poll: SMLData | null = null;
+  /** Whether the user expanded or collapsed the availability.
+   * Until then, it expands as soon as the availability of an invitee is known. */
+  let isExpandedByUser = false;
   if (handover?.event == event) {
     ({ view, poll } = handover);
     handover = null;
-    expanded = enlarged = true;
+    expanded = enlarged = isExpandedByUser = true;
   }
 
   $: participants = event.participants;
@@ -158,50 +157,81 @@
   }
   // </copied>
 
+  let expandCheckCount = 0;
+  $: $invitees, expandIfAvailable();
+  async function expandIfAvailable() {
+    let count = ++expandCheckCount;
+    let day = new Date(event.startTime);
+    day.setHours(0, 0, 0, 0);
+    let dayEnd = new Date(day);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    try {
+      let freeBusy = await FreeBusy.load(event.calendar, invitees.contents, day, dayEnd);
+      if (freeBusy.hasInformation && count == expandCheckCount && !isExpandedByUser) {
+        expanded = true;
+      }
+    } catch (ex) {
+      // The views show the error
+    }
+  }
+
+  function showView(newView: AvailabilityView) {
+    view = newView;
+    expanded = isExpandedByUser = true;
+  }
+
   function toggleExpanded() {
     expanded = !expanded;
+    isExpandedByUser = true;
     if (!expanded) {
       enlarged = false;
+    }
+  }
+
+  /** Whether the view switcher shows the long labels, short labels, or only icons */
+  let labels: "long" | "short" | "none" = "long";
+  let headerE: HTMLElement;
+  let headerWidth = 0;
+  let fitCount = 0;
+  $: headerWidth, expanded, $invitees, fitLabels();
+  async function fitLabels() {
+    let count = ++fitCount;
+    for (let candidate of ["long", "short", "none"] as const) {
+      labels = candidate;
+      await tick();
+      if (count != fitCount || !headerE || headerE.scrollWidth <= headerE.clientWidth) {
+        return;
+      }
     }
   }
 </script>
 
 <style>
-  .availability {
-    container-type: inline-size;
-    container-name: availability;
+  .availability.expanded {
+    flex: 1 0 auto;
   }
   .availability.enlarged {
     flex: 1 1 0;
     min-height: 0;
   }
   .header {
+    contain: inline-size;
     align-items: center;
     gap: 12px;
   }
-  .title {
-    opacity: 50%;
+  .header :global(.island) {
+    flex-shrink: 0;
     white-space: nowrap;
-    cursor: pointer;
   }
-  .short {
+  .short,
+  .short-labels .long {
     display: none;
   }
-  @container availability (max-width: 650px) {
-    .expanded .title {
-      display: none;
-    }
-  }
-  @container availability (max-width: 450px) {
-    .long {
-      display: none;
-    }
-    .short {
-      display: inline;
-    }
+  .short-labels .short {
+    display: inline;
   }
   .view {
-    height: 300px;
+    flex: 1 0 300px;
     margin-block-start: 6px;
     padding: 8px;
     border: 1px dotted var(--border);
@@ -209,11 +239,6 @@
   }
   .enlarged .view {
     flex: 1 1 0;
-    height: auto;
     min-height: 0;
-  }
-  .hint {
-    margin-block-start: 6px;
-    opacity: 70%;
   }
 </style>

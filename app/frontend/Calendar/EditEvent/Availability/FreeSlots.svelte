@@ -83,7 +83,8 @@
   /** The meeting. "Use this time" moves it.
    * in/out */
   export let event: Event;
-  /** How many hours fit into the visible height */
+  /** How many hours fit at least into the visible height.
+   * A higher view shows more hours. */
   export let showHours = 5;
 
   const kShowDays = 5; // Mon-Fri
@@ -135,7 +136,8 @@
 
   let scrollE: Scroll;
   let visibleHeight = 0;
-  $: rowHeight = visibleHeight / showHours;
+  const kMaxRowHeight = 50;
+  $: rowHeight = Math.max(visibleHeight / (kEndHour - kStartHour), Math.min(visibleHeight / showHours, kMaxRowHeight));
   $: day, rowHeight, scrollToMeeting();
   async function scrollToMeeting() {
     await tick();
@@ -173,6 +175,7 @@
   }
   .date {
     font-size: 90%;
+    white-space: nowrap;
   }
   .weekday {
     display: block;

@@ -29,8 +29,8 @@
   </PersonsAutocomplete>
 </vbox>
 
-<vbox class="availability" class:enlarged={isAvailabilityEnlarged}>
-  <Availability {event} bind:enlarged={isAvailabilityEnlarged} />
+<vbox class="availability" class:expanded={isAvailabilityExpanded} class:enlarged={isAvailabilityEnlarged}>
+  <Availability {event} bind:expanded={isAvailabilityExpanded} bind:enlarged={isAvailabilityEnlarged} />
 </vbox>
 
 <script lang="ts">
@@ -49,6 +49,9 @@
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
+  /** Whether the availability is shown
+   * out */
+  export let isAvailabilityExpanded = false;
   /** Whether the availability fills the dialog
    * in/out */
   export let isAvailabilityEnlarged = false;
@@ -76,6 +79,9 @@
   }
   .availability {
     margin-block-start: 18px;
+  }
+  .availability.expanded {
+    flex: 1 0 auto;
   }
   .availability.enlarged {
     flex: 1 1 0;

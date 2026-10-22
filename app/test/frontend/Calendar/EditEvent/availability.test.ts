@@ -237,6 +237,38 @@ test("Meeting time poll: Remembers whether to ask only people with unknown avail
   expect(text(".recipients .names")).toEqual(["Frida Free, Bob Busy, Una Unknown"]);
 });
 
+test("Meeting time poll: When the availability of everybody is known, asks everybody", async () => {
+  let event = newMeeting();
+  event.participants.remove(una);
+  await show(AvailabilityPoll, { event });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(text(".recipients .names")).toEqual(["Frida Free, Bob Busy"]);
+  let checkbox = document.querySelector(".option .checkbox");
+  expect(checkbox.classList).toContain("disabled");
+  expect(checkbox.getAttribute("title")).toBe("The availability of all participants is known");
+  expect(checkbox.querySelector<HTMLInputElement>("input").checked).toBe(false);
+});
+
+test("Expanded by default, as soon as the availability of a participant is known", async () => {
+  await show(Availability, { event: newMeeting() });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(document.querySelector(".availability.expanded")).not.toBeNull();
+  expect(document.querySelector(".free-slots")).not.toBeNull();
+});
+
+test("Collapsed by default without free/busy, and the view buttons expand it", async () => {
+  await show(Availability, { event: newMeeting(new NoFreeBusyCalendar()) });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(document.querySelector(".availability.expanded")).toBeNull();
+  (document.querySelector('button[title="Poll"]') as HTMLElement).click();
+  flushSync();
+  expect(document.querySelector(".availability.expanded")).not.toBeNull();
+  expect(document.querySelector(".availability-poll")).not.toBeNull();
+});
+
 test("Without free/busy from the server, only the poll is available", async () => {
   await show(Availability, { event: newMeeting(new NoFreeBusyCalendar()), expanded: true });
   await new Promise(resolve => setTimeout(resolve, 0));

@@ -4,7 +4,7 @@
     <hbox flex bind:offsetWidth={width}>
       <Scroll>
         <vbox class="columns" flex class:show-description={showDescription} class:show-attachments={showAttachments}
-          class:availability-enlarged={isAvailabilityEnlarged}>
+          class:availability-expanded={isAvailabilityExpanded} class:availability-enlarged={isAvailabilityEnlarged}>
           <vbox class="column1">
             <hbox class="time-box" >
               <TimeBox {event} />
@@ -38,8 +38,8 @@
               {/if}
             {/if}
             {#if showParticipants}
-              <Section label={$t`Invite`} icon={ParticipantsIcon} flex={isAvailabilityEnlarged || null}>
-                <ParticipantsBox {event} bind:isAvailabilityEnlarged />
+              <Section label={$t`Invite`} icon={ParticipantsIcon} flex={isAvailabilityExpanded || null}>
+                <ParticipantsBox {event} bind:isAvailabilityExpanded bind:isAvailabilityEnlarged />
               </Section>
             {/if}
             {#if !isAvailabilityEnlarged}
@@ -131,6 +131,7 @@
   $: showAttachments = $attachments.hasItems;
 
   let width: number;
+  let isAvailabilityExpanded = false;
   let isAvailabilityEnlarged = false;
 
   function expandRepeat(): void {
@@ -197,6 +198,9 @@
   }
   .column3.attachments {
     margin-block-start: 12px;
+  }
+  .availability-expanded .column1 {
+    flex: 1 0 auto;
   }
   .availability-enlarged .column1 {
     flex: 1 1 0;
