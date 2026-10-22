@@ -253,7 +253,7 @@
 
   function spans(intervals: TimeInterval[] | null, timeline: Timeline): { left: number, width: number }[] {
     return (intervals ?? [])
-      .map(interval => timeline.span(interval.from, interval.to))
+      .map(interval => timeline.span(interval.startTime, interval.endTime))
       .filter(span => span && span.width > 0);
   }
 

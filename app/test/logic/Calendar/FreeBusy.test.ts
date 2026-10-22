@@ -46,15 +46,15 @@ test("Loads the availability with the logic call", async () => {
   expect(calendar.requested.participants).toEqual([anna, bert, carla]);
   expect(calendar.requested.from).toEqual(at(0));
   expect(freeBusy.hasInformation).toBe(true);
-  expect(freeBusy.rowFor(anna).busy).toEqual([{ from: at(9), to: at(10) }]);
+  expect(freeBusy.rowFor(anna).busy).toEqual([{ startTime: at(9), endTime: at(10) }]);
   expect(freeBusy.rowFor(carla).busy).toBe(null);
 });
 
 test("All attendees: union of the busy times", async () => {
   let freeBusy = await FreeBusy.load(new FreeBusyCalendar(), [anna, bert, carla], at(0), at(24));
   expect(freeBusy.allAttendeesBusy).toEqual([
-    { from: at(9), to: at(11) },
-    { from: at(14), to: at(15) },
+    { startTime: at(9), endTime: at(11) },
+    { startTime: at(14), endTime: at(15) },
   ]);
 });
 
@@ -99,19 +99,19 @@ test("Results are matched by email address, if the server returns other objects"
   let freeBusy = FreeBusy.fromAvailability([bert], [
     { participant: bertCopy, availability: [appointment(at(8), at(9))] },
   ]);
-  expect(freeBusy.rowFor(bert).busy).toEqual([{ from: at(8), to: at(9) }]);
+  expect(freeBusy.rowFor(bert).busy).toEqual([{ startTime: at(8), endTime: at(9) }]);
 });
 
 test("Merge overlapping and touching intervals", () => {
   expect(FreeBusy.merge([
-    { from: at(13), to: at(14) },
-    { from: at(9), to: at(10) },
-    { from: at(10), to: at(11) },
-    { from: at(10, 30), to: at(10, 45) },
-    { from: at(12), to: at(12) },
+    { startTime: at(13), endTime: at(14) },
+    { startTime: at(9), endTime: at(10) },
+    { startTime: at(10), endTime: at(11) },
+    { startTime: at(10, 30), endTime: at(10, 45) },
+    { startTime: at(12), endTime: at(12) },
   ])).toEqual([
-    { from: at(9), to: at(11) },
-    { from: at(13), to: at(14) },
+    { startTime: at(9), endTime: at(11) },
+    { startTime: at(13), endTime: at(14) },
   ]);
 });
 
@@ -131,8 +131,8 @@ test("Keeps each appointment with its status and details, for display", () => {
     [at(11), FreeBusyStatus.Tentative, "Lunch", "Canteen"],
   ]);
   expect(row.busy).toEqual([
-    { from: at(9), to: at(10, 30) },
-    { from: at(11), to: at(12) },
+    { startTime: at(9), endTime: at(10, 30) },
+    { startTime: at(11), endTime: at(12) },
   ]);
 });
 

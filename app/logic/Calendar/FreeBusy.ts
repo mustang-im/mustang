@@ -49,7 +49,7 @@ export class FreeBusy {
       let appointments = result.availability
         .filter(appointment => !appointment.isFree)
         .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-      let busy = FreeBusy.merge(appointments.map(appointment => ({ from: appointment.startTime, to: appointment.endTime })));
+      let busy = FreeBusy.merge(appointments.map(appointment => ({ startTime: appointment.startTime, endTime: appointment.endTime })));
       return { participant, busy, appointments };
     }), availability.length > 0);
   }
@@ -72,7 +72,7 @@ export class FreeBusy {
     if (!busy) {
       return "unknown";
     }
-    return busy.some(interval => interval.from < end && interval.to > start) ? "busy" : "free";
+    return busy.some(interval => interval.startTime < end && interval.endTime > start) ? "busy" : "free";
   }
 
   /**
@@ -105,17 +105,17 @@ export class FreeBusy {
 
   static merge(intervals: TimeInterval[]): TimeInterval[] {
     let sorted = intervals
-      .filter(interval => interval.to > interval.from)
-      .sort((a, b) => a.from.getTime() - b.from.getTime());
+      .filter(interval => interval.endTime > interval.startTime)
+      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
     let merged: TimeInterval[] = [];
     for (let interval of sorted) {
       let last = merged.at(-1);
-      if (last && interval.from <= last.to) {
-        if (interval.to > last.to) {
-          last.to = new Date(interval.to);
+      if (last && interval.startTime <= last.endTime) {
+        if (interval.endTime > last.endTime) {
+          last.endTime = new Date(interval.endTime);
         }
       } else {
-        merged.push({ from: new Date(interval.from), to: new Date(interval.to) });
+        merged.push({ startTime: new Date(interval.startTime), endTime: new Date(interval.endTime) });
       }
     }
     return merged;
