@@ -4,9 +4,11 @@
   on:contextmenu={onContextMenu}
   bind:this={ribbonEl}>
   <hbox class="tab-row">
-    <button class="tab file-tab" on:click={onFile} title={$t`File`}>
-      {$t`File`}
-    </button>
+    {#if appWindow.isMainWindow}
+      <button class="tab file-tab" on:click={onFile} title={$t`File`}>
+        {$t`File`}
+      </button>
+    {/if}
     <hbox class="tabs" role="tablist" tabindex="-1" on:keydown={onTabRowKeyDown}>
       {#each shownTabs as tab}
         <button class="tab" role="tab"
@@ -24,13 +26,15 @@
     <slot name="tab-row-end" />
     <TellMe {ribbonEl} bind:isSurveying={isTellMeSurveying} />
     <ContextMenu bind:this={contextMenu}>
-      {#if !$qatHidden.value}
-        <MenuItem label={$qatPosition.value == "below" ? $t`Show Quick Access Toolbar Above the Ribbon` : $t`Show Quick Access Toolbar Below the Ribbon`}
-          onClick={() => { $qatPosition.value = $qatPosition.value == "below" ? "above" : "below"; }} />
-      {:else}
-        <MenuItem label={$t`Show Quick Access Toolbar`} onClick={() => { $qatHidden.value = false; }} />
+      {#if appWindow.isMainWindow}
+        {#if !$qatHidden.value}
+          <MenuItem label={$qatPosition.value == "below" ? $t`Show Quick Access Toolbar Above the Ribbon` : $t`Show Quick Access Toolbar Below the Ribbon`}
+            onClick={() => { $qatPosition.value = $qatPosition.value == "below" ? "above" : "below"; }} />
+        {:else}
+          <MenuItem label={$t`Show Quick Access Toolbar`} onClick={() => { $qatHidden.value = false; }} />
+        {/if}
+        <MenuDivider />
       {/if}
-      <MenuDivider />
       <MenuItem label={$t`Customize the Ribbon…`} onClick={() => $isCustomizing = true} />
       <MenuItem label={$t`Collapse the Ribbon`} checkable checked={isCollapsed} shortCutInfo={$t`Ctrl+F1 *=> Keyboard shortcut`} onClick={onToggleCollapsed} />
     </ContextMenu>
@@ -57,7 +61,7 @@
     <div data-metric="groupChrome" style="width: calc(2 * var(--lo-ribbon-group-padding))"></div>
   </div>
 </vbox>
-<svelte:window on:click={onClickOutside} on:keydown={onKeyDown} />
+<AppWindowEvents on:click={onClickOutside} on:keydown={onKeyDown} />
 
 <script lang="ts">
   import type { RibbonTabInfo, RibbonLayout, RibbonMetrics } from "./RibbonGroup";
@@ -69,6 +73,8 @@
   import TellMe from "./TellMe.svelte";
   import CustomizeRibbonDialog from "./CustomizeRibbonDialog.svelte";
   import ContextMenu from "../Menu/ContextMenu.svelte";
+  import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+  import AppWindowEvents from "../../../frontend/MainWindow/AppWindowEvents.svelte";
   import type { RibbonHiddenParts } from "./RibbonCustomization";
   import { get, writable } from "svelte/store";
   import type { QuickAccessPosition } from "../QuickAccess/QuickAccess";
@@ -78,6 +84,7 @@
 
   export let id: string;
 
+  const appWindow = AppWindow.current();
   const tabs = writable<RibbonTabInfo[]>([]);
   const selectedTab = writable<RibbonTabInfo>(null);
   const metrics = writable<RibbonMetrics>(null);
@@ -196,6 +203,18 @@
     if (isTempOpen && event.key == "Escape") {
       isTempOpen = false;
     }
+    // <copied from="../../MainWindow/MainWindow.svelte">
+    let target = event.target as HTMLElement;
+    if (event.defaultPrevented || event.cancelBubble || appWindow.window.document.querySelector("dialog:modal") ||
+        target?.closest?.("[contenteditable]:not([contenteditable='false'])")) {
+      return;
+    }
+    // </copied>
+    if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key == "F1") {
+      event.preventDefault();
+      event.stopPropagation();
+      onToggleCollapsed();
+    }
   }
 
   function onContextMenu(event: MouseEvent) {
@@ -212,7 +231,7 @@
       return;
     }
     let tabButtons = Array.from(ribbonEl.querySelectorAll<HTMLElement>(".tab-row .tabs .tab"));
-    let pos = tabButtons.indexOf(document.activeElement as HTMLElement);
+    let pos = tabButtons.indexOf(appWindow.window.document.activeElement as HTMLElement);
     if (pos < 0) {
       return;
     }

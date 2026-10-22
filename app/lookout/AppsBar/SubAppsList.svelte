@@ -10,13 +10,16 @@
 <script lang="ts">
   import type { MustangApp } from "../../frontend/AppsBar/MustangApp";
   import { openApp } from "../../frontend/AppsBar/selectedApp";
+  import { AppWindow } from "../../frontend/MainWindow/AppWindow";
   import AppButton from "./AppButton.svelte";
   import { catchErrors } from "../../frontend/Util/error";
+
+  const appWindow = AppWindow.current();
 
   export let mainApp: MustangApp;
   export let selectedApp: MustangApp | null;
 
-  $: subApps = $mainApp.subApps;
+  $: subApps = appWindow.uiState($mainApp.subApps);
 
   function onSelectApp(app: MustangApp) {
     openApp(app, app.windowParams);

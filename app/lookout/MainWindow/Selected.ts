@@ -1,4 +1,5 @@
 import type { QuickAccessCommand } from "../Shared/QuickAccess/QuickAccess";
+import { AppWindow } from "../../frontend/MainWindow/AppWindow";
 import { writable } from "svelte/store";
 
 export interface StatusBarItem {
@@ -21,6 +22,6 @@ export interface StatusBarContent {
   views: StatusBarView[];
 }
 
-export const statusBarContent = writable<StatusBarContent | null>(null);
+export const statusBarContent = AppWindow.perWindow(() => writable<StatusBarContent | null>(null));
 
-export const quickAccessCommands = writable<QuickAccessCommand[]>([]);
+export const quickAccessCommands = AppWindow.perWindow(() => writable<QuickAccessCommand[]>([]));

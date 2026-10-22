@@ -9,26 +9,26 @@
       <hbox class="from">
         <hbox class="sender-name">
           {#if $message.from}
-            <RecipientsList recipients={new ArrayColl([$message.from])} withAddress />
+            <RecipientsList recipients={new ArrayColl([$message.from])} {message} withAddress />
           {/if}
         </hbox>
       </hbox>
       {#if $to.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`To`}</span>
-          <RecipientsList recipients={to} />
+          <RecipientsList recipients={to} {message} />
         </hbox>
       {/if}
       {#if $cc.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`Cc`}</span>
-          <RecipientsList recipients={cc} />
+          <RecipientsList recipients={cc} {message} />
         </hbox>
       {/if}
       {#if $bcc.hasItems}
         <hbox class="recipients">
           <span class="recipients-label">{$t`Bcc`}</span>
-          <RecipientsList recipients={bcc} />
+          <RecipientsList recipients={bcc} {message} />
         </hbox>
       {/if}
     </vbox>
@@ -120,6 +120,10 @@
   <SubMenu label={$t`View *=> Choose how the email is displayed`} icon={SourceIcon}>
     <DisplayModeSwitcher />
   </SubMenu>
+  {#if appWindow.isMainWindow}
+    <MenuItem label={$t`Open in New Window`} icon={PopOutIcon}
+      onClick={async () => { await appWindow.open(MessageWindow, { message }, 1000, 800); }} />
+  {/if}
   <MenuItem label={$t`Message Properties…`} icon={PropertiesIcon}
     onClick={() => { isPropertiesOpen = true; }} />
 </Menu>
@@ -165,12 +169,17 @@
   import SaveIcon from "lucide-svelte/icons/save";
   import SourceIcon from "lucide-svelte/icons/code-xml";
   import PropertiesIcon from "lucide-svelte/icons/file-cog";
+  import PopOutIcon from "lucide-svelte/icons/square-arrow-out-up-right";
   import RemoveIcon from "lucide-svelte/icons/x";
   import ErrorIcon from "lucide-svelte/icons/circle-x";
   import { catchErrors } from "../../../frontend/Util/error";
   import { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
   import { mailMustangApp } from "../../../frontend/Mail/MailMustangApp";
+  import { AppWindow } from "../../../frontend/MainWindow/AppWindow";
+  import MessageWindow from "../../../frontend/Mail/Message/MessageWindow.svelte";
+
+  const appWindow = AppWindow.current();
 
   export let message: EMail;
 
