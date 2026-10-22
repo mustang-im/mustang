@@ -56,6 +56,17 @@ test("An old message to a distribution list decrypts with the expired key of ano
   expect(email.text.trim()).toBe("Hello Dana");
 });
 
+test("A message for our renewed certificate decrypts, after we added the certificate to our key", async () => {
+  let folder = await addAccount("dana@example.com", kDanaKey, kDanaCert);
+  // Decrypt with the old certificate first, as before the renewal
+  await read(folder, "Dana <dana@example.com>", kBcc);
+  let key = folder.account.identities.first.encryptionPrivateKeys.first as SMIMEPrivateKey;
+  await key.addCertificates(kDanaRenewedCert);
+  let { email, errors } = await read(folder, "Dana <dana@example.com>", kRenewed);
+  expect(errors).toEqual([]);
+  expect(email.text.trim()).toBe("Hello Dana");
+});
+
 /** @returns the INBOX of a new account with this identity */
 async function addAccount(emailAddress: string, privateKey?: string, certificate?: string): Promise<Folder> {
   let { folder } = await setupTestFolder();
@@ -153,6 +164,31 @@ nBjj5IseODmCKOfWuPfL7ahofb06AKJBx62GUVjtETqDcIUT4xm4kU60Bao/7cg3
 k5SaLG7wxWBYCHz/EwK+CYtWFKtFIu1Btc+ETfRkl2muhAIVKpzVNxKjEE6VpDZE
 fy8zYmYYg0BBa0lhJ9rvylNInKRZ0ze1xs54MUJu9qTlSHQOmHEKghbFPxULaSv3
 H30qvGhIvkUekDVhiFGZCnPVlO9A8ow=
+-----END CERTIFICATE-----
+`;
+
+/** `openssl req -x509 -key key.pem`, with the key of kDanaKey and the same
+ * options, so it has another serial number */
+const kDanaRenewedCert = `
+-----BEGIN CERTIFICATE-----
+MIIDQzCCAiugAwIBAgIUNg7sk3kcjJPd6g5gcVrziIrW5mEwDQYJKoZIhvcNAQEL
+BQAwDzENMAsGA1UEAwwERGFuYTAeFw0yNjEwMjIxMjE5NTdaFw00NjEwMTcxMjE5
+NTdaMA8xDTALBgNVBAMMBERhbmEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQDPRO15iQDJ6d1Oas8LsIQD6i5xb5N61UCdU/A0bNLbTmlFvkcgFnf3WP6G
+5ZvnK1vz4fw1TRTkn7RJIgk6MjA21N82TVm4jQXMzCigSievrQQm9fpNhN5YK9cu
+r3uRCf3wy2BG9U4h2BT2iyE7a/61dsF2V07/xnlhsMPeQtZ8DCkA6Oi4tEJMbFIu
+z8Ij2E14gpZKzA6DRyHUTJgXtNCCZwcO0Yh4MLgBJvb22V6Im3JODkxPJUfO4J6p
+9piAoY0OwH2shhhAWnEObJZqizZK3v9I4qsrmFI4vLffsAM1n5cuXda+3JcIWbd6
+M17cAf8c8CZPhivtyd4mN7bVewMtAgMBAAGjgZYwgZMwHQYDVR0OBBYEFDGPkhcv
+NJyaKi8FAq6vgFuh4fbdMB8GA1UdIwQYMBaAFDGPkhcvNJyaKi8FAq6vgFuh4fbd
+MA8GA1UdEwEB/wQFMAMBAf8wGwYDVR0RBBQwEoEQZGFuYUBleGFtcGxlLmNvbTAO
+BgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwQwDQYJKoZIhvcNAQEL
+BQADggEBAAqibX3qA28WFupZORX5SzooCAOBkZGmSln0e8587nG5bjk3KBY9hfrk
+aIQNjtcuwGKcBf14GE9hZgZnttm7sUVjBYMuQJM/F+tpIJk/9XdZ2HreofPY4A8s
+mIthXYyaqu9ZPrJltVTcj9mviX5on1KREaZBXRr++KyhW5oY1GeTgSN1prixHNjo
+QMt9VZ3aTzvpZHQz+ViuXxL48yAAKaP7t3VHA5w6e9R5adJPqUJ/kRSWBNRKRJQT
+jD1+3i2omyGV4RnXn6qO24S4rv0/bGOwpQ6EHzXChibfc3FeZFN//fHTTGFa0CZc
+ESkeBhDwRTFCW3//6VxIKmqd1FS9Ydg=
 -----END CERTIFICATE-----
 `;
 
@@ -269,4 +305,18 @@ iCWuOcnj+wkw6bXreq//HBd2VFAp8b5prsHc8A2SasoQawugrakwEKc62PkTntUw
 bAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQlV0w+t8Myhn979Athtus4YBAgtsH
 AaTyc13VEJzfsD0plICgYR5dUJkjUNnDHUQomAUQHPfAA5gCZKk3ri0ktwXOjCmG
 t8C44f/9yhCK3wVtkw==
+`;
+
+/** `openssl cms -encrypt -aes-256-cbc` to kDanaRenewedCert */
+const kRenewed = `
+MIIBywYJKoZIhvcNAQcDoIIBvDCCAbgCAQAxggFDMIIBPwIBADAnMA8xDTALBgNV
+BAMMBERhbmECFDYO7JN5HIyT3eoOYHFa84iK1uZhMA0GCSqGSIb3DQEBAQUABIIB
+AM5nbBUAl9VKQq62bteTDTqRAZFGZp5v4IvmpwH5vq6hjTwDjq70fzms1s7gjdbb
+BNBSzj84IACmu8sH0ZYBdj7itQ16kjCzGrKxYO7PA4VJu3OqcSrI+WdhL0aoMAan
+7n67Yebh4LxGDkzRyvpmpFMTXEfND9ymFEfgODftwy0UY27OgAg7nII7MDcLbERA
+dYzLhUUa0aZUsYbeVYiKBXvc/EaVY5GMDgKSvL2/Nd49LQtuApdh/vm8OLn9ML2s
+Hvr5/5t4x58ENMp2S0UAtSC2/ifFVqG9z+5DZ2SY2+7NpVqkaqdYJgmwuoFNmBPG
+9ccJz95pLm/grbbY1alAxwUwbAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQgRbY
+9nTpb8qQjJ0arfh8iYBAWRfqATx0ULKazPZF7sxLQlSpgUDTPcXFE6rbW/ox02Zc
+i/cnfStdTyhtDkOej7cN+ybucpU0BgcBsM3m0JR2lw==
 `;

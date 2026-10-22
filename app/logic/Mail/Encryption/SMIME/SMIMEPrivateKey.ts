@@ -22,7 +22,6 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
   @notifyChangedProperty
   didBackup = false;
   justCreated = false;
-  protected _decodedCertificate: Certificate | null = null; // cache only
 
   /** User wishes to send encrypted emails whenever possible */
   get encryptByDefault(): boolean {
