@@ -5,6 +5,7 @@ import type { PublicKey } from "../../Mail/Encryption/PublicKey";
 import { usesCrypto } from "../../Mail/Encryption/KeyUtils";
 import { SMIMEPrivateKey } from "../../Mail/Encryption/SMIME/SMIMEPrivateKey";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
+import { logErrorToServer } from "../../util/error";
 import { AbstractFunction } from "../../util/util";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -15,22 +16,29 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
   /** Exchange matches the start of first name, last name, display name,
    * alias and office, but not reliably the email addresses.
    * With an `smtp:` prefix, it matches the start of all email addresses instead.
-   * No Exchange API searches both in one call. */
+   * No Exchange API searches both in one call.
+   * Adds the results of each search as soon as it returns,
+   * because the other search may be slow.
+   * Logs errors, does not throw. */
   async quickSearchAsync(searchTerm: string, results: ArrayColl<Person>) {
-    let found = await Promise.all([
-      this.searchGAL(searchTerm),
-      this.searchGAL("smtp:" + searchTerm),
-    ]);
-    for (let persons of found) {
-      for (let person of persons) {
-        // Dedup
-        if (results.find(existing => existing.name == person.name &&
-            existing.emailAddresses.first?.value == person.emailAddresses.first?.value)) {
-          continue;
+    await Promise.all([ // Exchange can't search for both in a single server call :-(
+      searchTerm, // name
+      "smtp:" + searchTerm, // email address
+    ].map(async term => {
+      try {
+        let persons = await this.searchGAL(term);
+        for (let person of persons) {
+          // Dedup
+          if (results.find(existing => existing.name == person.name &&
+              existing.emailAddresses.first?.value == person.emailAddresses.first?.value)) {
+            continue;
+          }
+          results.add(person);
         }
-        results.add(person);
+      } catch (ex) {
+        logErrorToServer(ex);
       }
-    }
+    }));
   }
 
   /** @returns the persons whose fields start with `searchTerm`,
