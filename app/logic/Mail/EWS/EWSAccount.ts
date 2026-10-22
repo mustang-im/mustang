@@ -566,7 +566,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         watchdog.fulfilled();
         break;
       }
-    } while (!signal.aborted && Date.now() - lastAttempt >= 10000) // quit when the stream ended within 10 seconds. The watchdog tries again later.
+    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when the stream ended within 10 seconds. The watchdog tries again later.
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */
