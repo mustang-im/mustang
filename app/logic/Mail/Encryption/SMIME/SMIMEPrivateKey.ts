@@ -22,6 +22,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
   @notifyChangedProperty
   didBackup = false;
   justCreated = false;
+  protected _decodedCertificate: Certificate | null = null; // cache only
 
   /** User wishes to send encrypted emails whenever possible */
   get encryptByDefault(): boolean {
@@ -44,7 +45,7 @@ export class SMIMEPrivateKey extends SMIMEPublicKey implements PrivateKey {
     if (!this.certificate) {
       return false;
     }
-    let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    let cert = this._decodedCertificate ??= Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
     if (rid.type == "subjectKeyIdentifier") {
       let ski = cert.tbsCertificate.extensions?.find(ext => ext.extnID == "subjectKeyIdentifier");
       return !!ski && !indexedDB.cmp(OctetString.decode(ski.extnValue), rid.value);
