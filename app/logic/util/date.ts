@@ -119,6 +119,22 @@ export function isSameTimezone(ianaTimezone: string, time: Date) {
     summer.toLocaleString("de") == summer.toLocaleString("de", tz);
 }
 
+/**
+ * @param timezone IANA timezone, e.g. "Europe/Berlin", or null for the local time zone
+ * @returns The date and time in `timezone` at `time`, in the UTC fields of the returned `Date` */
+export function localTime(time: Date, timezone: string | null): Date {
+  // "lt" locale has date format YYYY-MM-DD hh:mm:ss, which we can easily read as UTC
+  return new Date(time.toLocaleString("lt", { timeZone: timezone ?? undefined }).replace(" ", "T") + "Z");
+}
+
+/**
+ * @param shift in milliseconds
+ * @returns `time` moved by `shift`, keeping the time of day in `timezone` across clock changes */
+export function moveLocalTime(time: Date, shift: number, timezone: string | null): Date {
+  let moved = new Date(time.getTime() + shift);
+  return new Date(moved.getTime() + localTime(time, timezone).getTime() + shift - localTime(moved, timezone).getTime());
+}
+
 export function getToday() {
   const today = new Date();
   today.setHours(0);

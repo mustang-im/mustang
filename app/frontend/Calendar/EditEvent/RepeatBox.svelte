@@ -113,10 +113,14 @@
   $: startTime, timezone, duration, updateDateUI();
   function updateDateUI() {
     master.startEditing();
-    master.startTime = event.startTime;
-    master.timezone = event.timezone;
-    master.duration = event.duration;
-    master.newRecurrenceRule(frequency, interval, week, weekdays);
+    if (event.parentEvent && master.recurrenceRule) {
+      master.moveSeriesWithOccurrence(event);
+    } else {
+      master.startTime = event.startTime;
+      master.timezone = event.timezone;
+      master.duration = event.duration;
+      master.newRecurrenceRule(frequency, interval, week, weekdays);
+    }
     let localStartTime = master.recurrenceRule.seriesStartTime;
     week = master.recurrenceRule.week;
     weekdays = master.recurrenceRule.weekdays?.slice() ?? [localStartTime.getUTCDay()];
