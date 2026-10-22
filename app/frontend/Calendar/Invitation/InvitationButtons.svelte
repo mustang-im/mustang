@@ -15,7 +15,7 @@
         icon={DeclineIcon}
         classes="decline font-normal" />
       <MenuItem
-        label={$t`Change to Reject without sending a reply *=> not attend the meeting, and not tell the organizer`}
+        label={$t`Change to Reject silently *=> not attend the meeting, without sending a reply to the organizer`}
         onClick={onDeclineWithoutReply}
         icon={DeclineIcon}
         classes="decline font-normal" />
@@ -54,7 +54,7 @@
         icon={AcceptIcon}
         classes="accept font-normal" />
       <MenuItem
-        label={$t`Change to Accept without sending a reply *=> attend the meeting, and not tell the organizer`}
+        label={$t`Change to Accept silently *=> attend the meeting, without sending a reply to the organizer`}
         onClick={onAcceptWithoutReply}
         icon={AcceptIcon}
         classes="accept font-normal" />
@@ -92,12 +92,12 @@
       classes="decline secondary font-normal" />
     <ButtonMenu buttonIcon={ChevronDownIcon}>
       <MenuItem
-        label={$t`Confirm without sending a reply *=> Confirm to attend the meeting, but not tell the organizer`}
+        label={$t`Confirm silently *=> Add the meeting invitation to my calendar without sending a reply to the organizer`}
         onClick={onAcceptWithoutReply}
         icon={AcceptIcon}
         classes="accept font-normal" />
       <MenuItem
-        label={$t`Reject without sending a reply *=> Decline to attend the meeting, but not tell the organizer`}
+        label={$t`Reject silently *=> Decline the meeting invitation without sending a reply to the organizer`}
         onClick={onDeclineWithoutReply}
         icon={DeclineIcon}
         classes="decline font-normal" />
