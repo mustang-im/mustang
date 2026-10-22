@@ -3,7 +3,7 @@
   on:dblclick
   {title}>
   <hbox class="time" bind:this={timeE} bind:clientWidth={timeWidth}>
-    <span class:compact={timeFit == "compact"}>{timeFit == "full" ? startTime : getTimeStringWithoutDayPeriod(start)}</span>
+    <span class:compact={timeFit == "compact"} class:hidden={timeFit == "hidden"}>{timeFit == "full" ? startTime : getTimeStringWithoutDayPeriod(start)}</span>
   </hbox>
   {#if title}
     <hbox class="title">{title}</hbox>
@@ -28,15 +28,16 @@
 
   $: startTime = start.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "2-digit" });
 
-  /** Whether the time leaves out AM/PM, or uses a smaller font, so that it fits next to the buttons */
-  let timeFit: "full" | "without-day-period" | "compact" = "full";
+  /** Whether the time leaves out AM/PM, uses a smaller font, or hides, so that it fits next to the buttons.
+   * The hour labels show the time, too. */
+  let timeFit: "full" | "without-day-period" | "compact" | "hidden" = "full";
   let timeE: HTMLElement;
   let timeWidth = 0;
   let fitCount = 0;
   $: timeWidth, startTime, fitTime();
   async function fitTime() {
     let count = ++fitCount;
-    for (let candidate of ["full", "without-day-period", "compact"] as const) {
+    for (let candidate of ["full", "without-day-period", "compact", "hidden"] as const) {
       timeFit = candidate;
       await tick();
       if (count != fitCount || !timeE || timeE.scrollWidth <= timeE.clientWidth) {
@@ -60,8 +61,7 @@
     container: event-proposal / size;
   }
   .time {
-    /* Less space for the time, and the buttons wrap below it */
-    flex: 1 0 2.5em;
+    flex: 1 1 0;
     min-width: 0;
     overflow: hidden;
     font-weight: 600;
@@ -70,6 +70,9 @@
   .compact {
     font-size: 10px;
     line-height: 12px;
+  }
+  .hidden {
+    visibility: hidden;
   }
   .time,
   .title {
@@ -81,8 +84,9 @@
     margin: 4px;
     align-self: start;
   }
-  .end :global(.toolbar) {
+  .event-proposal .end :global(.toolbar) {
     margin-inline-start: 4px;
+    padding: 0;
   }
   @container event-proposal (height < 32px) {
     .time,
@@ -91,6 +95,11 @@
     }
     .end {
       margin-block: 1px;
+    }
+  }
+  @container event-proposal (height < 14px) {
+    .time {
+      visibility: hidden;
     }
   }
   .event-proposal :global(button .label) {

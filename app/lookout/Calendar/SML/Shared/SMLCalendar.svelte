@@ -178,7 +178,6 @@
     font-size: var(--lo-font-size-small);
   }
   .sml-calendar :global(.event-proposal .toolbar) {
-    padding: 0;
     border: 1px solid var(--lo-border);
     border-radius: var(--lo-radius-small);
     box-shadow: none;
