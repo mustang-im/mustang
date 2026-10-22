@@ -1,4 +1,4 @@
-<Dialog title={$t`Rules and Alerts`} on:close={onClose} width="720px" height="640px">
+<Dialog title={$t`Rules and Alerts`} on:close={onClose} width="720px" height="720px">
   <DialogTabs tabs={[{ id: "email-rules", label: $t`Email Rules` }]} selected="email-rules" />
   <hbox class="folder-row">
     <span>{$t`Apply changes to this folder`}</span>
@@ -372,7 +372,8 @@
     margin-block-start: 10px;
   }
   .server-notes {
-    flex-shrink: 0;
+    min-height: 0;
+    overflow-y: auto;
     gap: 2px;
     margin-block-start: 8px;
     font-size: var(--lo-font-size-small);
