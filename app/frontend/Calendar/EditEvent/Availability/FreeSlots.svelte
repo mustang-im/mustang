@@ -26,7 +26,10 @@
                       class:meeting={slot.start < $event.endTime && slot.end > $event.startTime}
                       class:expanded={expandedSlot == slot}
                       title={slotDetails(slot)}>
-                      <hbox class="time">{getTimeString(slot.start)}</hbox>
+                      <hbox class="time">
+                        <span class="with-day-period">{getTimeString(slot.start)}</span>
+                        <span class="without-day-period">{getTimeStringWithoutDayPeriod(slot.start)}</span>
+                      </hbox>
                       {#if expandedSlot == slot}
                         <vbox class="details">
                           {#if slot.busy.hasItems}
@@ -75,7 +78,7 @@
   import Scroll from "../../../Shared/Scroll.svelte";
   import Clickable from "../../../Shared/Clickable.svelte";
   import Button from "../../../Shared/Button.svelte";
-  import { getTimeString, getWeekDays, getWeekStart } from "../../../../logic/util/date";
+  import { getTimeString, getTimeStringWithoutDayPeriod, getWeekDays, getWeekStart } from "../../../../logic/util/date";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
   import { getDateTimeLocale, t } from "../../../../l10n/l10n";
@@ -199,6 +202,7 @@
     background-color: var(--slot-color);
     color: black;
     cursor: pointer;
+    container-type: inline-size;
   }
   .slot.availability-free {
     --slot-color: #CBF3E1;
@@ -233,6 +237,23 @@
   }
   .time {
     white-space: nowrap;
+  }
+  .without-day-period {
+    display: none;
+  }
+  @container (width < 8.4ch) {
+    .with-day-period {
+      display: none;
+    }
+    .without-day-period {
+      display: inline;
+    }
+  }
+  @container (width < 5ch) {
+    .time {
+      font-size: 10px;
+      line-height: 12px;
+    }
   }
   .availability-free .time {
     font-weight: 600;

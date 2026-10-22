@@ -114,6 +114,13 @@
   .sml-calendar :global(.day-header .date) {
     font-weight: 600;
   }
+  .sml-calendar :global(.day-header .weekday) {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
   .sml-calendar :global(.time.label) {
     color: var(--lo-fg-secondary);
     font-size: var(--lo-font-size-small);
@@ -145,7 +152,15 @@
   .sml-calendar :global(.event .event .title) {
     margin-block-start: 1px;
     margin-inline-start: 4px;
+    font-size: inherit;
     line-height: 15px;
+  }
+  @container (width < 5.5ch) or (height < 16px) {
+    .sml-calendar :global(.event .event .time),
+    .sml-calendar :global(.event .event .title) {
+      font-size: 10px;
+      line-height: 12px;
+    }
   }
   .sml-calendar :global(.event-proposal) {
     margin: 0 2px 1px 0;
@@ -159,11 +174,20 @@
     border-style: dashed;
     background-color: var(--lo-accent-tint);
   }
+  .sml-calendar :global(.event-proposal .time) {
+    font-size: var(--lo-font-size-small);
+  }
   .sml-calendar :global(.event-proposal .toolbar) {
+    padding: 0;
     border: 1px solid var(--lo-border);
     border-radius: var(--lo-radius-small);
     box-shadow: none;
     background-color: var(--lo-pane-bg);
+  }
+  .sml-calendar :global(.event-proposal button.button),
+  .sml-calendar :global(.event-proposal button.button:not(.plain)) {
+    min-height: 0;
+    padding: 2px;
   }
   .sml-calendar :global(.event-proposal .toolbar button.button) {
     color: var(--lo-fg-secondary);

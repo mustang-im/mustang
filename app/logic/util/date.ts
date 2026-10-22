@@ -79,6 +79,20 @@ export function getTimeString(date: Date): string {
   return date.toLocaleString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" });
 }
 
+/** @returns Time without AM/PM, e.g. "3:23" or "15:23".
+ * For where the hour labels next to it already show AM/PM. */
+export function getTimeStringWithoutDayPeriod(date: Date): string {
+  if (!date) {
+    return "";
+  }
+  return new Intl.DateTimeFormat(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })
+    .formatToParts(date)
+    .filter(part => part.type != "dayPeriod")
+    .map(part => part.value)
+    .join("")
+    .trim();
+}
+
 /**
  * @param weekday day of the week
  * @param form How long the name should be
