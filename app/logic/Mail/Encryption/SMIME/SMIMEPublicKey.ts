@@ -236,7 +236,9 @@ function lazyGetCACertificates(type: string): Promise<Certificate[]> {
 
 async function getCACertificatesLazy(type: string): Promise<Certificate[]> {
   let certificates: Certificate[] = [];
-  let rootCertificates: string[] = await appGlobal.remoteApp.getCACertificates(type);
+  let rootCertificates: string[] = type == "bundled"
+    ? splitPEM((await import("./roots/mozilla-email-roots.pem?raw")).default)
+    : await appGlobal.remoteApp.getCACertificates(type);
   for (let cert of rootCertificates) {
     try {
       certificates.push(Certificate.decodePEM(cert, { label: "CERTIFICATE" }));
