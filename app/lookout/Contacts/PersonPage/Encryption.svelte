@@ -54,7 +54,7 @@
   export let person: Person;
 
   // <copied from="../../../frontend/Contacts/PersonPage/EncryptionImport.svelte">
-  const acceptFileTypes = [ "application/pgp-keys", ".asc", "application/pkix-cert", "application/pkcs7-certificates", "application/x-x509-user-cert", "application/x-x509-ca-cert", "application/x-pem-file", ".pem", "text/plain" ];
+  const acceptFileTypes = [ "application/pgp-keys", ".asc", "application/pkix-cert", "application/pkcs7-certificates", ".p7b", ".p7c", "application/x-x509-user-cert", "application/x-x509-ca-cert", "application/x-pem-file", ".pem", "text/plain" ];
   // </copied>
 
   let fileSelector: FileSelector;
@@ -83,8 +83,7 @@
       return;
     }
     // <copied from="../../../frontend/Contacts/PersonPage/EncryptionImport.svelte" onImportFile()>, saved with the contact form
-    let fileContent = await file.text();
-    let key = await importPublicKey(fileContent);
+    let key = await importPublicKey(file);
     person.addEncryptionPublicKey(key);
     // </copied>
   }

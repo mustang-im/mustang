@@ -1,10 +1,13 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo, SignedData, Any } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayToHex } from "./SMIMERSAES";
+import { sameName } from "./SMIMEVerify";
 import { appGlobal } from "../../../app";
+import { assert } from "../../../util/util";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl } from "svelte-collections";
+import { gt } from "../../../../l10n/l10n";
 
 export class SMIMEPublicKey extends PublicKey {
   system = EncryptionSystem.SMIME;
@@ -88,10 +91,55 @@ export class SMIMEPublicKey extends PublicKey {
     let parts = splitPEM(publicKey);
     for (let part of parts) {
       if (part.startsWith("-----BEGIN CERTIFICATE-----")) {
-        await this.addCertificate(Certificate.decodePEM(part, { label: "CERTIFICATE" }));
+        // Some CAs label PKCS#7 as CERTIFICATE
+        await this.addCertificatesFromDER(Any.decodePEM(part, { label: "CERTIFICATE" }));
       } else if (part.startsWith("-----BEGIN TRUSTED CERTIFICATE-----")) {
         await this.addCertificate(Certificate.decodePEM(part, { label: "TRUSTED CERTIFICATE" }));
+      } else if (part.startsWith("-----BEGIN PKCS7-----")) {
+        await this.addCertificatesFromDER(Any.decodePEM(part, { label: "PKCS7" }));
       }
+    }
+  }
+
+  /** Reads a certificate file: X.509 or PKCS#7, as PEM or DER */
+  async addCertificateFile(file: File) {
+    let fileContents = new Uint8Array(await file.arrayBuffer());
+    // DER starts with the ASN.1 tag for a sequence, PEM with the "-----BEGIN " line
+    if (fileContents[0] == 0x30) {
+      await this.addCertificatesFromDER(fileContents);
+      return;
+    }
+    let pem = new TextDecoder().decode(fileContents);
+    assert(pem.includes("-----BEGIN CERTIFICATE-----") ||
+      pem.includes("-----BEGIN TRUSTED CERTIFICATE-----") ||
+      pem.includes("-----BEGIN PKCS7-----"),
+      gt`Could not find a certificate in this file`);
+    await this.addCertificates(pem);
+  }
+
+  protected async addCertificatesFromDER(der: Uint8Array) {
+    let cert: Certificate;
+    try {
+      cert = Certificate.decode(der);
+    } catch (ex) {
+      await this.addPKCS7Certificates(der);
+      return;
+    }
+    await this.addCertificate(cert);
+  }
+
+  protected async addPKCS7Certificates(der: Uint8Array) {
+    let certificates = new ArrayColl<Certificate>(SignedData.decode(der, { berToDER: true }).content.certificates);
+    assert(certificates.hasItems, gt`Could not find a certificate in this file`);
+    function isIssuer(issuer: Certificate, cert: Certificate): boolean {
+      return issuer != cert && sameName(issuer.tbsCertificate.subject, cert.tbsCertificate.issuer);
+    }
+    // PKCS#7 has the certificates in no order, so start with the one that issued none of the others
+    let cert = certificates.find(issuer => !certificates.some(issued => isIssuer(issuer, issued)));
+    while (cert) {
+      certificates.remove(cert);
+      await this.addCertificate(cert);
+      cert = certificates.find(issuer => isIssuer(issuer, cert));
     }
   }
 
