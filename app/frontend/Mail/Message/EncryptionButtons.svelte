@@ -1,8 +1,8 @@
-{#if signed || encrypted}
+{#if signed || encrypted || signedBySomeoneElse}
   <hbox class="signed key-{trustLevel} plain">
     <RoundButton
       label={msg}
-      icon={encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
+      icon={signedBySomeoneElse ? WarningIcon : encrypted && signed ? EncryptedIcon : signed ? SignedIcon : EncryptedUnsignedIcon}
       onClick={openSigningKey}
       iconSize="12px"
       padding="2px"
@@ -20,6 +20,7 @@
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
+  import WarningIcon from "lucide-svelte/icons/triangle-alert";
   import { showError } from "../../Util/error";
   import { t } from "../../../l10n/l10n";
 
@@ -31,15 +32,18 @@
   $: getPublicKeyByKeyID($message.signedByKeyID, message)
     .then(key => signingKey = key)
     .catch(showError);
-  $: signed = $message.signedByKeyID && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted;
+  $: signedBySomeoneElse = $message.isSignedBySomeoneElse(signingKey);
+  $: signed = $message.signedByKeyID && signingKey && $signingKey.trustLevel != TrustLevel.Distrusted && !signedBySomeoneElse;
   $: encrypted = $message.wasEncrypted;
-  $: trustLevel = $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
+  $: trustLevel = signedBySomeoneElse ? "someone-else" : $signingKey?.trustLevel == TrustLevel.Distrusted ? "none" : $signingKey?.trustLevel ?? "none";
   $: keyName = $signingKey?.name ?? $message.signedByKeyID?.substring(2, 6);
   $: msg = signed && encrypted
       ? $t`This message was end-to-end-encrypted to you, and signed by ${$message.from?.name ?? $t`somebody`} with ${signingKey?.system} key ${keyName}`
       : signed
         ? $t`This message was signed with ${signingKey?.system} key ${keyName}`
-        : $t`This message was end-to-end-encrypted, but not signed`;
+        : signedBySomeoneElse
+          ? $t`Signed by someone else: ${$signingKey.userIDs.contents.join(", ") || $signingKey.name}`
+          : $t`This message was end-to-end-encrypted, but not signed`;
 
   function openSigningKey() {
     isExpanded = !isExpanded;
@@ -59,6 +63,10 @@
     display: none;
     /*background-color: red;
     color: white;*/
+  }
+  .signed.key-someone-else :global(.button) {
+    background-color: red;
+    color: white;
   }
   .signed.key-sender :global(.button) {
     background-color: yellow;

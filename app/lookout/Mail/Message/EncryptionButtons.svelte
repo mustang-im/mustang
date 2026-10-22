@@ -1,9 +1,11 @@
-{#if isSigned || isEncrypted}
-  <hbox class="security-bar" class:verified={isSigned}>
-    <svelte:component this={isEncrypted && isSigned ? EncryptedIcon : isSigned ? SignedIcon : EncryptedUnsignedIcon} size={16} />
+{#if isSigned || isEncrypted || signedBySomeoneElse}
+  <hbox class="security-bar" class:verified={isSigned} class:warning={signedBySomeoneElse}>
+    <svelte:component this={signedBySomeoneElse ? WarningIcon : isEncrypted && isSigned ? EncryptedIcon : isSigned ? SignedIcon : EncryptedUnsignedIcon} size={16} />
     <span class="text">
       {#if isSigned}
         {isEncrypted ? $t`Encrypted. Signed by: ${$message.from?.emailAddress ?? ""}` : $t`Signed by: ${$message.from?.emailAddress ?? ""}`}
+      {:else if signedBySomeoneElse}
+        {$t`Signed by someone else: ${signingKey.userIDs.contents.join(", ") || signingKey.name}`}
       {:else}
         {$t`Encrypted, but not signed`}
       {/if}
@@ -20,6 +22,7 @@
   import SignedIcon from "lucide-svelte/icons/signature";
   import EncryptedIcon from "lucide-svelte/icons/lock";
   import EncryptedUnsignedIcon from "lucide-svelte/icons/shield-question-mark";
+  import WarningIcon from "lucide-svelte/icons/triangle-alert";
   import { showError } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
 
@@ -33,7 +36,8 @@
     .catch(showError);
   // </copied>
   /* <copied to="EncryptionDetails.svelte"> */
-  $: isSigned = $message && !!message.signedByKeyID && !!signingKey && signingKey.trustLevel != TrustLevel.Distrusted;
+  $: signedBySomeoneElse = $message.isSignedBySomeoneElse(signingKey);
+  $: isSigned = $message && !!message.signedByKeyID && !!signingKey && signingKey.trustLevel != TrustLevel.Distrusted && !signedBySomeoneElse;
   /* </copied> */
   $: isEncrypted = !!$message.wasEncrypted;
 </script>
@@ -57,6 +61,9 @@
   }
   .security-bar.verified :global(svg) {
     color: var(--lo-accent-text);
+  }
+  .security-bar.warning :global(svg) {
+    color: var(--lo-danger);
   }
   .text {
     min-width: 0;
