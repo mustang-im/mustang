@@ -142,6 +142,12 @@ describe("PKCS#12 import", () => {
     expect(keys[1].certificate).toBe(keys[0].certificate);
   });
 
+  test("A key that is not RSA is rejected as unsupported", async () => {
+    let p12 = await readFixture(kECFixture);
+    await expect(async () => SMIMEPrivateKey.importPrivateKey(await p12.toPEM(), kPassphrase))
+      .rejects.toThrow(/unsupported/i);
+  });
+
   test("The file that the user picked is read as .p12 or as PEM", async () => {
     let bytes = base64ToBytes(kRC2AndTripleDESFixture.replace(/\s/g, ""));
     let pem = await readKeyFile(new File([bytes], "mykey.p12"), kPassphrase);
@@ -409,6 +415,30 @@ const kRootFirstFixture = `
   kstYsP07nqyZ/U/x0dqEpABX6rNy1y5nKS8fzq84jEVRzJBc2l34GRGGNdG3FdSFNU1Vm54YMngK
   bEHN0+blxULOppv9fleqlrGHkv+kYm2AkNFpwqhK2T0wQTAxMA0GCWCGSAFlAwQCAQUABCDpt6W0
   E+AszFuqtXNvWwfUwKL+J6UE8R5ZZynZNbAd+gQITgpSQ38G2+wCAggA
+`;
+
+/** AES again, but with an EC key, which we do not support */
+const kECFixture = `
+  MIIEbAIBAzCCBCIGCSqGSIb3DQEHAaCCBBMEggQPMIIECzCCAsIGCSqGSIb3DQEHBqCCArMwggKv
+  AgEAMIICqAYJKoZIhvcNAQcBMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAiEhB3mk5TR
+  8AICCAAwDAYIKoZIhvcNAgkFADAdBglghkgBZQMEASoEEHF6wgKB9ieNMWeZFQcxRsGAggJArhWq
+  3QCy9Ig7RoDq98WdKFoe1NfUjU/D2KjLEk/LuD1nsfS4lAYa+t0s/HaMMYOtyfmzH/quIttxdfGQ
+  InSEHwbcwziRm9cS04xcTjatyNRaEHAdlRGnE9AEfmG2r9o4jslxjWHgkoM0MuyQfZOzgvHrYOjF
+  MTkQTdhgg+2aXYVIPo6Eh61bLvNxv9wzmvkb5myMnZn9LBJDKzmfnK6Qmb23Y1jVRRoFHXY2eLhr
+  3Lqhby/PcKcP8++imvwJOhawDtyHLa8xh+vFsk1ziQZ657Oy8DWRV4Ase0q04jcXSFf/jmvQ2rOe
+  q/16+S4RXGLfd9EVcX+3ceRvKNj4K1ArZdNJhBD7wQF7GdBKJzwh5r1RKpd5p3w2QYm6tVu05fHK
+  YH/+31XSm29Wuwwd9NBAxqXAwg8PqVO+Uim9yJmNVGmDTz0bRSCo+FPaSjVgXfthCPXuP/SkgsIw
+  ztm4PAFbBDdsGO55RUmEb3ps0cgb5wQ7b0r1TPXUlMrjy1XiyxZ2Sq6wxnvDSN+Jt1z1iS8ZU/hd
+  FilvmygF360xo4h/NBQRuQdmkyrURpXjGiiLlKyWsEAhO1fHgBI79yhnxqohkavRf3TzwFMDn6HB
+  7Xe+yq80VzDq0+7ek/G884gom60ZwipdeuaDhs8Rslo6rVY6umJ389FUJF/PhsJq5oHWz6qTJsdg
+  1sBMj1I6VE4Hw6S6I7qfsdDYcno3jpvY4okUR+yhbuePkzCaSNRN4Edbdxqb5HFAa1t06W39zdgS
+  3DcgMIIBQQYJKoZIhvcNAQcBoIIBMgSCAS4wggEqMIIBJgYLKoZIhvcNAQwKAQKgge8wgewwVwYJ
+  KoZIhvcNAQUNMEowKQYJKoZIhvcNAQUMMBwECC7/Ma532/O6AgIIADAMBggqhkiG9w0CCQUAMB0G
+  CWCGSAFlAwQBKgQQbg0G2/EpDnxNM8XzZP2DvwSBkMyGRGagJoDiWzo+XLOw3wNOa39CfVBvQKLS
+  C+zwpJEeBz/NoFptrPhMUZb9QfZe/k2XA0qFP1aicxEQkT2u5pA1Ci/cBMC441n2mPnSxAVGSM4n
+  walKUBMz8udl12B6yX37s4dqeV5nHv9TX1P0JxRLVK0L8apx/lDmrhDEgGFgGNjG0BiMzFjwSFHs
+  ZSUnDjElMCMGCSqGSIb3DQEJFTEWBBTEFPesDESg9jOF324tupadREBEWzBBMDEwDQYJYIZIAWUD
+  BAIBBQAEIMdtEf88grvt6RYgRqc0u3D2atlf9MrzwCCMiDuCme3pBAjfq2YOT6S+3AICCAA=
 `;
 
 /** pbeWithSHAAnd128BitRC2CBC for the certificate,

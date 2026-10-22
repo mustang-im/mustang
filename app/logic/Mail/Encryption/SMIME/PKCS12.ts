@@ -68,8 +68,12 @@ export class PKCS12 {
   }
 
   protected sortedCertificates(): Certificate[] {
-    let { n } = RSAPrivateKey.decode(PrivateKeyInfo.decode(this.keys[0]).privateKey);
     let unsorted = this.certificates.map(der => Certificate.decode(der));
+    let privateKeyInfo = PrivateKeyInfo.decode(this.keys[0]);
+    if (privateKeyInfo.privateKeyAlgorithm.algorithm != "rsaEncryption") {
+      return unsorted;
+    }
+    let { n } = RSAPrivateKey.decode(privateKeyInfo.privateKey);
     let sorted: Certificate[] = [];
     let next = unsorted.find(cert => RSAPublicKey.decode(cert.tbsCertificate.publicKey.subjectPublicKey.data).n == n);
     while (next) {
