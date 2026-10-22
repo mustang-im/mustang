@@ -3,7 +3,7 @@
 {#if event.isIncomingMeeting && !event.isCancelled}
   <MenuDivider />
   {#each responses as response}
-    <SubMenu label={response.label} icon={response.icon}>
+    <SubMenu label={response.label} icon={response.icon} classes={response.classes}>
       <ResponseMenuItems checked={event.myParticipation == response.value}
         onRespond={sendReply => event.respondToInvitation(response.value, sendReply)} />
     </SubMenu>
@@ -78,9 +78,9 @@
   export let event: Event;
 
   $: responses = [
-    { value: InvitationResponse.Accept, label: $t`Accept *=> Accept the invitation to the meeting`, icon: AcceptIcon },
-    { value: InvitationResponse.Tentative, label: $t`Tentative *=> Not sure to join this business meeting`, icon: TentativeIcon },
-    { value: InvitationResponse.Decline, label: $t`Decline *=> Decline the invitation to the meeting`, icon: DeclineIcon },
-  ] as { value: InvitationResponseInMessage, label: string, icon: typeof AcceptIcon }[];
+    { value: InvitationResponse.Accept, label: $t`Accept *=> Accept the invitation to the meeting`, icon: AcceptIcon, classes: "accept" },
+    { value: InvitationResponse.Tentative, label: $t`Tentative *=> Not sure to join this business meeting`, icon: TentativeIcon, classes: "" },
+    { value: InvitationResponse.Decline, label: $t`Decline *=> Decline the invitation to the meeting`, icon: DeclineIcon, classes: "decline" },
+  ] as { value: InvitationResponseInMessage, label: string, icon: typeof AcceptIcon, classes: string }[];
   $: isRecurring = event.recurrenceCase == RecurrenceCase.Instance || event.recurrenceCase == RecurrenceCase.Exception;
 </script>

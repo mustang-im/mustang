@@ -9,13 +9,11 @@
 <ResponseButton label={$t`More options *=> More ways to respond to the meeting invitation`} icon={MoreIcon} iconOnly
   pressed={response == InvitationResponse.Tentative}>
   <MenuItem label={$t`Accept silently *=> Add the meeting invitation to my calendar without sending a reply to the organizer`}
-    onClick={() => onRespond(InvitationResponse.Accept, false)}>
-    <span slot="icon" class="accept-icon"><AcceptIcon size="16" /></span>
-  </MenuItem>
+    icon={AcceptIcon} classes="accept"
+    onClick={() => onRespond(InvitationResponse.Accept, false)} />
   <MenuItem label={$t`Decline silently *=> Decline the meeting invitation without sending a reply to the organizer`}
-    onClick={() => onRespond(InvitationResponse.Decline, false)}>
-    <span slot="icon" class="decline-icon"><DeclineIcon size="16" /></span>
-  </MenuItem>
+    icon={DeclineIcon} classes="decline"
+    onClick={() => onRespond(InvitationResponse.Decline, false)} />
   <MenuItem label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon}
     checked={response == InvitationResponse.Tentative}
     onClick={() => onRespond(InvitationResponse.Tentative, true)} />
@@ -45,14 +43,3 @@
   export let onReplyToAll: () => Promise<void> | void;
   export let onForward: (event: Event) => Promise<void> | void;
 </script>
-
-<style>
-  .accept-icon {
-    display: flex;
-    color: var(--lo-success);
-  }
-  .decline-icon {
-    display: flex;
-    color: var(--lo-danger);
-  }
-</style>
