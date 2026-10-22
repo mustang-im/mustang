@@ -7,9 +7,16 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 const kHeartbeatMS = 45 * 1000;
 
 class TestEWSAccount extends EWSAccount {
+  /** What the server answers to our subscription requests, in order. An `Error` fails the request. */
+  subscriptions: (string | Error)[] = ["subscription-1"];
+
   async callEWS(request: any): Promise<any> {
     if (request.m$Subscribe) {
-      return { SubscriptionId: "subscription-1" };
+      let subscription = this.subscriptions.shift();
+      if (subscription instanceof Error) {
+        throw subscription;
+      }
+      return { SubscriptionId: subscription };
     }
     if (request.m$Unsubscribe) {
       return {};
@@ -56,6 +63,33 @@ function heartbeatStream(count = Infinity): (signal: AbortSignal) => any {
   });
 }
 
+/** The server lost our subscription, e.g. while the computer slept */
+function subscriptionLost(): any {
+  return {
+    ok: true,
+    status: 200,
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(`<?xml version="1.0" encoding="utf-8"?>
+          <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+            <Body>
+              <GetStreamingEventsResponse xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+                <ResponseMessages>
+                  <GetStreamingEventsResponseMessage ResponseClass="Error">
+                    <MessageText>The specified subscription was not found.</MessageText>
+                    <ResponseCode>ErrorSubscriptionNotFound</ResponseCode>
+                    <ConnectionStatus>Closed</ConnectionStatus>
+                  </GetStreamingEventsResponseMessage>
+                </ResponseMessages>
+              </GetStreamingEventsResponse>
+            </Body>
+          </Envelope>`));
+        controller.close();
+      },
+    }),
+  };
+}
+
 /** The server name doesn't resolve, e.g. while the VPN tunnel isn't up yet */
 function unreachable(): any {
   throw new TypeError("Failed to fetch");
@@ -65,19 +99,27 @@ function httpError(status: number, statusText: string): any {
   return { ok: false, status, statusText };
 }
 
+interface StreamRequest {
+  subscriptionID: string;
+  signal: AbortSignal;
+}
+
 /** Answers the stream requests with `responses`, in order.
- * @returns the signals of the requests that came in */
-function serve(responses: ((signal: AbortSignal) => any)[]): AbortSignal[] {
-  let signals: AbortSignal[] = [];
+ * @returns the requests that came in */
+function serve(responses: ((signal: AbortSignal) => any)[]): StreamRequest[] {
+  let requests: StreamRequest[] = [];
   globalThis.fetch = (async (_url: string, options: RequestInit) => {
-    signals.push(options.signal);
-    let response = responses[signals.length - 1];
+    requests.push({
+      subscriptionID: /<t:SubscriptionId>([^<]*)</.exec(options.body as string)[1],
+      signal: options.signal,
+    });
+    let response = responses[requests.length - 1];
     if (!response) {
       throw new Error("Unexpected stream request");
     }
     return response(options.signal);
   }) as any;
-  return signals;
+  return requests;
 }
 
 function newTestAccount(): TestEWSAccount {
@@ -107,7 +149,7 @@ test("A stream that keeps sending heartbeats stays open", async () => {
   await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
 
   expect(requests.length).toBe(1);
-  expect(requests[0].aborted).toBe(false);
+  expect(requests[0].signal.aborted).toBe(false);
   await account.unsubscribeAllSubscriptions();
 });
 
@@ -119,8 +161,8 @@ test("A stream that stopped sending heartbeats is opened again", async () => {
   await vi.advanceTimersByTimeAsync(3 * kHeartbeatMS + 1000);
 
   expect(requests.length).toBe(2);
-  expect(requests[0].aborted).toBe(true);
-  expect(requests[1].aborted).toBe(false);
+  expect(requests[0].signal.aborted).toBe(true);
+  expect(requests[1].signal.aborted).toBe(false);
   await account.unsubscribeAllSubscriptions();
 });
 
@@ -132,7 +174,7 @@ test("When the server isn't reachable yet, e.g. a late VPN, the stream is opened
   await vi.advanceTimersByTimeAsync(5 * kHeartbeatMS);
 
   expect(requests.length).toBe(3);
-  expect(requests[2].aborted).toBe(false);
+  expect(requests[2].signal.aborted).toBe(false);
   await account.unsubscribeAllSubscriptions();
 });
 
@@ -170,4 +212,17 @@ test("After an error that won't go away by itself, the stream is not opened agai
 
   expect(requests.length).toBe(1);
   expect(errors.map(ex => ex.message)).toEqual(["Login failed"]);
+});
+
+test("When getting a new subscription failed, e.g. because the VPN dropped again, we try again later", async () => {
+  let account = newTestAccount();
+  account.subscriptions = ["subscription-1", new TypeError("Failed to fetch"), "subscription-2"];
+  let requests = serve([subscriptionLost, subscriptionLost, heartbeatStream()]);
+
+  await account.subscribeToNotifications();
+  await vi.advanceTimersByTimeAsync(3 * kHeartbeatMS);
+
+  expect(requests.map(request => request.subscriptionID)).toEqual(["subscription-1", "subscription-1", "subscription-2"]);
+  expect(requests[2].signal.aborted).toBe(false);
+  await account.unsubscribeAllSubscriptions();
 });

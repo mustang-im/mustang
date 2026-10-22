@@ -550,6 +550,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         if (isNetworkError(ex) || ex?.message == "terminated") { // `fetch()` says "terminated"
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
+          watchdog.restart(); // e.g. it failed while we processed a chunk, which pauses the watchdog
           continue;
         }
         this.errorCallback(ex);
@@ -562,16 +563,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   /** The server lost our subscription. Get a new one, which restarts the stream. */
   protected async resubscribeNotifications(username: string) {
     if (username == this.username) {
-      this.subscriptionID = undefined;
-      await this.subscribeToNotifications();
+      await this.subscribeToNotifications(true);
       // The new subscription doesn't know what happened before, e.g. mail that arrived while the computer slept
       this.inbox?.getNewMessages()
         .catch(this.errorCallback);
       return;
     }
     for (let account of this.subscribedAccounts(username)) {
-      account.subscriptionID = undefined;
-      await this.subscribeToNotificationsForSubaccount(account);
+      await this.subscribeToNotificationsForSubaccount(account, true);
     }
   }
 
@@ -619,10 +618,12 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
   }
 
-  async subscribeToNotifications() {
+  /** @param renew The server lost our subscription. Until we have a new one, we keep the lost one,
+   *   so that a restarted stream finds out again, and we try again. */
+  async subscribeToNotifications(renew = false) {
     let lock = await this.subscribeLock.lock();
     try {
-      if (this.subscriptionID) {
+      if (this.subscriptionID && !renew) {
         console.warn("EWS: Trying to re-subscribe");
         // E.g. re-login after connection loss. The subscription is still ours,
         // but the stream that carries it died with the connection.
@@ -654,10 +655,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     }
   }
 
-  async subscribeToNotificationsForSubaccount(account: EWSSubscribable) {
+  /** @param renew @see `subscribeToNotifications()` */
+  async subscribeToNotificationsForSubaccount(account: EWSSubscribable, renew = false) {
     let lock = await this.subscribeLock.lock();
     try {
-      if (account.subscriptionID) {
+      if (account.subscriptionID && !renew) {
         console.warn("EWS: Trying to re-subscribe");
         // E.g. re-login after connection loss. The subscription is still ours,
         // but the stream that carries it died with the connection.
