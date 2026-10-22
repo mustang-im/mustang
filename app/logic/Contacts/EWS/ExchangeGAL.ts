@@ -52,8 +52,9 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
       return;
     }
     let domain = getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress));
-    if (!this.account.identities.some(identity => usesCrypto(identity, SMIMEPrivateKey) &&
-        getBaseDomainFromHost(getDomainForEmailAddress(identity.emailAddress)) == domain)) {
+    if (!this.account.identities.some(
+           identity => usesCrypto(identity, SMIMEPrivateKey) &&
+           getBaseDomainFromHost(getDomainForEmailAddress(identity.emailAddress)) == domain)) {
       return;
     }
     let emailAddress = recipient.emailAddress.toLowerCase();
