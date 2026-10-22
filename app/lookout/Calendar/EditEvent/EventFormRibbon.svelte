@@ -10,16 +10,22 @@
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Accept}
               onClick={() => respond(InvitationResponse.Accept)} />
+            <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
+              onClick={() => respond(InvitationResponse.Accept, false)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Tentative}
               onClick={() => respond(InvitationResponse.Tentative)} />
+            <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
+              onClick={() => respond(InvitationResponse.Tentative, false)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline">
             <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
               checked={$event.myParticipation == InvitationResponse.Decline}
               onClick={() => respond(InvitationResponse.Decline)} />
+            <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
+              onClick={() => respond(InvitationResponse.Decline, false)} />
           </RibbonMenuButton>
         {/if}
       </RibbonGroup>
@@ -213,6 +219,7 @@
   import OfflineIcon from "lucide-svelte/icons/video-off";
   import LinkIcon from "lucide-svelte/icons/link";
   import SendIcon from "lucide-svelte/icons/send";
+  import NoResponseIcon from "lucide-svelte/icons/mail-x";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";
   import CheckNamesIcon from "lucide-svelte/icons/user-check";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
@@ -300,8 +307,8 @@
     await navigator.clipboard.writeText(lines.join("\n"));
   }
 
-  async function respond(response: InvitationResponseInMessage) {
-    await event.respondToInvitation(response);
+  async function respond(response: InvitationResponseInMessage, sendReply = true) {
+    await event.respondToInvitation(response, sendReply);
     flow.close();
   }
 

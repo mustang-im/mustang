@@ -42,7 +42,7 @@ export class IncomingInvitation {
     // TODO What if you were only invited to a single exception?
   }
 
-  async respondToInvitationFromMail(response: InvitationResponseInMessage) {
+  async respondToInvitationFromMail(response: InvitationResponseInMessage, sendReply = true) {
     throw new AbstractFunction();
   }
 

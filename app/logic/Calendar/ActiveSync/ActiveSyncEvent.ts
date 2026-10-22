@@ -337,9 +337,9 @@ export class ActiveSyncEvent extends ExchangeEvent {
     await super.makeExclusions(exclusions);
   }
 
-  async respondToInvitation(response: InvitationResponseInMessage): Promise<void> {
+  async respondToInvitation(response: InvitationResponseInMessage, sendReply = true): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
-    let SendResponse = this.calendar.account.protocolVersion == "16.1" ? {} : [];
+    let SendResponse = sendReply && this.calendar.account.protocolVersion == "16.1" ? {} : [];
     let request = {
       // TODO support ActiveSync 14.0
       Request: this.serverID ? {
@@ -358,7 +358,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
     await this.calendar.account.callEAS("MeetingResponse", request);
     // We asked ActiveSync 16.1 to send the response for us.
     if (this.calendar.account.protocolVersion != "16.1") {
-      await super.respondToInvitation(response, this.calendar.account, false);
+      await super.respondToInvitation(response, sendReply, this.calendar.account, false);
     }
     await this.calendar.listEvents(); // Sync whatever Exchange decides to do
   }

@@ -7,6 +7,8 @@
       <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
         checked={event.myParticipation == response.value}
         onClick={() => event.respondToInvitation(response.value)} />
+      <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
+        onClick={() => event.respondToInvitation(response.value, false)} />
     </SubMenu>
   {/each}
 {/if}
@@ -58,6 +60,7 @@
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SubMenu from "../../Shared/Menu/SubMenu.svelte";
   import SendIcon from "lucide-svelte/icons/send";
+  import NoResponseIcon from "lucide-svelte/icons/mail-x";
   import OpenIcon from "lucide-svelte/icons/square-pen";
   import AcceptIcon from "lucide-svelte/icons/check";
   import TentativeIcon from "lucide-svelte/icons/circle-help";

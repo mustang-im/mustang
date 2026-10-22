@@ -15,6 +15,11 @@
         icon={DeclineIcon}
         classes="decline font-normal" />
       <MenuItem
+        label={$t`Change to Reject without sending a reply *=> not attend the meeting, and not tell the organizer`}
+        onClick={onDeclineWithoutReply}
+        icon={DeclineIcon}
+        classes="decline font-normal" />
+      <MenuItem
         label={$t`Change to Maybe *=> Maybe attend the meeting`}
         onClick={onTentative}
         icon={MaybeIcon}
@@ -36,6 +41,11 @@
       <MenuItem
         label={$t`Change to Accept *=> attend the meeting`}
         onClick={onAccept}
+        icon={AcceptIcon}
+        classes="accept font-normal" />
+      <MenuItem
+        label={$t`Change to Accept without sending a reply *=> attend the meeting, and not tell the organizer`}
+        onClick={onAcceptWithoutReply}
         icon={AcceptIcon}
         classes="accept font-normal" />
       <MenuItem
@@ -67,6 +77,16 @@
         icon={MaybeIcon}
         classes="maybe font-normal" />
       <MenuItem
+        label={$t`Confirm without sending a reply *=> Confirm to attend the meeting, but not tell the organizer`}
+        onClick={onAcceptWithoutReply}
+        icon={AcceptIcon}
+        classes="accept font-normal" />
+      <MenuItem
+        label={$t`Reject without sending a reply *=> Decline to attend the meeting, but not tell the organizer`}
+        onClick={onDeclineWithoutReply}
+        icon={DeclineIcon}
+        classes="decline font-normal" />
+      <MenuItem
         label={$t`Invite other people`}
         onClick={onForward}
         icon={ForwardIcon}
@@ -97,14 +117,14 @@
   export let myParticipation: InvitationResponse = InvitationResponse.NoResponseReceived;
   export let invitation: IncomingInvitation | Event;
 
-  async function respond(response: InvitationResponseInMessage) {
+  async function respond(response: InvitationResponseInMessage, sendReply = true) {
     //console.log("respond", invitation)
     myParticipation = response;
     if (invitation instanceof Event) {
-      await invitation.respondToInvitation(response);
+      await invitation.respondToInvitation(response, sendReply);
       // Exchange responds and then drops the declined occurrence, so don't save it back
     } else if (invitation instanceof IncomingInvitation) {
-      await invitation.respondToInvitationFromMail(response);
+      await invitation.respondToInvitationFromMail(response, sendReply);
     } else {
       throw new NotReached();
     }
@@ -118,6 +138,12 @@
   }
   async function onDecline() {
     await respond(InvitationResponse.Decline);
+  }
+  async function onAcceptWithoutReply() {
+    await respond(InvitationResponse.Accept, false);
+  }
+  async function onDeclineWithoutReply() {
+    await respond(InvitationResponse.Decline, false);
   }
 
   async function onOpenInCalendar() {

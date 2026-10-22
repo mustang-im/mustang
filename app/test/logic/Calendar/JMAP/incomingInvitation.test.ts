@@ -175,6 +175,25 @@ test("Declining an invitation tells the server and the organizer", async () => {
   expect(sent[0].event.participants.first.response).toEqual(InvitationResponse.Decline);
 });
 
+test("Accepting an invitation without a reply adds the event, but tells the organizer nothing", async () => {
+  let { account, calendar, calls, sent } = setup();
+  let email = await newInvitationEMail(account);
+
+  let invitation = calendar.getIncomingInvitationForEMail(email);
+  await invitation.respondToInvitationFromMail(InvitationResponse.Accept, false);
+
+  expect(calendar.events.length).toEqual(1);
+  expect(calendar.events.first.myParticipation).toEqual(InvitationResponse.Accept);
+  expect(calls.length).toEqual(1);
+  expect(calls[0].method).toEqual("CalendarEvent/set");
+  let created = Object.values(calls[0].args.create)[0] as TJMAPCalendarEvent;
+  let participants = Object.values(created.participants);
+  expect(participants.find(participant => participant.calendarAddress == "mailto:" + kMe).participationStatus).toEqual("accepted");
+  // Neither the server nor we send the reply
+  expect(calls[0].args.sendSchedulingMessages).toBeFalsy();
+  expect(sent.length).toEqual(0);
+});
+
 test("The JMAP calendar accepts an invitation from another account's inbox", async () => {
   let { calendar, calls, sent } = setup();
   let imap = setupIMAP();
@@ -321,4 +340,22 @@ test("Accepting an invitation that the JMAP server added keeps the server's part
   expect(sent.length).toEqual(1);
   expect(sent[0].iCalMethod).toEqual("REPLY");
   expect(sent[0].to.first.emailAddress).toEqual(kOrganizer);
+});
+
+test("Declining an invitation in the calendar without a reply tells only the server", async () => {
+  let { account, calendar, calls, sent } = setup();
+  appGlobal.emailAccounts.add(account);
+  let event = calendar.newEvent();
+  event.fromJMAP(serverMeeting("needs-action"));
+  calendar.events.add(event);
+
+  await event.respondToInvitation(InvitationResponse.Decline, false);
+
+  expect(event.myParticipation).toEqual(InvitationResponse.Decline);
+  expect(calls.length).toEqual(1);
+  expect(calls[0].method).toEqual("CalendarEvent/set");
+  let updated = calls[0].args.update.serverEventID as TJMAPCalendarEvent;
+  expect(updated.participants.meID.participationStatus).toEqual("declined");
+  expect(calls[0].args.sendSchedulingMessages).toBeFalsy();
+  expect(sent.length).toEqual(0);
 });

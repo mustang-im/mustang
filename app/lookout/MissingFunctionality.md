@@ -164,7 +164,8 @@ Appointment and meeting form, recurrence, Scheduling Assistant and Tracking.
 | Response Options: Request Responses, Allow New Time Proposals, Allow Forwarding, Hide Attendee List | Meeting tab > Response Options | Event properties (EWS `IsResponseRequested`, `AllowNewTimeProposal`; iCalendar `RSVP`) |
 | Save a meeting without sending; the "Send update?" choices after moving or editing a meeting: send, don't send, send only to added or removed attendees | Save; dialog after moving or editing a meeting | A send parameter on `Event.save()` / `OutgoingInvitation.sendInvitations()`. The logic always sends, so Lookout only asks whether to move the meeting and send the update. |
 | A note to the attendees with a cancellation | Cancel Meeting | A message parameter on `Event.deleteIt()` / `sendCancellations()` |
-| Edit the Response before Sending; Do Not Send a Response | Accept / Tentative / Decline menus | A comment and a send parameter on `Event.respondToInvitation()`. Lookout's menus have only Send the Response Now, and the reading pane buttons always send. |
+| Edit the Response before Sending | Accept / Tentative / Decline menus | A comment parameter on `Event.respondToInvitation()` |
+| Do Not Send a Response from the reading pane buttons and from the invitation in a mail | Accept / Tentative / Decline buttons with a menu | *UI only*: Lookout's buttons there have no menu and always send. The context menu and the event form have it. |
 | From ▾ (organizer identity) | Meeting form, above Title | Choosing the identity for `OutgoingInvitation.createOrganizer()`, which always uses the calendar's `inviteAs` identity |
 | Meeting Options (online meeting settings) | Online Meeting group | Settings of the meeting on the meeting server, `MeetAccount` has only `createMeetingURL()` |
 | Propose New Time, Accept Proposal | Respond menu | iTIP `COUNTER` / `DECLINECOUNTER`, EWS proposed times |
