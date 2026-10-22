@@ -460,8 +460,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   /** @param username stable ID per stream, e.g. the streamed account's username */
   async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
-    // After a network error, we wait this long before the next attempt, and the loop goes on only after attempts
-    // that took at least this long. So the loop condition needs `>=`: a failed attempt plus the wait can be exactly this long.
     const kRetrySeconds = 10;
     let lastAttempt: number;
     let signal = abort.signal;
