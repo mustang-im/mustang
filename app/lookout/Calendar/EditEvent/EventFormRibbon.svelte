@@ -37,7 +37,7 @@
         <RibbonButton label={$t`Reply All`} icon={ReplyAllIcon}
           onClick={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))} />
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
-          onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
+          onClick={async () => openComposer(await IncomingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
       <RibbonGroup label={$t`Calendar`}>
         <RibbonButton label={$t`Calendar… *=> Show this day in the calendar`} icon={CalendarIcon}
@@ -79,7 +79,7 @@
         {/if}
         <RibbonButton label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
           disabled={!flow.isSaved && (isMeeting ? $t`Send the meeting first` : $t`Save the appointment first`)}
-          onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
+          onClick={async () => openComposer(await IncomingInvitation.forwardEventByMail(event))} />
       </RibbonGroup>
       <RibbonGroup label={$t`Online Meeting`}>
         {#if $event.isOnline}
@@ -193,7 +193,6 @@
   import type { MeetAccount } from "../../../logic/Meet/MeetAccount";
   import type { EventEditFlow } from "./EventEditFlow";
   import type { InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { openExternalURL } from "../../../logic/util/os-integration";
   import { appGlobal } from "../../../logic/app";

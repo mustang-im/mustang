@@ -18,7 +18,7 @@
       onClick={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))} />
   {/if}
   <MenuItem label={$t`Forward`} icon={ForwardIcon} shortCutInfo={$t`Ctrl+F *=> Keyboard shortcut`}
-    onClick={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
+    onClick={async () => openComposer(await IncomingInvitation.forwardEventByMail(event))} />
 {/if}
 <MenuDivider />
 {#if event.isCancelled}
@@ -58,7 +58,6 @@
   import { CalendarActions } from "../CalendarActions";
   import { openEvent } from "../../../frontend/Calendar/open";
   import { openComposer } from "../../../frontend/Mail/open";
-  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
