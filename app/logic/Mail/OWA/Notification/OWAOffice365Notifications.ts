@@ -53,14 +53,14 @@ export class OWAOffice365Notifications extends OWANotifications {
         if (!response.ok) {
           throw new Error(`start failed with HTTP ${response.status} ${response.statusText}`);
         }
-        // We have to request a ping every 5 minutes,
+        // We have to request a ping every 5 minutes, like the SignalR client does,
         // otherwise we stop receiving events.
         url = this.account.url + URLPart`notificationchannel/ping?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        pingTimer = setInterval(fetch, (json.TransportConnectTimeout || 5) * 60 * 1000, url, timerOptions);
+        pingTimer = setInterval(fetch, 5 * 60 * 1000, url, timerOptions);
         // We have to abort the stream after 40 minutes,
-        // because the access token will expire eventually.
+        // because the access token expires after about 50 minutes.
         url = this.account.url + URLPart`notificationchannel/abort?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
-        abortTimer = setTimeout(fetch, (json.KeepAliveTimeout || 40) * 60 * 1000, url, timerOptions);
+        abortTimer = setTimeout(fetch, 40 * 60 * 1000, url, timerOptions);
         // Now set up the stream itself.
         url = this.account.url + URLPart`notificationchannel/connect?transport=serverSentEvents&cid=${cid}&connectionToken=${json.ConnectionToken}`;
         let stream = await fetch(url, streamOptions);
