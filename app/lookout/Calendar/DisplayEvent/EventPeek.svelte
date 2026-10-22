@@ -26,6 +26,11 @@
         <button class="peek-button" on:click={onDelete}>{$t`Remove from Calendar`}</button>
       </hbox>
     {:else if $event.isIncomingMeeting}
+      {#if $event.isMoved}
+        <hbox class="notice">
+          {$t`The organizer changed the time or place of this meeting. Please respond again.`}
+        </hbox>
+      {/if}
       <hbox class="buttons">
         <button class="peek-button accept" class:chosen={$event.myParticipation == InvitationResponse.Accept}
           on:click={() => respond(InvitationResponse.Accept)}>
