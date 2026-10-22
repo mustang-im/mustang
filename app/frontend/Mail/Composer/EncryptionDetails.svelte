@@ -114,8 +114,8 @@
 
   /** The address book search leaves the keys out, to stay fast */
   async function autoFetchAddressbookKeys() {
-    await Promise.all(recipientsWithoutKeys.contents.flatMap(recipient =>
-      appGlobal.searchOnlyAddressbooks.contents.map(ab => ab.fetchCertificate(recipient))));
+    await Promise.all(recipientsWithoutKeys.contents.map(recipient =>
+      recipient.fetchEncryptionKeys()));
   }
 
   async function autoQueryKeyServer() {

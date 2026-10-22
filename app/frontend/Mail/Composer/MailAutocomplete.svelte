@@ -10,7 +10,6 @@
 
 <script lang="ts">
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
-  import { appGlobal } from "../../../logic/app";
   import PersonsAutocomplete from "../../Contacts/PersonAutocomplete/PersonsAutocomplete.svelte";
   import AddressbookChanger from "../../Contacts/AddressbookChanger.svelte";
   import { showError } from "../../Util/error";
@@ -32,10 +31,8 @@
     // </copied>
 
     // Get the certificate now, so that we can show whether we can encrypt
-    for (let ab of appGlobal.searchOnlyAddressbooks) {
-      ab.fetchCertificate(recipient)
-        .catch(showError);
-    }
+    recipient.fetchEncryptionKeys()
+      .catch(showError);
   }
 </script>
 

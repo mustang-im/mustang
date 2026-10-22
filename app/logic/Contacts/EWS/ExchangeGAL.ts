@@ -1,13 +1,12 @@
 import { SearchOnlyAddressbook } from "../Addressbook";
-import { ContactEntry, type Person } from "../../Abstract/Person";
-import type { PersonUID } from "../../Abstract/PersonUID";
+import type { Person } from "../../Abstract/Person";
 import type { MailAccount } from "../../Mail/MailAccount";
-import { getPublicKeyForPerson, getPublicKeyForPersonUID, usesCrypto } from "../../Mail/Encryption/KeyUtils";
+import type { PublicKey } from "../../Mail/Encryption/PublicKey";
+import { usesCrypto } from "../../Mail/Encryption/KeyUtils";
 import { SMIMEPrivateKey } from "../../Mail/Encryption/SMIME/SMIMEPrivateKey";
-import { SMIMEPublicKey } from "../../Mail/Encryption/SMIME/SMIMEPublicKey";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
 import { AbstractFunction } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 /** The Global Address List (GAL) of an Exchange server */
 export class ExchangeGAL extends SearchOnlyAddressbook {
@@ -40,34 +39,35 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
     throw new AbstractFunction();
   }
 
-  /** The entries that `fetchCertificate()` asked for, by lowercase email address */
-  protected readonly certificateLookups = new Map<string, Person>();
+  /** By lowercase email address */
+  protected readonly encryptionKeyLookups = new Map<string, Promise<Collection<PublicKey>>>();
 
-  /** Asks only about a recipient without an S/MIME certificate, who has
-   * the same base domain as one of our identities, if that identity has an
-   * S/MIME certificate itself. Only then we may find one here, and need it.
+  /** Asks only about the first email address which has the same base domain
+   * as one of our identities, if that identity has an S/MIME certificate itself.
+   * Only then we may find one here, and need it.
    * Costs a server round trip only once per email address. */
-  async fetchCertificate(recipient: PersonUID): Promise<void> {
-    if (getPublicKeyForPersonUID(recipient, SMIMEPublicKey)) {
-      return;
+  async fetchEncryptionKeys(emailAddresses: Collection<string>): Promise<Collection<PublicKey>> {
+    let emailAddress = emailAddresses.find(emailAddress => {
+      let domain = getBaseDomainFromHost(getDomainForEmailAddress(emailAddress));
+      return this.account.identities.some(
+             identity => usesCrypto(identity, SMIMEPrivateKey) &&
+             getBaseDomainFromHost(getDomainForEmailAddress(identity.emailAddress)) == domain);
+    })?.toLowerCase();
+    if (!emailAddress) {
+      return new ArrayColl<PublicKey>();
     }
-    let domain = getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress));
-    if (!this.account.identities.some(
-           identity => usesCrypto(identity, SMIMEPrivateKey) &&
-           getBaseDomainFromHost(getDomainForEmailAddress(identity.emailAddress)) == domain)) {
-      return;
+    let lookup = this.encryptionKeyLookups.get(emailAddress);
+    if (!lookup) {
+      lookup = this.requestEncryptionKeys(emailAddress);
+      this.encryptionKeyLookups.set(emailAddress, lookup);
     }
-    let emailAddress = recipient.emailAddress.toLowerCase();
-    let entry = this.certificateLookups.get(emailAddress);
-    if (!entry) {
-      entry = this.newPerson();
-      entry.emailAddresses.add(new ContactEntry(emailAddress, "work", "mailto"));
-      this.certificateLookups.set(emailAddress, entry);
-    }
-    await entry.fetchEncryptionKeys();
-    let key = getPublicKeyForPerson(entry, SMIMEPublicKey);
-    if (key) {
-      recipient.encryptionPublicKey = key;
-    }
+    return await lookup;
+  }
+
+  /** The GAL search leaves out the S/MIME certificates,
+   * so we resolve the person once more, which returns them.
+   * Reports errors, does not throw. */
+  protected async requestEncryptionKeys(emailAddress: string): Promise<Collection<PublicKey>> {
+    throw new AbstractFunction();
   }
 }

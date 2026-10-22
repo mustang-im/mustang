@@ -21,7 +21,6 @@
   import type { MailIdentity } from "../../../logic/Mail/MailIdentity";
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { EncryptionSystem } from "../../../logic/Mail/Encryption/enums";
-  import { appGlobal } from "../../../logic/app";
   import { getEncryptionSystem, getPublicKeyForPersonUID } from "../../../logic/Mail/Encryption/KeyUtils";
   import { queryKeyServers } from "./RecipientKeys";
   import RecipientCertificatesDialog from "./RecipientCertificatesDialog.svelte";
@@ -51,8 +50,8 @@
 
   async function autoFetchMissingKeys() {
     await Promise.all([
-      Promise.all(recipientsWithoutKeys.contents.flatMap(recipient =>
-        appGlobal.searchOnlyAddressbooks.contents.map(ab => ab.fetchCertificate(recipient)))),
+      Promise.all(recipientsWithoutKeys.contents.map(recipient =>
+        recipient.fetchEncryptionKeys())),
       hasKeyServers ? queryKeyServers(recipientsWithoutKeys, true) : null,
     ]);
   }
