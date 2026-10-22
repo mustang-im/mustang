@@ -9,10 +9,8 @@ import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
-// #if [!WEBMAIL]
-import { JMAPFileSharingAccount } from "../../Files/JMAP/JMAPFileSharingAccount";
+import { JMAPFileAccount } from "../../Files/JMAP/JMAPFileAccount";
 import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileSharingAccounts";
-// #endif
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPUpload } from "./TJMAPGeneric";
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
@@ -135,11 +133,9 @@ export class JMAPAccount extends MailAccount {
         if (this.haveCalendar) {
           await this.listCalendars();
         }
-        // #if [!WEBMAIL]
         if (this.haveFiles) {
           await this.addFileSharingAccount();
         }
-        // #endif
         if (!this.isDependentAccount && this.haveSharing) {
           await this.addNewlySharedAccounts(); // Shared while we were not running
         }
@@ -788,12 +784,10 @@ export class JMAPAccount extends MailAccount {
     if (type == "ShareNotification") {
       await this.addNewlySharedAccounts();
     }
-    // #if [!WEBMAIL]
     if (type == "FileNode") {
-      let files = this.dependentAccounts().find(account => account instanceof JMAPFileSharingAccount) as JMAPFileSharingAccount;
+      let files = this.dependentAccounts().find(account => account instanceof JMAPFileAccount) as JMAPFileAccount;
       await files?.fetchChanges();
     }
-    // #endif
   }
 
   /** Starts push mail
@@ -811,11 +805,9 @@ export class JMAPAccount extends MailAccount {
     if (this.haveSharing) {
       types.push("ShareNotification");
     }
-    // #if [!WEBMAIL]
     if (this.haveFiles) {
       types.push("FileNode");
     }
-    // #endif
     const kPingSeconds = 60;
     url = url
       .replace("{accountId}", this.accountID)
@@ -950,10 +942,9 @@ export class JMAPAccount extends MailAccount {
     }
   }
 
-  // #if [!WEBMAIL]
   /** Our files, or the files that another user shared with us */
   protected async addFileSharingAccount() {
-    if (this.dependentAccounts().find(account => account instanceof JMAPFileSharingAccount)) {
+    if (this.dependentAccounts().find(account => account instanceof JMAPFileAccount)) {
       return;
     }
     if (this.isDependentAccount) {
@@ -965,12 +956,11 @@ export class JMAPAccount extends MailAccount {
         return; // They did not share any files with us
       }
     }
-    let files = newFileSharingAccountForProtocol("files-jmap") as JMAPFileSharingAccount;
+    let files = newFileSharingAccountForProtocol("files-jmap") as JMAPFileAccount;
     files.initFromMainAccount(this);
     appGlobal.fileSharingAccounts.add(files);
     await files.save();
   }
-  // #endif
 
   /** Takes over changes of our calendars, e.g. a new name, and removes
    * those that were deleted on the server or are no longer shared with us. */

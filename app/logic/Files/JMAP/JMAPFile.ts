@@ -1,6 +1,6 @@
 import { File } from "../File";
 import type { JMAPDirectory } from "./JMAPDirectory";
-import type { JMAPFileSharingAccount } from "./JMAPFileSharingAccount";
+import type { JMAPFileAccount } from "./JMAPFileAccount";
 import type { TJMAPFileNode } from "./TJMAPFileNode";
 import type { TJMAPGetResponse } from "../../Mail/JMAP/TJMAPGeneric";
 import { appGlobal } from "../../app";
@@ -23,7 +23,7 @@ export class JMAPFile extends File {
   protected contentsBlobID: string | null = null;
   protected readonly syncLock = new Lock();
 
-  get account(): JMAPFileSharingAccount {
+  get account(): JMAPFileAccount {
     return this.parent?.account;
   }
 
@@ -71,7 +71,10 @@ export class JMAPFile extends File {
         if (this.contents) {
           return;
         }
-        await this.writeLocalFile(await this.downloadServerVersion());
+        let contents = await this.downloadServerVersion();
+        // #if [!WEBMAIL]
+        await this.writeLocalFile(contents);
+        // #endif
       } finally {
         lock.release();
       }

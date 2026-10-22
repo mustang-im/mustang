@@ -14,7 +14,7 @@ import { ArrayColl, SetColl } from "svelte-collections";
 /** Files on a JMAP server, as per draft-ietf-jmap-filenode.
  * The JMAP mail account is our main account, and gives us the session.
  * The algorithm for the locally cached files is in `JMAPFileSync.md`. */
-export class JMAPFileSharingAccount extends FileSharingAccount {
+export class JMAPFileAccount extends FileSharingAccount {
   readonly protocol: string = "files-jmap";
   declare readonly rootDirs: ArrayColl<JMAPDirectory>;
   protected localChangesPoller: ReturnType<typeof setInterval> | null = null;

@@ -1,5 +1,5 @@
 import { appGlobal } from "../../../../logic/app";
-import { JMAPFileSharingAccount } from "../../../../logic/Files/JMAP/JMAPFileSharingAccount";
+import { JMAPFileAccount } from "../../../../logic/Files/JMAP/JMAPFileAccount";
 import type { JMAPFile } from "../../../../logic/Files/JMAP/JMAPFile";
 import type { JMAPDirectory } from "../../../../logic/Files/JMAP/JMAPDirectory";
 import { DummyFileStorage } from "../../../../logic/Files/Store/DummyFileStorage";
@@ -50,7 +50,7 @@ async function setup(serverOptions: Partial<FakeFileNodeServer> = {}) {
   let server = new FakeFileNodeServer();
   Object.assign(server, serverOptions);
   let jmapAccount = server.newAccount();
-  let files = new JMAPFileSharingAccount();
+  let files = new JMAPFileAccount();
   files.storage = new DummyFileStorage();
   files.initFromMainAccount(jmapAccount);
   let errors: Error[] = [];

@@ -1,6 +1,6 @@
 import { Directory } from "../Directory";
 import { JMAPFile } from "./JMAPFile";
-import type { JMAPFileSharingAccount } from "./JMAPFileSharingAccount";
+import type { JMAPFileAccount } from "./JMAPFileAccount";
 import type { File } from "../File";
 import type { TJMAPFileNode } from "./TJMAPFileNode";
 import { appGlobal } from "../../app";
@@ -11,7 +11,7 @@ import { gt } from "../../../l10n/l10n";
 import { ArrayColl, type Collection } from "svelte-collections";
 
 export class JMAPDirectory extends Directory {
-  declare account: JMAPFileSharingAccount;
+  declare account: JMAPFileAccount;
   declare readonly files: ArrayColl<JMAPFile>;
   declare readonly subDirs: ArrayColl<JMAPDirectory>;
   declare parent: JMAPDirectory;
