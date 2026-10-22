@@ -22,6 +22,7 @@ export class ActiveSyncIncomingInvitation extends IncomingInvitation {
         CollectionId: this.message.folder.id,
         RequestId: this.message.serverID,
         // `{}` sends an empty element, and the server sends the reply, `[]` sends nothing
+        // < 16.1, we send the reply in @see Event.respondToInvitation()
         SendResponse: sendReply && this.calendar.account.protocolVersion == "16.1" ? {} : [],
       },
     };
