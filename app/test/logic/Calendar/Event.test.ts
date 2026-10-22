@@ -1,6 +1,6 @@
 import '../../../logic/app'; // Import first, to set up the module graph and dodge the Account import cycle
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
-import { Event } from '../../../logic/Calendar/Event';
+import { Event, RecurrenceCase } from '../../../logic/Calendar/Event';
 import { Calendar } from '../../../logic/Calendar/Calendar';
 import { Frequency, RecurrenceRule } from '../../../logic/Calendar/RecurrenceRule';
 import { k1HourMS } from '../../../logic/util/date';
@@ -37,6 +37,35 @@ test("Genuine occurrence dates are still recognised for exclusion - #1186", () =
   let valid = new Date(2020, 0, 5, 9, 0);
   // The guard must not swallow real deletions: this date is a real occurrence.
   expect(master.recurrenceRule.getIndexOfOccurrence(valid)).not.toBe(-1);
+});
+
+/* copyFrom() gave the copy the same Date objects as the original,
+ * so changing a date of the copy in place changed the original event, too. */
+test("Changing a date of a copy doesn't change the original event", () => {
+  let master = dailyMaster();
+  master.alarm = new Date(2020, 0, 1, 8, 45);
+  master.lastUpdateTime = new Date(2019, 11, 1);
+  master.exclusions.add(new Date(2020, 0, 5, 9, 0));
+  let exception = new Event(undefined, master);
+  exception.recurrenceCase = RecurrenceCase.Exception;
+  exception.recurrenceStartTime = new Date(2020, 0, 3, 9, 0);
+  exception.startTime = new Date(2020, 0, 3, 11, 0);
+  exception.endTime = new Date(2020, 0, 3, 12, 0);
+
+  function datesOf(event: Event): Date[] {
+    return [event.startTime, event.endTime, event.alarm, event.lastUpdateTime, event.recurrenceStartTime, ...event.exclusions.contents]
+      .filter(date => date);
+  }
+  for (let original of [master, exception]) {
+    let copy = new Event();
+    copy.copyFrom(original);
+    let originalTimes = datesOf(original).map(date => date.getTime());
+    expect(datesOf(copy).map(date => date.getTime())).toEqual(originalTimes);
+    for (let date of datesOf(copy)) {
+      date.setTime(date.getTime() + k1HourMS);
+    }
+    expect(datesOf(original).map(date => date.getTime())).toEqual(originalTimes);
+  }
 });
 
 /** #1405: The event dialog showed the event twice: once from the calendar,
