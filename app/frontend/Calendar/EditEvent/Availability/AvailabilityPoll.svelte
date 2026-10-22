@@ -19,19 +19,7 @@
   </hbox>
   {#if sml}
     <slot name="editor" {sml}>
-      <hbox class="editor" flex>
-        <vbox class="poll-calendar" flex>
-          <EditCalendar {options} duration={$event.durationMinutes}
-            dateStart={new Date(event.startTime)} focusHour={Math.max(event.startTime.getHours() - 1, 0)} />
-        </vbox>
-        <vbox class="list">
-          <hbox class="label">{$t`Possible times`}</hbox>
-          {#if $options.isEmpty}
-            <hbox class="empty">{$t`Add the times that you propose`}</hbox>
-          {/if}
-          <EditList {options} duration={$event.durationMinutes} showEndTime={false} />
-        </vbox>
-      </hbox>
+      <EditPollTimes {event} {sml} />
     </slot>
     <hbox class="buttons">
       <Button
@@ -56,15 +44,13 @@
   import type { TSMLMeetingTimePoll } from "../../../../logic/Mail/SML/TSML";
   import { createMeetingTimePoll } from "../../../../logic/Mail/SML/SMLCreateKind";
   import AvailabilityLoader from "./AvailabilityLoader.svelte";
-  import EditCalendar from "../../SML/Shared/EditCalendar.svelte";
-  import EditList from "../../SML/Shared/EditList.svelte";
+  import EditPollTimes from "./EditPollTimes.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
   import Button from "../../../Shared/Button.svelte";
   import ComposeIcon from "lucide-svelte/icons/pencil";
   import { openComposer } from "../../../Mail/open";
   import { getLocalStorage } from "../../../Util/LocalStorage";
   import { getWeekStart } from "../../../../logic/util/date";
-  import { syncArrayColl } from "../../../../logic/util/collections";
   import { UserError } from "../../../../logic/util/util";
   import type { Collection } from "svelte-collections";
   import { t } from "../../../../l10n/l10n";
@@ -87,7 +73,6 @@
     timePoll.duration = event.durationMinutes;
     timePoll.options.push(new Date(event.startTime));
   }
-  $: options = sml ? syncArrayColl((sml.sml as TSMLMeetingTimePoll).options, date => date) : null;
 
   let freeBusy: FreeBusy | null = null;
   $: participants = event.participants;
@@ -127,46 +112,6 @@
   }
   .recipients :global(.checking) {
     margin: 0;
-  }
-  .editor {
-    flex: 1 0 auto;
-    min-height: 250px;
-  }
-  .poll-calendar {
-    min-width: 0;
-  }
-  .poll-calendar :global(.calendar) {
-    flex: 1 1 0;
-    height: auto;
-    min-height: 0;
-  }
-  .list {
-    width: 200px;
-    margin-inline-start: 16px;
-    overflow-y: auto;
-  }
-  .list .label {
-    margin-block-end: 8px;
-    opacity: 70%;
-  }
-  .empty {
-    opacity: 50%;
-  }
-  @container availability-poll (max-width: 600px) {
-    .editor {
-      flex-direction: column;
-    }
-    .poll-calendar {
-      min-height: 250px;
-    }
-    .poll-calendar :global(.day-header .weekday) {
-      display: none;
-    }
-    .list {
-      width: auto;
-      margin-inline-start: 0;
-      margin-block-start: 8px;
-    }
   }
   .buttons {
     justify-content: end;

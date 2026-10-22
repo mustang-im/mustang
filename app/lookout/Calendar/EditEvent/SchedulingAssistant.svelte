@@ -7,6 +7,10 @@
   </hbox>
   <hbox class="view-tabs">
     <DialogTabs tabs={viewTabs} bind:selected={view} />
+    {#if view == "poll"}
+      <DialogButton label={$t`Use calendar`} icon={CalendarIcon} classes="plain" pressed={useCalendar}
+        onClick={() => { useCalendar = !useCalendar; }} />
+    {/if}
   </hbox>
   {#if view == "free"}
     <vbox flex class="view">
@@ -17,7 +21,15 @@
   {:else}
     <vbox flex class="view">
       <AvailabilityPoll {event} bind:sml={poll}>
-        <PollEdit slot="editor" let:sml {sml} showDuration={false} />
+        <svelte:fragment slot="editor" let:sml>
+          {#if useCalendar}
+            <SMLCalendar>
+              <EditPollTimes {event} {sml} />
+            </SMLCalendar>
+          {:else}
+            <PollEdit {sml} showDuration={false} />
+          {/if}
+        </svelte:fragment>
       </AvailabilityPoll>
     </vbox>
   {/if}
@@ -34,8 +46,12 @@
   import AvailabilityGrid from "./AvailabilityGrid.svelte";
   import FreeSlots from "../../../frontend/Calendar/EditEvent/Availability/FreeSlots.svelte";
   import AvailabilityPoll from "../../../frontend/Calendar/EditEvent/Availability/AvailabilityPoll.svelte";
+  import EditPollTimes from "../../../frontend/Calendar/EditEvent/Availability/EditPollTimes.svelte";
   import PollEdit from "../SML/Shared/PollEdit.svelte";
+  import SMLCalendar from "../SML/Shared/SMLCalendar.svelte";
   import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
+  import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -52,6 +68,7 @@
   ];
   let view = "free";
   let poll: SMLData | null = null;
+  let useCalendar = true;
   $: participants = event.participants;
 
   // <copied from="../../../frontend/Calendar/EditEvent/Availability/Availability.svelte">
@@ -94,13 +111,28 @@
   }
   .view-tabs {
     flex-shrink: 0;
+    align-items: end;
     margin: 0 24px 8px 24px;
+    border-block-end: 1px solid var(--lo-border);
   }
   .view-tabs :global(.dialog-tabs) {
     flex: 1;
+    border-block-end: none;
+  }
+  .view-tabs :global(.dialog-button) {
+    height: 28px;
+    margin-block-end: 2px;
   }
   .view {
     min-height: 0;
     margin: 0 24px 12px 24px;
+  }
+  .view :global(.sml-calendar) {
+    flex: 1 0 0;
+    height: auto;
+    min-height: 200px;
+  }
+  .view :global(.edit-poll-times) {
+    min-height: 200px;
   }
 </style>
