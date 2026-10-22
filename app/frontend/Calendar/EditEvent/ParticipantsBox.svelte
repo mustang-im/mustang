@@ -30,10 +30,7 @@
 </vbox>
 
 <vbox class="availability" class:enlarged={isAvailabilityEnlarged}>
-  <ExpandSection>
-    <hbox slot="header" class="header">{$t`Availability of participants`}</hbox>
-    <Availability {event} bind:enlarged={isAvailabilityEnlarged} />
-  </ExpandSection>
+  <Availability {event} bind:enlarged={isAvailabilityEnlarged} />
 </vbox>
 
 <script lang="ts">
@@ -45,7 +42,6 @@
   import PersonAvailability from "./PersonAvailability.svelte";
   import ParticipantConfirmIcon from "./ParticipantConfirmIcon.svelte";
   import ParticipantConfirmText from "./ParticipantConfirmText.svelte";
-  import ExpandSection from "../../Shared/ExpandSection.svelte";
   import Availability from "./Availability/Availability.svelte";
   import SectionTitle from "./SectionTitle.svelte";
   import { showError } from "../../Util/error";
@@ -81,12 +77,8 @@
   .availability {
     margin-block-start: 18px;
   }
-  .availability.enlarged,
-  .availability.enlarged :global(.expander) {
+  .availability.enlarged {
     flex: 1 1 0;
     min-height: 0;
-  }
-  .availability .header {
-    opacity: 50%;
   }
 </style>

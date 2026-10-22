@@ -45,9 +45,9 @@
   export let onSend: () => Promise<void>;
 
   const viewTabs = [
-    { id: "free", label: $t`Free times` },
+    { id: "free", label: $t`Free slots` },
     { id: "participants", label: $t`Who is free when` },
-    { id: "poll", label: $t`Meeting time poll` },
+    { id: "poll", label: $t`Poll *=> Ask the participants by email which times suit them` },
   ];
   let view = "free";
   let poll: SMLData | null = null;

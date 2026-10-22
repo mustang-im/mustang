@@ -110,36 +110,57 @@ function text(selector: string): string[] {
   return [...document.querySelectorAll(selector)].map(element => element.textContent.trim());
 }
 
-/** The free/busy blocks are `Event`s that are in no calendar,
- * so opening or selecting them would fail #1430 */
-test("Free times: Clicking a time slot moves the meeting there, and neither selects nor opens it", async () => {
-  let event = newMeeting();
-  await show(FreeSlots, { event });
+test("Free slots: Each slot shows only its start time, and the details on hover", async () => {
+  await show(FreeSlots, { event: newMeeting() });
   let slots = document.querySelectorAll(".slot");
   // Mon-Fri, 8:00-18:00
   expect(slots.length).toBe(5 * 10);
+  let slot = slots[0];
+  // Una's unknown availability doesn't count
+  expect(slot.classList).toContain("availability-partly");
+  expect(slot.textContent).not.toContain("Bob Busy");
+  expect(slot.getAttribute("title")).toContain("Bob Busy");
+  expect(slot.getAttribute("title")).toContain("Frida Free");
+  expect(slot.getAttribute("title")).toContain("Una Unknown");
+});
 
-  let monday = slots[0];
+test("Free slots: Clicking a slot shows who is busy, free and unknown, and neither selects nor opens anything #1430", async () => {
+  let event = newMeeting();
+  let startTime = event.startTime;
+  await show(FreeSlots, { event });
+  let monday = document.querySelector(".slot");
   monday.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   monday.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
   flushSync();
 
-  expect(event.startTime).toEqual(new Date(2026, 7, 31, 8, 0));
-  expect(event.durationMinutes).toBe(60);
+  expect(monday.classList).toContain("expanded");
+  expect(text(".slot.expanded .detail")).toEqual([
+    "Busy: Bob Busy",
+    "Free: Me, Frida Free",
+    "Unknown: Una Unknown",
+  ]);
+  expect(event.startTime).toBe(startTime);
   expect(notifications.contents.map(notification => notification.message)).toEqual([]);
   expect(get(selectedEvent)).toBeNull();
+
+  monday.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  flushSync();
+  expect(document.querySelector(".slot.expanded")).toBeNull();
 });
 
-test("Free times: Each slot shows who is busy, and the details on hover", async () => {
-  await show(FreeSlots, { event: newMeeting() });
-  let slot = document.querySelector(".slot");
-  // Una's unknown availability doesn't count
-  expect(slot.classList).toContain("availability-partly");
-  expect(slot.textContent).toContain("Bob Busy");
-  expect(slot.textContent).not.toContain("Frida Free");
-  expect(slot.textContent).not.toContain("Una Unknown");
-  expect(slot.getAttribute("title")).toContain("Frida Free");
-  expect(slot.getAttribute("title")).toContain("Una Unknown");
+test("Free slots: \"Use this time\" moves the meeting there", async () => {
+  let event = newMeeting();
+  await show(FreeSlots, { event });
+  let monday = document.querySelector(".slot");
+  monday.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  flushSync();
+  (monday.querySelector("button.use-time") as HTMLElement).click();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+
+  expect(event.startTime).toEqual(new Date(2026, 7, 31, 8, 0));
+  expect(event.durationMinutes).toBe(60);
+  expect(monday.classList).toContain("meeting");
 });
 
 test("Who is free when: One column per participant, with the appointments", async () => {

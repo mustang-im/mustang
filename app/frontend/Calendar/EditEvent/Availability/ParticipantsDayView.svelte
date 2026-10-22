@@ -266,13 +266,14 @@
   .appointment {
     flex: 1 1 0;
     min-width: 0;
-    height: calc(100% - 2px);
-    margin-inline-end: 3px;
+    height: calc(100% - 1px);
+    margin-inline-end: 1.5px;
     padding: 1px 6px;
     box-sizing: border-box;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--appointment-color) 65%, black);
-    border-radius: var(--border-radius);
+    --appointment-border: color-mix(in srgb, var(--appointment-color) 65%, black);
+    border: 1px solid color-mix(in srgb, var(--appointment-border) 50%, transparent);
+    border-radius: calc(var(--border-radius) / 2);
     background-color: var(--appointment-color);
     color: black;
     --stripe-color: color-mix(in srgb, var(--appointment-color) 70%, transparent);
@@ -294,8 +295,8 @@
   }
   @media (prefers-color-scheme: dark) {
     .appointment {
+      --appointment-border: color-mix(in srgb, var(--appointment-color) 60%, var(--bg));
       background-color: color-mix(in srgb, var(--appointment-color) 35%, var(--bg));
-      border-color: color-mix(in srgb, var(--appointment-color) 60%, var(--bg));
       color: var(--fg);
       --stripe-color: color-mix(in srgb, var(--appointment-color) 25%, transparent);
     }
