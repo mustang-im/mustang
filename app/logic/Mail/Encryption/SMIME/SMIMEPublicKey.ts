@@ -247,7 +247,7 @@ async function getCACertificatesLazy(type: string): Promise<Certificate[]> {
     try {
       let certificate = Certificate.decodePEM(cert, { label: "CERTIFICATE" });
       let hash = new Uint8Array(await crypto.subtle.digest("SHA-256", Certificate.encode(certificate) as BufferSource));
-      if (notEmailRoots.includes(Uint8ArrayToHex(hash))) {
+      if (notEmailRoots.includes(uint8ArrayToHex(hash))) {
         continue;
       }
       certificates.push(certificate);
