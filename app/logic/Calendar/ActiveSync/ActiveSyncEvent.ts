@@ -340,7 +340,7 @@ export class ActiveSyncEvent extends ExchangeEvent {
   async respondToInvitation(response: InvitationResponseInMessage, sendReply = true): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     // `{}` sends an empty element, and the server sends the reply, `[]` sends nothing
-    // < 16.1, we send the reply in @see Event.respondToInvitation()
+    // In < 16.1, we send the reply ourselves, see below
     let SendResponse = sendReply && this.calendar.account.protocolVersion == "16.1" ? {} : [];
     let request = {
       // TODO support ActiveSync 14.0
