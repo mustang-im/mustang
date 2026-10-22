@@ -87,7 +87,7 @@
       plain
       />
   </hbox>
-  {#if !$appGlobal.isMobile && appWindow.mainWindow == appWindow}
+  {#if !$appGlobal.isMobile && appWindow.isMainWindow}
     <hbox class="popout button">
       <Button
         icon={PopOutIcon}
@@ -150,8 +150,8 @@
   async function toggleStar() {
     await message.markStarred(!message.isStarred);
   }
-  function onPopOut() {
-    appWindow.open(MessageWindow, { message }, 1000, 800);
+  async function onPopOut() {
+    await appWindow.open(MessageWindow, { message }, 1000, 800);
   }
   function reply() {
     let reply = message.compose.replyToAuthor();

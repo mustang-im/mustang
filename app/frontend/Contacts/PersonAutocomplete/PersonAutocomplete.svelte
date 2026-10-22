@@ -60,6 +60,7 @@
     </hbox>
   {/if}
 </hbox>
+<AppWindowEvents capture on:click={event => catchErrors(() => onClickOutside(event))} />
 
 <script lang="ts">
   import { findPerson, nameFromEmailAddress, PersonUID } from "../../../logic/Abstract/PersonUID";
@@ -76,9 +77,8 @@
   // <https://github.com/pstanoev/simple-svelte-autocomplete>
   // <http://simple-svelte-autocomplete.surge.sh>
   import Autocomplete from 'simple-svelte-autocomplete';
-  import { AppWindow } from "../../MainWindow/AppWindow";
-  import { onMount, tick } from 'svelte';
-  import { on } from 'svelte/events';
+  import AppWindowEvents from "../../MainWindow/AppWindowEvents.svelte";
+  import { tick } from 'svelte';
   import { catchErrors, showError } from "../../Util/error";
   import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
   import { UserError } from "../../../logic/util/util";
@@ -92,9 +92,6 @@
   export let typedText: string = ""; /* in/out */
   export let onAddPerson: (person: PersonUID) => void | Promise<void>;
   export let askForName = false;
-
-  const appWindow = AppWindow.current();
-  onMount(() => on(appWindow.window, "click", event => catchErrors(() => onClickOutside(event)), { capture: true }));
 
   async function search(inputStr: string) {
     try {

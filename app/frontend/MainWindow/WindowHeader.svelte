@@ -3,7 +3,7 @@
   <vbox class="app-logo">
     <Icon data={logo} size="20px" />
   </vbox>
-  {#if title == null}
+  {#if appWindow.isMainWindow}
     <hbox class="workspace">
       <WorkspaceHeader {selectedApp} />
     </hbox>
@@ -12,18 +12,16 @@
     {title ?? $titleStore ?? selectedApp?.name ?? appName}
   </hbox>
   <vbox flex class="free" />
-  {#if title == null}
+  {#if appWindow.isMainWindow}
     <hbox class="search-box">
       <SearchField bind:searchTerm={$globalSearchTerm} />
     </hbox>
-    {#if !webMail}
-      <hbox class="new-window">
-        <Button label={$t`Open a new window`}
-          icon={NewWindowIcon} iconSize="16px" plain iconOnly
-          onClick={onNewWindow}
-          />
-      </hbox>
-    {/if}
+    <hbox class="new-window">
+      <Button label={$t`Open a new window`}
+        icon={NewWindowIcon} iconSize="16px" plain iconOnly
+        onClick={onNewWindow}
+        />
+    </hbox>
   {/if}
   {#if !webMail}
     <hbox class="right">
@@ -95,8 +93,8 @@
     appWindow.close();
   }
 
-  function onNewWindow() {
-    AppWindow.openMainWindow(MainWindow, {}, appWindow.window.outerWidth, appWindow.window.outerHeight);
+  async function onNewWindow() {
+    await AppWindow.openMainWindow(MainWindow, {}, appWindow.window.outerWidth, appWindow.window.outerHeight);
   }
 
   $: titleStore = selectedApp?.title;

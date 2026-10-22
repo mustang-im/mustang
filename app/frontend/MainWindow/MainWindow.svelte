@@ -107,7 +107,7 @@
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;
   $: sidebar = $sidebarApp?.sidebar;
-  // <copied to="PopoutWindow.svelte">
+  // <copied to="SecondaryWindow.svelte">
   $: rtl = rtlLocales.includes(getUILocale()) ? 'rtl' : null;
   // </copied>
   categoriesLoaded; /* make sure to import the file, so that that categories load */
@@ -162,7 +162,7 @@
     assert(["system", "light", "dark"].includes(theme), $t`Bad theme name ` + theme);
     appGlobal.remoteApp.setTheme(theme);
   }
-  // <copied to="PopoutWindow.svelte">
+  // <copied to="SecondaryWindow.svelte">
   let colorsSetting = getLocalStorage("appearance.colors", {});
   $: applyColors($colorsSetting.value, appWindow.window.document);
   // </copied>

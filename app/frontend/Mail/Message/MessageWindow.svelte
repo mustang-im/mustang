@@ -1,12 +1,12 @@
-<PopoutWindow title={$message.subject ?? ""}>
+<SecondaryWindow title={$message.subject ?? ""}>
   <MessageDisplay {message} />
-</PopoutWindow>
+</SecondaryWindow>
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { selectedMessage, selectedMessages } from "../Selected";
   import { AppWindow } from "../../MainWindow/AppWindow";
-  import PopoutWindow from "../../MainWindow/PopoutWindow.svelte";
+  import SecondaryWindow from "../../MainWindow/SecondaryWindow.svelte";
   import MessageDisplay from "./MessageDisplay.svelte";
   import { ArrayColl, CollectionObserver, type Collection } from "svelte-collections";
   import { onDestroy } from "svelte";

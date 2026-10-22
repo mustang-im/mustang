@@ -33,14 +33,16 @@
   <vbox class="splitter" />
 {/if}
 
+<AppWindowEvents
+  on:pointermove={onMouseMove}
+  on:pointerup={onMouseUp}
+  />
 
 <script lang="ts">
 	import { appGlobal } from "../../logic/app";
   import { sanitize } from "../../../lib/util/sanitizeDatatypes";
   import ErrorBoundary from "./ErrorBoundary.svelte";
-  import { AppWindow } from "../MainWindow/AppWindow";
-  import { onMount } from "svelte";
-  import { on } from "svelte/events";
+  import AppWindowEvents from "../MainWindow/AppWindowEvents.svelte";
 
   /** Left pane cannot be made smaller than this
    * in px */
@@ -60,16 +62,6 @@
   export let rightFixedWidth: number | null = null;
   /** If set, will save the ratio in localStorage as preference and restore it */
   export let name: string = null;
-
-  const appWindow = AppWindow.current();
-  onMount(() => {
-    let removeMove = on(appWindow.window, "pointermove", onMouseMove);
-    let removeUp = on(appWindow.window, "pointerup", onMouseUp);
-    return () => {
-      removeMove();
-      removeUp();
-    };
-  });
 
 	const barWidth = appGlobal.isMobile ? 6 : 2;
   let rightRatio = JSON.parse(sanitize.nonemptystring(localStorage?.getItem("ui.splitter." + name), null)) ?? initialRightRatio;

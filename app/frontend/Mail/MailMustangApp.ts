@@ -3,6 +3,7 @@ import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
 import { AppWindow } from "../MainWindow/AppWindow";
 import ComposerWindow from "./Composer/ComposerWindow.svelte";
+import { showError } from "../Util/error";
 import { OAuth2Tab, oAuth2TabsOpen } from "../../logic/Auth/UI/OAuth2Tab";
 import { appGlobal } from "../../logic/app";
 import mailIcon from '../asset/icon/appBar/mail.svg?raw';
@@ -23,8 +24,9 @@ export class MailMustangApp extends MustangApp {
    */
   writeMail(mail: EMail) {
     let appWindow = AppWindow.current();
-    if (appWindow.mainWindow != appWindow) {
-      this.writeMailInNewWindow(mail);
+    if (!appWindow.isMainWindow) {
+      this.writeMailInNewWindow(mail)
+        .catch(showError);
       return;
     }
     let composerApp = new WriteMailMustangApp();
@@ -34,8 +36,8 @@ export class MailMustangApp extends MustangApp {
     openApp(composerApp, composerApp.windowParams);
   }
 
-  writeMailInNewWindow(mail: EMail) {
-    AppWindow.current().open(ComposerWindow, { mail }, 1000, 800);
+  async writeMailInNewWindow(mail: EMail) {
+    await AppWindow.current().open(ComposerWindow, { mail }, 1000, 800);
   }
 
   login(tab: OAuth2Tab): LoginDialogMustangApp {

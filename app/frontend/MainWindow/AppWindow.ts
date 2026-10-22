@@ -1,4 +1,5 @@
 import { appGlobal } from "../../logic/app";
+import { webMail } from "../../logic/build";
 import { assert } from "../../logic/util/util";
 import { catchErrors } from "../Util/error";
 import { ArrayColl } from "svelte-collections";
@@ -14,7 +15,7 @@ import { getContext, mount, unmount, type Component } from "svelte";
  */
 export class AppWindow {
   readonly window: Window;
-  /** For the backend to find the window */
+  /** As in `window.open()` */
   readonly name: string;
   /**
    * The window where the apps show, e.g. when the user clicks on a person.
@@ -25,6 +26,8 @@ export class AppWindow {
   /** What this window shows. Only for the windows that we opened. */
   component: Component<any>;
   props: Record<string, any>;
+  /** `SecondaryBrowserWindow` in the backend. Only for the windows that we opened, and not in the webmail. */
+  protected browserWindow: any;
   protected readonly uiStates = new Map<object, object>();
 
   /** The window that started with the app */
@@ -65,6 +68,11 @@ export class AppWindow {
     let target = window.event?.target as any;
     let win = target?.ownerDocument?.defaultView ?? target?.defaultView ?? target?.window;
     return win ? AppWindow.all.find(appWindow => appWindow.window == win) : undefined;
+  }
+
+  /** Whether this window shows the whole app with all apps */
+  get isMainWindow(): boolean {
+    return this.mainWindow == this;
   }
 
   /** The first main window and all windows that we opened */
@@ -127,30 +135,37 @@ export class AppWindow {
    * If such a window is already open with the same `props`, brings it to the front instead.
    * The new window closes when the first main window closes.
    */
-  open<Props extends Record<string, any>>(component: Component<Props>, props: Props, width: number, height: number): AppWindow {
+  async open<Props extends Record<string, any>>(component: Component<Props>, props: Props, width: number, height: number): Promise<AppWindow> {
     let existing = AppWindow.opened.find(appWindow => appWindow.component == component &&
       Object.keys(props).every(key => appWindow.props[key] == props[key]));
     if (existing) {
       existing.focus();
       return existing;
     }
-    return AppWindow.openWindow(component, props, width, height, this.mainWindow);
+    return await AppWindow.openWindow(component, props, width, height, this.mainWindow);
   }
 
   /**
    * Opens a new window that shows `component` and in which the apps show.
    * The new window closes when the first main window closes.
    */
-  static openMainWindow<Props extends Record<string, any>>(component: Component<Props>, props: Props, width: number, height: number): AppWindow {
-    return AppWindow.openWindow(component, props, width, height, null);
+  static async openMainWindow<Props extends Record<string, any>>(component: Component<Props>, props: Props, width: number, height: number): Promise<AppWindow> {
+    return await AppWindow.openWindow(component, props, width, height, null);
   }
 
-  protected static openWindow<Props extends Record<string, any>>(component: Component<Props>, props: Props, width: number, height: number, mainWindow: AppWindow | null): AppWindow {
+  protected static async openWindow<Props extends Record<string, any>>(component: Component<Props>, props: Props, width: number, height: number, mainWindow: AppWindow | null): Promise<AppWindow> {
     let name = "mustang-window-" + ++AppWindow.lastID;
-    // Ends up in `setWindowOpenHandler()` in desktop/src/main/index.ts
-    let win = AppWindow.main.window.open("about:blank", name, `mustang-window,width=${width},height=${height}`);
+    let features = `width=${width},height=${height}`;
+    let browserWindow = null;
+    if (!webMail) {
+      // The desktop app allows only windows with this token, see `setWindowOpenHandler()` in desktop/src/main/index.ts
+      browserWindow = await appGlobal.remoteApp.allowSecondaryWindow();
+      features += ",mustang-window=" + browserWindow.token;
+    }
+    let win = AppWindow.main.window.open("about:blank", name, features);
     assert(win, "Failed to open a new window");
     let appWindow = new AppWindow(win, name, mainWindow);
+    appWindow.browserWindow = browserWindow;
     appWindow.show(component, props);
     AppWindow.opened.add(appWindow);
     return appWindow;
@@ -307,7 +322,7 @@ export class AppWindow {
     if (this == AppWindow.main) {
       await appGlobal.remoteApp.minimizeMainWindow();
     } else {
-      await appGlobal.remoteApp.minimizeAppWindow(this.name);
+      await this.browserWindow.minimize();
     }
   }
 
@@ -315,7 +330,7 @@ export class AppWindow {
     if (this == AppWindow.main) {
       await appGlobal.remoteApp.maximizeMainWindow();
     } else {
-      await appGlobal.remoteApp.maximizeAppWindow(this.name);
+      await this.browserWindow.maximize();
     }
   }
 
@@ -324,7 +339,7 @@ export class AppWindow {
     if (this == AppWindow.main) {
       await appGlobal.remoteApp.unminimizeMainWindow();
     } else {
-      await appGlobal.remoteApp.unminimizeAppWindow(this.name);
+      await this.browserWindow.restore();
     }
   }
 

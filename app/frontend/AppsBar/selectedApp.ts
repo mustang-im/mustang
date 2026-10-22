@@ -38,7 +38,7 @@ export function goTo(pageURL: string, params: PageParams) {
     state: addParams(params),
   });
   let appWindow = AppWindow.current();
-  if (appWindow != appWindow.mainWindow) {
+  if (!appWindow.isMainWindow) {
     bringAppToFront();
   }
 }

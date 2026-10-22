@@ -8,13 +8,14 @@
     <slot />
   </vbox>
 {/if}
+<AppWindowEvents on:click={onClickOutside} on:mousewheel={onClickOutside} />
 
 <script lang="ts">
   import { AppWindow } from '../MainWindow/AppWindow';
+  import AppWindowEvents from '../MainWindow/AppWindowEvents.svelte';
   import { createPopperActions } from 'svelte-popperjs';
   import type { Placement } from '@popperjs/core';
-  import { onDestroy, onMount } from 'svelte';
-  import { on } from 'svelte/events';
+  import { onDestroy } from 'svelte';
 
   /** in/out */
   export let popupOpen: boolean;
@@ -39,14 +40,6 @@
   export let autoClose: boolean = true;
 
   const appWindow = AppWindow.current();
-  onMount(() => {
-    let removeClick = on(appWindow.window, "click", onClickOutside);
-    let removeWheel = on(appWindow.window, "mousewheel", onClickOutside);
-    return () => {
-      removeClick();
-      removeWheel();
-    };
-  });
 
   const [popupRef, popupContent, getInstance] = createPopperActions({
     placement: placement,

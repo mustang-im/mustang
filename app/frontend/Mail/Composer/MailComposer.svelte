@@ -15,7 +15,7 @@
       <EncryptionButtons {mail} identity={fromIdentity} />
       <hbox flex class="spacer" />
       <hbox class="close buttons">
-        {#if !appGlobal.isMobile && appWindow.mainWindow == appWindow}
+        {#if !appGlobal.isMobile && appWindow.isMainWindow}
           <RoundButton
             label={$t`Open in a separate window`}
             icon={PopOutIcon}
@@ -393,7 +393,7 @@
     }
     doOnClose = [];
 
-    if (appWindow.mainWindow != appWindow) {
+    if (!appWindow.isMainWindow) {
       appWindow.close();
       return;
     }
@@ -403,14 +403,14 @@
     goBack();
   }
 
-  function onPopOut() {
+  async function onPopOut() {
     onClose();
-    mailMustangApp.writeMailInNewWindow(mail);
+    await mailMustangApp.writeMailInNewWindow(mail);
   }
 
   /** The user closed the separate window of the composer */
   onDestroy(() => {
-    if (closing || appWindow.mainWindow == appWindow || !hasOwnText(mail)) {
+    if (closing || appWindow.isMainWindow || !hasOwnText(mail)) {
       return;
     }
     mail.compose.saveAsDraft()

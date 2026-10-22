@@ -5,6 +5,7 @@ import JPCWebSocket from '../../lib/jpc-ws';
 import * as OWA from './owa';
 import { appName, production } from '../../app/logic/build';
 import { WebContents } from './WebContents';
+import { SecondaryBrowserWindow } from './SecondaryBrowserWindow';
 import { Observable, notifyChangedProperty } from '../../lib/util/Observable';
 import { ImapFlow } from 'imapflow';
 import { Database } from "@radically-straightforward/sqlite"; // formerly @leafac/sqlite
@@ -65,9 +66,7 @@ async function createSharedAppObject() {
     minimizeMainWindow,
     unminimizeMainWindow,
     maximizeMainWindow,
-    minimizeAppWindow,
-    unminimizeAppWindow,
-    maximizeAppWindow,
+    allowSecondaryWindow,
     addEventListenerWebContents,
     getWebContents,
     writeTextToClipboard,
@@ -633,32 +632,17 @@ let mainWindow: BrowserWindow;
 
 export function setMainWindow(mainWin: BrowserWindow) {
   mainWindow = mainWin;
-  // Their content lives in the main window's JS context, which is gone now
+  // The main window holds the JS context for all windows, so close all secondary windows as well
   mainWindow.on("closed", () => {
-    for (let appWindow of appWindows.values()) {
-      appWindow.close();
+    for (let secondaryWindow of BrowserWindow.getAllWindows()) {
+      secondaryWindow.close();
     }
   });
 }
 
-/** Additional windows that the frontend opened. By window name. */
-const appWindows = new Map<string, BrowserWindow>();
-
-export function addAppWindow(name: string, appWindow: BrowserWindow) {
-  appWindows.set(name, appWindow);
-  appWindow.on("closed", () => appWindows.delete(name));
-}
-
-function minimizeAppWindow(name: string) {
-  appWindows.get(name)?.minimize();
-}
-
-function unminimizeAppWindow(name: string) {
-  appWindows.get(name)?.restore();
-}
-
-function maximizeAppWindow(name: string) {
-  appWindows.get(name)?.maximize();
+/** Lets the frontend open one secondary window. @see `SecondaryBrowserWindow` */
+function allowSecondaryWindow(): SecondaryBrowserWindow {
+  return SecondaryBrowserWindow.allow();
 }
 
 function minimizeMainWindow() {
