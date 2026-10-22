@@ -67,12 +67,9 @@ export class OutgoingInvitation {
     if (!isFuture) {
       return;
     }
-    let unedited = this.event.unedited;
-    if (unedited) {
-      await unedited.outgoingInvitation.sendCancellationsTo(unedited.participants);
-    } else {
-      await this.sendCancellationsTo(this.event.participants);
-    }
+    let cancelled = this.event.unedited ?? this.event;
+    cancelled.sequence++;
+    await cancelled.outgoingInvitation.sendCancellationsTo(cancelled.participants);
   }
 
   protected async send(method: iCalMethod, participants: Collection<Participant>) {
@@ -115,6 +112,15 @@ export class OutgoingInvitation {
     email.attachments.addAll(this.event.attachments.contents
       .filter(attachment => attachment.content) // We can't send what we don't have
       .map(attachment => attachment.cloneTo(email)));
+  }
+
+  /**
+   * The attendees already have an earlier version of this meeting,
+   * and the change makes it outdated, so it needs a new `sequence`.
+   */
+  outdatesAttendeesVersion(): boolean {
+    return this.changesNeedToNotify() &&
+      this.event.unedited.participants.some(participant => participant.isInvitee);
   }
 
   /**

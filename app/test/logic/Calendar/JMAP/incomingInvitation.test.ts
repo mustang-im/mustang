@@ -117,10 +117,10 @@ function setupIMAP() {
 }
 
 /** The invitation email, as it arrives in the inbox of `account` */
-async function newInvitationEMail(account: MailAccount, attendee = kMe): Promise<EMail> {
+async function newInvitationEMail(account: MailAccount, attendee = kMe, ics = invitationICal(attendee)): Promise<EMail> {
   let email = account.getSpecialFolder(SpecialFolder.Inbox).newEMail();
   let attachment = email.newAttachment();
-  attachment.fromFile(new File([invitationICal(attendee)], "invite.ics", { type: "text/calendar" }));
+  attachment.fromFile(new File([ics], "invite.ics", { type: "text/calendar" }));
   email.attachments.add(attachment);
   await new ICalEMailProcessor().process(email);
   expect(email.invitationMessage).toEqual(InvitationMessage.Invitation);
@@ -160,6 +160,36 @@ test("Accepting an invitation adds the event to the JMAP calendar", async () => 
   expect(sent[0].event.participants.length).toEqual(1);
   expect(sent[0].event.participants.first.emailAddress).toEqual(kMe);
   expect(sent[0].event.participants.first.response).toEqual(InvitationResponse.Accept);
+});
+
+test("A changed time of an accepted invitation reaches the JMAP server, with the organizer's new sequence", async () => {
+  let { account, calendar, calls, sent } = setup();
+  appGlobal.calendars.add(calendar);
+  appGlobal.emailAccounts.add(account);
+  let email = await newInvitationEMail(account);
+  await calendar.getIncomingInvitationForEMail(email).respondToInvitationFromMail(InvitationResponse.Accept);
+  let event = calendar.events.first as JMAPEvent;
+  let newStart = new Date(email.event.startTime.getTime() + 60 * 60 * 1000);
+  let changedICal = invitationICal(kMe)
+    .replace("DTSTAMP:20080507T170000Z", "DTSTAMP:20080508T170000Z")
+    .replace("SEQUENCE:0", "SEQUENCE:1")
+    .replace(/DTSTART:.*/, "DTSTART:" + toICalDate(newStart))
+    .replace(/DTEND:.*/, "DTEND:" + toICalDate(new Date(newStart.getTime() + 30 * 60 * 1000)));
+
+  await newInvitationEMail(account, kMe, changedICal);
+
+  expect(calendar.events.length).toEqual(1);
+  expect(event.startTime).toEqual(newStart);
+  expect(event.isMoved).toBe(true);
+  expect(event.myParticipation).toEqual(InvitationResponse.NoResponseReceived);
+  expect(calls.length).toEqual(2);
+  let updated = calls[1].args.update.serverEventID as TJMAPCalendarEvent;
+  expect(updated.sequence).toEqual(1);
+  expect(updated.start).toEqual(newStart.toISOString().replace(/\.\d+Z$/, ""));
+  let participants = Object.values(updated.participants);
+  expect(participants.find(participant => participant.calendarAddress == "mailto:" + kMe).participationStatus).toEqual("needs-action");
+  // Only the reply to the first invitation
+  expect(sent.length).toEqual(1);
 });
 
 test("Declining an invitation tells the server and the organizer", async () => {

@@ -17,7 +17,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
       event.copyFrom(this.event);
       await event.adoptAttachmentsFrom(this.event);
       this.calendar.events.add(event);
-    } else if (this.event?.lastUpdateTime >= event.lastUpdateTime) {
+    } else if (!event.isNewerVersionThan(this.event)) {
       event.copyFrom(this.event);
       await event.adoptAttachmentsFrom(this.event);
     }
@@ -25,6 +25,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     /* else add participant? */
     let hasChanged = event.myParticipation != response;
     event.myParticipation = this.myParticipation = myParticipant.response = response;
+    event.isMoved = false;
 
     let isFuture = event.startTime?.getTime() > Date.now() || event.recurrenceCase == RecurrenceCase.Master;
     if (hasChanged && isFuture) {
@@ -37,6 +38,7 @@ export class ICalIncomingInvitation extends IncomingInvitation {
     let { identity, myParticipant } = this.participantMe(calEvent, mailAccount);
     let hasChanged = myParticipant.response != response;
     calEvent.myParticipation = myParticipant.response = response;
+    calEvent.isMoved = false;
     // Do *not* save, @see Event.respondToInvitation()
 
     let isFuture = calEvent.startTime?.getTime() > Date.now() || calEvent.recurrenceCase == RecurrenceCase.Master;
