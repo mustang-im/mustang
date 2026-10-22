@@ -3,11 +3,19 @@ import "../../../logic/app"; // first, to resolve the import cycle around Abstra
 import { Calendar } from "../../../logic/Calendar/Calendar";
 import { Participant } from "../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-import { FreeBusy, FreeBusyStatus, SlotAvailability } from "../../../logic/Calendar/FreeBusy";
+import { FreeBusy, SlotAvailability } from "../../../logic/Calendar/FreeBusy";
+import { FreeBusyEvent, FreeBusyStatus } from "../../../logic/Calendar/FreeBusyEvent";
 import { expect, test } from "vitest";
 
 function at(hours: number, minutes = 0): Date {
   return new Date(2026, 9, 15, hours, minutes);
+}
+
+function appointment(from: Date, to: Date, status = FreeBusyStatus.Busy, title?: string, location?: string): FreeBusyEvent {
+  let event = new FreeBusyEvent(from, to, status);
+  event.title = title;
+  event.location = location;
+  return event;
 }
 
 const anna = new Participant("anna@example.com", "Anna", InvitationResponse.Organizer);
@@ -20,12 +28,12 @@ class FreeBusyCalendar extends Calendar {
     this.requested = { participants, from, to };
     return [
       { participant: participants[0], availability: [
-        { from: at(9), to: at(10), free: false },
-        { from: at(10), to: at(12), free: true },
+        appointment(at(9), at(10)),
+        appointment(at(10), at(12), FreeBusyStatus.Free),
       ] },
       { participant: participants[1], availability: [
-        { from: at(9, 30), to: at(11), free: false },
-        { from: at(14), to: at(15), free: false },
+        appointment(at(9, 30), at(11)),
+        appointment(at(14), at(15)),
       ] },
       { participant: participants[2], availability: undefined },
     ];
@@ -80,7 +88,7 @@ test("Whether the calendar provides free/busy at all, asked once per calendar", 
 test("Results are matched by email address, if the server returns other objects", () => {
   let bertCopy = new Participant("bert@example.com", "Bert B.", InvitationResponse.Unknown);
   let freeBusy = FreeBusy.fromAvailability([bert], [
-    { participant: bertCopy, availability: [{ from: at(8), to: at(9), free: false }] },
+    { participant: bertCopy, availability: [appointment(at(8), at(9))] },
   ]);
   expect(freeBusy.rowFor(bert).busy).toEqual([{ from: at(8), to: at(9) }]);
 });
@@ -101,14 +109,14 @@ test("Merge overlapping and touching intervals", () => {
 test("Keeps each appointment with its status and details, for display", () => {
   let freeBusy = FreeBusy.fromAvailability([anna], [
     { participant: anna, availability: [
-      { from: at(11), to: at(12), free: false, status: FreeBusyStatus.Tentative, title: "Lunch", location: "Canteen" },
-      { from: at(9), to: at(10), free: false },
-      { from: at(9, 30), to: at(10, 30), free: false, status: FreeBusyStatus.OutOfOffice },
-      { from: at(13), to: at(14), free: true, status: FreeBusyStatus.Free },
+      appointment(at(11), at(12), FreeBusyStatus.Tentative, "Lunch", "Canteen"),
+      appointment(at(9), at(10)),
+      appointment(at(9, 30), at(10, 30), FreeBusyStatus.OutOfOffice),
+      appointment(at(13), at(14), FreeBusyStatus.Free),
     ] },
   ]);
   let row = freeBusy.rowFor(anna);
-  expect(row.appointments.map(appointment => [appointment.from, appointment.status, appointment.title, appointment.location])).toEqual([
+  expect(row.appointments.map(appointment => [appointment.startTime, appointment.status, appointment.title, appointment.location])).toEqual([
     [at(9), FreeBusyStatus.Busy, undefined, undefined],
     [at(9, 30), FreeBusyStatus.OutOfOffice, undefined, undefined],
     [at(11), FreeBusyStatus.Tentative, "Lunch", "Canteen"],
@@ -147,7 +155,7 @@ test("Time slots: Free when everybody whose availability we know is free, busy w
   let dora = new Participant("dora@example.com", "Dora", InvitationResponse.Accept);
   let withDora = FreeBusy.fromAvailability([anna, bert, dora], [
     { participant: anna, availability: [] },
-    { participant: bert, availability: [{ from: at(14), to: at(15), free: false }] },
+    { participant: bert, availability: [appointment(at(14), at(15))] },
     { participant: dora, availability: [] },
   ]);
   expect(slotAt(withDora.slots([at(0)], 8, 16, 60), 14).availability).toBe(SlotAvailability.Partly);

@@ -1,49 +1,8 @@
 import type { Calendar } from "./Calendar";
 import type { Participant } from "./Participant";
+import type { FreeBusyEvent } from "./FreeBusyEvent";
+import type { TimeInterval } from "../util/date";
 import { ArrayColl } from "svelte-collections";
-import { gt } from "../../l10n/l10n";
-
-export enum FreeBusyStatus {
-  Free = "free",
-  Tentative = "tentative",
-  Busy = "busy",
-  OutOfOffice = "oof",
-  WorkingElsewhere = "elsewhere",
-}
-
-export const freeBusyStatusLabels: Record<FreeBusyStatus, string> = {
-  [FreeBusyStatus.Free]: gt`Free *=> Availability: Not busy at this time`,
-  [FreeBusyStatus.Tentative]: gt`Tentative *=> Availability: Has a tentative appointment at this time`,
-  [FreeBusyStatus.Busy]: gt`Busy`,
-  [FreeBusyStatus.OutOfOffice]: gt`Out of office`,
-  [FreeBusyStatus.WorkingElsewhere]: gt`Working elsewhere`,
-};
-
-/** A time in the calendar of another person, as their server reveals it */
-export interface FreeBusyTime {
-  from: Date;
-  to: Date;
-  free: boolean;
-  status?: FreeBusyStatus;
-  /** Only when the person lets us see the details */
-  title?: string;
-  location?: string;
-}
-
-export interface BusyInterval {
-  from: Date;
-  to: Date;
-}
-
-export interface AttendeeAvailability {
-  participant: Participant;
-  busy: BusyInterval[] | null;
-  appointments: FreeBusyTime[] | null;
-}
-
-export type AvailabilityStatus = "free" | "busy" | "unknown";
-
-type ArePersonsFreeResult = Awaited<ReturnType<Calendar["arePersonsFree"]>>;
 
 export class FreeBusy {
   readonly rows: AttendeeAvailability[];
@@ -88,15 +47,10 @@ export class FreeBusy {
         return { participant, busy: null, appointments: null };
       }
       let appointments = result.availability
-        .filter(interval => !interval.free)
-        .map(interval => ({
-          ...interval,
-          from: new Date(interval.from),
-          to: new Date(interval.to),
-          status: interval.status ?? FreeBusyStatus.Busy,
-        }))
-        .sort((a, b) => a.from.getTime() - b.from.getTime());
-      return { participant, busy: FreeBusy.merge(appointments), appointments };
+        .filter(appointment => !appointment.isFree)
+        .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+      let busy = FreeBusy.merge(appointments.map(appointment => ({ from: appointment.startTime, to: appointment.endTime })));
+      return { participant, busy, appointments };
     }), availability.length > 0);
   }
 
@@ -104,7 +58,7 @@ export class FreeBusy {
     return this.rows.some(row => row.busy);
   }
 
-  get allAttendeesBusy(): BusyInterval[] {
+  get allAttendeesBusy(): TimeInterval[] {
     return FreeBusy.merge(this.rows.flatMap(row => row.busy ?? []));
   }
 
@@ -149,11 +103,11 @@ export class FreeBusy {
     return slots;
   }
 
-  static merge(intervals: BusyInterval[]): BusyInterval[] {
+  static merge(intervals: TimeInterval[]): TimeInterval[] {
     let sorted = intervals
       .filter(interval => interval.to > interval.from)
       .sort((a, b) => a.from.getTime() - b.from.getTime());
-    let merged: BusyInterval[] = [];
+    let merged: TimeInterval[] = [];
     for (let interval of sorted) {
       let last = merged.at(-1);
       if (last && interval.from <= last.to) {
@@ -168,11 +122,15 @@ export class FreeBusy {
   }
 }
 
-export enum SlotAvailability {
-  Free = "free",
-  Partly = "partly",
-  Busy = "busy",
+export interface AttendeeAvailability {
+  participant: Participant;
+  busy: TimeInterval[] | null;
+  appointments: FreeBusyEvent[] | null;
 }
+
+export type AvailabilityStatus = "free" | "busy" | "unknown";
+
+type ArePersonsFreeResult = Awaited<ReturnType<Calendar["arePersonsFree"]>>;
 
 /** A time when the participants could meet, and who of them is free then */
 export class FreeBusySlot {
@@ -207,4 +165,10 @@ export class FreeBusySlot {
     }
     return SlotAvailability.Partly;
   }
+}
+
+export enum SlotAvailability {
+  Free = "free",
+  Partly = "partly",
+  Busy = "busy",
 }

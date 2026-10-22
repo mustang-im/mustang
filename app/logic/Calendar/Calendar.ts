@@ -3,7 +3,7 @@ import type { AttachmentStorage } from "../Abstract/Attachment";
 import type { PersonUID } from "../Abstract/PersonUID";
 import { Event } from "./Event";
 import type { Participant } from "./Participant";
-import type { FreeBusyTime } from "./FreeBusy";
+import type { FreeBusyEvent } from "./FreeBusyEvent";
 import type { EMail } from "../Mail/EMail";
 import { ICalIncomingInvitation } from "./ICal/ICalIncomingInvitation";
 import { SQLEvent } from "./SQL/SQLEvent";
@@ -123,7 +123,7 @@ export class Calendar extends Account {
     });
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyTime[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyEvent[] }[]> {
     return [];
   }
 

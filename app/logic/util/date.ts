@@ -176,3 +176,8 @@ export const k1HourMS = k1HourS * 1000;
 export const k1DayMS = k1DayS * 1000;
 export const k1WeekMS = k1WeekS * 1000;
 export const k1MonthMS = k1MonthS * 1000;
+
+export interface TimeInterval {
+  from: Date;
+  to: Date;
+}

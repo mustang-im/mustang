@@ -30,13 +30,15 @@
             {/each}
             {#each $participants.each as participant, i}
               <DayColumn {day} column={i + 2} events={noEvents} overlayEvents={appointmentEvents.get(participant) ?? noEvents}>
-                <vbox class="appointment font-small status-{statusByEvent.get(appointment)}" slot="event-overlay" let:event={appointment}
-                  title={appointmentDetails(appointment)}>
-                  <hbox class="title">{appointment.title}</hbox>
-                  {#if appointment.location}
-                    <hbox class="location">{appointment.location}</hbox>
-                  {/if}
-                </vbox>
+                <svelte:fragment slot="event-overlay" let:event>
+                  {@const appointment = event as FreeBusyEvent}
+                  <vbox class="appointment font-small status-{appointment.status}" title={appointmentDetails(appointment)}>
+                    <hbox class="title">{appointment.title || appointment.statusLabel}</hbox>
+                    {#if appointment.location}
+                      <hbox class="location">{appointment.location}</hbox>
+                    {/if}
+                  </vbox>
+                </svelte:fragment>
               </DayColumn>
               {#if !freeBusy.rowFor(participant)?.appointments}
                 <vbox class="no-info" style="grid-column: {i + 2}">
@@ -57,9 +59,10 @@
 </vbox>
 
 <script lang="ts">
-  import { Event } from "../../../../logic/Calendar/Event";
+  import type { Event } from "../../../../logic/Calendar/Event";
   import type { Participant } from "../../../../logic/Calendar/Participant";
-  import { freeBusyStatusLabels, type AvailabilityStatus, type FreeBusy, type FreeBusyStatus } from "../../../../logic/Calendar/FreeBusy";
+  import type { AvailabilityStatus, FreeBusy } from "../../../../logic/Calendar/FreeBusy";
+  import type { FreeBusyEvent } from "../../../../logic/Calendar/FreeBusyEvent";
   import AvailabilityLoader from "./AvailabilityLoader.svelte";
   import DayColumn from "../../DayView/DayColumn.svelte";
   import TimeLabel from "../../DayView/TimeLabel.svelte";
@@ -115,29 +118,15 @@
     }
   }
 
-  /** The appointments of the participants are no real events and are in no calendar,
+  /** The appointments of the participants are in no calendar,
    * so they are shown as overlay and not as events, which the user could open. */
   let noEvents = new ArrayColl<Event>();
   let appointmentEvents = new Map<Participant, ArrayColl<Event>>();
-  let statusByEvent = new Map<Event, FreeBusyStatus>();
   let freeBusy: FreeBusy | null = null;
   $: freeBusy, setAppointments();
   function setAppointments() {
-    appointmentEvents = new Map();
-    statusByEvent = new Map();
-    for (let row of freeBusy?.rows ?? []) {
-      let events = new ArrayColl<Event>();
-      for (let appointment of row.appointments ?? []) {
-        let appointmentEvent = new Event();
-        appointmentEvent.startTime = appointment.from;
-        appointmentEvent.endTime = appointment.to;
-        appointmentEvent.title = appointment.title || freeBusyStatusLabels[appointment.status];
-        appointmentEvent.location = appointment.location;
-        statusByEvent.set(appointmentEvent, appointment.status);
-        events.add(appointmentEvent);
-      }
-      appointmentEvents.set(row.participant, events);
-    }
+    appointmentEvents = new Map((freeBusy?.rows ?? []).map(row =>
+      [row.participant, new ArrayColl<Event>(row.appointments ?? [])]));
   }
 
   function statusLabel(status: AvailabilityStatus): string {
@@ -151,10 +140,10 @@
     }
   }
 
-  function appointmentDetails(appointment: Event): string {
+  function appointmentDetails(appointment: FreeBusyEvent): string {
     return [
       `${getTimeString(appointment.startTime)} – ${getTimeString(appointment.endTime)}`,
-      appointment.title,
+      appointment.title || appointment.statusLabel,
       appointment.location,
     ].filter(line => line).join("\n");
   }

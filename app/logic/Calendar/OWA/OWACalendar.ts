@@ -1,7 +1,7 @@
 import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
 import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
-import { FreeBusyStatus, type FreeBusyTime } from "../FreeBusy";
+import { FreeBusyEvent } from "../FreeBusyEvent";
 import type { Attachment } from "../../Abstract/Attachment";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { OWAEvent } from "./OWAEvent";
@@ -56,7 +56,7 @@ export class OWACalendar extends ExchangeCalendar {
     return new OWAIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyTime[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyEvent[] }[]> {
     let results = await this.callOWA(new OWAGetUserAvailabilityRequest(participants, from, to));
     let availabilities = [];
     for (let [i, participant] of participants.entries()) {
@@ -74,16 +74,14 @@ export class OWACalendar extends ExchangeCalendar {
         availability: ensureArray(result.CalendarView.Items)
           .filter(event => this.freeBusyStatus(event.FreeBusyType))
           .map(event => {
-            let status = this.freeBusyStatus(event.FreeBusyType);
+            let appointment = new FreeBusyEvent(
+              new Date(event.Start + "Z"),
+              new Date(event.End + "Z"),
+              this.freeBusyStatus(event.FreeBusyType));
             let details = hasDetails && event.Sensitivity != "Private" ? event : null;
-            return {
-              from: new Date(event.Start + "Z"),
-              to: new Date(event.End + "Z"),
-              free: status == FreeBusyStatus.Free,
-              status,
-              title: sanitize.label(details?.Subject, null),
-              location: sanitize.label(details?.Location?.DisplayName, null),
-            };
+            appointment.title = sanitize.label(details?.Subject, null);
+            appointment.location = sanitize.label(details?.Location?.DisplayName, null);
+            return appointment;
           }),
       });
     }

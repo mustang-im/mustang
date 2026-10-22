@@ -1,6 +1,6 @@
 import { ExchangeCalendar } from "../EWS/ExchangeCalendar";
 import type { Participant } from "../Participant";
-import { FreeBusyStatus, type FreeBusyTime } from "../FreeBusy";
+import { FreeBusyEvent, FreeBusyStatus } from "../FreeBusyEvent";
 import { ActiveSyncEvent, fromCompact } from "./ActiveSyncEvent";
 import { ActiveSyncIncomingInvitation } from "./ActiveSyncIncomingInvitation";
 import type { ActiveSyncAccount, ActiveSyncPingable } from "../../Mail/ActiveSync/ActiveSyncAccount";
@@ -44,7 +44,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
     return new ActiveSyncIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyTime[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyEvent[] }[]> {
     return Promise.all(participants.map(async participant => {
       let request = {
         To: participant.emailAddress,
@@ -72,14 +72,20 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
       if (!statuses.some(status => status)) {
         return { participant };
       }
-      let availability = statuses
-        .map((status, i) => ({
-          from: new Date(from.getTime() + i * kHalfHour),
-          to: new Date(from.getTime() + (i + 1) * kHalfHour),
-          free: status == FreeBusyStatus.Free,
-          status,
-        }))
-        .filter(interval => interval.status);
+      let availability: FreeBusyEvent[] = [];
+      for (let [i, status] of statuses.entries()) {
+        if (!status) {
+          continue;
+        }
+        let start = new Date(from.getTime() + i * kHalfHour);
+        let end = new Date(from.getTime() + (i + 1) * kHalfHour);
+        let last = availability.at(-1);
+        if (last && last.status == status && last.endTime.getTime() == start.getTime()) {
+          last.endTime = end;
+        } else {
+          availability.push(new FreeBusyEvent(start, end, status));
+        }
+      }
       return { participant, availability };
     }));
   }

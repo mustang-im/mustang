@@ -1,7 +1,7 @@
 import { ExchangeCalendar } from "./ExchangeCalendar";
 import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
-import { FreeBusyStatus, type FreeBusyTime } from "../FreeBusy";
+import { FreeBusyEvent } from "../FreeBusyEvent";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
@@ -51,7 +51,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     return new EWSIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyTime[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyEvent[] }[]> {
     let request = {
       m$GetUserAvailabilityRequest: {
         m$MailboxDataArray: {
@@ -85,16 +85,14 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
         availability: ensureArray(result.FreeBusyView.CalendarEventArray?.CalendarEvent)
           .filter(event => this.freeBusyStatus(event.BusyType))
           .map(event => {
-            let status = this.freeBusyStatus(event.BusyType);
+            let appointment = new FreeBusyEvent(
+              sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
+              sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
+              this.freeBusyStatus(event.BusyType));
             let details = sanitize.boolean(event.CalendarEventDetails?.IsPrivate, false) ? null : event.CalendarEventDetails;
-            return {
-              from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
-              to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
-              free: status == FreeBusyStatus.Free,
-              status,
-              title: sanitize.label(details?.Subject, null),
-              location: sanitize.label(details?.Location, null),
-            };
+            appointment.title = sanitize.label(details?.Subject, null);
+            appointment.location = sanitize.label(details?.Location, null);
+            return appointment;
           }),
       });
     }

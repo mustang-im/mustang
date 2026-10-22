@@ -121,7 +121,8 @@
 <script lang="ts">
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { FreeBusy, FreeBusyStatus, freeBusyStatusLabels, type AvailabilityStatus, type BusyInterval } from "../../../logic/Calendar/FreeBusy";
+  import { FreeBusy, type AvailabilityStatus } from "../../../logic/Calendar/FreeBusy";
+  import { FreeBusyStatus, freeBusyStatusLabels } from "../../../logic/Calendar/FreeBusyEvent";
   import { Timeline } from "./AvailabilityGrid";
   import { EventEditFlow } from "./EventEditFlow";
   import type { EventTimeEditor } from "./EventTimeEditor";
@@ -138,7 +139,7 @@
   import ChevronIcon from "lucide-svelte/icons/chevron-up";
   import { onMount, tick } from "svelte";
   import { derived } from "svelte/store";
-  import { getTimeString } from "../../../logic/util/date";
+  import { getTimeString, type TimeInterval } from "../../../logic/util/date";
   import { getDateTimeLocale, t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -246,11 +247,11 @@
     scrollEl.scrollLeft = Math.max(0, target);
   }
 
-  function busyOf(freeBusy: FreeBusy | null, participant: Participant): BusyInterval[] | null {
+  function busyOf(freeBusy: FreeBusy | null, participant: Participant): TimeInterval[] | null {
     return freeBusy?.rowFor(participant)?.busy ?? null;
   }
 
-  function spans(intervals: BusyInterval[] | null, timeline: Timeline): { left: number, width: number }[] {
+  function spans(intervals: TimeInterval[] | null, timeline: Timeline): { left: number, width: number }[] {
     return (intervals ?? [])
       .map(interval => timeline.span(interval.from, interval.to))
       .filter(span => span && span.width > 0);
@@ -258,7 +259,7 @@
 
   function appointmentSpans(freeBusy: FreeBusy | null, participant: Participant, timeline: Timeline) {
     return (freeBusy?.rowFor(participant)?.appointments ?? [])
-      .map(appointment => ({ appointment, span: timeline.span(appointment.from, appointment.to) }))
+      .map(appointment => ({ appointment, span: timeline.span(appointment.startTime, appointment.endTime) }))
       .filter(({ span }) => span && span.width > 0)
       .map(({ appointment, span }) => ({
         left: span.left,
@@ -266,8 +267,8 @@
         status: appointment.status,
         title: appointment.title ?? "",
         details: [
-          `${getTimeString(appointment.from)} – ${getTimeString(appointment.to)}`,
-          appointment.title || freeBusyStatusLabels[appointment.status],
+          `${getTimeString(appointment.startTime)} – ${getTimeString(appointment.endTime)}`,
+          appointment.title || appointment.statusLabel,
           appointment.location,
         ].filter(line => line).join("\n"),
       }));

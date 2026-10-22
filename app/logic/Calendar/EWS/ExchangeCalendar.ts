@@ -1,5 +1,5 @@
 import { Calendar } from "../Calendar";
-import { FreeBusyStatus } from "../FreeBusy";
+import { FreeBusyStatus } from "../FreeBusyEvent";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class ExchangeCalendar extends Calendar {

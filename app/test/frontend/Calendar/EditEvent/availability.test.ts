@@ -5,7 +5,7 @@ import { Calendar } from "../../../../logic/Calendar/Calendar";
 import { Event } from "../../../../logic/Calendar/Event";
 import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
-import { FreeBusyStatus } from "../../../../logic/Calendar/FreeBusy";
+import { FreeBusyEvent, FreeBusyStatus } from "../../../../logic/Calendar/FreeBusyEvent";
 import { JMAPAccount } from "../../../../logic/Mail/JMAP/JMAPAccount";
 import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
 import { SpecialFolder } from "../../../../logic/Mail/Folder";
@@ -54,6 +54,13 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+function vacation(from: Date, to: Date): FreeBusyEvent {
+  let event = new FreeBusyEvent(from, to, FreeBusyStatus.OutOfOffice);
+  event.title = "Vacation";
+  event.location = "Beach";
+  return event;
+}
+
 /** Frida is free, Bob is on vacation, and the server knows nothing about Una */
 class TestCalendar extends Calendar {
   constructor() {
@@ -67,7 +74,7 @@ class TestCalendar extends Calendar {
       .map(participant => ({
         participant,
         availability: participant.emailAddress.startsWith("busy")
-          ? [{ from, to, free: false, status: FreeBusyStatus.OutOfOffice, title: "Vacation", location: "Beach" }]
+          ? [vacation(from, to)]
           : [],
       }));
   }
