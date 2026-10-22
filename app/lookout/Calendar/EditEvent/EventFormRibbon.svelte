@@ -131,7 +131,7 @@
     {/if}
   </RibbonTab>
 
-  {#if isMeeting && !isIncoming}
+  {#if !isIncoming}
     <RibbonTab label={schedulingLabel} bind:isSelected={isSchedulingSelected}>
       <RibbonGroup label={$t`Scheduling *=> Ribbon group to find a time when all attendees are available`}>
         <RibbonButton label={$t`Refresh Availability`} icon={RefreshIcon}

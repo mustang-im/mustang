@@ -85,6 +85,15 @@ test("Whether the calendar provides free/busy at all, asked once per calendar", 
   expect(calendar.requested).toBe(null);
 });
 
+test("Without participants, nothing is known, and the calendar is not marked as without free/busy", async () => {
+  let calendar = new Calendar();
+  let freeBusy = await FreeBusy.load(calendar, [], at(0), at(24));
+  expect(freeBusy.hasInformation).toBe(false);
+  expect(freeBusy.isSupported).toBe(true);
+  expect(await FreeBusy.isSupported(calendar, [])).toBe(true);
+  expect(await FreeBusy.isSupported(calendar, [anna])).toBe(false);
+});
+
 test("Results are matched by email address, if the server returns other objects", () => {
   let bertCopy = new Participant("bert@example.com", "Bert B.", InvitationResponse.Unknown);
   let freeBusy = FreeBusy.fromAvailability([bert], [

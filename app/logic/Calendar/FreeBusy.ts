@@ -33,7 +33,7 @@ export class FreeBusy {
 
   static async load(calendar: Calendar, participants: Participant[], from: Date, to: Date): Promise<FreeBusy> {
     if (!participants.length) {
-      return new FreeBusy([], false);
+      return new FreeBusy([]);
     }
     let availability = await calendar.arePersonsFree(participants, from, to);
     return FreeBusy.fromAvailability(participants, availability);

@@ -126,8 +126,8 @@
   $: isSent = isMeeting && $event.isOutgoingMeeting && isSaved;
   $: ribbonKey = `${isMeeting}-${isSent}-${isIncoming}`;
   $: kindLabel = $event && $participants && eventTabLabel(event);
-  $: ribbonKey, isSchedulingSelected = isTrackingSelected = false;
-  $: showScheduling = isMeeting && !isIncoming && isSchedulingSelected;
+  $: isSent, isIncoming, isSchedulingSelected = isTrackingSelected = false;
+  $: showScheduling = !isIncoming && isSchedulingSelected;
   $: showTracking = isSent && isTrackingSelected;
   $: showsEditor = !isIncoming && !showScheduling && !showTracking;
   $: $event, $participants, $parentEvent, $shownCalendarEvents, updateState(editor);

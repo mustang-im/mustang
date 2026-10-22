@@ -55,7 +55,9 @@
       </vbox>
     {:else}
       <hbox class="no-info">
-        {freeBusy.isSupported
+        {!freeBusy.rows.length
+          ? $t`Nobody is invited yet`
+          : freeBusy.isSupported
           ? $t`The availability of the participants is unknown`
           : $t`This calendar doesn't provide the availability of other people`}
       </hbox>

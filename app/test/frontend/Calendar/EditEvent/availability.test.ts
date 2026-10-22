@@ -247,6 +247,23 @@ test("Without free/busy from the server, only the poll is available", async () =
   expect(text(".recipients .names")).toEqual(["Frida Free, Bob Busy, Una Unknown"]);
 });
 
+test("Before anybody is invited, Free slots and Poll say so", async () => {
+  let event = newMeeting();
+  event.participants.clear();
+  await show(FreeSlots, { event });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(text(".free-slots .no-info")).toEqual(["Nobody is invited yet"]);
+  unmount(component);
+  document.body.innerHTML = "";
+
+  await show(AvailabilityPoll, { event });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(text(".recipients .names")).toEqual(["Nobody is invited yet"]);
+  expect(document.querySelector('button.send[title="Nobody is invited yet"]:disabled')).not.toBeNull();
+});
+
 test("Enlarge in the sidebar opens the full window, which keeps the view", async () => {
   let event = newMeeting();
   selectedApp.set(null);

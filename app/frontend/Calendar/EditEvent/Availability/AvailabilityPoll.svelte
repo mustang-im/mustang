@@ -13,7 +13,7 @@
       <hbox class="names" class:none={$recipients.isEmpty}>
         {$recipients.hasItems
           ? $recipients.contents.map(participant => participant.name || participant.emailAddress).join(", ")
-          : $t`The availability of all participants is known`}
+          : noRecipientsReason}
       </hbox>
     </AvailabilityLoader>
   </hbox>
@@ -27,7 +27,7 @@
         icon={ComposeIcon}
         classes="send"
         onClick={onSend}
-        disabled={$recipients.isEmpty ? $t`The availability of all participants is known` : false}
+        disabled={$recipients.isEmpty ? noRecipientsReason : false}
         />
     </hbox>
   {:else}
@@ -77,6 +77,12 @@
   let freeBusy: FreeBusy | null = null;
   $: participants = event.participants;
   $: recipients = pollRecipients($participants, freeBusy, $onlyUnknownSetting.value);
+  $: noRecipientsReason = noRecipientsText($participants);
+  function noRecipientsText(participants: Collection<Participant>): string {
+    return participants.find(participant => participant.response != InvitationResponse.Organizer)
+      ? $t`The availability of all participants is known`
+      : $t`Nobody is invited yet`;
+  }
   function pollRecipients(participants: Collection<Participant>, freeBusy: FreeBusy | null, onlyUnknown: boolean): Collection<Participant> {
     return participants.filterOnce(participant =>
       participant.response != InvitationResponse.Organizer &&

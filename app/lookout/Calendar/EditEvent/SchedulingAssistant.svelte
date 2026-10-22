@@ -1,6 +1,8 @@
 <vbox flex class="scheduling-assistant">
   <hbox class="header">
-    <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
+    {#if $participants.hasItems}
+      <SendButton label={sendLabel} disabled={sendDisabled} onClick={onSend} />
+    {/if}
     <grid class="fields">
       <TimeBox {event} editor={timeEditor} {flow} showSummary={false} />
     </grid>
