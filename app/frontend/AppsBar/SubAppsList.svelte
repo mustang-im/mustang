@@ -14,17 +14,20 @@
 <script lang="ts">
   import type { MustangApp } from "./MustangApp";
   import { openApp } from "./selectedApp";
+  import { AppWindow } from "../MainWindow/AppWindow";
   import SubAppButton from "./SubAppButton.svelte";
   import AppIcon from "./AppIcon.svelte";
   import { catchErrors } from "../Util/error";
   import { CollectionObserver } from "svelte-collections";
   import { onDestroy, onMount } from "svelte";
 
+  const appWindow = AppWindow.current();
+
   export let mainApp: MustangApp;
   /* in/out */
   export let selectedApp: MustangApp | null;
 
-  $: subApps = $mainApp.subApps;
+  $: subApps = appWindow.uiState($mainApp.subApps);
 
   function onSelectApp(app: MustangApp) {
     openApp(app, app.windowParams);
@@ -36,7 +39,7 @@
     removed(apps: MustangApp[]) {
       for (let app of apps) {
         if (selectedApp == app) {
-          selectedApp = mainApp.subApps.last ?? mainApp;
+          selectedApp = subApps.last ?? mainApp;
         }
       }
     }
