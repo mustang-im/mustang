@@ -19,6 +19,8 @@ export class OWAExchangeNotifications extends OWANotifications {
       const endScript = "</script>";
       let data = "";
       for await (let chunk of stream.body) {
+        this.abort.signal.throwIfAborted(); // e.g. a newer listener took over, after this connection was silent for too long
+        this.watchdog.fulfilled(); // processing the notifications may take longer
         // Avoid racing with ourselves, if we caused the notification.
         await new Promise(resolve => setTimeout(resolve, 100));
         // A notification can be split across chunks,
@@ -36,6 +38,7 @@ export class OWAExchangeNotifications extends OWANotifications {
           }
           await this.account.onNotificationMessages(messages);
         }
+        this.watchdog.restart();
       }
     }
   }
