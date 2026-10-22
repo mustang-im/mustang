@@ -9,6 +9,10 @@ import { JMAPAddressbook } from "../../Contacts/JMAP/JMAPAddressbook";
 import { JMAPCalendar } from "../../Calendar/JMAP/JMAPCalendar";
 import { newAddressbookForProtocol } from "../../Contacts/AccountsList/Addressbooks";
 import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
+// #if [!WEBMAIL]
+import { JMAPFileSharingAccount } from "../../Files/JMAP/JMAPFileSharingAccount";
+import { newFileSharingAccountForProtocol } from "../../Files/AccountsList/FileSharingAccounts";
+// #endif
 import { TJMAPObjectTypes, type TJMAPAPIErrorResponse, type TJMAPAPIRequest, type TJMAPAPIResponse, type TJMAPChangeResponse, type TJMAPGetResponse, type TJMAPMethodResponse, type TJMAPObjectType, type TJMAPPrincipal, type TJMAPSession, type TJMAPSessionAccount, type TJMAPShareNotification, type TJMAPUpload } from "./TJMAPGeneric";
 import type { TJMAPFolder, TJMAPIdentity } from "./TJMAPMail";
 import type { TJMAPCalendar } from "../../Calendar/JMAP/TJMAPCalendar";
@@ -28,7 +32,7 @@ import { Semaphore } from "../../util/flow/Semaphore";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { Throttle } from "../../util/flow/Throttle";
 import { Timeout } from "../../util/flow/Timeout";
-import { waitUntilOnline, isNetworkError, isTransientError, HTTPError } from "../../util/netUtil";
+import { waitUntilOnline, isNetworkError, isTransientError, retryOnTransientError, HTTPError } from "../../util/netUtil";
 import { assert } from "../../util/util";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl, Collection, MapColl, SetColl } from "svelte-collections";
@@ -131,6 +135,11 @@ export class JMAPAccount extends MailAccount {
         if (this.haveCalendar) {
           await this.listCalendars();
         }
+        // #if [!WEBMAIL]
+        if (this.haveFiles) {
+          await this.addFileSharingAccount();
+        }
+        // #endif
         if (!this.isDependentAccount && this.haveSharing) {
           await this.addNewlySharedAccounts(); // Shared while we were not running
         }
@@ -203,6 +212,9 @@ export class JMAPAccount extends MailAccount {
   get haveCalendar(): boolean {
     return !!this.accountCapabilities["urn:ietf:params:jmap:calendars"];
   }
+  get haveFiles(): boolean {
+    return !!this.accountCapabilities["urn:ietf:params:jmap:filenode"];
+  }
   get haveSharing(): boolean {
     return this.hasCapability("urn:ietf:params:jmap:principals");
   }
@@ -211,6 +223,11 @@ export class JMAPAccount extends MailAccount {
   get maxParallelRequests(): number {
     let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxConcurrentRequests, null);
     return serverMax ? Math.max(1, Math.min(serverMax - 1, 30)) : 5;
+  }
+  /** @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxObjectsInGet` */
+  get maxObjectsInGet(): number {
+    let serverMax = sanitize.integer(this.session?.capabilities?.["urn:ietf:params:jmap:core"]?.maxObjectsInGet, null);
+    return serverMax > 0 ? serverMax : 500;
   }
   /** @see <https://www.rfc-editor.org/rfc/rfc8620#section-2> `maxObjectsInSet` */
   get maxObjectsInSet(): number {
@@ -283,7 +300,8 @@ export class JMAPAccount extends MailAccount {
   async makeCalls(calls: [string, Record<string, any>, string?][]): Promise<TJMAPMethodResponse[]> {
     await this.ensureLoggedIn();
     const kOurCapabilities = ["urn:ietf:params:jmap:core", "urn:ietf:params:jmap:mail", "urn:ietf:params:jmap:submission",
-      "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars", "urn:ietf:params:jmap:principals"];
+      "urn:ietf:params:jmap:contacts", "urn:ietf:params:jmap:calendars", "urn:ietf:params:jmap:principals",
+      "urn:ietf:params:jmap:filenode", "urn:ietf:params:jmap:conditional"];
     let using = kOurCapabilities.filter(capability => this.hasCapability(capability));
     let requestJSON: TJMAPAPIRequest = {
       using: using,
@@ -451,6 +469,21 @@ export class JMAPAccount extends MailAccount {
     let blobId = uploadResponse.blobId;
     console.log("Uploaded message to", url, "and got blobID", blobId);
     return uploadResponse;
+  }
+
+  async downloadBlob(blobID: string, name: string, mimeType: string): Promise<Blob> {
+    let url = this.session.downloadUrl
+      .replace("{accountId}", encodeURIComponent(this.accountID))
+      .replace("{blobId}", encodeURIComponent(blobID))
+      .replace("{name}", encodeURIComponent(name))
+      .replace("{type}", encodeURIComponent(mimeType));
+    return await retryOnTransientError(() => this.httpGet(url, {
+      headers: {
+        "Accept": mimeType,
+        "Content-Type": undefined, // override
+      },
+      result: "blob",
+    }));
   }
 
   /** Updates the folders that changed on the server, e.g. their counts.
@@ -755,6 +788,12 @@ export class JMAPAccount extends MailAccount {
     if (type == "ShareNotification") {
       await this.addNewlySharedAccounts();
     }
+    // #if [!WEBMAIL]
+    if (type == "FileNode") {
+      let files = this.dependentAccounts().find(account => account instanceof JMAPFileSharingAccount) as JMAPFileSharingAccount;
+      await files?.fetchChanges();
+    }
+    // #endif
   }
 
   /** Starts push mail
@@ -772,6 +811,11 @@ export class JMAPAccount extends MailAccount {
     if (this.haveSharing) {
       types.push("ShareNotification");
     }
+    // #if [!WEBMAIL]
+    if (this.haveFiles) {
+      types.push("FileNode");
+    }
+    // #endif
     const kPingSeconds = 60;
     url = url
       .replace("{accountId}", this.accountID)
@@ -905,6 +949,28 @@ export class JMAPAccount extends MailAccount {
       await cal.save();
     }
   }
+
+  // #if [!WEBMAIL]
+  /** Our files, or the files that another user shared with us */
+  protected async addFileSharingAccount() {
+    if (this.dependentAccounts().find(account => account instanceof JMAPFileSharingAccount)) {
+      return;
+    }
+    if (this.isDependentAccount) {
+      let response = await this.makeSingleCallForSharedAccount("FileNode/query", {
+        accountId: this.accountID,
+        limit: 1,
+      });
+      if (!response?.ids?.length) {
+        return; // They did not share any files with us
+      }
+    }
+    let files = newFileSharingAccountForProtocol("files-jmap") as JMAPFileSharingAccount;
+    files.initFromMainAccount(this);
+    appGlobal.fileSharingAccounts.add(files);
+    await files.save();
+  }
+  // #endif
 
   /** Takes over changes of our calendars, e.g. a new name, and removes
    * those that were deleted on the server or are no longer shared with us. */

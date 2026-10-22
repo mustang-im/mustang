@@ -3,6 +3,7 @@ import { WebDAVAccount } from '../WebDAV/WebDAVAccount';
 import { NextcloudAccount } from '../Nextcloud/NextcloudAccount';
 import { OpenCloudAccount } from '../OpenCloud/OpenCloudAccount';
 // #if [!WEBMAIL]
+import { JMAPFileSharingAccount } from '../JMAP/JMAPFileSharingAccount';
 import { myHarddrive } from '../Harddrive/HarddriveAccount';
 import { SQLFileSharingAccount } from '../SQL/SQLFileSharingAccount';
 // #endif
@@ -24,6 +25,10 @@ function _newFileSharingAccountForProtocol(protocol: string): FileSharingAccount
     return new OpenCloudAccount();
   } else if (protocol == "webdav") {
     return new WebDAVAccount();
+  // #if [!WEBMAIL]
+  } else if (protocol == "files-jmap") {
+    return new JMAPFileSharingAccount();
+  // #endif
   }
   throw new NotReached(`Unknown file sharing account type ${protocol}`);
 }
