@@ -126,12 +126,14 @@ function createType3MessageFromType2Message(WWWAuthenticate, username, password)
   return createType3Message(decodeType2Message(WWWAuthenticate), username, password);
 }
 
-async function readFile(path: string): Promise<ArrayBufferLike> {
+// <copied to="../../app/test/logic/Files/Harddrive/Harddrive.test.ts">
+async function readFile(path: string): Promise<Uint8Array> {
   let fileHandle = await fsPromises.open(path, "r");
-  let { buffer } = await fileHandle.readFile();
+  let contents = await fileHandle.readFile();
   await fileHandle.close();
-  return buffer;
+  return new Uint8Array(contents.buffer, contents.byteOffset, contents.length);
 }
+// </copied>
 async function writeFile(path: string, permissions: number, contents: Uint8Array): Promise<void> {
   await fsPromises.rm(path, { force: true });
   let fileHandle = await fsPromises.open(path, "w", permissions);
@@ -701,6 +703,7 @@ export interface FileStat {
  * @param includeHidden include dotfiles (on Unix: name starting with ".")
  * @returns list of files and directories in the directory
  */
+// <copied to="../../app/test/logic/Files/Harddrive/Harddrive.test.ts">
 async function listDirectoryContents(dirPath: string, withStats = true, includeHidden = false): FileStat[] {
   let files = [] as FileStat[];
   let entries = await fsPromises.readdir(dirPath, { withFileTypes: true });
@@ -727,6 +730,7 @@ async function listDirectoryContents(dirPath: string, withStats = true, includeH
   }
   return files;
 }
+// </copied>
 
 /** @returns data: URL */
 async function getIconForFileType(ext: string, mimetype: string): Promise<string> {
