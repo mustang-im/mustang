@@ -170,110 +170,117 @@ export class JMAPFolder extends Folder {
    */
   async fetchChangedMessagesForAllFolders(): Promise<ArrayColl<JMAPEMail>> {
     assert(this.account.syncState.has("Email"), "No sync state");
-    let lock = await this.account.stateLock.lock();
-    try {
-      //console.log("JMAP fetching changes for folder", this.name);
-      // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
-      let response = await retryOnTransientError(() => this.account.makeCombinedCall([
-        [
-          "Email/changes", {
-            accountId: this.account.accountID,
-            sinceState: this.account.syncState.get("Email"),
-            maxChanges: 500,
-          },
-          "changes",
-        ], [
-          "Email/get", {
-            accountId: this.account.accountID,
-            "#ids": {
-              resultOf: "changes",
-              name: "Email/changes",
-              path: "/created",
+    let newMessagesOfThisFolder = new ArrayColl<JMAPEMail>();
+    const kMaxRounds = 1000;
+    for (let round = 1; round <= kMaxRounds; round++) {
+      let lock = await this.account.stateLock.lock();
+      try {
+        let sinceState = this.account.syncState.get("Email");
+        //console.log("JMAP fetching changes for folder", this.name);
+        // <https://www.rfc-editor.org/rfc/rfc8620#section-5.2>
+        let response = await retryOnTransientError(() => this.account.makeCombinedCall([
+          [
+            "Email/changes", {
+              accountId: this.account.accountID,
+              sinceState: sinceState,
+              maxChanges: 500,
             },
-            properties: JMAPEMail.listProperties,
-          },
-          "added",
-        ], [
-          "Email/get", {
-            accountId: this.account.accountID,
-            "#ids": {
-              resultOf: "changes",
-              name: "Email/changes",
-              path: "/updated",
+            "changes",
+          ], [
+            "Email/get", {
+              accountId: this.account.accountID,
+              "#ids": {
+                resultOf: "changes",
+                name: "Email/changes",
+                path: "/created",
+              },
+              properties: JMAPEMail.listProperties,
             },
-            properties: JMAPEMail.listProperties,
-          },
-          "changed",
-        ],
-      ]));
-      //console.log("sync response", response);
+            "added",
+          ], [
+            "Email/get", {
+              accountId: this.account.accountID,
+              "#ids": {
+                resultOf: "changes",
+                name: "Email/changes",
+                path: "/updated",
+              },
+              properties: JMAPEMail.listProperties,
+            },
+            "changed",
+          ],
+        ]));
+        //console.log("sync response", response);
 
-      let changes = response["changes"] as TJMAPChangeResponse<TJMAPEMailHeaders>;
-      let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
-      let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+        let changes = response["changes"] as TJMAPChangeResponse<TJMAPEMailHeaders>;
+        let addedResponse = response["added"] as TJMAPGetResponse<TJMAPEMailHeaders>;
+        let changedResponse = response["changed"] as TJMAPGetResponse<TJMAPEMailHeaders>;
 
-      // Split the responses by folder: map Folder JMAP ID -> JMAP EMail
-      let addedByFolder = new Map<string, TJMAPEMailHeaders[]>();
-      let changedByFolder = new Map<string, TJMAPEMailHeaders[]>();
-      let newMessagesOfThisFolder = new ArrayColl<JMAPEMail>();
-      splitByFolder(addedResponse.list, addedByFolder);
-      splitByFolder(changedResponse.list, changedByFolder);
+        // Split the responses by folder: map Folder JMAP ID -> JMAP EMail
+        let addedByFolder = new Map<string, TJMAPEMailHeaders[]>();
+        let changedByFolder = new Map<string, TJMAPEMailHeaders[]>();
+        splitByFolder(addedResponse.list, addedByFolder);
+        splitByFolder(changedResponse.list, changedByFolder);
 
-      let allFolders = this.account.getAllFolders() as ArrayColl<JMAPFolder>;
-      for (let folder of allFolders) {
-        let removed = this.findMovedAway(changedResponse.list, folder); // catches deletes e.g. from Inbox, which we read anyways
-        let addedThisFolder = addedByFolder.get(folder.id);
-        let changedThisFolder = changedByFolder.get(folder.id);
-        if (!(addedThisFolder || changedThisFolder ||
-              removed.hasItems ||
-              changes.destroyed?.length && (folder.messages.hasItems || [SpecialFolder.Trash, SpecialFolder.Spam].includes(folder.specialFolder)))) {
-          continue;
-        }
-        /** To avoid reading all messages of all folders, we handle
-         * - permanent deletes only from folders that we already read, and Trash / Spam (`DeleteStrategy.MoveToTrash`)
-         * - moves only from folders that we already read
-         * - new messages only in folders that we already listed
-         * This is a tradeoff. */
-        await folder.readFolder();
-        if (folder.messages.isEmpty && folder.countTotal > 0) {
-          continue; // Adding messages here would stop listAllMessages() from ever running
-        }
-        removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
-        removed.addAll(await folder.parseRemovedMessages(changes.destroyed ?? []));
-        // A draft or email uploaded from here comes back in `created`, so need dup checks
-        let addedResult = folder.parseMessageList(addedThisFolder ?? []);
-        let changedResult = folder.parseMessageList(changedThisFolder ?? []);
-        addedResult.newMessages.addAll(changedResult.newMessages);
-        //console.log(folder.name, "added messages", addedResult.newMessages.contents.map(e => e.subject));
-        //console.log(folder.name, "updated messages", changedResult.updatedMessages.contents.map(e => e.subject));
-        //console.log(folder.name, "removed messages", removedMessages.contents.map(e => e.subject));
+        let allFolders = this.account.getAllFolders() as ArrayColl<JMAPFolder>;
+        for (let folder of allFolders) {
+          let removed = this.findMovedAway(changedResponse.list, folder); // catches deletes e.g. from Inbox, which we read anyways
+          let addedThisFolder = addedByFolder.get(folder.id);
+          let changedThisFolder = changedByFolder.get(folder.id);
+          if (!(addedThisFolder || changedThisFolder ||
+                removed.hasItems ||
+                changes.destroyed?.length && (folder.messages.hasItems || [SpecialFolder.Trash, SpecialFolder.Spam].includes(folder.specialFolder)))) {
+            continue;
+          }
+          /** To avoid reading all messages of all folders, we handle
+           * - permanent deletes only from folders that we already read, and Trash / Spam (`DeleteStrategy.MoveToTrash`)
+           * - moves only from folders that we already read
+           * - new messages only in folders that we already listed
+           * This is a tradeoff. */
+          await folder.readFolder();
+          if (folder.messages.isEmpty && folder.countTotal > 0) {
+            continue; // Adding messages here would stop listAllMessages() from ever running
+          }
+          removed = this.findMovedAway(changedResponse.list, folder); // repeat after reading the folder
+          removed.addAll(await folder.parseRemovedMessages(changes.destroyed ?? []));
+          // A draft or email uploaded from here comes back in `created`, so need dup checks
+          let addedResult = folder.parseMessageList(addedThisFolder ?? []);
+          let changedResult = folder.parseMessageList(changedThisFolder ?? []);
+          addedResult.newMessages.addAll(changedResult.newMessages);
+          //console.log(folder.name, "added messages", addedResult.newMessages.contents.map(e => e.subject));
+          //console.log(folder.name, "updated messages", changedResult.updatedMessages.contents.map(e => e.subject));
+          //console.log(folder.name, "removed messages", removedMessages.contents.map(e => e.subject));
 
-        folder.messages.removeAll(removed);
-        for (let msg of addedResult.newMessages) {
-          msg.isNewArrived = true;
+          folder.messages.removeAll(removed);
+          for (let msg of addedResult.newMessages) {
+            msg.isNewArrived = true;
+          }
+          folder.messages.addAll(addedResult.newMessages);
+          for (let msg of removed) {
+            await msg.deleteMessageLocally();
+          }
+          await folder.storage.saveFolderProperties(folder);
+          await folder.saveMsgUpdates(changedResult.updatedMessages);
+          await folder.saveNewMsgs(addedResult.newMessages);
+          if (this === folder) {
+            newMessagesOfThisFolder.addAll(addedResult.newMessages);
+          }
         }
-        folder.messages.addAll(addedResult.newMessages);
-        for (let msg of removed) {
-          await msg.deleteMessageLocally();
-        }
-        await folder.storage.saveFolderProperties(folder);
-        await folder.saveMsgUpdates(changedResult.updatedMessages);
-        await folder.saveNewMsgs(addedResult.newMessages);
-        if (this === folder) {
-          newMessagesOfThisFolder = addedResult.newMessages;
-        }
-      }
 
-      this.account.syncState.set("Email", changes.newState);
-      await this.account.save();
-      if (changes.hasMoreChanges) {
+        this.account.syncState.set("Email", changes.newState);
+        await this.account.save();
+        if (!changes.hasMoreChanges) {
+          return newMessagesOfThisFolder;
+        }
+        if (changes.newState == sinceState) {
+          break;
+        }
+      } finally {
         lock.release();
-        await this.fetchChangedMessagesForAllFolders();
       }
-      return newMessagesOfThisFolder;
-    } finally {
-      lock.release();
     }
+    this.account.errorCallback(new Error("Email changes: The server keeps reporting more changes. Stopped."));
+    return newMessagesOfThisFolder;
   }
 
   protected async parseRemovedMessages(messageIDs: string[]): Promise<SetColl<JMAPEMail>> {

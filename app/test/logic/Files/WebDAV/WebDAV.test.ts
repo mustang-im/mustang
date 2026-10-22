@@ -88,7 +88,10 @@ beforeAll(async () => {
     deleteFile: (filepath: string) => fs.unlink(filepath),
     async statFile(filepath: string) {
       let s = await fs.stat(filepath);
-      return { size: s.size, lastMod: s.mtime };
+      let stat = {} as any;
+      stat.size = s.size;
+      stat.lastMod = s.mtime;
+      return stat;
     },
     fs,
     // </copied>
@@ -253,9 +256,9 @@ test("Open in app, after the file changed on the server, opens the new version",
 
 test("Local edits are kept and uploaded as conflicted copy, when the file changed on the server", async () => {
   let root = account.rootDirs.first;
-  await verify.putFileContents("/edited.txt", "Version 1\n");
+  await verify.putFileContents("/kept.txt", "Version 1\n");
   await root.listContents();
-  let file = root.files.find(f => f.name == "edited.txt");
+  let file = root.files.find(f => f.name == "kept.txt");
   await file.openOSApp();
   let localPath = openedFiles.pop().path;
 
@@ -264,7 +267,7 @@ test("Local edits are kept and uploaded as conflicted copy, when the file change
   let editTime = new Date(file.lastMod.getTime() + 60 * 1000);
   await fs.utimes(localPath, editTime, editTime);
 
-  await verify.putFileContents("/edited.txt", "Version 2, edited elsewhere\n");
+  await verify.putFileContents("/kept.txt", "Version 2, edited elsewhere\n");
   await root.listContents();
 
   await file.openOSApp();
@@ -272,18 +275,18 @@ test("Local edits are kept and uploaded as conflicted copy, when the file change
 
   // The upload runs in the background
   let copy = await vi.waitFor(() => {
-    let copy = root.files.find(f => f.path.startsWith("/edited ("));
+    let copy = root.files.find(f => f.path.startsWith("/kept ("));
     expect(copy).toBeDefined();
     return copy;
   });
-  expect(copy.path).toMatch(/^\/edited \(conflicted copy \d{4}-\d\d-\d\d \d\d-\d\d-\d\d\)\.txt$/);
+  expect(copy.path).toMatch(/^\/kept \(conflicted copy \d{4}-\d\d-\d\d \d\d-\d\d-\d\d\)\.txt$/);
   let onServer = await verify.getFileContents(copy.path, { format: "text" });
   expect(onServer).toBe("Edited locally\n");
   // The renamed local file is the local copy of the uploaded conflicted copy
   expect(path.dirname(copy.filepathLocal)).toBe(path.dirname(localPath));
   expect(await fs.readFile(copy.filepathLocal, "utf8")).toBe("Edited locally\n");
   let localFiles = await fs.readdir(path.dirname(localPath));
-  expect(localFiles.filter(name => name.startsWith("edited")).length).toBe(2);
+  expect(localFiles.filter(name => name.startsWith("kept")).length).toBe(2);
 });
 
 test("Open in app checks the new contents of a file changed on the server", async () => {
@@ -299,4 +302,36 @@ test("Open in app checks the new contents of a file changed on the server", asyn
 
   await expect(file.openOSApp()).rejects.toThrow(/script/);
   expect(openedFiles.length).toBe(0);
+});
+
+test("Refresh doesn't upload a file that was only downloaded", async () => {
+  let root = account.rootDirs.first;
+  await verify.putFileContents("/downloaded.txt", "From the server\n");
+  // Older than the download, as files on a server usually are
+  let lastModOnServer = new Date("2025-01-02T03:04:05Z");
+  await fs.utimes(path.join(storageDir, "downloaded.txt"), lastModOnServer, lastModOnServer);
+  await root.listContents();
+  let file = root.files.find(f => f.name == "downloaded.txt");
+  await file.download();
+
+  await root.uploadChangedFiles();
+
+  let stat = await verify.stat("/downloaded.txt") as webdavClient.FileStat;
+  expect(new Date(stat.lastmod).getTime()).toBe(lastModOnServer.getTime());
+});
+
+test("Refresh uploads a downloaded file that was changed on disk", async () => {
+  let root = account.rootDirs.first;
+  await verify.putFileContents("/edited.txt", "From the server\n");
+  let lastModOnServer = new Date("2025-01-02T03:04:05Z");
+  await fs.utimes(path.join(storageDir, "edited.txt"), lastModOnServer, lastModOnServer);
+  await root.listContents();
+  let file = root.files.find(f => f.name == "edited.txt");
+  await file.download();
+
+  // E.g. edited in a desktop app
+  await fs.writeFile(file.filepathLocal, "Changed on disk\n");
+  await root.uploadChangedFiles();
+
+  expect(await verify.getFileContents("/edited.txt", { format: "text" })).toBe("Changed on disk\n");
 });

@@ -1,9 +1,11 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../../logic/app";
+import { appGlobal } from "../../../../logic/app";
 import { EWSGAL } from "../../../../logic/Contacts/EWS/EWSGAL";
 import type { EWSPerson } from "../../../../logic/Contacts/EWS/EWSPerson";
 import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { kCertificate, kCertificateEmailAddress, kSMIMECertificate, kSMIMECertificateEmailAddress } from "../testCertificate";
+import { addSMIMEIdentities } from "../smimeIdentities";
 import { ArrayColl } from "svelte-collections";
 import { expect, test } from "vitest";
 
@@ -31,8 +33,9 @@ const kPersons = [{
 }];
 
 /** An account stub which resolves names like Exchange does:
- * Without routing type prefix, it matches the names and the primary email address,
- * with an `smtp:` prefix, it matches all email addresses. Both match only the start. */
+ * Without routing type prefix, it matches only the names, like a directory which
+ * does not search the `mail` attribute. With an `smtp:` prefix, it matches all
+ * email addresses. Both match only the start. */
 function fakeAccount(persons = kPersons): any {
   return {
     errorCallback: (ex: Error) => { throw ex; },
@@ -43,7 +46,7 @@ function fakeAccount(persons = kPersons): any {
       let entry = query.m$ResolveNames.m$UnresolvedEntry.toLowerCase();
       let matches = entry.startsWith("smtp:")
         ? persons.filter(person => person.emailAddresses.some(email => email.startsWith(entry.slice("smtp:".length))))
-        : persons.filter(person => [person.name, person.firstName, person.lastName, person.emailAddresses[0]]
+        : persons.filter(person => [person.name, person.firstName, person.lastName]
           .some(field => field.toLowerCase().startsWith(entry)));
       if (!matches.length) {
         throw { type: "ErrorNameResolutionNoResults" };
@@ -67,7 +70,7 @@ function resolutionXML(person: typeof kPersons[0]): any {
       EmailAddresses: {
         Entry: person.emailAddresses.map((email, i) => ({
           Key: "EmailAddress" + (i + 1),
-          Value: "SMTP:" + email,
+          Value: (i == 0 ? "SMTP:" : "smtp:") + email, // the primary one in capitals
         })),
       },
       UserSMIMECertificate: person.smimeCertificates.length ? { Base64Binary: person.smimeCertificates } : undefined,
@@ -76,8 +79,12 @@ function resolutionXML(person: typeof kPersons[0]): any {
   };
 }
 
+/** As the composer and the calendar use it: our identity is in `example.com` and has an S/MIME certificate */
 async function search(searchTerm: string, account = fakeAccount()): Promise<ArrayColl<EWSPerson>> {
+  addSMIMEIdentities(account, "me@example.com");
   let gal = new EWSGAL(account);
+  appGlobal.searchOnlyAddressbooks.clear();
+  appGlobal.searchOnlyAddressbooks.add(gal);
   let results = new ArrayColl<EWSPerson>();
   await gal.quickSearchAsync(searchTerm, results);
   return results;
@@ -90,9 +97,16 @@ test("Find by last name", async () => {
   expect(results.first.emailAddresses.first.value).toBe("ben@example.com");
 });
 
-test("An email address which is not the primary one is not found", async () => {
+test("Find by the start of the email address", async () => {
+  let results = await search("cathy@ex");
+  expect(results.length).toBe(1);
+  expect(results.first.name).toBe("Cathy Chen");
+});
+
+test("Find by an email address which is not the primary one", async () => {
   let results = await search("sales");
-  expect(results.length).toBe(0);
+  expect(results.length).toBe(1);
+  expect(results.first.name).toBe("Ben Bucksch");
 });
 
 test("Person matching both name and email address is returned only once", async () => {
@@ -114,20 +128,21 @@ test("Server errors are passed on", async () => {
   await expect(search("ben", account)).rejects.toMatchObject({ type: "ErrorAccessDenied" });
 });
 
-test("The search itself costs only 1 request, and returns no certificates", async () => {
+test("The search fetches no certificates", async () => {
   let account = fakeAccount();
   let results = await search("bucksch", account);
-  expect(account.queries.length).toBe(1);
-  expect(account.lastQuery.m$ResolveNames.ContactDataShape).toBeUndefined();
+  for (let query of account.queries) {
+    expect(query.m$ResolveNames.ContactDataShape).toBeUndefined();
+  }
   expect(results.first.encryptionPublicKeys.length).toBe(0);
 });
 
 test("Read the `userCertificate` of the person that the user picked", async () => {
   let account = fakeAccount();
   let person = (await search("cathy", account)).first;
+  account.queries = [];
   await person.fetchEncryptionKeys();
-  expect(account.queries.length).toBe(2);
-  expect(account.lastQuery.m$ResolveNames.m$UnresolvedEntry).toBe(person.emailAddresses.first.value);
+  expect(account.queries.length).toBe(1);
   expect(account.lastQuery.m$ResolveNames.ContactDataShape).toBe("AllProperties");
   expect(person.encryptionPublicKeys.length).toBe(1);
   let key = person.encryptionPublicKeys.first;
@@ -139,10 +154,11 @@ test("Read the `userCertificate` of the person that the user picked", async () =
 test("Ask the directory only once for the same person", async () => {
   let account = fakeAccount();
   let person = (await search("cathy", account)).first;
+  account.queries = [];
   // The composer asks when the user picks the person, and again when they encrypt
   await Promise.all([person.fetchEncryptionKeys(), person.fetchEncryptionKeys()]);
   await person.fetchEncryptionKeys();
-  expect(account.queries.length).toBe(2); // the search, and one lookup
+  expect(account.queries.length).toBe(1);
   expect(person.encryptionPublicKeys.length).toBe(1);
 });
 
