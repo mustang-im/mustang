@@ -66,10 +66,10 @@ export class ExchangeMailAccount extends MailAccount {
   }
 
   /** When another client changes the server rules, Exchange deletes the copy of the rules that Outlook keeps.
-   * Outlook makes a new copy, but without its rules for sent mail, which exist only in that copy. */
+   * Outlook makes a new copy, but without its rules for sent mail and the rules that are turned off in Outlook, which exist only in that copy. */
   protected setOutlookRulesExist(exist: boolean) {
     this.serverFilterRulesReadOnlyReason = exist
-      ? gt`Classic Outlook keeps its own copy of the rules for this account. Exchange would delete it when the rules change here, and the rules that Outlook runs on sent mail would be lost. You can change the rules in Outlook.`
+      ? gt`Classic Outlook keeps its own copy of the rules for this account. Exchange would delete it when the rules change here, and the rules in Outlook for sent mail and the rules that are turned off in Outlook would be lost. You can change the rules in Outlook.`
       : null;
   }
 
