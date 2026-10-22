@@ -129,7 +129,6 @@
   import { Event } from "../../../logic/Calendar/Event";
   import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { InvitationResponse, type InvitationResponseInMessage } from "../../../logic/Calendar/Invitation/InvitationStatus";
-  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import type { EMail } from "../../../logic/Mail/EMail";
   import { openEvent } from "../open";
   import { openComposer } from "../../Mail/open";
@@ -219,7 +218,7 @@
     if (invitation instanceof IncomingInvitation) {
       mail = await invitation.message.compose.forward();
     } else if (invitation instanceof Event) {
-      mail = await OutgoingInvitation.forwardEventByMail(invitation);
+      mail = await IncomingInvitation.forwardEventByMail(invitation);
     }
     openComposer(mail);
   }

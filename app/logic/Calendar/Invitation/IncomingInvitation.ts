@@ -4,6 +4,7 @@ import { Participant } from "../Participant";
 import { InvitationMessage, InvitationResponse, type InvitationResponseInMessage } from "../Invitation/InvitationStatus";
 import { identityForCalendar } from "./OutgoingInvitation";
 import { findIdentityForEMailAddress } from "../../Mail/MailIdentity";
+import { getICal } from "../ICal/ICalGenerator";
 import type { EMail } from "../../Mail/EMail";
 import { AbstractFunction, NotReached, assert } from "../../util/util";
 
@@ -58,6 +59,28 @@ export class IncomingInvitation {
     mail.subject = "Re: " + event.title; // Do NOT translate "Re: "
     let recipients = toAll ? event.participants.contents : [event.organizer];
     mail.to.addAll(recipients.filter(participant => participant && !findIdentityForEMailAddress(participant.emailAddress)));
+    return mail;
+  }
+
+  /**
+   * Forwards an event to another person by email.
+   *
+   * - This is typically used on an event from incoming invitation.
+   * - If it was an outgoing invitation, that means you're the organizer, and
+   *   you'd simply add participants to the event.
+   * - If it was an event without participants, you'd simply add participants.
+   */
+  static async forwardEventByMail(event: Event): Promise<EMail> {
+    let identity = identityForCalendar(event.calendar);
+    let mail = identity.newEMailFrom();
+    mail.subject = "Fwd: " + event.title; // Do NOT translate "Fwd: "
+    mail.event = event;
+    // `mail.event` already sends the event, but it's not visible in the composer, so add it a third time
+    let icalStr = new TextEncoder().encode(await getICal(event));
+    let file = new File([icalStr], "forwarded.ics", { type: "text/calendar" });
+    let attachment = mail.newAttachment();
+    attachment.fromFile(file);
+    mail.attachments.add(attachment);
     return mail;
   }
 

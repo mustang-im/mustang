@@ -21,7 +21,7 @@
             onRespond={(response, sendReply) => event.respondToInvitation(response, sendReply)}
             onReplyToOrganizer={() => openComposer(IncomingInvitation.replyToEventByMail(event, false))}
             onReplyToAll={() => openComposer(IncomingInvitation.replyToEventByMail(event, true))}
-            onForward={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
+            onForward={async () => openComposer(await IncomingInvitation.forwardEventByMail(event))} />
         </hbox>
       {/if}
     </vbox>
@@ -49,7 +49,6 @@
   import ResponseButton from "../Invitation/ResponseButton.svelte";
   import RespondButtons from "../Invitation/RespondButtons.svelte";
   import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
-  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
   import { openComposer } from "../../../frontend/Mail/open";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
