@@ -5,7 +5,7 @@ import type { File } from "../../../../logic/Files/File";
 import type { FileOrDirectory } from "../../../../logic/Files/FileOrDirectory";
 import { appGlobal } from "../../../../logic/app";
 import type { Collection } from "svelte-collections";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 /**
  * Cloud account:
@@ -13,6 +13,7 @@ import { afterEach, beforeEach, expect, test } from "vitest";
  *     Budgets/
  *       2024-Budget.odt
  *       budget-2023.ODT
+ *       minutes.md        (contents in memory)
  *       Archive/
  *         Old/
  *           budget-1999.txt
@@ -20,6 +21,8 @@ import { afterEach, beforeEach, expect, test } from "vitest";
  *       Holiday.JPG       (no MIME type, like on the harddrive)
  *       scan              (MIME type from the server, no file extension)
  *     notes.txt
+ *     trip.txt          (contents on disk)
+ *     contract.txt      (contents only on the server)
  *
  * Second account:
  *   Home/
@@ -29,6 +32,7 @@ let cloud: FileSharingAccount;
 let second: FileSharingAccount;
 let budgets: Directory;
 let photos: Directory;
+let contract: File;
 
 function addDir(parent: Directory, name: string): Directory {
   let dir = parent.newDirectory(name);
@@ -59,6 +63,12 @@ beforeEach(() => {
   addFile(photos, "Holiday.JPG");
   addFile(photos, "scan", "image/png");
   addFile(root, "notes.txt", "text/plain");
+  addFile(budgets, "minutes.md").contents = new Blob(["We met in Porto."]);
+  addFile(root, "trip.txt").filepathLocal = "/home/user/files/trip.txt";
+  contract = addFile(root, "contract.txt");
+  appGlobal.remoteApp = {
+    readFile: async (path: string) => path == "/home/user/files/trip.txt" ? new TextEncoder().encode("Train to Porto") : null,
+  };
 
   second = new FileSharingAccount();
   second.name = "Second";
@@ -72,6 +82,7 @@ beforeEach(() => {
 
 afterEach(() => {
   appGlobal.fileSharingAccounts.removeAll([cloud, second]);
+  appGlobal.remoteApp = null;
 });
 
 function names(entries: Collection<FileOrDirectory>): string[] {
@@ -81,7 +92,9 @@ function names(entries: Collection<FileOrDirectory>): string[] {
 async function search(criteria: (search: SearchFile) => void, limit?: number): Promise<Collection<FileOrDirectory>> {
   let search = new SearchFile();
   criteria(search);
-  return await search.startSearch(limit);
+  let found = await search.startSearch(limit);
+  await search.finished;
+  return found;
 }
 
 test("Finds files and folders by a part of their name, ignoring upper and lower case", async () => {
@@ -153,4 +166,42 @@ test("Folder of a result: from the account root down", () => {
   let file = budgets.subDirs.first.subDirs.first.files.first;
   expect(file.parentDirs.contents.map(dir => dir.name)).toEqual(["Files", "Budgets", "Archive", "Old"]);
   expect(cloud.rootDirs.first.parentDirs.isEmpty).toBe(true);
+});
+
+test("Finds documents by their text, if their contents are already in memory or on disk", async () => {
+  expect(names(await search(search => search.contentText = "PORTO"))).toEqual(["minutes.md", "trip.txt"]);
+  expect(names(await search(search => search.contentText = "train"))).toEqual(["trip.txt"]);
+});
+
+test("Doesn't download files to search them", async () => {
+  let download = vi.spyOn(contract, "download");
+  let found = await search(search => search.contentText = "porto");
+  expect(names(found)).not.toContain("contract.txt");
+  expect(download).not.toHaveBeenCalled();
+});
+
+test("Each word can be in the name or in the text", async () => {
+  expect(names(await search(search => search.contentText = "minutes porto"))).toEqual(["minutes.md"]);
+  expect(names(await search(search => search.contentText = "trip met"))).toEqual([]);
+});
+
+test("The other criteria apply to the documents found by their text, too", async () => {
+  let found = await search(search => {
+    search.contentText = "porto";
+    search.directory = budgets;
+  });
+  expect(names(found)).toEqual(["minutes.md"]);
+
+  found = await search(search => {
+    search.contentText = "porto";
+    search.hasMIMETypes.add("image/");
+  });
+  expect(names(found)).toEqual([]);
+
+  expect((await search(search => search.contentText = "porto", 1)).length).toBe(1);
+});
+
+test("A broken document doesn't stop the search", async () => {
+  addFile(budgets, "broken.docx").contents = new Blob(["This is not a ZIP file"]);
+  expect(names(await search(search => search.contentText = "porto"))).toEqual(["minutes.md", "trip.txt"]);
 });

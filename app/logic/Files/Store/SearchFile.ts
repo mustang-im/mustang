@@ -5,6 +5,7 @@ import type { FileSharingAccount } from "../FileSharingAccount";
 import { fileExtensions } from "../FileType/MIMETypes";
 import { getTagByName, type Tag } from "../../Abstract/Tag";
 import { appGlobal } from "../../app";
+import { dataError } from "../../util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { notifyChangedProperty, Observable } from "../../util/Observable";
 import { ArrayColl, SetColl, type Collection } from "svelte-collections";
@@ -39,24 +40,34 @@ export class SearchFile extends Observable {
    * A type that ends with "/" matches all its subtypes. */
   readonly hasMIMETypes = new SetColl<string>;
 
-  /** Searches the file and folder names */
+  /** Searches the file and folder names, and the text of the documents
+   * whose contents we already have, @see `File.localText()` */
   @notifyChangedProperty
   contentText: string | null = null;
 
+  /** Resolves once the search in the file contents finished. `startSearch()` returns
+   * before that, and keeps adding to the collection that it returned. */
+  finished: Promise<void> = Promise.resolve();
+  protected stopContentSearch: AbortController | null = null;
+
   async startSearch(limit = Infinity): Promise<ArrayColl<FileOrDirectory>> {
+    this.stopContentSearch?.abort();
+    let stop = this.stopContentSearch = new AbortController();
     let found = new ArrayColl<FileOrDirectory>();
+    let byContent = new ArrayColl<File>();
     if (this.directory) {
-      this.findIn(this.directory.subDirs, this.directory.files, found, limit);
-      return found;
+      this.findIn(this.directory.subDirs, this.directory.files, found, byContent, limit);
+    } else {
+      let accounts = this.account ? new ArrayColl([this.account]) : appGlobal.fileSharingAccounts;
+      for (let account of accounts) {
+        this.findIn(account.rootDirs, new ArrayColl<File>(), found, byContent, limit);
+      }
     }
-    let accounts = this.account ? new ArrayColl([this.account]) : appGlobal.fileSharingAccounts;
-    for (let account of accounts) {
-      this.findIn(account.rootDirs, new ArrayColl<File>(), found, limit);
-    }
+    this.finished = this.findInContents(byContent, found, limit, stop.signal);
     return found;
   }
 
-  protected findIn(dirs: Collection<Directory>, files: Collection<File>, found: ArrayColl<FileOrDirectory>, limit: number) {
+  protected findIn(dirs: Collection<Directory>, files: Collection<File>, found: ArrayColl<FileOrDirectory>, byContent: ArrayColl<File>, limit: number) {
     for (let dir of dirs) {
       if (found.length >= limit) {
         return;
@@ -64,14 +75,41 @@ export class SearchFile extends Observable {
       if (this.matches(dir)) {
         found.add(dir);
       }
-      this.findIn(dir.subDirs, dir.files, found, limit);
+      this.findIn(dir.subDirs, dir.files, found, byContent, limit);
     }
     for (let file of files) {
       if (found.length >= limit) {
         return;
       }
-      if (this.matches(file)) {
+      if (!this.matchesProperties(file)) {
+        continue;
+      }
+      if (this.matchesTerms(file)) {
         found.add(file);
+      } else {
+        byContent.add(file);
+      }
+    }
+  }
+
+  protected async findInContents(files: Collection<File>, found: ArrayColl<FileOrDirectory>, limit: number, stop: AbortSignal) {
+    const kMaxDocuments = 1000;
+    let searched = 0;
+    for (let file of files) {
+      if (stop.aborted || found.length >= limit || searched >= kMaxDocuments) {
+        return;
+      }
+      try {
+        let text = await file.localText();
+        if (text == null) {
+          continue;
+        }
+        searched++;
+        if (this.matchesTerms(file, text)) {
+          found.add(file);
+        }
+      } catch (ex) {
+        dataError(ex);
       }
     }
   }
@@ -122,9 +160,10 @@ export class SearchFile extends Observable {
     return this.matchesTerms(entry) && this.matchesProperties(entry);
   }
 
-  protected matchesTerms(entry: FileOrDirectory): boolean {
+  protected matchesTerms(entry: FileOrDirectory, text?: string): boolean {
     let name = entry.name?.toLowerCase() ?? "";
-    return this.searchTerms.every(term => name.includes(term));
+    text = text?.toLowerCase();
+    return this.searchTerms.every(term => name.includes(term) || text?.includes(term));
   }
 
   protected get searchTerms(): string[] {
