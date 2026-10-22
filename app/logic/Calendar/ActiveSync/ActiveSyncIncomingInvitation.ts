@@ -21,6 +21,8 @@ export class ActiveSyncIncomingInvitation extends IncomingInvitation {
         UserResponse: ActiveSyncResponse[response],
         CollectionId: this.message.folder.id,
         RequestId: this.message.serverID,
+        // The server sends the reply to the organizer only if there is a <SendResponse/> element: `{}` is an empty element, `[]` none.
+        // Before ActiveSync 16.1, we send the reply ourselves, see below.
         SendResponse: sendReply && this.calendar.account.protocolVersion == "16.1" ? {} : [],
       },
     };
