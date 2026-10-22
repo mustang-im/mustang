@@ -3,7 +3,7 @@ import { SMIMEPublicKey, KeyStatus } from "../../../../../logic/Mail/Encryption/
 import { SignedData } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
 import { verifySignedData } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEVerify";
 import { TrustLevel, trustOrder } from "../../../../../logic/Mail/Encryption/enums";
-import { kRootCA, kPathLen0CA, kAlice, kSubCA, kCarol, kNoCertSignCA, kBob, kMailCA, kTLSServer, kCEO, kOldCertificate, kDan, kSignedContent, kSignedByAlice, kSignedByErin } from "./certificateChains";
+import { kRootCA, kPathLen0CA, kAlice, kSubCA, kCarol, kNoCertSignCA, kBob, kMailCA, kTLSServer, kCEO, kOldCertificate, kDan, kGrace, kTLSCA, kHeidi, kTLSRootCA, kJudy, kExpiredRootCA, kIvan, kSignedContent, kSignedByAlice, kSignedByErin } from "./certificateChains";
 import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
@@ -23,7 +23,7 @@ globalThis.indexedDB ??= {
 // so this has to be the same for all tests in this file.
 appGlobal.remoteApp = {
   async getCACertificates(type: string): Promise<string[]> {
-    return type == "bundled" ? [kRootCA] : [];
+    return type == "bundled" ? [kRootCA, kTLSRootCA, kExpiredRootCA] : [];
   },
 };
 
@@ -59,6 +59,25 @@ describe("Certificate chain", () => {
 
   test("of a TLS server certificate is not trusted for email", async () => {
     await expectNotTrusted(kTLSServer + kMailCA);
+  });
+
+  // As the Windows chain engine (Outlook) does. Thunderbird and Apple Mail don't.
+  test("of a certificate for any purpose is trusted for email", async () => {
+    let key = await SMIMEPublicKey.importPublicKey(kGrace + kMailCA);
+    expect(await key.keyStatus()).toBe(KeyStatus.Valid);
+    expect(key.trustLevel).toBe(TrustLevel.ThirdParty);
+  });
+
+  test("through a CA for TLS server certificates is not trusted for email", async () => {
+    await expectNotTrusted(kHeidi + kTLSCA);
+  });
+
+  test("to a root for TLS server certificates is not trusted for email", async () => {
+    await expectNotTrusted(kJudy);
+  });
+
+  test("to an expired root is not trusted", async () => {
+    await expectNotTrusted(kIvan);
   });
 });
 

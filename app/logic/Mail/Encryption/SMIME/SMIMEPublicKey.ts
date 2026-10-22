@@ -106,8 +106,7 @@ export class SMIMEPublicKey extends PublicKey {
     // cannot sign as another identity today. Do not start trusting the chain
     // itself for identity binding without adding those X.509 path checks first.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
-    let extKeyUsage = this.extension("extKeyUsage");
-    if (extKeyUsage && !ExtKeyUsage.decode(extKeyUsage).some(purpose => purpose == "emailProtection" || purpose == "anyExtendedKeyUsage")) {
+    if (!this.allowsEMailProtection()) {
       return KeyStatus.ChainInvalid;
     }
     for (let key of this.chain) {
@@ -119,7 +118,7 @@ export class SMIMEPublicKey extends PublicKey {
       if (!await verifySignature(cert, signer)) {
         return KeyStatus.ChainInvalid;
       }
-      if (!key.mayIssueCertificates(this.chain.contents.indexOf(key))) {
+      if (!key.mayIssueCertificates(this.chain.contents.indexOf(key)) || !key.allowsEMailProtection()) {
         return KeyStatus.ChainInvalid;
       }
       cert = signer;
@@ -127,6 +126,11 @@ export class SMIMEPublicKey extends PublicKey {
     for (let type of ["bundled", "system", "extra"]) {
       for (let ca of await lazyGetCACertificates(type)) {
         if (await verifySignature(cert, ca)) {
+          let root = new SMIMEPublicKey();
+          await root.setCertificate(ca);
+          if (root.obsolete || !root.allowsEMailProtection()) {
+            continue;
+          }
           let caTrust = type == "bundled" ? TrustLevel.ThirdParty : type == "system" ? TrustLevel.OS : TrustLevel.Personal;
           if (trustOrder(this.trustLevel) < trustOrder(caTrust)) {
             this.trustLevel = caTrust;
@@ -159,6 +163,14 @@ export class SMIMEPublicKey extends PublicKey {
     }
     let { data } = KeyUsage.decode(keyUsage);
     return usages.some(bit => (data[bit >> 3] & (0x80 >> (bit % 8))) != 0);
+  }
+
+  protected allowsEMailProtection(): boolean {
+    let extKeyUsage = this.extension("extKeyUsage");
+    if (!extKeyUsage) {
+      return true;
+    }
+    return ExtKeyUsage.decode(extKeyUsage).some(purpose => purpose == "emailProtection" || purpose == "anyExtendedKeyUsage");
   }
 
   protected extension(extnID: string): Uint8Array | undefined {
