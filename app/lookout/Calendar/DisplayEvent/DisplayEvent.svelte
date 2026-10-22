@@ -14,21 +14,11 @@
         </hbox>
       {:else if $event.isIncomingMeeting}
         <hbox class="buttons">
-          <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
-            pressed={$event.myParticipation == InvitationResponse.Accept}>
-            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Accept}
-              onRespond={sendReply => event.respondToInvitation(InvitationResponse.Accept, sendReply)} />
-          </ResponseButton>
-          <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
-            pressed={$event.myParticipation == InvitationResponse.Tentative}>
-            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Tentative}
-              onRespond={sendReply => event.respondToInvitation(InvitationResponse.Tentative, sendReply)} />
-          </ResponseButton>
-          <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
-            pressed={$event.myParticipation == InvitationResponse.Decline}>
-            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Decline}
-              onRespond={sendReply => event.respondToInvitation(InvitationResponse.Decline, sendReply)} />
-          </ResponseButton>
+          <RespondButtons response={$event.myParticipation}
+            onRespond={(response, sendReply) => event.respondToInvitation(response, sendReply)}
+            onReplyToOrganizer={() => openComposer(OutgoingInvitation.replyToEventByMail(event, false))}
+            onReplyToAll={() => openComposer(OutgoingInvitation.replyToEventByMail(event, true))}
+            onForward={async () => openComposer(await OutgoingInvitation.forwardEventByMail(event))} />
         </hbox>
       {/if}
     </vbox>
@@ -50,18 +40,16 @@
 
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { EventLook } from "./EventLook";
   import { CalendarActions } from "../CalendarActions";
   import DetailsGrid from "./DetailsGrid.svelte";
   import ResponseButton from "../Invitation/ResponseButton.svelte";
-  import ResponseMenuItems from "../Invitation/ResponseMenuItems.svelte";
+  import RespondButtons from "../Invitation/RespondButtons.svelte";
+  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import { openComposer } from "../../../frontend/Mail/open";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
   import cssBody from "../../../frontend/Mail/Message/content-body.css?inline";
-  import AcceptIcon from "lucide-svelte/icons/check";
-  import TentativeIcon from "lucide-svelte/icons/circle-help";
-  import DeclineIcon from "lucide-svelte/icons/x";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../../l10n/l10n";

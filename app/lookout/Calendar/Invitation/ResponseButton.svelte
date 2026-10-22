@@ -7,9 +7,6 @@
     <svelte:component this={icon} size={16} />
     {#if !iconOnly}
       <span>{label}</span>
-      {#if hasMenu}
-        <span class="chevron"><ChevronDownIcon size={12} /></span>
-      {/if}
     {/if}
   </button>
   {#if hasMenu}
@@ -22,7 +19,6 @@
 <script lang="ts">
   import Menu from "../../Shared/Menu/Menu.svelte";
   import { showError } from "../../../frontend/Util/error";
-  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent;
@@ -108,11 +104,5 @@
   }
   .response-button.decline :global(svg) {
     color: var(--lo-danger);
-  }
-  .response-button .chevron {
-    display: flex;
-  }
-  .response-button .chevron :global(svg) {
-    color: var(--lo-fg-secondary);
   }
 </style>
