@@ -246,12 +246,16 @@
     color: #1B8022;
     background-color: #AAE3D2;
   }
-  .buttons :global(button.accept) {
+  .buttons :global(button.accept:not(.menuitem)),
+  .buttons :global(button.menuitem.accept .icon) {
     color: #1B8022;
   }
-  .buttons :global(button.decline) {
+  .buttons :global(button.decline:not(.menuitem)) {
     color: #FE1B1B;
     border-color: #F69FA1;
+  }
+  .buttons :global(button.menuitem.decline .icon) {
+    color: #FE1B1B;
   }
   .buttons :global(button.accept.done) {
     color: white;

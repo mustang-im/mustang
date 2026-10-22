@@ -45,15 +45,15 @@
       <hbox class="buttons">
         <button class="peek-button accept" class:chosen={$event.myParticipation == InvitationResponse.Accept}
           on:click={() => respond(InvitationResponse.Accept)}>
-          <AcceptIcon size="14" /> {$t`Accept *=> Accept the invitation to the meeting`}
+          <AcceptIcon size="14" /> <span class="label">{$t`Accept *=> Accept the invitation to the meeting`}</span>
         </button>
         <button class="peek-button tentative" class:chosen={$event.myParticipation == InvitationResponse.Tentative}
           on:click={() => respond(InvitationResponse.Tentative)}>
-          <TentativeIcon size="14" /> {$t`Tentative *=> Not sure to join this business meeting`}
+          <TentativeIcon size="14" /> <span class="label">{$t`Tentative *=> Not sure to join this business meeting`}</span>
         </button>
         <button class="peek-button decline" class:chosen={$event.myParticipation == InvitationResponse.Decline}
           on:click={() => respond(InvitationResponse.Decline)}>
-          <DeclineIcon size="14" /> {$t`Decline *=> Decline the invitation to the meeting`}
+          <DeclineIcon size="14" /> <span class="label">{$t`Decline *=> Decline the invitation to the meeting`}</span>
         </button>
       </hbox>
     {:else}
@@ -235,6 +235,9 @@
   }
   .peek-button.primary:hover {
     background-color: var(--lo-accent-hover);
+  }
+  .peek-button .label {
+    text-box: trim-both cap alphabetic;
   }
   .peek-button.accept :global(svg) {
     color: var(--lo-success);

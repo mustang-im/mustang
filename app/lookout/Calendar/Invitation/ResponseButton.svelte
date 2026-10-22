@@ -6,7 +6,7 @@
     on:click={onClicked} bind:this={buttonEl}>
     <svelte:component this={icon} size={16} />
     {#if !iconOnly}
-      <span>{label}</span>
+      <span class="label">{label}</span>
     {/if}
   </button>
   {#if hasMenu}
@@ -72,6 +72,9 @@
     color: var(--lo-fg);
     font: inherit;
     cursor: pointer;
+  }
+  .response-button .label {
+    text-box: trim-both cap alphabetic;
   }
   .response-button.icon-only {
     min-width: 0;
