@@ -137,14 +137,14 @@ test("Keeps each appointment with its status and details, for display", () => {
 });
 
 function slotAt(slots: ReturnType<FreeBusy["slots"]>, hours: number) {
-  return slots.find(slot => slot.start.getTime() == at(hours).getTime());
+  return slots.find(slot => slot.startTime.getTime() == at(hours).getTime());
 }
 
 test("Time slots: Free when everybody whose availability we know is free, busy when many are busy", async () => {
   let freeBusy = await FreeBusy.load(new FreeBusyCalendar(), [anna, bert, carla], at(0), at(24));
   let slots = freeBusy.slots([at(0)], 8, 16, 60);
-  expect(slots.contents.map(slot => slot.start)).toEqual([8, 9, 10, 11, 12, 13, 14, 15].map(hours => at(hours)));
-  expect(slots.contents.every(slot => slot.end.getTime() - slot.start.getTime() == 60 * 60 * 1000)).toBe(true);
+  expect(slots.contents.map(slot => slot.startTime)).toEqual([8, 9, 10, 11, 12, 13, 14, 15].map(hours => at(hours)));
+  expect(slots.contents.every(slot => slot.endTime.getTime() - slot.startTime.getTime() == 60 * 60 * 1000)).toBe(true);
 
   let nine = slotAt(slots, 9);
   expect(nine.busy.contents).toEqual([anna, bert]);
@@ -175,7 +175,7 @@ test("Time slots: Each of the days, and none when nobody's availability is known
   let nextDay = new Date(2026, 9, 16);
   let slots = freeBusy.slots([at(0), nextDay], 8, 18, 30);
   expect(slots.length).toBe(2 * 20);
-  expect(slots.last.end).toEqual(new Date(2026, 9, 16, 18));
+  expect(slots.last.endTime).toEqual(new Date(2026, 9, 16, 18));
 
   let unknown = await FreeBusy.load(new Calendar(), [anna, bert], at(0), at(24));
   expect(unknown.slots([at(0)], 8, 18, 60).isEmpty).toBe(true);

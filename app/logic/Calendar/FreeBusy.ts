@@ -134,15 +134,15 @@ type ArePersonsFreeResult = Awaited<ReturnType<Calendar["arePersonsFree"]>>;
 
 /** A time when the participants could meet, and who of them is free then */
 export class FreeBusySlot {
-  readonly start: Date;
-  readonly end: Date;
+  readonly startTime: Date;
+  readonly endTime: Date;
   readonly free = new ArrayColl<Participant>();
   readonly busy = new ArrayColl<Participant>();
   readonly unknown = new ArrayColl<Participant>();
 
-  constructor(start: Date, end: Date) {
-    this.start = new Date(start);
-    this.end = new Date(end);
+  constructor(startTime: Date, endTime: Date) {
+    this.startTime = new Date(startTime);
+    this.endTime = new Date(endTime);
   }
 
   add(participant: Participant, status: AvailabilityStatus) {

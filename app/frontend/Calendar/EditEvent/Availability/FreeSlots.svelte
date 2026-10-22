@@ -23,12 +23,12 @@
                   <Clickable onClick={() => expandedSlot = expandedSlot == slot ? null : slot}>
                     <vbox class="slot font-small availability-{slot.availability}"
                       style="grid-row: {r + 2}; grid-column: {i + 2}"
-                      class:meeting={slot.start < $event.endTime && slot.end > $event.startTime}
+                      class:meeting={slot.startTime < $event.endTime && slot.endTime > $event.startTime}
                       class:expanded={expandedSlot == slot}
                       title={slotDetails(slot)}>
                       <hbox class="time">
-                        <span class="with-day-period">{getTimeString(slot.start)}</span>
-                        <span class="without-day-period">{getTimeStringWithoutDayPeriod(slot.start)}</span>
+                        <span class="with-day-period">{getTimeString(slot.startTime)}</span>
+                        <span class="without-day-period">{getTimeStringWithoutDayPeriod(slot.startTime)}</span>
                       </hbox>
                       {#if expandedSlot == slot}
                         <vbox class="details">
@@ -42,9 +42,9 @@
                             <hbox class="detail">{$t`Unknown: ${names(slot.unknown)}`}</hbox>
                           {/if}
                         </vbox>
-                        {#if slot.start.getTime() != $event.startTime.getTime()}
+                        {#if slot.startTime.getTime() != $event.startTime.getTime()}
                           <hbox class="buttons">
-                            <Button label={$t`Use this time`} classes="use-time" onClick={() => moveMeetingTo(slot.start)} />
+                            <Button label={$t`Use this time`} classes="use-time" onClick={() => moveMeetingTo(slot.startTime)} />
                           </hbox>
                         {/if}
                       {/if}
@@ -111,7 +111,7 @@
       let starts = days.map(shownDay => new Date(shownDay.getFullYear(), shownDay.getMonth(), shownDay.getDate(), hour));
       rows.push({
         time: starts[0],
-        slots: starts.map(start => slots?.find(slot => slot.start.getTime() == start.getTime())),
+        slots: starts.map(start => slots?.find(slot => slot.startTime.getTime() == start.getTime())),
       });
     }
   }
@@ -122,7 +122,7 @@
 
   function slotDetails(slot: FreeBusySlot): string {
     return [
-      `${getTimeString(slot.start)} – ${getTimeString(slot.end)}`,
+      `${getTimeString(slot.startTime)} – ${getTimeString(slot.endTime)}`,
       slot.busy.hasItems ? $t`Busy: ${names(slot.busy)}` : null,
       slot.free.hasItems ? $t`Free: ${names(slot.free)}` : null,
       slot.unknown.hasItems ? $t`Unknown: ${names(slot.unknown)}` : null,
