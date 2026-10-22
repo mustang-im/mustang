@@ -114,13 +114,21 @@
       display: inline;
     }
   }
-  @container (width < 5.3ch) or (height < 1.9em) {
+  @container (height < 1.9em) {
+    .time,
+    .title {
+      margin-block-start: 1px;
+      font-size: clamp(8px, (100cqh - 2px) / 1.2, 1em);
+      line-height: 1.2;
+    }
+  }
+  @container (width < 5.3ch) {
     .time,
     .title {
       margin-block-start: 1px;
       margin-inline-start: 2px;
-      font-size: 10px;
-      line-height: 12px;
+      font-size: clamp(8px, (100cqh - 2px) / 1.2, 10px);
+      line-height: 1.2;
     }
   }
   @container (width < 3ch) {

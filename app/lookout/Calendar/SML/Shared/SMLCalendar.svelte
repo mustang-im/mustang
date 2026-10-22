@@ -155,11 +155,18 @@
     font-size: inherit;
     line-height: 15px;
   }
-  @container (width < 5.5ch) or (height < 16px) {
+  @container (height < 16px) {
     .sml-calendar :global(.event .event .time),
     .sml-calendar :global(.event .event .title) {
-      font-size: 10px;
-      line-height: 12px;
+      font-size: clamp(8px, (100cqh - 2px) / 1.2, 1em);
+      line-height: 1.2;
+    }
+  }
+  @container (width < 5.5ch) {
+    .sml-calendar :global(.event .event .time),
+    .sml-calendar :global(.event .event .title) {
+      font-size: clamp(8px, (100cqh - 2px) / 1.2, 10px);
+      line-height: 1.2;
     }
   }
   .sml-calendar :global(.event-proposal) {
