@@ -90,6 +90,33 @@ function subscriptionLost(): any {
   };
 }
 
+/** The server refuses the stream, e.g. because we have no rights, and would do so again */
+function refused(): any {
+  return {
+    ok: true,
+    status: 200,
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(`<?xml version="1.0" encoding="utf-8"?>
+          <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+            <Body>
+              <GetStreamingEventsResponse xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+                <ResponseMessages>
+                  <GetStreamingEventsResponseMessage ResponseClass="Error">
+                    <MessageText>The subscription is invalid.</MessageText>
+                    <ResponseCode>ErrorInvalidSubscription</ResponseCode>
+                    <ConnectionStatus>Closed</ConnectionStatus>
+                  </GetStreamingEventsResponseMessage>
+                </ResponseMessages>
+              </GetStreamingEventsResponse>
+            </Body>
+          </Envelope>`));
+        controller.close();
+      },
+    }),
+  };
+}
+
 /** The server name doesn't resolve, e.g. while the VPN tunnel isn't up yet */
 function unreachable(): any {
   throw new TypeError("Failed to fetch");
@@ -102,6 +129,7 @@ function httpError(status: number, statusText: string): any {
 interface StreamRequest {
   subscriptionID: string;
   signal: AbortSignal;
+  authorization?: string;
 }
 
 /** Answers the stream requests with `responses`, in order.
@@ -112,6 +140,7 @@ function serve(responses: ((signal: AbortSignal) => any)[]): StreamRequest[] {
     requests.push({
       subscriptionID: /<t:SubscriptionId>([^<]*)</.exec(options.body as string)[1],
       signal: options.signal,
+      authorization: (options.headers as Record<string, string>).Authorization,
     });
     let response = responses[requests.length - 1];
     if (!response) {
@@ -166,12 +195,14 @@ test("A stream that stopped sending heartbeats is opened again", async () => {
   await account.unsubscribeAllSubscriptions();
 });
 
-test("When the server isn't reachable yet, e.g. a late VPN, the stream is opened again later", async () => {
+test("When the server isn't reachable yet, e.g. a late VPN, we try again every 10 s until it is", async () => {
   let account = newTestAccount();
   let requests = serve([unreachable, unreachable, heartbeatStream()]);
 
   await account.subscribeToNotifications();
-  await vi.advanceTimersByTimeAsync(5 * kHeartbeatMS);
+  await vi.advanceTimersByTimeAsync(5 * 1000);
+  expect(requests.length).toBe(1);
+  await vi.advanceTimersByTimeAsync(20 * 1000);
 
   expect(requests.length).toBe(3);
   expect(requests[2].signal.aborted).toBe(false);
@@ -224,5 +255,39 @@ test("When getting a new subscription failed, e.g. because the VPN dropped again
 
   expect(requests.map(request => request.subscriptionID)).toEqual(["subscription-1", "subscription-1", "subscription-2"]);
   expect(requests[2].signal.aborted).toBe(false);
+  await account.unsubscribeAllSubscriptions();
+});
+
+test("When the server refuses the stream, we report that once, and don't ask again", async () => {
+  let account = newTestAccount();
+  let errors: any[] = [];
+  account.errorCallback = ex => errors.push(ex);
+  let requests = serve([refused, refused, heartbeatStream()]);
+
+  await account.subscribeToNotifications();
+  await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
+
+  expect(requests.length).toBe(1);
+  expect(errors.map(ex => ex.type)).toEqual(["ErrorInvalidSubscription"]);
+});
+
+test("When the access token expired while the computer slept, we get a new one before we reconnect", async () => {
+  let account = newTestAccount();
+  account.authMethod = AuthMethod.OAuth2;
+  account.oAuth2 = {
+    isLoggedIn: false,
+    authorizationHeader: "Bearer expired",
+    async login(interactive: boolean) {
+      expect(interactive).toBe(false);
+      this.isLoggedIn = true;
+      this.authorizationHeader = "Bearer fresh";
+    },
+  } as any;
+  let requests = serve([heartbeatStream()]);
+
+  await account.subscribeToNotifications();
+  await vi.advanceTimersByTimeAsync(1000);
+
+  expect(requests.map(request => request.authorization)).toEqual(["Bearer fresh"]);
   await account.unsubscribeAllSubscriptions();
 });

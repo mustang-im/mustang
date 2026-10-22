@@ -35,7 +35,7 @@ import { notifyChangedProperty } from "../../util/Observable";
 import { isNetworkError } from "../../util/netUtil";
 import { logErrorToServer } from "../../util/error";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
-import { assert, ensureArray, NotReached, NotSupported, type Json } from "../../util/util";
+import { assert, ensureArray, sleep, NotReached, NotSupported, type Json } from "../../util/util";
 import { base64ToUint8Array } from "../../util/blob";
 import { gt } from "../../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
@@ -463,7 +463,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     let lastAttempt: number;
     let signal = abort.signal;
     // Exchange sends a heartbeat every 45 seconds. Without it, the connection is dead, e.g. after a VPN drop,
-    // which doesn't always end the stream, or the reconnect below gave up.
+    // which doesn't always end the stream, or the stream below ended right away.
     let watchdog = new Timeout(2 * 45, () => {
       if (!signal.aborted) { // not replaced by a newer stream, nor unsubscribed
         this.streamNotifications(username)
@@ -473,11 +473,15 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     do {
       try {
         lastAttempt = Date.now();
+        if (this.oAuth2 && !this.oAuth2.isLoggedIn) {
+          await this.oAuth2.login(false); // e.g. the access token expired while the computer slept
+        }
         const endEnvelope = "</Envelope>";
         let body = this.request2XML(request);
         let data = "";
         const processChunk = async (chunk: string) => {
           watchdog.fulfilled(); // processing the notifications may take longer
+          let refused = false;
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;
@@ -509,8 +513,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
                 await this.resubscribeNotifications(username);
                 return; // it restarted the stream, and aborted this one
               }
+              if (ex instanceof EWSItemError) {
+                refused = true;
+              }
               this.errorCallback(ex);
             }
+          }
+          if (refused) {
+            return; // e.g. we have no rights. The server would answer the same, if the watchdog asked again.
           }
           watchdog.restart();
         };
@@ -551,13 +561,16 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           // Connection broke down, which is normal after a while.
           // Loop and re-open the connection.
           watchdog.restart(); // e.g. it failed while we processed a chunk, which pauses the watchdog
+          if (Date.now() - lastAttempt < 10000) {
+            await sleep(10); // e.g. the VPN tunnel isn't up yet
+          }
           continue;
         }
         this.errorCallback(ex);
         watchdog.fulfilled();
         break;
       }
-    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. The watchdog tries again later.
+    } while (!signal.aborted && Date.now() - lastAttempt >= 10000) // quit when the stream ended within 10 seconds. The watchdog tries again later.
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */
