@@ -44,14 +44,14 @@
   $: $recipientKeys, recipientsWithoutKeys = $allRecipients.filterObservable(p => !getPublicKeyForPersonUID(p));
   let hasKeyServers = false;
   $: identity, hasKeyServers = getEncryptionSystem(mail) == EncryptionSystem.PGP;
-  $: $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
+  $: identity, $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
     $t`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
   async function autoFetchMissingKeys() {
     await Promise.all([
       Promise.all(recipientsWithoutKeys.contents.map(recipient =>
-        recipient.findPerson()?.fetchEncryptionKeys())),
+        identity.fetchCertificateFromDirectory(recipient))),
       hasKeyServers ? queryKeyServers(recipientsWithoutKeys, true) : null,
     ]);
   }

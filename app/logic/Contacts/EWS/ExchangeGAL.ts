@@ -1,7 +1,8 @@
 import { SearchOnlyAddressbook } from "../Addressbook";
-import type { Person } from "../../Abstract/Person";
+import { ContactEntry, type Person } from "../../Abstract/Person";
+import type { PublicKey } from "../../Mail/Encryption/PublicKey";
 import { AbstractFunction } from "../../util/util";
-import type { ArrayColl } from "svelte-collections";
+import type { ArrayColl, Collection } from "svelte-collections";
 
 /** The Global Address List (GAL) of an Exchange server */
 export class ExchangeGAL extends SearchOnlyAddressbook {
@@ -30,5 +31,21 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
    *   without their S/MIME certificates */
   protected async searchGAL(searchTerm: string): Promise<ArrayColl<Person>> {
     throw new AbstractFunction();
+  }
+
+  /** The entries that `findEncryptionKeys()` asked for, by lowercase email address */
+  protected readonly certificateLookups = new Map<string, Person>();
+
+  /** Costs a server round trip only once per email address */
+  async findEncryptionKeys(emailAddress: string): Promise<Collection<PublicKey>> {
+    emailAddress = emailAddress.toLowerCase();
+    let person = this.certificateLookups.get(emailAddress);
+    if (!person) {
+      person = this.newPerson();
+      person.emailAddresses.add(new ContactEntry(emailAddress, "work", "mailto"));
+      this.certificateLookups.set(emailAddress, person);
+    }
+    await person.fetchEncryptionKeys();
+    return person.encryptionPublicKeys;
   }
 }

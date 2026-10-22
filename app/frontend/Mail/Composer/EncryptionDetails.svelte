@@ -100,7 +100,7 @@
   /** The key servers have PGP keys, but no S/MIME certificates */
   let hasKeyServers = false;
   $: identity, hasKeyServers = getEncryptionSystem(mail) == EncryptionSystem.PGP;
-  $: $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
+  $: identity, $recipientsWithoutKeys.hasItems && catchErrors(autoFetchMissingKeys);
   $: encryptionError = $mail.shouldEncrypt && $recipientsWithoutKeys.hasItems ?
     gt`Some recipients are missing certificates for encryption.\nEither add certificates for them, remove them, or disable encryption.` : null;
 
@@ -115,7 +115,7 @@
   /** The address book search leaves the keys out, to stay fast */
   async function autoFetchAddressbookKeys() {
     await Promise.all(recipientsWithoutKeys.contents.map(recipient =>
-      recipient.findPerson()?.fetchEncryptionKeys()));
+      identity.fetchCertificateFromDirectory(recipient)));
   }
 
   async function autoQueryKeyServer() {
