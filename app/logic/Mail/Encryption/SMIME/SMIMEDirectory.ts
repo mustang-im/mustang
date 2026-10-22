@@ -17,9 +17,9 @@ import { ArrayColl } from "svelte-collections";
  */
 export async function readDirectoryCertificates(smimeCertificates: string[], certificates: string[], errorCallback: (ex: Error) => void): Promise<ArrayColl<SMIMEPublicKey>> {
   let keys = new ArrayColl<SMIMEPublicKey>();
-  for (let blob of smimeCertificates) {
+  for (let cert of smimeCertificates) {
     try {
-      keys.add(await smimeCertificateToKey(blob));
+      keys.add(await smimeCertificateToKey(cert));
     } catch (ex) {
       errorCallback(ex);
     }
