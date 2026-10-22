@@ -49,6 +49,7 @@ import MailConnectedAccounts from "./Mail/ConnectedAccounts.svelte";
 import CalendarConnectedAccounts from "./Calendar/ConnectedAccounts.svelte";
 import ContactsImportExport from "./Contacts/ImportExport.svelte";
 import CalendarImportExport from "./Calendar/ImportExport.svelte";
+import CalendarWorkHours from "./Calendar/WorkHours.svelte";
 // #if [PROPRIETARY]
 import { meetMustangApp } from "../Meet/MeetMustangApp";
 import { M3Account } from "../../logic/Meet/M3/M3Account";
@@ -124,6 +125,7 @@ calendarSettings.forApp = calendarMustangApp;
 settingsCategories.add(calendarSettings);
 
 accountSettings.add(new AccSetting(Calendar, "calendar-connected", gt`Connected accounts`, CalendarConnectedAccounts, true));
+accountSettings.add(new AccSetting(Calendar, "calendar-work-hours", gt`Work hours`, CalendarWorkHours, true));
 accountSettings.add(new AccSetting(Calendar, "calendar-import", gt`Import/Export`, CalendarImportExport, true));
 accountSettings.add(new AccSetting(CalDAVCalendar, "calendar-server", gt`Server`, AccountURLServer));
 

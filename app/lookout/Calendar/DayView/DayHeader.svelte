@@ -14,8 +14,9 @@
 <script lang="ts">
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { CalendarActions } from "../CalendarActions";
+  import { WorkingHours } from "../WorkingHours";
   import NewEventCalendarMenu from "../NewEventCalendarMenu.svelte";
-  // import { selectedCalendar } from "../../../frontend/Calendar/selected";
+  import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import { createEventDispatcher } from "svelte";
   import AddIcon from "lucide-svelte/icons/circle-plus";
@@ -33,9 +34,8 @@
   let newEventMenu: NewEventCalendarMenu;
 
   function onAdd() {
-    let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 8);
-    // let start = WorkingHours.workStartOf(calendar ?? $selectedCalendar, day);
-    catchErrors(() => newEventMenu.openMenu(addButton, chosen => CalendarActions.newEvent(chosen, start, null)));
+    catchErrors(() => newEventMenu.openMenu(addButton, chosen =>
+      CalendarActions.newEvent(chosen, WorkingHours.workStartOf(chosen ?? $selectedCalendar, day), null)));
   }
 </script>
 

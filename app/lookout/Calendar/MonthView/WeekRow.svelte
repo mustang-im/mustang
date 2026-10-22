@@ -52,11 +52,12 @@
   import { WeekRowLayout } from "./WeekRow";
   import { CalendarActions } from "../CalendarActions";
   import { now, selectedSlots, eventPeek, type SlotSelection } from "../selected";
-  import { selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
+  import { selectedCalendar, selectedEvent, selectedDate } from "../../../frontend/Calendar/selected";
   import { catchErrors } from "../../../frontend/Util/error";
   import EventContainer from "./EventContainer.svelte";
   import InlineEventTitle from "../InlineEventTitle.svelte";
   import NewEventCalendarMenu from "../NewEventCalendarMenu.svelte";
+  import { WorkingHours } from "../WorkingHours";
   import AddIcon from "lucide-svelte/icons/circle-plus";
   import type { Collection } from "svelte-collections";
   import { derived } from "svelte/store";
@@ -139,9 +140,8 @@
   }
 
   function onAdd(button: HTMLElement, day: Date) {
-    let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 8);
-    // let start = WorkingHours.workStartOf($selectedCalendar, day);
-    catchErrors(() => newEventMenu.openMenu(button, calendar => CalendarActions.newEvent(calendar, start, null)));
+    catchErrors(() => newEventMenu.openMenu(button, calendar =>
+      CalendarActions.newEvent(calendar, WorkingHours.workStartOf(calendar ?? $selectedCalendar, day), null)));
   }
 
   function onContextMenu(mouseEvent: MouseEvent) {

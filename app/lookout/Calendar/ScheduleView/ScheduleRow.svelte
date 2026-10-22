@@ -12,9 +12,9 @@
     on:contextmenu={onContextMenu}
     bind:this={trackEl}>
     {#each days as day, d}
-      <!-- {#each $workingHours.offWorkMinutes(day) as offWorkRange}
+      {#each $workingHours.offWorkMinutes(day) as offWorkRange}
         <div class="off-hours" style="left: {d * dayWidth + offWorkRange.from * pxPerMinute}px; width: {(offWorkRange.to - offWorkRange.from) * pxPerMinute}px" />
-      {/each} -->
+      {/each}
       <div class="day-line" style="left: {d * dayWidth}px" />
     {/each}
     {#if selection}
@@ -33,6 +33,7 @@
   import type { Event } from "../../../logic/Calendar/Event";
   import type { Calendar } from "../../../logic/Calendar/Calendar";
   import { ScheduleLayout } from "./ScheduleLayout";
+  import { WorkingHours } from "../WorkingHours";
   import { CalendarActions } from "../CalendarActions";
   import { selectedSlots, eventPeek, type SlotSelection } from "../selected";
   import { selectedCalendar, selectedEvent } from "../../../frontend/Calendar/selected";
@@ -56,7 +57,7 @@
 
   let trackEl: HTMLDivElement;
 
-  // $: workingHours = WorkingHours.of(calendar);
+  $: workingHours = WorkingHours.of(calendar);
   $: pxPerMinute = pxPerHour / 60;
   $: dayWidth = pxPerHour * 24;
   $: rangeStart = days[0];
@@ -202,13 +203,13 @@
       repeating-linear-gradient(to right, color-mix(in srgb, var(--lo-divider) 45%, transparent) 0 1px, transparent 1px var(--slot-width));
     touch-action: none;
   }
-  /* .off-hours {
+  .off-hours {
     position: absolute;
     top: 0;
     bottom: 0;
     background-color: var(--lo-calendar-off-work-bg);
     pointer-events: none;
-  } */
+  }
   .day-line {
     position: absolute;
     top: 0;

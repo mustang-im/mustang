@@ -43,9 +43,8 @@
         {/each}
       </div>
       {#each range.days as day, d}
-        <!-- workingHours={$groupWorkingHours[g]} -->
         <DayColumn {day} column={firstColumnOf(g) + d} dayIndex={d} group={g} events={group.timed} calendar={group.calendar}
-          {pxPerMinute} {timeScale}
+          workingHours={$groupWorkingHours[g]} {pxPerMinute} {timeScale}
           isToday={day.toDateString() == $now.toDateString()}
           showsPastTimeLine={showsToday && day.getTime() < new Date($now).setHours(0, 0, 0, 0)}
           visibleFromMinute={visibleFromMinute} visibleToMinute={visibleToMinute} on:scrolltominute={event => scrollToMinute(event.detail)} on:slotmenu />
@@ -68,8 +67,9 @@
 <script lang="ts">
   import type { CalendarRange } from "../CalendarRange";
   import { TimeColumnLayout } from "./DayColumn";
+  import { WorkingHours } from "../WorkingHours";
   import { now, eventPeek, timeZoneRulers } from "../selected";
-  import { selectedDate } from "../../../frontend/Calendar/selected";
+  import { selectedDate, shownWorkHours } from "../../../frontend/Calendar/selected";
   import DayHeader from "./DayHeader.svelte";
   import AllDayEvents from "./AllDayEvents.svelte";
   import DayColumn from "./DayColumn.svelte";
@@ -77,7 +77,7 @@
   import CalendarTab from "./CalendarTab.svelte";
   import { getLocalStorage } from "../../../frontend/Util/LocalStorage";
   import { k1DayMS } from "../../../logic/util/date";
-  // import { derived } from "svelte/store";
+  import { derived } from "svelte/store";
   import { onMount, tick } from "svelte";
 
   export let range: CalendarRange;
@@ -88,7 +88,7 @@
   $: timeScale = $timeScaleSetting.value;
   const kSlotHeight = 24;
   const kRulerWidth = 56;
-  // const shownWorkingHours = WorkingHours.ofAll(shownWorkHours);
+  const shownWorkingHours = WorkingHours.ofAll(shownWorkHours);
 
   let scrollEl: HTMLDivElement;
   let rulersEl: HTMLElement;
@@ -109,8 +109,8 @@
     groups.map(() => dayColumns).join(" 8px ");
   $: slotStarts = Array.from({ length: TimeColumnLayout.kMinutesPerDay / timeScale }, (_, i) => i * timeScale);
 
-  // $: groupWorkingHours = derived(groups.map(group =>
-  //   group.calendar ? WorkingHours.of(group.calendar) : shownWorkingHours), all => all);
+  $: groupWorkingHours = derived(groups.map(group =>
+    group.calendar ? WorkingHours.of(group.calendar) : shownWorkingHours), all => all);
 
   let groupEvents: ReturnType<typeof eventsOf>[] = [];
   $: groupEvents = groups.map(group => groupEvents.find(shown => shown.events == group.events) ?? eventsOf(group));
@@ -186,8 +186,7 @@
   onMount(() => {
     let focusMinute = showsToday
       ? Math.max($now.getHours() - 1, 0) * 60
-      : 8 * 60;
-      // : WorkingHours.combined($groupWorkingHours).firstWorkMinute(range.days);
+      : WorkingHours.combined($groupWorkingHours).firstWorkMinute(range.days);
     scrollEl.scrollTop = focusMinute * pxPerMinute;
     topMinute = focusMinute;
   });

@@ -41,6 +41,7 @@
   import type { CalendarColumnGroup } from "../DayView/DayViewGrid.svelte";
   import type { CalendarRange } from "../CalendarRange";
   import { ScheduleLayout } from "./ScheduleLayout";
+  import { WorkingHours } from "../WorkingHours";
   import { now, eventPeek, timeZoneRulers } from "../selected";
   import { selectedCalendar } from "../../../frontend/Calendar/selected";
   import ScheduleRow from "./ScheduleRow.svelte";
@@ -81,8 +82,7 @@
     }
     let focusMinute = showsNow
       ? Math.max($now.getHours() - 1, 0) * 60
-      : 8 * 60;
-      // : WorkingHours.combined(rows.map(row => WorkingHours.ofCalendar(row.calendar))).firstWorkMinute(range.days);
+      : WorkingHours.combined(rows.map(row => WorkingHours.ofCalendar(row.calendar))).firstWorkMinute(range.days);
     let dayIndex = showsNow ? Math.floor(nowMinute / ScheduleLayout.kMinutesPerDay) : 0;
     scrollEl.scrollLeft = dayIndex * dayWidth + focusMinute * pxPerHour / 60;
   }

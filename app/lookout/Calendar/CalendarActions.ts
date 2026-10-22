@@ -2,9 +2,10 @@ import type { Event } from "../../logic/Calendar/Event";
 import type { Calendar } from "../../logic/Calendar/Calendar";
 import { Frequency } from "../../logic/Calendar/RecurrenceRule";
 import { selectedCalendar, selectedDate, selectedEvent, startDate } from "../../frontend/Calendar/selected";
-import { inlineTitle, selectedSlots, updatingCount, type CalendarViewType, type SlotSelection } from "./selected";
+import { inlineTitle, selectedSlots, updatingCount, workWeekHours, type CalendarViewType, type SlotSelection } from "./selected";
 import { getLocalStorage } from "../../frontend/Util/LocalStorage";
 import { CalendarRange } from "./CalendarRange";
+import { WorkingHours } from "./WorkingHours";
 import { setNewEventTime } from "../../frontend/Calendar/event";
 import { openEvent } from "../../frontend/Calendar/open";
 import { calendarMustangApp } from "../../frontend/Calendar/CalendarMustangApp";
@@ -53,17 +54,15 @@ export class CalendarActions {
       return;
     }
     let view = getLocalStorage<CalendarViewType>("lookout.calendar.view", "workweek").value;
-    let range = new CalendarRange(view, get(view == "dual" ? selectedDate : startDate), getLocalStorage<number>("lookout.calendar.dayCount", 1).value);
-    // let range = new CalendarRange(view, get(view == "dual" ? selectedDate : startDate), getLocalStorage<number>("lookout.calendar.dayCount", 1).value,
-    //   get(workWeekHours).workDays());
+    let range = new CalendarRange(view, get(view == "dual" ? selectedDate : startDate), getLocalStorage<number>("lookout.calendar.dayCount", 1).value,
+      get(workWeekHours).workDays());
     let now = new Date();
     let start: Date;
     if (!slots && range.contains(now)) {
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1);
     } else {
       let day = slots?.start ?? range.start;
-      start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 8);
-      // start = WorkingHours.workStartOf(calendar ?? slots?.calendar ?? get(selectedCalendar), day);
+      start = WorkingHours.workStartOf(calendar ?? slots?.calendar ?? get(selectedCalendar), day);
     }
     CalendarActions.newEvent(calendar ?? slots?.calendar, start, null, kind);
   }

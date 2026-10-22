@@ -87,6 +87,7 @@
   --thread-line: #A8D5CD;
   --thread-unread: #19916F;
   --thread-node-bg: #E8E8F0;
+  --calendar-off-work-bg: #F3F3F6;
 
   color: var(--fg);
   background-color: var(--bg);
@@ -138,6 +139,7 @@
     --thread-line: #3D6A61;
     --thread-unread: #29B78E;
     --thread-node-bg: #2C2C2E;
+    --calendar-off-work-bg: #1E1E21;
 
     color: var(--fg);
     background-color: var(--bg);

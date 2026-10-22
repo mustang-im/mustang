@@ -109,7 +109,7 @@
   import { openEvent } from "../../frontend/Calendar/open";
   import { openComposer } from "../../frontend/Mail/open";
   import { OutgoingInvitation } from "../../logic/Calendar/Invitation/OutgoingInvitation";
-  import { eventPeek, inlineTitle, selectedSlots, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarViewType, type SlotSelection } from "./selected";
+  import { eventPeek, inlineTitle, selectedSlots, workWeekHours, updatingCount, CalendarCurrentView, CalendarFolderPane, calendarSearchOptions, listedEvents, allListedEvents, CalendarSearchScope, type CalendarViewType, type SlotSelection } from "./selected";
   import { selectedCalendar, selectedDate, selectedEvent, shownCalendars, shownCalendarEvents, startDate } from "../../frontend/Calendar/selected";
   import { appGlobal } from "../../logic/app";
   import { getToday } from "../../logic/util/date";
@@ -183,8 +183,7 @@
   $: view, dayCount, currentView, showView();
 
   $: rangeDate = view == "dual" ? $selectedDate : $startDate;
-  $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1);
-  // $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
+  $: range = new CalendarRange(view, rangeDate, view == "day" || view == "schedule" ? dayCount : 1, $workWeekHours.workDays());
 
   const withoutDeclined = new Map<Collection<Event>, Collection<Event>>();
   function visible(events: Collection<Event>, showDeclined: boolean): Collection<Event> {
@@ -255,8 +254,7 @@
       return;
     }
     if (view == "dual" && shownView != "dual") {
-      let shownRange = new CalendarRange(shownView, $startDate, shownView == "day" || shownView == "schedule" ? shownDayCount : 1);
-      // let shownRange = new CalendarRange(shownView, $startDate, shownView == "day" || shownView == "schedule" ? shownDayCount : 1, $workWeekHours.workDays());
+      let shownRange = new CalendarRange(shownView, $startDate, shownView == "day" || shownView == "schedule" ? shownDayCount : 1, $workWeekHours.workDays());
       if (!shownRange.contains($selectedDate)) {
         $selectedDate = $startDate;
       }
