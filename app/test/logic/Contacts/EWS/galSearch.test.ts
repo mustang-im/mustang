@@ -1,9 +1,11 @@
 // app first, to resolve the import cycle around Abstract/Account.ts
 import "../../../../logic/app";
+import { appGlobal } from "../../../../logic/app";
 import { EWSGAL } from "../../../../logic/Contacts/EWS/EWSGAL";
 import type { EWSPerson } from "../../../../logic/Contacts/EWS/EWSPerson";
 import { SMIMEPublicKey } from "../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { kCertificate, kCertificateEmailAddress, kSMIMECertificate, kSMIMECertificateEmailAddress } from "../testCertificate";
+import { addSMIMEIdentities } from "../smimeIdentities";
 import { ArrayColl } from "svelte-collections";
 import { expect, test } from "vitest";
 
@@ -77,8 +79,12 @@ function resolutionXML(person: typeof kPersons[0]): any {
   };
 }
 
+/** As the composer and the calendar use it: our identity is in `example.com` and has an S/MIME certificate */
 async function search(searchTerm: string, account = fakeAccount()): Promise<ArrayColl<EWSPerson>> {
+  addSMIMEIdentities(account, "me@example.com");
   let gal = new EWSGAL(account);
+  appGlobal.searchOnlyAddressbooks.clear();
+  appGlobal.searchOnlyAddressbooks.add(gal);
   let results = new ArrayColl<EWSPerson>();
   await gal.quickSearchAsync(searchTerm, results);
   return results;
