@@ -481,7 +481,6 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         let data = "";
         const processChunk = async (chunk: string) => {
           watchdog.fulfilled(); // processing the notifications may take longer
-          let refused = false;
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;
@@ -513,14 +512,11 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
                 await this.resubscribeNotifications(username);
                 return; // it restarted the stream, and aborted this one
               }
-              if (ex instanceof EWSItemError) {
-                refused = true;
-              }
               this.errorCallback(ex);
+              if (ex instanceof EWSItemError) {
+                return; // The server refused the stream, e.g. for missing rights. It would answer the same, if the watchdog asked again.
+              }
             }
-          }
-          if (refused) {
-            return; // e.g. we have no rights. The server would answer the same, if the watchdog asked again.
           }
           watchdog.restart();
         };
