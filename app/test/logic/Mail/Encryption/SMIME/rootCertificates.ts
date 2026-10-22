@@ -107,3 +107,62 @@ qNSPXv9lG7Etw8MIXq9v9K+e7fwSOeLXqMdQ70b9hYUFk65Fu61QSASnyExcTMlc
 rJcDVtHtX+rLgGt2sscl/00cyIA28I2IOfTYy6eJM+Zv6unizJpcrjT0xIbg9g==
 -----END CERTIFICATE-----
 `;
+
+/* A company's own CA, as the OS of its employees trusts it. Generated with OpenSSL 3.0:
+ * openssl req -new -newkey rsa:2048 -nodes -keyout cert.key -subj "/O=Example Company/CN=..." -out cert.csr
+ * openssl x509 -req -in cert.csr -CA root.pem -CAkey root.key -days 7300 -sha256 \
+ *   -set_serial 0x$(openssl rand -hex 8) -extfile ext.cnf -extensions cert -out cert.pem
+ * where the section `cert` of `ext.cnf` has the extensions listed above each certificate.
+ * The root uses `-signkey root.key -days 8000` instead of `-CA` and `-CAkey`. */
+
+/** basicConstraints = critical, CA:TRUE
+ * keyUsage = critical, keyCertSign, cRLSign
+ * subjectKeyIdentifier = hash */
+export const kCompanyRoot = `-----BEGIN CERTIFICATE-----
+MIIDPTCCAiWgAwIBAgIJALZFl14YkoubMA0GCSqGSIb3DQEBCwUAMDwxGDAWBgNV
+BAoMD0V4YW1wbGUgQ29tcGFueTEgMB4GA1UEAwwXRXhhbXBsZSBDb21wYW55IFJv
+b3QgQ0EwHhcNMjYxMDIyMTIwODEzWhcNNDgwOTE2MTIwODEzWjA8MRgwFgYDVQQK
+DA9FeGFtcGxlIENvbXBhbnkxIDAeBgNVBAMMF0V4YW1wbGUgQ29tcGFueSBSb290
+IENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzkHegPLhXc2KgQxi
+TvBGvm1Ixy6r5AzKckMgBKr+iLWbnMnMb5Eqzr/nCvPIh4aTtz9YquhLPFgfTagK
+C9D2k1xTn5dRcn653hNccQX7ZCFvHGpsvS8k5NZFeCFCySaIqYViqUIU0D6n42Z8
+KMZsUwM4b1JlGTZY/HnK5zCtu1hmZBQoW25Au4LQ+BpHueGU1gmTEbM21DJfEJcj
+0WdJ2xXbVb4inaJAQ8RrJ00zt0CheamEPLrUV9X5Y+lEan9qGAiPhaGZyikxr7T7
+l29ELCtgUJLMuSgDgnibarX51NFWu+BGtzJNR4RCN5ZcYbdZRxSuYZJdh01OL0Dr
+FxlgGQIDAQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBBjAd
+BgNVHQ4EFgQUH10DzfyRpBG2IGdJoXZ080zlRYQwDQYJKoZIhvcNAQELBQADggEB
+AAFpSkiESRknLhGGlgUt1XYgM87b01RrJI8p5e7BjWQOCJC/67CrxWf/0Bw0Z4Uu
+zWhR0yv4NpfMT6c8QRTu3xOoMaShRtmsWANw7tMFdCxy+W4gu5Qe5DuthdFVevzl
+2CDgsSbVFZvfHRJIwr3+x3X4B0wo4OJXhk0WLztFC8p8Ovo+Qo+tgEQWaz/Eipia
+wL6nlELlz4TOARSzYPDAygkUpcrSUECMuH1QL6fQwr0TZ/ParbCKTNZsMHyrcTCo
+5NzGkOAZwGR9QsEwefA0vh9dwT76ZLh/N/mNykUgQRYsQS3zRh36niaGGgKhpkjr
+Of0GzDEUXYkGoMcKCbiTSEU=
+-----END CERTIFICATE-----
+`;
+
+/** basicConstraints = critical, CA:FALSE
+ * keyUsage = critical, digitalSignature, keyEncipherment
+ * extendedKeyUsage = emailProtection
+ * subjectAltName = email:alice@example.com */
+export const kCompanyAlice = `-----BEGIN CERTIFICATE-----
+MIIDfjCCAmagAwIBAgIJALyR2T9Pv6q2MA0GCSqGSIb3DQEBCwUAMDwxGDAWBgNV
+BAoMD0V4YW1wbGUgQ29tcGFueTEgMB4GA1UEAwwXRXhhbXBsZSBDb21wYW55IFJv
+b3QgQ0EwHhcNMjYxMDIyMTIwODEzWhcNNDYxMDE3MTIwODEzWjAqMRgwFgYDVQQK
+DA9FeGFtcGxlIENvbXBhbnkxDjAMBgNVBAMMBUFsaWNlMIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEArsban9zeKhIb51sBIfhuo1B3WpUTSvPTuWMsDfCp
+4gaFBS/iV3mBvcdjgKUhUixrLnMc+tRbI3tq0vl8Jpt0JRzXNeE4Ur+uwz2Abl11
+UzLp+cQueYIdxEtft89HiNkD8nnTar6K/dHizsl+OjmHT/WKz9Ral0uI/kp9W5Av
+DOsojDwT7UoMbb8q9ZyUCNBqvKxPOlW+pcdIoERz6kbbSMW5NtU/2t+Pr2brM7RI
+pCNCZwbRmnG40uxw+kRwzRIdLNDoxb3Mued8D2nZFl2WlU7tEstWHoRPu4V+T61N
+q9GV3kNeEdzbWGEDIJ4PrgTFgidpFr0xpGT82J7ciUDVrQIDAQABo4GUMIGRMAwG
+A1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwME
+MBwGA1UdEQQVMBOBEWFsaWNlQGV4YW1wbGUuY29tMB0GA1UdDgQWBBQmrqKM/MAq
+m23VqSdKKc6sllai6zAfBgNVHSMEGDAWgBQfXQPN/JGkEbYgZ0mhdnTzTOVFhDAN
+BgkqhkiG9w0BAQsFAAOCAQEAcvIiCyeLMZz3EDG5Uv43L/GFtNWTy3uHWKrGq03o
+X3N4JMufr2bDEJ6iwboqtuyRqk9V60YcE7y/zdEPelBH0bG5CmeoUMk+hc/S64kF
+J1htiJw5XVItUgRrg53Ur8F+Fn7EXEv+AQbz733rgt4AWN6le1ctn/FY+cZ914t2
+0WSprYHbKpCFYZB7413gG77sg1APZRIybaeH19k3Nyj/2kyp8bSIP4zZscACVtz9
+QjI83BACY1rF0Cs/8y5FkbN61jWm4xYM24O1gNokKCmfNPvyJJ5ZYis2qDOVwpzG
+xv3wfO/b60beZ0k3p3WmAfxO0bsuj9UpR4upFcAX1CQ+5Q==
+-----END CERTIFICATE-----
+`;

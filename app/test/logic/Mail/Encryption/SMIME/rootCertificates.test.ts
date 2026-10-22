@@ -1,7 +1,7 @@
 import { SMIMEPublicKey, KeyStatus } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEPublicKey";
 import { TrustLevel } from "../../../../../logic/Mail/Encryption/enums";
 import { appGlobal } from "../../../../../logic/app";
-import { kISRGRootX1, kLetsEncryptR11, kSectigoEmailCAR36 } from "./rootCertificates";
+import { kISRGRootX1, kLetsEncryptR11, kSectigoEmailCAR36, kCompanyRoot, kCompanyAlice } from "./rootCertificates";
 import { afterEach, beforeEach, expect, test, describe, vi } from "vitest";
 
 // The browser has this, but Node does not.
@@ -17,18 +17,19 @@ globalThis.indexedDB ??= {
   },
 } as any;
 
-// Like Node's `tls.getCACertificates()`, whose "bundled" roots are for websites.
+// Like Node's `tls.getCACertificates()`: The "bundled" roots are for websites,
+// and the OS has them, too, plus the company's own root.
 // `SMIMEPublicKey` caches the CA certificates per process, so this is the same for all tests in this file.
 appGlobal.remoteApp = {
   async getCACertificates(type: string): Promise<string[]> {
-    return type == "bundled" ? [kISRGRootX1] : [];
+    return type == "bundled" ? [kISRGRootX1] : type == "system" ? [kISRGRootX1, kCompanyRoot] : [];
   },
 };
 
 // The real certificates expire
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date("2026-10-22T12:00:00Z"));
+  vi.setSystemTime(new Date("2027-01-01T00:00:00Z"));
 });
 
 afterEach(() => {
@@ -46,6 +47,13 @@ describe("S/MIME root certificates", () => {
   test("a root that Mozilla trusts only for websites does not confirm the certificate", async () => {
     let key = await SMIMEPublicKey.importPublicKey(kLetsEncryptR11);
     expect(await key.keyStatus()).not.toBe(KeyStatus.Valid);
-    expect(key.trustLevel).not.toBe(TrustLevel.ThirdParty);
+    expect(key.trustLevel).toBe(TrustLevel.Sender);
+  });
+
+  test("a company root that the OS trusts confirms the certificate", async () => {
+    let key = await SMIMEPublicKey.importPublicKey(kCompanyAlice);
+    expect(await key.keyStatus()).toBe(KeyStatus.Valid);
+    expect(key.trustLevel).toBe(TrustLevel.OS);
+    expect(key.caName).toBe("Example Company Root CA");
   });
 });
