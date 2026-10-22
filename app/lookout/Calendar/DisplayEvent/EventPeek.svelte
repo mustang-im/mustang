@@ -26,6 +26,9 @@
         <button class="peek-button" on:click={onDelete}>{$t`Remove from Calendar`}</button>
       </hbox>
     {:else if $event.isIncomingMeeting}
+      <hbox class="email-organizer">
+        <Checkbox label={$t`Email organizer *=> Send the response to the meeting invitation to the organizer`} bind:checked={emailOrganizer} />
+      </hbox>
       <hbox class="buttons">
         <button class="peek-button accept" class:chosen={$event.myParticipation == InvitationResponse.Accept}
           on:click={() => respond(InvitationResponse.Accept)}>
@@ -64,12 +67,14 @@
   import TentativeIcon from "lucide-svelte/icons/circle-help";
   import DeclineIcon from "lucide-svelte/icons/x";
   import DetailsGrid from "./DetailsGrid.svelte";
+  import Checkbox from "../../Shared/Form/Checkbox.svelte";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
   export let anchor: HTMLElement;
 
   let popupOpen = true;
+  let emailOrganizer = true;
   $: if (!popupOpen) {
     onClose();
   }
@@ -97,7 +102,7 @@
   }
 
   function respond(response: InvitationResponseInMessage) {
-    catchErrors(() => event.respondToInvitation(response));
+    catchErrors(() => event.respondToInvitation(response, emailOrganizer));
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
@@ -178,6 +183,12 @@
     gap: 8px;
     margin-block-start: 16px;
     flex-wrap: wrap;
+  }
+  .email-organizer {
+    margin-block-start: 16px;
+  }
+  .email-organizer + .buttons {
+    margin-block-start: 8px;
   }
   .peek-button {
     display: flex;

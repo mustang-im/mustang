@@ -46,14 +46,20 @@
     {:else if canRespond}
       <hbox class="respond" role="group" aria-label={$t`Respond *=> Buttons to answer the meeting invitation`}>
         <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
-          pressed={response == InvitationResponse.Accept}
-          onClick={() => onRespond(InvitationResponse.Accept)} />
+          pressed={response == InvitationResponse.Accept}>
+          <ResponseMenuItems checked={response == InvitationResponse.Accept}
+            onRespond={sendReply => onRespond(InvitationResponse.Accept, sendReply)} />
+        </ResponseButton>
         <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
-          pressed={response == InvitationResponse.Tentative}
-          onClick={() => onRespond(InvitationResponse.Tentative)} />
+          pressed={response == InvitationResponse.Tentative}>
+          <ResponseMenuItems checked={response == InvitationResponse.Tentative}
+            onRespond={sendReply => onRespond(InvitationResponse.Tentative, sendReply)} />
+        </ResponseButton>
         <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
-          pressed={response == InvitationResponse.Decline}
-          onClick={() => onRespond(InvitationResponse.Decline)} />
+          pressed={response == InvitationResponse.Decline}>
+          <ResponseMenuItems checked={response == InvitationResponse.Decline}
+            onRespond={sendReply => onRespond(InvitationResponse.Decline, sendReply)} />
+        </ResponseButton>
       </hbox>
     {/if}
     <grid class="details">
@@ -93,6 +99,7 @@
   import { eventWhenText, eventConflict, myResponseText } from "../EditEvent/EventFormInfo";
   import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
   import ResponseButton from "./ResponseButton.svelte";
+  import ResponseMenuItems from "./ResponseMenuItems.svelte";
   import { catchErrors } from "../../../frontend/Util/error";
   import InfoIcon from "lucide-svelte/icons/info";
   import WarningIcon from "lucide-svelte/icons/triangle-alert";
@@ -198,8 +205,8 @@
   }
   // </copied>
 
-  async function onRespond(newResponse: InvitationResponseInMessage) {
-    await incoming.respondToInvitationFromMail(newResponse);
+  async function onRespond(newResponse: InvitationResponseInMessage, sendReply: boolean) {
+    await incoming.respondToInvitationFromMail(newResponse, sendReply);
     response = newResponse;
   }
 

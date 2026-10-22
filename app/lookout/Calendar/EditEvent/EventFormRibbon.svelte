@@ -7,25 +7,16 @@
             onClick={onDelete} />
         {:else}
           <RibbonMenuButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept">
-            <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
-              checked={$event.myParticipation == InvitationResponse.Accept}
-              onClick={() => respond(InvitationResponse.Accept)} />
-            <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
-              onClick={() => respond(InvitationResponse.Accept, false)} />
+            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Accept}
+              onRespond={sendReply => respond(InvitationResponse.Accept, sendReply)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative">
-            <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
-              checked={$event.myParticipation == InvitationResponse.Tentative}
-              onClick={() => respond(InvitationResponse.Tentative)} />
-            <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
-              onClick={() => respond(InvitationResponse.Tentative, false)} />
+            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Tentative}
+              onRespond={sendReply => respond(InvitationResponse.Tentative, sendReply)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline">
-            <MenuItem label={$t`Send the Response Now`} icon={SendIcon}
-              checked={$event.myParticipation == InvitationResponse.Decline}
-              onClick={() => respond(InvitationResponse.Decline)} />
-            <MenuItem label={$t`Do Not Send a Response`} icon={NoResponseIcon}
-              onClick={() => respond(InvitationResponse.Decline, false)} />
+            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Decline}
+              onRespond={sendReply => respond(InvitationResponse.Decline, sendReply)} />
           </RibbonMenuButton>
         {/if}
       </RibbonGroup>
@@ -205,6 +196,7 @@
   import { selectedDate, selectedEvent, startDate } from "../../../frontend/Calendar/selected";
   import { askYesNo } from "../../Shared/Dialog/MessageBox";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import ResponseMenuItems from "../Invitation/ResponseMenuItems.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import SaveIcon from "lucide-svelte/icons/save";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
@@ -218,8 +210,6 @@
   import JoinIcon from "lucide-svelte/icons/log-in";
   import OfflineIcon from "lucide-svelte/icons/video-off";
   import LinkIcon from "lucide-svelte/icons/link";
-  import SendIcon from "lucide-svelte/icons/send";
-  import NoResponseIcon from "lucide-svelte/icons/mail-x";
   import CalendarIcon from "lucide-svelte/icons/calendar-days";
   import CheckNamesIcon from "lucide-svelte/icons/user-check";
   import AddressBookIcon from "lucide-svelte/icons/book-user";
@@ -307,7 +297,7 @@
     await navigator.clipboard.writeText(lines.join("\n"));
   }
 
-  async function respond(response: InvitationResponseInMessage, sendReply = true) {
+  async function respond(response: InvitationResponseInMessage, sendReply: boolean) {
     await event.respondToInvitation(response, sendReply);
     flow.close();
   }

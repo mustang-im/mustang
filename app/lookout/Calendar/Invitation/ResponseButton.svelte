@@ -1,22 +1,44 @@
-<button class="response-button {classes}" class:pressed class:running aria-pressed={pressed}
-  disabled={!!disabled || running} title={typeof disabled == "string" ? disabled : label}
-  on:click={onClicked}>
-  <svelte:component this={icon} size={16} />
-  <span>{label}</span>
-</button>
+<div class="response-button-wrapper">
+  <button class="response-button {classes}" class:pressed class:running aria-pressed={pressed}
+    aria-haspopup={hasMenu ? "menu" : undefined} aria-expanded={hasMenu ? isMenuOpen : undefined}
+    disabled={!!disabled || running} title={typeof disabled == "string" ? disabled : label}
+    on:click={onClicked} bind:this={buttonEl}>
+    <svelte:component this={icon} size={16} />
+    <span>{label}</span>
+    {#if hasMenu}
+      <span class="chevron"><ChevronDownIcon size={12} /></span>
+    {/if}
+  </button>
+  {#if hasMenu}
+    <Menu bind:isMenuOpen anchor={buttonEl} placement="bottom-start">
+      <slot />
+    </Menu>
+  {/if}
+</div>
 
 <script lang="ts">
+  import Menu from "../../Shared/Menu/Menu.svelte";
   import { showError } from "../../../frontend/Util/error";
+  import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
 
   export let label: string;
   export let icon: ConstructorOfATypedSvelteComponent;
-  export let onClick: () => Promise<void> | void;
+  export let onClick: () => Promise<void> | void = null;
   export let pressed = false;
   export let disabled: boolean | string = false;
   export let classes = "";
 
+  const hasMenu = !!$$slots.default;
+  let isMenuOpen = false;
+  let buttonEl: HTMLButtonElement;
+
   let running = false;
-  async function onClicked() {
+  async function onClicked(event: MouseEvent) {
+    if (hasMenu) {
+      event.stopPropagation();
+      isMenuOpen = !isMenuOpen;
+      return;
+    }
     if (running) {
       return;
     }
@@ -32,6 +54,9 @@
 </script>
 
 <style>
+  .response-button-wrapper {
+    display: contents;
+  }
   .response-button {
     display: flex;
     align-items: center;
@@ -75,5 +100,11 @@
   }
   .response-button.decline :global(svg) {
     color: var(--lo-danger);
+  }
+  .response-button .chevron {
+    display: flex;
+  }
+  .response-button .chevron :global(svg) {
+    color: var(--lo-fg-secondary);
   }
 </style>

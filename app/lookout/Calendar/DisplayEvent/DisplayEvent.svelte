@@ -15,14 +15,20 @@
       {:else if $event.isIncomingMeeting}
         <hbox class="buttons">
           <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
-            pressed={$event.myParticipation == InvitationResponse.Accept}
-            onClick={() => event.respondToInvitation(InvitationResponse.Accept)} />
+            pressed={$event.myParticipation == InvitationResponse.Accept}>
+            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Accept}
+              onRespond={sendReply => event.respondToInvitation(InvitationResponse.Accept, sendReply)} />
+          </ResponseButton>
           <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
-            pressed={$event.myParticipation == InvitationResponse.Tentative}
-            onClick={() => event.respondToInvitation(InvitationResponse.Tentative)} />
+            pressed={$event.myParticipation == InvitationResponse.Tentative}>
+            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Tentative}
+              onRespond={sendReply => event.respondToInvitation(InvitationResponse.Tentative, sendReply)} />
+          </ResponseButton>
           <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
-            pressed={$event.myParticipation == InvitationResponse.Decline}
-            onClick={() => event.respondToInvitation(InvitationResponse.Decline)} />
+            pressed={$event.myParticipation == InvitationResponse.Decline}>
+            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Decline}
+              onRespond={sendReply => event.respondToInvitation(InvitationResponse.Decline, sendReply)} />
+          </ResponseButton>
         </hbox>
       {/if}
     </vbox>
@@ -49,6 +55,7 @@
   import { CalendarActions } from "../CalendarActions";
   import DetailsGrid from "./DetailsGrid.svelte";
   import ResponseButton from "../Invitation/ResponseButton.svelte";
+  import ResponseMenuItems from "../Invitation/ResponseMenuItems.svelte";
   import WebView from "../../../frontend/Shared/WebView.svelte";
   import cssContent from "../../../frontend/Mail/Message/content.css?inline";
   import cssBody from "../../../frontend/Mail/Message/content-body.css?inline";
