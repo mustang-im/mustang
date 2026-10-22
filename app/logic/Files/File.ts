@@ -5,6 +5,7 @@ import { openOSAppForFile } from "../util/os-integration";
 import { getFilesDir } from "../util/backend-wrapper";
 import { appGlobal } from "../app";
 import { RunOnce } from "../util/flow/RunOnce";
+import { Lock } from "../util/flow/Lock";
 import { notifyChangedProperty } from "../util/Observable";
 import { NotImplemented, UserError, assert, type URLString } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -36,7 +37,7 @@ export class File extends FileOrDirectory {
   protected readonly downloadRunOnce = new RunOnce<void>();
   protected readonly readFileRunOnce = new RunOnce<void>();
   protected readonly getURLRunOnce = new RunOnce<URLString | null>();
-  protected removingLocalFile: Promise<File | null> | null = null;
+  protected readonly localFileLock = new Lock();
 
   /** If a File is GCed, the registered blob: URL is revoked automatically.
    * @see Abstract/Attachment. */
@@ -126,15 +127,15 @@ export class File extends FileOrDirectory {
 
   protected async saveAsLocalFile() {
     assert(this.contents, "Need contents");
+    let lock = await this.localFileLock.lock(); // waits until `deleteStaleLocalCache()` moved the old file away
     try {
-      await this.removingLocalFile;
-    } catch (ex) {
-      // The caller of `deleteStaleLocalCache()` reports it
+      this.filepathLocal ??= await this.getLocalFilePath();
+      let contents = new Uint8Array(await this.contents.arrayBuffer());
+      await appGlobal.remoteApp.writeFile(this.filepathLocal, 0o600, contents);
+      await this.setLocalFileLastMod();
+    } finally {
+      lock.release();
     }
-    this.filepathLocal ??= await this.getLocalFilePath();
-    let contents = new Uint8Array(await this.contents.arrayBuffer());
-    await appGlobal.remoteApp.writeFile(this.filepathLocal, 0o600, contents);
-    await this.setLocalFileLastMod();
     await this.saveLocally(); // file path as marker that we have the file on disk
     // TODO Watch local file for changes, in case user edited, and then trigger upload
   }
@@ -183,35 +184,38 @@ export class File extends FileOrDirectory {
     }
   }
 
+  /** Use instead of `deleteLocalCache()` when the file changed on the server.
+   * If the user edited the local file, it renames it to a conflicted copy and uploads that to the server. */
   async deleteStaleLocalCache() {
     let lastMod = this.lastMod;
     let filepathLocal = this.forgetLocalCache();
     if (!filepathLocal) {
       return;
     }
-    this.removingLocalFile = this.deleteOrRenameLocalFile(filepathLocal, lastMod);
-    let conflictedCopy = await this.removingLocalFile;
-    if (!conflictedCopy) {
-      return;
+    let conflictedCopy: File;
+    let lock = await this.localFileLock.lock();
+    try {
+      // Not edited locally, i.e. still has the time of the server file: delete it
+      let stat = await appGlobal.remoteApp.statFile(filepathLocal);
+      if (Math.abs(stat.lastMod.getTime() - lastMod.getTime()) < 2000) {
+        await appGlobal.remoteApp.deleteFile(filepathLocal);
+        return;
+      }
+      // Edited locally: rename it to a conflicted copy
+      conflictedCopy = this.parent.newFile(conflictedCopyName(this, stat.lastMod));
+      conflictedCopy.filepathLocal = await conflictedCopy.getLocalFilePath();
+      await appGlobal.remoteApp.fs.rename(filepathLocal, conflictedCopy.filepathLocal);
+    } finally {
+      lock.release();
     }
+    // Upload the conflicted copy, with the renamed file as its local copy
     await conflictedCopy.upload();
     this.parent.files.add(conflictedCopy);
     await conflictedCopy.setLocalFileLastMod();
     await conflictedCopy.saveLocally();
   }
 
-  protected async deleteOrRenameLocalFile(filepathLocal: string, lastMod: Date): Promise<File | null> {
-    let stat = await appGlobal.remoteApp.statFile(filepathLocal);
-    if (Math.abs(stat.lastMod.getTime() - lastMod.getTime()) < 2000) {
-      await appGlobal.remoteApp.deleteFile(filepathLocal);
-      return null;
-    }
-    let conflictedCopy = this.parent.newFile(conflictedCopyName(this, stat.lastMod));
-    conflictedCopy.filepathLocal = await conflictedCopy.getLocalFilePath();
-    await appGlobal.remoteApp.fs.rename(filepathLocal, conflictedCopy.filepathLocal);
-    return conflictedCopy;
-  }
-
+  /** @returns Path of the file on disk, which we no longer reference, so the caller must delete or rename it. null = not on disk */
   protected forgetLocalCache(): string | null {
     this.clearURL();
     this.contents = null;
