@@ -124,12 +124,13 @@ export class SMIMEPublicKey extends PublicKey {
       }
       cert = signer;
     }
+    const kAcceptX509v1Roots = false;
     for (let type of ["bundled", "system", "extra"]) {
       for (let ca of await lazyGetCACertificates(type)) {
         if (await verifySignature(cert, ca)) {
           let root = new SMIMEPublicKey();
           await root.setCertificate(ca);
-          if (root.obsolete || !root.allowsEMailProtection()) {
+          if (root.obsolete || !root.allowsEMailProtection() || (!kAcceptX509v1Roots && !ca.tbsCertificate.version)) {
             continue;
           }
           let caTrust = type == "bundled" ? TrustLevel.ThirdParty : type == "system" ? TrustLevel.OS : TrustLevel.Personal;
@@ -171,7 +172,8 @@ export class SMIMEPublicKey extends PublicKey {
     if (!extKeyUsage) {
       return true;
     }
-    return ExtKeyUsage.decode(extKeyUsage).some(purpose => purpose == "emailProtection" || purpose == "anyExtendedKeyUsage");
+    const kAcceptAnyPurpose = false;
+    return ExtKeyUsage.decode(extKeyUsage).some(purpose => purpose == "emailProtection" || (kAcceptAnyPurpose && purpose == "anyExtendedKeyUsage"));
   }
 
   protected extension(extnID: string): Uint8Array | undefined {

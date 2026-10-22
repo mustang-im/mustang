@@ -3,7 +3,7 @@ import { SMIMEPublicKey, KeyStatus } from "../../../../../logic/Mail/Encryption/
 import { SignedData } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEASN1";
 import { verifySignedData } from "../../../../../logic/Mail/Encryption/SMIME/SMIMEVerify";
 import { TrustLevel, trustOrder } from "../../../../../logic/Mail/Encryption/enums";
-import { kRootCA, kPathLen0CA, kAlice, kSubCA, kCarol, kNoCertSignCA, kBob, kMailCA, kTLSServer, kCEO, kOldCertificate, kDan, kGrace, kTLSCA, kHeidi, kTLSRootCA, kJudy, kExpiredRootCA, kIvan, kSignedContent, kSignedByAlice, kSignedByErin } from "./certificateChains";
+import { kRootCA, kPathLen0CA, kAlice, kSubCA, kCarol, kNoCertSignCA, kBob, kMailCA, kTLSServer, kCEO, kOldCertificate, kDan, kGrace, kTLSCA, kHeidi, kTLSRootCA, kJudy, kExpiredRootCA, kIvan, kX509v1RootCA, kFrank, kSignedContent, kSignedByAlice, kSignedByErin } from "./certificateChains";
 import { expect, test, describe } from "vitest";
 
 // The browser has this, but Node does not.
@@ -23,7 +23,7 @@ globalThis.indexedDB ??= {
 // so this has to be the same for all tests in this file.
 appGlobal.remoteApp = {
   async getCACertificates(type: string): Promise<string[]> {
-    return type == "bundled" ? [kRootCA, kTLSRootCA, kExpiredRootCA] : [];
+    return type == "bundled" ? [kRootCA, kTLSRootCA, kExpiredRootCA, kX509v1RootCA] : [];
   },
 };
 
@@ -61,11 +61,10 @@ describe("Certificate chain", () => {
     await expectNotTrusted(kTLSServer + kMailCA);
   });
 
-  // As the Windows chain engine (Outlook) does. Thunderbird and Apple Mail don't.
-  test("of a certificate for any purpose is trusted for email", async () => {
-    let key = await SMIMEPublicKey.importPublicKey(kGrace + kMailCA);
-    expect(await key.keyStatus()).toBe(KeyStatus.Valid);
-    expect(key.trustLevel).toBe(TrustLevel.ThirdParty);
+  // The Windows chain engine (Outlook) accepts it, Thunderbird and Apple Mail don't.
+  // Only with `kAcceptAnyPurpose` in `allowsEMailProtection()`, which is off.
+  test("of a certificate for any purpose is not trusted for email", async () => {
+    await expectNotTrusted(kGrace + kMailCA);
   });
 
   test("through a CA for TLS server certificates is not trusted for email", async () => {
@@ -78,6 +77,12 @@ describe("Certificate chain", () => {
 
   test("to an expired root is not trusted", async () => {
     await expectNotTrusted(kIvan);
+  });
+
+  // Windows, Thunderbird and Apple Mail accept it.
+  // Only with `kAcceptX509v1Roots` in `keyStatus()`, which is off.
+  test("to a version 1 root is not trusted", async () => {
+    await expectNotTrusted(kFrank);
   });
 });
 
