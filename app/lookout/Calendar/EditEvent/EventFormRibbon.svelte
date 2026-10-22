@@ -7,15 +7,15 @@
             onClick={onDelete} />
         {:else}
           <RibbonMenuButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept">
-            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Accept}
+            <ResponseMenuItems response={InvitationResponse.Accept} checked={$event.myParticipation == InvitationResponse.Accept}
               onRespond={sendReply => respond(InvitationResponse.Accept, sendReply)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative">
-            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Tentative}
+            <ResponseMenuItems response={InvitationResponse.Tentative} checked={$event.myParticipation == InvitationResponse.Tentative}
               onRespond={sendReply => respond(InvitationResponse.Tentative, sendReply)} />
           </RibbonMenuButton>
           <RibbonMenuButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline">
-            <ResponseMenuItems checked={$event.myParticipation == InvitationResponse.Decline}
+            <ResponseMenuItems response={InvitationResponse.Decline} checked={$event.myParticipation == InvitationResponse.Decline}
               onRespond={sendReply => respond(InvitationResponse.Decline, sendReply)} />
           </RibbonMenuButton>
         {/if}

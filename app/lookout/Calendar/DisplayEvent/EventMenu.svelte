@@ -4,7 +4,7 @@
   <MenuDivider />
   {#each responses as response}
     <SubMenu label={response.label} icon={response.icon} classes={response.classes}>
-      <ResponseMenuItems checked={event.myParticipation == response.value}
+      <ResponseMenuItems response={response.value} checked={event.myParticipation == response.value}
         onRespond={sendReply => event.respondToInvitation(response.value, sendReply)} />
     </SubMenu>
   {/each}
