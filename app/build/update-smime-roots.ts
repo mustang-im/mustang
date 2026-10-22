@@ -5,20 +5,20 @@ let tag = process.argv[2];
 if (!/^NSS_[0-9_]+_RTM$/.test(tag ?? "")) {
   throw new Error("Usage: npm run smime:update-roots NSS_3_132_RTM");
 }
-let certdata: string | null = null;
-for (let url of [
-  `https://hg.mozilla.org/projects/nss/raw-file/${tag}/lib/ckfw/builtins/certdata.txt`,
-  `https://raw.githubusercontent.com/mozilla/nss/${tag}/lib/ckfw/builtins/certdata.txt`,
-]) {
-  let response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`${url}: ${response.status} ${response.statusText}`);
-  }
-  let text = await response.text();
-  if (certdata != null && text != certdata) {
-    throw new Error(`${url} differs from the other download`);
-  }
-  certdata = text;
+// These roots decide which CAs we trust. Fetch the file from 2 independent hosts and use it
+// only if both copies are identical, so that a single compromised host can't change it.
+let response = await fetch(`https://hg.mozilla.org/projects/nss/raw-file/${tag}/lib/ckfw/builtins/certdata.txt`);
+if (!response.ok) {
+  throw new Error(`hg.mozilla.org: ${response.status} ${response.statusText}`);
+}
+let certdata = await response.text();
+let responseAlt = await fetch(`https://raw.githubusercontent.com/mozilla/nss/${tag}/lib/ckfw/builtins/certdata.txt`);
+if (!responseAlt.ok) {
+  throw new Error(`GitHub: ${responseAlt.status} ${responseAlt.statusText}`);
+}
+let certdataAlt = await responseAlt.text();
+if (certdata != certdataAlt) {
+  throw new Error("certdata.txt from hg.mozilla.org and from GitHub differ");
 }
 
 let objects: Record<string, string | Buffer>[] = [];
