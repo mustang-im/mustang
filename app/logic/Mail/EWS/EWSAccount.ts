@@ -2,9 +2,10 @@ import { ExchangeMailAccount } from "./ExchangeMailAccount";
 import { AuthMethod, type Account } from "../../Abstract/Account";
 import type { EMail } from "../EMail";
 import { SpecialFolder, MailShareCombinedPermissions, type Folder, type MailShareIndividualPermissions } from "../Folder";
-import { EWSFolder, getEWSItem } from "./EWSFolder";
+import { EWSFolder, getEWSItem, getEWSItems } from "./EWSFolder";
 import { EWSSearchEMail } from "./EWSSearchEMail";
 import { EWSFilterRule } from "./EWSFilterRule";
+import { OutlookRulesCopy } from "./OutlookRulesCopy";
 import type { FilterRuleAction } from "../FilterRules/FilterRuleAction";
 import { deleteExchangePermissions, setExchangePermissions } from "./ExchangePermission";
 import { EWSCreateItemRequest } from "./Request/EWSCreateItemRequest";
@@ -1340,11 +1341,64 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
 
   protected async fetchServerFilterRules(): Promise<FilterRuleAction[]> {
     let response = await this.callEWS({ m$GetInboxRules: {} });
-    this.setOutlookRulesExist(response.OutlookRuleBlobExists == "true");
-    return ensureArray(response.InboxRules?.Rule)
+    let rules = ensureArray(response.InboxRules?.Rule)
       .map(json => this.newServerFilterRule(json))
       .sort((a, b) => a.priority - b.priority)
       .map(serverRule => serverRule.toFilterRule());
+    await this.checkOutlookRulesCopy(rules, response.OutlookRuleBlobExists == "true");
+    return rules;
+  }
+
+  protected async fetchOutlookRulesStreams(): Promise<Uint8Array[]> {
+    let request = {
+      m$FindItem: {
+        Traversal: "Associated",
+        m$ItemShape: {
+          t$BaseShape: "IdOnly",
+        },
+        m$Restriction: {
+          t$IsEqualTo: {
+            t$FieldURI: {
+              FieldURI: "item:ItemClass",
+            },
+            t$FieldURIOrConstant: {
+              t$Constant: {
+                Value: OutlookRulesCopy.kItemClass,
+              },
+            },
+          },
+        },
+        m$ParentFolderIds: {
+          t$DistinguishedFolderId: {
+            Id: "inbox",
+          },
+        },
+      },
+    };
+    let result = await this.callEWS(request);
+    let streams: Uint8Array[] = [];
+    for (let item of getEWSItems(result.RootFolder?.Items ?? {})) {
+      let response = await this.callEWS({
+        m$GetItem: {
+          m$ItemShape: {
+            t$BaseShape: "IdOnly",
+            t$AdditionalProperties: {
+              t$ExtendedFieldURI: {
+                PropertyTag: OutlookRulesCopy.kPropertyTag,
+                PropertyType: "Binary",
+              },
+            },
+          },
+          m$ItemIds: {
+            t$ItemId: {
+              Id: sanitize.nonemptystring(item?.ItemId?.Id),
+            },
+          },
+        },
+      });
+      streams.push(base64ToUint8Array(sanitize.nonemptystring(getEWSItem(response.Items)?.ExtendedProperty?.Value)));
+    }
+    return streams;
   }
 
   protected async uploadServerFilterRules(rules: FilterRuleAction[], deletedIDs: string[]): Promise<void> {
@@ -1364,9 +1418,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (!createOperations.length && !setOperations.length && !deletedIDs.length) {
       return;
     }
+    await this.checkOutlookRulesCopyAgain();
     let request = {
       m$UpdateInboxRules: {
-        m$RemoveOutlookRuleBlob: false,
+        m$RemoveOutlookRuleBlob: this.mayDeleteOutlookRulesCopy,
         m$Operations: {
           t$CreateRuleOperation: createOperations,
           t$SetRuleOperation: setOperations,

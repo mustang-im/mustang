@@ -3,6 +3,7 @@ import { appGlobal } from "../../../../logic/app.ts"; // defeats circular import
 import { OWAAccount } from "../../../../logic/Mail/OWA/OWAAccount";
 import { FilterRuleAction } from "../../../../logic/Mail/FilterRules/FilterRuleAction";
 import { Person } from "../../../../logic/Abstract/Person";
+import { outlookRulesStream, base64 } from "../EWS/outlookRulesStream";
 import { expect, test } from "vitest";
 
 appGlobal.me ??= new Person();
@@ -40,10 +41,20 @@ function serverRules(): any[] {
 class TestOWAAccount extends OWAAccount {
   readonly requests: any[] = [];
   readonly rules = serverRules();
+  /** The copy of the rules that classic Outlook keeps, @see `OutlookRulesCopy` */
+  outlookRulesStreams: Uint8Array[] = [];
 
   async callOWA(request: any): Promise<any> {
     let json = JSON.parse(JSON.stringify(request));
     this.requests.push({ action: request.action, json });
+    if (request.action == "FindItem") {
+      expect(json.Body.Traversal).toBe("Associated");
+      return { RootFolder: { Items: this.outlookRulesStreams.map((_stream, i) => ({ ItemId: { Id: "copy-" + i } })) } };
+    }
+    if (request.action == "GetItem") {
+      let stream = this.outlookRulesStreams[Number(json.Body.ItemIds[0].Id.replace("copy-", ""))];
+      return { Items: [{ ExtendedProperty: [{ ExtendedFieldURI: { PropertyTag: "0x6802", PropertyType: "Binary" }, Value: base64(stream) }] }] };
+    }
     if (request.action == "GetInboxRule") {
       return { WasSuccessful: true, InboxRuleCollection: { InboxRules: this.rules } };
     }
@@ -59,7 +70,7 @@ class TestOWAAccount extends OWAAccount {
   }
 
   get changes(): any[] {
-    return this.requests.filter(request => request.action != "GetInboxRule");
+    return this.requests.filter(request => !["GetInboxRule", "FindItem", "GetItem"].includes(request.action));
   }
 }
 
@@ -184,4 +195,61 @@ test("OWA: While Outlook keeps its own copy of the rules, the server rules becom
 
   await expect(account.saveServerFilterRules()).rejects.toThrow(/Outlook/);
   expect(rule(account, "Newsletters").readOnlyReason).toMatch(/Outlook/);
+});
+
+test("OWA: When Outlook's copy of the rules has no rules of its own, the server rules stay editable, and Exchange may delete the copy", async () => {
+  let account = newTestAccount();
+  account.outlookRulesStreams = [outlookRulesStream([{ name: "Newsletters" }, { name: "Invoices" }])];
+
+  await account.refreshServerFilterRules();
+  expect(rule(account, "Invoices").readOnlyReason).toBeNull();
+  expect(account.serverFilterRulesNotice).toMatch(/Outlook/);
+
+  rule(account, "Invoices").criteria.bodyText = "bill";
+  account.requests.length = 0;
+  await account.saveServerFilterRules();
+
+  let change = account.changes[0];
+  expect(change.action).toBe("SetInboxRule");
+  expect(change.json.Force).toBe(true);
+  // It would hide the warning also for later changes in Outlook on the web
+  expect(change.json.AlwaysDeleteOutlookRulesBlob).toBe(false);
+  // Outlook may have changed its copy in the meantime
+  let actions = account.requests.map(request => request.action);
+  expect(actions.slice(0, actions.indexOf("SetInboxRule"))).toContain("GetItem");
+});
+
+test("OWA: The rules that only Outlook's copy of the rules has keep the server rules read-only, and the user sees their names", async () => {
+  let account = newTestAccount();
+  account.outlookRulesStreams = [outlookRulesStream([
+    { name: "Newsletters" },
+    { name: "Cc my boss", isForSentMail: true },
+    { name: "Invoices" },
+  ])];
+
+  await account.refreshServerFilterRules();
+
+  let reason = rule(account, "Invoices").readOnlyReason;
+  expect(reason).toContain("Cc my boss");
+  expect(reason).not.toContain("Newsletters");
+  expect(account.serverFilterRulesNotice).toBeNull();
+});
+
+test("OWA: If we can't look for Outlook's copy of the rules, the server asks before it deletes the copy", async () => {
+  let account = newTestAccount();
+  let callOWA = account.callOWA.bind(account);
+  account.callOWA = async (request: any) => {
+    if (request.action == "FindItem") {
+      throw new Error("FindItem is not available");
+    }
+    return await callOWA(request);
+  };
+
+  await account.refreshServerFilterRules();
+  expect(rule(account, "Invoices").readOnlyReason).toBeNull();
+  expect(account.dataErrors.length).toBe(1);
+
+  rule(account, "Invoices").criteria.bodyText = "bill";
+  await account.saveServerFilterRules();
+  expect(account.changes[0].json.Force).toBe(false);
 });
