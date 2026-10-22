@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
-import "../../../../logic/app"; // first, to resolve the import cycle around Abstract/Account.ts
-import { Calendar } from "../../../../logic/Calendar/Calendar";
-import { Participant } from "../../../../logic/Calendar/Participant";
-import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
-import { FreeBusy } from "../../../Calendar/EditEvent/FreeBusy";
+import "../../../logic/app"; // first, to resolve the import cycle around Abstract/Account.ts
+import { Calendar } from "../../../logic/Calendar/Calendar";
+import { Participant } from "../../../logic/Calendar/Participant";
+import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
+import { FreeBusy, FreeBusyStatus, SlotAvailability } from "../../../logic/Calendar/FreeBusy";
 import { expect, test } from "vitest";
 
 function at(hours: number, minutes = 0): Date {
@@ -96,4 +96,70 @@ test("Merge overlapping and touching intervals", () => {
     { from: at(9), to: at(11) },
     { from: at(13), to: at(14) },
   ]);
+});
+
+test("Keeps each appointment with its status and details, for display", () => {
+  let freeBusy = FreeBusy.fromAvailability([anna], [
+    { participant: anna, availability: [
+      { from: at(11), to: at(12), free: false, status: FreeBusyStatus.Tentative, title: "Lunch", location: "Canteen" },
+      { from: at(9), to: at(10), free: false },
+      { from: at(9, 30), to: at(10, 30), free: false, status: FreeBusyStatus.OutOfOffice },
+      { from: at(13), to: at(14), free: true, status: FreeBusyStatus.Free },
+    ] },
+  ]);
+  let row = freeBusy.rowFor(anna);
+  expect(row.appointments.map(appointment => [appointment.from, appointment.status, appointment.title, appointment.location])).toEqual([
+    [at(9), FreeBusyStatus.Busy, undefined, undefined],
+    [at(9, 30), FreeBusyStatus.OutOfOffice, undefined, undefined],
+    [at(11), FreeBusyStatus.Tentative, "Lunch", "Canteen"],
+  ]);
+  expect(row.busy).toEqual([
+    { from: at(9), to: at(10, 30) },
+    { from: at(11), to: at(12) },
+  ]);
+});
+
+function slotAt(slots: ReturnType<FreeBusy["slots"]>, hours: number) {
+  return slots.find(slot => slot.start.getTime() == at(hours).getTime());
+}
+
+test("Time slots: Free when everybody whose availability we know is free, busy when many are busy", async () => {
+  let freeBusy = await FreeBusy.load(new FreeBusyCalendar(), [anna, bert, carla], at(0), at(24));
+  let slots = freeBusy.slots([at(0)], 8, 16, 60);
+  expect(slots.contents.map(slot => slot.start)).toEqual([8, 9, 10, 11, 12, 13, 14, 15].map(hours => at(hours)));
+  expect(slots.contents.every(slot => slot.end.getTime() - slot.start.getTime() == 60 * 60 * 1000)).toBe(true);
+
+  let nine = slotAt(slots, 9);
+  expect(nine.busy.contents).toEqual([anna, bert]);
+  expect(nine.unknown.contents).toEqual([carla]);
+  expect(nine.availability).toBe(SlotAvailability.Busy);
+
+  let noon = slotAt(slots, 12);
+  expect(noon.free.contents).toEqual([anna, bert]);
+  expect(noon.unknown.contents).toEqual([carla]);
+  expect(noon.availability).toBe(SlotAvailability.Free);
+
+  let two = slotAt(slots, 14);
+  expect(two.busy.contents).toEqual([bert]);
+  expect(two.free.contents).toEqual([anna]);
+  expect(two.availability).toBe(SlotAvailability.Busy);
+
+  let dora = new Participant("dora@example.com", "Dora", InvitationResponse.Accept);
+  let withDora = FreeBusy.fromAvailability([anna, bert, dora], [
+    { participant: anna, availability: [] },
+    { participant: bert, availability: [{ from: at(14), to: at(15), free: false }] },
+    { participant: dora, availability: [] },
+  ]);
+  expect(slotAt(withDora.slots([at(0)], 8, 16, 60), 14).availability).toBe(SlotAvailability.Partly);
+});
+
+test("Time slots: Each of the days, and none when nobody's availability is known", async () => {
+  let freeBusy = await FreeBusy.load(new FreeBusyCalendar(), [anna, bert], at(0), at(24));
+  let nextDay = new Date(2026, 9, 16);
+  let slots = freeBusy.slots([at(0), nextDay], 8, 18, 30);
+  expect(slots.length).toBe(2 * 20);
+  expect(slots.last.end).toEqual(new Date(2026, 9, 16, 18));
+
+  let unknown = await FreeBusy.load(new Calendar(), [anna, bert], at(0), at(24));
+  expect(unknown.slots([at(0)], 8, 18, 60).isEmpty).toBe(true);
 });

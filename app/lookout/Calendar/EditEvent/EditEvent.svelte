@@ -82,7 +82,7 @@
   import SchedulingAssistant from "./SchedulingAssistant.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
   import SignaturesDialog, { openSignatures } from "../../Mail/Composer/SignaturesDialog.svelte";
-  import { FreeBusy } from "./FreeBusy";
+  import { FreeBusy } from "../../../logic/Calendar/FreeBusy";
   import { EditorTool } from "../../Shared/Editor/EditorTool";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";

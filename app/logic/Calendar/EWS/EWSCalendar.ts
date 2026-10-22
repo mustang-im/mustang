@@ -1,6 +1,7 @@
 import { ExchangeCalendar } from "./ExchangeCalendar";
 import { CalendarShareCombinedPermissions } from "../Calendar";
 import type { Participant } from "../Participant";
+import { FreeBusyStatus, type FreeBusyTime } from "../FreeBusy";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import { EWSEvent } from "./EWSEvent";
 import { EWSIncomingInvitation } from "./EWSIncomingInvitation";
@@ -50,7 +51,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
     return new EWSIncomingInvitation(this, message);
   }
 
-  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: { from: Date, to: Date, free: boolean }[] }[]> {
+  async arePersonsFree(participants: Participant[], from: Date, to: Date): Promise<{ participant: Participant, availability?: FreeBusyTime[] }[]> {
     let request = {
       m$GetUserAvailabilityRequest: {
         m$MailboxDataArray: {
@@ -66,7 +67,7 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
             t$StartTime: from.toISOString(),
             t$EndTime: to.toISOString(),
           },
-          t$RequestedView: "FreeBusy",
+          t$RequestedView: "Detailed",
         },
       },
     };
@@ -81,11 +82,20 @@ export class EWSCalendar extends ExchangeCalendar implements EWSSubscribable {
       }
       availabilities.push({
         participant,
-        availability: ensureArray(result.FreeBusyView.CalendarEventArray?.CalendarEvent).map(event => ({
-          from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
-          to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
-          free: event.BusyType == "Free",
-        })),
+        availability: ensureArray(result.FreeBusyView.CalendarEventArray?.CalendarEvent)
+          .filter(event => this.freeBusyStatus(event.BusyType))
+          .map(event => {
+            let status = this.freeBusyStatus(event.BusyType);
+            let details = sanitize.boolean(event.CalendarEventDetails?.IsPrivate, false) ? null : event.CalendarEventDetails;
+            return {
+              from: sanitize.date(sanitize.nonemptystring(event.StartTime) + "Z"),
+              to: sanitize.date(sanitize.nonemptystring(event.EndTime) + "Z"),
+              free: status == FreeBusyStatus.Free,
+              status,
+              title: sanitize.label(details?.Subject, null),
+              location: sanitize.label(details?.Location, null),
+            };
+          }),
       });
     }
     return availabilities;
