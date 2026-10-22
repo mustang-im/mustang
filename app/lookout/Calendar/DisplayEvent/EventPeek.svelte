@@ -27,7 +27,7 @@
       </hbox>
     {:else if $event.isIncomingMeeting}
       <hbox class="email-organizer">
-        <Checkbox label={$t`Email organizer *=> Send the response to the meeting invitation to the organizer`} bind:checked={emailOrganizer} />
+        <Checkbox label={$t`Email organizer *=> Send the response to the meeting invitation to the organizer`} bind:checked={sendReply} />
       </hbox>
       <hbox class="buttons">
         <button class="peek-button accept" class:chosen={$event.myParticipation == InvitationResponse.Accept}
@@ -74,7 +74,7 @@
   export let anchor: HTMLElement;
 
   let popupOpen = true;
-  let emailOrganizer = true;
+  let sendReply = true;
   $: if (!popupOpen) {
     onClose();
   }
@@ -102,7 +102,7 @@
   }
 
   function respond(response: InvitationResponseInMessage) {
-    catchErrors(() => event.respondToInvitation(response, emailOrganizer));
+    catchErrors(() => event.respondToInvitation(response, sendReply));
   }
 
   function onKeyDown(keyEvent: KeyboardEvent) {
