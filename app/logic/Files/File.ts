@@ -236,14 +236,20 @@ export class File extends FileOrDirectory {
   }
 
   protected async getLocalFilePath(): Promise<string> {
+    let fullDir = await this.getLocalDirPath();
+    await appGlobal.remoteApp.fs.mkdir(fullDir, { recursive: true, mode: 0o700 });
+    return `${fullDir}/${sanitize.filename(this.name, "file")}`;
+  }
+
+  /** The directory of `this.parent` on disk: The same path as on the server, only sanitized */
+  protected async getLocalDirPath(): Promise<string> {
     filesDir ??= await getFilesDir();
     let fullDir = `${filesDir}/files/cloud/${this.account.id}`;
-    let dir = sanitize.dirname(this.parent.path, false, "");
+    let dir = sanitize.dirname(this.parent.path, false, "").replace(/\/+$/, "");
     if (dir) {
       fullDir += "/" + dir;
     }
-    await appGlobal.remoteApp.fs.mkdir(fullDir, { recursive: true, mode: 0o700 });
-    return `${fullDir}/${sanitize.filename(this.name)}`;
+    return fullDir;
   }
 }
 

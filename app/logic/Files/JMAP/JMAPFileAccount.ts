@@ -163,6 +163,10 @@ export class JMAPFileAccount extends FileSharingAccount {
             let node = await this.applyServerNode(json);
             if (node instanceof JMAPFile) {
               changedFiles.add(node);
+            } else if (node instanceof JMAPDirectory) { // e.g. renamed, so the files in it move on disk
+              for (let dir of node.getInclusiveDescendants()) {
+                changedFiles.addAll(dir.files);
+              }
             }
           } catch (ex) {
             this.dataError(ex);

@@ -72,6 +72,10 @@ async function setupWithFile(serverOptions: Partial<FakeFileNodeServer> = {}) {
   return { server, jmapAccount, files, errors, docs, docsID, file, fileID };
 }
 
+function accountDir(files: JMAPFileAccount): string {
+  return `${tempDir}/files/cloud/${files.id}`;
+}
+
 async function readDisk(filepath: string): Promise<string> {
   return await fsPromises.readFile(filepath, "utf-8");
 }
@@ -159,7 +163,7 @@ test("Writes draft -18 of FileNode", async () => {
 test("Downloads a file to disk, with the modification time from the server", async () => {
   let { file, files, errors } = await setupWithFile();
   await file.download();
-  expect(file.filepathLocal).toBe(`${tempDir}/files/cloud/${files.id}/${file.nodeID}/a.txt`);
+  expect(file.filepathLocal).toBe(`${accountDir(files)}/Docs/a.txt`);
   expect(await readDisk(file.filepathLocal)).toBe("original");
   expect((await fsPromises.stat(file.filepathLocal)).mtime.toISOString()).toBe("2026-10-01T10:00:00.000Z");
   expect(await file.isLocalFileChanged()).toBe(false);
@@ -321,6 +325,7 @@ test("Deleted on the server, but changed on disk: The user's version is kept as 
   let copy = server.find(modifiedName, docs.nodeID);
   expect(server.contents(copy.id)).toBe("my version");
   expect(docs.files.contents.map(file => file.name)).toEqual([modifiedName]);
+  expect(docs.files.first.filepathLocal).toBe(`${accountDir(files)}/Docs/${modifiedName}`);
   expect(await readDisk(docs.files.first.filepathLocal)).toBe("my version");
   expect(errors).toEqual([]);
 });
@@ -337,6 +342,9 @@ test("A directory deleted on the server keeps the files that the user changed, i
   expect(copy.parentId).toBe(null);
   expect(server.contents(copy.id)).toBe("my version");
   expect(files.rootDir.files.contents.map(file => file.name)).toEqual([copy.name]);
+  expect(files.rootDir.files.first.filepathLocal).toBe(`${accountDir(files)}/${copy.name}`);
+  expect(await readDisk(files.rootDir.files.first.filepathLocal)).toBe("my version");
+  await expect(fsPromises.stat(`${accountDir(files)}/Docs`)).rejects.toThrow(); // The empty directory on disk is gone too
   expect(errors).toEqual([]);
 });
 
@@ -361,6 +369,150 @@ test("The user deleted the file on disk: It's only our copy, so it stays on the 
   await files.syncLocalCopies();
   expect(file.filepathLocal).toBe(null);
   expect(server.nodes.has(fileID)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test("The files on disk have the same paths as on the server", async () => {
+  let { server, files, docs, docsID, file, errors } = await setupWithFile();
+  let subID = server.addDirectory("Sub", docsID);
+  server.addFile("deep.txt", "deep", subID);
+  server.addFile("top.txt", "top");
+  await files.rootDir.listContents();
+  await docs.listContents();
+  let sub = docs.subDirs.find(dir => dir.nodeID == subID);
+  await sub.listContents();
+  let deep = sub.files.first;
+  let top = files.rootDir.files.first;
+
+  for (let each of [file, deep, top]) {
+    await each.download();
+  }
+  expect(file.filepathLocal).toBe(`${accountDir(files)}/Docs/a.txt`);
+  expect(deep.filepathLocal).toBe(`${accountDir(files)}/Docs/Sub/deep.txt`);
+  expect(top.filepathLocal).toBe(`${accountDir(files)}/top.txt`);
+  expect(await readDisk(deep.filepathLocal)).toBe("deep");
+  expect(errors).toEqual([]);
+});
+
+test("Names that are the same on disk, after sanitizing or because the name is already taken, get a number", async () => {
+  let { server, files, docs, docsID, errors } = await setupWithFile();
+  // `?` and `*` are not allowed on Windows
+  let firstID = server.addFile("Report?.txt", "first", docsID);
+  let secondID = server.addFile("Report*.txt", "second", docsID);
+  let thirdID = server.addFile("b.txt", "ours", docsID);
+  await docs.listContents();
+  let first = docs.files.find(file => file.nodeID == firstID);
+  let second = docs.files.find(file => file.nodeID == secondID);
+  let third = docs.files.find(file => file.nodeID == thirdID);
+  await fsPromises.mkdir(`${accountDir(files)}/Docs`, { recursive: true });
+  await fsPromises.writeFile(`${accountDir(files)}/Docs/b.txt`, "not ours"); // e.g. another app saved it there
+
+  for (let each of [first, second, third]) {
+    await each.download();
+  }
+  let unnumbered = [first, second].find(file => !file.filepathLocal.endsWith("-1.txt")).filepathLocal;
+  expect(path.dirname(unnumbered)).toBe(`${accountDir(files)}/Docs`);
+  expect([first.filepathLocal, second.filepathLocal]).toContain(unnumbered.replace(/\.txt$/, "-1.txt"));
+  expect(await readDisk(first.filepathLocal)).toBe("first");
+  expect(await readDisk(second.filepathLocal)).toBe("second");
+  expect(third.filepathLocal).toBe(`${accountDir(files)}/Docs/b-1.txt`);
+  expect(await readDisk(third.filepathLocal)).toBe("ours");
+  expect(await readDisk(`${accountDir(files)}/Docs/b.txt`)).toBe("not ours");
+
+  let paths = [first, second, third].map(file => file.filepathLocal);
+  await files.syncLocalCopies(); // The numbered files stay where they are
+  expect([first, second, third].map(file => file.filepathLocal)).toEqual(paths);
+  expect(errors).toEqual([]);
+});
+
+test("A rename on the server, or in our app, moves the file on disk", async () => {
+  let { server, files, file, fileID, errors } = await setupWithFile();
+  await file.download();
+  let oldPath = file.filepathLocal;
+  server.update(fileID, { name: "b.txt" });
+
+  await files.fetchChanges();
+  expect(file.filepathLocal).toBe(`${accountDir(files)}/Docs/b.txt`);
+  expect(await readDisk(file.filepathLocal)).toBe("original");
+  await expect(fsPromises.stat(oldPath)).rejects.toThrow();
+  expect(await file.isLocalFileChanged()).toBe(false);
+
+  file.name = "c.txt";
+  await file.save();
+  await files.syncLocalCopies();
+  expect(file.filepathLocal).toBe(`${accountDir(files)}/Docs/c.txt`);
+  expect(await readDisk(file.filepathLocal)).toBe("original");
+  expect(setCalls(server).filter(args => !args.update?.[fileID]?.name)).toEqual([]); // Only our rename, no upload
+  expect(errors).toEqual([]);
+});
+
+test("A rename or move of a directory on the server moves the files in it on disk", async () => {
+  let { server, files, docs, docsID, errors } = await setupWithFile();
+  let subID = server.addDirectory("Sub", docsID);
+  server.addFile("deep.txt", "deep", subID);
+  await docs.listContents();
+  let sub = docs.subDirs.find(dir => dir.nodeID == subID);
+  await sub.listContents();
+  let deep = sub.files.first;
+  await deep.download();
+  expect(deep.filepathLocal).toBe(`${accountDir(files)}/Docs/Sub/deep.txt`);
+
+  server.update(docsID, { name: "Documents" });
+  await files.fetchChanges();
+  expect(deep.filepathLocal).toBe(`${accountDir(files)}/Documents/Sub/deep.txt`);
+  expect(await readDisk(deep.filepathLocal)).toBe("deep");
+  await expect(fsPromises.stat(`${accountDir(files)}/Docs`)).rejects.toThrow(); // The empty directories are gone
+
+  let otherID = server.addDirectory("Other");
+  server.update(subID, { parentId: otherID });
+  await files.fetchChanges();
+  expect(deep.filepathLocal).toBe(`${accountDir(files)}/Other/Sub/deep.txt`);
+  expect(await readDisk(deep.filepathLocal)).toBe("deep");
+  expect(await deep.isLocalFileChanged()).toBe(false);
+  expect(setCalls(server)).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("While another app has the file locked, it moves on disk in a later round, and the sync goes on where it is", async () => {
+  let { server, files, file, fileID, errors } = await setupWithFile();
+  await file.download();
+  let oldPath = file.filepathLocal;
+  server.update(fileID, { name: "b.txt" });
+  lockedPaths.add(oldPath);
+  try {
+    await files.fetchChanges();
+    expect(file.filepathLocal).toBe(oldPath);
+    await editOnDisk(file, "changed on disk");
+    await files.syncLocalCopies();
+    expect(file.filepathLocal).toBe(oldPath);
+    expect(server.contents(fileID)).toBe("changed on disk");
+  } finally {
+    lockedPaths.delete(oldPath);
+  }
+
+  await files.syncLocalCopies();
+  expect(file.filepathLocal).toBe(`${accountDir(files)}/Docs/b.txt`);
+  expect(await readDisk(file.filepathLocal)).toBe("changed on disk");
+  await expect(fsPromises.stat(oldPath)).rejects.toThrow();
+  expect(await file.isLocalFileChanged()).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test("A conflict copy whose name is already taken on disk gets a number", async () => {
+  let { server, files, docs, file, fileID, errors } = await setupWithFile();
+  await file.download();
+  let localDate = new Date(2026, 9, 21, 14, 3, 59);
+  let takenPath = `${accountDir(files)}/Docs/a-modified-${stamp(localDate)}.txt`;
+  await fsPromises.writeFile(takenPath, "not ours");
+  await editOnDisk(file, "my version", localDate);
+  server.changeFile(fileID, "their version");
+
+  await files.fetchChanges();
+  let copy = docs.files.find(file => file.name.startsWith("a-modified-"));
+  expect(copy.filepathLocal).toBe(takenPath.replace(/\.txt$/, "-1.txt"));
+  expect(await readDisk(copy.filepathLocal)).toBe("my version");
+  expect(await readDisk(takenPath)).toBe("not ours");
+  expect(await readDisk(file.filepathLocal)).toBe("their version");
   expect(errors).toEqual([]);
 });
 

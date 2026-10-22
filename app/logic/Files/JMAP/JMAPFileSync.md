@@ -5,9 +5,13 @@ This describes how `JMAPFile.syncLocalCopy()` keeps the file on disk and the fil
 
 ## What we store
 
-- The file on disk is `<files dir>/files/cloud/<account ID>/<FileNode ID>/<name>`.
-  One directory per FileNode, so a rename or move on the server doesn't move the file on disk while another app has it open,
-  and two names that are the same after sanitizing, e.g. `Report (1).docx` and `Report 1.docx`, don't share a file.
+- The file on disk is in `<files dir>/files/cloud/<account ID>/`, at the same path as on the server, e.g. `Docs/Sub/Report.docx`.
+  The names of the directories and the file are sanitized, so they are safe on disk.
+- If the name is already taken on disk, we add a number before the extension: `Report-1.docx`, `Report-2.docx`.
+  E.g. `Report (1).docx` and `Report 1.docx` on the server are the same after sanitizing,
+  and `Report.docx` and `report.docx` are the same on Windows and macOS.
+  Directories don't get a number: Two directories that are the same on disk share it, and their files get numbers.
+- `filepathLocal` (in the database) is where the file is on disk, so we find it again after a rename or move on the server.
 - When we write the file to disk, we set its modification time to the `modified` time on the server.
 - `JMAPFile.localCopy` is the state of the file on disk, when we last wrote it or uploaded it:
   - `blobID`: The server version that the file on disk is based on
@@ -17,7 +21,8 @@ This describes how `JMAPFile.syncLocalCopy()` keeps the file on disk and the fil
 
 ## When we sync
 
-- The server sends a push notification for `FileNode`. We fetch the changes with `FileNode/changes`, and sync the changed files that we have on disk.
+- The server sends a push notification for `FileNode`. We fetch the changes with `FileNode/changes`, and sync the changed files that we have on disk,
+  and those in a changed directory.
 - Every minute, we sync all files that we have on disk, because we get no notification when another app changes them. This also retries what failed.
 - At login, and with the Refresh button.
 - When the user opens the file.
@@ -29,6 +34,10 @@ This describes how `JMAPFile.syncLocalCopy()` keeps the file on disk and the fil
 - The user deleted the file on disk: It was only our copy, so we forget it, and the file on the server stays.
 
 ## What we do
+
+First, if the file was renamed or moved on the server, or a directory above it, we move the file on disk to its new path.
+If another app has the file open and locked it (on Windows), it stays where it is, and the next round tries again.
+Directories on disk that are empty afterwards are removed. Then:
 
 | On disk | On the server | Then |
 |---|---|---|
@@ -64,12 +73,12 @@ If the rename fails, because another app has the file open and locked it (on Win
 3. The file on disk keeps the user's version. It's now based on the server version, so the next round uploads it.
 
 Either way, both versions are then on disk and on the server, as two files, so the user sees both in the app and on other devices.
-If a name is already taken, we put a number before the name on disk, and the server picks a free name.
+If a name is already taken, we add a number on disk, as above, and the server picks a free name.
 
 ### Deleted on the server, but changed on disk
 
-We keep the user's changes: Rename the file on disk to `<name>-modified-<YY-MM-DD-HH-MM-SS>.<ext>` (unless it's locked),
-and upload it as new file, into the same directory, or, if that was deleted too, into the closest parent directory that still exists.
+We keep the user's changes: Upload it as new file `<name>-modified-<YY-MM-DD-HH-MM-SS>.<ext>`, into the same directory,
+or, if that was deleted too, into the closest parent directory that still exists. The file on disk moves there too (unless it's locked).
 
 ### Rounds
 

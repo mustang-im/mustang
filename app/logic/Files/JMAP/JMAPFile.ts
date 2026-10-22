@@ -126,6 +126,7 @@ export class JMAPFile extends File {
       await this.saveLocally();
       return true;
     }
+    await this.moveLocalFile();
     if (localChanged) {
       this.clearURL();
       this.contents = null;
@@ -266,22 +267,13 @@ export class JMAPFile extends File {
       return;
     }
     let stat = await appGlobal.remoteApp.statFile(this.filepathLocal);
-    let modifiedName = this.conflictName("modified", new Date(stat.lastMod));
-    let modifiedPath = await this.freeLocalPath(modifiedName);
-    try {
-      await appGlobal.remoteApp.fs.rename(this.filepathLocal, modifiedPath);
-      this.filepathLocal = modifiedPath;
-    } catch (ex) {
-      if (!this.isLocked(ex)) {
-        throw ex;
-      }
-    }
     this.nodeID = null;
     this.blobID = null;
     this.localCopy = null;
-    this.setFileName(modifiedName);
+    this.setFileName(this.conflictName("modified", new Date(stat.lastMod)));
     this.moveTo(survivor);
     await this.saveLocally();
+    await this.moveLocalFile();
     await this.createOnServer();
   }
 
@@ -363,12 +355,16 @@ export class JMAPFile extends File {
   async deleteLocalCache() {
     this.localCopy = null;
     this.contentsBlobID = null;
+    let filepath = this.filepathLocal;
     try {
       await super.deleteLocalCache();
     } catch (ex) {
       if (!this.isLocked(ex) && ex.code != "ENOENT") {
         throw ex;
       }
+    }
+    if (filepath) {
+      await this.removeEmptyLocalDirs(filepath);
     }
   }
 
@@ -421,33 +417,95 @@ export class JMAPFile extends File {
     return new Blob([bytes], { type: this.mimetype });
   }
 
-  /** Each file is in its own directory, named after the node ID, so that
-   * a rename or move on the server doesn't need to move the file on disk,
-   * and names that are the same after sanitizing don't collide. */
+  /** Where the file is on the server, see `File.getLocalFilePath()`,
+   * but with a number, if the name is already taken on disk */
   protected async getLocalFilePath(): Promise<string> {
-    assert(this.nodeID, `${this.name}: Not yet on the server`);
-    let dir = `${await getFilesDir()}/files/cloud/${this.account.id}/${this.nodeID}`;
-    await appGlobal.remoteApp.fs.mkdir(dir, { recursive: true, mode: 0o700 });
-    return `${dir}/${sanitize.filename(this.name, "file")}`;
+    return await this.uniqueLocalPath(await super.getLocalFilePath());
+  }
+
+  /** After a rename or move on the server, of the file or of a parent directory,
+   * moves the file on disk to the same place. If another app has the file locked,
+   * the file stays where it is, and the next sync tries again. */
+  protected async moveLocalFile() {
+    let wanted = await super.getLocalFilePath();
+    if (this.isLocalPathFor(wanted)) {
+      return;
+    }
+    let oldPath = this.filepathLocal;
+    let newPath = await this.uniqueLocalPath(wanted);
+    try {
+      await appGlobal.remoteApp.fs.rename(oldPath, newPath);
+    } catch (ex) {
+      if (this.isLocked(ex)) {
+        return;
+      }
+      throw ex;
+    }
+    this.filepathLocal = newPath;
+    await this.saveLocally();
+    await this.removeEmptyLocalDirs(oldPath);
+  }
+
+  /** @returns `filepathLocal` is `filepath`, or `filepath` with a number from `uniqueLocalPath()` */
+  protected isLocalPathFor(filepath: string): boolean {
+    let local = this.filepathLocal;
+    if (local == filepath) {
+      return true;
+    }
+    let { base, ext } = this.splitExt(filepath);
+    let number = local.substring(base.length + 1, local.length - ext.length);
+    return local.startsWith(base + "-") && local.endsWith(ext) && /^[1-9][0-9]*$/.test(number);
+  }
+
+  /** @returns `filepath`, or, if that is already taken on disk,
+   * with a number before the extension, e.g. `report-1.docx` */
+  protected async uniqueLocalPath(filepath: string): Promise<string> {
+    let { base, ext } = this.splitExt(filepath);
+    const kMaxTries = 100;
+    for (let i = 0; i <= kMaxTries; i++) {
+      let candidate = i ? `${base}-${i}${ext}` : filepath;
+      try {
+        await appGlobal.remoteApp.fs.stat(candidate);
+      } catch (ex) {
+        if (ex.code == "ENOENT") {
+          return candidate;
+        }
+        throw ex;
+      }
+    }
+    throw new Error(`${this.name}: Too many files with this name`);
+  }
+
+  /** E.g. `/dir/report.docx` -> `/dir/report` and `.docx` */
+  protected splitExt(filepath: string): { base: string, ext: string } {
+    let dot = filepath.lastIndexOf(".");
+    if (dot <= filepath.lastIndexOf("/") + 1) {
+      return { base: filepath, ext: "" };
+    }
+    return { base: filepath.substring(0, dot), ext: filepath.substring(dot) };
   }
 
   /** A path for a new file in the same directory on disk as our file, which is not yet taken */
   protected async freeLocalPath(name: string): Promise<string> {
     let dir = await appGlobal.remoteApp.path.dirname(this.filepathLocal);
-    let filename = sanitize.filename(name, "file");
-    const kMaxTries = 100;
-    for (let i = 1; i <= kMaxTries; i++) {
-      let filepath = `${dir}/${i == 1 ? "" : i + "-"}${filename}`;
+    return await this.uniqueLocalPath(`${dir}/${sanitize.filename(name, "file")}`);
+  }
+
+  /** Removes the directories on disk above `filepath` that are now empty, up to the directory of the account */
+  protected async removeEmptyLocalDirs(filepath: string) {
+    let accountDir = `${await getFilesDir()}/files/cloud/${this.account.id}/`;
+    let dir = filepath.substring(0, filepath.lastIndexOf("/"));
+    while (dir.startsWith(accountDir)) {
       try {
-        await appGlobal.remoteApp.fs.stat(filepath);
+        await appGlobal.remoteApp.fs.rmdir(dir);
       } catch (ex) {
-        if (ex.code == "ENOENT") {
-          return filepath;
+        if (["ENOTEMPTY", "EEXIST", "ENOENT"].includes(ex.code) || this.isLocked(ex)) {
+          return;
         }
         throw ex;
       }
+      dir = dir.substring(0, dir.lastIndexOf("/"));
     }
-    throw new Error(`${name}: Too many files with this name`);
   }
 
   /** E.g. `report-modified-26-10-21-14-03-59.docx`. The date is in local time. */
