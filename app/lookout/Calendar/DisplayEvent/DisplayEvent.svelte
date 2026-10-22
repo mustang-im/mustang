@@ -13,6 +13,9 @@
             onClick={() => CalendarActions.deleteOccurrence(event)} />
         </hbox>
       {:else if $event.isIncomingMeeting}
+        {#if $event.isMoved}
+          <hbox class="notice">{$t`The organizer changed the time or place of this meeting. Please respond again.`}</hbox>
+        {/if}
         <hbox class="buttons">
           <RespondButtons response={$event.myParticipation}
             onRespond={(response, sendReply) => event.respondToInvitation(response, sendReply)}

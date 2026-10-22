@@ -42,6 +42,9 @@ export class ActiveSyncIncomingInvitation extends IncomingInvitation {
   async updateParticipantReply() {
     await this.updateFromOtherInvitationMessage();
   }
+  async updateChangedMeeting() {
+    await this.updateFromOtherInvitationMessage();
+  }
   /** Exchange server auto-processes these */
   async updateFromOtherInvitationMessage() {
     await this.calendar.listEvents();

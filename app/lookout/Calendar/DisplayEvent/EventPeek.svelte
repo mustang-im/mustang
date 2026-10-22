@@ -26,6 +26,11 @@
         <button class="peek-button" on:click={onDelete}>{$t`Remove from Calendar`}</button>
       </hbox>
     {:else if $event.isIncomingMeeting}
+      {#if $event.isMoved}
+        <hbox class="notice">
+          {$t`The organizer changed the time or place of this meeting. Please respond again.`}
+        </hbox>
+      {/if}
       <hbox class="email-organizer">
         <Checkbox label={$t`Email organizer *=> Send the response to the meeting invitation to the organizer`} bind:checked={sendReply} />
       </hbox>

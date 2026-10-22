@@ -164,6 +164,9 @@
     if (calEvent?.isCancelled) {
       return $t`This meeting has been cancelled by the organizer`;
     }
+    if (calEvent?.isMoved) {
+      return $t`The organizer changed the time or place of this meeting. Please respond again.`;
+    }
     return myResponseText(myResponse);
   }
 
