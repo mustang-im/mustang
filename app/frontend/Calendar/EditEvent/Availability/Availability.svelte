@@ -11,6 +11,7 @@
           iconSize="16px"
           onClick={() => view = "free"}
           selected={view == "free"}
+          disabled={noAvailabilityReason}
           >
           <hbox slot="label">
             <span class="long">{$t`Free slots`}</span>
@@ -23,6 +24,7 @@
           iconSize="16px"
           onClick={() => view = "participants"}
           selected={view == "participants"}
+          disabled={noAvailabilityReason}
           >
           <hbox slot="label">
             <span class="long">{$t`Who is free when`}</span>
@@ -45,7 +47,7 @@
           ? $t`Shrink *=> Make the availability small again, and show the other fields of the event`
           : $t`Enlarge *=> Let the availability fill the dialog`}
         icon={enlarged ? ShrinkIcon : EnlargeIcon}
-        onClick={() => enlarged = !enlarged}
+        onClick={enlarged ? () => enlarged = false : onEnlarge}
         classes="plain"
         border={false}
         iconSize="16px"
@@ -77,10 +79,22 @@
   {/if}
 </vbox>
 
-<script lang="ts">
+<script lang="ts" context="module">
   import type { Event } from "../../../../logic/Calendar/Event";
-  import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
   import type { SMLData } from "../../../../logic/Mail/SML/SMLData";
+
+  type AvailabilityView = "free" | "participants" | "poll";
+
+  /** "Enlarge" in the sidebar opens the event in the full window,
+   * in a new dialog, which takes over the view and the poll */
+  let handover: { event: Event, view: AvailabilityView, poll: SMLData | null } | null = null;
+</script>
+
+<script lang="ts">
+  import { InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
+  import { FreeBusy } from "../../../../logic/Calendar/FreeBusy";
+  import { calendarMustangApp, CalendarEventMustangApp } from "../../CalendarMustangApp";
+  import { selectedApp } from "../../../AppsBar/selectedApp";
   import FreeSlots from "./FreeSlots.svelte";
   import ParticipantsDayView from "./ParticipantsDayView.svelte";
   import AvailabilityPoll from "./AvailabilityPoll.svelte";
@@ -105,12 +119,44 @@
    * in/out */
   export let enlarged = false;
 
-  let view: "free" | "participants" | "poll" = "free";
+  let view: AvailabilityView = "free";
   let poll: SMLData | null = null;
+  if (handover?.event == event) {
+    ({ view, poll } = handover);
+    handover = null;
+    expanded = enlarged = true;
+  }
 
   $: participants = event.participants;
   $: invitees = participants.filterObservable(participant => participant.response != InvitationResponse.Organizer);
   $: showHours = enlarged ? 10 : 5;
+  $: isInSidebar = !($selectedApp instanceof CalendarEventMustangApp);
+
+  function onEnlarge() {
+    if (isInSidebar) {
+      handover = { event, view, poll };
+      calendarMustangApp.showEvent(event);
+      return;
+    }
+    enlarged = true;
+  }
+
+  // <copied to="../../../../lookout/Calendar/EditEvent/SchedulingAssistant.svelte">
+  let noAvailabilityReason: string | false = false;
+  $: event.calendar, $participants, checkAvailability();
+  async function checkAvailability() {
+    let isSupported = true;
+    try {
+      isSupported = await FreeBusy.isSupported(event.calendar, event.participants.contents);
+    } catch (ex) {
+      // The views show the error
+    }
+    noAvailabilityReason = isSupported ? false : $t`This calendar doesn't provide the availability of other people`;
+    if (!isSupported) {
+      view = "poll";
+    }
+  }
+  // </copied>
 
   function toggleExpanded() {
     expanded = !expanded;

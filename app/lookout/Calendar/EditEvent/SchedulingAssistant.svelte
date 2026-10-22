@@ -26,6 +26,7 @@
 <script lang="ts">
   import type { Event } from "../../../logic/Calendar/Event";
   import type { SMLData } from "../../../logic/Mail/SML/SMLData";
+  import { FreeBusy } from "../../../logic/Calendar/FreeBusy";
   import type { EventEditFlow } from "./EventEditFlow";
   import type { EventTimeEditor } from "./EventTimeEditor";
   import SendButton from "./SendButton.svelte";
@@ -44,13 +45,31 @@
   export let sendDisabled: string | false = false;
   export let onSend: () => Promise<void>;
 
-  const viewTabs = [
-    { id: "free", label: $t`Free slots` },
-    { id: "participants", label: $t`Who is free when` },
+  $: viewTabs = [
+    { id: "free", label: $t`Free slots`, disabled: noAvailabilityReason },
+    { id: "participants", label: $t`Who is free when`, disabled: noAvailabilityReason },
     { id: "poll", label: $t`Poll *=> Ask the participants by email which times suit them` },
   ];
   let view = "free";
   let poll: SMLData | null = null;
+  $: participants = event.participants;
+
+  // <copied from="../../../frontend/Calendar/EditEvent/Availability/Availability.svelte">
+  let noAvailabilityReason: string | false = false;
+  $: event.calendar, $participants, checkAvailability();
+  async function checkAvailability() {
+    let isSupported = true;
+    try {
+      isSupported = await FreeBusy.isSupported(event.calendar, event.participants.contents);
+    } catch (ex) {
+      // The views show the error
+    }
+    noAvailabilityReason = isSupported ? false : $t`This calendar doesn't provide the availability of other people`;
+    if (!isSupported) {
+      view = "poll";
+    }
+  }
+  // </copied>
 </script>
 
 <style>

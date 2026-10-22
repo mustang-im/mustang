@@ -17,6 +17,9 @@ import { notifications } from "../../../../logic/util/Notification";
 import FreeSlots from "../../../../frontend/Calendar/EditEvent/Availability/FreeSlots.svelte";
 import ParticipantsDayView from "../../../../frontend/Calendar/EditEvent/Availability/ParticipantsDayView.svelte";
 import AvailabilityPoll from "../../../../frontend/Calendar/EditEvent/Availability/AvailabilityPoll.svelte";
+import Availability from "../../../../frontend/Calendar/EditEvent/Availability/Availability.svelte";
+import { CalendarEventMustangApp } from "../../../../frontend/Calendar/CalendarMustangApp";
+import { selectedApp } from "../../../../frontend/AppsBar/selectedApp";
 import { flushSync, mount, unmount } from "svelte";
 import { get } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
@@ -85,8 +88,16 @@ const bob = new Participant("busy@example.com", "Bob Busy", InvitationResponse.N
 const una = new Participant("unknown@example.com", "Una Unknown", InvitationResponse.NoResponseReceived);
 
 /** Thursday, 10:00 to 11:00 */
-function newMeeting(): Event {
-  let event = new Event(new TestCalendar());
+/** A calendar whose server doesn't tell the availability of other people */
+class NoFreeBusyCalendar extends Calendar {
+  constructor() {
+    super();
+    this.inviteAsIdentityID = identity.id;
+  }
+}
+
+function newMeeting(calendar: Calendar = new TestCalendar()): Event {
+  let event = new Event(calendar);
   event.title = "Planning";
   event.startTime = new Date(2026, 8, 3, 10, 0);
   event.endTime = new Date(2026, 8, 3, 11, 0);
@@ -224,4 +235,33 @@ test("Meeting time poll: Remembers whether to ask only people with unknown avail
 
   await show(AvailabilityPoll, { event: newMeeting() });
   expect(text(".recipients .names")).toEqual(["Frida Free, Bob Busy, Una Unknown"]);
+});
+
+test("Without free/busy from the server, only the poll is available", async () => {
+  await show(Availability, { event: newMeeting(new NoFreeBusyCalendar()), expanded: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  let reason = "This calendar doesn't provide the availability of other people";
+  expect(document.querySelectorAll(`button[title="${reason}"]:disabled`).length).toBe(2);
+  expect(document.querySelector(".availability-poll")).not.toBeNull();
+  expect(text(".recipients .names")).toEqual(["Frida Free, Bob Busy, Una Unknown"]);
+});
+
+test("Enlarge in the sidebar opens the full window, which keeps the view", async () => {
+  let event = newMeeting();
+  selectedApp.set(null);
+  await show(Availability, { event, expanded: true });
+  (document.querySelector('button[title="Poll"]') as HTMLElement).click();
+  flushSync();
+  (document.querySelector('button[title="Enlarge"]') as HTMLElement).click();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(get(selectedApp)).toBeInstanceOf(CalendarEventMustangApp);
+  // Not this dialog in the sidebar, but the new one in the full window is enlarged
+  expect(document.querySelector(".availability.enlarged")).toBeNull();
+  unmount(component);
+  document.body.innerHTML = "";
+
+  await show(Availability, { event });
+  expect(document.querySelector(".availability.enlarged")).not.toBeNull();
+  expect(document.querySelector(".availability-poll")).not.toBeNull();
 });

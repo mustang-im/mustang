@@ -35,8 +35,8 @@
     </slot>
     <hbox class="buttons">
       <Button
-        label={$t`Send poll`}
-        icon={SendIcon}
+        label={$t`Compose mail`}
+        icon={ComposeIcon}
         classes="send"
         onClick={onSend}
         disabled={$recipients.isEmpty ? $t`The availability of all participants is known` : false}
@@ -60,7 +60,7 @@
   import EditList from "../../SML/Shared/EditList.svelte";
   import Checkbox from "../../../Shared/Checkbox.svelte";
   import Button from "../../../Shared/Button.svelte";
-  import SendIcon from "lucide-svelte/icons/send";
+  import ComposeIcon from "lucide-svelte/icons/pencil";
   import { openComposer } from "../../../Mail/open";
   import { getLocalStorage } from "../../../Util/LocalStorage";
   import { getWeekStart } from "../../../../logic/util/date";
