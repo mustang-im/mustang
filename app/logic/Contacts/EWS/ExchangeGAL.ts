@@ -2,7 +2,7 @@ import { SearchOnlyAddressbook } from "../Addressbook";
 import { ContactEntry, type Person } from "../../Abstract/Person";
 import type { PersonUID } from "../../Abstract/PersonUID";
 import type { MailAccount } from "../../Mail/MailAccount";
-import { getMyPrivateKey, getPublicKeyForPersonUID } from "../../Mail/Encryption/KeyUtils";
+import { getPublicKeyForPerson, getPublicKeyForPersonUID, usesCrypto } from "../../Mail/Encryption/KeyUtils";
 import { SMIMEPrivateKey } from "../../Mail/Encryption/SMIME/SMIMEPrivateKey";
 import { SMIMEPublicKey } from "../../Mail/Encryption/SMIME/SMIMEPublicKey";
 import { getBaseDomainFromHost, getDomainForEmailAddress } from "../../util/netUtil";
@@ -52,7 +52,7 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
       return;
     }
     let domain = getBaseDomainFromHost(getDomainForEmailAddress(recipient.emailAddress));
-    if (!this.account.identities.some(identity => !!getMyPrivateKey(identity, SMIMEPrivateKey) &&
+    if (!this.account.identities.some(identity => usesCrypto(identity, SMIMEPrivateKey) &&
         getBaseDomainFromHost(getDomainForEmailAddress(identity.emailAddress)) == domain)) {
       return;
     }
@@ -64,13 +64,9 @@ export class ExchangeGAL extends SearchOnlyAddressbook {
       this.certificateLookups.set(emailAddress, entry);
     }
     await entry.fetchEncryptionKeys();
-    let person = recipient.findPerson();
-    for (let key of entry.encryptionPublicKeys) {
-      if (person) {
-        person.addEncryptionPublicKey(key);
-      } else if (!key.obsolete) {
-        recipient.encryptionPublicKey = key;
-      }
+    let key = getPublicKeyForPerson(entry, SMIMEPublicKey);
+    if (key) {
+      recipient.encryptionPublicKey = key;
     }
   }
 }

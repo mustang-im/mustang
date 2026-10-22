@@ -52,7 +52,7 @@
   async function autoFetchMissingKeys() {
     await Promise.all([
       Promise.all(recipientsWithoutKeys.contents.flatMap(recipient =>
-        appGlobal.searchOnlyAddressbooks.contents.map(directory => directory.fetchCertificate(recipient)))),
+        appGlobal.searchOnlyAddressbooks.contents.map(ab => ab.fetchCertificate(recipient)))),
       hasKeyServers ? queryKeyServers(recipientsWithoutKeys, true) : null,
     ]);
   }

@@ -73,8 +73,8 @@ beforeEach(() => {
 
 /** As the composer does */
 async function askDirectories(recipient: PersonUID) {
-  await Promise.all(appGlobal.searchOnlyAddressbooks.contents.map(directory =>
-    directory.fetchCertificate(recipient)));
+  await Promise.all(appGlobal.searchOnlyAddressbooks.contents.map(ab =>
+    ab.fetchCertificate(recipient)));
 }
 
 function personInAddressbook(emailAddress: string): Person {
@@ -218,4 +218,17 @@ test("Recipient who is not in the directory", async () => {
   await askDirectories(recipient); // the error callback would throw
   expect(account.queries).toEqual(["smtp:newbie@example.com"]);
   expect(canEncryptTo(recipient)).toBe(false);
+});
+
+test("The composer's list of recipients without certificate updates", async () => {
+  personInAddressbook("colleague@example.com");
+  let withContact = new PersonUID("colleague@example.com", "Colleague");
+  let withoutContact = new PersonUID("colleague@sales.example.com", "Colleague");
+  let recipients = new ArrayColl([withContact, withoutContact]);
+  // as in `EncryptionDetails.svelte`
+  let recipientsWithoutKeys = recipients.filterObservable(recipient => !getPublicKeyForPersonUID(recipient));
+  expect(recipientsWithoutKeys.length).toBe(2);
+  await askDirectories(withContact);
+  await askDirectories(withoutContact);
+  expect(recipientsWithoutKeys.length).toBe(0);
 });
