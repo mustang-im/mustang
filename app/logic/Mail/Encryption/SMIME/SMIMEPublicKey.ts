@@ -1,6 +1,6 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo, BasicConstraints, KeyUsage, KeyUsageBit, ExtKeyUsage } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt, padFF, Uint8ArrayToHex } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";
 import { sanitize } from "../../../../../lib/util/sanitizeDatatypes";
@@ -106,6 +106,10 @@ export class SMIMEPublicKey extends PublicKey {
     // cannot sign as another identity today. Do not start trusting the chain
     // itself for identity binding without adding those X.509 path checks first.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    let extKeyUsage = this.extension("extKeyUsage");
+    if (extKeyUsage && !ExtKeyUsage.decode(extKeyUsage).some(purpose => purpose == "emailProtection" || purpose == "anyExtendedKeyUsage")) {
+      return KeyStatus.ChainInvalid;
+    }
     for (let key of this.chain) {
       if (key.obsolete) {
         console.log("obsolete certificate in chain");
@@ -113,6 +117,9 @@ export class SMIMEPublicKey extends PublicKey {
       }
       let signer = Certificate.decodePEM(key.certificate, { label: "CERTIFICATE" });
       if (!await verifySignature(cert, signer)) {
+        return KeyStatus.ChainInvalid;
+      }
+      if (!key.mayIssueCertificates(this.chain.contents.indexOf(key))) {
         return KeyStatus.ChainInvalid;
       }
       cert = signer;
@@ -133,6 +140,30 @@ export class SMIMEPublicKey extends PublicKey {
       return KeyStatus.SelfSignedRoot;
     }
     return KeyStatus.ChainIncomplete;
+  }
+
+  /** @param subCAs How many CA certificates are between this one and the leaf */
+  protected mayIssueCertificates(subCAs: number): boolean {
+    let basicConstraints = this.extension("basicConstraints");
+    if (!basicConstraints) {
+      return false;
+    }
+    let { cA, pathLenConstraint } = BasicConstraints.decode(basicConstraints);
+    return cA && (pathLenConstraint == null || subCAs <= pathLenConstraint) && this.allowsKeyUsage(KeyUsageBit.keyCertSign);
+  }
+
+  allowsKeyUsage(...usages: KeyUsageBit[]): boolean {
+    let keyUsage = this.extension("keyUsage");
+    if (!keyUsage) {
+      return true;
+    }
+    let { data } = KeyUsage.decode(keyUsage);
+    return usages.some(bit => (data[bit >> 3] & (0x80 >> (bit % 8))) != 0);
+  }
+
+  protected extension(extnID: string): Uint8Array | undefined {
+    let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    return cert.tbsCertificate.extensions?.find(ext => ext.extnID == extnID)?.extnValue;
   }
 
   /** Reads an S/MIME certificate from a file.
