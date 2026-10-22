@@ -744,6 +744,9 @@ export class Event extends Observable {
    * Saves the event to the server and to the database.
    */
   async save() {
+    if (this.isOutgoingMeeting && this.outgoingInvitation.outdatesAttendeesVersion()) {
+      this.sequence++;
+    }
     await this.saveLocally();
     await this.saveToServer();
   }
