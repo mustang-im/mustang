@@ -26,6 +26,7 @@ import { XML2JSON, JSON2XML } from "./XML2JSON";
 import { EWSCalendarShortcut } from "../../Calendar/EWS/EWSCalendarShortcut";
 import { ensureLicensed } from "../../util/LicenseClient";
 import { Throttle } from "../../util/flow/Throttle";
+import { Timeout } from "../../util/flow/Timeout";
 import { Semaphore } from "../../util/flow/Semaphore";
 import { ConnectionPurpose } from "./ConnectionPurpose";
 import { RunOnce } from "../../util/flow/RunOnce";
@@ -461,6 +462,14 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   async callStream(request: Json, abort: AbortController, responseCallback: (message: Record<string, any>) => Promise<void>, username: string) {
     let lastAttempt: number;
     let signal = abort.signal;
+    // Exchange sends a heartbeat every 45 seconds. Without it, the connection is dead, e.g. after a VPN drop,
+    // which doesn't always end the stream, or the reconnect below gave up.
+    let watchdog = new Timeout(2 * 45, () => {
+      if (!signal.aborted) { // not replaced by a newer stream, nor unsubscribed
+        this.streamNotifications(username)
+          .catch(this.errorCallback);
+      }
+    });
     do {
       try {
         lastAttempt = Date.now();
@@ -468,6 +477,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
         let body = this.request2XML(request);
         let data = "";
         const processChunk = async (chunk: string) => {
+          watchdog.fulfilled(); // processing the notifications may take longer
           data += chunk;
           while (data.includes(endEnvelope)) {
             let pos = data.indexOf(endEnvelope) + endEnvelope.length;
@@ -502,6 +512,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
               this.errorCallback(ex);
             }
           }
+          watchdog.restart();
         };
         let response: any;
         if (this.authMethod == AuthMethod.NTLM) {
@@ -542,9 +553,10 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
           continue;
         }
         this.errorCallback(ex);
+        watchdog.fulfilled();
         break;
       }
-    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. TODO throw? But don't show error to user.
+    } while (!signal.aborted && Date.now() - lastAttempt > 10000) // quit when last failure < 10 seconds ago. The watchdog tries again later.
   }
 
   /** The server lost our subscription. Get a new one, which restarts the stream. */
@@ -552,6 +564,9 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
     if (username == this.username) {
       this.subscriptionID = undefined;
       await this.subscribeToNotifications();
+      // The new subscription doesn't know what happened before, e.g. mail that arrived while the computer slept
+      this.inbox?.getNewMessages()
+        .catch(this.errorCallback);
       return;
     }
     for (let account of this.subscribedAccounts(username)) {
