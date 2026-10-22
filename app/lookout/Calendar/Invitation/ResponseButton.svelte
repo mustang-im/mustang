@@ -1,12 +1,15 @@
 <div class="response-button-wrapper">
-  <button class="response-button {classes}" class:pressed class:running aria-pressed={pressed}
+  <button class="response-button {classes}" class:pressed class:running class:icon-only={iconOnly} aria-pressed={pressed}
     aria-haspopup={hasMenu ? "menu" : undefined} aria-expanded={hasMenu ? isMenuOpen : undefined}
+    aria-label={iconOnly ? label : undefined}
     disabled={!!disabled || running} title={typeof disabled == "string" ? disabled : label}
     on:click={onClicked} bind:this={buttonEl}>
     <svelte:component this={icon} size={16} />
-    <span>{label}</span>
-    {#if hasMenu}
-      <span class="chevron"><ChevronDownIcon size={12} /></span>
+    {#if !iconOnly}
+      <span>{label}</span>
+      {#if hasMenu}
+        <span class="chevron"><ChevronDownIcon size={12} /></span>
+      {/if}
     {/if}
   </button>
   {#if hasMenu}
@@ -25,6 +28,7 @@
   export let icon: ConstructorOfATypedSvelteComponent;
   export let onClick: () => Promise<void> | void = null;
   export let pressed = false;
+  export let iconOnly = false;
   export let disabled: boolean | string = false;
   export let classes = "";
 
@@ -71,6 +75,10 @@
     color: var(--lo-fg);
     font: inherit;
     cursor: pointer;
+  }
+  .response-button.icon-only {
+    min-width: 0;
+    padding: 0 10px;
   }
   .response-button:hover:not(:disabled) {
     background-color: var(--lo-hover-bg);

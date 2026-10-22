@@ -45,20 +45,28 @@
       </hbox>
     {:else if canRespond}
       <hbox class="respond" role="group" aria-label={$t`Respond *=> Buttons to answer the meeting invitation`}>
-        <ResponseButton label={$t`Accept *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
-          pressed={response == InvitationResponse.Accept}>
-          <ResponseMenuItems checked={response == InvitationResponse.Accept}
-            onRespond={sendReply => onRespond(InvitationResponse.Accept, sendReply)} />
-        </ResponseButton>
-        <ResponseButton label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon} classes="tentative"
+        <ResponseButton label={$t`Yes *=> Accept the invitation to the meeting`} icon={AcceptIcon} classes="accept"
+          pressed={response == InvitationResponse.Accept}
+          onClick={() => onRespond(InvitationResponse.Accept, true)} />
+        <ResponseButton label={$t`No *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
+          pressed={response == InvitationResponse.Decline}
+          onClick={() => onRespond(InvitationResponse.Decline, true)} />
+        <ResponseButton label={$t`More options *=> More ways to respond to the meeting invitation`} icon={MoreIcon} iconOnly
           pressed={response == InvitationResponse.Tentative}>
-          <ResponseMenuItems checked={response == InvitationResponse.Tentative}
-            onRespond={sendReply => onRespond(InvitationResponse.Tentative, sendReply)} />
-        </ResponseButton>
-        <ResponseButton label={$t`Decline *=> Decline the invitation to the meeting`} icon={DeclineIcon} classes="decline"
-          pressed={response == InvitationResponse.Decline}>
-          <ResponseMenuItems checked={response == InvitationResponse.Decline}
-            onRespond={sendReply => onRespond(InvitationResponse.Decline, sendReply)} />
+          <MenuItem label={$t`Accept silently *=> Accept the meeting invitation without telling the organizer`} icon={AcceptIcon}
+            onClick={() => onRespond(InvitationResponse.Accept, false)} />
+          <MenuItem label={$t`Decline silently *=> Decline the meeting invitation without telling the organizer`} icon={DeclineIcon}
+            onClick={() => onRespond(InvitationResponse.Decline, false)} />
+          <MenuItem label={$t`Tentative *=> Not sure to join this business meeting`} icon={TentativeIcon}
+            checked={response == InvitationResponse.Tentative}
+            onClick={() => onRespond(InvitationResponse.Tentative, true)} />
+          <MenuDivider />
+          <MenuItem label={$t`Reply to organizer`} icon={ReplyIcon}
+            onClick={() => MessageActions.respond(message, message.compose.replyToAuthor())} />
+          <MenuItem label={$t`Reply to all attendees`} icon={ReplyAllIcon}
+            onClick={() => MessageActions.respond(message, message.compose.replyAll())} />
+          <MenuItem label={$t`Forward meeting`} icon={ForwardIcon}
+            onClick={event => MessageActions.forward(message, event as MouseEvent)} />
         </ResponseButton>
       </hbox>
     {/if}
@@ -99,7 +107,9 @@
   import { eventWhenText, eventConflict, myResponseText } from "../EditEvent/EventFormInfo";
   import EventInDayView from "../DisplayEvent/EventInDayView.svelte";
   import ResponseButton from "./ResponseButton.svelte";
-  import ResponseMenuItems from "./ResponseMenuItems.svelte";
+  import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
+  import { MessageActions } from "../../Mail/MessageActions";
   import { catchErrors } from "../../../frontend/Util/error";
   import InfoIcon from "lucide-svelte/icons/info";
   import WarningIcon from "lucide-svelte/icons/triangle-alert";
@@ -108,6 +118,10 @@
   import AcceptIcon from "lucide-svelte/icons/check";
   import TentativeIcon from "lucide-svelte/icons/circle-help";
   import DeclineIcon from "lucide-svelte/icons/x";
+  import MoreIcon from "lucide-svelte/icons/ellipsis";
+  import ReplyIcon from "lucide-svelte/icons/reply";
+  import ReplyAllIcon from "lucide-svelte/icons/reply-all";
+  import ForwardIcon from "lucide-svelte/icons/forward";
   import ClockIcon from "lucide-svelte/icons/clock-3";
   import LocationIcon from "lucide-svelte/icons/map-pin";
   import OnlineIcon from "lucide-svelte/icons/video";

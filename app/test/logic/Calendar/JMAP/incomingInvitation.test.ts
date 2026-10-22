@@ -6,6 +6,8 @@ import { IMAPAccount } from "../../../../logic/Mail/IMAP/IMAPAccount";
 import type { JMAPEvent } from "../../../../logic/Calendar/JMAP/JMAPEvent";
 import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCalendar";
 import { ICalEMailProcessor } from "../../../../logic/Calendar/ICal/ICalEMailProcessor";
+import { OutgoingInvitation } from "../../../../logic/Calendar/Invitation/OutgoingInvitation";
+import { Participant } from "../../../../logic/Calendar/Participant";
 import { InvitationMessage, InvitationResponse } from "../../../../logic/Calendar/Invitation/InvitationStatus";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import type { EMail } from "../../../../logic/Mail/EMail";
@@ -358,4 +360,20 @@ test("Declining an invitation in the calendar without a reply tells only the ser
   expect(updated.participants.meID.participationStatus).toEqual("declined");
   expect(calls[0].args.sendSchedulingMessages).toBeFalsy();
   expect(sent.length).toEqual(0);
+});
+
+test("A mail about a meeting goes to the organizer, or to all attendees except me", () => {
+  const kOtherAttendee = "user3@example.com";
+  let { account, calendar } = setup();
+  appGlobal.emailAccounts.add(account);
+  let event = calendar.newEvent();
+  event.fromJMAP(serverMeeting("needs-action"));
+  event.participants.add(new Participant(kOtherAttendee, "User 3", InvitationResponse.NoResponseReceived));
+
+  let toOrganizer = OutgoingInvitation.replyToEventByMail(event, false);
+  expect(toOrganizer.to.contents.map(person => person.emailAddress)).toEqual([kOrganizer]);
+  expect(toOrganizer.subject).toContain(event.title);
+
+  let toAll = OutgoingInvitation.replyToEventByMail(event, true);
+  expect(new Set(toAll.to.contents.map(person => person.emailAddress))).toEqual(new Set([kOrganizer, kOtherAttendee]));
 });

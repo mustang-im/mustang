@@ -161,6 +161,19 @@ export class OutgoingInvitation {
     mail.attachments.add(attachment);
     return mail;
   }
+
+  /**
+   * Writes an email about an event to its organizer,
+   * or to the organizer and all attendees.
+   */
+  static replyToEventByMail(event: Event, toAll: boolean): EMail {
+    let identity = identityForCalendar(event.calendar);
+    let mail = identity.newEMailFrom();
+    mail.subject = "Re: " + event.title; // Do NOT translate "Re: "
+    let recipients = toAll ? event.participants.contents : [event.organizer];
+    mail.to.addAll(recipients.filter(participant => participant && !findIdentityForEMailAddress(participant.emailAddress)));
+    return mail;
+  }
 }
 
 export function identityForCalendar(calendar: Calendar): MailIdentity {

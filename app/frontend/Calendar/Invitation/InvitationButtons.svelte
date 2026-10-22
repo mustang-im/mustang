@@ -25,6 +25,16 @@
         icon={MaybeIcon}
         classes="maybe font-normal" />
       <MenuItem
+        label={$t`Reply to organizer`}
+        onClick={onReplyToOrganizer}
+        icon={ReplyIcon}
+        classes="reply font-normal" />
+      <MenuItem
+        label={$t`Reply to all attendees`}
+        onClick={onReplyToAll}
+        icon={ReplyAllIcon}
+        classes="reply-all font-normal" />
+      <MenuItem
         label={$t`Invite other people`}
         onClick={onForward}
         icon={ForwardIcon}
@@ -54,6 +64,16 @@
         icon={MaybeIcon}
         classes="maybe font-normal" />
       <MenuItem
+        label={$t`Reply to organizer`}
+        onClick={onReplyToOrganizer}
+        icon={ReplyIcon}
+        classes="reply font-normal" />
+      <MenuItem
+        label={$t`Reply to all attendees`}
+        onClick={onReplyToAll}
+        icon={ReplyAllIcon}
+        classes="reply-all font-normal" />
+      <MenuItem
         label={$t`Invite other people`}
         onClick={onForward}
         icon={ForwardIcon}
@@ -72,11 +92,6 @@
       classes="decline secondary font-normal" />
     <ButtonMenu buttonIcon={ChevronDownIcon}>
       <MenuItem
-        label={$t`Maybe *=> Maybe attend the meeting`}
-        onClick={onTentative}
-        icon={MaybeIcon}
-        classes="maybe font-normal" />
-      <MenuItem
         label={$t`Confirm without sending a reply *=> Confirm to attend the meeting, but not tell the organizer`}
         onClick={onAcceptWithoutReply}
         icon={AcceptIcon}
@@ -86,6 +101,21 @@
         onClick={onDeclineWithoutReply}
         icon={DeclineIcon}
         classes="decline font-normal" />
+      <MenuItem
+        label={$t`Maybe *=> Maybe attend the meeting`}
+        onClick={onTentative}
+        icon={MaybeIcon}
+        classes="maybe font-normal" />
+      <MenuItem
+        label={$t`Reply to organizer`}
+        onClick={onReplyToOrganizer}
+        icon={ReplyIcon}
+        classes="reply font-normal" />
+      <MenuItem
+        label={$t`Reply to all attendees`}
+        onClick={onReplyToAll}
+        icon={ReplyAllIcon}
+        classes="reply-all font-normal" />
       <MenuItem
         label={$t`Invite other people`}
         onClick={onForward}
@@ -110,6 +140,8 @@
   import DeclineIcon from "lucide-svelte/icons/x";
   import MaybeIcon from "lucide-svelte/icons/circle-help";
   import ForwardIcon from "lucide-svelte/icons/forward";
+  import ReplyIcon from "lucide-svelte/icons/reply";
+  import ReplyAllIcon from "lucide-svelte/icons/reply-all";
   import ChevronDownIcon from "lucide-svelte/icons/chevron-down";
   import { NotReached } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
@@ -160,6 +192,26 @@
       throw new NotReached();
     }
     openEvent(calEvent);
+  }
+
+  function onReplyToOrganizer() {
+    let mail: EMail;
+    if (invitation instanceof IncomingInvitation) {
+      mail = invitation.message.compose.replyToAuthor();
+    } else if (invitation instanceof Event) {
+      mail = OutgoingInvitation.replyToEventByMail(invitation, false);
+    }
+    openComposer(mail);
+  }
+
+  function onReplyToAll() {
+    let mail: EMail;
+    if (invitation instanceof IncomingInvitation) {
+      mail = invitation.message.compose.replyAll();
+    } else if (invitation instanceof Event) {
+      mail = OutgoingInvitation.replyToEventByMail(invitation, true);
+    }
+    openComposer(mail);
   }
 
   async function onForward() {
