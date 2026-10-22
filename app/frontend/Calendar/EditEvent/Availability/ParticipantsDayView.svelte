@@ -83,6 +83,22 @@
   export let showHours = 5;
 
   let day = startOfDay(event.startTime);
+  // <copied to="FreeSlots.svelte">
+  // Before the statements that use `day`, because Svelte doesn't see that this changes `day`, and runs each statement only once per update
+  let lastStartTime = event.startTime.getTime();
+  $: followMeeting($event.startTime);
+  function followMeeting(startTime: Date) {
+    if (startTime.getTime() == lastStartTime) {
+      return;
+    }
+    lastStartTime = startTime.getTime();
+    let meetingDay = startOfDay(startTime);
+    if (meetingDay.getTime() != day.getTime()) {
+      day = meetingDay;
+    }
+  }
+  // </copied>
+
   $: dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
   $: participants = event.participants;
   $: meeting = layoutTimeColumn([$event], day)[0];
@@ -95,16 +111,6 @@
 
   function stepDay(days: number) {
     day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + days);
-  }
-
-  let lastStartTime = event.startTime.getTime();
-  $: followMeeting($event.startTime);
-  function followMeeting(startTime: Date) {
-    if (startTime.getTime() == lastStartTime) {
-      return;
-    }
-    lastStartTime = startTime.getTime();
-    day = startOfDay(startTime);
   }
 
   let startTimes: Date[] = [];
@@ -169,11 +175,11 @@
   }
   // </copied>
 
-  // <copied from="../../DayView/DayViewGrid.svelte"> Pages by day, so scrolls on each new day, too
+  // <copied from="../../DayView/DayViewGrid.svelte"> Pages by day, so scrolls on each new day, too. Focuses the meeting, also when it moves.
   let scrollE: Scroll;
   let visibleHeight = 0;
   $: pxPerHour = visibleHeight / showHours;
-  $: focusHour = Math.max(event.startTime.getHours() - 1, 0);
+  $: focusHour = Math.max($event.startTime.getHours() - 1, 0);
   $: day, focusHour, pxPerHour, scrollToFocusHour();
   async function scrollToFocusHour() {
     await tick(); // The new grid height reaches the DOM only after the update

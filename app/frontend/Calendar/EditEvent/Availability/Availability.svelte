@@ -160,6 +160,9 @@
   let expandCheckCount = 0;
   $: $invitees, expandIfAvailable();
   async function expandIfAvailable() {
+    if (expanded || isExpandedByUser) {
+      return;
+    }
     let count = ++expandCheckCount;
     let day = new Date(event.startTime);
     day.setHours(0, 0, 0, 0);

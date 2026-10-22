@@ -204,6 +204,53 @@ test("Who is free when: Clicking a time moves the meeting there", async () => {
   expect(event.durationMinutes).toBe(60);
 });
 
+async function moveMeeting(event: Event, start: Date) {
+  let duration = event.duration;
+  event.startTime = start;
+  event.duration = duration;
+  flushSync();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+}
+
+test("Who is free when: Follows the meeting to another day, and loads the availability only for a new day", async () => {
+  let event = newMeeting();
+  let loads = vi.spyOn(event.calendar, "arePersonsFree");
+  await show(ParticipantsDayView, { event });
+  expect(loads).toHaveBeenCalledTimes(1);
+
+  let column = document.querySelectorAll(".day-column")[1] as HTMLElement;
+  column.getBoundingClientRect = () => ({ top: 100, height: 2400 } as DOMRect);
+  column.querySelector(".hour-slot").dispatchEvent(new MouseEvent("click", { bubbles: true, clientY: 100 + 2400 * 14 / 24 }));
+  flushSync();
+  await moveMeeting(event, new Date(2026, 8, 3, 16, 0));
+  expect(loads).toHaveBeenCalledTimes(1);
+
+  // e.g. in the date field
+  await moveMeeting(event, new Date(2026, 8, 4, 9, 0));
+  expect(document.querySelector(".meeting")).not.toBeNull();
+  expect(loads).toHaveBeenCalledTimes(2);
+});
+
+test("Free slots: Follows the meeting to another week, and loads the availability only for a new week", async () => {
+  let event = newMeeting();
+  let loads = vi.spyOn(event.calendar, "arePersonsFree");
+  await show(FreeSlots, { event });
+  expect(loads).toHaveBeenCalledTimes(1);
+
+  (document.querySelectorAll(".slot")[0] as HTMLElement).click();
+  flushSync();
+  (document.querySelector("button.use-time") as HTMLElement).click();
+  flushSync();
+  await moveMeeting(event, new Date(2026, 8, 4, 15, 0));
+  expect(loads).toHaveBeenCalledTimes(1);
+
+  // e.g. in the date field
+  await moveMeeting(event, new Date(2026, 8, 10, 9, 0));
+  expect(document.querySelector(".slot.meeting")).not.toBeNull();
+  expect(loads).toHaveBeenCalledTimes(2);
+});
+
 test("Meeting time poll: Asks only the participants with unknown availability, or all of them", async () => {
   let event = newMeeting();
   let sml = createMeetingTimePoll(identity);

@@ -25,7 +25,9 @@
   let loadCount = 0;
 
   $: participants = event.participants;
-  $: from, to, $participants, load();
+  /** Changes only when the availability to load changes, not when the event changes otherwise */
+  $: loadKey = [from.getTime(), to.getTime(), ...$participants.contents.map(participant => participant.emailAddress)].join(" ");
+  $: loadKey, load();
   async function load() {
     let count = ++loadCount;
     try {

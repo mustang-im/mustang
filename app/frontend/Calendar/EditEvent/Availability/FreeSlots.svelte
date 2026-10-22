@@ -96,6 +96,21 @@
   const kSlotMinutes = 60;
 
   let day = new Date(event.startTime);
+  // <copied from="ParticipantsDayView.svelte"> Pages by week, not by day
+  // Before the statements that use `day`, because Svelte doesn't see that this changes `day`, and runs each statement only once per update
+  let lastStartTime = event.startTime.getTime();
+  $: followMeeting($event.startTime);
+  function followMeeting(startTime: Date) {
+    if (startTime.getTime() == lastStartTime) {
+      return;
+    }
+    lastStartTime = startTime.getTime();
+    if (getWeekStart(startTime).getTime() != getWeekStart(day).getTime()) {
+      day = new Date(startTime);
+    }
+  }
+  // </copied>
+
   $: weekStart = getWeekStart(day);
   $: weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + kShowDays);
   $: days = getWeekDays(weekStart).slice(0, kShowDays);
@@ -141,10 +156,11 @@
   let visibleHeight = 0;
   const kMaxRowHeight = 50;
   $: rowHeight = Math.max(visibleHeight / (kEndHour - kStartHour), Math.min(visibleHeight / showHours, kMaxRowHeight));
-  $: day, rowHeight, scrollToMeeting();
+  $: meetingHour = $event.startTime.getHours();
+  $: day, meetingHour, rowHeight, scrollToMeeting();
   async function scrollToMeeting() {
     await tick();
-    scrollE?.scrollTo(Math.max(event.startTime.getHours() - 1 - kStartHour, 0) * rowHeight);
+    scrollE?.scrollTo(Math.max(meetingHour - 1 - kStartHour, 0) * rowHeight);
   }
 </script>
 
