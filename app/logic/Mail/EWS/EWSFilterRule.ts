@@ -33,14 +33,15 @@ export class EWSFilterRule extends ServerFilterRule {
 
   protected get sections(): Record<string, Record<string, any>> {
     return {
-      Conditions: this.object(this.json.Conditions),
-      Exceptions: this.object(this.json.Exceptions),
-      Actions: this.object(this.json.Actions),
+      Conditions: this.json.Conditions || {},
+      Exceptions: this.json.Exceptions || {},
+      Actions: this.json.Actions || {},
     };
   }
 
   protected isUnderstood(section: string, key: string, value: any): boolean {
-    if (section == "Conditions") {
+    switch (section) {
+    case "Conditions":
       switch (key) {
       case "ContainsSubjectOrBodyStrings":
       case "Categories": // Exchange checks for any of the categories, we for all
@@ -54,12 +55,14 @@ export class EWSFilterRule extends ServerFilterRule {
       case "FlaggedForAction":
         return value == "Any";
       case "WithinSizeRange":
-        return Object.values(this.object(value)).every(size => sanitize.integer(size, null) != null);
+        return Object.values(value).every((size: any) => sanitize.integer(size, null) != null);
       case "WithinDateRange":
-        return Object.values(this.object(value)).every(date => sanitize.date(date, null));
+        return Object.values(value).every((date: any) => sanitize.date(date, null));
       }
-    }
-    if (section == "Actions") {
+      return false;
+    case "Exceptions": // Our rules have no exceptions
+      return false;
+    case "Actions":
       switch (key) {
       case "AssignCategories":
         return this.strings(value).length > 0;
@@ -72,6 +75,7 @@ export class EWSFilterRule extends ServerFilterRule {
       case "PermanentDelete":
         return value == "true";
       }
+      return false;
     }
     return false;
   }
@@ -188,28 +192,25 @@ export class EWSFilterRule extends ServerFilterRule {
    * @param isNew For `CreateRuleOperation`, without the ID */
   toRequest(isNew = false): any {
     const kRuleOrder = ["RuleId", "DisplayName", "Priority", "IsEnabled", "IsInError", "Conditions", "Exceptions", "Actions"];
+    if (this.isReadOnly) {
+      return this.withNamespaces(this.ordered(this.json, kRuleOrder.slice(0, 4), false));
+    }
+    const kNewRuleOrder = ["DisplayName", "Priority", "IsEnabled", "Conditions", "Exceptions", "Actions"];
+    let rule = this.ordered(this.json, isNew ? kNewRuleOrder : kRuleOrder, false);
     const kPredicatesOrder = ["Categories", "ContainsBodyStrings", "ContainsHeaderStrings", "ContainsRecipientStrings",
       "ContainsSenderStrings", "ContainsSubjectOrBodyStrings", "ContainsSubjectStrings", "FlaggedForAction", "FromAddresses",
       "FromConnectedAccounts", "HasAttachments", "Importance", "IsApprovalRequest", "IsAutomaticForward", "IsAutomaticReply",
       "IsEncrypted", "IsMeetingRequest", "IsMeetingResponse", "IsNDR", "IsPermissionControlled", "IsReadReceipt", "IsSigned",
       "IsVoicemail", "ItemClasses", "MessageClassifications", "NotSentToMe", "SentCcMe", "SentOnlyToMe", "SentToAddresses",
       "SentToMe", "SentToOrCcMe", "Sensitivity", "WithinDateRange", "WithinSizeRange"];
-    const kActionsOrder = ["AssignCategories", "CopyToFolder", "Delete", "ForwardAsAttachmentToRecipients",
-      "ForwardToRecipients", "MarkImportance", "MarkAsRead", "MoveToFolder", "PermanentDelete", "RedirectToRecipients",
-      "SendSMSAlertToRecipients", "ServerReplyWithMessage", "StopProcessingRules"];
-    if (this.isReadOnly) {
-      return this.withNamespaces(this.ordered(this.json, kRuleOrder.slice(0, 4), false));
-    }
-    let rule = this.ordered(this.json, kRuleOrder, false);
-    if (isNew) {
-      delete rule.RuleId;
-      delete rule.IsInError;
-    }
     for (let predicates of ["Conditions", "Exceptions"]) {
       if (typeof rule[predicates] == "object") {
         rule[predicates] = this.ordered(rule[predicates], kPredicatesOrder);
       }
     }
+    const kActionsOrder = ["AssignCategories", "CopyToFolder", "Delete", "ForwardAsAttachmentToRecipients",
+      "ForwardToRecipients", "MarkImportance", "MarkAsRead", "MoveToFolder", "PermanentDelete", "RedirectToRecipients",
+      "SendSMSAlertToRecipients", "ServerReplyWithMessage", "StopProcessingRules"];
     if (typeof rule.Actions == "object") {
       rule.Actions = this.ordered(rule.Actions, kActionsOrder);
     }
@@ -253,9 +254,13 @@ export class EWSFilterRule extends ServerFilterRule {
     return result;
   }
 
-  /** An empty element is an empty string in `XML2JSON()` */
-  protected object(json: any): Record<string, any> {
-    return json && typeof json == "object" ? json : {};
+  /** Shows an address as its email address, and a folder as its ID */
+  protected plainText(value: any): string {
+    let text = value?.EmailAddress ?? value?.Id;
+    if (typeof text == "string") {
+      return sanitize.label(text, "");
+    }
+    return super.plainText(value);
   }
 
   /** A list of strings is a `<String>` element for each string */

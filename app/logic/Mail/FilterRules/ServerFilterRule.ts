@@ -210,15 +210,12 @@ export class ServerFilterRule {
     return words.charAt(0).toUpperCase() + words.slice(1);
   }
 
+  /** The subclasses show the objects of their protocol in short, e.g. a person as email address */
   protected plainText(value: any): string {
     if (Array.isArray(value)) {
       return value.map(item => this.plainText(item)).filter(text => text).join(", ");
     }
     if (value && typeof value == "object") {
-      let address = value.EmailAddress ?? value.SmtpAddress ?? value.address ?? value.DisplayName ?? value.Id;
-      if (typeof address == "string") {
-        return sanitize.label(address, "");
-      }
       return Object.values(value).map(item => this.plainText(item)).filter(text => text).join(", ");
     }
     return sanitize.label(String(value ?? ""), "");

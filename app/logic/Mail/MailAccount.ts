@@ -324,14 +324,16 @@ export class MailAccount extends TCPAccount {
       throw new NotSupported(gt`${appName} cannot run all parts of the rule ${movedHere.name}`);
     }
     let deletedIDs = [...this.knownServerFilterRuleIDs].filter(id => !rules.some(rule => rule.serverID == id));
+    for (let rule of this.filterRuleActions) {
+      if (rule.serverID && !rule.server) {
+        rule.serverID = null;
+        rule.serverJSON = null;
+      }
+    }
     try {
       await this.uploadServerFilterRules(rules, deletedIDs);
     } finally {
       await this.save(); // the IDs of the created rules
-    }
-    for (let rule of this.filterRuleActions.filterOnce(rule => !rule.server && !!rule.serverID)) {
-      rule.serverID = null;
-      rule.serverJSON = null;
     }
     await this.refreshServerFilterRules();
   }

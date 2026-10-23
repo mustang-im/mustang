@@ -832,7 +832,7 @@ export class OWAAccount extends ExchangeMailAccount {
   }
 
   get canServerFilterRules(): boolean {
-    return !this.mainAccount;
+    return !this.isDependentAccount;
   }
 
   newServerFilterRule(json: any): OWAFilterRule {
@@ -866,14 +866,14 @@ export class OWAAccount extends ExchangeMailAccount {
 
   /** The commands of the OWA options report errors in their own way */
   protected async callOWAOptions(request: OWAOptionsRequest): Promise<any> {
-    const kPromptUser = 4;
     let response = await this.callOWA(request);
-    if (response.WasSuccessful === false && (response.ErrorCode == kPromptUser || response.ErrorCode == "PromptUser")) {
-      // The only question of the rule commands: Delete the copy of the rules that Outlook keeps?
-      this.setOutlookRulesExist(true);
-      throw new UserError(this.serverFilterRulesReadOnlyReason);
-    }
     if (response.WasSuccessful === false) {
+      const kPromptUser = 4;
+      if (response.ErrorCode == kPromptUser || response.ErrorCode == "PromptUser") {
+        // The only question of the rule commands: Delete the copy of the rules that Outlook keeps?
+        this.setOutlookRulesExist(true);
+        throw new UserError(this.serverFilterRulesReadOnlyReason);
+      }
       throw new Error(sanitize.label(response.ErrorMessage, null) || sanitize.label(response.UserPrompt, null) || gt`The mail server could not process the rules`);
     }
     return response;

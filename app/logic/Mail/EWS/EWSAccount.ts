@@ -1304,7 +1304,7 @@ export class EWSAccount extends ExchangeMailAccount implements EWSSubscribable {
   }
 
   get canServerFilterRules(): boolean {
-    return !this.mainAccount;
+    return !this.isDependentAccount;
   }
 
   newServerFilterRule(json: any): EWSFilterRule {

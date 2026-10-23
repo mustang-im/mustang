@@ -417,7 +417,7 @@ export class GraphAccount extends ExchangeMailAccount {
   }
 
   get canServerFilterRules(): boolean {
-    return !this.mainAccount;
+    return !this.isDependentAccount;
   }
 
   newServerFilterRule(json: any): GraphFilterRule {

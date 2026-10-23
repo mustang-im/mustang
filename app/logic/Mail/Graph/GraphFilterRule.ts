@@ -37,7 +37,8 @@ export class GraphFilterRule extends ServerFilterRule {
   }
 
   protected isUnderstood(section: string, key: string, value: any): boolean {
-    if (section == "conditions") {
+    switch (section) {
+    case "conditions":
       switch (key) {
       case "bodyOrSubjectContains":
       case "categories": // Exchange checks for any of the categories, we for all
@@ -51,8 +52,10 @@ export class GraphFilterRule extends ServerFilterRule {
       case "withinSizeRange":
         return Object.values(value).every((size: any) => sanitize.integer(size, null) != null);
       }
-    }
-    if (section == "actions") {
+      return false;
+    case "exceptions": // Our rules have no exceptions
+      return false;
+    case "actions":
       switch (key) {
       case "assignCategories":
         return this.strings(value).length > 0;
@@ -65,6 +68,7 @@ export class GraphFilterRule extends ServerFilterRule {
       case "permanentDelete":
         return value === true;
       }
+      return false;
     }
     return false;
   }
@@ -167,5 +171,13 @@ export class GraphFilterRule extends ServerFilterRule {
   get newProperties(): Record<string, any> {
     let { displayName, sequence, isEnabled, conditions, exceptions, actions } = this.json;
     return { displayName, sequence, isEnabled, conditions, exceptions, actions };
+  }
+
+  /** Shows an email address without the name */
+  protected plainText(value: any): string {
+    if (typeof value?.address == "string") {
+      return sanitize.label(value.address, "");
+    }
+    return super.plainText(value);
   }
 }

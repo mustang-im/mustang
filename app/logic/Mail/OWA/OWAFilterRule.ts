@@ -148,4 +148,13 @@ export class OWAFilterRule extends ServerFilterRule {
   setParameters(original: OWAFilterRule): Record<string, any> {
     return { Identity: this.json.Identity, ...this.changedProperties(original) };
   }
+
+  /** Shows a person as their email address, and a folder as its name */
+  protected plainText(value: any): string {
+    let text = value?.SmtpAddress ?? value?.DisplayName;
+    if (typeof text == "string") {
+      return sanitize.label(text, "");
+    }
+    return super.plainText(value);
+  }
 }
