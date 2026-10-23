@@ -44,16 +44,13 @@ beforeAll(async () => {
   app.appGlobal.remoteApp = {
     platform: () => "darwin", // Not Linux, so that there is no "Root" directory outside of the temp directory
     directory: (type: string) => specialDirs[type],
-    // <copied from="../../../../../desktop/backend/backend.ts">
     async readFile(filepath: string): Promise<Uint8Array> {
       let fileHandle = await fs.open(filepath, "r");
       let contents = await fileHandle.readFile();
       await fileHandle.close();
       return new Uint8Array(contents.buffer, contents.byteOffset, contents.length);
     },
-    // </copied>
     deleteFile: (filepath: string) => fs.unlink(filepath),
-    // <copied from="../../../../../desktop/backend/backend.ts">
     async listDirectoryContents(dirPath: string, withStats = true, includeHidden = false) {
       let files = [] as any[];
       let entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -80,7 +77,6 @@ beforeAll(async () => {
       }
       return files;
     },
-    // </copied>
     fs: {
       ...fs,
       async rename(from: string, to: string) {
