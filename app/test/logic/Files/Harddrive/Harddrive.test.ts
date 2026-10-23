@@ -281,20 +281,30 @@ test("Rename a file", async () => {
   let dir = await folderWith("Rename", { "old name.txt": "Renamed\n" });
   let file = dir.files.find(f => f.name == "old name.txt");
 
-  file.setFileName("new name.txt");
-  await file.save();
+  await file.rename("new name.txt");
 
   expect(await exists(path.join(docsDir, "Rename", "old name.txt"))).toBe(false);
   expect(await fs.readFile(path.join(docsDir, "Rename", "new name.txt"), "utf8")).toBe("Renamed\n");
+  expect(file.name).toBe("new name.txt");
+  expect(file.nameWithoutExt).toBe("new name");
   expect(await readText(file)).toBe("Renamed\n");
+});
+
+test("Rename to the same name changes nothing", async () => {
+  let dir = await folderWith("Rename same", { "same.txt": "Same\n" });
+  let file = dir.files.find(f => f.name == "same.txt");
+
+  await file.rename("same.txt");
+
+  expect(await fs.readFile(path.join(docsDir, "Rename same", "same.txt"), "utf8")).toBe("Same\n");
+  expect(file.name).toBe("same.txt");
 });
 
 test("Rename of a file to the name of another file fails, and keeps both files", async () => {
   let dir = await folderWith("Rename clash", { "first.txt": "First\n", "second.txt": "Second\n" });
   let file = dir.files.find(f => f.name == "first.txt");
 
-  file.setFileName("second.txt");
-  await expect(file.save()).rejects.toThrow();
+  await expect(file.rename("second.txt")).rejects.toThrow();
 
   expect(await fs.readFile(path.join(docsDir, "Rename clash", "first.txt"), "utf8")).toBe("First\n");
   expect(await fs.readFile(path.join(docsDir, "Rename clash", "second.txt"), "utf8")).toBe("Second\n");
@@ -310,8 +320,7 @@ test("Rename a folder, and its files can still be opened", async () => {
   let inside = dir.files.find(f => f.name == "inside.txt");
   let deep = nested.files.find(f => f.name == "deep.txt");
 
-  dir.name = "New folder name";
-  await dir.save();
+  await dir.rename("New folder name");
 
   expect(await exists(path.join(docsDir, "Old folder name"))).toBe(false);
   expect(await fs.readFile(path.join(docsDir, "New folder name", "inside.txt"), "utf8")).toBe("Inside\n");
@@ -320,6 +329,25 @@ test("Rename a folder, and its files can still be opened", async () => {
   let created = await nested.createSubDirectory("Even deeper");
   expect((await fs.stat(path.join(docsDir, "New folder name", "Nested", "Even deeper"))).isDirectory()).toBe(true);
   expect(created).toBeDefined();
+});
+
+test("Saving a file writes its contents to the file on disk", async () => {
+  let dir = await folderWith("Save", { "saved.txt": "Before\n" });
+  let file = dir.files.find(f => f.name == "saved.txt");
+
+  file.contents = new Blob(["After saving\n"]);
+  await file.save();
+
+  expect(await fs.readFile(path.join(docsDir, "Save", "saved.txt"), "utf8")).toBe("After saving\n");
+});
+
+test("Saving a file whose contents aren't loaded leaves the file on disk as it is", async () => {
+  let dir = await folderWith("Save unloaded", { "unloaded.txt": "Keep\n" });
+  let file = dir.files.find(f => f.name == "unloaded.txt");
+
+  await file.save();
+
+  expect(await fs.readFile(path.join(docsDir, "Save unloaded", "unloaded.txt"), "utf8")).toBe("Keep\n");
 });
 
 test("Delete a file, and only that file", async () => {

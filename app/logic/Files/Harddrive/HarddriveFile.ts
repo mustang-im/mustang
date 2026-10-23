@@ -29,13 +29,17 @@ export class HarddriveFile extends File {
     await appGlobal.remoteApp.deleteFile(this.path);
   }
 
-  /** Rename */
   async saveOnServer() {
-    let path = this.parent.childPath(this.name);
-    if (path == this.path) {
+    if (!this.contents) {
       return;
     }
-    await this.parent.renameChild(this, path);
+    let contents = new Uint8Array(await this.contents.arrayBuffer());
+    await appGlobal.remoteApp.fs.writeFile(this.path, contents, { mode: 0o600 });
+  }
+
+  async renameOnServer(newName: string) {
+    let path = this.parent.childPath(newName);
+    await this.parent.renameChild(this, newName, path);
     this.path = this.filepathLocal = path;
   }
 }

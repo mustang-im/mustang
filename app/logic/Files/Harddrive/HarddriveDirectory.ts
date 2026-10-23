@@ -113,27 +113,18 @@ export class HarddriveDirectory extends Directory {
     }
   }
 
-  /** Rename */
-  async saveOnServer() {
+  async renameOnServer(newName: string) {
     if (!this.parent) {
       return;
     }
-    let path = this.parent.childPath(this.name, true);
-    if (path == this.path) {
-      return;
-    }
-    await this.parent.renameChild(this, path);
+    let path = this.parent.childPath(newName, true);
+    await this.parent.renameChild(this, newName, path);
     this.setPath(path);
   }
 
-  async renameChild(child: FileOrDirectory, path: string) {
-    try {
-      this.checkChildName(child.name);
-      await this.account.move(child.path, path);
-    } catch (ex) {
-      await this.listContents(); // Shows the name on disk again
-      throw ex;
-    }
+  async renameChild(child: FileOrDirectory, newName: string, path: string) {
+    this.checkChildName(newName);
+    await this.account.move(child.path, path);
   }
 
   /** Also changes the paths of the contents, which contain our name */
