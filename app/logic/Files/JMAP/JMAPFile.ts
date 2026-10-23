@@ -324,23 +324,20 @@ export class JMAPFile extends File {
     await this.keepLocalChanges(this.parent);
   }
 
-  /** Rename */
   async saveOnServer() {
-    if (!this.nodeID || this.parent.childPath(this.name) == this.path) {
+    await this.upload();
+  }
+
+  async renameOnServer(newName: string) {
+    if (!this.nodeID) {
       return;
     }
-    try {
-      await this.account.setNodes({
-        update: {
-          [this.nodeID]: { name: this.name },
-        },
-      });
-    } catch (ex) {
-      await this.parent.listContents(); // Shows the name on the server again
-      throw ex;
-    }
-    this.path = this.parent.childPath(this.name);
-    await this.saveLocally();
+    await this.account.setNodes({
+      update: {
+        [this.nodeID]: { name: newName },
+      },
+    });
+    this.path = this.parent.childPath(newName);
   }
 
   async deleteOnServer() {

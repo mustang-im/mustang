@@ -81,23 +81,16 @@ export class JMAPDirectory extends Directory {
     }
   }
 
-  /** Rename */
-  async saveOnServer() {
-    if (!this.nodeID || this.parent.childPath(this.name, true) == this.path) {
+  async renameOnServer(newName: string) {
+    if (!this.nodeID) {
       return;
     }
-    try {
-      await this.account.setNodes({
-        update: {
-          [this.nodeID]: { name: this.name },
-        },
-      });
-    } catch (ex) {
-      await this.parent.listContents(); // Shows the name on the server again
-      throw ex;
-    }
-    this.path = this.parent.childPath(this.name, true);
-    await this.saveLocally();
+    await this.account.setNodes({
+      update: {
+        [this.nodeID]: { name: newName },
+      },
+    });
+    this.path = this.parent.childPath(newName, true);
   }
 
   async createSubDirectory(name: string): Promise<JMAPDirectory> {

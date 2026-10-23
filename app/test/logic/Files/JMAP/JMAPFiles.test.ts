@@ -203,6 +203,17 @@ test("A change on disk is uploaded, only if the file on the server is unchanged"
   expect(errors).toEqual([]);
 });
 
+test("save() uploads the change on disk", async () => {
+  let { server, file, fileID, errors } = await setupWithFile();
+  await file.download();
+  await editOnDisk(file, "changed on disk");
+
+  await file.save();
+  expect(server.contents(fileID)).toBe("changed on disk");
+  expect(server.nodes.get(fileID).name).toBe("a.txt");
+  expect(errors).toEqual([]);
+});
+
 test("Without draft-ietf-jmap-conditional, `ifInState` guards the upload, and we try again when other files changed", async () => {
   let { server, files, file, fileID, errors } = await setupWithFile({ conditional: false });
   let otherID = server.addFile("other.txt", "other");
@@ -437,8 +448,7 @@ test("A rename on the server, or in our app, moves the file on disk", async () =
   await expect(fsPromises.stat(oldPath)).rejects.toThrow();
   expect(await file.isLocalFileChanged()).toBe(false);
 
-  file.name = "c.txt";
-  await file.save();
+  await file.rename("c.txt");
   await files.syncLocalCopies();
   expect(file.filepathLocal).toBe(`${accountDir(files)}/Docs/c.txt`);
   expect(await readDisk(file.filepathLocal)).toBe("original");
@@ -538,13 +548,11 @@ test("Rename, move, copy and delete on the server", async () => {
   let other = await files.rootDir.createSubDirectory("Other");
   expect(server.find("Other").id).toBe(other.nodeID);
 
-  file.name = "b.txt";
-  await file.save();
+  await file.rename("b.txt");
   expect(server.nodes.get(fileID).name).toBe("b.txt");
   expect(file.path).toBe("/Docs/b.txt");
 
-  docs.name = "Documents";
-  await docs.save();
+  await docs.rename("Documents");
   expect(server.nodes.get(docs.nodeID).name).toBe("Documents");
   expect(file.path).toBe("/Documents/b.txt");
 
@@ -578,12 +586,11 @@ test("Rename, move, copy and delete on the server", async () => {
   expect(errors).toEqual([]);
 });
 
-test("A rename that the server rejects shows the name on the server again", async () => {
+test("A rename that the server rejects keeps the name", async () => {
   let { server, docs, file, fileID } = await setupWithFile();
   server.addFile("taken.txt", "x", docs.nodeID);
   await docs.listContents();
-  file.name = "taken.txt";
-  await expect(file.save()).rejects.toThrow();
+  await expect(file.rename("taken.txt")).rejects.toThrow();
   expect(file.name).toBe("a.txt");
   expect(server.nodes.get(fileID).name).toBe("a.txt");
 });
