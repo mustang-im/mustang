@@ -71,6 +71,7 @@ async function createSharedAppObject() {
     openExternalURL,
     openFileInNativeApp,
     showFileInFolder,
+    startDrag,
     startupArgs,
     computerOn,
     isDefaultApp,
@@ -520,6 +521,11 @@ function setAsDefaultApp(protocol: string) {
 
 function showFileInFolder(filePath: string) {
   shell.showItemInFolder(filePath);
+}
+
+async function startDrag(filePath: string) {
+  let icon = await app.getFileIcon(filePath);
+  mainWindow.webContents.startDrag({ file: filePath, icon });
 }
 
 async function askForMediaAccess(mediaType: string) {

@@ -94,7 +94,7 @@
   import { onMount } from "svelte";
   import { ArrayColl } from "svelte-collections";
   import { openComposer } from "../../../frontend/Mail/open";
-  import { OutgoingInvitation } from "../../../logic/Calendar/Invitation/OutgoingInvitation";
+  import { IncomingInvitation } from "../../../logic/Calendar/Invitation/IncomingInvitation";
   import { t } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -265,7 +265,7 @@
       } else if (key == "f" && flow.isSaved) {
         keyEvent.preventDefault();
         keyEvent.stopPropagation();
-        openComposer(await OutgoingInvitation.forwardEventByMail(event));
+        openComposer(await IncomingInvitation.forwardEventByMail(event));
         return;
       }
     }

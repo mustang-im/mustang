@@ -104,6 +104,7 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   if (vevent.entries.dtstamp) {
     [event.lastUpdateTime] = parseDate(vevent.entries.dtstamp[0]);
   }
+  event.sequence = sanitize.integer(vevent.entries.sequence?.[0].value, 0);
   if (vevent.entries.dtstart?.[0].properties.value?.toLowerCase() == "date") {
     event.allDay = true;
   }
