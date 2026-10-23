@@ -10,7 +10,7 @@
   on:click|capture={(event) => catchErrors(() => onClickTopLevel(event))} />
 
 {#if frontend == "lookout"}
-  {#await import("../../lookout/MainWindow/MainWindow.svelte") then lookout}
+  {#await lookoutWindow then lookout}
     <svelte:component this={lookout.default} />
   {/await}
 {:else}
@@ -100,6 +100,8 @@
 
   const frontendSetting = getLocalStorage("appearance.frontend", "classic");
   $: frontend = $frontendSetting.value;
+  // For Vite, the import must be in `<script>` to pre-bundle, otherwise "504 Outdated Optimize Dep"
+  $: lookoutWindow = frontend == "lookout" ? import("../../lookout/MainWindow/MainWindow.svelte") : null;
 
   // $: sidebarApp = $mustangApps.filter(app => app.showSidebar).first; // TODO watch `app` property changes
   $: $sidebarApp = $meetMustangApp.showSidebar ? meetMustangApp : null;

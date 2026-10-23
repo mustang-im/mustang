@@ -18,7 +18,7 @@ export default defineConfig({
       // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
       env: {
         // For conditional `// #if [FOO]` statements in the code
-        WEBMAIL: !!webMail && includeProprietary ? !!webMail : undefined,
+        WEBMAIL: webMail && includeProprietary ? webMail : undefined,
         MOBILE: isMobile,
         PROPRIETARY: includeProprietary ? true : undefined,
         PRODUCTION: production ? true : undefined,

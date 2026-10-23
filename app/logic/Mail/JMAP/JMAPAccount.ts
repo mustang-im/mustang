@@ -532,22 +532,32 @@ export class JMAPAccount extends MailAccount {
       "ids": null,
     }) as TJMAPGetResponse<TJMAPFolder>;
     for (let folderJSON of serverFoldersResponse.list) {
-      // If the server lists the parent only later, we move the folder there on the next listing
-      let parent = folderJSON.parentId
-        ? this.findFolder(folder => folder.id == folderJSON.parentId) as JMAPFolder
-        : null;
-      let parentFolders = parent ? parent.subFolders : this.rootFolders;
-      let folder = parentFolders.find(folder => folder.id == folderJSON.id) as JMAPFolder;
-      if (!folder) {
-        // We may already have the folder from our database, or it moved
-        folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
-        let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
-        oldParentFolders.remove(folder);
-        folder.parent = parent;
-        parentFolders.add(folder);
-      }
+      // We may already have the folder from our database
+      let folder = this.findFolder(folder => folder.id == folderJSON.id) as JMAPFolder ?? this.newFolder();
       folder.fromJMAP(folderJSON);
       currentFolders.set(folder.id, folder);
+    }
+    let parentIDs = new Map(serverFoldersResponse.list.map(folderJSON => [folderJSON.id, folderJSON.parentId]));
+    // Only now, because the server may list a folder before its parent
+    for (let folderJSON of serverFoldersResponse.list) {
+      let folder = currentFolders.get(folderJSON.id);
+      let parent = currentFolders.get(folderJSON.parentId) ?? null;
+      let ancestorID = folderJSON.parentId;
+      for (let i = 0; ancestorID && ancestorID != folder.id && i < parentIDs.size; i++) {
+        ancestorID = parentIDs.get(ancestorID);
+      }
+      if (ancestorID == folder.id) {
+        this.dataError(new Error(`Folder ${folder.name}: The server made the folder its own parent or a subfolder of itself. Showing it at the top level.`));
+        parent = null;
+      }
+      let parentFolders = parent ? parent.subFolders : this.rootFolders;
+      if (parentFolders.contains(folder)) {
+        continue;
+      }
+      let oldParentFolders = folder.parent?.subFolders ?? this.rootFolders;
+      oldParentFolders.remove(folder);
+      folder.parent = parent;
+      parentFolders.add(folder);
     }
 
     for (let folder of oldFolders) {
@@ -775,19 +785,14 @@ export class JMAPAccount extends MailAccount {
       await reconnectThrottle.throttle();
       let connection = new AbortController();
       let pingSeconds = kPingSeconds;
-      let watchdog: Timeout | null = null;
       // A dead connection, e.g. after sleep or a network change, doesn't always end the stream,
       // and a half-open VPN tunnel may accept a new connection, but never answer
-      function expectAnswer() {
-        watchdog?.fulfilled();
-        watchdog = new Timeout(2 * pingSeconds, () => {
-          // A `DOMException` named "TimeoutError", like `fetch()` throws for its own timeouts, so that the `catch`
-          // below takes it as transient (`isTransientError()`), and the `while` loop reconnects
-          connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError"));
-        });
-      }
+      let watchdog = new Timeout(2 * pingSeconds, () => {
+        // A `DOMException` named "TimeoutError", like `fetch()` throws for its own timeouts, so that the `catch`
+        // below takes it as transient (`isTransientError()`), and the `while` loop reconnects
+        connection.abort(new DOMException("Push connection: The server stopped answering", "TimeoutError"));
+      });
       try {
-        expectAnswer();
         let stream = await fetch(url, {
           headers: {
             Authorization: this.authorizationHeader(),
@@ -800,7 +805,7 @@ export class JMAPAccount extends MailAccount {
         }
         let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
         for await (let event of eventStream) {
-          watchdog?.fulfilled();
+          watchdog.fulfilled();
           if (event.name == "ping") {
             try {
               pingSeconds = sanitize.integerRange(JSON.parse(event.data).interval, 1, 1500, pingSeconds);
@@ -830,7 +835,7 @@ export class JMAPAccount extends MailAccount {
               console.error(ex);
             }
           }
-          expectAnswer();
+          watchdog.restart(2 * pingSeconds);
         }
       } catch (ex) {
         if (ex.name == "AbortError") { // disconnect(), or a newer listener took over
@@ -847,7 +852,7 @@ export class JMAPAccount extends MailAccount {
           throw ex;
         }
       } finally {
-        watchdog?.fulfilled();
+        watchdog.fulfilled();
       }
     }
   }

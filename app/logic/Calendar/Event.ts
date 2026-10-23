@@ -214,6 +214,11 @@ export class Event extends Observable {
    * The event was cancelled by the organizer (not our user). */
   @notifyChangedProperty
   isCancelled = false;
+  /** Only for incoming meetings
+   * The organizer changed the time or the place of the meeting,
+   * and our user did not respond to the change yet. */
+  @notifyChangedProperty
+  isMoved = false;
   /** If we're currently editing this event,
    * saves the original state before the editing.
    *
@@ -227,6 +232,9 @@ export class Event extends Observable {
    * We don't need to track local changes, only those sent by others.
    * Local changes sent to others will always get the current timestamp in `ICalGenerator` */
   lastUpdateTime: Date | null;
+  /** iCal SEQUENCE: The version of the meeting, which the organizer increases
+   * with each change. Used together with `lastUpdateTime`, RFC 5546 2.1.5 */
+  sequence = 0;
   /** Includes changes to `alarm`, lastUpdateTime does not consider to be a change */
   @notifyChangedProperty
   lastMod = new Date();
@@ -426,7 +434,9 @@ export class Event extends Observable {
     this.participants.replaceAll(original.participants);
     this.attachments.replaceAll(original.attachments);
     this.myParticipation = original.myParticipation;
+    this.isMoved = original.isMoved;
     this.lastUpdateTime = original.lastUpdateTime;
+    this.sequence = original.sequence;
   }
 
   fromExtraJSON(json: any) {
@@ -435,7 +445,9 @@ export class Event extends Observable {
     this.isOnline = sanitize.boolean(json.isOnline, false);
     this.onlineMeetingURL = sanitize.url(json.onlineMeetingURL, null);
     this.isCancelled = sanitize.boolean(json.isCancelled, false);
+    this.isMoved = sanitize.boolean(json.isMoved, false);
     this.lastUpdateTime = sanitize.date(json.lastUpdateTime, null);
+    this.sequence = sanitize.integer(json.sequence, 0);
     this.lastMod = sanitize.date(json.lastMod, this.lastMod);
   }
   toExtraJSON(): any {
@@ -444,7 +456,9 @@ export class Event extends Observable {
     json.isOnline = this.isOnline;
     json.onlineMeetingURL = this.onlineMeetingURL;
     json.isCancelled = this.isCancelled;
+    json.isMoved = this.isMoved;
     json.lastUpdateTime = this.lastUpdateTime;
+    json.sequence = this.sequence;
     json.lastMod = this.lastMod;
     return json;
   }
@@ -457,6 +471,15 @@ export class Event extends Observable {
    * or the same meeting in another calendar or in an invitation email */
   isSameUID(other: Event | null | undefined): boolean {
     return this == other || !!this.calUID && this.calUID == other?.calUID;
+  }
+
+  /** Whether this is a later version of the meeting than `other`,
+   * as the organizer sent it. RFC 5546 2.1.5 */
+  isNewerVersionThan(other: Event): boolean {
+    if (this.sequence != other.sequence) {
+      return this.sequence > other.sequence;
+    }
+    return (this.lastUpdateTime?.getTime() ?? 0) > (other.lastUpdateTime?.getTime() ?? 0);
   }
 
   /** Assumes that `startEditing()` was called before */
@@ -486,6 +509,7 @@ export class Event extends Observable {
         aThis.filename == other.attachments.get(i).filename)) &&
       !this.recurrenceRule == !other.recurrenceRule &&
       (!this.recurrenceRule || this.recurrenceRule.matches(other.recurrenceRule)) &&
+      this.exclusions.length == other.exclusions.length &&
       this.alarm?.getTime() == other.alarm?.getTime()
     );
   }
@@ -795,7 +819,7 @@ export class Event extends Observable {
       if (this.isOutgoingMeeting) {
         await this.outgoingInvitation.sendCancellations();
       } else if (this.isIncomingMeeting) {
-        await this.respondToInvitation(InvitationResponse.Decline, null, false);
+        await this.respondToInvitation(InvitationResponse.Decline, true, null, false);
       }
     } catch (ex) {
       this.calendar.errorCallback(ex);
@@ -872,10 +896,10 @@ export class Event extends Observable {
    *
    * TODO Move API to @see IncomingInvitation and code to @see ICalIncomingInvitation
    */
-  async respondToInvitation(response: InvitationResponseInMessage, mailAccount?: MailAccount, save = true): Promise<void> {
+  async respondToInvitation(response: InvitationResponseInMessage, sendReply = true, mailAccount?: MailAccount, save = true): Promise<void> {
     assert(this.isIncomingMeeting, "Only invitations can be responded to");
     const { ICalIncomingInvitation } = await import("./ICal/ICalIncomingInvitation"); // HACK to avoid circular import in `InvitationEvent`
-    await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, mailAccount);
+    await ICalIncomingInvitation.respondToInvitationFromCalEvent(this, response, sendReply, mailAccount);
     if (save) { // `save == false` for deleted events and `InvitationEvent`
       await this.save();
     }
@@ -966,6 +990,12 @@ export class Event extends Observable {
 
   /**
    * Deletes the event and any subsequent instances that are not exceptions.
+   *
+   * UI helper. Call it on an event that is not being edited, whose master is
+   * not being edited either: call `cancelEditing()` on both first. Otherwise,
+   * the pending UI changes of the master would be saved, too.
+   * It changes the master in its own editing session, so that `save()` sees
+   * the shortened series as a change and sends the update to the participants.
    */
   async truncateRecurrence() {
     let master = this.parentEvent;
