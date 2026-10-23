@@ -148,14 +148,7 @@
         {#if chain}
           <vbox>
             {#await keyStatusAsync then keyStatus}
-              {#if keyStatus == KeyStatus.NoCertificate}
-                <hbox>
-                  <Button
-                    label={$t`Please add the certificate`}
-                    onClick={onAddCertificateSMIME}
-                    />
-                </hbox>
-              {:else if keyStatus == KeyStatus.ChainInvalid}
+              {#if keyStatus == KeyStatus.ChainInvalid}
                 <hbox>{$t`The certificate chain could not be verified.`}</hbox>
               {:else if keyStatus == KeyStatus.ChainIncomplete}
                 <hbox>
