@@ -121,6 +121,16 @@ describe("Generator on fixtures", () => {
     expect(find.kind == "method" && new Set(find.returns)).toEqual(new Set([Person, "null"]));
   });
 
+  test("HTMLString is HTML, which the bridge sanitizes", () => {
+    expect(member("Mail", "signature")).toMatchObject({ kind: "field", type: ["HTML"] });
+    expect(member("Mail", "preview")).toMatchObject({ kind: "getter", type: ["HTML"] });
+    let insert = member("Mail", "insert");
+    expect(insert.kind == "method" && insert.params).toEqual([
+      { name: "html", type: ["HTML"] },
+      { name: "at", type: ["number"], optional: true },
+    ]);
+  });
+
   test("Field types", () => {
     let types = (name: string) => {
       let found = member("Mail", name);
@@ -174,6 +184,9 @@ describe("Generator on fixtures", () => {
           let title: string = mail.title;
           mail.title = "changed";
           mail.body = "<p>changed</p>";
+          mail.signature = "<p>Fred</p>";
+          let signature: string = mail.signature;
+          await mail.insert("<b>x</b>");
           let body: string = await mail.body;
           let size: number = await mail.size;
           let saved: boolean = await mail.save(true);
@@ -229,7 +242,7 @@ describe("Generator errors", () => {
 
   test("Wrong members", () => {
     let message = generateErrors("WrongMembers.ts");
-    for (let label of ["NotExported", "ClassWithWriteGroup", "Members.fixed", "Members.computed", "Members.run", "Members.count", "Members.secret", "Members.internal", "Members.twice"]) {
+    for (let label of ["NotExported", "ClassWithWriteGroup", "Members.fixed", "Members.computed", "Members.run", "Members.count", "Members.secret", "Members.internal", "Members.twice", "Members.maybeHTML"]) {
       expect(message).toContain(label + ":");
     }
   });
@@ -243,12 +256,27 @@ describe("Generator errors", () => {
   });
 });
 
+/** Shows the classes that it read */
+class InspectableGenerator extends AddonAPIGenerator {
+  get classInfos(): any[] {
+    return this.classes;
+  }
+}
+
 describe("App API", () => {
+  let generator: InspectableGenerator;
   let generated: { apiTypes: string, addonAPI: string };
 
   beforeAll(() => {
-    generated = new AddonAPIGenerator().generate();
+    generator = new InspectableGenerator();
+    generated = generator.generate();
   }, 120000);
+
+  test("Message HTML that addons write is sanitized", () => {
+    let html = generator.classInfos.find(c => c.name == "Message").members.find(m => m.name == "html");
+    expect(html.write).toContain("mail.compose");
+    expect(html.type).toEqual(["HTML"]);
+  });
 
   test("Committed files are up to date. Run `npm run addons:generate`", () => {
     expect(generated.apiTypes).toBe(readFileSync(join(apiDir, "apiTypes.ts"), "utf-8"));

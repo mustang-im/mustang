@@ -98,6 +98,26 @@ export function sanitizeHTMLExternal(html: string): string {
   return sanitized;
 }
 
+/** Like `sanitizeHTML()`, but also removes CSS that loads images or fonts.
+ * For HTML that the app shows in its own document, e.g. HTML from addons.
+ * @returns HTML document */
+export function sanitizeHTMLWithoutLoading(html: string): string {
+  if (!html) {
+    return "";
+  }
+  includeExternal = false;
+  isWithoutLoading = true;
+  try {
+    return DOMPurify.sanitize(html, {
+      USE_PROFILES: { html: true },
+      FORBID_TAGS: ["svg", "mathml", "form"],
+      WHOLE_DOCUMENT: true,
+    });
+  } finally {
+    isWithoutLoading = false;
+  }
+}
+
 /** Removes scripts, event handlers, external references and everything else that is not a plain image.
  * Show the result only as `<img>`, which is the main protection.
  * @returns SVG document, or "" if it is not an SVG image */
@@ -155,6 +175,16 @@ function addStyles(output: string[], styles: CSSStyleDeclaration) {
  * `cssText` keeps the declaration order and the `!important` flags. Mails need
  * `!important` in their `@media` rules to override their inline styles. */
 function styleDeclarations(styles: CSSStyleDeclaration): string {
+  if (isWithoutLoading) {
+    const kLoadingFunction = /(url|image|image-set|cross-fade|src)\s*\(/i;
+    for (let i = styles.length - 1; i >= 0; i--) {
+      let name = styles.item(i);
+      if (kLoadingFunction.test(styles.getPropertyValue(name))) {
+        styles.removeProperty(name);
+      }
+    }
+    return styles.cssText;
+  }
   return styles.cssText.replace(cssURLRegex, `$&${proxy}`);
 };
 
@@ -208,6 +238,7 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
 });
 
 let includeExternal = false;
+let isWithoutLoading = false;
 DOMPurify.addHook('afterSanitizeAttributes', node => {
   for (let attribute of urlAttributes) {
     if (node.hasAttribute(attribute)) {

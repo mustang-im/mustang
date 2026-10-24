@@ -102,7 +102,7 @@ export const apiClasses: APIClass[] = [
     members: [
       { name: "attachments", kind: "field", read: ["message"], type: [{ collection: [Attachment] }] },
       { name: "from", kind: "field", read: ["message"], type: [PersonUID] },
-      { name: "html", kind: "getter", read: ["message"], write: ["mail.compose"], type: ["string"] },
+      { name: "html", kind: "getter", read: ["message"], write: ["mail.compose"], type: ["HTML"] },
       { name: "isRead", kind: "field", read: ["message"], type: ["boolean"] },
       { name: "isStarred", kind: "field", read: ["message"], type: ["boolean"] },
       { name: "received", kind: "field", read: ["message"], type: ["Date"] },

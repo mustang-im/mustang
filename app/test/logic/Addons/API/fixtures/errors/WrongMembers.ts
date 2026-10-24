@@ -1,4 +1,5 @@
 import { addon } from "../../../../../../logic/Addons/API/addon";
+import type { HTMLString } from "../../../../../../logic/util/util";
 
 class NotExported {
   @addon("mail")
@@ -28,4 +29,6 @@ export class Members {
   @addon("mail")
   @addon("mail.all")
   twice: string;
+  @addon("mail", "mail.compose")
+  maybeHTML: HTMLString | null;
 }

@@ -1,5 +1,6 @@
 import { addon, addonHook } from "../../../../../../logic/Addons/API/addon";
 import { Observable, notifyChangedProperty } from "../../../../../../logic/util/Observable";
+import type { HTMLString } from "../../../../../../logic/util/util";
 import { ArrayColl, MapColl, SetColl, type Collection } from "svelte-collections";
 
 /** @addon("mail.all") */
@@ -64,6 +65,19 @@ export class Mail extends Item {
     this._body = value;
   }
   _body = "";
+  @addon("message", "mail.compose")
+  signature: HTMLString = "";
+  @addon("message", "mail.compose")
+  get preview(): string {
+    return this._preview;
+  }
+  set preview(value: HTMLString) {
+    this._preview = value;
+  }
+  _preview = "";
+  @addon("mail.compose")
+  async insert(html: HTMLString, at?: number): Promise<void> {
+  }
   @addon("mail")
   async save(force: boolean, count?: number): Promise<boolean> {
     return force;

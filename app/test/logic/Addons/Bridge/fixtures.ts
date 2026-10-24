@@ -33,6 +33,8 @@ export class TMessage extends Observable {
   @notifyChangedProperty
   subject = "Hello";
   @notifyChangedProperty
+  html = "<p>Hello</p>";
+  @notifyChangedProperty
   from = new TPerson();
   @notifyChangedProperty
   isRead = false;
@@ -109,6 +111,7 @@ export const testClasses: APIClass[] = [
   {
     name: "TMessage", class: TMessage, groups: ["mail"], members: [
       { name: "subject", kind: "field", read: ["message"], write: ["mail.compose"], type: ["string"] },
+      { name: "html", kind: "field", read: ["message"], write: ["mail.compose"], type: ["HTML"] },
       { name: "from", kind: "field", read: ["message"], type: [TPerson] },
       { name: "isRead", kind: "field", read: ["message"], type: ["boolean"] },
       { name: "sent", kind: "field", read: ["message"], type: ["Date"] },

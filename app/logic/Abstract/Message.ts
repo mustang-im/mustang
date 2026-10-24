@@ -7,7 +7,7 @@ import { convertHTMLToText, convertTextToHTML, sanitizeHTML, sanitizeHTMLExterna
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { addon } from "../Addons/API/addon";
 import { dataError } from "../util/error";
-import { AbstractFunction } from "../util/util";
+import { AbstractFunction, type HTMLString } from "../util/util";
 import { ArrayColl, MapColl } from "svelte-collections";
 
 export class Message extends Observable {
@@ -106,7 +106,7 @@ export class Message extends Observable {
   /** HTML version of the message.
    * Sanitized. */
   @addon("message", "mail.compose")
-  get html(): string {
+  get html(): HTMLString {
     if (this._sanitizedHTML) {
       return this._sanitizedHTML;
     }
@@ -127,7 +127,7 @@ export class Message extends Observable {
 
   /** Must also set `.text` (or at least get `.text` to auto-generate it),
    * to keep them in sync. */
-  set html(val: string) {
+  set html(val: HTMLString) {
     this._rawHTML = val;
     this._sanitizedHTML = null;
   }

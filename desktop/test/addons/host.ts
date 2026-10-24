@@ -5,6 +5,7 @@ import { AddonAPI } from "../../../app/logic/Addons/Bridge/AddonAPI";
 import { HandleBudget } from "../../../app/logic/Addons/Bridge/HandleTable";
 import { SandboxFrame } from "../../../app/logic/Addons/Sandbox/SandboxFrame";
 import { TMessage, testClasses, testEnums } from "../../../app/test/logic/Addons/Bridge/fixtures";
+import { evilHTML } from "../../../app/test/logic/Addons/evil/src/html";
 
 /** Path in the addon package -> code. Set by the test runner. */
 declare const kEvilCode: Record<string, string>;
@@ -40,7 +41,7 @@ class TestAddon {
     let start = performance.now();
     let frame = new SandboxFrame("Evil");
     frame.iframe.hidden = kind == "logic";
-    let bridge = new AddonBridge(frame.port, api, ["message", "mail"], this.budget);
+    let bridge = new AddonBridge(frame.port, api, ["message", "mail", "mail.compose"], this.budget);
     frame.bridge = bridge;
     bridge.registerService("storage", { call: (_bridge, method, args) => this.storageCall(method, args) });
     bridge.registerService("ui", { call: () => undefined });
@@ -134,6 +135,23 @@ async function measure(addon: TestAddon, logic: SandboxFrame): Promise<void> {
   }
 }
 
+/** The addon writes HTML into a draft. The app renders it in its own document, like the composer. */
+async function compose(logic: SandboxFrame, tag: string): Promise<void> {
+  let draft = new TMessage();
+  let grant = logic.bridge.newGrant(["message", "mail", "mail.compose"]);
+  await logic.bridge.request("ui", "command", { draft }, grant, { command: "compose" });
+  grant.revoke();
+  results["compose-" + tag] = draft.html;
+  let rendered = newContainer();
+  rendered.innerHTML = draft.html;
+  // Control: the same HTML without the bridge
+  let control = newContainer();
+  control.innerHTML = evilHTML(`${config.denied}/control_${tag}`);
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  rendered.remove();
+  control.remove();
+}
+
 async function run(): Promise<void> {
   try {
     // Control: requests of the app itself carry its cookies
@@ -146,6 +164,7 @@ async function run(): Promise<void> {
     let logic = await addon.open("logic", "dist/main.js", document.body);
     await logic.bridge.request("ui", "command", {}, null, { command: "probe" });
     results["worker-" + tag] = addon.storage.get("results:worker-" + tag);
+    await compose(logic, tag);
     let panel = await addon.open("ui", "dist/panel.js", newContainer());
     results["frame-" + tag] = await addon.waitFor("results:frame-" + tag);
     await new Promise(resolve => setTimeout(resolve, 300));

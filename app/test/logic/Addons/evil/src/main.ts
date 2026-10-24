@@ -1,5 +1,6 @@
 // Runs in the addon's worker
 import { Probes, type EvilConfig } from "./probes";
+import { evilHTML } from "./html";
 
 mustang.ui.onCommand("probe", async () => {
   let config = await mustang.storage.get("config") as unknown as EvilConfig;
@@ -60,4 +61,9 @@ mustang.ui.onCommand("count", async ({ messages }) => {
   let at = Date.now();
   await mustang.storage.set("count", messages.length);
   await mustang.storage.set("countAt", at);
+});
+
+mustang.ui.onCommand("compose", async ({ draft }) => {
+  let config = await mustang.storage.get("config") as unknown as EvilConfig;
+  draft.html = evilHTML(`${config.denied}/compose_${config.tag}`);
 });

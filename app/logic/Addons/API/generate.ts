@@ -137,7 +137,7 @@ export class AddonAPIGenerator {
       if (write && ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Readonly) {
         this.error(node, label, "A readonly field can't have write groups");
       }
-      return { name, node, kind: "field", read, write };
+      return { name, node, kind: "field", read, write, isHTML: this.isHTML([node.type], node, label) };
     }
     if (ts.isGetAccessor(node) || ts.isSetAccessor(node)) {
       let accessors = classNode.members.filter(member => member.name?.getText() == name);
@@ -148,7 +148,8 @@ export class AddonAPIGenerator {
       if (write && !accessors.some(ts.isSetAccessor)) {
         this.error(node, label, "A getter without setter can't have write groups");
       }
-      return { name, node, kind: "getter", read, write };
+      let typeNodes = accessors.map(accessor => ts.isGetAccessor(accessor) ? accessor.type : (accessor as ts.SetAccessorDeclaration).parameters[0]?.type);
+      return { name, node, kind: "getter", read, write, isHTML: this.isHTML(typeNodes, node, label) };
     }
     if (ts.isMethodDeclaration(node)) {
       if (write) {
@@ -266,7 +267,7 @@ export class AddonAPIGenerator {
         member.returns = this.returnTypes(signature.getReturnType(), member.node, label);
       } else {
         let symbol = this.checker.getSymbolAtLocation(member.node.name);
-        member.type = this.types(this.checker.getTypeOfSymbol(symbol), member.node, label, "value");
+        member.type = member.isHTML ? ["HTML"] : this.types(this.checker.getTypeOfSymbol(symbol), member.node, label, "value");
       }
     }
   }
@@ -305,7 +306,9 @@ export class AddonAPIGenerator {
         continue;
       }
       let optional = !!node.questionToken || !!node.initializer;
-      let type = this.types(this.checker.getTypeOfSymbol(parameter), node, paramLabel, "value");
+      let type: TypeInfo[] = this.isHTML([node.type], node, paramLabel)
+        ? ["HTML"]
+        : this.types(this.checker.getTypeOfSymbol(parameter), node, paramLabel, "value");
       if (optional) {
         type = type.filter(t => t != "undefined");
       }
@@ -344,8 +347,17 @@ export class AddonAPIGenerator {
     return result.sort((a, b) => this.sortKey(a).localeCompare(this.sortKey(b), "en"));
   }
 
+  /** `HTMLString` (logic/util/util.ts) becomes "HTML", which the bridge sanitizes when it comes from an addon */
+  protected isHTML(typeNodes: (ts.TypeNode | undefined)[], node: ts.Node, label: string): boolean {
+    let found = typeNodes.filter(typeNode => typeNode && /\bHTMLString\b/.test(typeNode.getText()));
+    if (found.some(typeNode => !ts.isTypeReferenceNode(typeNode) || typeNode.typeName.getText() != "HTMLString")) {
+      this.error(node, label, "HTMLString can only be the whole type");
+    }
+    return found.length > 0;
+  }
+
   protected sortKey(type: TypeInfo): string {
-    let order = ["string", "number", "boolean", "Date", "Uint8Array", "objects", "void", "null", "undefined"];
+    let order = ["string", "HTML", "number", "boolean", "Date", "Uint8Array", "objects", "void", "null", "undefined"];
     if (typeof type == "string") {
       return String(order.indexOf(type));
     }
@@ -626,6 +638,9 @@ export class AddonAPIGenerator {
 
   protected typesTS(types: TypeInfo[]): string {
     return types.map(type => {
+      if (type == "HTML") {
+        return "string";
+      }
       if (typeof type == "string") {
         return type;
       }
@@ -660,6 +675,7 @@ interface MemberInfo {
   kind: "field" | "getter" | "method";
   read: AddonGroup[];
   write?: AddonGroup[];
+  isHTML?: boolean;
   type?: TypeInfo[];
   params?: ParamInfo[];
   returns?: TypeInfo[];
@@ -697,7 +713,7 @@ interface MustangAPIInfo {
   body: string;
 }
 
-type TypeInfo = "string" | "number" | "boolean" | "Date" | "Uint8Array" | "null" | "undefined" | "void" |
+type TypeInfo = "string" | "HTML" | "number" | "boolean" | "Date" | "Uint8Array" | "null" | "undefined" | "void" |
   ClassInfo | EnumInfo | { collection: TypeInfo[] };
 
 if (process.argv[1] && import.meta.url == pathToFileURL(resolve(process.argv[1])).href) {

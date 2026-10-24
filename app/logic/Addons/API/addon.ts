@@ -19,9 +19,10 @@ export function addonHook<T>(point: string, group: AddonGroup, args?: (self: T) 
 
 export type APIConstructor = abstract new (...args: any[]) => any;
 
-/** One alternative of a union. A class stands for a handle of it. */
+/** One alternative of a union. A class stands for a handle of it.
+ * "HTML" is a string that the bridge sanitizes when it comes from an addon. */
 export type APIType =
-  "string" | "number" | "boolean" | "Date" | "Uint8Array" | "null" | "undefined" | "void" |
+  "string" | "HTML" | "number" | "boolean" | "Date" | "Uint8Array" | "null" | "undefined" | "void" |
   APIConstructor |
   { enum: string } |
   { collection: APIType[] };

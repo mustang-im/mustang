@@ -4,6 +4,7 @@ import { Grant } from "./Grant";
 import { HandleTable, TooManyHandlesError, type HandleBudget, type HandleEntry } from "./HandleTable";
 import { Observable } from "../../util/Observable";
 import { minorError } from "../../util/error";
+import { sanitizeHTMLWithoutLoading } from "../../util/convertHTML";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
 type FieldMember = Extract<APIMember, { kind: "field" | "getter" }>;
@@ -359,6 +360,11 @@ export class AddonBridge {
       case "string":
         if (typeof value == "string" && value.length <= kMaxStringLength) {
           return value;
+        }
+        break;
+      case "HTML":
+        if (typeof value == "string" && value.length <= kMaxStringLength) {
+          return sanitizeHTMLWithoutLoading(value);
         }
         break;
       case "number":
