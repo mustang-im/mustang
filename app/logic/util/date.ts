@@ -134,20 +134,21 @@ export function isSameTimezone(ianaTimezone: string, time: Date) {
 }
 
 export function getToday() {
-  const today = new Date();
-  today.setHours(0);
-  today.setMinutes(0);
-  today.setSeconds(0);
-  today.setMilliseconds(0);
-  return today;
+  return getDayStart(new Date());
+}
+
+/** @returns The day that contains `date`, at 00:00 */
+export function getDayStart(date: Date): Date {
+  let startTime = new Date(date);
+  startTime.setHours(0, 0, 0, 0);
+  return startTime;
 }
 
 /** @returns The Monday of the week that contains `date`, at 00:00 */
 export function getWeekStart(date: Date): Date {
-  let startTime = new Date(date);
+  let startTime = getDayStart(date);
   // `getDay()` is 0 on Sunday, which still belongs to the Monday before it
   startTime.setDate(startTime.getDate() - (startTime.getDay() + 6) % 7);
-  startTime.setHours(0, 0, 0, 0);
   return startTime;
 }
 

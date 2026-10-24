@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { getTimeString, getTimeStringWithoutDayPeriod } from "../../../logic/util/date";
+import { getDayStart, getTimeString, getTimeStringWithoutDayPeriod, getWeekStart } from "../../../logic/util/date";
 import { saveDateTimeLocale } from "../../../l10n/l10n";
 import { afterEach, expect, test } from "vitest";
 
@@ -30,4 +30,12 @@ test("Time without AM/PM is the normal time in 24-hour locales", () => {
     saveDateTimeLocale(locale);
     expect(getTimeStringWithoutDayPeriod(time)).toBe(getTimeString(time));
   }
+});
+
+test("Day start is midnight of the same day, and the week starts on Monday", () => {
+  let dayStart = getDayStart(time);
+  expect(dayStart).toEqual(new Date(2026, 9, 29));
+  expect(time.getTime()).toBe(new Date(2026, 9, 29, 15, 5).getTime());
+  // Sunday belongs to the week before
+  expect(getWeekStart(new Date(2026, 10, 1, 12, 0))).toEqual(new Date(2026, 9, 26));
 });

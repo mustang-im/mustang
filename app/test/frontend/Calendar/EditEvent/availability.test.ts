@@ -232,6 +232,25 @@ test("Who is free when: Follows the meeting to another day, and loads the availa
   expect(loads).toHaveBeenCalledTimes(2);
 });
 
+test("Who is free when, Free slots: After going to another day or week, changing the meeting's title doesn't go back", async () => {
+  for (let view of [ParticipantsDayView, FreeSlots]) {
+    let event = newMeeting();
+    await show(view, { event });
+    expect(document.querySelector(".meeting, .slot.meeting")).not.toBeNull();
+    (document.querySelector("button.next-button") as HTMLElement).click();
+    flushSync();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    flushSync();
+    expect(document.querySelector(".meeting, .slot.meeting")).toBeNull();
+
+    event.title = "Planning, 2nd round";
+    flushSync();
+    expect(document.querySelector(".meeting, .slot.meeting")).toBeNull();
+    unmount(component);
+    component = null;
+  }
+});
+
 test("Free slots: Follows the meeting to another week, and loads the availability only for a new week", async () => {
   let event = newMeeting();
   let loads = vi.spyOn(event.calendar, "arePersonsFree");

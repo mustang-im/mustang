@@ -71,7 +71,7 @@
   import Button from "../../../Shared/Button.svelte";
   import ChevronLeftIcon from "lucide-svelte/icons/chevron-left";
   import ChevronRightIcon from "lucide-svelte/icons/chevron-right";
-  import { getFormattedDateString, getTimeString } from "../../../../logic/util/date";
+  import { getDayStart, getFormattedDateString, getTimeString } from "../../../../logic/util/date";
   import { ArrayColl } from "svelte-collections";
   import { tick } from "svelte";
   import { t } from "../../../../l10n/l10n";
@@ -82,32 +82,12 @@
   /** How many hours fit into the visible height */
   export let showHours = 5;
 
-  let day = startOfDay(event.startTime);
-  // <copied to="FreeSlots.svelte">
-  // Before the statements that use `day`, because Svelte doesn't see that this changes `day`, and runs each statement only once per update
-  let lastStartTime = event.startTime.getTime();
-  $: followMeeting($event.startTime);
-  function followMeeting(startTime: Date) {
-    if (startTime.getTime() == lastStartTime) {
-      return;
-    }
-    lastStartTime = startTime.getTime();
-    let meetingDay = startOfDay(startTime);
-    if (meetingDay.getTime() != day.getTime()) {
-      day = meetingDay;
-    }
-  }
-  // </copied>
-
+  /** The meeting's day, or the day that the user went to */
+  $: meetingDayStartTime = getDayStart($event.startTime).getTime();
+  $: day = new Date(meetingDayStartTime);
   $: dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
   $: participants = event.participants;
   $: meeting = layoutTimeColumn([$event], day)[0];
-
-  function startOfDay(time: Date): Date {
-    let start = new Date(time);
-    start.setHours(0, 0, 0, 0);
-    return start;
-  }
 
   function stepDay(days: number) {
     day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + days);
