@@ -392,13 +392,13 @@ export class Event extends Observable {
    * copyEditableFieldsFrom and recurring events need extra care. */
   copyFrom(original: Event) {
     this.copyEditableFieldsFrom(original);
-    this.recurrenceStartTime = original.recurrenceStartTime;
+    this.recurrenceStartTime = original.recurrenceStartTime ? new Date(original.recurrenceStartTime) : null;
     this.recurrenceCase = original.recurrenceCase;
     this.recurrenceRule = original.recurrenceRule;
     if (this.recurrenceRule) {
       this.instances.replaceAll(original.instances);
       this.exceptions.replaceAll(original.exceptions);
-      this.exclusions.replaceAll(original.exclusions);
+      this.exclusions.replaceAll(original.exclusions.contents.map(exclusion => new Date(exclusion)));
     }
     this.parentEvent = original.parentEvent;
   }
@@ -435,7 +435,7 @@ export class Event extends Observable {
     this.attachments.replaceAll(original.attachments);
     this.myParticipation = original.myParticipation;
     this.isMoved = original.isMoved;
-    this.lastUpdateTime = original.lastUpdateTime;
+    this.lastUpdateTime = original.lastUpdateTime ? new Date(original.lastUpdateTime) : original.lastUpdateTime;
     this.sequence = original.sequence;
   }
 
