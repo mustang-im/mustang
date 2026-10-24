@@ -269,6 +269,24 @@ test("A server rule that the server doesn't allow to change is read-only, and sh
   expect(runByRadio("Mustang").disabled).toBe(true);
 });
 
+test("When the server rules become read-only while the page is open, the page shows it", async () => {
+  account.hasServerRules = true;
+  let rule = newRule("Newsletters");
+  rule.server = true;
+  rule.serverID = "rule-1";
+  rule.serverJSON = {};
+  showRulesPage();
+  await vi.waitFor(() => expect(account.filterRuleActions.first.serverID).toBe("rule-1"));
+  expect(target.querySelector("input[name=name]").hasAttribute("inert")).toBe(false);
+
+  // e.g. the server says that classic Outlook keeps its own copy of the rules
+  account.serverFilterRulesReadOnlyReason = "Outlook keeps a copy";
+  flushSync();
+
+  expect(target.textContent).toContain("Outlook keeps a copy");
+  expect(target.querySelector("input[name=name]").hasAttribute("inert")).toBe(true);
+});
+
 test("A server rule with parts that we can't show stays editable, but can't move to us", () => {
   account.hasServerRules = true;
   let rule = newRule("Newsletters");

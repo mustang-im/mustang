@@ -286,19 +286,22 @@ export class MailAccount extends TCPAccount {
     if (!this.canServerFilterRules) {
       return;
     }
-    let fetched = (await this.fetchServerFilterRules()).map(serverRule => {
+    // Update our server rules with any changes from the server.
+    // Collect them in the server's new order, but include any new server rules too.
+    let fetched: FilterRuleAction[] = [];
+    for (let serverRule of await this.fetchServerFilterRules()) {
       let known = this.filterRuleActions.find(rule => rule.server && rule.serverID == serverRule.serverID);
       if (known) {
         known.fromJSON(serverRule.toJSON());
-        return known;
       }
-      return serverRule;
-    });
-    let remaining = [...fetched];
+      fetched.push(known ?? serverRule);
+    }
+    this.knownServerFilterRuleIDs = new Set(fetched.map(rule => rule.serverID));
+    // Insert the updated rules back into the full list in the same places as the server rules were before.
     let rules: FilterRuleAction[] = [];
     for (let rule of this.filterRuleActions) {
       if (rule.server && rule.serverID) {
-        let next = remaining.shift();
+        let next = fetched.shift();
         if (next) {
           rules.push(next);
         }
@@ -306,9 +309,8 @@ export class MailAccount extends TCPAccount {
       }
       rules.push(rule);
     }
-    rules.push(...remaining);
+    rules.push(...fetched);
     this.filterRuleActions.replaceAll(rules);
-    this.knownServerFilterRuleIDs = new Set(fetched.map(rule => rule.serverID));
     await this.save();
   }
 
