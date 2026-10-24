@@ -1,5 +1,6 @@
-<div class="addon-frame" class:fill={!maxHeight} bind:this={containerE}
-  style:height={maxHeight ? Math.min($frame?.contentHeight ?? 0, maxHeight) + "px" : null}>
+<div class="addon-frame" class:fill={!maxHeight} bind:this={containerE} bind:contentRect={containerRect}
+  style:height={maxHeight ? Math.min($frame?.contentHeight ?? 0, maxHeight) + "px" : null}
+  style:--frame-width={containerRect ? wholeDevicePixels(containerRect.width) + "px" : null}>
 </div>
 
 <script lang="ts">
@@ -29,6 +30,7 @@
   export let frame: SandboxFrame | null = null;
 
   let containerE: HTMLDivElement;
+  let containerRect: DOMRectReadOnly;
   let frameSandbox: AddonSandbox | null = null;
   let sentContext: Record<string, object> | null = null;
   let sentGroups: AddonGroup[] | null = null;
@@ -103,6 +105,11 @@
     target.setTheme(properties, style.colorScheme, darkMode.matches, fonts);
   }
 
+  /** The browser rounds the frame width for the content, but clips at the rounded edges, which can cut off 1px of the content */
+  function wholeDevicePixels(cssPixels: number): number {
+    return Math.floor(cssPixels * devicePixelRatio) / devicePixelRatio;
+  }
+
   onDestroy(() => {
     darkMode.removeEventListener("change", onThemeChange);
     closeFrame();
@@ -120,7 +127,7 @@
   }
   .addon-frame :global(iframe) {
     display: block;
-    width: 100%;
+    width: var(--frame-width, 100%);
     height: 100%;
     border: none;
     background: transparent;
