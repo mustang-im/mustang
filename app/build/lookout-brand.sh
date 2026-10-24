@@ -4,7 +4,7 @@ VERSION=`grep "\"version\"" ../../app/package.json | sed -e "s|^.*\"version\": \
 echo Building version $VERSION
 perl -p -i \
   -e "s|production = false|production = true|;" \
-  -e "s|dataAppName: string = 'Mustang'|dataAppName: string = 'Parula'|;" \
+  -e "s|dataAppName: string = appName;|dataAppName: string = 'Parula';|;" \
   -e "s|'Mustang'|'Lookout'|;" \
   -e "s|'https://mustang.im'|'https://lookout.parula.app'|;" \
   -e "s|defaultFrontend: string = '.*';$|defaultFrontend: string = 'lookout';|;" \

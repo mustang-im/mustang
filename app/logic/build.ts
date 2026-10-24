@@ -3,7 +3,7 @@
 export const production = false;
 export const appVersion: string = '0.9.41-dev';
 export const appName: string = 'Mustang';
-export const dataAppName: string = 'Mustang';
+export const dataAppName: string = appName;
 export const siteRoot: string = 'https://mustang.im';
 export const isMobile = false;
 export const webMail = false;
