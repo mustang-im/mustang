@@ -5,21 +5,21 @@ echo Building version $VERSION
 perl -p -i \
   -e "s|production = false|production = true|;" \
   -e "s|'Mustang'|'Lookout'|;" \
-  -e "s|'https://mustang.im'|'https://parula.beonex.com'|;" \
+  -e "s|'https://mustang.im'|'https://lookout.parula.app'|;" \
   -e "s|defaultFrontend: string = '.*';$|defaultFrontend: string = 'lookout';|;" \
   -e "s|appVersion: string = '.*';$|appVersion: string = '$VERSION';|;" \
   ../logic/build.ts
 perl -p -i \
   -e "s|Mustang GmbH|Beonex GmbH|g;" \
   -e "s|Mustang|Lookout|g;" \
-  -e "s|https://mustang.im|https://parula.beonex.com|g;" \
+  -e "s|https://mustang.im|https://lookout.parula.app|g;" \
   -e "s|\"name\": \"mustang\"|\"name\": \"lookout\"|;" \
   -e "s|\"version\": \".*\"|\"version\": \"$VERSION\"|;" \
   ../../desktop/package.json
 perl -p -i \
   -e "s|Mustang GmbH|Beonex GmbH|g;" \
   -e "s|Mustang|Lookout|g;" \
-  -e "s|https://mustang.im|https://parula.beonex.com|g;" \
+  -e "s|https://mustang.im|https://lookout.parula.app|g;" \
   -e "s|\"name\": \"mustang\"|\"name\": \"lookout\"|;" \
   ../package.json
 perl -p -i \
