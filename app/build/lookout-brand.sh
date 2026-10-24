@@ -4,6 +4,7 @@ VERSION=`grep "\"version\"" ../../app/package.json | sed -e "s|^.*\"version\": \
 echo Building version $VERSION
 perl -p -i \
   -e "s|production = false|production = true|;" \
+  -e "s|dataAppName: string = 'Mustang'|dataAppName: string = 'Parula'|;" \
   -e "s|'Mustang'|'Lookout'|;" \
   -e "s|'https://mustang.im'|'https://lookout.parula.app'|;" \
   -e "s|defaultFrontend: string = '.*';$|defaultFrontend: string = 'lookout';|;" \
@@ -23,6 +24,7 @@ perl -p -i \
   -e "s|\"name\": \"mustang\"|\"name\": \"lookout\"|;" \
   ../package.json
 perl -p -i \
+  -e "s|appId: im.mustang.client|appId: app.parula.lookout|;" \
   -e "s|Mustang GmbH|Beonex GmbH|g;" \
   -e "s|Mustang|Lookout|g;" \
   -e "s|mustang-mail|lookout|g;" \
