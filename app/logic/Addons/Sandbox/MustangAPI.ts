@@ -11,6 +11,9 @@ export interface MustangAPI {
   readonly hooks: AddonHooks;
   readonly protocols: AddonProtocols;
   readonly storage: AddonStorage;
+  /** Waits until a collection of app objects has all its items.
+   * Collections in arguments and results come with their items. The collections of those items load when read, in the background. */
+  loaded(collection: Collection<any>): Promise<void>;
 }
 
 export interface AddonInfo {
