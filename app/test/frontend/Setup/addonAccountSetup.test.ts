@@ -87,3 +87,36 @@ test("Without its running addon, the setup page says so", async () => {
   expect(target.textContent).toContain("not running");
   await expect((page as any).onContinue()).rejects.toThrow();
 });
+
+test("The setup UI stays while other addons start and stop, and opens again when its addon starts again", async () => {
+  let addon = newProtocolAddon("Restarted Mail", ["test"], mustang => mustang.protocols.register("test", {} as any));
+  let otherAddon = newProtocolAddon("Second Mail", ["test"], mustang => mustang.protocols.register("test", {} as any));
+  await addon.enable();
+  let account = newAccountForProtocol(AddonProtocol.accountProtocol(addon.id, "test")) as AddonMailAccount;
+  let target = document.createElement("div");
+  document.body.append(target);
+  let page = mount(AddonAccountSetup, { target, props: { account } });
+  cleanup.push(async () => {
+    unmount(page);
+    target.remove();
+    await addon.uninstall();
+    await otherAddon.uninstall();
+  });
+  flushSync();
+  let setupFrame = target.querySelector(".addon-frame");
+  expect(setupFrame).toBeTruthy();
+
+  await otherAddon.enable();
+  await otherAddon.disable();
+  flushSync();
+  expect(target.querySelector(".addon-frame")).toBe(setupFrame);
+
+  await addon.disable();
+  flushSync();
+  expect(target.textContent).toContain("not running");
+  await addon.enable();
+  flushSync();
+  let newSandbox = addon.sandbox as any as ProtocolSandbox;
+  await waitFor(() => newSandbox.uiFrames.length == 1);
+  expect(target.querySelector(".addon-frame")).not.toBe(setupFrame);
+});

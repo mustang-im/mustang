@@ -3,11 +3,8 @@
   subtitle={$t`Import your existing chat account or create a new one`}
 />
 
-<ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
-
-{#if addonAccount}
-  <AddonAccountSetup account={addonAccount} bind:this={addonSetup} />
-{/if}
+<ProtocolSelectorWithAddons type="chat" {appProtocols} newAccount={newChatAccountForProtocol}
+  bind:selectedProtocol={selectedProtocol} bind:this={protocolSelector} />
 
 <ErrorMessageInline bind:this={errorUI} />
 
@@ -22,10 +19,9 @@
   import { newChatAccountForProtocol } from "../../../logic/Chat/AccountsList/ChatAccounts";
   import type { ChatAccount } from "../../../logic/Chat/ChatAccount";
   import type { AddonChatAccount } from "../../../logic/Chat/Addon/AddonChatAccount";
-  import { addonProtocols } from "../../../logic/Addons/AddonProtocols";
   import { appGlobal } from "../../../logic/app";
-  import AddonAccountSetup from "../Addon/AddonAccountSetup.svelte";
-  import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
+  import ProtocolSelectorWithAddons from "../Addon/ProtocolSelectorWithAddons.svelte";
+  import type { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
@@ -43,7 +39,7 @@
   export let onCancel = () => undefined;
 
   let selectedProtocol: string;
-  let addonSetup: AddonAccountSetup;
+  let protocolSelector: ProtocolSelectorWithAddons;
   let errorUI: ErrorMessageInline;
   /*$: onSelectProtocol(selectedProtocol);
   function onSelectProtocol(protocol: string) {
@@ -56,12 +52,10 @@
     { label: "WhatsApp", protocolID: "whatsapp" },
     { label: "Signal", protocolID: "signal" },
   ];
-  $: protocols = appProtocols.concat($addonProtocols.contents.filter(protocol => protocol.type == "chat").map(protocol => ({ label: protocol.label, protocolID: protocol.protocol })));
-  $: addonAccount = $addonProtocols.some(protocol => protocol.protocol == selectedProtocol) ? newChatAccountForProtocol(selectedProtocol) as AddonChatAccount : null;
 
   async function onContinue() {
+    let addonAccount = await protocolSelector.addonAccountFromSetup() as AddonChatAccount;
     if (addonAccount) {
-      await addonSetup.onContinue();
       await addonAccount.loginAndStartup(true);
       await addonAccount.save();
       appGlobal.chatAccounts.add(addonAccount);

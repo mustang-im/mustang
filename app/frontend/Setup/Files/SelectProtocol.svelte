@@ -3,11 +3,8 @@
   subtitle={$t`Access your cloud files in your existing account`}
 />
 
-<ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
-
-{#if addonAccount}
-  <AddonAccountSetup account={addonAccount} bind:this={addonSetup} />
-{/if}
+<ProtocolSelectorWithAddons type="files" {appProtocols} newAccount={newFileSharingAccountForProtocol}
+  bind:selectedProtocol={selectedProtocol} bind:this={protocolSelector} />
 
 <ErrorMessageInline bind:this={errorUI} />
 
@@ -22,11 +19,10 @@
   import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
   import { newFileSharingAccountForProtocol } from "../../../logic/Files/AccountsList/FileSharingAccounts";
   import type { AddonFileSharingAccount } from "../../../logic/Files/Addon/AddonFileSharingAccount";
-  import { addonProtocols } from "../../../logic/Addons/AddonProtocols";
   import { appGlobal } from "../../../logic/app";
-  import AddonAccountSetup from "../Addon/AddonAccountSetup.svelte";
+  import ProtocolSelectorWithAddons from "../Addon/ProtocolSelectorWithAddons.svelte";
   import WebDAVSetup from "./WebDAVSetup.svelte";
-  import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
+  import type { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
@@ -42,7 +38,7 @@
 
   let selectedProtocol: string;
 
-  let addonSetup: AddonAccountSetup;
+  let protocolSelector: ProtocolSelectorWithAddons;
   let errorUI: ErrorMessageInline;
 
   const appProtocols: ProtocolDescription[] = [
@@ -53,12 +49,10 @@
     //{ label: `SharePoint`, protocolID: "graph-sharepoint" },
     { label: `WebDAV`, protocolID: "webdav" },
   ];
-  $: protocols = appProtocols.concat($addonProtocols.contents.filter(protocol => protocol.type == "files").map(protocol => ({ label: protocol.label, protocolID: protocol.protocol })));
-  $: addonAccount = $addonProtocols.some(protocol => protocol.protocol == selectedProtocol) ? newFileSharingAccountForProtocol(selectedProtocol) as AddonFileSharingAccount : null;
 
   async function onContinue() {
+    let addonAccount = await protocolSelector.addonAccountFromSetup() as AddonFileSharingAccount;
     if (addonAccount) {
-      await addonSetup.onContinue();
       await addonAccount.login(true);
       await addonAccount.save();
       appGlobal.fileSharingAccounts.add(addonAccount);

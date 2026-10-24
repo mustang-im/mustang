@@ -3,11 +3,8 @@
   subtitle=""
 />
 
-<ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
-
-{#if addonAccount}
-  <AddonAccountSetup account={addonAccount} bind:this={addonSetup} />
-{/if}
+<ProtocolSelectorWithAddons type="contacts" {appProtocols} newAccount={newAddressbookForProtocol}
+  bind:selectedProtocol={selectedProtocol} bind:this={protocolSelector} />
 
 <ErrorMessageInline bind:this={errorUI} />
 
@@ -22,12 +19,11 @@
   import type { Addressbook } from "../../../logic/Contacts/Addressbook";
   import { newAddressbookForProtocol } from "../../../logic/Contacts/AccountsList/Addressbooks";
   import type { AddonAddressbook } from "../../../logic/Contacts/Addon/AddonAddressbook";
-  import { addonProtocols } from "../../../logic/Addons/AddonProtocols";
   import { appGlobal } from "../../../logic/app";
-  import AddonAccountSetup from "../Addon/AddonAccountSetup.svelte";
+  import ProtocolSelectorWithAddons from "../Addon/ProtocolSelectorWithAddons.svelte";
   import LocalAddressbookSetup from "./LocalAddressbookSetup.svelte";
   import CardDAVSetup from "./CardDAVSetup.svelte";
-  import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
+  import type { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
   import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
@@ -42,19 +38,17 @@
   export let onCancel = (event: Event) => undefined;
 
   let selectedProtocol: string;
-  let addonSetup: AddonAccountSetup;
+  let protocolSelector: ProtocolSelectorWithAddons;
   let errorUI: ErrorMessageInline;
 
   const appProtocols: ProtocolDescription[] = [
     { label: $t`New local addressbook`, protocolID: "addressbook-local" },
     { label: $t`New CardDAV addressbook`, protocolID: "carddav" },
   ];
-  $: protocols = appProtocols.concat($addonProtocols.contents.filter(protocol => protocol.type == "contacts").map(protocol => ({ label: protocol.label, protocolID: protocol.protocol })));
-  $: addonAccount = $addonProtocols.some(protocol => protocol.protocol == selectedProtocol) ? newAddressbookForProtocol(selectedProtocol) as AddonAddressbook : null;
 
   async function onContinue() {
+    let addonAccount = await protocolSelector.addonAccountFromSetup() as AddonAddressbook;
     if (addonAccount) {
-      await addonSetup.onContinue();
       await addonAccount.login(true);
       await addonAccount.listContacts(); // check whether it works
       appGlobal.addressbooks.add(addonAccount);

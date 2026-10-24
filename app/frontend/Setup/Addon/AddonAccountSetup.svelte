@@ -1,6 +1,6 @@
 {#if protocol}
   <vbox class="addon-account-setup">
-    {#key protocol}
+    {#key protocol.protocol}
       <AddonFrame addon={protocol.addon} entry={protocol.contribution.setup} maxHeight={600} bind:frame />
     {/key}
   </vbox>
