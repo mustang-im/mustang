@@ -26,8 +26,10 @@
   /** The user pressed Escape in the frame */
   export let onEscape: () => void = () => {};
 
+  /** out: The frame, once the addon's module runs */
+  export let frame: SandboxFrame | null = null;
+
   let containerE: HTMLDivElement;
-  let frame: SandboxFrame | null = null;
   let frameSandbox: AddonSandbox | null = null;
   let sentContext: Record<string, object> | null = null;
   let sentGroups: AddonGroup[] | null = null;

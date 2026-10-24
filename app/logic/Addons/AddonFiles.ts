@@ -45,8 +45,10 @@ export class DesktopAddonFiles extends AddonFiles {
   /** A different file name for every different `text`, also on file systems that ignore case or trailing dots.
    * Keeps a-z, 0-9 and -, and writes every other character as _ and the hex codes of its bytes. */
   protected fileName(text: string): string {
+    // <copied to="AddonProtocols.ts">
     return text.replace(/[^a-z0-9-]/gu, char =>
       [...new TextEncoder().encode(char)].map(byte => "_" + byte.toString(16).padStart(2, "0")).join(""));
+    // </copied>
   }
 
   protected async writeFiles(version: string, files: MapColl<string, Uint8Array>): Promise<void> {

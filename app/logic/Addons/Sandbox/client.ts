@@ -1,7 +1,7 @@
 /* The runtime of the addon in its sandbox: the `mustang` global, app objects as proxies, and the messages to the app.
  * Runs in the addon's worker and in its UI frames, in the same realm as the addon code. Not a security boundary:
  * the app checks everything in `AddonBridge`. */
-import type { MustangAPI, UIContext, CommandEvent, HookCancel, AddonProtocol, JSONValue, Subscribable } from "./MustangAPI";
+import type { MustangAPI, UIContext, CommandEvent, HookCancel, MailProtocol, AccountSetup, JSONValue, Subscribable } from "./MustangAPI";
 import type { AppFonts } from "./SandboxFrame";
 import { ArrayColl } from "svelte-collections";
 
@@ -137,7 +137,7 @@ export class SandboxClient {
   protected handlers = new Map<string, (args: any, data: any) => unknown>();
   protected commands = new Map<string, (event: CommandEvent) => void | Promise<void>>();
   protected hooks = new Map<string, ((...args: any[]) => any)[]>();
-  protected protocols = new Map<string, AddonProtocol>();
+  protected protocols = new Map<string, MailProtocol>();
   protected context = new Store<UIContext>({ theme: { dark: false } });
   protected collected = new FinalizationRegistry<number>(h => this.forget(h));
   protected initialized: Promise<void>;
@@ -186,13 +186,17 @@ export class SandboxClient {
         },
       },
       protocols: {
-        register(id: string, implementation: AddonProtocol) {
+        register(id: string, implementation: MailProtocol) {
           client.protocols.set(id, implementation);
           client.callService("protocols", "register", [id])
             .catch(reportError);
         },
         newMessages(accountID: string, folderID: string) {
           client.callService("protocols", "newMessages", [accountID, folderID])
+            .catch(reportError);
+        },
+        setupAccount(account: AccountSetup) {
+          client.callService("protocols", "setupAccount", [account])
             .catch(reportError);
         },
       },
@@ -727,7 +731,7 @@ export class SandboxClient {
 
   protected async callProtocol(data: { protocol: string, operation: string, args: unknown[] }): Promise<unknown> {
     let implementation = this.protocols.get(data.protocol);
-    let operation = implementation?.[data.operation];
+    let operation = implementation?.[data.operation as keyof MailProtocol];
     if (typeof operation != "function") {
       throw new Error(`The protocol ${data.protocol} has no operation ${data.operation}`);
     }

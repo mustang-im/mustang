@@ -39,16 +39,24 @@
   import AddonPermissions from "./AddonPermissions.svelte";
   import Button from "../../Shared/Button.svelte";
   import RemoveIcon from "lucide-svelte/icons/trash-2";
-  import { t } from "../../../l10n/l10n";
+  import { AddonProtocol } from "../../../logic/Addons/AddonProtocols";
+  import { getAllAccounts } from "../../../logic/Abstract/Account";
+  import { t, plural } from "../../../l10n/l10n";
 
   export let addon: Addon;
 
   $: grantedPermissions = addon.grantedPermissions;
 
   async function onRemove() {
-    let question = addon.manifest.protocols.hasItems
-      ? $t`Do you want to remove the addon ${addon.name}? Your accounts that use it stay, but they don't work until you install it again.`
-      : $t`Do you want to remove the addon ${addon.name}?`;
+    let protocols = addon.manifest.protocols.contents.map(contribution => AddonProtocol.accountProtocol(addon.id, contribution.id));
+    let accountCount = getAllAccounts().filterOnce(account => protocols.includes(account.protocol)).length;
+    let question = $t`Do you want to remove the addon ${addon.name}?`;
+    if (accountCount) {
+      question += " " + $plural(accountCount, {
+        one: "Your account that uses it stays, but it doesn't work until you install the addon again.",
+        other: "Your # accounts that use it stay, but they don't work until you install the addon again.",
+      });
+    }
     if (!confirm(question)) {
       return;
     }

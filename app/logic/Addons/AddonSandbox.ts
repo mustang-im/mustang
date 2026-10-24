@@ -4,6 +4,7 @@ import { addonPermissions, AddonObjectScope } from "./Permissions";
 import { AddonUI } from "./AddonUI";
 import { AddonApp } from "./AddonApp";
 import { AddonHooks } from "./AddonHooks";
+import { AddonProtocols } from "./AddonProtocols";
 import { AddonBridge, type AddonService } from "./Bridge/AddonBridge";
 import { AddonAPI } from "./Bridge/AddonAPI";
 import { AddonBudget } from "./Bridge/AddonBudget";
@@ -27,6 +28,7 @@ export class AddonSandbox implements AddonRegistration {
   /** Its buttons, menu items and panels in the app */
   readonly ui: AddonUI;
   readonly hooks: AddonHooks;
+  readonly protocols: AddonProtocols;
   isStopped = false;
   protected static api = new AddonAPI(apiClasses, apiEnums);
 
@@ -34,6 +36,7 @@ export class AddonSandbox implements AddonRegistration {
     this.addon = addon;
     this.ui = new AddonUI(this);
     this.hooks = new AddonHooks(this);
+    this.protocols = new AddonProtocols(this);
   }
 
   /** Starts the addon's logic worker, if it has one, and then shows its UI */
@@ -105,6 +108,7 @@ export class AddonSandbox implements AddonRegistration {
     bridge.registerService("storage", new AddonStorageService(this.addon.storage));
     bridge.registerService("ui", this.ui);
     bridge.registerService("hooks", this.hooks);
+    bridge.registerService("protocols", this.protocols);
     if (kind == "ui") {
       bridge.registerService("frame", frame);
     }
