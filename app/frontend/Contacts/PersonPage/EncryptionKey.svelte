@@ -282,14 +282,13 @@
     await person.save();
   }
   let fileSelector: FileSelector;
-  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem" ];
+  const acceptFileTypes = [ "application/x-x509-email-cert", "application/x-x509-ca-cert", "application/pkix-cert", ".crt", "application/x-pem-file", ".pem", ".p7b", ".p7c" ];
   async function onAddCertificateSMIME() {
     let file = await fileSelector.selectFile();
     if (!file) {
       return;
     }
-    let fileContent = await file.text();
-    await (key as SMIMEPublicKey).addCertificates(fileContent);
+    await (key as SMIMEPublicKey).addCertificateFile(file);
     keyStatusAsync = (key as SMIMEPublicKey).keyStatus();
     await person.save();
   }

@@ -149,16 +149,15 @@ export async function importPrivateKey(fileContent: string, passphrase: string):
   throw new UserError(gt`Could not find a key in this file`);
 }
 
-export async function importPublicKey(fileContent: string): Promise<PublicKey> {
-  assert(fileContent.includes("---BEGIN ") && fileContent.includes("---END "), gt`Could not find a key in this file`);
+export async function importPublicKey(file: File): Promise<PublicKey> {
+  let fileContent = await file.text();
   assert(!fileContent.includes("PRIVATE KEY"), gt`This is a secret key. If this is your key, go to Settings | Mail | Identity | Encryption and import it there.`);
   if (fileContent.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
     return await PGPPublicKey.importPublicKey(fileContent);
-  } else if (fileContent.includes("-----BEGIN CERTIFICATE-----") ||
-    fileContent.includes("-----BEGIN TRUSTED CERTIFICATE-----")) {
-    return await SMIMEPublicKey.importPublicKey(fileContent);
   }
-  throw new UserError(gt`Could not find a key in this file`);
+  let key = new SMIMEPublicKey();
+  await key.addCertificateFile(file);
+  return key;
 }
 
 export function addPublicKeyToPersonUID(uid: PersonUID, key: PublicKey) {
