@@ -14,7 +14,7 @@ import type { PublicKey } from "./Encryption/PublicKey";
 import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
-import type { EncryptionSystem } from "./Encryption/enums";
+import { EncryptionSystem } from "./Encryption/enums";
 import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
 import { blobToDataURL } from "../util/blob";
 import { isMobile, webMail } from "../build";
@@ -110,7 +110,7 @@ export class EMail extends Message {
   @notifyChangedProperty
   wasEncrypted = false;
   /** This email was correctly signed with this public key.
-   * The signature was valid and the public key matches `From:`.
+   * The signature was valid. For S/MIME, @see isSignedBySomeoneElse()
    * This gives you the specific public key that was used to sign.
    * Format: `PublicKey.id` */
   @notifyChangedProperty
@@ -191,14 +191,18 @@ export class EMail extends Message {
     if (!signer) {
       return;
     }
-    let emailAddress = this.from?.emailAddress?.toLowerCase();
-    if (!emailAddress || !signer.userIDs.some(userID => userID.toLowerCase() == emailAddress)) {
+    if (!signer.isForEMailAddress(this.from?.emailAddress)) {
       return;
     }
     let known = this.from.encryptionPublicKey;
     if (!known || known.obsolete) {
       this.from.encryptionPublicKey = signer;
     }
+  }
+
+  /** The S/MIME certificate was issued for another address than `From:`, RFC 8550 section 3 */
+  isSignedBySomeoneElse(signer: PublicKey | null): boolean {
+    return signer?.system == EncryptionSystem.SMIME && !signer.isForEMailAddress(this.from?.emailAddress);
   }
 
   /** Marks as spam, and deletes or moves the message, as configured */
