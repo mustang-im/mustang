@@ -2,13 +2,14 @@
 import { appGlobal } from "../../../logic/app";
 import { Addons } from "../../../logic/Addons/Addons";
 import { Addon, AddonState, type AddonRegistration } from "../../../logic/Addons/Addon";
+import { DesktopAddonFiles } from "../../../logic/Addons/AddonFiles";
 import { UserError } from "../../../logic/util/util";
 import { fullPackageFiles, fullPackageJSON, gzip, kSVG, makeTar, makeTGZ } from "./testPackage";
-import { existsSync, mkdtempSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import fsPromises from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, MapColl } from "svelte-collections";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 // The sandbox needs a browser. test/logic/Addons/Sandbox tests it.
@@ -54,7 +55,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const kAddonDir = "addons/@example__translate";
+/** All files and directories in `<configDir>/addons/` */
+async function filesOnDisk(): Promise<string[]> {
+  try {
+    return await fsPromises.readdir(path.join(configDir, "addons"), { recursive: true });
+  } catch (ex) {
+    return [];
+  }
+}
+
+async function mainFilesOnDisk(): Promise<string[]> {
+  return (await filesOnDisk()).filter(file => file.endsWith(path.join("dist", "main.js")));
+}
 
 function packageTGZ(change: (json: any) => void = () => {}, files = fullPackageFiles()): Uint8Array {
   let json = fullPackageJSON();
@@ -193,7 +205,7 @@ describe("Install", () => {
     expect(addon.state).toBe(AddonState.Enabled);
     expect(addon.isEnabled).toBe(true);
     expect(addon.grantedPermissions.contents.sort()).toEqual(["https://*.example.org", "https://api.example.com", "mail", "mail.compose"]);
-    expect(existsSync(path.join(configDir, kAddonDir, "1.2.0/dist/main.js"))).toBe(true);
+    expect(await mainFilesOnDisk()).toHaveLength(1);
     expect(new TextDecoder().decode(await addon.readFile("dist/main.js"))).toBe(fullPackageFiles()["dist/main.js"]);
     expect(new TextDecoder().decode(await addon.readFile("./icons/translate.svg"))).toBe(kSVG);
     let stored = storedAddons();
@@ -213,7 +225,7 @@ describe("Install", () => {
     await expect(addons.install(pkg, new ArrayColl(["mail", "mail.compose"]))).rejects.toThrow(UserError);
     await expect(addons.install(pkg, new ArrayColl(["mail", "https://api.example.com", "https://*.example.org"]))).rejects.toThrow(UserError);
     expect(addons.installed.isEmpty).toBe(true);
-    expect(existsSync(path.join(configDir, kAddonDir))).toBe(false);
+    expect(await filesOnDisk()).toEqual([]);
     expect(storedAddons()).toEqual([]);
   });
 
@@ -239,6 +251,38 @@ describe("Install", () => {
     let addon = addons.get("@example/translate");
     expect(addon.state).toBe(AddonState.Error);
     expect(addon.error.message).toBe("Syntax error in main.js");
+  });
+});
+
+describe("Files on disk", () => {
+  test("Each addon has its own directory and storage, also with similar names", async () => {
+    let victim = new DesktopAddonFiles("@a/b__c");
+    let attacker = new DesktopAddonFiles("@a__b/c");
+    await victim.writeStorage(`{"token":"secret"}`);
+    expect(await attacker.readStorage()).toBeNull();
+    await attacker.writeStorage("{}");
+    await attacker.deleteAll();
+    expect(await victim.readStorage()).toBe(`{"token":"secret"}`);
+  });
+
+  test("Names are valid file names, and distinct also where the file system ignores case or trailing dots", async () => {
+    let ids = ["x", "x.", "x..", "@a/b__c", "@a__b/c", "@a/b", "a_2fb", "a.b", "a_b", "a~b", "a-b"];
+    let contents = new MapColl<string, Uint8Array>();
+    contents.set("main.js", new Uint8Array(1));
+    for (let id of ids) {
+      let files = new DesktopAddonFiles(id);
+      for (let version of ["1.0.0-Beta", "1.0.0-beta"]) {
+        await files.writePackage(version, contents);
+      }
+    }
+    let names = await fsPromises.readdir(path.join(configDir, "addons"));
+    let folded = (fileNames: string[]) => new Set(fileNames.map(name => name.toLowerCase().replace(/[. ]+$/, "")));
+    expect(folded(names).size).toBe(ids.length);
+    for (let name of names) {
+      expect(name).not.toMatch(/[/\\:*?"<>|\x00-\x1f]|[. ]$/);
+      let versions = await fsPromises.readdir(path.join(configDir, "addons", name));
+      expect(folded(versions).size).toBe(2);
+    }
   });
 });
 
@@ -307,7 +351,7 @@ describe("Uninstall", () => {
     expect(log).toEqual(["button"]);
     expect(addons.installed.isEmpty).toBe(true);
     expect(storedAddons()).toEqual([]);
-    expect(existsSync(path.join(configDir, kAddonDir))).toBe(false);
+    expect(await filesOnDisk()).toEqual([]);
   });
 
   test("Reinstalling starts with empty storage", async () => {
@@ -336,7 +380,7 @@ describe("Update", () => {
     expect(addon.state).toBe(AddonState.Enabled);
     expect(addon.manifest.version).toBe("1.3.0");
     expect(new TextDecoder().decode(await addon.readFile("dist/main.js"))).toBe("// version 1.3.0");
-    expect(existsSync(path.join(configDir, kAddonDir, "1.2.0"))).toBe(false);
+    expect(await mainFilesOnDisk()).toHaveLength(1);
     expect(storedAddons()[0].manifest.version).toBe("1.3.0");
   });
 
@@ -363,7 +407,7 @@ describe("Update", () => {
     await expect(addon.update(pkg, new ArrayColl(["mail.all"]))).rejects.toThrow(UserError);
     expect(addon.manifest.version).toBe("1.2.0");
     expect(addon.state).toBe(AddonState.Enabled);
-    expect(existsSync(path.join(configDir, kAddonDir, "2.0.0"))).toBe(false);
+    expect(await mainFilesOnDisk()).toHaveLength(1);
 
     await addon.update(pkg, added);
     expect(addon.manifest.version).toBe("2.0.0");

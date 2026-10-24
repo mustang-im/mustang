@@ -36,14 +36,21 @@ export abstract class AddonFiles {
   abstract writeStorage(json: string): Promise<void>;
 }
 
-/** Desktop: In `<configDir>/addons/<npm name with / as __>/` */
+/** Desktop: In `<configDir>/addons/<npm name>/<version>/` */
 export class DesktopAddonFiles extends AddonFiles {
   protected async dir(): Promise<string> {
-    return `${await getConfigDir()}/addons/${this.addonID.replaceAll("/", "__")}`;
+    return `${await getConfigDir()}/addons/${this.fileName(this.addonID)}`;
+  }
+
+  /** A different file name for every different `text`, also on file systems that ignore case or trailing dots.
+   * Keeps a-z, 0-9 and -, and writes every other character as _ and the hex codes of its bytes. */
+  protected fileName(text: string): string {
+    return text.replace(/[^a-z0-9-]/gu, char =>
+      [...new TextEncoder().encode(char)].map(byte => "_" + byte.toString(16).padStart(2, "0")).join(""));
   }
 
   protected async writeFiles(version: string, files: MapColl<string, Uint8Array>): Promise<void> {
-    let packageDir = `${await this.dir()}/${version}`;
+    let packageDir = `${await this.dir()}/${this.fileName(version)}`;
     let createdDirs = new Set<string>();
     for (let [path, contents] of files.entries()) {
       let filepath = `${packageDir}/${normalizeRelativePath(path)}`;
@@ -57,12 +64,12 @@ export class DesktopAddonFiles extends AddonFiles {
   }
 
   async readFile(version: string, path: string): Promise<Uint8Array> {
-    let filepath = `${await this.dir()}/${version}/${normalizeRelativePath(path)}`;
+    let filepath = `${await this.dir()}/${this.fileName(version)}/${normalizeRelativePath(path)}`;
     return new Uint8Array(await appGlobal.remoteApp.readFile(filepath));
   }
 
   async deletePackage(version: string): Promise<void> {
-    await appGlobal.remoteApp.fs.rm(`${await this.dir()}/${version}`, { recursive: true, force: true });
+    await appGlobal.remoteApp.fs.rm(`${await this.dir()}/${this.fileName(version)}`, { recursive: true, force: true });
   }
 
   async deleteAll(): Promise<void> {
