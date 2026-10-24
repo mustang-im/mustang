@@ -16,6 +16,7 @@ export class SMIMEPublicKey extends PublicKey {
   declare publicKeyArmored: string;
 
   chain = new ArrayColl<SMIMEPublicKey>();
+  protected _decodedCertificate: Certificate | null = null; // cache only
 
   constructor() {
     super();
@@ -51,6 +52,7 @@ export class SMIMEPublicKey extends PublicKey {
       this.keyLengthInBits = id.length * 4;
     }
     this.publicKeyArmored = Certificate.encodePEM(cert, { label: "CERTIFICATE" });
+    this._decodedCertificate = null;
     this.userIDs.replaceAll(certificateEMailAddresses(cert));
     // Do not overwrite the name that the user gave the key
     this.name ||= this.defaultName;
