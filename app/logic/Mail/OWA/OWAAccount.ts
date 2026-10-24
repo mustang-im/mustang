@@ -209,12 +209,7 @@ export class OWAAccount extends ExchangeMailAccount {
         }
 
         await this.callOWA(new OWASubscribeToNotificationRequest());
-
-        this.notifications = this.provider() == Provider.Office365
-          ? new OWAOffice365Notifications(this)
-          : new OWAExchangeNotifications(this);
-        this.notifications.start()
-          .catch(this.errorCallback);
+        this.listenForNotifications();
       } finally { // Even when the mail folders failed, so that calendar and addressbook still work
         await this.startupDependentAccounts();
       }
@@ -244,7 +239,19 @@ export class OWAAccount extends ExchangeMailAccount {
     }
   }
 
+  /** Starts a new listener for notifications from the server, and ends the old one,
+   * e.g. when its connection died */
+  listenForNotifications(): void {
+    this.notifications?.stop();
+    this.notifications = this.provider() == Provider.Office365
+      ? new OWAOffice365Notifications(this)
+      : new OWAExchangeNotifications(this);
+    this.notifications.listen()
+      .catch(this.errorCallback);
+  }
+
   async disconnect() {
+    this.notifications?.stop();
     let galAB = appGlobal.searchOnlyAddressbooks.find(ab => ab.mainAccount == this);
     if (galAB) {
       appGlobal.searchOnlyAddressbooks.remove(galAB);
