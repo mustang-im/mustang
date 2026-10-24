@@ -1,6 +1,6 @@
 // Electron main process of the sandbox security test. Started by `runSandboxSecurity.ts`.
 // Sets up the session like `src/main/index.ts` does, with test servers, and loads `host.ts` in a window.
-import { app, BrowserWindow, session } from "electron";
+import { app, BrowserWindow, session, type Session } from "electron";
 import { AddonFrameGuard } from "../../src/main/addonSandbox";
 import https from "node:https";
 import http from "node:http";
@@ -61,7 +61,18 @@ jpcServer.on("upgrade", (request, socket: Socket) => {
   socket.destroy();
 });
 
-app.commandLine.appendSwitch("host-resolver-rules", "MAP *.addon-test.example 127.0.0.1, MAP intranet 127.0.0.1");
+app.commandLine.appendSwitch("host-resolver-rules", "MAP *.addon-test.example 127.0.0.1, MAP intranet 127.0.0.1, " +
+  "MAP rebind.attacker.example 127.0.0.1, MAP public.attacker.example 203.0.113.5");
+
+/** The test servers of the declared and undeclared hosts are on 127.0.0.1, too */
+class TestFrameGuard extends AddonFrameGuard {
+  async isAllowedRequest(session: Session, url: string): Promise<boolean> {
+    if (new URL(url).hostname.endsWith(".addon-test.example")) {
+      return this.isAllowedURL(url);
+    }
+    return await super.isAllowedRequest(session, url);
+  }
+}
 
 app.whenReady().then(async () => {
   httpsPort = await listen(httpsServer, "127.0.0.1");
@@ -73,11 +84,23 @@ app.whenReady().then(async () => {
     denied: `https://denied.addon-test.example:${httpsPort}`,
     local: [`https://localhost:${httpsPort}`, `https://127.0.0.1:${httpsPort}`, `https://[::1]:${ipv6Port}`, `https://intranet:${httpsPort}`],
     jpc: `ws://localhost:${jpcPort}`,
+    rebind: `https://rebind.attacker.example:${httpsPort}`,
   };
   let defaultSession = session.defaultSession;
   defaultSession.setCertificateVerifyProc((_request, callback) => callback(0));
-  let guard = new AddonFrameGuard();
+  let guard = new TestFrameGuard();
   guard.install(defaultSession);
+  let guardResults = {
+    rebindResolvesTo: (await defaultSession.resolveHost("rebind.attacker.example")).endpoints.map(endpoint => endpoint.address),
+    rebind: await guard.isAllowedRequest(defaultSession, "https://rebind.attacker.example/x"),
+    publicResolvesTo: (await defaultSession.resolveHost("public.attacker.example")).endpoints.map(endpoint => endpoint.address),
+    public: await guard.isAllowedRequest(defaultSession, "https://public.attacker.example/x"),
+    urls: Object.fromEntries([
+      "https://203.0.113.5/", "https://[2001:db8::1]/", "https://[64:ff9b::cb00:7105]/", "https://[::ffff:cb00:7105]/",
+      "https://10.1.2.3/", "https://[::ffff:10.1.2.3]/", "https://[64:ff9b::7f00:1]/", "https://[64:ff9b::a01:203]/",
+      "https://[64:ff9b:1::cb00:7105]/", "https://[::127.0.0.1]/", "https://[fd00::1]/", "https://169.254.169.254/",
+    ].map(url => [url, guard.isAllowedURL(url)])),
+  };
   // Like allowCrossDomainRequestsFromFrontend() in src/main/index.ts
   defaultSession.webRequest.onBeforeSendHeaders({ urls: ["https://*/*", "http://*/*"] }, (details, callback) => {
     let requestHeaders = details.requestHeaders;
@@ -117,6 +140,7 @@ app.whenReady().then(async () => {
   results.cookieHeaders = cookieHeaders;
   results.cookiesAfter = (await defaultSession.cookies.get({})).map(cookie => cookie.name + "@" + cookie.domain);
   results.config = config;
+  results.guard = guardResults;
   results.electron = process.versions.electron;
   console.log("SANDBOX-TEST-RESULT " + JSON.stringify(results));
   window.destroy();

@@ -1,11 +1,11 @@
 /** Defense in depth for the sandboxed frames that run addon code (`addon-sandbox.html`).
  * Their opaque origin and the page's own Content-Security-Policy are the first line of defense.
- * Even if those fail, addon frames here can't navigate, can't reach localhost or the local network,
- * get no cookies, and get no permissions.
+ * Even if those fail, addon frames here can't navigate, can't reach localhost or the local network
+ * (also not via host names that resolve to local addresses), get no cookies, and get no permissions.
  *
  * An addon frame is a sub frame with an opaque origin whose URL is `addon-sandbox.html` next to the app,
  * and every frame inside it. An addon controls neither its origin nor its URL path. */
-import type { Session, WebContents, WebFrameMain } from "electron";
+import type { CallbackResponse, Session, WebContents, WebFrameMain } from "electron";
 import { BlockList, isIP } from "node:net";
 
 export class AddonFrameGuard {
@@ -19,7 +19,7 @@ export class AddonFrameGuard {
       this.localAddresses.addSubnet(network, prefix, "ipv4");
     }
     for (let [network, prefix] of [
-      ["::", 96], ["::ffff:0:0", 96], ["64:ff9b::", 96], ["64:ff9b:1::", 48], ["fc00::", 7], ["fe80::", 10], ["fec0::", 10], ["ff00::", 8],
+      ["::", 96], ["64:ff9b:1::", 48], ["fc00::", 7], ["fe80::", 10], ["fec0::", 10], ["ff00::", 8],
     ] as [string, number][]) {
       this.localAddresses.addSubnet(network, prefix, "ipv6");
     }
@@ -27,7 +27,11 @@ export class AddonFrameGuard {
 
   install(session: Session): void {
     session.webRequest.onBeforeRequest({ urls: ["<all_urls>"] }, (details, callback) => {
-      callback({ cancel: this.isInAddonFrame(details.frame) && !this.isAllowedURL(details.url) });
+      if (!this.isInAddonFrame(details.frame)) {
+        callback({ cancel: false });
+        return;
+      }
+      this.checkRequest(session, details.url, callback);
     });
     session.setPermissionRequestHandler((webContents, _permission, callback, details) => {
       callback(details.isMainFrame || !this.isAddonFrameURL(details.requestingUrl, webContents));
@@ -101,6 +105,37 @@ export class AddonFrameGuard {
     return page.protocol == sandboxPage.protocol && page.host == sandboxPage.host && page.pathname == sandboxPage.pathname;
   }
 
+  protected async checkRequest(session: Session, url: string, callback: (response: CallbackResponse) => void): Promise<void> {
+    let isAllowed = false;
+    try {
+      isAllowed = await this.isAllowedRequest(session, url);
+    } catch (ex) {
+      // Blocked
+    }
+    callback({ cancel: !isAllowed });
+  }
+
+  /** `isAllowedURL()`, and the host name doesn't resolve to a local address, e.g. by DNS rebinding.
+   * The check fills the network stack's DNS cache, which the request then uses. */
+  async isAllowedRequest(session: Session, urlString: string): Promise<boolean> {
+    if (!this.isAllowedURL(urlString)) {
+      return false;
+    }
+    let url = new URL(urlString);
+    let host = this.hostOf(url);
+    if (url.protocol != "https:" || isIP(host)) {
+      return true;
+    }
+    let endpoints: { address: string }[];
+    try {
+      ({ endpoints } = await session.resolveHost(host));
+    } catch (ex) {
+      // Without a name server for this host, only a proxy can reach it
+      return !/\bDIRECT\b/.test(await session.resolveProxy(urlString));
+    }
+    return endpoints.length > 0 && !endpoints.some(endpoint => this.isLocalAddress(endpoint.address));
+  }
+
   /** Addon frames may load only from https servers on the internet, and their own `blob:` and `data:` URLs */
   isAllowedURL(urlString: string): boolean {
     if (!URL.canParse(urlString)) {
@@ -113,11 +148,33 @@ export class AddonFrameGuard {
     if (url.protocol != "https:") {
       return false;
     }
-    let host = url.hostname.toLowerCase().replace(/\.$/, "").replace(/^\[(.*)\]$/, "$1");
-    let ipVersion = isIP(host);
-    if (ipVersion) {
-      return !this.localAddresses.check(host, ipVersion == 6 ? "ipv6" : "ipv4");
+    let host = this.hostOf(url);
+    if (isIP(host)) {
+      return !this.isLocalAddress(host);
     }
     return host.includes(".") && !/(^|\.)(localhost|local|internal|home\.arpa)$/.test(host);
+  }
+
+  protected hostOf(url: URL): string {
+    return url.hostname.toLowerCase().replace(/\.$/, "").replace(/^\[(.*)\]$/, "$1");
+  }
+
+  /** Loopback, private, link-local, CGNAT, ULA, multicast etc., also as IPv4 in IPv6. Anything that isn't an IP address, too.
+   * `BlockList` checks IPv4-mapped IPv6 addresses against the IPv4 subnets. */
+  protected isLocalAddress(address: string): boolean {
+    let ipVersion = isIP(address);
+    if (!ipVersion) {
+      return true;
+    }
+    if (ipVersion == 4) {
+      return this.localAddresses.check(address, "ipv4");
+    }
+    let nat64 = new URL(`https://[${address}]/`).hostname.match(/^\[64:ff9b::(?:([0-9a-f]{1,4}):)?([0-9a-f]{0,4})\]$/);
+    if (nat64) {
+      let high = parseInt(nat64[1] ?? "0", 16);
+      let low = parseInt(nat64[2] || "0", 16);
+      return this.localAddresses.check(`${high >> 8}.${high & 255}.${low >> 8}.${low & 255}`, "ipv4");
+    }
+    return this.localAddresses.check(address, "ipv6");
   }
 }

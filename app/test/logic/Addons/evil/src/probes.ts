@@ -11,6 +11,8 @@ export interface EvilConfig {
   local: string[];
   /** A local WebSocket server like the app's JPC backend */
   jpc: string;
+  /** A normal host name that resolves to 127.0.0.1, like with DNS rebinding */
+  rebind: string;
   /** Which addon instance this is, e.g. "hosts" or "any" */
   tag: string;
 }
@@ -43,7 +45,7 @@ export class Probes {
   }
 
   async network(prefix = ""): Promise<void> {
-    let { allowed, denied, local, jpc } = this.config;
+    let { allowed, denied, local, jpc, rebind } = this.config;
     await this.attempt(prefix + "fetchAllowed", async () => (await fetch(this.url(allowed, prefix + "fetchAllowed"))).status);
     await this.attempt(prefix + "cookie", async () => await (await fetch(this.url(allowed, prefix + "cookie"), { credentials: "include" })).text());
     await this.attempt(prefix + "fetchDenied", async () => (await fetch(this.url(denied, prefix + "fetchDenied"))).status);
@@ -57,6 +59,7 @@ export class Probes {
     }
     await this.attempt(prefix + "jpcWebSocket", () => this.webSocket(this.url(jpc, prefix + "jpcWebSocket")));
     await this.attempt(prefix + "jpcHTTP", async () => (await fetch(this.url(jpc.replace("ws:", "http:"), prefix + "jpcHTTP"))).status);
+    await this.attempt(prefix + "rebind", async () => (await fetch(this.url(rebind, prefix + "rebind"))).status);
   }
 
   async storage(): Promise<void> {

@@ -143,9 +143,9 @@ class SandboxSecurityTest {
         this.expect(`${name}: fetch to the declared host works`, !!probes?.fetchAllowed?.startsWith("ALLOWED"), probes?.fetchAllowed);
         let cookiePath = `/${probes == frame ? "frame" : "worker"}-${tag}/cookie`;
         this.expect(`${name}: requests to the declared host carry no cookie`, results.cookieHeaders?.[cookiePath] == "none", results.cookieHeaders);
-        this.blocked(probes, name, ["local0", "local1", "local2", "local3", "jpcWebSocket", "jpcHTTP"]);
+        this.blocked(probes, name, ["local0", "local1", "local2", "local3", "jpcWebSocket", "jpcHTTP", "rebind"]);
       }
-      this.blocked(frame, where, ["pushedLocal0", "pushedLocal1", "pushedLocal2", "pushedLocal3"]);
+      this.blocked(frame, where, ["pushedLocal0", "pushedLocal1", "pushedLocal2", "pushedLocal3", "pushedRebind"]);
       this.noHits(`${tag}: HTML that the addon wrote into a draft loads nothing in the app`, key => key.includes(`/compose_${tag}/`));
       let draft = results["compose-" + tag] ?? "";
       this.expect(`${tag}: the draft keeps the addon's text and data: images`, draft.includes("Draft text") && draft.includes("data:image/gif"), draft);
@@ -168,6 +168,16 @@ class SandboxSecurityTest {
     }
     this.noHits("Nothing reached localhost, 127.0.0.1, ::1 or single-label hosts", key => localHosts.some(host => key.startsWith(host)));
     this.noHits("Nothing reached the JPC stand-in", key => key.startsWith("jpc/"));
+    this.noHits("Nothing reached a host name that resolves to 127.0.0.1", key => key.startsWith("rebind."));
+    let guard = results.guard;
+    this.expect("Control: the rebinding host name resolves to 127.0.0.1", guard?.rebindResolvesTo?.includes("127.0.0.1"), guard);
+    this.expect("Guard: a host name that resolves to 127.0.0.1 is blocked", guard?.rebind === false, guard);
+    this.expect("Guard: a host name that resolves to a public address is allowed", guard?.public === true && guard?.publicResolvesTo?.includes("203.0.113.5"), guard);
+    let urls = guard?.urls ?? {};
+    let publicURLs = ["https://203.0.113.5/", "https://[2001:db8::1]/", "https://[64:ff9b::cb00:7105]/", "https://[::ffff:cb00:7105]/"];
+    this.expect("Guard: public IPv4 and IPv6 addresses are allowed, also IPv4 in IPv6", publicURLs.every(url => urls[url] === true), urls);
+    this.expect("Guard: local addresses are blocked, also IPv4 in IPv6 and NAT64",
+      Object.keys(urls).length > publicURLs.length && Object.entries(urls).every(([url, isAllowed]) => publicURLs.includes(url) || isAllowed === false), urls);
     this.expect("The app got no BroadcastChannel message", results.broadcastsReceived?.length == 0, results.broadcastsReceived);
     this.expect("Control: requests of the app carry its cookie", results.cookieHeaders?.["/app/cookie"]?.includes("appsession=secret-session"), results.cookieHeaders);
     this.expect("Control: responses to the app set cookies", results.cookiesAfter?.some(cookie => cookie.startsWith("set-by-app@")), results.cookiesAfter);

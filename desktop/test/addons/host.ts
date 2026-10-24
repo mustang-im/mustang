@@ -15,6 +15,7 @@ interface TestConfig {
   denied: string;
   local: string[];
   jpc: string;
+  rebind: string;
 }
 
 const config: TestConfig = JSON.parse(new URLSearchParams(location.search).get("config"));

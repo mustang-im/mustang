@@ -94,6 +94,7 @@ async function run(context: any): Promise<void> {
   for (let [i, base] of config.local.entries()) {
     await probes.attempt("pushedLocal" + i, async () => (await fetch(probes.url(base, "pushedLocal" + i))).status);
   }
+  await probes.attempt("pushedRebind", async () => (await fetch(probes.url(config.rebind, "pushedRebind"))).status);
   await probes.attempt("siblingFrames", () => {
     for (let i = 0; i < window.parent.frames.length; i++) {
       window.parent.frames[i].postMessage({ evil: config.tag }, "*");
