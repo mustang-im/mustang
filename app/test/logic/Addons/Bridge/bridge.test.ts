@@ -318,6 +318,37 @@ describe("Bounds", () => {
     await Promise.all(pending);
   });
 
+  test("A flood of loads doesn't block the app, and loads only once", async () => {
+    let { bridge, addon } = rawSetup(["message", "mail", "mail.all"]);
+    let message = new TMessage();
+    message.folder = new TFolder();
+    for (let i = 0; i < 20000; i++) {
+      message.folder.messages.add(new TMessage());
+    }
+    let snapshot = await give(bridge, addon, message, bridge.newGrant(["message", "mail", "mail.all"]));
+    let folder = (await addon.request({ op: "call", h: snapshot.h, m: "getFolder" })).v;
+    let folderH = folder.h;
+    // Too many to come with the folder
+    expect(folder.p.messages.items).toEqual([]);
+    expect(folder.p.messages.done).toBe(false);
+    let maxDelay = 0;
+    let last = performance.now();
+    let timer = setInterval(() => {
+      let now = performance.now();
+      maxDelay = Math.max(maxDelay, now - last);
+      last = now;
+    }, 5);
+    addon.send(...Array.from({ length: 5000 }, () => ({ op: "load", h: folderH, m: "messages" })));
+    let messagesH = folder.p.messages.h;
+    await addon.waitFor(op => op.op == "coll" && op.h == messagesH && op.done);
+    clearInterval(timer);
+    let chunks = addon.ops.filter(op => op.op == "coll" && op.h == messagesH);
+    expect(chunks.filter(op => op.reset)).toHaveLength(1);
+    expect(chunks.flatMap(op => op.add)).toHaveLength(20000);
+    expect(addon.received.every(message => message.filter(op => op.op == "coll").reduce((sum, op) => sum + op.add.length, 0) <= 2100)).toBe(true);
+    expect(maxDelay).toBeLessThan(500);
+  }, 30000);
+
   test("Too many collection changes collapse into a reload", async () => {
     let { bridge, addon } = rawSetup();
     let message = new TMessage();

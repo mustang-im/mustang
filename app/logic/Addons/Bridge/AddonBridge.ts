@@ -42,7 +42,13 @@ export class AddonBridge {
   protected changedCollections = new Set<HandleEntry>();
   /** Collections whose items go to the addon in chunks */
   protected loadingCollections = new Set<HandleEntry>();
+  /** Collections that the addon wants, or that changed too much. With the field that the addon read. */
+  protected pendingLoads = new Map<HandleEntry, { of?: number, m?: string }>();
   protected isLoadingScheduled = false;
+  /** Operations from the addon that wait for their turn */
+  protected backlog: unknown[] = [];
+  protected backlogIndex = 0;
+  protected isBacklogScheduled = false;
   protected inFlight = 0;
   protected requests = new Map<number, { resolve: (data: unknown) => void, reject: (ex: Error) => void }>();
   protected nextRequestID = 1;
@@ -100,6 +106,8 @@ export class AddonBridge {
     this.changedObjects.clear();
     this.changedCollections.clear();
     this.loadingCollections.clear();
+    this.pendingLoads.clear();
+    this.backlog = [];
     this.outbox = [];
     this.handles.clear();
     for (let request of this.requests.values()) {
@@ -160,12 +168,35 @@ export class AddonBridge {
 
   protected receive(ops: unknown): void {
     const kMaxOpsPerMessage = 10000;
-    if (!Array.isArray(ops) || this.isClosed) {
+    const kMaxBacklog = 100000;
+    if (!Array.isArray(ops) || this.isClosed || this.backlog.length - this.backlogIndex > kMaxBacklog) {
       return;
     }
     let count = Math.min(ops.length, kMaxOpsPerMessage);
     for (let i = 0; i < count; i++) {
-      this.receiveOp(ops[i]);
+      this.backlog.push(ops[i]);
+    }
+    this.workOnBacklog();
+  }
+
+  /** Works on the operations of the addon for at most a few ms per task, so that the app stays responsive */
+  protected workOnBacklog(): void {
+    const kTimeSliceMS = 20;
+    let end = performance.now() + kTimeSliceMS;
+    while (this.backlogIndex < this.backlog.length && !this.isClosed && performance.now() < end) {
+      this.receiveOp(this.backlog[this.backlogIndex++]);
+    }
+    if (this.backlogIndex >= this.backlog.length || this.isClosed) {
+      this.backlog = [];
+      this.backlogIndex = 0;
+      return;
+    }
+    if (!this.isBacklogScheduled) {
+      this.isBacklogScheduled = true;
+      setTimeout(() => {
+        this.isBacklogScheduled = false;
+        this.workOnBacklog();
+      }, 0);
     }
   }
 
@@ -466,9 +497,16 @@ export class AddonBridge {
     entry.sent++;
     let reference: any = { h: entry.h, coll: 1 };
     if (depth <= 1 && !this.inOutbox.has(entry.h)) {
+      const kMaxInlineItems = 100;
       this.inOutbox.add(entry.h);
+      if (collection.length > kMaxInlineItems) {
+        reference.items = [];
+        reference.done = false;
+        this.reload(entry);
+        return reference;
+      }
       this.startLoading(entry);
-      reference.items = this.nextItems(entry);
+      reference.items = this.nextItems(entry, kMaxInlineItems);
       reference.done = !entry.unsentItems;
     }
     return reference;
@@ -500,15 +538,20 @@ export class AddonBridge {
       throw new TypeError("Not a collection");
     }
     let entry = parent.grant.handles.get(collection) ?? this.handles.add(collection, parent.grant, null, this.itemTypesOf(member.type));
-    entry.sent++;
-    this.startLoading(entry);
-    this.queue({ op: "coll", h: entry.h, of: parent.h, m: member.name, reset: true, add: this.nextItems(entry), done: !entry.unsentItems });
+    if (this.pendingLoads.has(entry) || entry.unsentItems) {
+      return;
+    }
+    this.pendingLoads.set(entry, { of: parent.h, m: member.name });
+    this.scheduleLoading();
   }
 
   /** Sends all items again */
   protected reload(entry: HandleEntry): void {
-    this.startLoading(entry);
-    this.queue({ op: "coll", h: entry.h, reset: true, add: this.nextItems(entry), done: !entry.unsentItems });
+    entry.addedItems = [];
+    entry.removedItems = [];
+    this.changedCollections.delete(entry);
+    this.pendingLoads.set(entry, this.pendingLoads.get(entry) ?? {});
+    this.scheduleLoading();
   }
 
   protected startLoading(entry: HandleEntry): void {
@@ -528,12 +571,11 @@ export class AddonBridge {
   }
 
   /** @returns the next chunk of items for the addon. Schedules the rest. */
-  protected nextItems(entry: HandleEntry): unknown[] {
-    const kChunkSize = 1000;
+  protected nextItems(entry: HandleEntry, max = 1000): unknown[] {
     let chunk = [];
     let taken = 0;
     for (let item of entry.unsentItems ?? []) {
-      if (taken++ >= kChunkSize) {
+      if (taken++ >= max) {
         break;
       }
       entry.unsentItems.delete(item);
@@ -572,19 +614,54 @@ export class AddonBridge {
     setTimeout(() => this.sendLoadingChunks(), 0);
   }
 
-  /** One chunk per collection and task, so that the app stays responsive */
+  /** A limited number of items per task, so that the app stays responsive */
   protected sendLoadingChunks(): void {
+    const kItemsPerTask = 2000;
+    const kChunkSize = 1000;
     this.isLoadingScheduled = false;
+    if (this.isClosed) {
+      return;
+    }
+    let budget = kItemsPerTask;
+    for (let [entry, field] of [...this.pendingLoads]) {
+      if (budget <= 0) {
+        break;
+      }
+      this.pendingLoads.delete(entry);
+      if (!this.handles.has(entry)) {
+        continue;
+      }
+      // Copying the list of items costs, too
+      budget -= Math.ceil((entry.object as Collection<any>).length / 100);
+      this.startLoading(entry);
+      let add = this.nextItems(entry, Math.max(1, Math.min(kChunkSize, budget)));
+      budget -= add.length;
+      if (field.of !== undefined) {
+        entry.sent++;
+      }
+      this.queue({ op: "coll", h: entry.h, ...field, reset: true, add, done: !entry.unsentItems });
+    }
     for (let entry of [...this.loadingCollections]) {
-      if (!this.handles.has(entry) || !entry.unsentItems) {
+      if (budget <= 0) {
+        break;
+      }
+      if (!this.handles.has(entry) || !entry.unsentItems || this.pendingLoads.has(entry)) {
         this.loadingCollections.delete(entry);
         continue;
       }
-      this.queue({ op: "coll", h: entry.h, add: this.nextItems(entry), done: !entry.unsentItems });
+      let add = this.nextItems(entry, Math.min(kChunkSize, budget));
+      budget -= add.length;
+      this.queue({ op: "coll", h: entry.h, add, done: !entry.unsentItems });
+    }
+    if (this.pendingLoads.size || this.loadingCollections.size) {
+      this.scheduleLoading();
     }
   }
 
   protected itemsAdded(entry: HandleEntry, items: any[]): void {
+    if (this.pendingLoads.has(entry)) {
+      return;
+    }
     if (entry.unsentItems) {
       for (let item of items) {
         entry.unsentItems.add(item);
@@ -596,6 +673,9 @@ export class AddonBridge {
   }
 
   protected itemsRemoved(entry: HandleEntry, items: any[]): void {
+    if (this.pendingLoads.has(entry)) {
+      return;
+    }
     for (let item of items) {
       if (entry.unsentItems?.has(item)) {
         entry.unsentItems.delete(item);
