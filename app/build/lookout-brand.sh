@@ -31,5 +31,5 @@ perl -p -i \
   -e "s|mustang|lookout|g;" \
   ../../desktop/electron-builder.yml
 
-perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-lookout.svg', '../frontend/asset/icon/general/logo.svg')"
-perl -MFile::Copy -e "copy('../../desktop/build/icon-lookout.png', '../../desktop/build/icon.png')"
+perl -MFile::Copy -e "copy('../frontend/asset/icon/general/logo-parula.svg', '../frontend/asset/icon/general/logo.svg')"
+perl -MFile::Copy -e "copy('../../desktop/build/icon-parula.png', '../../desktop/build/icon.png')"
