@@ -2,6 +2,7 @@ import type { Addon, AddonRegistration } from "./Addon";
 import type { AddonStorage } from "./AddonFiles";
 import { addonPermissions, AddonObjectScope } from "./Permissions";
 import { AddonUI } from "./AddonUI";
+import { AddonApp } from "./AddonApp";
 import { AddonBridge, type AddonService } from "./Bridge/AddonBridge";
 import { AddonAPI } from "./Bridge/AddonAPI";
 import { HandleBudget } from "./Bridge/HandleTable";
@@ -47,6 +48,11 @@ export class AddonSandbox implements AddonRegistration {
     }
     this.register(this.ui);
     this.ui.show();
+    for (let contribution of this.addon.manifest.apps) {
+      let app = new AddonApp(this.addon, contribution);
+      this.register(app);
+      app.show();
+    }
   }
 
   /** Shows a UI module of the addon in `container`
