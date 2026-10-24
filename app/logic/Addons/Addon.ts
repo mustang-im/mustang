@@ -1,4 +1,5 @@
 import type { Addons } from "./Addons";
+import type { AddonSandbox } from "./AddonSandbox";
 import type { AddonManifest, AddonPackage } from "./AddonManifest";
 import { AddonStorage, type AddonFiles } from "./AddonFiles";
 import { addonPermissions } from "./Permissions";
@@ -41,6 +42,9 @@ export class Addon extends Observable {
   error: Error | null = null;
   /** Undone in reverse order, when the addon stops */
   readonly registrations = new ArrayColl<AddonRegistration>();
+  /** Where the addon code runs, while it runs */
+  @notifyChangedProperty
+  sandbox: AddonSandbox | null = null;
   readonly files: AddonFiles;
   readonly storage: AddonStorage;
   protected lifecycleLock = new Lock();
@@ -189,6 +193,12 @@ export class Addon extends Observable {
 
   /** Starts the addon's code. It adds the sandbox, and everything that the addon adds to the app, to `registrations`. */
   protected async start(): Promise<void> {
+    // Loaded only when needed. Its imports of the app classes would make an import cycle with app.ts.
+    let { AddonSandbox } = await import("./AddonSandbox");
+    let sandbox = new AddonSandbox(this);
+    this.registrations.add(sandbox);
+    this.sandbox = sandbox;
+    await sandbox.start();
   }
 
   protected async stop(): Promise<void> {

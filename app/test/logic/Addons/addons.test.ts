@@ -11,6 +11,16 @@ import path from "node:path";
 import { ArrayColl } from "svelte-collections";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
+// The sandbox needs a browser. test/logic/Addons/Sandbox tests it.
+vi.mock("../../../logic/Addons/AddonSandbox", () => ({
+  AddonSandbox: class {
+    async start() {
+    }
+    unregister() {
+    }
+  },
+}));
+
 let configDir: string;
 
 beforeAll(() => {

@@ -133,7 +133,7 @@ export class SandboxClient {
       this.resolveInitialized = resolve;
     });
     this.handlers.set("ui.command", (args, data) => this.runCommand(args, data));
-    this.handlers.set("ui.context", (args, data) => this.context.set({ ...args, theme: { dark: !!data?.dark } }));
+    this.handlers.set("ui.context", args => this.context.set({ ...args, theme: this.context.value.theme }));
     this.handlers.set("hooks.run", (args, data) => this.runHooks(args, data));
     this.handlers.set("protocols.call", (_args, data) => this.callProtocol(data));
     this.mustang = this.newMustangAPI();
@@ -248,14 +248,13 @@ export class SandboxClient {
     this.flush();
   }
 
-  protected applyTheme(theme: { properties: [string, string][], colorScheme: string }): void {
+  protected applyTheme(theme: { properties: [string, string][], colorScheme: string, dark: boolean }): void {
     let style = document.documentElement.style;
     for (let [name, value] of theme.properties) {
-      if (name.startsWith("--")) {
-        style.setProperty(name, value);
-      }
+      style.setProperty(name, value);
     }
     style.setProperty("color-scheme", theme.colorScheme);
+    this.context.set({ ...this.context.value, theme: { dark: theme.dark } });
   }
 
   // Messages from the app

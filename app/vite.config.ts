@@ -5,6 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import wasm from 'vite-plugin-wasm';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { webMail, isMobile, includeProprietary, production } from './logic/build';
+import { SandboxPage } from './logic/Addons/Sandbox/SandboxPage';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -27,6 +28,7 @@ export default defineConfig({
     nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),
     svelte(),
     wasm(),
+    new SandboxPage().vitePlugin(),
     sentryVitePlugin({
       url: "https://errorlog.parula.app/",
       org: "bugsink-has-no-orgs",
