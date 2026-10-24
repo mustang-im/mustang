@@ -201,7 +201,7 @@ describe("List", () => {
     showPage();
     await click(rows()[0].querySelector(".row"));
 
-    let confirm = vi.fn(() => false);
+    let confirm = vi.fn((_question: string) => false);
     vi.stubGlobal("confirm", confirm);
     await click(buttonWithText("Remove"));
     expect(confirm).toHaveBeenCalledTimes(1);

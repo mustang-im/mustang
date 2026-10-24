@@ -79,3 +79,16 @@ test("@addon and @addonHook keep the methods", async () => {
   expect(annotated.add(1, 2)).toBe(8);
   expect(await annotated.double(21)).toBe(42);
 });
+
+test("@addon and @addonHook add nothing at runtime", () => {
+  // Fields stay plain properties of the object, without accessor on the prototype
+  expect(Object.getOwnPropertyDescriptor(Annotated.prototype, "plain")).toBeUndefined();
+  expect(Object.getOwnPropertyDescriptor(new Annotated(), "plain")).toMatchObject({ value: "plain", writable: true });
+  // Methods stay the original functions, without wrapper
+  for (let [name, body] of [["add", "a + b + this.plain.length"], ["double", "value * 2"]]) {
+    let descriptor = Object.getOwnPropertyDescriptor(Annotated.prototype, name);
+    expect(descriptor.get).toBeUndefined();
+    expect(descriptor.value.name).toBe(name);
+    expect(descriptor.value.toString()).toContain(body);
+  }
+});

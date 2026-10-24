@@ -259,7 +259,9 @@ describe("Example notes-app", () => {
 
   async function showNotes(storage: TestStorage): Promise<HTMLElement> {
     (globalThis as any).mustang = { storage };
-    cleanups.push(() => delete (globalThis as any).mustang);
+    cleanups.push(() => {
+      delete (globalThis as any).mustang;
+    });
     let target = show(Notes, {});
     await tick(10);
     flushSync();
