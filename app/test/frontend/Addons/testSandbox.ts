@@ -6,7 +6,7 @@ import { AddonManifest } from "../../../logic/Addons/AddonManifest";
 import { AddonUI } from "../../../logic/Addons/AddonUI";
 import { AddonBridge } from "../../../logic/Addons/Bridge/AddonBridge";
 import { AddonAPI } from "../../../logic/Addons/Bridge/AddonAPI";
-import { HandleBudget } from "../../../logic/Addons/Bridge/HandleTable";
+import { AddonBudget } from "../../../logic/Addons/Bridge/AddonBudget";
 import { SandboxFrame } from "../../../logic/Addons/Sandbox/SandboxFrame";
 import { apiClasses, apiEnums } from "../../../logic/Addons/API/apiTypes";
 import { MailAccount } from "../../../logic/Mail/MailAccount";
@@ -23,7 +23,7 @@ const api = new AddonAPI(apiClasses, apiEnums);
 export class TestSandbox {
   readonly addon: Addon;
   readonly ui: AddonUI;
-  readonly budget = new HandleBudget();
+  readonly budget = new AddonBudget();
   logicFrame: { bridge: AddonBridge } | null = null;
   /** The addon's main code */
   logic: TestClient;

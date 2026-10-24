@@ -9,7 +9,7 @@ import { AddonCancelError } from "../../../logic/Addons/AddonCancelError";
 import { HookPoint, hookPoints, type Hook } from "../../../logic/Addons/API/HookPoint";
 import { AddonBridge } from "../../../logic/Addons/Bridge/AddonBridge";
 import { AddonAPI } from "../../../logic/Addons/Bridge/AddonAPI";
-import { HandleBudget } from "../../../logic/Addons/Bridge/HandleTable";
+import { AddonBudget } from "../../../logic/Addons/Bridge/AddonBudget";
 import { apiClasses, apiEnums } from "../../../logic/Addons/API/apiTypes";
 import { ComposeActions } from "../../../logic/Mail/ComposeActions";
 import type { EMail } from "../../../logic/Mail/EMail";
@@ -54,7 +54,7 @@ class HookSandbox {
 
   async connect(): Promise<AddonBridge> {
     let channel = new MessageChannel();
-    let bridge = new AddonBridge(channel.port1, api, this.addon.apiGroups, new HandleBudget());
+    let bridge = new AddonBridge(channel.port1, api, this.addon.apiGroups, new AddonBudget());
     bridge.registerService("hooks", this.hooks);
     let client = new TestClient();
     client.start(channel.port2);

@@ -2,7 +2,7 @@
 // with the real sandbox page, bridge and frames, and the evil addon.
 import { AddonBridge } from "../../../app/logic/Addons/Bridge/AddonBridge";
 import { AddonAPI } from "../../../app/logic/Addons/Bridge/AddonAPI";
-import { HandleBudget } from "../../../app/logic/Addons/Bridge/HandleTable";
+import { AddonBudget } from "../../../app/logic/Addons/Bridge/AddonBudget";
 import { SandboxFrame } from "../../../app/logic/Addons/Sandbox/SandboxFrame";
 import { TMessage, testClasses, testEnums } from "../../../app/test/logic/Addons/Bridge/fixtures";
 import { evilHTML } from "../../../app/test/logic/Addons/evil/src/html";
@@ -30,7 +30,7 @@ new BroadcastChannel("mustang-app").onmessage = event => broadcasts.push(event.d
 class TestAddon {
   readonly connectSrc: string;
   readonly storage = new Map<string, unknown>();
-  readonly budget = new HandleBudget();
+  readonly budget = new AddonBudget();
   protected waiters: (() => void)[] = [];
 
   constructor(tag: string, connectSrc: string) {

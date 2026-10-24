@@ -1,7 +1,7 @@
 import { newBridge, RawAddon, TestClient, TAccount, TBase, TChild, TFolder, TMessage, TPerson, tick } from "./fixtures";
 import type { AddonBridge } from "../../../../logic/Addons/Bridge/AddonBridge";
 import type { Grant } from "../../../../logic/Addons/Bridge/Grant";
-import { HandleBudget } from "../../../../logic/Addons/Bridge/HandleTable";
+import { AddonBudget } from "../../../../logic/Addons/Bridge/AddonBudget";
 import type { AddonGroup } from "../../../../logic/Addons/API/addon";
 import { sanitizeHTMLWithoutLoading } from "../../../../logic/util/convertHTML";
 import { ArrayColl } from "svelte-collections";
@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 /** A bridge with a raw (malicious) addon at the other end */
-function rawSetup(groups: AddonGroup[] = ["message", "mail"], budget?: HandleBudget) {
+function rawSetup(groups: AddonGroup[] = ["message", "mail"], budget?: AddonBudget) {
   let { bridge, port } = newBridge(groups, budget);
   let addon = new RawAddon(port);
   bridge.start({ name: "Test", version: "1.0.0" });
@@ -298,17 +298,17 @@ describe("Arguments and writes", () => {
 
 describe("Bounds", () => {
   test("Handles per addon, over all its frames", async () => {
-    let budget = new HandleBudget(6);
+    let budget = new AddonBudget(6);
     let first = rawSetup(["message", "mail"], budget);
     let second = rawSetup(["message", "mail"], budget);
     // Each message is 4 handles: message, from, to, tags
     await give(first.bridge, first.addon, new TMessage(), first.bridge.newGrant(["message", "mail"]));
-    expect(budget.count).toBe(4);
+    expect(budget.handles).toBe(4);
     let grant = second.bridge.newGrant(["message", "mail"]);
     expect(() => second.bridge.notify("test", "give", { object: new TMessage() }, grant)).toThrow("more than 6");
-    expect(budget.count).toBeLessThanOrEqual(6);
+    expect(budget.handles).toBeLessThanOrEqual(6);
     first.bridge.close();
-    expect(budget.count).toBeLessThanOrEqual(2);
+    expect(budget.handles).toBeLessThanOrEqual(2);
     let snapshot = await give(second.bridge, second.addon, new TMessage(), second.bridge.newGrant(["message", "mail"]));
     expect(snapshot.p.subject).toBe("Hello");
   });
@@ -325,6 +325,43 @@ describe("Bounds", () => {
     let replies = addon.ops.filter(op => op.op == "reply" && op.id <= 1200);
     expect(replies).toHaveLength(200);
     expect(replies.every(op => op.id > 1000 && op.e.message.includes("calls running"))).toBe(true);
+  });
+
+  test("Calls in flight, over all frames of the addon", async () => {
+    let budget = new AddonBudget();
+    let first = rawSetup(["message", "mail"], budget);
+    let second = rawSetup(["message", "mail"], budget);
+    let firstMessage = await give(first.bridge, first.addon, new TMessage(), first.bridge.newGrant(["message", "mail"]));
+    let secondMessage = await give(second.bridge, second.addon, new TMessage(), second.bridge.newGrant(["message", "mail"]));
+    let waits = (h: number, count: number) => Array.from({ length: count }, (_, i) => ({ op: "call", id: i + 1, h, m: "wait" }));
+    first.addon.send(...waits(firstMessage.h, 700));
+    await tick(50);
+    second.addon.send(...waits(secondMessage.h, 500));
+    await second.addon.waitFor(op => op.id == 500);
+    let refused = second.addon.ops.filter(op => op.op == "reply" && op.e?.message.includes("calls running"));
+    expect(refused).toHaveLength(200);
+  });
+
+  test("Waiting operations, over all frames of the addon", async () => {
+    let budget = new AddonBudget();
+    let first = rawSetup(["message", "mail"], budget);
+    let second = rawSetup(["message", "mail"], budget);
+    let message = await give(second.bridge, second.addon, new TMessage(), second.bridge.newGrant(["message", "mail"]));
+    // A clock that runs fast: the app works on almost none of the operations per task
+    let time = performance.now();
+    let clock = vi.spyOn(performance, "now").mockImplementation(() => time += 1000);
+    let noops = Array.from({ length: 10000 }, () => ({ op: "release", h: 999999999, n: 1 }));
+    for (let i = 0; i < 11; i++) {
+      first.addon.send(...noops);
+    }
+    await tick(100);
+    expect(budget.backlog).toBeGreaterThan(100000);
+    second.addon.send({ op: "get", id: 1, h: message.h, m: "isRead" });
+    await tick(100);
+    expect(second.addon.ops.some(op => op.op == "reply" && op.id == 1)).toBe(false);
+    clock.mockRestore();
+    await vi.waitFor(() => expect(budget.backlog).toBe(0), { timeout: 10000 });
+    expect((await second.addon.request({ op: "get", h: message.h, m: "isRead" })).v).toBe(false);
   });
 
   test("Operations per message", async () => {

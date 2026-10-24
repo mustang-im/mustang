@@ -1,7 +1,7 @@
 import type { APIClass, APIEnum } from "../../../../logic/Addons/API/addon";
 import { AddonAPI } from "../../../../logic/Addons/Bridge/AddonAPI";
 import { AddonBridge } from "../../../../logic/Addons/Bridge/AddonBridge";
-import { HandleBudget } from "../../../../logic/Addons/Bridge/HandleTable";
+import { AddonBudget } from "../../../../logic/Addons/Bridge/AddonBudget";
 import type { AddonGroup } from "../../../../logic/Addons/API/addon";
 import { SandboxClient } from "../../../../logic/Addons/Sandbox/client";
 import { Observable, notifyChangedProperty } from "../../../../logic/util/Observable";
@@ -144,7 +144,7 @@ export const testEnums: APIEnum[] = [
 
 export const testAPI = new AddonAPI(testClasses, testEnums);
 
-export function newBridge(groups: AddonGroup[], budget = new HandleBudget()): { bridge: AddonBridge, port: MessagePort } {
+export function newBridge(groups: AddonGroup[], budget = new AddonBudget()): { bridge: AddonBridge, port: MessagePort } {
   let channel = new MessageChannel();
   let bridge = new AddonBridge(channel.port1, testAPI, groups, budget);
   return { bridge, port: channel.port2 };

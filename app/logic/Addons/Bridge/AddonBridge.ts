@@ -1,7 +1,8 @@
 import type { AddonGroup, APIClass, APIMember, APIType } from "../API/addon";
 import type { AddonAPI } from "./AddonAPI";
 import { Grant } from "./Grant";
-import { HandleTable, TooManyHandlesError, type HandleBudget, type HandleEntry } from "./HandleTable";
+import { HandleTable, TooManyHandlesError, type HandleEntry } from "./HandleTable";
+import type { AddonBudget } from "./AddonBudget";
 import { Observable } from "../../util/Observable";
 import { minorError } from "../../util/error";
 import { sanitizeHTMLWithoutLoading } from "../../util/convertHTML";
@@ -31,6 +32,8 @@ export class AddonBridge {
   /** The `@addon` groups that the user granted to the addon */
   readonly groups: SetColl<AddonGroup>;
   readonly handles: HandleTable;
+  /** Shared by all frames of the addon */
+  readonly budget: AddonBudget;
   protected services = new Map<string, AddonService>();
   protected fieldLists = new WeakMap<Grant, Map<APIClass, FieldMember[]>>();
   protected roots = new Map<string, { collection: Collection<any>, grant: Grant }>();
@@ -50,7 +53,6 @@ export class AddonBridge {
   protected backlog: unknown[] = [];
   protected backlogIndex = 0;
   protected isBacklogScheduled = false;
-  protected inFlight = 0;
   protected requests = new Map<number, { resolve: (data: unknown) => void, reject: (ex: Error) => void }>();
   protected nextRequestID = 1;
   isClosed = false;
@@ -58,10 +60,11 @@ export class AddonBridge {
   readonly ready: Promise<void>;
   protected readyCallbacks: { resolve: () => void, reject: (ex: Error) => void } | null;
 
-  constructor(port: MessagePort, api: AddonAPI, groups: Iterable<AddonGroup>, budget: HandleBudget) {
+  constructor(port: MessagePort, api: AddonAPI, groups: Iterable<AddonGroup>, budget: AddonBudget) {
     this.port = port;
     this.api = api;
     this.groups = new SetColl([...groups]);
+    this.budget = budget;
     this.handles = new HandleTable(budget);
     this.ready = new Promise((resolve, reject) => {
       this.readyCallbacks = { resolve, reject };
@@ -108,6 +111,7 @@ export class AddonBridge {
     this.changedCollections.clear();
     this.loadingCollections.clear();
     this.pendingLoads.clear();
+    this.budget.backlog -= this.backlog.length - this.backlogIndex;
     this.backlog = [];
     this.outbox = [];
     this.handles.clear();
@@ -170,13 +174,14 @@ export class AddonBridge {
   protected receive(ops: unknown): void {
     const kMaxOpsPerMessage = 10000;
     const kMaxBacklog = 100000;
-    if (!Array.isArray(ops) || this.isClosed || this.backlog.length - this.backlogIndex > kMaxBacklog) {
+    if (!Array.isArray(ops) || this.isClosed || this.budget.backlog > kMaxBacklog) {
       return;
     }
     let count = Math.min(ops.length, kMaxOpsPerMessage);
     for (let i = 0; i < count; i++) {
       this.backlog.push(ops[i]);
     }
+    this.budget.backlog += count;
     this.workOnBacklog();
   }
 
@@ -185,6 +190,7 @@ export class AddonBridge {
     const kTimeSliceMS = 20;
     let end = performance.now() + kTimeSliceMS;
     while (this.backlogIndex < this.backlog.length && !this.isClosed && performance.now() < end) {
+      this.budget.backlog--;
       this.receiveOp(this.backlog[this.backlogIndex++]);
     }
     if (this.backlogIndex >= this.backlog.length || this.isClosed) {
@@ -253,11 +259,11 @@ export class AddonBridge {
   /** @param id undefined = the addon wants no answer */
   protected async runRequest(id: number | undefined, op: Record<string, unknown>): Promise<void> {
     const kMaxInFlight = 1000;
-    if (this.inFlight >= kMaxInFlight) {
+    if (this.budget.inFlight >= kMaxInFlight) {
       this.queueError(id, new Error(`The addon has more than ${kMaxInFlight} calls running`));
       return;
     }
-    this.inFlight++;
+    this.budget.inFlight++;
     try {
       let reply = await this.run(op);
       if (id !== undefined) {
@@ -266,7 +272,7 @@ export class AddonBridge {
     } catch (ex) {
       this.queueError(id, ex);
     } finally {
-      this.inFlight--;
+      this.budget.inFlight--;
     }
   }
 

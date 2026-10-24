@@ -6,7 +6,7 @@ import { AddonApp } from "./AddonApp";
 import { AddonHooks } from "./AddonHooks";
 import { AddonBridge, type AddonService } from "./Bridge/AddonBridge";
 import { AddonAPI } from "./Bridge/AddonAPI";
-import { HandleBudget } from "./Bridge/HandleTable";
+import { AddonBudget } from "./Bridge/AddonBudget";
 import { SandboxFrame } from "./Sandbox/SandboxFrame";
 import { apiClasses, apiEnums } from "./API/apiTypes";
 import type { AddonGroup } from "./API/addon";
@@ -20,8 +20,8 @@ import { ArrayColl } from "svelte-collections";
  * Stopping it removes all frames, which ends the addon code, and revokes all app objects that the addon got. */
 export class AddonSandbox implements AddonRegistration {
   readonly addon: Addon;
-  /** All frames of the addon together may hold this many app objects */
-  readonly budget = new HandleBudget();
+  /** For all frames of the addon together: app objects, running calls, waiting operations */
+  readonly budget = new AddonBudget();
   logicFrame: SandboxFrame | null = null;
   readonly uiFrames = new ArrayColl<SandboxFrame>();
   /** Its buttons, menu items and panels in the app */

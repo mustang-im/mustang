@@ -1,15 +1,6 @@
 import type { APIClass, APIType } from "../API/addon";
+import type { AddonBudget } from "./AddonBudget";
 import type { Grant } from "./Grant";
-
-/** Limits how many app objects one addon holds, over all its frames */
-export class HandleBudget {
-  readonly max: number;
-  count = 0;
-
-  constructor(max = 100000) {
-    this.max = max;
-  }
-}
 
 export class TooManyHandlesError extends Error {
 }
@@ -45,11 +36,11 @@ export class HandleEntry {
 
 /** The app objects that the code in one sandboxed frame or worker holds */
 export class HandleTable {
-  readonly budget: HandleBudget;
+  readonly budget: AddonBudget;
   protected entries = new Map<number, HandleEntry>();
   protected nextHandle = 1;
 
-  constructor(budget: HandleBudget) {
+  constructor(budget: AddonBudget) {
     this.budget = budget;
   }
 
@@ -61,13 +52,13 @@ export class HandleTable {
     if (grant.isRevoked) {
       throw new Error("The addon may no longer use these app objects");
     }
-    if (this.budget.count >= this.budget.max) {
-      throw new TooManyHandlesError(`The addon holds more than ${this.budget.max} app objects. Release some.`);
+    if (this.budget.handles >= this.budget.maxHandles) {
+      throw new TooManyHandlesError(`The addon holds more than ${this.budget.maxHandles} app objects. Release some.`);
     }
     let entry = new HandleEntry(this.nextHandle++, object, grant, apiClass, itemTypes);
     this.entries.set(entry.h, entry);
     grant.handles.set(object, entry);
-    this.budget.count++;
+    this.budget.handles++;
     return entry;
   }
 
@@ -116,7 +107,7 @@ export class HandleTable {
     }
     this.entries.delete(entry.h);
     entry.grant.handles.delete(entry.object);
-    this.budget.count--;
+    this.budget.handles--;
     entry.unsentItems = null;
     try {
       entry.unobserve?.();
