@@ -14,7 +14,9 @@ class AppObject {
   [kState]: ObjectState;
 
   subscribe(run: (value: this) => void): () => void {
-    let subscribers = this[kState].subscribers;
+    let state = this[kState];
+    state.subscribers ??= new Set();
+    let subscribers = state.subscribers;
     subscribers.add(run);
     run(this);
     return () => subscribers.delete(run);
@@ -31,7 +33,7 @@ class ObjectState {
   readonly h: number;
   readonly cls: ClassInfo;
   readonly fields = new Map<string, unknown>();
-  readonly subscribers = new Set<(value: any) => void>();
+  subscribers: Set<(value: any) => void> | null = null;
   isReleased = false;
 
   constructor(client: SandboxClient, h: number, cls: ClassInfo) {
@@ -41,7 +43,7 @@ class ObjectState {
   }
 
   notify(object: AppObject): void {
-    for (let run of this.subscribers) {
+    for (let run of this.subscribers ?? []) {
       try {
         run(object);
       } catch (ex) {
@@ -57,18 +59,31 @@ class CollectionMirror<T> extends ArrayColl<T> {
 }
 
 class CollectionState {
-  readonly client: SandboxClient;
-  readonly h: number;
+  /** undefined, until the items load */
+  h: number | undefined;
+  /** The app object and field that it belongs to, for loading */
+  readonly owner: { h: number, m: string } | null;
   isLoading = false;
   readonly loaded: Promise<void>;
   resolveLoaded: () => void;
 
-  constructor(client: SandboxClient, h: number) {
-    this.client = client;
+  constructor(h: number | undefined, owner: { h: number, m: string } | null) {
     this.h = h;
+    this.owner = owner;
     this.loaded = new Promise(resolve => {
       this.resolveLoaded = resolve;
     });
+  }
+}
+
+/** A collection field that the app sent without items. Becomes a `CollectionMirror` when the addon reads it. */
+class LazyCollection {
+  readonly ownerH: number;
+  readonly name: string;
+
+  constructor(ownerH: number, name: string) {
+    this.ownerH = ownerH;
+    this.name = name;
   }
 }
 
@@ -227,10 +242,10 @@ export class SandboxClient {
         this.sendService("frame", "escape", []);
       }
     }, { capture: true });
+    // Not the root element: its size is at least the size of the frame, so the frame could not shrink
     new ResizeObserver(() => {
-      let root = document.documentElement;
-      this.sendService("frame", "size", [root.scrollWidth, root.scrollHeight]);
-    }).observe(document.documentElement);
+      this.sendService("frame", "size", [document.body.scrollWidth, document.body.scrollHeight]);
+    }).observe(document.body);
     this.handlers.set("ui.theme", (_args, data) => this.applyTheme(data));
     await this.initialized;
     try {
@@ -315,7 +330,7 @@ export class SandboxClient {
   }
 
   protected receiveChange(op: any): void {
-    let value = this.decode(op.v);
+    let value = this.decodeField(op.v, op.h, op.m);
     let object = this.remotes.get(op.h)?.ref?.deref();
     if (!(object instanceof AppObject)) {
       return;
@@ -326,6 +341,9 @@ export class SandboxClient {
 
   protected receiveCollectionChange(op: any): void {
     let added = (op.add ?? []).map(value => this.decode(value));
+    if (op.of !== undefined) {
+      this.bindMirror(op.h, op.of, op.m);
+    }
     let mirror = this.remotes.get(op.h)?.ref?.deref();
     if (!(mirror instanceof CollectionMirror)) {
       return;
@@ -397,9 +415,13 @@ export class SandboxClient {
     if (value.p) {
       let fields = object[kState].fields;
       let isRefresh = fields.size > 0;
+      let previous = isRefresh ? new Map(fields) : null;
       fields.clear();
       for (let [name, fieldValue] of Object.entries(value.p)) {
-        fields.set(name, this.decode(fieldValue));
+        let decoded = this.decodeField(fieldValue, value.h, name);
+        let old = previous?.get(name);
+        // Keep a collection that already loads
+        fields.set(name, decoded instanceof LazyCollection && old instanceof CollectionMirror ? old : decoded);
       }
       if (isRefresh) {
         object[kState].notify(object);
@@ -408,11 +430,43 @@ export class SandboxClient {
     return object;
   }
 
+  protected decodeField(value: any, ownerH: number, name: string): unknown {
+    if (value?.coll && value.h === undefined) {
+      return new LazyCollection(ownerH, name);
+    }
+    return this.decode(value);
+  }
+
+  /** The app sends the items of a collection field that the addon read */
+  protected bindMirror(h: number, ownerH: number, name: string): void {
+    let remote = this.remotes.get(h);
+    if (!remote) {
+      remote = new Remote();
+      this.remotes.set(h, remote);
+    }
+    remote.count++;
+    let owner = this.remotes.get(ownerH)?.ref?.deref();
+    let ownerState = owner instanceof AppObject ? owner[kState] : null;
+    let mirror = ownerState?.fields.get(name);
+    if (!(mirror instanceof CollectionMirror) || mirror[kState].h !== undefined) {
+      return;
+    }
+    let existing = remote.ref?.deref();
+    if (existing instanceof CollectionMirror) {
+      ownerState.fields.set(name, existing);
+      mirror.replaceAll(existing.contents);
+      mirror[kState].resolveLoaded();
+      return;
+    }
+    mirror[kState].h = h;
+    this.track(mirror, remote, h);
+  }
+
   protected decodeCollection(value: any, remote: Remote): CollectionMirror<any> {
     let mirror = remote.ref?.deref() as CollectionMirror<any>;
     if (!mirror) {
       mirror = new CollectionMirror();
-      mirror[kState] = new CollectionState(this, value.h);
+      mirror[kState] = new CollectionState(value.h, null);
       this.track(mirror, remote, value.h);
     }
     if (value.items) {
@@ -479,8 +533,12 @@ export class SandboxClient {
       throw new Error(`The addon may not read ${state.cls.name}.${name}`);
     }
     let value = state.fields.get(name);
-    if (value instanceof CollectionMirror) {
-      this.load(value);
+    if (value instanceof LazyCollection) {
+      let mirror = new CollectionMirror();
+      mirror[kState] = new CollectionState(undefined, { h: value.ownerH, m: value.name });
+      state.fields.set(name, mirror);
+      this.load(mirror);
+      return mirror;
     }
     return value;
   }
@@ -495,11 +553,11 @@ export class SandboxClient {
 
   protected load(mirror: CollectionMirror<any>): void {
     let state = mirror[kState];
-    if (state.isLoading) {
+    if (state.isLoading || state.h !== undefined) {
       return;
     }
     state.isLoading = true;
-    this.send({ op: "load", h: state.h });
+    this.send({ op: "load", h: state.owner.h, m: state.owner.m });
   }
 
   async loaded(mirror: CollectionMirror<any>): Promise<void> {

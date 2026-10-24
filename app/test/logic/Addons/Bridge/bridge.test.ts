@@ -404,17 +404,49 @@ describe("Changes", () => {
     }
     let snapshot = await give(bridge, addon, account, bridge.newGrant(["message", "mail", "mail.all"]));
     let folderRef = snapshot.p.folders.items[0];
-    expect(folderRef.p.messages.items).toBeUndefined();
-    let messagesH = folderRef.p.messages.h;
-    addon.send({ op: "load", h: messagesH });
-    let first = await addon.waitFor(op => op.op == "coll" && op.h == messagesH && op.reset);
+    // Without handle, so it costs nothing until the addon reads it
+    expect(folderRef.p.messages).toEqual({ coll: 1 });
+    let handles = bridge.handles.size;
+    addon.send({ op: "load", h: folderRef.h, m: "messages" });
+    let first = await addon.waitFor(op => op.op == "coll" && op.of == folderRef.h && op.m == "messages");
+    expect(first.reset).toBe(true);
     expect(first.add).toHaveLength(1000);
+    let messagesH = first.h;
+    expect(bridge.handles.size).toBeGreaterThan(handles);
     let last = await addon.waitFor(op => op.op == "coll" && op.h == messagesH && op.done);
     let chunks = addon.ops.filter(op => op.op == "coll" && op.h == messagesH);
     expect(chunks.length).toBe(3);
     expect(chunks.reduce((sum, op) => sum + op.add.length, 0)).toBe(2500);
     // Items come without their own collection items
     expect(last.add[0].p.to.items).toBeUndefined();
+  });
+
+  test("Collections of objects in arrays come without handles", async () => {
+    let { bridge, addon } = rawSetup();
+    let messages = Array.from({ length: 10 }, () => new TMessage());
+    bridge.notify("test", "give", { messages }, bridge.newGrant(["message", "mail"]), "array");
+    let request = await addon.waitFor(op => op.op == "request" && op.d == "array");
+    expect(request.a.messages[0].p.to).toEqual({ coll: 1 });
+    // message and from
+    expect(bridge.handles.size).toBe(20);
+  });
+
+  test("Loading a field: only readable collection fields of live handles", async () => {
+    let { bridge, addon } = rawSetup(["message", "mail", "mail.all"]);
+    let message = new TMessage();
+    message.folder = new TFolder();
+    let grant = bridge.newGrant(["message", "mail"]);
+    let snapshot = await give(bridge, addon, message, grant);
+    for (let m of ["folder", "subject", "secret", "__proto__", "constructor", "loadBody", 5, null]) {
+      addon.send({ op: "load", h: snapshot.h, m });
+    }
+    addon.send({ op: "load", h: snapshot.p.from.h, m: "name" }, { op: "load", h: 9999, m: "to" });
+    await tick(20);
+    expect(addon.ops.filter(op => op.op == "coll")).toHaveLength(0);
+    grant.revoke();
+    addon.send({ op: "load", h: snapshot.h, m: "to" });
+    await tick(20);
+    expect(addon.ops.filter(op => op.op == "coll")).toHaveLength(0);
   });
 
   test("No changes for released objects", async () => {
@@ -478,12 +510,12 @@ describe("Roots", () => {
     bridge.setRoot("mail", "mail.all", new ArrayColl([account]), bridge.newGrant(["message", "mail", "mail.all"]));
     bridge.start({ name: "Test", version: "1" });
     let init = await addon.waitFor(op => op.op == "init");
-    let folderRef = init.roots.mail.items[0].p.folders;
-    addon.send({ op: "load", h: folderRef.h });
-    let folders = await addon.waitFor(op => op.op == "coll" && op.h == folderRef.h);
-    let messagesH = folders.add[0].p.messages.h;
-    addon.send({ op: "load", h: messagesH });
-    let messages = await addon.waitFor(op => op.op == "coll" && op.h == messagesH);
+    let accountH = init.roots.mail.items[0].h;
+    addon.send({ op: "load", h: accountH, m: "folders" });
+    let folders = await addon.waitFor(op => op.op == "coll" && op.of == accountH);
+    let folderH = folders.add[0].h;
+    addon.send({ op: "load", h: folderH, m: "messages" });
+    let messages = await addon.waitFor(op => op.op == "coll" && op.of == folderH);
     expect(await errorOf(addon, { op: "set", h: messages.add[0].h, m: "subject", v: "Spoofed" })).toContain("may not change");
     expect(message.subject).toBe("Hello");
     bridge.close();

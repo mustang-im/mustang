@@ -1,10 +1,12 @@
-import type { AddonGroup, APIMember, APIType } from "../API/addon";
+import type { AddonGroup, APIClass, APIMember, APIType } from "../API/addon";
 import type { AddonAPI } from "./AddonAPI";
 import { Grant } from "./Grant";
 import { HandleTable, TooManyHandlesError, type HandleBudget, type HandleEntry } from "./HandleTable";
 import { Observable } from "../../util/Observable";
 import { minorError } from "../../util/error";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
+
+type FieldMember = Extract<APIMember, { kind: "field" | "getter" }>;
 
 /** A part of the `mustang` API that is not an app object, e.g. `mustang.storage` */
 export interface AddonService {
@@ -29,6 +31,7 @@ export class AddonBridge {
   readonly groups: SetColl<AddonGroup>;
   readonly handles: HandleTable;
   protected services = new Map<string, AddonService>();
+  protected fieldLists = new WeakMap<Grant, Map<APIClass, FieldMember[]>>();
   protected roots = new Map<string, { collection: Collection<any>, grant: Grant }>();
   protected outbox: any[] = [];
   /** Handles whose fields are already in the outbox */
@@ -142,7 +145,7 @@ export class AddonBridge {
     try {
       for (let [name, value] of Object.entries(args)) {
         a[name] = Array.isArray(value)
-          ? value.map(item => this.toAddon(item, null, grant, 0))
+          ? value.map(item => this.toAddon(item, null, grant, 1))
           : this.toAddon(value, null, grant, 0);
       }
     } catch (ex) {
@@ -187,7 +190,7 @@ export class AddonBridge {
           .catch(minorError);
         return;
       case "load":
-        this.load(this.handles.get(op.h));
+        this.loadField(this.handles.get(op.h), op.m);
         return;
       case "release":
         if (typeof op.h == "number" && Number.isSafeInteger(op.n) && (op.n as number) > 0) {
@@ -380,7 +383,7 @@ export class AddonBridge {
 
   /** Converts an app value for the addon. App objects become handles under `grant`.
    * @param types The declared types. null = any app object that the grant allows.
-   * @param depth Collections at depth 0 and 1 come with their items, deeper ones when the addon asks. */
+   * @param depth Collections at depth 0 and 1 come with their items. Deeper ones come without handle, and load when the addon reads them. */
   protected toAddon(value: unknown, types: APIType[] | null, grant: Grant | null, depth: number): unknown {
     if (value === null || value === undefined ||
         typeof value == "string" || typeof value == "number" || typeof value == "boolean" ||
@@ -438,22 +441,26 @@ export class AddonBridge {
     return { h: entry.h, c, p };
   }
 
-  protected *fieldsOf(entry: HandleEntry): Generator<Extract<APIMember, { type: APIType[] }>> {
-    for (let member of this.api.membersOf(entry.apiClass)) {
-      if (member.kind == "field" && entry.grant.allows(member.read)) {
-        yield member;
-      }
+  /** The fields that the grant allows to read */
+  protected fieldsOf(entry: HandleEntry): FieldMember[] {
+    let cache = this.fieldLists.get(entry.grant);
+    if (!cache) {
+      cache = new Map();
+      this.fieldLists.set(entry.grant, cache);
     }
+    let fields = cache.get(entry.apiClass);
+    if (!fields) {
+      fields = [...this.api.membersOf(entry.apiClass)].filter(member =>
+        member.kind == "field" && entry.grant.allows(member.read)) as FieldMember[];
+      cache.set(entry.apiClass, fields);
+    }
+    return fields;
   }
 
   protected collectionToAddon(collection: Collection<any>, types: APIType[] | null, grant: Grant, depth: number): unknown {
-    let itemTypes: APIType[] | null = null;
-    if (types) {
-      let collectionType = types.find(type => typeof type == "object" && "collection" in type) as { collection: APIType[] };
-      if (!collectionType) {
-        throw new TypeError("A collection is not the declared type");
-      }
-      itemTypes = collectionType.collection;
+    let itemTypes = this.itemTypesOf(types);
+    if (depth > 1) {
+      return { coll: 1 };
     }
     let entry = grant.handles.get(collection) ?? this.handles.add(collection, grant, null, itemTypes);
     entry.sent++;
@@ -469,11 +476,37 @@ export class AddonBridge {
 
   // Collections
 
-  /** The addon wants all items of a collection */
-  protected load(entry: HandleEntry): void {
-    if (entry.apiClass) {
-      throw new Error("Not a collection");
+  /** @returns The allowed types of the items, or null, if `types` is null
+   * @throws if `types` has no collection */
+  protected itemTypesOf(types: APIType[] | null): APIType[] | null {
+    if (!types) {
+      return null;
     }
+    let collectionType = types.find(type => typeof type == "object" && "collection" in type) as { collection: APIType[] };
+    if (!collectionType) {
+      throw new TypeError("A collection is not the declared type");
+    }
+    return collectionType.collection;
+  }
+
+  /** The addon reads a collection field that came without its items */
+  protected loadField(parent: HandleEntry, name: unknown): void {
+    let member = parent.apiClass && typeof name == "string" ? this.api.member(parent.apiClass, name) : undefined;
+    if (member?.kind != "field" || !parent.grant.allows(member.read) || parent.grant.isRevoked) {
+      throw new Error("The addon may not read this collection");
+    }
+    let collection = parent.object[member.name];
+    if (!(collection instanceof Collection)) {
+      throw new TypeError("Not a collection");
+    }
+    let entry = parent.grant.handles.get(collection) ?? this.handles.add(collection, parent.grant, null, this.itemTypesOf(member.type));
+    entry.sent++;
+    this.startLoading(entry);
+    this.queue({ op: "coll", h: entry.h, of: parent.h, m: member.name, reset: true, add: this.nextItems(entry), done: !entry.unsentItems });
+  }
+
+  /** Sends all items again */
+  protected reload(entry: HandleEntry): void {
     this.startLoading(entry);
     this.queue({ op: "coll", h: entry.h, reset: true, add: this.nextItems(entry), done: !entry.unsentItems });
   }
@@ -576,7 +609,7 @@ export class AddonBridge {
   protected collectionChanged(entry: HandleEntry): void {
     const kMaxQueuedChanges = 10000;
     if (entry.addedItems.length + entry.removedItems.length > kMaxQueuedChanges) {
-      this.load(entry);
+      this.reload(entry);
       return;
     }
     this.changedCollections.add(entry);
@@ -656,7 +689,7 @@ export class AddonBridge {
         continue;
       }
       try {
-        this.outbox.push({ op: "change", h: entry.h, m: member.name, v: this.toAddon(value, member.type, entry.grant, 1) });
+        this.outbox.push({ op: "change", h: entry.h, m: member.name, v: this.toAddon(value, member.type, entry.grant, 2) });
         entry.fields.set(member.name, value);
       } catch (ex) {
         // The addon doesn't get this field

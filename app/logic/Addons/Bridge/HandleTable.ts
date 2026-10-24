@@ -31,8 +31,8 @@ export class HandleEntry {
   /** Collections: The items that the addon gets next, in this order. null, when the addon has all items. */
   unsentItems: Set<any> | null = null;
   /** Collections: Changes for the addon */
-  addedItems: any[] = [];
-  removedItems: any[] = [];
+  addedItems: any[] | null = null;
+  removedItems: any[] | null = null;
 
   constructor(h: number, object: any, grant: Grant, apiClass: APIClass | null, itemTypes: APIType[] | null) {
     this.h = h;
