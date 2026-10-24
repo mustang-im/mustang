@@ -1,6 +1,6 @@
 import { addonHookPoints, addonPermissions } from "./Permissions";
 import { appName, appVersion } from "../build";
-import { UserError } from "../util/util";
+import { UserError, removeControlCharacters } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, type Collection, type MapColl } from "svelte-collections";
@@ -241,8 +241,7 @@ export class AddonManifest {
       return fallback;
     }
     let label = this.checkString(value, field, maxLength);
-    // Control characters, and bidi controls, which can make a label look like another
-    if (/[\x00-\x1F\x7F-\x9F؜‎‏‪-‮⁦-⁩]/.test(label)) {
+    if (removeControlCharacters(label) != label) {
       this.invalid(field);
     }
     return sanitize.nonemptylabel(label);

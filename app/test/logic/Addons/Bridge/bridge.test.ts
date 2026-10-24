@@ -178,8 +178,8 @@ describe("Handles", () => {
     let { bridge, addon } = rawSetup();
     let pending = bridge.request("test", "fail", {}, null);
     let request = await addon.waitFor(op => op.op == "request" && op.m == "fail");
-    addon.send({ op: "reply", id: request.id, e: { name: "Error", message: "Open \u202Etxt.exe\u202C now\u0007\n" } });
-    await expect(pending).rejects.toSatisfy((ex: Error) => ex.message.includes("txt.exe") && !/\p{C}/u.test(ex.message));
+    addon.send({ op: "reply", id: request.id, e: { name: "Error", message: "Open \u202Etxt.exe\u202C now\u0007\n\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67" } });
+    await expect(pending).rejects.toSatisfy((ex: Error) => ex.message.includes("txt.exe") && ex.message.includes("\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67") && !/[\u202E\u202C\u0007\n]/u.test(ex.message));
   });
 
   test("App errors reach the addon only as name and message", async () => {

@@ -5,6 +5,7 @@ import { HandleTable, TooManyHandlesError, type HandleEntry } from "./HandleTabl
 import type { AddonBudget } from "./AddonBudget";
 import { Observable } from "../../util/Observable";
 import { minorError } from "../../util/error";
+import { removeControlCharacters } from "../../util/util";
 import { sanitizeHTMLWithoutLoading } from "../../util/convertHTML";
 import { ArrayColl, Collection, SetColl } from "svelte-collections";
 
@@ -877,7 +878,7 @@ export class AddonBridge {
   protected errorFromAddon(e: unknown): Error {
     const kMaxLength = 1000;
     let message = this.isPlainObject(e) ? e.message : e;
-    return new Error(this.shortString(message, kMaxLength).replace(/\p{C}+/gu, " "));
+    return new Error(removeControlCharacters(this.shortString(message, kMaxLength)));
   }
 
   protected shortString(value: unknown, maxLength = 100): string {

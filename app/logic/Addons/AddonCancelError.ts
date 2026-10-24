@@ -1,5 +1,5 @@
 import type { Addon } from "./Addon";
-import { UserError } from "../util/util";
+import { UserError, removeControlCharacters } from "../util/util";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { gt } from "../../l10n/l10n";
 
@@ -8,7 +8,7 @@ export class AddonCancelError extends UserError {
   /** @param reason From the addon. Untrusted. */
   constructor(addon: Addon, reason: string) {
     const kMaxLength = 200;
-    let text = reason.substring(0, kMaxLength).replace(/\p{C}+/gu, " ").trim();
+    let text = removeControlCharacters(reason.substring(0, kMaxLength)).trim();
     super(`${addon.name}: ${sanitize.nonemptylabel(text, gt`Cancelled`)}`);
   }
 }

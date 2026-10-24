@@ -4,7 +4,7 @@ import type { AddonProtocolContribution } from "./AddonManifest";
 import type { AddonBridge, AddonService } from "./Bridge/AddonBridge";
 import type { JSONValue } from "./Sandbox/MustangAPI";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
-import { UserError } from "../util/util";
+import { UserError, removeControlCharacters } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, MapColl } from "svelte-collections";
 
@@ -124,7 +124,7 @@ export class AddonProtocols implements AddonService {
     if (typeof value != "string" || value.length > maxLength) {
       throw new TypeError(`${field} must be a string of at most ${maxLength} characters`);
     }
-    let text = value.replace(/\p{C}+/gu, " ").trim();
+    let text = removeControlCharacters(value).trim();
     if (!text) {
       throw new Error(`${field} is missing`);
     }

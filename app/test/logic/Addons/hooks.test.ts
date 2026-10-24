@@ -218,13 +218,14 @@ describe("Before-hooks", () => {
 
   test("The reason is sanitized", async () => {
     let sandbox = await newAddon("Checker");
-    sandbox.logic.mustang.hooks.before("mail.send", () => ({ cancel: "‮evil\u0000\n" + "x".repeat(100000) }));
+    sandbox.logic.mustang.hooks.before("mail.send", () => ({ cancel: "‮evil\u0000\n👨‍👩‍👧" + "x".repeat(100000) }));
     await waitFor(() => mailSend.hooks.length == 1);
     let error = await newMail().mail.compose.send().catch(ex => ex);
     expect(error).toBeInstanceOf(AddonCancelError);
     expect(error.message.startsWith("Checker: ")).toBe(true);
     expect(error.message).toContain("evil");
-    expect(error.message).not.toMatch(/\p{C}/u);
+    expect(error.message).toContain("👨‍👩‍👧");
+    expect(error.message).not.toMatch(/[‮\u0000\n]/u);
     expect(error.message.length).toBeLessThan(500);
   });
 

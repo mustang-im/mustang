@@ -72,6 +72,10 @@ test("Survives the round trip through toJSON(), as stored for the next app start
   expect(stored.ui.contents).toEqual(manifest.ui.contents);
 });
 
+test("Labels may have emoji sequences", () => {
+  expect(parse(json => json.mustang.name = "Family 👨‍👩‍👧 ❤️").name).toBe("Family 👨‍👩‍👧 ❤️");
+});
+
 test("Author as npm object", () => {
   expect(parse(json => json.author = { name: "Jane", email: "jane@example.com" }).author).toBe("Jane");
 });
@@ -95,6 +99,8 @@ describe("Rejects", () => {
     ["display name not a string", json => json.mustang.name = { evil: true }],
     ["control character in label", json => json.mustang.name = "Trans\u0000late"],
     ["bidi override in label", json => json.mustang.name = "‮etalsnart"],
+    ["bidi isolate in label", json => json.mustang.name = "Trans\u2067late"],
+    ["C1 control character in label", json => json.mustang.name = "Trans\u009Blate"],
     ["description too long", json => json.description = "a".repeat(501)],
     ["homepage javascript:", json => json.homepage = "javascript:alert(1)"],
     ["minAppVersion too high", json => json.mustang.minAppVersion = "999.0.0"],

@@ -55,6 +55,11 @@ export function capitalizeWords(str: string): string {
   return str.split(" ").map(word => capitalizeStart(word)).join(" ");
 }
 
+/** Bidi controls can make a text look like another. Keeps emoji sequences intact. */
+export function removeControlCharacters(text: string): string {
+  return text.replace(/[\p{Cc}\p{Bidi_Control}]+/gu, " ");
+}
+
 /** TODO Implement this correctly */
 export function fileExtensionForMIMEType(mimetype: string) {
   if (typeof (mimetype) == "string" && mimetype != "application/octet-stream") {

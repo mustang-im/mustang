@@ -6,7 +6,7 @@ import type { AccountData, JSONValue } from "./Sandbox/MustangAPI";
 import { appGlobal } from "../app";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { RunOnce } from "../util/flow/RunOnce";
-import { UserError } from "../util/util";
+import { UserError, removeControlCharacters } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import type { Collection } from "svelte-collections";
 
@@ -240,8 +240,7 @@ export class AddonConnection {
     if (typeof value != "string") {
       return fallback;
     }
-    // Control characters, and bidi controls, which can make a text look like another
-    let text = value.substring(0, maxLength).replace(/[\u0000-\u001F\u007F-\u009F؜‎‏‪-‮⁦-⁩]+/gu, " ").trim();
+    let text = removeControlCharacters(value.substring(0, maxLength)).trim();
     return text || fallback;
   }
 
