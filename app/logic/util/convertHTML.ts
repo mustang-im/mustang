@@ -98,6 +98,25 @@ export function sanitizeHTMLExternal(html: string): string {
   return sanitized;
 }
 
+/** Removes scripts, event handlers, external references and everything else that is not a plain image.
+ * Show the result only as `<img>`, which is the main protection.
+ * @returns SVG document, or "" if it is not an SVG image */
+export function sanitizeSVG(svg: string): string {
+  if (!svg) {
+    return "";
+  }
+  includeExternal = false;
+  let fragment = DOMPurify.sanitize(svg, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    RETURN_DOM_FRAGMENT: true,
+  });
+  let svgE = fragment?.firstElementChild;
+  if (svgE?.namespaceURI != "http://www.w3.org/2000/svg" || svgE.localName != "svg") {
+    return "";
+  }
+  return new XMLSerializer().serializeToString(svgE);
+}
+
 // <copied from="https://github.com/cure53/DOMPurify/blob/main/demos/hooks-proxy-demo.html" modified="true" license="Apache 2.0">
 const proxy = 'http://localhost:5454/proxy?url=';
 const cssURLRegex = /url\((?!["']?data:)["']?/gim;

@@ -7,7 +7,8 @@ import type { AddonGroup } from "./API/addon";
 import { Observable, notifyChangedProperty } from "../util/Observable";
 import { Lock } from "../util/flow/Lock";
 import { minorError } from "../util/error";
-import { UserError } from "../util/util";
+import { sanitizeSVG } from "../util/convertHTML";
+import { UserError, type URLString } from "../util/util";
 import { gt } from "../../l10n/l10n";
 import { ArrayColl, SetColl, type Collection } from "svelte-collections";
 
@@ -80,6 +81,18 @@ export class Addon extends Observable {
   /** @param path relative to the package root */
   async readFile(path: string): Promise<Uint8Array> {
     return await this.files.readFile(this.manifest.version, path);
+  }
+
+  /**
+   * @param path of an SVG file in the package, e.g. `manifest.icon`
+   * @returns `blob:` URL of the sanitized image. Revoke it with `URL.revokeObjectURL()`, when it no longer shows.
+   */
+  async iconURL(path: string): Promise<URLString> {
+    let svg = sanitizeSVG(new TextDecoder().decode(await this.readFile(path)));
+    if (!svg) {
+      throw new Error(gt`The icon ${path} of the addon ${this.name} is not an SVG image`);
+    }
+    return URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
   }
 
   async enable(): Promise<void> {
