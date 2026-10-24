@@ -159,8 +159,9 @@ export class Addons {
         }
         let addon = new Addon(this, manifest, this.newFiles(manifest.id));
         addon.isEnabled = sanitize.boolean(addonJSON.enabled, false);
+        let requested = manifest.requestedPermissions;
         addon.grantedPermissions.addAll(sanitize.array(addonJSON.granted, [])
-          .filter(permission => typeof permission == "string"));
+          .filter(permission => typeof permission == "string" && requested.includes(permission)));
         this.installed.add(addon);
       } catch (ex) {
         dataError(ex);

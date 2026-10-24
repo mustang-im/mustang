@@ -472,6 +472,18 @@ describe("App start", () => {
     expect(addons.get("@example/second").state).toBe(AddonState.Disabled);
   });
 
+  test("Grants only what the addon asks for, whatever the stored list says", async () => {
+    await install();
+    let stored = storedAddons();
+    stored[0].granted.push("mail.all", "network.any", "https://evil.example.com");
+    localStorage.setItem("addons", JSON.stringify(stored));
+    let addons = new Addons();
+    addons.loadOnStartup();
+    let addon = addons.get("@example/translate");
+    expect(addon.grantedPermissions.contents.sort()).toEqual(addon.manifest.requestedPermissions.contents.sort());
+    expect(addon.apiGroups.contents).not.toContain("mail.all");
+  });
+
   test("A failing addon gets the error, and doesn't throw", async () => {
     await install();
     vi.spyOn(Addon.prototype as any, "start").mockRejectedValueOnce(new Error("Worker crashed"));
