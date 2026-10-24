@@ -16,7 +16,6 @@
   export let item: AddonUIItem;
   /** The objects of the click, for `mustang.ui.context`, e.g. `{ messages }` */
   export let context: Record<string, object>;
-  /** in/out */
   export let popupOpen = false;
   /** Element, or an object with `getBoundingClientRect()` */
   export let anchor: any;

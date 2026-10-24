@@ -144,7 +144,6 @@ export class AddonSandbox implements AddonRegistration {
     return groups;
   }
 
-  /** Ends the addon code */
   unregister(): void {
     this.isStopped = true;
     this.logicFrame?.remove();

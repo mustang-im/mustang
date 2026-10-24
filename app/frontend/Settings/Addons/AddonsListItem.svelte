@@ -36,7 +36,6 @@
   import { t } from "../../../l10n/l10n";
 
   export let addon: Addon;
-  /** in/out */
   export let selectedAddon: Addon | null;
 
   $: isSelected = selectedAddon == addon;

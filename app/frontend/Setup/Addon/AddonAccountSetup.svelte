@@ -20,7 +20,6 @@
   /** Shows the `setup` UI of the addon that implements the protocol of `account`,
    * and takes what the user entered there. */
 
-  /** in */
   export let account: Account & { connection: AddonConnection };
 
   let frame: SandboxFrame | null = null;

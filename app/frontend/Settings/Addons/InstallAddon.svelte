@@ -102,9 +102,7 @@
   import type { ArrayColl } from "svelte-collections";
   import { t } from "../../../l10n/l10n";
 
-  /** in/out */
   export let isOpen: boolean;
-  /** out: the installed addon */
   export let selectedAddon: Addon | null;
 
   const installed = appGlobal.addons.installed;

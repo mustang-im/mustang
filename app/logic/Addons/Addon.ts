@@ -13,7 +13,6 @@ import { gt } from "../../l10n/l10n";
 import { ArrayColl, SetColl, type Collection } from "svelte-collections";
 
 export enum AddonState {
-  /** Its code runs */
   Enabled = "enabled",
   Disabled = "disabled",
   /** It should run, but failed. @see `Addon.error` */
@@ -22,11 +21,9 @@ export enum AddonState {
 
 /** Something that an addon added to the app, e.g. a button, a protocol, or its sandbox */
 export interface AddonRegistration {
-  /** Removes it from the app */
   unregister(): void | Promise<void>;
 }
 
-/** An installed addon */
 export class Addon extends Observable {
   readonly addons: Addons;
   @notifyChangedProperty
@@ -172,7 +169,6 @@ export class Addon extends Observable {
     }
   }
 
-  /** At app start */
   async startup(): Promise<void> {
     let lock = await this.lifecycleLock.lock();
     try {

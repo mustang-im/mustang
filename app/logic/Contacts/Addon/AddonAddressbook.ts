@@ -38,7 +38,6 @@ export class AddonAddressbook extends Addressbook {
     await this.connection.login();
   }
 
-  /** For setup: Checks the login, without storing anything */
   async verifyLogin(): Promise<void> {
     await this.connection.verifyLogin();
   }
