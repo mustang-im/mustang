@@ -13,8 +13,8 @@ export const addonProtocols = new ArrayColl<AddonProtocol>();
 
 /** An account of an addon protocol, while it's logged in */
 export interface AddonProtocolAccount {
-  /** The addon says that the server has new messages in this folder */
-  onNewMessages(folderID: string): void;
+  /** The addon says that the server has new messages in this folder or chat room */
+  onNewMessages?(folderID: string): void;
 }
 
 /** What the user entered in the `setup` UI of a protocol. Checked. */
@@ -82,7 +82,7 @@ export class AddonProtocols implements AddonService {
     }
     for (let protocol of addonProtocols) {
       if (protocol.protocols == this) {
-        protocol.accounts.get(accountID)?.onNewMessages(folderID);
+        protocol.accounts.get(accountID)?.onNewMessages?.(folderID);
       }
     }
   }

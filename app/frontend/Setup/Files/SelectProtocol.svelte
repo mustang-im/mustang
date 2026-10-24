@@ -5,8 +5,14 @@
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
 
+{#if addonAccount}
+  <AddonAccountSetup account={addonAccount} bind:this={addonSetup} />
+{/if}
+
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
   canContinue={!!selectedProtocol}
   canCancel={true}
   onCancel={onCancel}
@@ -15,10 +21,16 @@
 <script lang="ts">
   import { FileSharingAccount } from "../../../logic/Files/FileSharingAccount";
   import { newFileSharingAccountForProtocol } from "../../../logic/Files/AccountsList/FileSharingAccounts";
+  import type { AddonFileSharingAccount } from "../../../logic/Files/Addon/AddonFileSharingAccount";
+  import { addonProtocols } from "../../../logic/Addons/AddonProtocols";
+  import { appGlobal } from "../../../logic/app";
+  import AddonAccountSetup from "../Addon/AddonAccountSetup.svelte";
   import WebDAVSetup from "./WebDAVSetup.svelte";
   import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import { NotReached } from "../../../logic/util/util";
   import { t } from "../../../l10n/l10n";
 
@@ -30,7 +42,10 @@
 
   let selectedProtocol: string;
 
-  const protocols: ProtocolDescription[] = [
+  let addonSetup: AddonAccountSetup;
+  let errorUI: ErrorMessageInline;
+
+  const appProtocols: ProtocolDescription[] = [
     //{ label: `openCloud, ownCloud`, protocolID: "webdav-opencloud" },
     { label: `NextCloud`, protocolID: "webdav-nextcloud" },
     //{ label: `GMX, web.de, 1&1`, protocolID: "webdav" },
@@ -38,8 +53,18 @@
     //{ label: `SharePoint`, protocolID: "graph-sharepoint" },
     { label: `WebDAV`, protocolID: "webdav" },
   ];
+  $: protocols = appProtocols.concat($addonProtocols.contents.filter(protocol => protocol.type == "files").map(protocol => ({ label: protocol.label, protocolID: protocol.protocol })));
+  $: addonAccount = $addonProtocols.some(protocol => protocol.protocol == selectedProtocol) ? newFileSharingAccountForProtocol(selectedProtocol) as AddonFileSharingAccount : null;
 
-  function onContinue() {
+  async function onContinue() {
+    if (addonAccount) {
+      await addonSetup.onContinue();
+      await addonAccount.login(true);
+      await addonAccount.save();
+      appGlobal.fileSharingAccounts.add(addonAccount);
+      showPage = null;
+      return;
+    }
     config = newFileSharingAccountForProtocol(selectedProtocol);
     if (selectedProtocol.startsWith("webdav")) {
       showPage = WebDAVSetup;

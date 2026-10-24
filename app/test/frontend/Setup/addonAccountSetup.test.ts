@@ -70,7 +70,7 @@ test("The setup page shows the addon's setup UI, and the account takes what the 
   expect(account.username).toBe("me");
   expect(account.password).toBe("typed on the first page");
   expect(account.url).toBe("https://mail.example.com");
-  expect(account.extra).toEqual({ region: "eu" });
+  expect(account.connection.extra).toEqual({ region: "eu" });
 });
 
 test("Without its running addon, the setup page says so", async () => {

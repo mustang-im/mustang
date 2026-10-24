@@ -57,10 +57,10 @@ export interface HookCancel {
 
 export interface AddonProtocols {
   /** In the main code: Implements the protocol with this `id` from `mustang.protocols` in the manifest */
-  register(id: string, implementation: MailProtocol): void;
-  /** In the main code: The server has new messages in this folder, e.g. from a push notification.
-   * The app then calls `listMessages()` for the folder. */
-  newMessages(accountID: string, folderID: string): void;
+  register(id: string, implementation: Protocol): void;
+  /** In the main code: The server has new messages in this mail folder or chat room, e.g. from a push notification.
+   * The app then calls `listMessages()` for it. */
+  newMessages(accountID: string, folderOrRoomID: string): void;
   /** In the `setup` UI of a protocol: The account as the user entered it so far.
    * When the user continues, the app checks the login with the last values and creates the account. */
   setupAccount(account: AccountSetup): void;
@@ -84,7 +84,8 @@ export interface AccountData {
   /** For `mustang.protocols.newMessages()` */
   id: string;
   name: string;
-  emailAddress: string;
+  /** Of mail accounts */
+  emailAddress: string | null;
   username: string;
   serverURL: string | null;
   extra: JSONValue | null;
@@ -118,6 +119,162 @@ export interface MailProtocol {
   send(account: AccountData, mime: Uint8Array, from: string, recipients: string[]): Promise<void>;
 }
 
+/** The implementation of a protocol of the type that the manifest says */
+export type Protocol = MailProtocol | ChatProtocol | CalendarProtocol | ContactsProtocol | FilesProtocol;
+
+/** A list of changes since a sync state. The app calls again with `syncState`, while `hasMore` is true. */
+export interface ChangeList {
+  /** IDs of the items that are gone, at most 10,000 */
+  removed?: string[];
+  /** Opaque for the app, at most 10 KB. The app stores it. */
+  syncState: string;
+  /** There are more changes. The app calls again with `syncState`. */
+  hasMore?: boolean;
+}
+
+/** A chat protocol, implemented by the addon. IDs are those of the server.
+ * Every operation gets the account as first argument. Errors reach the user with their message. */
+export interface ChatProtocol {
+  /** Before any other operation of this account. Also after the addon restarted. */
+  login(account: AccountData, password: string | null): Promise<void>;
+  /** All chat rooms of the user, at most 10,000. Rooms that are no longer listed are removed. */
+  listRooms(account: AccountData): Promise<RoomData[]>;
+  /** The new, changed and removed messages of the room since `syncState`, at most 1,000 per call.
+   * @param syncState null = list all messages; else the `syncState` of the last call */
+  listMessages(account: AccountData, roomID: string, syncState: string | null): Promise<ChatMessageList>;
+  /** @returns The ID of the message on the server */
+  sendMessage(account: AccountData, roomID: string, message: OutgoingChatMessage): Promise<string>;
+}
+
+export interface RoomData {
+  id: string;
+  /** Of a group chat. A 1:1 chat has the name of the other person. */
+  name?: string;
+  /** true = group chat; false or missing = 1:1 chat with `members[0]` */
+  isGroup?: boolean;
+  /** Without the user, at most 10,000 */
+  members?: ChatPersonData[];
+}
+
+export interface ChatPersonData {
+  /** On the server */
+  id: string;
+  name?: string;
+}
+
+export interface ChatMessageList extends ChangeList {
+  /** New and changed messages */
+  messages: ChatMessageData[];
+}
+
+export interface ChatMessageData {
+  id: string;
+  /** Sent by the user */
+  outgoing?: boolean;
+  /** `ChatPersonData.id` of the sender */
+  from?: string;
+  /** Plain text, at most 1 MB */
+  text?: string;
+  /** Formatted text, at most 1 MB. Instead of `text`. The app sanitizes it. */
+  html?: string;
+  /** The ID of the message that this one answers */
+  inReplyTo?: string;
+  /** A Date, an ISO 8601 string, or ms since 1970 */
+  sent?: Date | string | number;
+  received?: Date | string | number;
+  isRead?: boolean;
+}
+
+export interface OutgoingChatMessage {
+  text: string;
+  html: string | null;
+  inReplyTo: string | null;
+}
+
+/** A calendar protocol, implemented by the addon. IDs are those of the server.
+ * Every operation gets the account as first argument. Errors reach the user with their message. */
+export interface CalendarProtocol {
+  /** Before any other operation of this account. Also after the addon restarted. */
+  login(account: AccountData, password: string | null): Promise<void>;
+  /** The new, changed and removed events since `syncState`, at most 1,000 per call.
+   * @param syncState null = list all events; else the `syncState` of the last call */
+  listEvents(account: AccountData, syncState: string | null): Promise<EventList>;
+  /** Creates or changes the event
+   * @param id null = new event
+   * @param ical RFC 5545, with one event, and its changed occurrences, if it repeats
+   * @returns The ID of the event on the server */
+  saveEvent(account: AccountData, id: string | null, ical: string): Promise<string>;
+  deleteEvent(account: AccountData, id: string): Promise<void>;
+}
+
+export interface EventList extends ChangeList {
+  /** New and changed events */
+  events: EventData[];
+}
+
+export interface EventData {
+  id: string;
+  /** RFC 5545, with one event, and its changed occurrences, if it repeats. At most 1 MB. */
+  ical: string;
+}
+
+/** A contacts protocol, implemented by the addon. IDs are those of the server.
+ * Every operation gets the account as first argument. Errors reach the user with their message. */
+export interface ContactsProtocol {
+  /** Before any other operation of this account. Also after the addon restarted. */
+  login(account: AccountData, password: string | null): Promise<void>;
+  /** The new, changed and removed contacts since `syncState`, at most 1,000 per call.
+   * @param syncState null = list all contacts; else the `syncState` of the last call */
+  listContacts(account: AccountData, syncState: string | null): Promise<ContactList>;
+  /** Creates or changes the contact
+   * @param id null = new contact
+   * @param vcard RFC 6350
+   * @returns The ID of the contact on the server */
+  saveContact(account: AccountData, id: string | null, vcard: string): Promise<string>;
+  deleteContact(account: AccountData, id: string): Promise<void>;
+}
+
+export interface ContactList extends ChangeList {
+  /** New and changed contacts */
+  contacts: ContactData[];
+}
+
+export interface ContactData {
+  id: string;
+  /** RFC 6350, at most 1 MB */
+  vcard: string;
+}
+
+/** A file sharing protocol, implemented by the addon.
+ * Paths start with "/", and those of directories end with "/".
+ * Every operation gets the account as first argument. Errors reach the user with their message. */
+export interface FilesProtocol {
+  /** Before any other operation of this account. Also after the addon restarted. */
+  login(account: AccountData, password: string | null): Promise<void>;
+  /** The files and directories in this directory, at most 10,000 */
+  listDirectory(account: AccountData, path: string): Promise<FileEntryData[]>;
+  /** @returns The contents of the file, at most 1 GB */
+  download(account: AccountData, path: string): Promise<Uint8Array>;
+  /** Creates or replaces the file */
+  upload(account: AccountData, path: string, contents: Uint8Array): Promise<void>;
+  /** A file, or a directory with all its contents */
+  delete(account: AccountData, path: string): Promise<void>;
+  /** Moves or renames a file */
+  move(account: AccountData, fromPath: string, toPath: string): Promise<void>;
+}
+
+export interface FileEntryData {
+  /** Without the path. At most 255 characters, without "/" and "\\". */
+  name: string;
+  isDirectory?: boolean;
+  /** In bytes */
+  size?: number;
+  /** A Date, an ISO 8601 string, or ms since 1970 */
+  lastMod?: Date | string | number;
+  /** e.g. "text/plain" */
+  mimetype?: string;
+}
+
 export interface FolderData {
   id: string;
   name: string;
@@ -128,15 +285,9 @@ export interface FolderData {
   countUnread?: number;
 }
 
-export interface MessageList {
+export interface MessageList extends ChangeList {
   /** New and changed messages */
   messages: MessageData[];
-  /** IDs of messages that are no longer in the folder */
-  removed?: string[];
-  /** Opaque for the app, at most 10 KB. The app stores it with the folder. */
-  syncState: string;
-  /** There are more changes. The app calls again with `syncState`. */
-  hasMore?: boolean;
 }
 
 export interface MessageData extends MessageFlags {

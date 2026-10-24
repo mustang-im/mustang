@@ -5,8 +5,14 @@
 
 <ProtocolSelector {protocols} bind:selectedProtocol={selectedProtocol} />
 
+{#if addonAccount}
+  <AddonAccountSetup account={addonAccount} bind:this={addonSetup} />
+{/if}
+
+<ErrorMessageInline bind:this={errorUI} />
+
 <ButtonsBottom
-  onContinue={onContinue}
+  onContinue={() => catchErrors(onContinue, errorUI.showError)}
   canContinue={!!selectedProtocol}
   canCancel={true}
   onCancel={onCancel}
@@ -15,9 +21,15 @@
 <script lang="ts">
   import { newChatAccountForProtocol } from "../../../logic/Chat/AccountsList/ChatAccounts";
   import type { ChatAccount } from "../../../logic/Chat/ChatAccount";
+  import type { AddonChatAccount } from "../../../logic/Chat/Addon/AddonChatAccount";
+  import { addonProtocols } from "../../../logic/Addons/AddonProtocols";
+  import { appGlobal } from "../../../logic/app";
+  import AddonAccountSetup from "../Addon/AddonAccountSetup.svelte";
   import ProtocolSelector, { ProtocolDescription } from "../Shared/ProtocolSelector.svelte";
   import ButtonsBottom from "../Shared/ButtonsBottom.svelte";
   import Header from "../Shared/Header.svelte";
+  import ErrorMessageInline from "../../Shared/ErrorMessageInline.svelte";
+  import { catchErrors } from "../../Util/error";
   import XMPPLogin from "./XMPPLogin.svelte";
   import MatrixLogin from "./MatrixLogin.svelte";
   import WhatsAppLinkDevice from "./WhatsApp/LinkDevice.svelte";
@@ -31,19 +43,31 @@
   export let onCancel = () => undefined;
 
   let selectedProtocol: string;
+  let addonSetup: AddonAccountSetup;
+  let errorUI: ErrorMessageInline;
   /*$: onSelectProtocol(selectedProtocol);
   function onSelectProtocol(protocol: string) {
     config = newChatAccountForProtocol(protocol);
   }*/
 
-  const protocols: ProtocolDescription[] = [
+  const appProtocols: ProtocolDescription[] = [
     { label: "XMPP / Jabber", protocolID: "xmpp" },
     { label: "Matrix", protocolID: "matrix" },
     { label: "WhatsApp", protocolID: "whatsapp" },
     { label: "Signal", protocolID: "signal" },
   ];
+  $: protocols = appProtocols.concat($addonProtocols.contents.filter(protocol => protocol.type == "chat").map(protocol => ({ label: protocol.label, protocolID: protocol.protocol })));
+  $: addonAccount = $addonProtocols.some(protocol => protocol.protocol == selectedProtocol) ? newChatAccountForProtocol(selectedProtocol) as AddonChatAccount : null;
 
-  function onContinue() {
+  async function onContinue() {
+    if (addonAccount) {
+      await addonSetup.onContinue();
+      await addonAccount.loginAndStartup(true);
+      await addonAccount.save();
+      appGlobal.chatAccounts.add(addonAccount);
+      showPage = null;
+      return;
+    }
     config = newChatAccountForProtocol(selectedProtocol);
     if (selectedProtocol == "xmpp") {
       showPage = XMPPLogin;

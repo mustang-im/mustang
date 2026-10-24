@@ -70,7 +70,7 @@ test("json-mail: setup, sync, read, flags, delete, folders, send and push, with 
   let setupFrame = await (addon.sandbox as any as ProtocolSandbox).connect();
   setupFrame.client.mustang.protocols.setupAccount({ name: "JSON Mail me", username: "me", serverURL: "https://json-mail.example.com" });
   await setupFrame.client.roundTrip();
-  account.fromAddonSetup(protocol.protocols.setupOf(setupFrame.bridge));
+  account.connection.fromAddonSetup(protocol.protocols.setupOf(setupFrame.bridge));
   await expect(account.verifyLogin()).rejects.toThrow("Wrong username or password");
   account.password = "secret";
   await account.verifyLogin();

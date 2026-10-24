@@ -96,15 +96,15 @@ export class ProtocolSandbox {
   }
 }
 
-/** An installed, not yet running addon with mail protocols. Start it with `addon.enable()`. */
-export function newProtocolAddon(name: string, protocols = ["test"], mainCode?: (mustang: MustangAPI) => void): Addon {
+/** An installed, not yet running addon with protocols of `type`. Start it with `addon.enable()`. */
+export function newProtocolAddon(name: string, protocols = ["test"], mainCode?: (mustang: MustangAPI) => void, type = "mail"): Addon {
   let manifest = AddonManifest.fromJSON({
     name: "@test/" + name.toLowerCase().replaceAll(" ", "-"),
     version: "1.0.0",
     mustang: {
       name,
       main: "dist/main.js",
-      protocols: protocols.map(id => ({ id, type: "mail", label: name + " " + id, setup: "dist/setup.js" })),
+      protocols: protocols.map(id => ({ id, type, label: name + " " + id, setup: "dist/setup.js" })),
     },
   }, null);
   let addon = new Addon(appGlobal.addons, manifest, { deleteAll: async () => {} } as any);
@@ -145,5 +145,77 @@ export async function waitFor(condition: () => boolean, timeoutMS = 5000): Promi
   }
   if (!condition()) {
     throw new Error("Timeout");
+  }
+}
+
+/** The changes on a server, as the addon sees them: a log, and the sync state is the position in the log */
+export class ChangeLog<Item extends { id: string }> {
+  changes: ({ scope: string, item: Item } | { scope: string, removed: string })[] = [];
+  /** Items per call */
+  chunkSize = 1000;
+  /** Always says that it has more, without progress */
+  isStuck = false;
+
+  add(item: Item, scope = ""): Item {
+    this.changes.push({ scope, item });
+    return item;
+  }
+
+  remove(id: string, scope = ""): void {
+    this.changes.push({ scope, removed: id });
+  }
+
+  /** Like the `listMessages()`, `listEvents()` and `listContacts()` operations of protocols
+   * @param name of the list of items in the result
+   * @param scope e.g. the chat room */
+  list(name: string, syncState: string | null, scope = ""): any {
+    if (this.isStuck) {
+      return { [name]: [], syncState: "stuck", hasMore: true };
+    }
+    let position = Number(syncState ?? 0);
+    let items: Item[] = [];
+    let removed: string[] = [];
+    for (; position < this.changes.length && items.length < this.chunkSize; position++) {
+      let change = this.changes[position];
+      if (change.scope != scope) {
+        continue;
+      }
+      if ("removed" in change) {
+        removed.push(change.removed);
+      } else {
+        items.push(change.item);
+      }
+    }
+    return { [name]: items, removed, syncState: String(position), hasMore: position < this.changes.length };
+  }
+}
+
+/** The server of a fake protocol: records the calls of the app, and checks the password */
+export class FakeProtocolServer {
+  calls: { operation: string, args: any[] }[] = [];
+  password = "secret";
+
+  /** @returns `operations`, recording each call, with a `login()` that checks the password */
+  protocol<P extends object>(operations: P): P {
+    let server = this;
+    let wrapped: any = {
+      async login(_account: unknown, password: string | null) {
+        if (password != server.password) {
+          throw new Error("Wrong password");
+        }
+      },
+      ...operations,
+    };
+    for (let [operation, func] of Object.entries(wrapped)) {
+      wrapped[operation] = async (...args: any[]) => {
+        server.calls.push({ operation, args });
+        return await (func as any)(...args);
+      };
+    }
+    return wrapped;
+  }
+
+  callsOf(operation: string): any[][] {
+    return this.calls.filter(call => call.operation == operation).map(call => call.args);
   }
 }

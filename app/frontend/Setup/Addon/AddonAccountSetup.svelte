@@ -10,7 +10,8 @@
 
 <script lang="ts">
   import type { Account } from "../../../logic/Abstract/Account";
-  import { addonProtocols, type AddonAccountSetup } from "../../../logic/Addons/AddonProtocols";
+  import type { AddonConnection } from "../../../logic/Addons/AddonConnection";
+  import { addonProtocols } from "../../../logic/Addons/AddonProtocols";
   import type { SandboxFrame } from "../../../logic/Addons/Sandbox/SandboxFrame";
   import AddonFrame from "../../Addons/AddonFrame.svelte";
   import { UserError } from "../../../logic/util/util";
@@ -20,7 +21,7 @@
    * and takes what the user entered there. */
 
   /** in */
-  export let account: Account & { fromAddonSetup(setup: AddonAccountSetup): void };
+  export let account: Account & { connection: AddonConnection };
 
   let frame: SandboxFrame | null = null;
 
@@ -33,7 +34,7 @@
     if (!setup) {
       throw new UserError($t`Please enter your account in the form of the addon`);
     }
-    account.fromAddonSetup(setup);
+    account.connection.fromAddonSetup(setup);
     return true;
   }
 </script>

@@ -158,7 +158,7 @@ async function newAccount(addon: Addon, login = true): Promise<AddonMailAccount>
   account.emailAddress = "me@example.com";
   account.username = "me";
   account.password = "secret";
-  account.addonName = addon.name;
+  account.connection.addonName = addon.name;
   await account.save();
   appGlobal.emailAccounts.add(account);
   if (login) {
@@ -527,13 +527,13 @@ describe("Setup", () => {
 
     let account = newAccountForProtocol(protocol.protocol) as AddonMailAccount;
     account.password = "typed before";
-    account.fromAddonSetup({ ...setup, password: null });
+    account.connection.fromAddonSetup({ ...setup, password: null });
     expect(account.name).toBe("Work");
     expect(account.username).toBe("me");
     expect(account.password).toBe("typed before");
     expect(account.url).toBe("https://mail.example.com");
-    expect(account.extra).toEqual({ region: "eu" });
-    expect(account.addonName).toBe(addon.name);
+    expect(account.connection.extra).toEqual({ region: "eu" });
+    expect(account.connection.addonName).toBe(addon.name);
   });
 
   test("Only the main code registers protocols, and only those of its manifest", async () => {

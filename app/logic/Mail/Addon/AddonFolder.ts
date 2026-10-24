@@ -3,7 +3,7 @@ import { AddonEMail } from "./AddonEMail";
 import type { AddonMailAccount } from "./AddonMailAccount";
 import type { EMailCollection } from "../Store/EMailCollection";
 import type { MessageFlags } from "../../Addons/Sandbox/MustangAPI";
-import { RunOnce } from "../../util/flow/RunOnce";
+import { RunAgain } from "../../util/flow/RunAgain";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -14,8 +14,7 @@ export class AddonFolder extends Folder {
   declare readonly subFolders: ArrayColl<AddonFolder>;
   /** Opaque, from the addon */
   declare syncState: string | null;
-  protected newMessagesRunOnce = new RunOnce<void>();
-  protected haveMoreNewMessages = false;
+  protected newMessagesRunAgain = new RunAgain(100);
 
   constructor(account: AddonMailAccount) {
     super(account);
@@ -23,57 +22,36 @@ export class AddonFolder extends Folder {
 
   fromAddon(json: any) {
     const kMaxLength = 1000;
-    this.id = this.account.checkID(json.id);
-    this.name = this.account.checkText(json.name, kMaxLength, null) ?? this.id;
+    this.id = this.account.connection.checkID(json.id);
+    this.name = this.account.connection.checkText(json.name, kMaxLength, null) ?? this.id;
     this.specialFolder = sanitize.enum(json.specialFolder, [
       SpecialFolder.Normal, SpecialFolder.Inbox, SpecialFolder.Sent, SpecialFolder.Drafts,
       SpecialFolder.Trash, SpecialFolder.Spam, SpecialFolder.Archive, SpecialFolder.Outbox,
     ], SpecialFolder.Normal);
-    this.countTotal = this.account.checkCount(json.countTotal, this.countTotal);
-    this.countUnread = this.account.checkCount(json.countUnread, this.countUnread);
+    this.countTotal = this.account.connection.checkCount(json.countTotal, this.countTotal);
+    this.countUnread = this.account.connection.checkCount(json.countUnread, this.countUnread);
   }
 
   /** Lists the new, changed and removed messages, in chunks.
    * Doesn't download their contents. @see downloadMessages() */
   async listMessages(): Promise<ArrayColl<AddonEMail>> {
-    // 10,000,000 messages
-    const kMaxRounds = 10000;
     await this.readFolder();
     let lock = await this.listMessagesLock.lock();
     try {
       let isFirstSync = !this.syncState;
       let newMessages = new ArrayColl<AddonEMail>();
-      for (let round = 1; round <= kMaxRounds; round++) {
-        let sinceState = this.syncState;
-        let hasMore = await this.applyMessageList(await this.account.call("listMessages", this.id, sinceState), newMessages, isFirstSync);
-        if (!hasMore) {
-          return newMessages;
-        }
-        if (this.syncState == sinceState) {
-          break;
-        }
-      }
-      this.account.errorCallback(new Error(`${this.name}: The addon keeps reporting more messages. Stopped.`));
+      await this.account.connection.listChanges("listMessages", [this.id], this.syncState, "messages",
+        async (messages, removed, syncState) => await this.applyMessageList(messages, removed, syncState, newMessages, isFirstSync));
       return newMessages;
     } finally {
       lock.release();
     }
   }
 
-  /** Checks one chunk from the addon, and stores it
-   * @param newMessages Adds the new messages to it
-   * @returns The addon has more */
-  protected async applyMessageList(value: unknown, newMessages: ArrayColl<AddonEMail>, isFirstSync: boolean): Promise<boolean> {
-    const kMaxMessages = 1000;
-    const kMaxRemoved = 10000;
-    const kMaxSyncStateLength = 10 * 1024;
+  /** Stores one checked chunk from the addon
+   * @param newMessages Adds the new messages to it */
+  protected async applyMessageList(messages: any[], removed: unknown[], syncState: string, newMessages: ArrayColl<AddonEMail>, isFirstSync: boolean): Promise<void> {
     let account = this.account;
-    let list = account.checkObject(value, "message list");
-    let messages = account.checkList(list.messages, kMaxMessages, "messages");
-    let removed = account.checkList(list.removed ?? [], kMaxRemoved, "removed messages");
-    if (typeof list.syncState != "string" || list.syncState.length > kMaxSyncStateLength) {
-      throw new Error(`${account.name}: The addon gave no sync state, or one larger than 10 KB`);
-    }
     let byID = new Map<string, AddonEMail>();
     for (let email of this.messages) {
       byID.set(email.pID as string, email);
@@ -83,7 +61,7 @@ export class AddonFolder extends Folder {
     let updated = new ArrayColl<AddonEMail>();
     for (let json of messages) {
       try {
-        let id = account.checkID(json?.id);
+        let id = account.connection.checkID(json?.id);
         if (this.deletions.has(id)) {
           continue;
         }
@@ -124,11 +102,10 @@ export class AddonFolder extends Folder {
       }
     }
     newMessages.addAll(added);
-    this.syncState = list.syncState;
+    this.syncState = syncState;
     this.countTotal = this.messages.length;
     this.countUnread = this.messages.filterOnce(email => !email.isRead).length;
     await this.storage.saveFolderProperties(this);
-    return list.hasMore === true;
   }
 
   /** Lists the new messages, and downloads them */
@@ -145,19 +122,8 @@ export class AddonFolder extends Folder {
   /** The addon says that the server has new messages.
    * While a sync runs, more of these result in one more sync. */
   newMessagesOnServer(): void {
-    const kMaxRounds = 100;
-    if (this.newMessagesRunOnce.running) {
-      this.haveMoreNewMessages = true;
-      return;
-    }
-    this.newMessagesRunOnce.runOnce(async () => {
-      for (let round = 1; round <= kMaxRounds; round++) {
-        this.haveMoreNewMessages = false;
-        await this.getNewMessages();
-        if (!this.haveMoreNewMessages) {
-          return;
-        }
-      }
+    this.newMessagesRunAgain.run(async () => {
+      await this.getNewMessages();
     }).catch(this.account.errorCallback);
   }
 
@@ -203,10 +169,10 @@ export class AddonFolder extends Folder {
     let account = this.account;
     let downloaded = new ArrayColl<AddonEMail>();
     let ids = emails.contents.map(email => email.pID);
-    let list = account.checkList(await account.call("downloadMessages", this.id, ids), emails.length, "messages");
+    let list = account.connection.checkList(await account.connection.call("downloadMessages", this.id, ids), emails.length, "messages");
     for (let json of list) {
       try {
-        let id = account.checkID(json?.id);
+        let id = account.connection.checkID(json?.id);
         let mime = json.mime;
         if (!(mime instanceof Uint8Array) || !mime.length || mime.buffer.byteLength > kMaxMIMESize) {
           throw new Error(`${account.name}: The addon gave no message for ID ${id}, or one larger than 50 MB`);
@@ -231,7 +197,7 @@ export class AddonFolder extends Folder {
     let sourceFolder = messages.first.folder;
     for (let i = 0; i < messages.length; i += kBatchSize) {
       let ids = messages.getIndexRange(i, kBatchSize).map(email => email.pID);
-      await this.account.call(action == "move" ? "moveMessages" : "copyMessages", sourceFolder.id, ids, this.id);
+      await this.account.connection.call(action == "move" ? "moveMessages" : "copyMessages", sourceFolder.id, ids, this.id);
     }
     await this.listMessages();
   }
@@ -241,7 +207,7 @@ export class AddonFolder extends Folder {
     const kBatchSize = 1000;
     for (let i = 0; i < emails.length; i += kBatchSize) {
       let ids = emails.getIndexRange(i, kBatchSize).map(email => email.pID);
-      await this.account.call("setFlags", this.id, ids, flags);
+      await this.account.connection.call("setFlags", this.id, ids, flags);
     }
   }
 
@@ -252,7 +218,7 @@ export class AddonFolder extends Folder {
   }
 
   async createSubFolder(name: string): Promise<AddonFolder> {
-    let json = this.account.checkObject(await this.account.call("createFolder", this.id, name), "folder");
+    let json = this.account.connection.checkObject(await this.account.connection.call("createFolder", this.id, name), "folder");
     let folder = await super.createSubFolder(name) as AddonFolder;
     folder.fromAddon(json);
     await folder.save();
@@ -261,13 +227,13 @@ export class AddonFolder extends Folder {
 
   async rename(newName: string): Promise<void> {
     await super.rename(newName);
-    await this.account.call("renameFolder", this.id, newName);
+    await this.account.connection.call("renameFolder", this.id, newName);
     await this.storage.saveFolderProperties(this);
   }
 
   /** Also deletes all messages in the folder, also on the server */
   protected async deleteItOnServer(): Promise<void> {
-    await this.account.call("deleteFolder", this.id);
+    await this.account.connection.call("deleteFolder", this.id);
   }
 
   fromExtraJSON(json: any) {

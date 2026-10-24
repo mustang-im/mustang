@@ -40,8 +40,10 @@
   import Button from "../../Shared/Button.svelte";
   import RemoveIcon from "lucide-svelte/icons/trash-2";
   import { AddonProtocol } from "../../../logic/Addons/AddonProtocols";
-  import { getAllAccounts } from "../../../logic/Abstract/Account";
+  import { getAllAccounts, type Account } from "../../../logic/Abstract/Account";
+  import { appGlobal } from "../../../logic/app";
   import { t, plural } from "../../../l10n/l10n";
+  import { ArrayColl } from "svelte-collections";
 
   export let addon: Addon;
 
@@ -49,7 +51,10 @@
 
   async function onRemove() {
     let protocols = addon.manifest.protocols.contents.map(contribution => AddonProtocol.accountProtocol(addon.id, contribution.id));
-    let accountCount = getAllAccounts().filterOnce(account => protocols.includes(account.protocol)).length;
+    let accounts = new ArrayColl<Account>();
+    accounts.addAll(getAllAccounts());
+    accounts.addAll(appGlobal.fileSharingAccounts);
+    let accountCount = accounts.filterOnce(account => protocols.includes(account.protocol)).length;
     let question = $t`Do you want to remove the addon ${addon.name}?`;
     if (accountCount) {
       question += " " + $plural(accountCount, {

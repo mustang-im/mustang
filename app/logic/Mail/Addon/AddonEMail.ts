@@ -22,7 +22,7 @@ export class AddonEMail extends EMail {
     const kMaxLength = 1000;
     const kMaxSubjectLength = 10000;
     let account = this.folder.account;
-    this.pID = account.checkID(json.id);
+    this.pID = account.connection.checkID(json.id);
     this.isRead = json.isRead === true;
     this.isStarred = json.isStarred === true;
     this.isReplied = json.isReplied === true;
@@ -34,33 +34,33 @@ export class AddonEMail extends EMail {
     if (this.downloadComplete) {
       return;
     }
-    this.id = account.checkText(json.messageID, kMaxLength, null) ?? this.pID as string;
-    this.subject = account.checkText(json.subject, kMaxSubjectLength, "");
+    this.id = account.connection.checkText(json.messageID, kMaxLength, null) ?? this.pID as string;
+    this.subject = account.connection.checkText(json.subject, kMaxSubjectLength, "");
     this.received = sanitize.date(json.received, this.received ?? new Date());
     this.sent = sanitize.date(json.sent, this.received);
-    this.inReplyTo = account.checkText(json.inReplyTo, kMaxLength, null);
-    this.from = account.checkPerson(json.from);
-    this.replyTo = json.replyTo ? account.checkPerson(json.replyTo) : null;
+    this.inReplyTo = account.connection.checkText(json.inReplyTo, kMaxLength, null);
+    this.from = account.connection.checkPerson(json.from);
+    this.replyTo = json.replyTo ? account.connection.checkPerson(json.replyTo) : null;
     this.setPersonsFromAddon(this.to, json.to);
     this.setPersonsFromAddon(this.cc, json.cc);
     this.setPersonsFromAddon(this.bcc, json.bcc);
     this.outgoing = account.isMyEMailAddress(this.from.emailAddress);
     this.contact = this.outgoing ? this.to.first : this.from;
-    this.size = account.checkCount(json.size, null);
+    this.size = account.connection.checkCount(json.size, null);
   }
 
   protected setPersonsFromAddon(persons: ArrayColl<PersonUID>, value: unknown) {
     const kMaxPersons = 1000;
     let account = this.folder.account;
     persons.replaceAll(Array.isArray(value)
-      ? account.checkList(value, kMaxPersons, "recipients").map(json => account.checkPerson(json))
+      ? account.connection.checkList(value, kMaxPersons, "recipients").map(json => account.connection.checkPerson(json))
       : []);
   }
 
   async download() {
     await this.downloadRunOnce.runOnce(async () => {
       let downloaded = await this.folder.downloadBatch(new ArrayColl([this]));
-      assert(downloaded.contains(this), gt`The addon ${this.folder.account.addonName} did not give the message`);
+      assert(downloaded.contains(this), gt`The addon ${this.folder.account.connection.addonName} did not give the message`);
     });
   }
 
@@ -109,7 +109,7 @@ export class AddonEMail extends EMail {
     folder.deletions.add(this.pID);
     try {
       if (strategy == DeleteStrategy.DeleteImmediately || !trash || trash == folder || folder.specialFolder == SpecialFolder.Spam) {
-        await folder.account.call("deleteMessages", folder.id, [this.pID]);
+        await folder.account.connection.call("deleteMessages", folder.id, [this.pID]);
         return;
       }
       await trash.moveMessageHere(this);

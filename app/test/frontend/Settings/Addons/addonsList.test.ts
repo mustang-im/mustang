@@ -4,6 +4,12 @@ import { appGlobal } from "../../../../logic/app";
 import { Addon, AddonState } from "../../../../logic/Addons/Addon";
 import { AddonManifest, AddonPackage } from "../../../../logic/Addons/AddonManifest";
 import { UserError } from "../../../../logic/util/util";
+import { AddonProtocol } from "../../../../logic/Addons/AddonProtocols";
+import { newAccountForProtocol } from "../../../../logic/Mail/AccountsList/MailAccounts";
+import { newChatAccountForProtocol } from "../../../../logic/Chat/AccountsList/ChatAccounts";
+import { newCalendarForProtocol } from "../../../../logic/Calendar/AccountsList/Calendars";
+import { newAddressbookForProtocol } from "../../../../logic/Contacts/AccountsList/Addressbooks";
+import { newFileSharingAccountForProtocol } from "../../../../logic/Files/AccountsList/FileSharingAccounts";
 import AddonsList from "../../../../frontend/Settings/Addons/AddonsList.svelte";
 import { fullPackageJSON } from "../../../logic/Addons/testPackage";
 import { waitFor } from "../../../logic/util/waitFor";
@@ -208,6 +214,31 @@ describe("List", () => {
     await tick();
     flushSync();
     expect(rows().length).toBe(0);
+  });
+
+  test("The remove question counts the accounts of the addon's protocols in all apps", async () => {
+    let addon = addAddon(json => {
+      json.mustang.protocols = ["mail", "chat", "calendar", "contacts", "files"]
+        .map(type => ({ id: type, type, label: type, setup: "dist/setup.js" }));
+    });
+    let protocol = (type: string) => AddonProtocol.accountProtocol(addon.id, type);
+    appGlobal.emailAccounts.add(newAccountForProtocol(protocol("mail")));
+    appGlobal.chatAccounts.add(newChatAccountForProtocol(protocol("chat")));
+    appGlobal.calendars.add(newCalendarForProtocol(protocol("calendar")));
+    appGlobal.addressbooks.add(newAddressbookForProtocol(protocol("contacts")));
+    appGlobal.fileSharingAccounts.add(newFileSharingAccountForProtocol(protocol("files")));
+    appGlobal.fileSharingAccounts.add(newFileSharingAccountForProtocol(protocol("files")));
+    showPage();
+    await click(rows()[0].querySelector(".row"));
+    let confirm = vi.fn((_question: string) => false);
+    vi.stubGlobal("confirm", confirm);
+
+    await click(buttonWithText("Remove"));
+
+    expect(confirm.mock.calls[0][0]).toContain("6 accounts");
+    for (let accounts of [appGlobal.emailAccounts, appGlobal.chatAccounts, appGlobal.calendars, appGlobal.addressbooks, appGlobal.fileSharingAccounts]) {
+      (accounts as any).clear();
+    }
   });
 });
 
