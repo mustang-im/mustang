@@ -9,8 +9,10 @@ export function addon(read: AddonGroup | AddonGroup[], write?: AddonGroup | Addo
 }
 
 /** Lets addons run hooks before and after this async method.
- * `args` builds the hook arguments. Without it, they are the method parameters by name. */
-export function addonHook<T>(point: string, group: AddonGroup, args?: (self: T, ...params: any[]) => object) {
+ * `args` gives the hook arguments as members of `this`, e.g. `(actions: ComposeActions) => ({ email: actions.email })`.
+ * Without it, they are the method parameters by name.
+ * No-op at runtime: `HookPoint` replaces the method only while an addon hooks it. */
+export function addonHook<T>(point: string, group: AddonGroup, args?: (self: T) => object) {
   return function (target: T, method: string, descriptor: PropertyDescriptor): void {
   };
 }
@@ -51,8 +53,14 @@ export interface APIEnum {
 
 export interface APIHook {
   point: string;
-  on: string;
+  class: APIConstructor;
+  method: string;
   group: AddonGroup;
-  args: APIParam[];
+  args: APIHookArg[];
   result: APIType[];
+}
+
+export interface APIHookArg extends APIParam {
+  /** The argument is this member of the object whose method runs. Without it, the method parameter at this position. */
+  member?: string;
 }

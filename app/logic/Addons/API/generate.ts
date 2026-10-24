@@ -93,7 +93,7 @@ export class AddonAPIGenerator {
       }
       let hookCall = this.annotation(member, "addonHook", name + "." + member.name?.getText());
       if (hookCall) {
-        this.readHook(member, hookCall, name);
+        this.readHook(node, member, hookCall, name);
       }
     }
     let call = this.annotation(node, "addon", name);
@@ -160,11 +160,15 @@ export class AddonAPIGenerator {
     return null;
   }
 
-  protected readHook(node: ts.ClassElement, call: ts.CallExpression, className: string) {
+  protected readHook(classNode: ts.ClassDeclaration, node: ts.ClassElement, call: ts.CallExpression, className: string) {
     let on = className + "." + node.name?.getText();
     let [pointArg, groupArg, argsArg] = call.arguments;
-    if (!ts.isMethodDeclaration(node)) {
-      this.error(node, on, "@addonHook() is only for methods");
+    if (!ts.isMethodDeclaration(node) || !ts.isIdentifier(node.name)) {
+      this.error(node, on, "@addonHook() is only for methods with a plain name");
+      return;
+    }
+    if (!classNode.name || !this.isExported(classNode)) {
+      this.error(node, on, "Classes with hooks must be exported by name");
       return;
     }
     if (!pointArg || !ts.isStringLiteral(pointArg) || !pointArg.text) {
@@ -175,9 +179,14 @@ export class AddonAPIGenerator {
       this.error(node, on, "The hook group must be a string literal");
       return;
     }
-    let argsFunction = argsArg && (ts.isArrowFunction(argsArg) || ts.isFunctionExpression(argsArg)) ? argsArg : undefined;
+    let argsFunction = argsArg && ts.isArrowFunction(argsArg) ? argsArg : undefined;
     if (argsArg && !argsFunction) {
-      this.error(node, on, "The hook arguments must be given by a function");
+      this.error(node, on, "The hook arguments must be given by an arrow function");
+      return;
+    }
+    let members = argsFunction ? this.hookArgMembers(argsFunction) : undefined;
+    if (argsFunction && !members) {
+      this.error(node, on, "The hook arguments function must look like (self: Class) => ({ name: self.member })");
       return;
     }
     let point = pointArg.text;
@@ -185,7 +194,30 @@ export class AddonAPIGenerator {
       this.error(node, on, `Hook point "${point}" exists twice`);
       return;
     }
-    this.hooks.push({ point, on, node, group: this.groups(groupArg, node, on)[0], argsFunction });
+    this.hooks.push({ point, on, classNode, method: node.name.text, node, group: this.groups(groupArg, node, on)[0], argsFunction, members });
+  }
+
+  /** `(actions) => ({ email: actions.email })` -> argument name `email` -> member `email`
+   * @returns null, if the function has another form */
+  protected hookArgMembers(argsFunction: ts.ArrowFunction): Map<string, string> | null {
+    let self = argsFunction.parameters.length == 1 ? argsFunction.parameters[0].name : undefined;
+    let body = argsFunction.body;
+    while (ts.isParenthesizedExpression(body)) {
+      body = body.expression;
+    }
+    if (!self || !ts.isIdentifier(self) || !ts.isObjectLiteralExpression(body)) {
+      return null;
+    }
+    let members = new Map<string, string>();
+    for (let property of body.properties) {
+      let value = ts.isPropertyAssignment(property) ? property.initializer : undefined;
+      if (!value || !ts.isIdentifier(property.name) || !ts.isPropertyAccessExpression(value) ||
+          !ts.isIdentifier(value.expression) || value.expression.text != self.text || !ts.isIdentifier(value.name)) {
+        return null;
+      }
+      members.set(property.name.text, value.name.text);
+    }
+    return members;
   }
 
   protected readEnum(node: ts.EnumDeclaration) {
@@ -247,6 +279,9 @@ export class AddonAPIGenerator {
       return;
     }
     hook.result = this.returnTypes(returnType, hook.node, hook.on);
+    if (hook.result.some(type => typeof type == "object" && !("values" in type))) {
+      this.error(hook.node, hook.on, "Hook results must be plain data, not app objects");
+    }
     if (!hook.argsFunction) {
       hook.args = this.params(signature.parameters, hook.on);
       return;
@@ -256,6 +291,7 @@ export class AddonAPIGenerator {
       name: property.name,
       type: this.types(this.checker.getTypeOfSymbol(property), hook.argsFunction, hook.on + " hook argument " + property.name, "value"),
       optional: false,
+      member: hook.members.get(property.name),
     }));
   }
 
@@ -461,14 +497,14 @@ export class AddonAPIGenerator {
   }
 
   protected apiTypesFile(): string {
-    let imports = new Map<string, string[]>();
-    for (let classInfo of this.classes) {
-      let path = this.importPath(classInfo.node.getSourceFile().fileName);
-      imports.set(path, [...imports.get(path) ?? [], classInfo.name]);
+    let imports = new Map<string, Set<string>>();
+    for (let node of [...this.classes.map(classInfo => classInfo.node), ...this.hooks.map(hook => hook.classNode)]) {
+      let path = this.importPath(node.getSourceFile().fileName);
+      imports.set(path, (imports.get(path) ?? new Set<string>()).add(node.name.text));
     }
     let importLines = [...imports.entries()]
       .sort(([a], [b]) => a.localeCompare(b, "en"))
-      .map(([path, names]) => `import { ${names.sort().join(", ")} } from "${path}";`);
+      .map(([path, names]) => `import { ${[...names].sort().join(", ")} } from "${path}";`);
     return [
       "// Generated by `npm run addons:generate` from the @addon annotations. Do not edit.",
       `import type { APIClass, APIEnum, APIHook } from "${this.importPath(join(apiDir, "addon.ts"))}";`,
@@ -490,7 +526,8 @@ export class AddonAPIGenerator {
       ...this.listOrEmpty("export const apiHooks: APIHook[] = [", this.hooks.map(hook => [
         "  {",
         `    point: "${hook.point}",`,
-        `    on: "${hook.on}",`,
+        `    class: ${hook.classNode.name.text},`,
+        `    method: "${hook.method}",`,
         `    group: "${hook.group}",`,
         `    args: [${hook.args.map(param => this.paramLiteral(param)).join(", ")}],`,
         `    result: ${this.typesLiteral(hook.result)},`,
@@ -514,7 +551,7 @@ export class AddonAPIGenerator {
   }
 
   protected paramLiteral(param: ParamInfo): string {
-    return `{ name: "${param.name}", type: ${this.typesLiteral(param.type)}${param.optional ? ", optional: true" : ""} }`;
+    return `{ name: "${param.name}", type: ${this.typesLiteral(param.type)}${param.optional ? ", optional: true" : ""}${param.member ? `, member: "${param.member}"` : ""} }`;
   }
 
   protected typesLiteral(types: TypeInfo[]): string {
@@ -632,6 +669,7 @@ interface ParamInfo {
   name: string;
   type: TypeInfo[];
   optional: boolean;
+  member?: string;
 }
 
 interface EnumInfo {
@@ -644,9 +682,12 @@ interface EnumInfo {
 interface HookInfo {
   point: string;
   on: string;
+  classNode: ts.ClassDeclaration;
+  method: string;
   node: ts.MethodDeclaration;
   group: AddonGroup;
-  argsFunction?: ts.ArrowFunction | ts.FunctionExpression;
+  argsFunction?: ts.ArrowFunction;
+  members?: Map<string, string>;
   args?: ParamInfo[];
   result?: TypeInfo[];
 }

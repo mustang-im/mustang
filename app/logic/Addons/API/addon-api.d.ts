@@ -114,7 +114,9 @@ export interface PersonUID extends AddonObject {
 /** @addon("mail.all") */
 export type SpecialFolder = "normal" | "inbox" | "sent" | "drafts" | "trash" | "spam" | "archive" | "outbox" | "all" | "search";
 
-export interface HookPoints {}
+export interface HookPoints {
+  "mail.send": { args: { email: EMail; }, result: void };
+}
 
 export interface MustangAPI {
   readonly addon: AddonInfo;

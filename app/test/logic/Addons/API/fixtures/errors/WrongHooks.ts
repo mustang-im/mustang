@@ -20,4 +20,20 @@ export class Hooks {
   @addonHook("test.group", "everything")
   async group(mail: Mail): Promise<void> {
   }
+  @addonHook("test.computed", "mail", (hooks: Hooks) => ({ mail: hooks.mailOf(1) }))
+  async computed(): Promise<void> {
+  }
+  @addonHook("test.objectResult", "mail")
+  async objectResult(mail: Mail): Promise<Mail> {
+    return mail;
+  }
+  mailOf(i: number): Mail {
+    return new Mail();
+  }
+}
+
+class Hidden {
+  @addonHook("test.hidden", "mail")
+  async send(mail: Mail): Promise<void> {
+  }
 }

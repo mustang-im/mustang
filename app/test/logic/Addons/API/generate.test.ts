@@ -153,11 +153,13 @@ describe("Generator on fixtures", () => {
     expect(apiHooks.map(hook => hook.point).sort()).toEqual(["test.save", "test.send"]);
     let send = apiHooks.find(hook => hook.point == "test.send");
     expect(send).toMatchObject({ group: "mail.compose", result: ["void"] });
-    expect(send.on).toContain("Actions.send");
-    expect(send.args).toEqual([{ name: "mail", type: [Mail] }]);
+    // The class itself, not its name: production builds minify class names
+    expect(send.class).toBe(Actions);
+    expect(send.method).toBe("send");
+    expect(send.args).toEqual([{ name: "mail", type: [Mail], member: "mail" }]);
     let save = apiHooks.find(hook => hook.point == "test.save");
-    expect(save).toMatchObject({ group: "mail", result: ["boolean"] });
-    expect(save.args.map(arg => [arg.name, arg.type])).toEqual([["mail", [Mail]], ["count", ["number"]]]);
+    expect(save).toMatchObject({ class: Actions, method: "save", group: "mail", result: ["boolean"] });
+    expect(save.args.map(arg => [arg.name, arg.type, arg.member])).toEqual([["mail", [Mail], undefined], ["count", ["number"], undefined]]);
     expect(typeof Actions.prototype.send).toBe("function");
   });
 
@@ -234,7 +236,7 @@ describe("Generator errors", () => {
 
   test("Wrong hooks", () => {
     let message = generateErrors("WrongHooks.ts");
-    for (let label of ["Hooks.sync", "Hooks.callback", "Hooks.second", "Hooks.group"]) {
+    for (let label of ["Hooks.sync", "Hooks.callback", "Hooks.second", "Hooks.group", "Hooks.computed", "Hooks.objectResult", "Hidden.send"]) {
       expect(message).toContain(label);
     }
     expect(message).not.toContain("Hooks.first");

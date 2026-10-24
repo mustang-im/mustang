@@ -7,6 +7,7 @@ import { PersonUID } from "../../Abstract/PersonUID";
 import { ChatAccount } from "../../Chat/ChatAccount";
 import { ChatMessage } from "../../Chat/ChatMessage";
 import { ChatRoom } from "../../Chat/ChatRoom";
+import { ComposeActions } from "../../Mail/ComposeActions";
 import { EMail } from "../../Mail/EMail";
 import { Folder } from "../../Mail/Folder";
 import { MailAccount } from "../../Mail/MailAccount";
@@ -125,4 +126,13 @@ export const apiEnums: APIEnum[] = [
   { name: "SpecialFolder", groups: ["mail.all"], values: ["normal", "inbox", "sent", "drafts", "trash", "spam", "archive", "outbox", "all", "search"] },
 ];
 
-export const apiHooks: APIHook[] = [];
+export const apiHooks: APIHook[] = [
+  {
+    point: "mail.send",
+    class: ComposeActions,
+    method: "send",
+    group: "mail.compose",
+    args: [{ name: "email", type: [EMail], member: "email" }],
+    result: ["void"],
+  },
+];
