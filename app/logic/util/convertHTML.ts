@@ -114,6 +114,18 @@ function urlAttribute(url: URLString, includeExternal = false) {
   return "";
 }
 
+/** Keeps `srcset` only if every image in it passes `urlAttribute()` */
+function srcsetAttribute(srcset: URLString): string {
+  const kDescriptor = /^[\d.e+-]+[wxh]$/i;
+  for (let word of srcset.split(/\s+/)) {
+    let url = word.replace(/^,+|,+$/g, "");
+    if (url && !kDescriptor.test(url) && !urlAttribute(url)) {
+      return "";
+    }
+  }
+  return srcset;
+}
+
 function addStyles(output: string[], styles: CSSStyleDeclaration) {
   if (styles) {
     output.push(styleDeclarations(styles));
@@ -200,6 +212,8 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
         let orgURL = node.getAttribute(attribute);
         let newURL = urlAttribute(orgURL, includeExternal);
         node.setAttribute(attribute, newURL);
+      } else if (attribute == "srcset") {
+        node.setAttribute(attribute, srcsetAttribute(node.getAttribute(attribute)));
       } else {
         let orgURL = node.getAttribute(attribute);
         let newURL = urlAttribute(orgURL);
