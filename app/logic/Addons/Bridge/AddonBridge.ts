@@ -877,7 +877,7 @@ export class AddonBridge {
   protected errorFromAddon(e: unknown): Error {
     const kMaxLength = 1000;
     let message = this.isPlainObject(e) ? e.message : e;
-    return new Error(this.shortString(message, kMaxLength));
+    return new Error(this.shortString(message, kMaxLength).replace(/\p{C}+/gu, " "));
   }
 
   protected shortString(value: unknown, maxLength = 100): string {
