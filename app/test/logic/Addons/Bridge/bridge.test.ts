@@ -241,6 +241,19 @@ describe("Arguments and writes", () => {
     expect(message.subject).toBe("Hello");
   });
 
+  test("A handle argument works only under the grant of the call", async () => {
+    let { bridge, addon } = rawSetup(["message", "mail", "mail.compose"]);
+    let viewed = new TMessage();
+    let read = await give(bridge, addon, viewed, bridge.newGrant(["message", "mail"]));
+    let draft = new TMessage();
+    let write = await give(bridge, addon, draft, bridge.newGrant(["message", "mail", "mail.compose"]));
+    let originalFrom = draft.from;
+    expect(await errorOf(addon, { op: "call", h: write.h, m: "setFrom", a: [{ h: read.p.from.h }] })).toBeTruthy();
+    expect(draft.from).toBe(originalFrom);
+    expect(await errorOf(addon, { op: "call", h: write.h, m: "setFrom", a: [{ h: write.p.from.h }] })).toBeUndefined();
+    expect(draft.from).toBe(originalFrom);
+  });
+
   test("Primitive types, numbers, enums", async () => {
     let { addon, snapshot } = await setupCompose();
     let h = snapshot.h;

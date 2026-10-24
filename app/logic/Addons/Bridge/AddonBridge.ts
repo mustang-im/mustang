@@ -288,7 +288,7 @@ export class AddonBridge {
       if (member.kind == "method" || !grant.allows(member.write)) {
         throw new Error(`The addon may not change ${what}`);
       }
-      let value = this.fromAddon(op.v, member.type, what);
+      let value = this.fromAddon(op.v, member.type, grant, what);
       entry.object[member.name] = value;
       return {};
     }
@@ -304,7 +304,7 @@ export class AddonBridge {
     if (member.kind != "method") {
       throw new Error(`${what} is not a function`);
     }
-    let args = this.argsFromAddon(op.a, member, what);
+    let args = this.argsFromAddon(op.a, member, grant, what);
     let result = await entry.object[member.name](...args);
     return { v: this.toAddon(result, member.returns, grant, 0) };
   }
@@ -340,7 +340,7 @@ export class AddonBridge {
     }
   }
 
-  protected argsFromAddon(args: unknown, member: APIMember & { kind: "method" }, what: string): unknown[] {
+  protected argsFromAddon(args: unknown, member: APIMember & { kind: "method" }, grant: Grant, what: string): unknown[] {
     if (args === undefined) {
       args = [];
     }
@@ -348,11 +348,12 @@ export class AddonBridge {
       throw new TypeError(`${what} takes at most ${member.params.length} arguments`);
     }
     return member.params.map((param, i) =>
-      this.fromAddon(args[i], param.optional ? [...param.type, "undefined"] : param.type, `Argument ${param.name} of ${what}`));
+      this.fromAddon(args[i], param.optional ? [...param.type, "undefined"] : param.type, grant, `Argument ${param.name} of ${what}`));
   }
 
-  /** Checks a value from the addon against the declared types, and turns handles into app objects */
-  protected fromAddon(value: unknown, types: APIType[], what: string): unknown {
+  /** Checks a value from the addon against the declared types, and turns handles into app objects
+   * @param grant of the object whose member the addon uses. Handles must be from it. */
+  protected fromAddon(value: unknown, types: APIType[], grant: Grant, what: string): unknown {
     const kMaxStringLength = 1024 * 1024;
     const kMaxBytes = 50 * 1024 * 1024;
     for (let type of types) {
@@ -401,9 +402,9 @@ export class AddonBridge {
       default:
         if (typeof type == "function") {
           if (this.isPlainObject(value) && typeof value.h == "number") {
-            let object = this.handles.get(value.h).object;
-            if (object instanceof type) {
-              return object;
+            let entry = this.handles.get(value.h);
+            if (entry.grant == grant && !grant.isRevoked && entry.object instanceof type) {
+              return entry.object;
             }
           }
         } else if ("enum" in type) {
