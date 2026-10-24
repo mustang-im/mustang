@@ -2,6 +2,7 @@
  * Runs in the addon's worker and in its UI frames, in the same realm as the addon code. Not a security boundary:
  * the app checks everything in `AddonBridge`. */
 import type { MustangAPI, UIContext, CommandEvent, HookCancel, AddonProtocol, JSONValue, Subscribable } from "./MustangAPI";
+import type { AppFonts } from "./SandboxFrame";
 import { ArrayColl } from "svelte-collections";
 
 type MemberKind = "field" | "getter" | "method";
@@ -263,13 +264,29 @@ export class SandboxClient {
     this.flush();
   }
 
-  protected applyTheme(theme: { properties: [string, string][], colorScheme: string, dark: boolean }): void {
+  protected applyTheme(theme: { properties: [string, string][], colorScheme: string, dark: boolean, fonts?: AppFonts }): void {
     let style = document.documentElement.style;
     for (let [name, value] of theme.properties) {
       style.setProperty(name, value);
     }
     style.setProperty("color-scheme", theme.colorScheme);
+    if (theme.fonts) {
+      this.addFonts(theme.fonts);
+    }
     this.context.set({ ...this.context.value, theme: { dark: theme.dark } });
+  }
+
+  /** The frame can't load the font files of the app, so they come as data */
+  protected addFonts(fonts: AppFonts): void {
+    let css = fonts.css;
+    for (let [path, dataURL] of Object.entries(fonts.files)) {
+      let bytes = Uint8Array.from(atob(dataURL.substring(dataURL.indexOf(",") + 1)), char => char.charCodeAt(0));
+      let url = URL.createObjectURL(new Blob([bytes], { type: "font/woff2" }));
+      css = css.replaceAll(`url(${path})`, `url(${url})`);
+    }
+    let element = document.createElement("style");
+    element.textContent = css;
+    document.head.append(element);
   }
 
   // Messages from the app

@@ -5,7 +5,7 @@
 <script lang="ts">
   import type { Addon } from "../../logic/Addons/Addon";
   import type { AddonSandbox } from "../../logic/Addons/AddonSandbox";
-  import type { SandboxFrame } from "../../logic/Addons/Sandbox/SandboxFrame";
+  import type { AppFonts, SandboxFrame } from "../../logic/Addons/Sandbox/SandboxFrame";
   import type { AddonGroup } from "../../logic/Addons/API/addon";
   import { catchErrors } from "../Util/error";
   import { onDestroy } from "svelte";
@@ -43,9 +43,14 @@
       return;
     }
     let opening = sandbox;
+    // Loaded only when needed, because they are big
+    let { appFonts } = await import("./AddonFonts");
+    if (frameSandbox != opening) {
+      return;
+    }
     let opened = await opening.openUIFrame(containerE, entry, newFrame => {
       newFrame.onEscape = () => onEscape();
-      sendTheme(newFrame);
+      sendTheme(newFrame, appFonts);
       sendContext(context, groups, newFrame);
     });
     if (frameSandbox != opening) {
@@ -81,8 +86,9 @@
   }
   darkMode.addEventListener("change", onThemeChange);
 
-  /** The app's CSS variables and fonts, so that the addon looks like the app */
-  function sendTheme(target: SandboxFrame) {
+  /** The app's CSS variables and fonts, so that the addon looks like the app
+   * @param fonts Only once per frame */
+  function sendTheme(target: SandboxFrame, fonts?: AppFonts) {
     let style = getComputedStyle(containerE);
     let properties: [string, string][] = [];
     for (let name of style) {
@@ -93,7 +99,7 @@
     for (let name of ["font-family", "font-size", "line-height", "color"]) {
       properties.push([name, style.getPropertyValue(name)]);
     }
-    target.setTheme(properties, style.colorScheme, darkMode.matches);
+    target.setTheme(properties, style.colorScheme, darkMode.matches, fonts);
   }
 
   onDestroy(() => {

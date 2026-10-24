@@ -1,6 +1,7 @@
 import type { Addon, AddonRegistration } from "./Addon";
 import type { AddonStorage } from "./AddonFiles";
 import { addonPermissions, AddonObjectScope } from "./Permissions";
+import { AddonUI } from "./AddonUI";
 import { AddonBridge, type AddonService } from "./Bridge/AddonBridge";
 import { AddonAPI } from "./Bridge/AddonAPI";
 import { HandleBudget } from "./Bridge/HandleTable";
@@ -21,27 +22,31 @@ export class AddonSandbox implements AddonRegistration {
   readonly budget = new HandleBudget();
   logicFrame: SandboxFrame | null = null;
   readonly uiFrames = new ArrayColl<SandboxFrame>();
+  /** Its buttons, menu items and panels in the app */
+  readonly ui: AddonUI;
   isStopped = false;
   protected static api = new AddonAPI(apiClasses, apiEnums);
 
   constructor(addon: Addon) {
     this.addon = addon;
+    this.ui = new AddonUI(this);
   }
 
-  /** Starts the addon's logic worker, if it has one */
+  /** Starts the addon's logic worker, if it has one, and then shows its UI */
   async start(): Promise<void> {
     if (isMobile) {
       throw new UserError(gt`Addons are not available on mobile yet`);
     }
     let main = this.addon.manifest.main;
-    if (!main) {
-      return;
+    if (main) {
+      let frame = new SandboxFrame(this.addon.name);
+      frame.iframe.hidden = true;
+      this.logicFrame = frame;
+      // Outside of the app's UI, so that the worker survives when the user switches apps
+      await this.startFrame(frame, document.body, "logic", main);
     }
-    let frame = new SandboxFrame(this.addon.name);
-    frame.iframe.hidden = true;
-    this.logicFrame = frame;
-    // Outside of the app's UI, so that the worker survives when the user switches apps
-    await this.startFrame(frame, document.body, "logic", main);
+    this.register(this.ui);
+    this.ui.show();
   }
 
   /** Shows a UI module of the addon in `container`
@@ -89,6 +94,7 @@ export class AddonSandbox implements AddonRegistration {
     let bridge = new AddonBridge(frame.port, AddonSandbox.api, this.addon.apiGroups, this.budget);
     frame.bridge = bridge;
     bridge.registerService("storage", new AddonStorageService(this.addon.storage));
+    bridge.registerService("ui", this.ui);
     if (kind == "ui") {
       bridge.registerService("frame", frame);
     }

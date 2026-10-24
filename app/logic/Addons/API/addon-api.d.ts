@@ -150,7 +150,11 @@ export interface CommandEvent {
 }
 
 export interface UIContext {
+  /** In `message-panel` */
   message?: EMail;
+  /** In a popup of `message-toolbar` and `message-menu` */
+  messages?: EMail[];
+  /** In a popup of `composer-toolbar` */
   draft?: EMail;
   theme: { dark: boolean };
 }

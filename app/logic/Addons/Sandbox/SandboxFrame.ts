@@ -3,6 +3,13 @@ import type { Grant } from "../Bridge/Grant";
 import type { AddonGroup } from "../API/addon";
 import { Observable, notifyChangedProperty } from "../../util/Observable";
 
+/** The app's fonts, for frames, which can't load them from the app */
+export interface AppFonts {
+  css: string;
+  /** The `url()` in `css` -> the font file as data: URL */
+  files: Record<string, string>;
+}
+
 /** A sandboxed iframe with addon code: hidden with the addon's logic worker, or visible with a UI module.
  * Its document has an opaque origin, its own policy, and talks to the app only via `port`. */
 export class SandboxFrame extends Observable implements AddonService {
@@ -69,9 +76,10 @@ export class SandboxFrame extends Observable implements AddonService {
     this.bridge.notify("ui", "context", context, this.contextGrant);
   }
 
-  /** @param properties CSS custom properties, e.g. `["--fg", "#160C27"]` */
-  setTheme(properties: [string, string][], colorScheme: string, isDark: boolean): void {
-    this.bridge.notify("ui", "theme", {}, null, { properties, colorScheme, dark: isDark });
+  /** @param properties CSS custom properties, e.g. `["--fg", "#160C27"]`
+   * @param fonts The app's fonts, once per frame */
+  setTheme(properties: [string, string][], colorScheme: string, isDark: boolean, fonts?: AppFonts): void {
+    this.bridge.notify("ui", "theme", {}, null, { properties, colorScheme, dark: isDark, fonts });
   }
 
   /** The "frame" service: what the UI frame tells the app */
