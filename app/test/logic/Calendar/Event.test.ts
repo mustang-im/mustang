@@ -1,5 +1,6 @@
 import '../../../logic/app'; // Import first, to set up the module graph and dodge the Account import cycle
-import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
+import { expectDaylightSavingTime } from './timeZone';
+import { describe, expect, test } from 'vitest';
 import { Event, RecurrenceCase } from '../../../logic/Calendar/Event';
 import { Calendar } from '../../../logic/Calendar/Calendar';
 import { Frequency, RecurrenceRule } from '../../../logic/Calendar/RecurrenceRule';
@@ -98,11 +99,8 @@ test("New events without calUID are not the same event", () => {
  * 2 days long when the event form moved it to another start date.
  * The dates are created within the tests, after the time zone has been set. */
 describe("All-day events on the days when the clocks change", () => {
-  beforeAll(() => {
-    vi.stubEnv("TZ", "Europe/Berlin");
-  });
-  afterAll(() => {
-    vi.unstubAllEnvs();
+  test("The time zone has daylight saving time", () => {
+    expectDaylightSavingTime();
   });
 
   function allDayEvent(startTime: Date, days = 1): Event {
