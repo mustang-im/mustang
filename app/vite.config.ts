@@ -47,6 +47,8 @@ export default defineConfig({
     exclude: ['@matrix-org/matrix-sdk-crypto-wasm'],
   },
   test: {
+    pool: "threads", // faster than the default `forks`, because threads start faster and pass messages faster than processes
+    globalSetup: "test/logic/Calendar/timeZone.ts", // worker threads can't change the time zone, so it's set once for all tests
     server: {
       deps: {
         // Workaround for app/logic/Abstract/Workspace.ts
