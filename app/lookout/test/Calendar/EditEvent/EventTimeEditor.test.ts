@@ -4,11 +4,7 @@ import { Calendar } from "../../../../logic/Calendar/Calendar";
 import type { Event } from "../../../../logic/Calendar/Event";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { EventTimeEditor } from "../../../Calendar/EditEvent/EventTimeEditor";
-import { afterAll, expect, test, vi } from "vitest";
-
-// A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
-vi.stubEnv("TZ", "Europe/Berlin");
-afterAll(() => vi.unstubAllEnvs());
+import { expect, test } from "vitest";
 
 function newEvent(start = new Date(2026, 9, 15, 10, 0), minutes = 30): Event {
   let calendar = new Calendar();

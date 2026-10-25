@@ -10,11 +10,8 @@ import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalend
 import { EventEditFlow } from "../../../Calendar/EditEvent/EventEditFlow";
 import { EventTimeEditor } from "../../../Calendar/EditEvent/EventTimeEditor";
 import { mockMessageBox } from "../../Shared/Dialog/mockMessageBox";
-import { afterAll, beforeEach, expect, test, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 
-// A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
-vi.stubEnv("TZ", "Europe/Berlin");
-afterAll(() => vi.unstubAllEnvs());
 // Answers the message boxes: Yes / OK, unless a test says otherwise
 const messageBox = mockMessageBox();
 beforeEach(() => {
