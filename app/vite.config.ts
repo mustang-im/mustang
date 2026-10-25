@@ -6,6 +6,17 @@ import wasm from 'vite-plugin-wasm';
 import conditionalCompile from "vite-plugin-conditional-compile";
 import { webMail, isMobile, includeProprietary, production } from './logic/build';
 
+const conditionalCompilePlugin: any = conditionalCompile({ // its types say that it returns an array, but it returns one plugin
+  // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
+  env: {
+    // For conditional `// #if [FOO]` statements in the code
+    WEBMAIL: webMail && includeProprietary ? webMail : undefined,
+    MOBILE: isMobile,
+    PROPRIETARY: includeProprietary ? true : undefined,
+    PRODUCTION: production ? true : undefined,
+  },
+});
+
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
@@ -14,16 +25,10 @@ export default defineConfig({
   },
 
   plugins: [
-    conditionalCompile({
-      // <https://github.com/LZS911/vite-plugin-conditional-compile/blob/master/README.md>
-      env: {
-        // For conditional `// #if [FOO]` statements in the code
-        WEBMAIL: webMail && includeProprietary ? webMail : undefined,
-        MOBILE: isMobile,
-        PROPRIETARY: includeProprietary ? true : undefined,
-        PRODUCTION: production ? true : undefined,
-      },
-    }),
+    {
+      ...conditionalCompilePlugin,
+      transform: { filter: { code: "#if" }, handler: conditionalCompilePlugin.transform }, // the plugin parses every file with Babel, which is slow, so give it only the files that use `#if`
+    },
     nodePolyfills({ include: ['buffer'], globals: { global: true, process: !!webMail } }),
     svelte(),
     wasm(),
