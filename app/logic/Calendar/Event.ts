@@ -13,6 +13,7 @@ import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { randomID, AbstractFunction, assert } from "../util/util";
 import { dataError } from "../util/error";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -636,6 +637,17 @@ export class Event extends Observable {
     return this.myParticipation == InvitationResponse.NoResponseReceived;
   }
 
+  /** How this event shows in our availability */
+  get busyStatus(): FreeBusyStatus {
+    if (this.isCancelled || this.myParticipation == InvitationResponse.Decline) {
+      return FreeBusyStatus.Free;
+    }
+    if (this.myParticipation == InvitationResponse.Tentative || this.isUnanswered) {
+      return FreeBusyStatus.Tentative;
+    }
+    return FreeBusyStatus.Busy;
+  }
+
   async createOnlineMeeting() {
     if (this.onlineMeetingURL || !this.createOnlineMeetingWithAccount) {
       return;
@@ -1042,3 +1054,19 @@ export enum RecurrenceCase {
    * Overrides a specific instance. */
   Exception = "exception",
 }
+
+export enum FreeBusyStatus {
+  Free = "free",
+  Tentative = "tentative",
+  Busy = "busy",
+  OutOfOffice = "out-of-office",
+  WorkingElsewhere = "elsewhere",
+}
+
+export const freeBusyStatusLabels: Record<FreeBusyStatus, string> = {
+  [FreeBusyStatus.Free]: gt`Free *=> Availability: Not busy at this time`,
+  [FreeBusyStatus.Tentative]: gt`Tentative *=> Availability: Has a tentative appointment at this time`,
+  [FreeBusyStatus.Busy]: gt`Busy *=> Availability: Not free at this time`,
+  [FreeBusyStatus.OutOfOffice]: gt`Out of office`,
+  [FreeBusyStatus.WorkingElsewhere]: gt`Working elsewhere`,
+};

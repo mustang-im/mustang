@@ -168,6 +168,29 @@ test("Free slots: Clicking a slot shows who is busy, free and unknown, and neith
   expect(document.querySelector(".slot.expanded")).toBeNull();
 });
 
+test("Free slots: My appointments in my calendars count, but not the meeting itself", async () => {
+  let event = newMeeting();
+  event.myParticipation = InvitationResponse.Organizer;
+  event.calendar.events.add(event);
+  let myCalendar = new Calendar();
+  let dentist = myCalendar.newEvent();
+  dentist.title = "Dentist";
+  dentist.startTime = new Date(2026, 8, 3, 14, 0);
+  dentist.endTime = new Date(2026, 8, 3, 15, 0);
+  myCalendar.events.add(dentist);
+  appGlobal.calendars.addAll([event.calendar, myCalendar]);
+  try {
+    await show(FreeSlots, { event });
+    let slots = document.querySelectorAll(".slot");
+    // Rows are hours from 8:00, columns Mon-Fri
+    let thursday = (hour: number) => slots[(hour - 8) * 5 + 3];
+    expect(thursday(14).getAttribute("title")).toContain("Busy: Me, Bob Busy");
+    expect(thursday(10).getAttribute("title")).toContain("Free: Me, Frida Free");
+  } finally {
+    appGlobal.calendars.removeAll([event.calendar, myCalendar]);
+  }
+});
+
 test("Free slots: \"Use this time\" moves the meeting there", async () => {
   let event = newMeeting();
   await show(FreeSlots, { event });

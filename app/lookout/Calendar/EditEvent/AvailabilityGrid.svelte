@@ -122,6 +122,7 @@
   import type { Participant } from "../../../logic/Calendar/Participant";
   import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
   import { FreeBusy, type AvailabilityStatus } from "../../../logic/Calendar/FreeBusy";
+  import { appGlobal } from "../../../logic/app";
   import { FreeBusyStatus, freeBusyStatusLabels } from "../../../logic/Calendar/FreeBusyEvent";
   import { Timeline } from "./AvailabilityGrid";
   import { EventEditFlow } from "./EventEditFlow";
@@ -213,7 +214,7 @@
       let shownDays = new Timeline(day, kHourWidth, kDayCount);
       let result = await FreeBusy.load(event.calendar, event.participants.contents, shownDays.day, shownDays.dayEnd);
       if (count == loadCount) {
-        freeBusy = result;
+        freeBusy = result.withMyEvents(event, appGlobal.calendarEvents, shownDays.day, shownDays.dayEnd);
       }
     } catch (ex) {
       if (count == loadCount) {
@@ -264,7 +265,7 @@
       .map(({ appointment, span }) => ({
         left: span.left,
         width: span.width,
-        status: appointment.status,
+        status: appointment.busyStatus,
         title: appointment.title ?? "",
         details: [
           `${getTimeString(appointment.startTime)} – ${getTimeString(appointment.endTime)}`,

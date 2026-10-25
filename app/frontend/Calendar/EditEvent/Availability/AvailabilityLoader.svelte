@@ -11,6 +11,7 @@
 <script lang="ts">
   import type { Event } from "../../../../logic/Calendar/Event";
   import { FreeBusy } from "../../../../logic/Calendar/FreeBusy";
+  import { appGlobal } from "../../../../logic/app";
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
   import { t } from "../../../../l10n/l10n";
 
@@ -35,7 +36,7 @@
     try {
       let result = await FreeBusy.load(event.calendar, participants.contents, from, to);
       if (count == loadCount) {
-        freeBusy = result;
+        freeBusy = result.withMyEvents(event, appGlobal.calendarEvents, from, to);
         error = null;
       }
     } catch (ex) {
