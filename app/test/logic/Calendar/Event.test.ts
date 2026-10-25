@@ -1,4 +1,5 @@
 import '../../../logic/app'; // Import first, to set up the module graph and dodge the Account import cycle
+import { expectDaylightSavingTime } from './timeZone';
 import { describe, expect, test } from 'vitest';
 import { Event, RecurrenceCase } from '../../../logic/Calendar/Event';
 import { Calendar } from '../../../logic/Calendar/Calendar';
@@ -96,8 +97,12 @@ test("New events without calUID are not the same event", () => {
  * The duration of an all-day event was the elapsed time rounded up to whole days,
  * so an all-day event on the day the clocks go back was 2 days long, and became
  * 2 days long when the event form moved it to another start date.
- * The tests run in a time zone with daylight saving time, see `test/timeZone.ts`. */
+ * The dates are created within the tests, after the time zone has been set. */
 describe("All-day events on the days when the clocks change", () => {
+  test("The time zone has daylight saving time", () => {
+    expectDaylightSavingTime();
+  });
+
   function allDayEvent(startTime: Date, days = 1): Event {
     let event = new Event();
     event.allDay = true;

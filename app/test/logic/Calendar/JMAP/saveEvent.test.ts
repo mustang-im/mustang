@@ -7,6 +7,7 @@ import type { TJMAPCalendarEvent } from "../../../../logic/Calendar/JMAP/TJSCale
 import { MailIdentity } from "../../../../logic/Mail/MailIdentity";
 import { DummyCalendarStorage } from "../../../../logic/Calendar/SQL/DummyCalendarStorage";
 import { Frequency } from "../../../../logic/Calendar/RecurrenceRule";
+import { expectDaylightSavingTime } from "../timeZone";
 import { beforeAll, describe, expect, test } from "vitest";
 
 beforeAll(() => {
@@ -255,8 +256,12 @@ describe("Sequence", () => {
 
 /* JSCalendar gives the end of an event as duration, and an all-day event
  * lasts "P1D". On the days when the clocks change, a day has 23 or 25 hours.
- * The tests run in a time zone with daylight saving time, see `test/timeZone.ts`. */
+ * The dates are created within the tests, after the time zone has been set. */
 describe("All-day events on the days when the clocks change", () => {
+  test("The time zone has daylight saving time", () => {
+    expectDaylightSavingTime();
+  });
+
   function allDayServerEvent(start: string): TJMAPCalendarEvent {
     let json = serverEvent();
     json.start = start;

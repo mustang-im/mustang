@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
 import { startTimeOptions, endTimeOptions, durationLabel, parseTime } from "../../../Calendar/EditEvent/TimeOptions";
+import { expectDaylightSavingTime } from "../../../../test/logic/Calendar/timeZone";
 import { expect, test } from "vitest";
+
+// A time zone with daylight saving time, which changes on 2026-03-29 and 2026-10-25
+test("The time zone has daylight saving time", () => {
+  expectDaylightSavingTime();
+});
 
 test("Start times: every half hour of the day", () => {
   let options = startTimeOptions(new Date(2026, 9, 15, 14, 20));
