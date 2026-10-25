@@ -14,6 +14,9 @@
   import ErrorMessageInline from "../../../Shared/ErrorMessageInline.svelte";
   import { t } from "../../../../l10n/l10n";
 
+  /** TODO Refactor this and integrate it into `Availability` component.
+   * We should not have components merely for functions */
+
   /** The meeting, with the participants whose availability to load */
   export let event: Event;
   export let from: Date;
