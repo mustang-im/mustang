@@ -201,6 +201,8 @@ function myMeeting(calendar: Calendar): Event {
 test("Own availability: our appointments from our calendars, instead of the server's", async () => {
   let calendar = new FreeBusyCalendar();
   let meeting = myMeeting(calendar);
+  let invited = myEvent(calendar, at(13), at(14), "Invited");
+  invited.myParticipation = InvitationResponse.NoResponseReceived;
   let maybe = myEvent(calendar, at(15), at(16), "Maybe");
   maybe.myParticipation = InvitationResponse.Tentative;
   let declined = myEvent(calendar, at(16), at(17), "Declined");
@@ -210,17 +212,18 @@ test("Own availability: our appointments from our calendars, instead of the serv
   let holiday = myEvent(calendar, at(0), at(24), "Holiday");
   holiday.allDay = true;
   let tomorrow = myEvent(calendar, new Date(2026, 9, 16, 12), new Date(2026, 9, 16, 13), "Tomorrow");
-  let myEvents = new ArrayColl([meeting, myEvent(calendar, at(12), at(13), "Lunch"), maybe, declined, cancelled, holiday, tomorrow]);
+  let myEvents = new ArrayColl([meeting, myEvent(calendar, at(12), at(13), "Lunch"), invited, maybe, declined, cancelled, holiday, tomorrow]);
 
   let fromServer = await FreeBusy.load(calendar, [anna, bert, carla], at(0), at(24));
   let freeBusy = fromServer.withMyEvents(meeting, myEvents, at(0), at(24));
   // Not the meeting itself, which the server reported as busy
   expect(freeBusy.rowFor(anna).busy).toEqual([
-    { startTime: at(12), endTime: at(13) },
+    { startTime: at(12), endTime: at(14) },
     { startTime: at(15), endTime: at(16) },
   ]);
-  expect(freeBusy.rowFor(anna).appointments.map(appointment => [appointment.title, appointment.status])).toEqual([
+  expect(freeBusy.rowFor(anna).appointments.map(appointment => [appointment.title, appointment.busyStatus])).toEqual([
     ["Lunch", FreeBusyStatus.Busy],
+    ["Invited", FreeBusyStatus.Tentative],
     ["Maybe", FreeBusyStatus.Tentative],
   ]);
   expect(freeBusy.rowFor(bert)).toBe(fromServer.rowFor(bert));

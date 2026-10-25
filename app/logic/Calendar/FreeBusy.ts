@@ -2,7 +2,6 @@ import type { Calendar } from "./Calendar";
 import type { Event } from "./Event";
 import type { Participant } from "./Participant";
 import { FreeBusyEvent, FreeBusyStatus } from "./FreeBusyEvent";
-import { InvitationResponse } from "./Invitation/InvitationStatus";
 import type { TimeInterval } from "../util/date";
 import { ArrayColl, type Collection } from "svelte-collections";
 
@@ -69,12 +68,10 @@ export class FreeBusy {
       return this;
     }
     let appointments = myEvents.filterOnce(event =>
-      event != meeting && !event.allDay && !event.isCancelled &&
-      event.myParticipation != InvitationResponse.Decline &&
+      event != meeting && !event.allDay && event.busyStatus != FreeBusyStatus.Free &&
       event.startTime < to && event.endTime > from
     ).contents.map(event => {
-      let isTentative = event.myParticipation == InvitationResponse.Tentative || event.isUnanswered;
-      let appointment = new FreeBusyEvent(event.startTime, event.endTime, isTentative ? FreeBusyStatus.Tentative : FreeBusyStatus.Busy);
+      let appointment = new FreeBusyEvent(event.startTime, event.endTime, event.busyStatus);
       appointment.title = event.title;
       appointment.location = event.location;
       return appointment;

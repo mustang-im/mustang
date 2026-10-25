@@ -4,6 +4,7 @@ import { Attachment, ContentDisposition, type MessageWithAttachments } from "../
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
+import { FreeBusyStatus } from "./FreeBusyStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
 import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
@@ -634,6 +635,17 @@ export class Event extends Observable {
 
   get isUnanswered(): boolean {
     return this.myParticipation == InvitationResponse.NoResponseReceived;
+  }
+
+  /** How this event shows in our availability */
+  get busyStatus(): FreeBusyStatus {
+    if (this.isCancelled || this.myParticipation == InvitationResponse.Decline) {
+      return FreeBusyStatus.Free;
+    }
+    if (this.myParticipation == InvitationResponse.Tentative || this.isUnanswered) {
+      return FreeBusyStatus.Tentative;
+    }
+    return FreeBusyStatus.Busy;
   }
 
   async createOnlineMeeting() {
