@@ -15,6 +15,8 @@ export async function sleep(seconds: number): Promise<void> {
   });
 }
 
+export const waitTime = { factor: 1 }; // tests lower it, to not wait the real time for network timeouts, retries and throttling, see `kRealtimeWait`
+
 export function arrayRemove<T>(array: T[], item: T) {
   let pos = array.indexOf(item);
   if (pos > -1) {
