@@ -41,6 +41,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@matrix-org/matrix-sdk-crypto-wasm'],
   },
+  json: {
+    namedExports: false, // else each translation file becomes a module with thousands of exports, which every test file loads again
+  },
   test: {
     server: {
       deps: {
