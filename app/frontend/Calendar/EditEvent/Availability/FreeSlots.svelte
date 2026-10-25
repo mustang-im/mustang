@@ -1,12 +1,20 @@
 <vbox class="free-slots" flex>
   <hbox class="range-header">
-    <DateRange bind:date={day} dateInterval={7} showDays={kShowDays} />
+    <hbox class="range">
+      <DateRange bind:date={day} dateInterval={7} {showDays} />
+    </hbox>
+    <hbox class="days-switcher">
+      <IslandSwitcher faint={false}>
+        <Button label={$t`Work week`} onClick={() => showDaysSetting.value = 5} selected={showDays == 5} />
+        <Button label={$t`Week`} onClick={() => showDaysSetting.value = 7} selected={showDays == 7} />
+      </IslandSwitcher>
+    </hbox>
   </hbox>
   <AvailabilityLoader {event} from={weekStart} to={weekEnd} bind:freeBusy>
     {#if freeBusy.hasInformation}
       <vbox class="grid-container" flex bind:offsetHeight={visibleHeight}>
         <Scroll bind:this={scrollE}>
-          <grid class="slots-grid" style="--days: {kShowDays}; --hours: {rows.length}; --row-height: {rowHeight}px">
+          <grid class="slots-grid" style="--days: {showDays}; --hours: {rows.length}; --row-height: {rowHeight}px">
             <hbox class="corner header" />
             {#each days as shownDay, i}
               <vbox class="day-header header" style="grid-column: {i + 2}">
@@ -78,6 +86,8 @@
   import Scroll from "../../../Shared/Scroll.svelte";
   import Clickable from "../../../Shared/Clickable.svelte";
   import Button from "../../../Shared/Button.svelte";
+  import IslandSwitcher from "../../../Shared/IslandSwitcher.svelte";
+  import { getLocalStorage } from "../../../Util/LocalStorage";
   import { getTimeString, getTimeStringWithoutAMPM, getWeekDays, getWeekStart } from "../../../../logic/util/date";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
@@ -90,17 +100,20 @@
    * A higher view shows more hours. */
   export let showHours = 5;
 
-  const kShowDays = 5; // Mon-Fri
   const kStartHour = 8;
   const kEndHour = 18;
   const kSlotMinutes = 60;
+
+  /** 5 = Mon-Fri, 7 = Mon-Sun */
+  const showDaysSetting = getLocalStorage("calendar.freeSlots.days", 5);
+  $: showDays = $showDaysSetting.value;
 
   /** The meeting's week, or the week that the user went to */
   $: meetingWeekStartTime = getWeekStart($event.startTime).getTime();
   $: day = new Date(meetingWeekStartTime);
   $: weekStart = getWeekStart(day);
-  $: weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + kShowDays);
-  $: days = getWeekDays(weekStart).slice(0, kShowDays);
+  $: weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + showDays);
+  $: days = getWeekDays(weekStart).slice(0, showDays);
 
   let freeBusy: FreeBusy | null = null;
   let rows: { time: Date, slots: (FreeBusySlot | undefined)[] }[] = [];
@@ -156,7 +169,17 @@
     min-height: 0;
   }
   .range-header {
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: end;
+  }
+  .range {
+    flex: 1 0 auto;
     justify-content: center;
+  }
+  .days-switcher {
+    white-space: nowrap;
+    margin-block-end: 4px;
   }
   .grid-container {
     min-height: 0;
