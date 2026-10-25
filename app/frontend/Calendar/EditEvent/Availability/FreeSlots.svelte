@@ -5,14 +5,15 @@
     </hbox>
     <hbox class="days-switcher">
       <IslandSwitcher faint={false}>
-        <Button label={$t`Work week`} onClick={() => showDaysSetting.value = 5} selected={showDays == 5} />
-        <Button label={$t`Week`} onClick={() => showDaysSetting.value = 7} selected={showDays == 7} />
+        <Button label="5" tooltip="{$t`Work week`}" onClick={() => showDaysSetting.value = 5} selected={showDays == 5} />
+        <Button label="7" tooltip={$t`Week`} onClick={() => showDaysSetting.value = 7} selected={showDays == 7} />
       </IslandSwitcher>
     </hbox>
   </hbox>
   <AvailabilityLoader {event} from={weekStart} to={weekEnd} bind:freeBusy>
     {#if freeBusy.hasInformation}
-      <vbox class="grid-container" flex bind:offsetHeight={visibleHeight}>
+      <vbox class="grid-container" flex
+        bind:offsetHeight={visibleHeight} bind:offsetWidth={visibleWidth}>
         <Scroll bind:this={scrollE}>
           <grid class="slots-grid" style="--days: {showDays}; --hours: {rows.length}; --row-height: {rowHeight}px">
             <hbox class="corner header" />
@@ -24,7 +25,9 @@
             {/each}
             {#each rows as row, r}
               <hbox class="time-label" style="grid-row: {r + 2}">
+                {#if visibleWidth > 400}
                 <TimeLabel time={row.time} />
+                {/if}
               </hbox>
               {#each row.slots as slot, i}
                 {#if slot}
@@ -154,6 +157,7 @@
 
   let scrollE: Scroll;
   let visibleHeight = 0;
+  let visibleWidth = 0;
   const kMaxRowHeight = 50;
   $: rowHeight = Math.max(visibleHeight / (kEndHour - kStartHour), Math.min(visibleHeight / showHours, kMaxRowHeight));
   $: meetingHour = $event.startTime.getHours();
@@ -176,6 +180,9 @@
   .range {
     flex: 1 0 auto;
     justify-content: center;
+  }
+  .range :global(.date-range) {
+    min-width: none;
   }
   .days-switcher {
     white-space: nowrap;
