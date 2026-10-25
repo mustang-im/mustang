@@ -127,7 +127,7 @@ test("Keeps each appointment with its status and details, for display", () => {
     ] },
   ]);
   let row = freeBusy.rowFor(anna);
-  expect(row.appointments.map(appointment => [appointment.startTime, appointment.status, appointment.title, appointment.location])).toEqual([
+  expect(row.appointments.map(appointment => [appointment.startTime, appointment.busyStatus, appointment.title, appointment.location])).toEqual([
     [at(9), FreeBusyStatus.Busy, undefined, undefined],
     [at(9, 30), FreeBusyStatus.OutOfOffice, undefined, undefined],
     [at(11), FreeBusyStatus.Tentative, "Lunch", "Canteen"],

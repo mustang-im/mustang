@@ -6,24 +6,24 @@ export { FreeBusyStatus, freeBusyStatusLabels };
 /** An appointment in the calendar of another person, as far as their server reveals it.
  * `title` and `location` are set only when the person lets us see them. */
 export class FreeBusyEvent extends Event {
-  status: FreeBusyStatus;
+  protected _busyStatus: FreeBusyStatus;
 
-  constructor(startTime: Date, endTime: Date, status: FreeBusyStatus) {
+  constructor(startTime: Date, endTime: Date, busyStatus: FreeBusyStatus) {
     super();
     this.startTime = startTime;
     this.endTime = endTime;
-    this.status = status;
+    this._busyStatus = busyStatus;
   }
 
   get busyStatus(): FreeBusyStatus {
-    return this.status;
+    return this._busyStatus;
   }
 
   get isFree(): boolean {
-    return this.status == FreeBusyStatus.Free;
+    return this._busyStatus == FreeBusyStatus.Free;
   }
 
   get statusLabel(): string {
-    return freeBusyStatusLabels[this.status];
+    return freeBusyStatusLabels[this._busyStatus];
   }
 }

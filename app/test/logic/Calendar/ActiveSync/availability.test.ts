@@ -24,7 +24,7 @@ async function availability(mergedFreeBusy: string) {
   let participant = new Participant("anna@example.com", "Anna", InvitationResponse.NoResponseReceived);
   let [result] = await calendar.arePersonsFree([participant], at(8), at(12));
   expect(result.participant).toBe(participant);
-  return result.availability?.map(event => [event.startTime, event.endTime, event.status]);
+  return result.availability?.map(event => [event.startTime, event.endTime, event.busyStatus]);
 }
 
 test("Half hours with the same status become one appointment", async () => {

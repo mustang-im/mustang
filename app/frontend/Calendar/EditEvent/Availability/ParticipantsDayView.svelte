@@ -32,7 +32,7 @@
               <DayColumn {day} column={i + 2} events={noEvents} overlayEvents={appointmentEvents.get(participant) ?? noEvents}>
                 <svelte:fragment slot="event-overlay" let:event>
                   {@const appointment = event as FreeBusyEvent}
-                  <vbox class="appointment font-small status-{appointment.status}" title={appointmentDetails(appointment)}>
+                  <vbox class="appointment font-small status-{appointment.busyStatus}" title={appointmentDetails(appointment)}>
                     <hbox class="title">{appointment.title || appointment.statusLabel}</hbox>
                     {#if appointment.location}
                       <hbox class="location">{appointment.location}</hbox>

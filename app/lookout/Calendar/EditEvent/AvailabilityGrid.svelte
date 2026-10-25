@@ -265,7 +265,7 @@
       .map(({ appointment, span }) => ({
         left: span.left,
         width: span.width,
-        status: appointment.status,
+        status: appointment.busyStatus,
         title: appointment.title ?? "",
         details: [
           `${getTimeString(appointment.startTime)} – ${getTimeString(appointment.endTime)}`,

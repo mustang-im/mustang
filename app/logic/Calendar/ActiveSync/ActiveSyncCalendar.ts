@@ -80,7 +80,7 @@ export class ActiveSyncCalendar extends ExchangeCalendar implements ActiveSyncPi
         let start = new Date(from.getTime() + i * kHalfHour);
         let end = new Date(from.getTime() + (i + 1) * kHalfHour);
         let last = availability.at(-1);
-        if (last && last.status == status && last.endTime.getTime() == start.getTime()) {
+        if (last && last.busyStatus == status && last.endTime.getTime() == start.getTime()) {
           last.endTime = end;
         } else {
           availability.push(new FreeBusyEvent(start, end, status));
