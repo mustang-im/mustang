@@ -1,12 +1,11 @@
 import './app.css';
 import { mount } from 'svelte';
-import MainWindow from './MainWindow/MainWindow.svelte';
 import { appName, appVersion, production } from '../logic/build';
 import { getLocalStorage } from './Util/LocalStorage';
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 import { assert } from '../logic/util/util';
 import { catchErrors } from './Util/error';
-import { gt } from '../l10n/l10n';
+import { gt, getUILocale, setUILocale } from '../l10n/l10n';
 import * as Sentry from "@sentry/svelte";
 
 if (production) {
@@ -19,6 +18,10 @@ if (production) {
   });
 }
 
+window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false); // before the `await`s, because `DOMContentLoaded` fires while they wait
+
+await catchErrors(() => setUILocale(getUILocale()), console.error); // the UI modules call `gt` when they load, so the language must be loaded before they're imported
+const { default: MainWindow } = await import('./MainWindow/MainWindow.svelte');
 const app = mount(MainWindow, {
   target: document.getElementById('app'),
 });
@@ -44,4 +47,3 @@ function loadWindowSettings() {
     throw gt`Bad window position: ` + windowPosition;
   }
 }
-window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false);

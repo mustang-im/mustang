@@ -1,102 +1,58 @@
 import en from './locales/en/messages.json';
-import de from './locales/de/messages.json';
-import fr from './locales/fr/messages.json';
-import it from './locales/it/messages.json';
-import es from './locales/es/messages.json';
-import pt from './locales/pt/messages.json';
-import pl from './locales/pl/messages.json';
-import ja from './locales/ja/messages.json';
-import zh from './locales/zh/messages.json';
-import zhHant from './locales/zh-Hant/messages.json';
-import enGB from './locales/en-GB/messages.json';
 
-import ar from './locales/ar/messages.json';
-import cs from './locales/cs/messages.json';
-import da from './locales/da/messages.json';
-import el from './locales/el/messages.json';
-import fi from './locales/fi/messages.json';
-import nb from './locales/nb/messages.json';
-import nl from './locales/nl/messages.json';
-import ro from './locales/ro/messages.json';
-import ru from './locales/ru/messages.json';
-import sv from './locales/sv/messages.json';
-import uk from './locales/uk/messages.json';
-import et from './locales/et/messages.json';
-import lt from './locales/lt/messages.json';
-import lv from './locales/lv/messages.json';
-import bg from './locales/bg/messages.json';
-import sl from './locales/sl/messages.json';
+/** Messages of `sourceLocale`. Built in, because `gt` can be called before `setUILocale()` loaded the UI language. */
+export const sourceMessages: Record<string, string> = en;
 
-import az from './locales/az/messages.json';
-import eo from './locales/eo/messages.json';
-import fa from './locales/fa/messages.json';
-import ga from './locales/ga/messages.json';
-import he from './locales/he/messages.json';
-import hi from './locales/hi/messages.json';
-import hu from './locales/hu/messages.json';
-import id from './locales/id/messages.json';
-import ko from './locales/ko/messages.json';
-import sk from './locales/sk/messages.json';
-import th from './locales/th/messages.json';
-import tr from './locales/tr/messages.json';
-import la from './locales/la/messages.json';
-import tlh from './locales/tlh/messages.json';
-
-import bn from './locales/bn/messages.json';
-import paArab from './locales/pa-Arab/messages.json';
-import ta from './locales/ta/messages.json';
-import ur from './locales/ur/messages.json';
-import vi from './locales/vi/messages.json';
-
-/** Map of lang code to messages.
+/** Map of lang code to a function that loads its messages.
+ * Each language is a separate file, and only the used one is loaded.
  * Lang codes: <https://www.wikiwand.com/en/List_of_ISO_639_language_codes> */
-export const languageMessages: Record<string, Record<string, string>> = {
-  en: en,
-  de: de,
-  fr: fr,
-  it: it,
-  es: es,
-  pt: pt,
-  pl: pl,
-  ja: ja,
-  zh: zh,
-  "zh-Hant": zhHant,
-  "en-GB": enGB,
-  ar: ar,
-  cs: cs,
-  da: da,
-  el: el,
-  fi: fi,
-  nb: nb,
-  nl: nl,
-  ro: ro,
-  ru: ru,
-  sv: sv,
-  uk: uk,
-  et: et,
-  lt: lt,
-  lv: lv,
-  bg: bg,
-  sl: sl,
-  az: az,
-  eo: eo,
-  fa: fa,
-  ga: ga,
-  he: he,
-  hi: hi,
-  hu: hu,
-  id: id,
-  ko: ko,
-  sk: sk,
-  th: th,
-  tr: tr,
-  la: la,
-  tlh: tlh,
-  bn: bn,
-  "pa-Arab": paArab,
-  ta: ta,
-  ur: ur,
-  vi: vi,
+export const languageMessages: Record<string, () => Promise<{ default: Record<string, string> }>> = {
+  en: async () => ({ default: en }),
+  de: () => import('./locales/de/messages.json'),
+  fr: () => import('./locales/fr/messages.json'),
+  it: () => import('./locales/it/messages.json'),
+  es: () => import('./locales/es/messages.json'),
+  pt: () => import('./locales/pt/messages.json'),
+  pl: () => import('./locales/pl/messages.json'),
+  ja: () => import('./locales/ja/messages.json'),
+  zh: () => import('./locales/zh/messages.json'),
+  "zh-Hant": () => import('./locales/zh-Hant/messages.json'),
+  "en-GB": () => import('./locales/en-GB/messages.json'),
+  ar: () => import('./locales/ar/messages.json'),
+  cs: () => import('./locales/cs/messages.json'),
+  da: () => import('./locales/da/messages.json'),
+  el: () => import('./locales/el/messages.json'),
+  fi: () => import('./locales/fi/messages.json'),
+  nb: () => import('./locales/nb/messages.json'),
+  nl: () => import('./locales/nl/messages.json'),
+  ro: () => import('./locales/ro/messages.json'),
+  ru: () => import('./locales/ru/messages.json'),
+  sv: () => import('./locales/sv/messages.json'),
+  uk: () => import('./locales/uk/messages.json'),
+  et: () => import('./locales/et/messages.json'),
+  lt: () => import('./locales/lt/messages.json'),
+  lv: () => import('./locales/lv/messages.json'),
+  bg: () => import('./locales/bg/messages.json'),
+  sl: () => import('./locales/sl/messages.json'),
+  az: () => import('./locales/az/messages.json'),
+  eo: () => import('./locales/eo/messages.json'),
+  fa: () => import('./locales/fa/messages.json'),
+  ga: () => import('./locales/ga/messages.json'),
+  he: () => import('./locales/he/messages.json'),
+  hi: () => import('./locales/hi/messages.json'),
+  hu: () => import('./locales/hu/messages.json'),
+  id: () => import('./locales/id/messages.json'),
+  ko: () => import('./locales/ko/messages.json'),
+  sk: () => import('./locales/sk/messages.json'),
+  th: () => import('./locales/th/messages.json'),
+  tr: () => import('./locales/tr/messages.json'),
+  la: () => import('./locales/la/messages.json'),
+  tlh: () => import('./locales/tlh/messages.json'),
+  bn: () => import('./locales/bn/messages.json'),
+  "pa-Arab": () => import('./locales/pa-Arab/messages.json'),
+  ta: () => import('./locales/ta/messages.json'),
+  ur: () => import('./locales/ur/messages.json'),
+  vi: () => import('./locales/vi/messages.json'),
 };
 
 export const sourceLocale = 'en';
