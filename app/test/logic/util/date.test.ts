@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { getDayStart, getTimeString, getTimeStringWithoutDayPeriod, getWeekStart } from "../../../logic/util/date";
+import { getDayStart, getTimeString, getTimeStringWithoutAMPM, getWeekStart } from "../../../logic/util/date";
 import { saveDateTimeLocale } from "../../../l10n/l10n";
 import { afterEach, expect, test } from "vitest";
 
@@ -9,26 +9,26 @@ afterEach(() => {
   saveDateTimeLocale("");
 });
 
-test("Time without AM/PM leaves out only the day period", () => {
+test("Time without AM/PM leaves out only the AM/PM part", () => {
   for (let locale of ["en-US", "es-US", "ko-KR"]) {
     saveDateTimeLocale(locale);
-    let dayPeriod = new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true })
+    let ampm = new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true })
       .formatToParts(time)
       .find(part => part.type == "dayPeriod")
       .value;
-    let withoutDayPeriod = getTimeStringWithoutDayPeriod(time);
-    expect(getTimeString(time)).toContain(dayPeriod);
-    expect(withoutDayPeriod).not.toContain(dayPeriod);
-    expect(getTimeString(time)).toContain(withoutDayPeriod);
-    expect(withoutDayPeriod).toContain("05");
-    expect(withoutDayPeriod).toBe(withoutDayPeriod.trim());
+    let withoutAMPM = getTimeStringWithoutAMPM(time);
+    expect(getTimeString(time)).toContain(ampm);
+    expect(withoutAMPM).not.toContain(ampm);
+    expect(getTimeString(time)).toContain(withoutAMPM);
+    expect(withoutAMPM).toContain("05");
+    expect(withoutAMPM).toBe(withoutAMPM.trim());
   }
 });
 
 test("Time without AM/PM is the normal time in 24-hour locales", () => {
   for (let locale of ["de-DE", "en-GB"]) {
     saveDateTimeLocale(locale);
-    expect(getTimeStringWithoutDayPeriod(time)).toBe(getTimeString(time));
+    expect(getTimeStringWithoutAMPM(time)).toBe(getTimeString(time));
   }
 });
 

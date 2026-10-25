@@ -27,8 +27,8 @@
                       class:expanded={expandedSlot == slot}
                       title={slotDetails(slot)}>
                       <hbox class="time">
-                        <span class="with-day-period">{getTimeString(slot.startTime)}</span>
-                        <span class="without-day-period">{getTimeStringWithoutDayPeriod(slot.startTime)}</span>
+                        <span class="with-ampm">{getTimeString(slot.startTime)}</span>
+                        <span class="without-ampm">{getTimeStringWithoutAMPM(slot.startTime)}</span>
                       </hbox>
                       {#if expandedSlot == slot}
                         <vbox class="details">
@@ -78,7 +78,7 @@
   import Scroll from "../../../Shared/Scroll.svelte";
   import Clickable from "../../../Shared/Clickable.svelte";
   import Button from "../../../Shared/Button.svelte";
-  import { getTimeString, getTimeStringWithoutDayPeriod, getWeekDays, getWeekStart } from "../../../../logic/util/date";
+  import { getTimeString, getTimeStringWithoutAMPM, getWeekDays, getWeekStart } from "../../../../logic/util/date";
   import type { Collection } from "svelte-collections";
   import { tick } from "svelte";
   import { getDateTimeLocale, t } from "../../../../l10n/l10n";
@@ -241,14 +241,14 @@
   .time {
     white-space: nowrap;
   }
-  .without-day-period {
+  .without-ampm {
     display: none;
   }
   @container (width < 8.4ch) {
-    .with-day-period {
+    .with-ampm {
       display: none;
     }
-    .without-day-period {
+    .without-ampm {
       display: inline;
     }
   }

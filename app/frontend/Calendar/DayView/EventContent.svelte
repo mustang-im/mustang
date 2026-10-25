@@ -6,8 +6,8 @@
     {#if showTime}
       <!--{event.startTime.toLocaleTimeString(getDateTimeLocale(), { hour: "numeric", minute: "numeric" })}-->
       <hbox class="time">
-        <span class="with-day-period">{startTime}</span>
-        <span class="without-day-period">{getTimeStringWithoutDayPeriod($event.startTime)}</span>
+        <span class="with-ampm">{startTime}</span>
+        <span class="without-ampm">{getTimeStringWithoutAMPM($event.startTime)}</span>
       </hbox>
     {/if}
     <hbox class="title">{$event.title}</hbox>
@@ -19,7 +19,7 @@
   import { openEvent } from "../open";
   import { selectedEvent } from "../selected";
   import Clickable from "../../Shared/Clickable.svelte";
-  import { getDurationString, getTimeStringWithoutDayPeriod } from "../../../logic/util/date";
+  import { getDurationString, getTimeStringWithoutAMPM } from "../../../logic/util/date";
   import { getDateTimeLocale } from "../../../l10n/l10n";
 
   export let event: Event;
@@ -103,14 +103,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .without-day-period {
+  .without-ampm {
     display: none;
   }
   @container (width < 8.5ch) {
-    .with-day-period {
+    .with-ampm {
       display: none;
     }
-    .without-day-period {
+    .without-ampm {
       display: inline;
     }
   }

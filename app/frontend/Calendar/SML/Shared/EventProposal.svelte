@@ -3,7 +3,7 @@
   on:dblclick
   {title}>
   <hbox class="time" bind:this={timeE} bind:clientWidth={timeWidth}>
-    <span class:compact={timeFit == "compact"} class:hidden={timeFit == "hidden"}>{timeFit == "full" ? startTime : getTimeStringWithoutDayPeriod(start)}</span>
+    <span class:compact={timeFit == "compact"} class:hidden={timeFit == "hidden"}>{timeFit == "full" ? startTime : getTimeStringWithoutAMPM(start)}</span>
   </hbox>
   {#if title}
     <hbox class="title">{title}</hbox>
@@ -17,7 +17,7 @@
 </hbox>
 
 <script lang="ts">
-  import { getTimeStringWithoutDayPeriod } from "../../../../logic/util/date";
+  import { getTimeStringWithoutAMPM } from "../../../../logic/util/date";
   import { getDateTimeLocale } from "../../../../l10n/l10n";
   import Toolbar from "../../../Shared/Toolbar/Toolbar.svelte";
   import { tick } from "svelte";
@@ -30,14 +30,14 @@
 
   /** Whether the time leaves out AM/PM, uses a smaller font, or hides, so that it fits next to the buttons.
    * The hour labels show the time, too. */
-  let timeFit: "full" | "without-day-period" | "compact" | "hidden" = "full";
+  let timeFit: "full" | "without-ampm" | "compact" | "hidden" = "full";
   let timeE: HTMLElement;
   let timeWidth = 0;
   let fitCount = 0;
   $: timeWidth, startTime, fitTime();
   async function fitTime() {
     let count = ++fitCount;
-    for (let candidate of ["full", "without-day-period", "compact", "hidden"] as const) {
+    for (let candidate of ["full", "without-ampm", "compact", "hidden"] as const) {
       timeFit = candidate;
       await tick();
       if (count != fitCount || !timeE || timeE.scrollWidth <= timeE.clientWidth) {

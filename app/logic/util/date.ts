@@ -81,7 +81,7 @@ export function getTimeString(date: Date): string {
 
 /** @returns Time without AM/PM, e.g. "3:23" or "15:23".
  * For where the hour labels next to it already show AM/PM. */
-export function getTimeStringWithoutDayPeriod(date: Date): string {
+export function getTimeStringWithoutAMPM(date: Date): string {
   if (!date) {
     return "";
   }
