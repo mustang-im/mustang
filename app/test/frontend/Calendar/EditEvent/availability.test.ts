@@ -20,6 +20,7 @@ import AvailabilityPoll from "../../../../frontend/Calendar/EditEvent/Availabili
 import Availability from "../../../../frontend/Calendar/EditEvent/Availability/Availability.svelte";
 import { CalendarEventMustangApp } from "../../../../frontend/Calendar/CalendarMustangApp";
 import { selectedApp } from "../../../../frontend/AppsBar/selectedApp";
+import { isDemo } from "../../../../frontend/AppsBar/demo";
 import { flushSync, mount, unmount } from "svelte";
 import { get } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
@@ -55,6 +56,7 @@ beforeEach(() => {
   notifications.clear();
   composed.length = 0;
   localStorage.clear();
+  isDemo.set(false);
 });
 
 function vacation(from: Date, to: Date): FreeBusyEvent {
@@ -325,6 +327,7 @@ test("Expanded by default, as soon as the availability of a participant is known
 });
 
 test("Collapsed by default without free/busy, and the view buttons expand it", async () => {
+  isDemo.set(true);
   await show(Availability, { event: newMeeting(new NoFreeBusyCalendar()) });
   await new Promise(resolve => setTimeout(resolve, 0));
   flushSync();
@@ -336,6 +339,7 @@ test("Collapsed by default without free/busy, and the view buttons expand it", a
 });
 
 test("Without free/busy from the server, only the poll is available", async () => {
+  isDemo.set(true);
   await show(Availability, { event: newMeeting(new NoFreeBusyCalendar()), expanded: true });
   await new Promise(resolve => setTimeout(resolve, 0));
   flushSync();
@@ -343,6 +347,21 @@ test("Without free/busy from the server, only the poll is available", async () =
   expect(document.querySelectorAll(`button[title="${reason}"]:disabled`).length).toBe(2);
   expect(document.querySelector(".availability-poll")).not.toBeNull();
   expect(text(".recipients .names")).toEqual(["Frida Free, Bob Busy, Una Unknown"]);
+});
+
+test("The poll only in demo mode, and without free/busy from the server no availability at all", async () => {
+  await show(Availability, { event: newMeeting(), expanded: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(document.querySelector(".free-slots")).not.toBeNull();
+  expect(document.querySelector('button[title="Poll"]')).toBeNull();
+  unmount(component);
+  document.body.innerHTML = "";
+
+  await show(Availability, { event: newMeeting(new NoFreeBusyCalendar()), expanded: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+  expect(document.querySelector(".availability")).toBeNull();
 });
 
 test("Before anybody is invited, Free slots and Poll say so", async () => {
@@ -363,6 +382,7 @@ test("Before anybody is invited, Free slots and Poll say so", async () => {
 });
 
 test("Enlarge in the sidebar opens the full window, which keeps the view", async () => {
+  isDemo.set(true);
   let event = newMeeting();
   selectedApp.set(null);
   await show(Availability, { event, expanded: true });

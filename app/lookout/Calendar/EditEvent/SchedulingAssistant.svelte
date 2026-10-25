@@ -53,6 +53,7 @@
   import SMLCalendar from "../SML/Shared/SMLCalendar.svelte";
   import DialogTabs from "../../Shared/Dialog/DialogTabs.svelte";
   import DialogButton from "../../Shared/Dialog/DialogButton.svelte";
+  import { isDemo } from "../../../frontend/AppsBar/demo";
   import CalendarIcon from "lucide-svelte/icons/calendar";
   import { t } from "../../../l10n/l10n";
 
@@ -66,7 +67,7 @@
   $: viewTabs = [
     { id: "free", label: $t`Free slots`, disabled: noAvailabilityReason },
     { id: "participants", label: $t`Who is free when`, disabled: noAvailabilityReason },
-    { id: "poll", label: $t`Poll *=> Ask the participants by email which times suit them` },
+    ...($isDemo ? [{ id: "poll", label: $t`Poll *=> Ask the participants by email which times suit them` }] : []),
   ];
   let view = "free";
   let poll: SMLData | null = null;
@@ -84,7 +85,7 @@
       // The views show the error
     }
     noAvailabilityReason = isSupported ? false : $t`This calendar doesn't provide the availability of other people`;
-    if (!isSupported) {
+    if (!isSupported && $isDemo) {
       view = "poll";
     }
   }

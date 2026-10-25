@@ -1,4 +1,4 @@
-{#if $invitees.hasItems}
+{#if $invitees.hasItems && (!noAvailabilityReason || $isDemo)}
   <vbox class="availability" class:expanded class:enlarged>
     <hbox class="header" class:short-labels={labels == "short"} bind:this={headerE} bind:clientWidth={headerWidth}>
       <IslandSwitcher faint={false}>
@@ -30,14 +30,16 @@
             <span class="short">{$t`Who *=> Short for: Who is free when`}</span>
           </hbox>
         </Button>
-        <Button
-          label={$t`Poll *=> Ask the participants by email which times suit them`}
-          icon={PollIcon}
-          iconSize="16px"
-          iconOnly={labels == "none"}
-          onClick={() => showView("poll")}
-          selected={expanded && view == "poll"}
-          />
+        {#if $isDemo}
+          <Button
+            label={$t`Poll *=> Ask the participants by email which times suit them`}
+            icon={PollIcon}
+            iconSize="16px"
+            iconOnly={labels == "none"}
+            onClick={() => showView("poll")}
+            selected={expanded && view == "poll"}
+            />
+        {/if}
       </IslandSwitcher>
       <hbox flex />
       {#if expanded}
@@ -91,6 +93,7 @@
   import { FreeBusy } from "../../../../logic/Calendar/FreeBusy";
   import { calendarMustangApp, CalendarEventMustangApp } from "../../CalendarMustangApp";
   import { selectedApp } from "../../../AppsBar/selectedApp";
+  import { isDemo } from "../../../AppsBar/demo";
   import FreeSlots from "./FreeSlots.svelte";
   import ParticipantsDayView from "./ParticipantsDayView.svelte";
   import AvailabilityPoll from "./AvailabilityPoll.svelte";
@@ -151,7 +154,7 @@
       // The views show the error
     }
     noAvailabilityReason = isSupported ? false : $t`This calendar doesn't provide the availability of other people`;
-    if (!isSupported) {
+    if (!isSupported && $isDemo) {
       view = "poll";
     }
   }
@@ -196,7 +199,7 @@
   let headerE: HTMLElement;
   let headerWidth = 0;
   let fitCount = 0;
-  $: headerWidth, expanded, $invitees, fitLabels();
+  $: headerWidth, expanded, $invitees, $isDemo, fitLabels();
   async function fitLabels() {
     let count = ++fitCount;
     for (let candidate of ["long", "short", "none"] as const) {
