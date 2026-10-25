@@ -18,15 +18,17 @@ if (production) {
   });
 }
 
-window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false); // before the `await`s, because `DOMContentLoaded` fires while they wait
+catchErrors(startUI, console.error);
 
-await catchErrors(() => setUILocale(getUILocale()), console.error); // the UI modules call `gt` when they load, so the language must be loaded before they're imported
-const { default: MainWindow } = await import('./MainWindow/MainWindow.svelte');
-const app = mount(MainWindow, {
-  target: document.getElementById('app'),
-});
-
-export default app;
+/** Loads the UI language, then the UI */
+async function startUI() {
+  await catchErrors(() => setUILocale(getUILocale()), console.error); // if it fails, the UI is in English
+  // The UI modules call `gt` when they load, so they're imported only after the language is loaded
+  const { default: MainWindow } = await import('./MainWindow/MainWindow.svelte');
+  mount(MainWindow, {
+    target: document.getElementById('app'),
+  });
+}
 
 function loadWindowSettings() {
   let windowSize = getLocalStorage("window.size", []).value;
@@ -47,3 +49,4 @@ function loadWindowSettings() {
     throw gt`Bad window position: ` + windowPosition;
   }
 }
+window.addEventListener("DOMContentLoaded", () => catchErrors(loadWindowSettings, console.error), false);

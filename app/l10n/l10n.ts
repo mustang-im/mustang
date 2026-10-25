@@ -3,7 +3,7 @@ import { derived, writable } from "svelte/store";
 import { generateMessageID } from "./generateMessageID";
 import { sanitize } from '../../lib/util/sanitizeDatatypes';
 
-import { languageMessages, sourceLocale, sourceMessages, localeMapping } from './list';
+import { locales, sourceLocale, sourceMessages, localeMapping } from './list';
 
 let requestedLocale: string;
 /** Loads the messages of the language and uses them from then on.
@@ -17,11 +17,13 @@ export async function setUILocale(lang: string) {
   let lang2 = lang.substring(0, 2);
 
   let availableLang =
-    languageMessages[lang] ? lang :
-    languageMessages[lang2] ? lang2 :
+    locales.includes(lang) ? lang :
+    locales.includes(lang2) ? lang2 :
     sourceLocale;
   requestedLocale = availableLang;
-  let { default: messages } = await languageMessages[availableLang]();
+  const languageFiles = import.meta.glob<Record<string, string>>(['./locales/*/messages.json', '!./locales/en/*'], { import: 'default' }); // only the used language is loaded. English is built in, see `sourceMessages`
+  let messages = availableLang == sourceLocale ? sourceMessages :
+    await languageFiles[`./locales/${availableLang}/messages.json`]();
   if (requestedLocale != availableLang) { // a later call switched to another language while this one was loading
     return;
   }
