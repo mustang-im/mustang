@@ -93,7 +93,7 @@
   <hbox class="legend">
     <span class="legend-item"><span class="swatch swatch-busy" /> {$t`Busy`}</span>
     <span class="legend-item"><span class="swatch swatch-busy status-tentative" /> {freeBusyStatusLabels[FreeBusyStatus.Tentative]}</span>
-    <span class="legend-item"><span class="swatch swatch-busy status-oof" /> {freeBusyStatusLabels[FreeBusyStatus.OutOfOffice]}</span>
+    <span class="legend-item"><span class="swatch swatch-busy status-out-of-office" /> {freeBusyStatusLabels[FreeBusyStatus.OutOfOffice]}</span>
     <span class="legend-item"><span class="swatch swatch-busy status-elsewhere" /> {freeBusyStatusLabels[FreeBusyStatus.WorkingElsewhere]}</span>
     <span class="legend-item"><span class="swatch swatch-no-info" /> {$t`No information *=> Availability: unknown`}</span>
     <hbox flex />
@@ -346,7 +346,7 @@
   .free-busy-grid {
     min-height: 0;
     --busy-color: color-mix(in srgb, var(--lo-accent) 72%, black);
-    --oof-color: #7A3E9D;
+    --out-of-office-color: #7A3E9D;
     --no-info-pattern: repeating-linear-gradient(135deg,
       color-mix(in srgb, var(--lo-fg-secondary) 35%, transparent) 0 1px,
       transparent 1px 6px);
@@ -544,9 +544,9 @@
     border: 1px solid var(--busy-color);
     color: var(--lo-fg);
   }
-  .busy.status-oof,
-  .swatch-busy.status-oof {
-    background-color: var(--oof-color);
+  .busy.status-out-of-office,
+  .swatch-busy.status-out-of-office {
+    background-color: var(--out-of-office-color);
   }
   .busy.status-elsewhere,
   .swatch-busy.status-elsewhere {

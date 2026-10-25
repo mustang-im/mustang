@@ -261,7 +261,7 @@
     background-color: color-mix(in srgb, var(--appointment-color) 40%, var(--bg));
     background-image: repeating-linear-gradient(-45deg, transparent 0 6px, var(--stripe-color) 6px 8px);
   }
-  .appointment.status-oof {
+  .appointment.status-out-of-office {
     --appointment-color: #C7A6E6;
   }
   .appointment.status-elsewhere {

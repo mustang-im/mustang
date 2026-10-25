@@ -26,7 +26,7 @@ export enum FreeBusyStatus {
   Free = "free",
   Tentative = "tentative",
   Busy = "busy",
-  OutOfOffice = "oof",
+  OutOfOffice = "out-of-office",
   WorkingElsewhere = "elsewhere",
 }
 
