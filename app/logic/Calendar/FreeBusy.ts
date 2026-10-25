@@ -1,8 +1,10 @@
 import type { Calendar } from "./Calendar";
+import type { Event } from "./Event";
 import type { Participant } from "./Participant";
-import type { FreeBusyEvent } from "./FreeBusyEvent";
+import { FreeBusyEvent, FreeBusyStatus } from "./FreeBusyEvent";
+import { InvitationResponse } from "./Invitation/InvitationStatus";
 import type { TimeInterval } from "../util/date";
-import { ArrayColl } from "svelte-collections";
+import { ArrayColl, type Collection } from "svelte-collections";
 
 export class FreeBusy {
   readonly rows: AttendeeAvailability[];
@@ -52,6 +54,33 @@ export class FreeBusy {
       let busy = FreeBusy.merge(appointments.map(appointment => ({ startTime: appointment.startTime, endTime: appointment.endTime })));
       return { participant, busy, appointments };
     }), availability.length > 0);
+  }
+
+  /**
+   * For the participant who is us, our appointments from all our calendars,
+   * instead of what the server knows. They are complete, also without free/busy
+   * from the server, and the meeting itself doesn't count.
+   * @param meeting The meeting that we organize
+   * @param myEvents The events of all our calendars
+   */
+  withMyEvents(meeting: Event, myEvents: Collection<Event>, from: Date, to: Date): FreeBusy {
+    let me = meeting.isOutgoingMeeting ? meeting.organizer : null;
+    if (!me) {
+      return this;
+    }
+    let appointments = myEvents.filterOnce(event =>
+      event != meeting && !event.allDay && !event.isCancelled &&
+      event.myParticipation != InvitationResponse.Decline &&
+      event.startTime < to && event.endTime > from
+    ).contents.map(event => {
+      let isTentative = event.myParticipation == InvitationResponse.Tentative || event.isUnanswered;
+      let appointment = new FreeBusyEvent(event.startTime, event.endTime, isTentative ? FreeBusyStatus.Tentative : FreeBusyStatus.Busy);
+      appointment.title = event.title;
+      appointment.location = event.location;
+      return appointment;
+    });
+    let myRow = FreeBusy.fromAvailability([me], [{ participant: me, availability: appointments }]).rows[0];
+    return new FreeBusy(this.rows.map(row => row.participant == me ? myRow : row), this.isSupported);
   }
 
   get hasInformation(): boolean {

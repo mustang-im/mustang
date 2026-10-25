@@ -5,6 +5,8 @@ import { Participant } from "../../../logic/Calendar/Participant";
 import { InvitationResponse } from "../../../logic/Calendar/Invitation/InvitationStatus";
 import { FreeBusy, SlotAvailability } from "../../../logic/Calendar/FreeBusy";
 import { FreeBusyEvent, FreeBusyStatus } from "../../../logic/Calendar/FreeBusyEvent";
+import type { Event } from "../../../logic/Calendar/Event";
+import { ArrayColl } from "svelte-collections";
 import { expect, test } from "vitest";
 
 function at(hours: number, minutes = 0): Date {
@@ -179,4 +181,57 @@ test("Time slots: Each of the days, and none when nobody's availability is known
 
   let unknown = await FreeBusy.load(new Calendar(), [anna, bert], at(0), at(24));
   expect(unknown.slots([at(0)], 8, 18, 60).isEmpty).toBe(true);
+});
+
+function myEvent(calendar: Calendar, from: Date, to: Date, title: string): Event {
+  let event = calendar.newEvent();
+  event.title = title;
+  event.startTime = from;
+  event.endTime = to;
+  return event;
+}
+
+function myMeeting(calendar: Calendar): Event {
+  let meeting = myEvent(calendar, at(9), at(10), "Planning");
+  meeting.myParticipation = InvitationResponse.Organizer;
+  meeting.participants.addAll([anna, bert, carla]);
+  return meeting;
+}
+
+test("Own availability: our appointments from our calendars, instead of the server's", async () => {
+  let calendar = new FreeBusyCalendar();
+  let meeting = myMeeting(calendar);
+  let maybe = myEvent(calendar, at(15), at(16), "Maybe");
+  maybe.myParticipation = InvitationResponse.Tentative;
+  let declined = myEvent(calendar, at(16), at(17), "Declined");
+  declined.myParticipation = InvitationResponse.Decline;
+  let cancelled = myEvent(calendar, at(17), at(18), "Cancelled");
+  cancelled.isCancelled = true;
+  let holiday = myEvent(calendar, at(0), at(24), "Holiday");
+  holiday.allDay = true;
+  let tomorrow = myEvent(calendar, new Date(2026, 9, 16, 12), new Date(2026, 9, 16, 13), "Tomorrow");
+  let myEvents = new ArrayColl([meeting, myEvent(calendar, at(12), at(13), "Lunch"), maybe, declined, cancelled, holiday, tomorrow]);
+
+  let fromServer = await FreeBusy.load(calendar, [anna, bert, carla], at(0), at(24));
+  let freeBusy = fromServer.withMyEvents(meeting, myEvents, at(0), at(24));
+  // Not the meeting itself, which the server reported as busy
+  expect(freeBusy.rowFor(anna).busy).toEqual([
+    { startTime: at(12), endTime: at(13) },
+    { startTime: at(15), endTime: at(16) },
+  ]);
+  expect(freeBusy.rowFor(anna).appointments.map(appointment => [appointment.title, appointment.status])).toEqual([
+    ["Lunch", FreeBusyStatus.Busy],
+    ["Maybe", FreeBusyStatus.Tentative],
+  ]);
+  expect(freeBusy.rowFor(bert)).toBe(fromServer.rowFor(bert));
+  expect(freeBusy.rowFor(carla).busy).toBe(null);
+});
+
+test("Own availability: Only for a meeting that we organize", async () => {
+  let calendar = new FreeBusyCalendar();
+  let meeting = myMeeting(calendar);
+  meeting.myParticipation = InvitationResponse.Accept;
+  let fromServer = await FreeBusy.load(calendar, [anna, bert, carla], at(0), at(24));
+  let myEvents = new ArrayColl([myEvent(calendar, at(12), at(13), "Lunch")]);
+  expect(fromServer.withMyEvents(meeting, myEvents, at(0), at(24))).toBe(fromServer);
 });
