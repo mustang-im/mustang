@@ -21,6 +21,7 @@ import Availability from "../../../../frontend/Calendar/EditEvent/Availability/A
 import { CalendarEventMustangApp } from "../../../../frontend/Calendar/CalendarMustangApp";
 import { selectedApp } from "../../../../frontend/AppsBar/selectedApp";
 import { isDemo } from "../../../../frontend/AppsBar/demo";
+import { getDateTimeLocale } from "../../../../l10n/l10n";
 import { flushSync, mount, unmount } from "svelte";
 import { get } from "svelte/store";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
@@ -204,6 +205,23 @@ test("Free slots: \"Use this time\" moves the meeting there", async () => {
   expect(event.startTime).toEqual(new Date(2026, 7, 31, 8, 0));
   expect(event.durationMinutes).toBe(60);
   expect(monday.classList).toContain("meeting");
+});
+
+test("Free slots: \"Week\" shows Saturday and Sunday too, and stays so for the next meeting", async () => {
+  let event = newMeeting();
+  await show(FreeSlots, { event });
+  (document.querySelector('button[title="Week"]') as HTMLElement).click();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  flushSync();
+
+  let saturday = new Date(2026, 8, 5).toLocaleDateString(getDateTimeLocale(), { weekday: "long" });
+  let sunday = new Date(2026, 8, 6).toLocaleDateString(getDateTimeLocale(), { weekday: "long" });
+  expect(text(".day-header .weekday").slice(5)).toEqual([saturday, sunday]);
+  expect(document.querySelectorAll(".slot").length).toBe(7 * 10);
+
+  unmount(component);
+  await show(FreeSlots, { event: newMeeting() });
+  expect(text(".day-header .weekday").length).toBe(7);
 });
 
 test("Who is free when: One column per participant, with the appointments", async () => {
