@@ -48,6 +48,7 @@ export default defineConfig({
         inline: [/lucide-svelte/],
       },
     },
+    setupFiles: ["test/realtimeWait.ts"], // the tests should not wait the real time for network timeouts, retries and throttling
   },
   build: {
     sourcemap: true
