@@ -90,11 +90,9 @@
   }
   @container event-proposal (height < 32px) {
     .time,
-    .title {
-      margin-block-start: 2px;
-    }
+    .title,
     .end {
-      margin-block: 1px;
+      margin-block: auto;
     }
   }
   @container event-proposal (height < 14px) {

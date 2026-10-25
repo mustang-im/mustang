@@ -117,7 +117,8 @@
   @container (height < 1.9em) {
     .time,
     .title {
-      margin-block-start: 1px;
+      margin-block: auto;
+      white-space: nowrap;
       font-size: clamp(8px, (100cqh - 2px) / 1.2, 1em);
       line-height: 1.2;
     }
@@ -125,7 +126,6 @@
   @container (width < 5.3ch) {
     .time,
     .title {
-      margin-block-start: 1px;
       margin-inline-start: 2px;
       font-size: clamp(8px, (100cqh - 2px) / 1.2, 10px);
       line-height: 1.2;
