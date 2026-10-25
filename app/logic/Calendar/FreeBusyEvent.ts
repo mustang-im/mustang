@@ -1,5 +1,4 @@
-import { Event } from "./Event";
-import { FreeBusyStatus, freeBusyStatusLabels } from "./FreeBusyStatus";
+import { Event, FreeBusyStatus, freeBusyStatusLabels } from "./Event";
 
 export { FreeBusyStatus, freeBusyStatusLabels };
 

@@ -4,7 +4,6 @@ import { Attachment, ContentDisposition, type MessageWithAttachments } from "../
 import { RecurrenceRule, type RecurrenceInit, Frequency } from "./RecurrenceRule";
 import { OutgoingInvitation } from "./Invitation/OutgoingInvitation";
 import { InvitationResponse, type InvitationResponseInMessage } from "./Invitation/InvitationStatus";
-import { FreeBusyStatus } from "./FreeBusyStatus";
 import type { MailAccount } from "../Mail/MailAccount";
 import type { MeetAccount } from "../Meet/MeetAccount";
 import { k1DayS, k1HourS, k1MinuteS, myTimezone } from "../util/date";
@@ -14,6 +13,7 @@ import { Lock } from "../util/flow/Lock";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
 import { randomID, AbstractFunction, assert } from "../util/util";
 import { dataError } from "../util/error";
+import { gt } from "../../l10n/l10n";
 import { ArrayColl } from "svelte-collections";
 
 export class Event extends Observable {
@@ -1054,3 +1054,19 @@ export enum RecurrenceCase {
    * Overrides a specific instance. */
   Exception = "exception",
 }
+
+export enum FreeBusyStatus {
+  Free = "free",
+  Tentative = "tentative",
+  Busy = "busy",
+  OutOfOffice = "out-of-office",
+  WorkingElsewhere = "elsewhere",
+}
+
+export const freeBusyStatusLabels: Record<FreeBusyStatus, string> = {
+  [FreeBusyStatus.Free]: gt`Free *=> Availability: Not busy at this time`,
+  [FreeBusyStatus.Tentative]: gt`Tentative *=> Availability: Has a tentative appointment at this time`,
+  [FreeBusyStatus.Busy]: gt`Busy *=> Availability: Not free at this time`,
+  [FreeBusyStatus.OutOfOffice]: gt`Out of office`,
+  [FreeBusyStatus.WorkingElsewhere]: gt`Working elsewhere`,
+};
