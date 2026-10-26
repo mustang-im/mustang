@@ -20,6 +20,7 @@ export class MailBody {
     return this.topLevel.find(e => e.hasAttribute("data-own-signature")) ?? null;
   }
 
+  /** No text and no image, e.g. `<p></p>` from the editor */
   get isEmpty(): boolean {
     return !this.doc.body.textContent.trim() && !this.doc.body.querySelector("img");
   }

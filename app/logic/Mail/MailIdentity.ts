@@ -78,7 +78,9 @@ export class MailIdentity extends Observable {
   async deleteFromServer(): Promise<void> {
   }
 
-  /** The signatures that the user can pick in the composer, the default first */
+  /** The signatures that the user can pick in the composer, the default first.
+   * Leaves out the empty ones: `signatureHTML` is null without default signature,
+   * and an extra signature is empty while the user hasn't written it yet in the settings. */
   get signatures(): ArrayColl<string> {
     return new ArrayColl([this.signatureHTML, ...this.altSignatures]
       .filter(signatureHTML => !new MailBody(signatureHTML).isEmpty));
