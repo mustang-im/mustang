@@ -3,7 +3,7 @@
   <InsertTab {editor} bind:openedTool onAttachFile={onAddAttachment} {onInsertPicture} bind:showEmojis>
     <svelte:fragment slot="include">
       <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
-        <SignatureMenuItems {identity} {editor} {mail} on:editSignatures={() => { $openSignatures = mail; }} />
+        <SignatureMenuItems {identity} {editor} {mail} />
       </RibbonMenuButton>
     </svelte:fragment>
     <svelte:fragment slot="groups">
@@ -36,7 +36,6 @@
   import EncryptionButtons from "./EncryptionButtons.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
   import PollsGroup from "./PollsGroup.svelte";
-  import { openSignatures } from "./SignaturesDialog.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import SignatureIcon from "lucide-svelte/icons/pen-line";
   import { t } from "../../../l10n/l10n";

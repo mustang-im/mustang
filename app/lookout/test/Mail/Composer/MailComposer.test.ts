@@ -8,9 +8,15 @@ import type { EMail } from "../../../../logic/Mail/EMail";
 import { DummyMailStorage } from "../../../../logic/Mail/Store/DummyMailStorage";
 import { PersonUID } from "../../../../logic/Abstract/PersonUID";
 import { sleep } from "../../../../logic/util/util";
+import { openAccountSettings } from "../../../Settings/SettingsDialogs";
 import MailComposer from "../../../Mail/Composer/MailComposer.svelte";
 import { flushSync, mount, unmount } from "svelte";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
+
+vi.mock("../../../Settings/SettingsDialogs", async importOriginal => ({
+  ...await importOriginal<typeof import("../../../Settings/SettingsDialogs")>(),
+  openAccountSettings: vi.fn(),
+}));
 
 beforeAll(() => {
   (globalThis as any).ResizeObserver ??= class {
@@ -39,6 +45,7 @@ beforeEach(async () => {
   identity.emailAddress = account.emailAddress;
   identity.realname = account.realname;
   identity.signatureHTML = "<p>Test User</p>";
+  identity.altSignatures.add("<p>Test User</p><p>Sales</p>");
   account.identities.add(identity);
   work = new MailIdentity(account);
   work.emailAddress = "test@work.example.com";
@@ -194,4 +201,30 @@ test("Changing From swaps the signature in the composer", async () => {
   expect(mail.rawHTMLDangerous).not.toContain("<p>Test User</p>");
   await selectFrom("user@example.com");
   await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test User"]));
+});
+
+async function openSignatureMenu(): Promise<HTMLButtonElement[]> {
+  let button = Array.from(document.querySelectorAll("button.ribbon-button"))
+    .find(button => button.textContent.trim() == "Signature") as HTMLButtonElement;
+  expect(button).toBeTruthy();
+  button.click();
+  await sleep(0);
+  flushSync();
+  return Array.from(document.querySelectorAll("button.lo-menuitem"));
+}
+
+test("The Signature menu lists the signatures of the From identity, and swaps the picked one in", async () => {
+  await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test User"]));
+  let items = await openSignatureMenu();
+  expect(items.map(item => item.textContent.trim())).toEqual(["Test User", "Test User · Sales", "Signatures…"]);
+  expect(items.map(item => item.classList.contains("checked"))).toEqual([true, false, false]);
+  items[1].click();
+  await vi.waitFor(() => expect(signaturesInEditor()).toEqual(["Test UserSales"]));
+  expect(mail.rawHTMLDangerous).toContain("Sales");
+});
+
+test("Signatures… opens the identities of the account in the account settings", async () => {
+  let items = await openSignatureMenu();
+  items.find(item => item.textContent.includes("Signatures…")).click();
+  expect(openAccountSettings).toHaveBeenCalledWith(account, "mail-identity");
 });

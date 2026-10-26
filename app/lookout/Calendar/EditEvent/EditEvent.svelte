@@ -54,9 +54,6 @@
   <SelectNamesDialog title={$t`Select Attendees and Resources`} persons={attendeesPicks} label={$t`Required *=> Attendees who must attend the meeting`}
     on:ok={() => flow.setAttendees(attendeesPicks.contents)} on:close={() => $openSelectAttendees = null} />
 {/if}
-{#if $openSignatures == event}
-  <SignaturesDialog identity={event.calendar?.inviteAs} on:close={() => $openSignatures = null} />
-{/if}
 <EditorToolDialogs {editor} bind:openedTool />
 
 <script lang="ts" context="module">
@@ -81,7 +78,6 @@
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
   import SchedulingAssistant from "./SchedulingAssistant.svelte";
   import SelectNamesDialog from "../../Mail/Composer/SelectNamesDialog.svelte";
-  import SignaturesDialog, { openSignatures } from "../../Mail/Composer/SignaturesDialog.svelte";
   import { FreeBusy } from "./FreeBusy";
   import { EditorTool } from "../../Shared/Editor/EditorTool";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
@@ -231,7 +227,7 @@
   }
 
   async function onKey(keyEvent: KeyboardEvent) {
-    if (keyEvent.defaultPrevented || $openRecurrence == event || showSaveChanges || seriesChoice || attendeesPicks || openedTool || $openSignatures == event) {
+    if (keyEvent.defaultPrevented || $openRecurrence == event || showSaveChanges || seriesChoice || attendeesPicks || openedTool) {
       return;
     }
     let key = keyEvent.key.toLowerCase();

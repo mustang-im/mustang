@@ -128,9 +128,6 @@
     onNo={onDiscard}
     on:close={() => showSaveChanges = false} />
 {/if}
-{#if showSignatures}
-  <SignaturesDialog identity={fromIdentity} on:close={() => $openSignatures = null} />
-{/if}
 <EditorToolDialogs {editor} bind:openedTool />
 
 <script lang="ts" context="module">
@@ -166,7 +163,6 @@
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField, openSelectNames } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
-  import SignaturesDialog, { openSignatures } from "./SignaturesDialog.svelte";
   import EditorToolDialogs from "../../Shared/Editor/EditorToolDialogs.svelte";
   import EmojiPane from "../../Shared/Editor/EmojiPane.svelte";
   import UndoRedoButtons from "../../Shared/Editor/UndoRedoButtons.svelte";
@@ -209,7 +205,6 @@
   let showEmojis = false;
   $: isSelectNamesOpen = $openSelectNames?.mail == mail;
   let showSaveChanges = false;
-  $: showSignatures = $openSignatures == mail;
   let openedTool: EditorTool | null = null;
   let ribbonLayout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   $: isChips = $ribbonLayout.value == "simplified";
@@ -472,7 +467,7 @@
     if (event.key != "Escape" || event.ctrlKey || event.altKey || event.shiftKey || event.metaKey ||
         !isTextField(event.target) ||
         event.defaultPrevented && !(event.target as HTMLElement).closest("[contenteditable]:not([contenteditable='false'])") ||
-        isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
+        isSelectNamesOpen || showSaveChanges || openedTool) {
       return;
     }
     event.preventDefault();
@@ -481,7 +476,7 @@
   }
 
   async function onKey(event: KeyboardEvent) {
-    if (isSelectNamesOpen || showSaveChanges || showSignatures || openedTool) {
+    if (isSelectNamesOpen || showSaveChanges || openedTool) {
       return;
     }
     let isCtrl = event.ctrlKey || event.metaKey;

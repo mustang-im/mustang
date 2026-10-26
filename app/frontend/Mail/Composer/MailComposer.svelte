@@ -113,6 +113,7 @@
         slot="before-undo"
         />
       <hbox slot="end" bind:this={smlAddAnchor}>
+        <SignatureButton {editor} identity={fromIdentity} />
         <Button
           label={$t`Actions`}
           icon={SMLIcon}
@@ -204,6 +205,7 @@
   import IdentitySelector from "./IdentitySelector.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";
   import EncryptionDetails from "./EncryptionDetails.svelte";
+  import SignatureButton from "./SignatureButton.svelte";
   import GraphicSelector from "../../Chat/Emoji/GraphicSelector.svelte";
   import SMLComposer from "./SMLComposer.svelte";
   import SMLAddKinds from "../SML/SMLAddKinds.svelte";

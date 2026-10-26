@@ -1,38 +1,46 @@
-{#each withSignature as signatureIdentity (signatureIdentity.id)}
-  <MenuItem label={signatureIdentity.emailAddress}
-    selected={!!mail && signatureIdentity == identity}
+{#each signatures as signatureHTML}
+  <MenuItem label={new MailBody(signatureHTML).textLine}
+    selected={!!current?.isOwnSignature(signatureHTML)}
     tooltip={mail ? $t`Use this signature in this message` : null}
     disabled={!editor}
-    onClick={() => onInsert(signatureIdentity)} />
+    onClick={() => onInsert(signatureHTML)} />
 {/each}
-{#if withSignature.length}
+{#if signatures.length}
   <MenuDivider />
 {/if}
-<MenuItem label={$t`Signatures… *=> Edit the email signatures`} onClick={() => dispatch("editSignatures")} />
+<MenuItem label={$t`Signatures… *=> Edit the email signatures`} onClick={onEditSignatures} />
 
 <script lang="ts">
   import type { EMail } from "../../../logic/Mail/EMail";
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
-  import { SignatureEdits } from "./SignatureEdits";
+  import { MailBody } from "../../../logic/Mail/MailBody";
+  import { appGlobal } from "../../../logic/app";
+  import { openAccountSettings } from "../../Settings/SettingsDialogs";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
   import MenuDivider from "../../Shared/Menu/MenuDivider.svelte";
   import type { Editor } from "@tiptap/core";
-  import { createEventDispatcher } from "svelte";
   import { t } from "../../../l10n/l10n";
 
-  export let identity: MailIdentity;
+  /** null: The signatures of all identities, e.g. in the calendar */
+  export let identity: MailIdentity | null;
   export let editor: Editor;
+  /** null: Inserts the signature at the cursor */
   export let mail: EMail | null = null;
-  const dispatch = createEventDispatcher<{ editSignatures: void }>();
 
   let identities = findAllIdentities();
-  $: withSignature = $identities.contents.filter(candidate => SignatureEdits.hasText(candidate.signatureHTML));
+  $: signatures = (identity ? [identity] : $identities.contents).flatMap(candidate => candidate.signatures.contents);
+  /** The menu opens anew each time */
+  let current = mail && editor ? new MailBody(editor.getHTML()) : null;
 
-  function onInsert(signatureIdentity: MailIdentity) {
+  function onInsert(signatureHTML: string) {
     if (mail) {
-      editor.commands.editSignature(body => body.putOwnSignature(signatureIdentity.signatureHTML));
+      editor.commands.editSignature(body => body.putOwnSignature(signatureHTML));
     } else {
-      editor.chain().focus().insertContent(signatureIdentity.signatureHTML).run();
+      editor.chain().focus().insertContent(signatureHTML).run();
     }
+  }
+
+  function onEditSignatures() {
+    openAccountSettings(identity?.account ?? appGlobal.emailAccounts.first, "mail-identity");
   }
 </script>

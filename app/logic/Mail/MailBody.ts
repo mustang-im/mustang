@@ -20,6 +20,10 @@ export class MailBody {
     return this.topLevel.find(e => e.hasAttribute("data-own-signature")) ?? null;
   }
 
+  get isEmpty(): boolean {
+    return !this.doc.body.textContent.trim() && !this.doc.body.querySelector("img");
+  }
+
   protected get topLevel(): Element[] {
     return Array.from(this.doc.body.children);
   }
@@ -31,11 +35,7 @@ export class MailBody {
    * @returns false, if nothing changed
    */
   putOwnSignature(signatureHTML: string | null, forEditing = true): boolean {
-    let footerE = this.doc.createElement("footer");
-    footerE.className = "signature";
-    footerE.setAttribute("data-own-signature", "");
-    footerE.innerHTML = signatureHTML ?? "";
-    this.removeSeparatorLine(footerE);
+    let footerE = this.newOwnSignature(signatureHTML);
     let existing = this.ownSignature;
     if (!footerE.textContent.trim() && !footerE.querySelector("img")) {
       existing?.remove();
@@ -65,6 +65,22 @@ export class MailBody {
     }
     this.doc.body.append(footerE);
     return true;
+  }
+
+  /** Whether our signature is this one, e.g. the one that the user picked.
+   * The editor may change the HTML, so this compares the text. */
+  isOwnSignature(signatureHTML: string | null): boolean {
+    let ownE = this.ownSignature;
+    return !!ownE && this.normalizedText(ownE) == this.normalizedText(this.newOwnSignature(signatureHTML));
+  }
+
+  protected newOwnSignature(signatureHTML: string | null): Element {
+    let footerE = this.doc.createElement("footer");
+    footerE.className = "signature";
+    footerE.setAttribute("data-own-signature", "");
+    footerE.innerHTML = signatureHTML ?? "";
+    this.removeSeparatorLine(footerE);
+    return footerE;
   }
 
   /** The plaintext version already starts the signature with `-- ` */
@@ -121,11 +137,29 @@ export class MailBody {
 
   /** E.g. when sending again after an error */
   protected signatureEndsWith(html: string): boolean {
-    let normalize = (text: string | null) => (text ?? "").replace(/\s+/g, " ").trim();
     let appendE = this.doc.createElement("div");
     appendE.innerHTML = html;
-    let text = normalize(appendE.textContent);
+    let text = this.normalizedText(appendE);
     return this.topLevel.some(e => e.matches(MailBody.kSignatureSelector) &&
-      normalize(e.lastElementChild?.textContent) == text);
+      this.normalizedText(e.lastElementChild) == text);
+  }
+
+  protected normalizedText(e: Element | null): string {
+    return (e?.textContent ?? "").replace(/\s+/g, " ").trim();
+  }
+
+  /** The start of the text in one line, with " · " between the lines,
+   * e.g. to show a signature in a menu */
+  get textLine(): string {
+    const kMaxLength = 60;
+    let bodyE = this.doc.body.cloneNode(true) as Element;
+    for (let lineE of bodyE.querySelectorAll("p, div, li, br, h1, h2, h3, h4, h5, h6, tr")) {
+      lineE.after("\u2029");
+    }
+    let text = bodyE.textContent.split("\u2029")
+      .map(line => line.replace(/\s+/g, " ").trim())
+      .filter(line => line)
+      .join(" · ");
+    return text.length > kMaxLength ? text.slice(0, kMaxLength - 1).trimEnd() + "…" : text;
   }
 }

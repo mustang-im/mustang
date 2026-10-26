@@ -55,7 +55,7 @@
     <RibbonButton label={$t`Link *=> Insert or edit a link in the text`} icon={LinkIcon} size="small" shortCutInfo={$t`Ctrl+K *=> Keyboard shortcut`}
       disabled={!editor} onClick={() => { $openEditorTool = { mail, tool: EditorTool.Link }; }} />
     <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon} size="small">
-      <SignatureMenuItems {identity} {editor} {mail} on:editSignatures={() => { $openSignatures = mail; }} />
+      <SignatureMenuItems {identity} {editor} {mail} />
     </RibbonMenuButton>
   </RibbonGroup>
   {#if isInline}
@@ -86,7 +86,6 @@
   import RibbonButtonRow from "../../Shared/Ribbon/RibbonButtonRow.svelte";
   import { checkNamesOf, openEditorTool } from "./MailComposer.svelte";
   import { openSelectNames, RecipientField } from "./SelectNamesDialog.svelte";
-  import { openSignatures } from "./SignaturesDialog.svelte";
   import SignatureMenuItems from "./SignatureMenuItems.svelte";
   import ShowFieldsGroup from "./ShowFieldsGroup.svelte";
   import EncryptionButtons from "./EncryptionButtons.svelte";

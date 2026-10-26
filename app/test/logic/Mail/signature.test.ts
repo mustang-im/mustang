@@ -428,3 +428,57 @@ test("User text: Checking it doesn't change the body", () => {
   expect(body.hasUserText).toBe(false);
   expect(body.html).toBe(html);
 });
+
+// Several signatures per identity
+
+test("An identity keeps its extra signatures in the config", () => {
+  personal.altSignatures.replaceAll([kWork, "<p>Fred</p>"]);
+  let loaded = new MailIdentity(account);
+  loaded.fromConfigJSON(JSON.parse(JSON.stringify(personal.toConfigJSON())));
+  expect(loaded.altSignatures.contents).toEqual([kWork, "<p>Fred</p>"]);
+
+  // An older config without them
+  let config = personal.toConfigJSON();
+  delete config.altSignatures;
+  loaded.fromConfigJSON(config);
+  expect(loaded.altSignatures.isEmpty).toBe(true);
+});
+
+test("The signatures to pick: The default first, without empty ones", () => {
+  personal.altSignatures.replaceAll(["<p></p>", kWork, ""]);
+  expect(personal.signatures.contents).toEqual([kFred, kWork]);
+  personal.signatureHTML = null;
+  expect(personal.signatures.contents).toEqual([kWork]);
+  personal.altSignatures.replaceAll([`<p><img src="data:image/png;base64,AAAA"></p>`]);
+  expect(personal.signatures.length).toBe(1);
+});
+
+test("Picking another signature of the same identity swaps ours", () => {
+  personal.altSignatures.add(kWork);
+  let mail = account.newEMailFrom();
+  let body = new MailBody(addSignature(mail, personal, "<p>See you</p>"));
+  expect(body.isOwnSignature(kFred)).toBe(true);
+  expect(body.isOwnSignature(kWork)).toBe(false);
+  expect(body.putOwnSignature(personal.altSignatures.first)).toBe(true);
+  expect(ownSignatureText(body.html)).toBe("Fred Miller, CTO");
+  expect(body.isOwnSignature(kWork)).toBe(true);
+  expect(body.isOwnSignature(kFred)).toBe(false);
+});
+
+test("The picked signature is recognized, even when the editor changed its HTML", () => {
+  let body = new MailBody(`<p>Hi</p><footer class="signature" data-own-signature=""><p>Fred<br>Miller</p></footer>`);
+  expect(body.isOwnSignature("Fred<br>Miller")).toBe(true);
+  expect(body.isOwnSignature("<p>-- </p><p>Fred<br>Miller</p>")).toBe(true);
+  expect(body.isOwnSignature("Fred")).toBe(false);
+  // Not a signature of a forwarded mail
+  expect(new MailBody(`<p>Hi</p><footer class="signature"><p>Fred<br>Miller</p></footer>`).isOwnSignature("Fred<br>Miller")).toBe(false);
+});
+
+test("A signature in one line, e.g. for a menu", () => {
+  expect(new MailBody(kFred).textLine).toBe("Fred Miller · Example Inc.");
+  expect(new MailBody("Fred<br>Miller<br>\n<br>  CTO").textLine).toBe("Fred · Miller · CTO");
+  expect(new MailBody("<p>Fred\n  Miller</p><div><p>CTO</p></div>").textLine).toBe("Fred Miller · CTO");
+  let long = new MailBody(`<p>${"Fred Miller ".repeat(10)}</p>`).textLine;
+  expect(long.length).toBeLessThanOrEqual(60);
+  expect(long.endsWith("…")).toBe(true);
+});

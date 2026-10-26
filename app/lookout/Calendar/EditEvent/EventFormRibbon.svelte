@@ -156,7 +156,7 @@
     <InsertTab {editor} bind:openedTool onAttachFile={onAddAttachment} bind:showEmojis>
       <svelte:fragment slot="include">
         <RibbonMenuButton label={$t`Signature`} icon={SignatureIcon}>
-          <SignatureMenuItems identity={null} {editor} on:editSignatures={() => { $openSignatures = event; }} />
+          <SignatureMenuItems identity={null} {editor} />
         </RibbonMenuButton>
       </svelte:fragment>
     </InsertTab>
@@ -183,7 +183,6 @@
   import type { EditorTool } from "../../Shared/Editor/EditorTool";
   import type { Editor } from "@tiptap/core";
   import SignatureMenuItems from "../../Mail/Composer/SignatureMenuItems.svelte";
-  import { openSignatures } from "../../Mail/Composer/SignaturesDialog.svelte";
   import FileSelector from "../../../frontend/Mail/Composer/Attachments/FileSelector.svelte";
   import { openSelectAttendees } from "./EditEvent.svelte";
   import { openRecurrence } from "./RecurrenceDialog.svelte";

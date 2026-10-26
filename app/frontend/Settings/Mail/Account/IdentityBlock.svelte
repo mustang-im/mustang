@@ -72,6 +72,32 @@
         {#if showSentByExplainer}
           <SentByExplainer />
         {/if}
+
+        {#if $altSignatures.hasItems}
+          <hbox class="alt-signatures-header">{$t`More signatures, to pick in the mail composer`}</hbox>
+        {/if}
+        {#each $altSignatures.each as signatureHTML, i}
+          <vbox class="signature-editor-box alt-signature">
+            <HTMLEditorToolbar editor={altEditors[i]}>
+              <Button
+                label={$t`Delete this signature`}
+                icon={DeleteIcon}
+                iconOnly
+                onClick={() => identity.altSignatures.splice(i, 1)}
+                slot="end"
+                />
+            </HTMLEditorToolbar>
+            <HTMLEditor html={signatureHTML} bind:editor={altEditors[i]}
+              on:change={event => onAltSignatureChange(i, event.detail)} />
+          </vbox>
+        {/each}
+        <hbox class="add-signature">
+          <Button
+            label={$t`Add signature`}
+            icon={AddIcon}
+            onClick={() => identity.altSignatures.add("")}
+            />
+        </hbox>
       </vbox>
     {/if}
 
@@ -99,7 +125,9 @@
   import ExpanderButtons from "../../../Shared/ExpanderButtons.svelte";
   import HeaderGroupBox from "../../../Shared/HeaderGroupBox.svelte";
   import RoundButton from "../../../Shared/RoundButton.svelte";
+  import Button from "../../../Shared/Button.svelte";
   import DeleteIcon from "lucide-svelte/icons/trash-2";
+  import AddIcon from "lucide-svelte/icons/plus";
   import RemoveIcon from "lucide-svelte/icons/circle-x";
   import type { Editor } from "@tiptap/core";
   import { appName, siteRoot } from "../../../../logic/build";
@@ -116,13 +144,15 @@
 
   let showReplyTo = !!identity.replyTo;
   let showOrganisation = !!identity.organisation;
-  let showSignature = !!identity.signatureHTML;
+  let showSignature = !!identity.signatureHTML || identity.altSignatures.hasItems;
   let showSentBy = !gLicense.license;
   let showSentByExplainer = false;
   $: keys = identity.encryptionPrivateKeys;
   $: showEncryption = $keys.hasItems;
   let showEncryptionOverride = false;
   let editor: Editor;
+  let altEditors: Editor[] = [];
+  $: altSignatures = identity.altSignatures;
   let emailInput: HTMLInputElement;
   $: $identity.emailAddress && checkInputField(() => sanitize.emailAddress($identity.emailAddress.replace("*", "any")), emailInput);
 
@@ -139,6 +169,10 @@
     if (identity.signatureHTML == "<p></p>") {
       identity.signatureHTML = null;
     }
+  }
+
+  function onAltSignatureChange(i: number, signatureHTML: string) {
+    identity.altSignatures.splice(i, 1, signatureHTML);
   }
 
   onMount(() => catchErrors(async () => {
@@ -174,6 +208,15 @@
   .signature :global(.html-editor) {
     min-height: 5em;
     padding: 8px;
+  }
+  .alt-signatures-header {
+    margin-block-start: 24px;
+  }
+  .alt-signature {
+    margin-block-start: 8px;
+  }
+  .add-signature {
+    margin-block-start: 12px;
   }
   .sentBy {
     padding: 8px 16px;
