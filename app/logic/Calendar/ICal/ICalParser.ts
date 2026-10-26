@@ -44,6 +44,15 @@ export class ICalContainer {
 
 export class ICalParser {
   containers: Record<string, ICalContainer[]> = Object.create(null);
+
+  /** The `VEVENT`s of all `VCALENDAR`s, and those without a `VCALENDAR` */
+  get vevents(): ICalContainer[] {
+    return [
+      ...this.containers.vcalendar?.flatMap(vcalendar => vcalendar.containers.vevent ?? []) ?? [],
+      ...this.containers.vevent ?? [],
+    ];
+  }
+
   constructor(textFile: string) {
     let current: ICalContainer | ICalParser = this;
     let lines = textFile.replace(/[\r\n]+/g, "\n").replace(/\n\s|\n$/g, "").split("\n");
@@ -53,15 +62,11 @@ export class ICalParser {
       if (/^BEGIN:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
         let container = new ICalContainer(current);
-        this.containers[name] = append(this.containers[name], container);
-        if (current instanceof ICalContainer) {
-          current.containers[name] = append(current.containers[name], container);
-        }
+        current.containers[name] = append(current.containers[name], container);
         current = container;
       } else if (/^END:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
-        assert(this.containers[name] && this.containers[name].at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
-        assert(current instanceof ICalContainer, "END without BEGIN");
+        assert(current instanceof ICalContainer && current.parent.containers[name]?.at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
         current = current.parent;
       } else {
         assert(current instanceof ICalContainer, gt`Item outside container` + gt`. Line ${i}: ${line}`);

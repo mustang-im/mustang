@@ -18,8 +18,8 @@ import type { ArrayColl } from "svelte-collections";
  */
 export function convertICalToEvent(ics: string, event: Event): boolean {
   let parsed = new ICalParser(ics);
-  let vevents = parsed.containers.vevent;
-  if (!vevents?.length) {
+  let vevents = parsed.vevents;
+  if (!vevents.length) {
     return false;
   }
   // A recurring event with modified occurrences has multiple VEVENTs:
@@ -37,11 +37,11 @@ export function convertICalToEvent(ics: string, event: Event): boolean {
  */
 export function convertICalToEvents(iCalFile: string, newEvent: () => Event, errorCallback: (ex: Error) => void): Event[] {
   let events = [];
-  let parsed = new ICalParser(iCalFile);
-  if (!parsed.containers.vevent) {
+  let vevents = new ICalParser(iCalFile).vevents;
+  if (!vevents.length) {
     throw new Error(gt`No iCal found`);
   }
-  for (let iCal of parsed.containers.vevent) {
+  for (let iCal of vevents) {
     try {
       let event = newEvent();
       convertICalContainerToEvent(iCal, event);
