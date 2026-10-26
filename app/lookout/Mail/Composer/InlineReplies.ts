@@ -1,5 +1,5 @@
 import type { EMail } from "../../../logic/Mail/EMail";
-import { hasUserText } from "./DraftContent";
+import { MailBody } from "../../../logic/Mail/MailBody";
 import { askYesNo } from "../../Shared/Dialog/MessageBox";
 import { inlineReplies, inlineRibbon } from "../Selected";
 import { get } from "svelte/store";
@@ -24,7 +24,7 @@ export interface InlineRibbon {
 
 export async function startInlineReply(original: EMail, draft: EMail) {
   let existing = inlineReplies.find(reply => reply.original == original) ?? null;
-  if (existing && hasUserText(existing.draft.html) &&
+  if (existing && new MailBody(existing.draft.html).hasUserText &&
       !await askYesNo(gt`Discard Draft`, gt`You already started a response to this message. Do you want to discard it and start a new one?`)) {
     return;
   }

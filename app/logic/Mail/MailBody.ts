@@ -1,4 +1,4 @@
-/** The HTML body of an email, for handling its signatures */
+/** The HTML body of an email that the user writes: our signature, the quote and the user's text */
 export class MailBody {
   /** Keep in sync with content.css */
   static readonly kSignatureSelector = "footer.signature, .moz-signature, .gmail_signature";
@@ -90,6 +90,17 @@ export class MailBody {
     for (let signatureE of this.doc.querySelectorAll(MailBody.kSignatureSelector)) {
       signatureE.remove();
     }
+  }
+
+  /** Whether the user wrote something, apart from the quote and the signatures.
+   * E.g. to close the composer without asking to save. */
+  get hasUserText(): boolean {
+    let bodyE = this.doc.body.cloneNode(true) as Element;
+    for (let notUserE of bodyE.querySelectorAll("blockquote, " + MailBody.kSignatureSelector)) {
+      notUserE.remove();
+    }
+    let text = bodyE.textContent.replace(/\s+/g, "");
+    return text.length >= 100; // Ignore attribution line before quote. TODO Match more precisely
   }
 
   /** Removes the marker of our signature, and adds `appendHTML` to the signature */

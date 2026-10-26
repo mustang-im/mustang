@@ -200,7 +200,7 @@ export class ComposeActions {
   async redirect(): Promise<EMail> {
     await this.email.loadAttachments();
     let redirect = this.email.folder.account.newEMailFrom();
-    redirect.composeSignature = ComposeSignature.Keep;
+    redirect.needsSignature = false;
     redirect.replyTo = this.email.from;
     redirect.subject = this.email.subject;
     redirect.html = this.email.html;
@@ -211,7 +211,7 @@ export class ComposeActions {
   async editAsNew(): Promise<EMail> {
     await this.email.loadAttachments();
     let clone = this.email.folder.account.newEMailFrom();
-    clone.composeSignature = ComposeSignature.Keep;
+    clone.needsSignature = false;
     clone.to.addAll(this.email.to);
     clone.cc.addAll(this.email.cc);
     clone.subject = this.email.subject;
@@ -314,32 +314,28 @@ export class ComposeActions {
   /**
    * For a new mail, reply or forward, when the composer opens it.
    * `send()` adds it for mails which skip the composer.
-   * @param html The body in the editor
-   * @returns The new body, or null, if nothing changed
+   * @param body In the editor
+   * @returns false, if nothing changed
    */
-  addSignature(identity: MailIdentity, html: string): string | null {
-    if (this.email.composeSignature != ComposeSignature.Add) {
-      return null;
+  addSignature(identity: MailIdentity, body: MailBody): boolean {
+    if (!this.email.needsSignature) {
+      return false;
     }
-    return this.putSignature(identity, html);
+    this.email.needsSignature = false;
+    return body.putOwnSignature(identity.signatureHTML);
   }
 
-  /** The user changed the From identity
-   * @returns The new body, or null, if nothing changed */
-  changeSignature(identity: MailIdentity, html: string): string | null {
-    let state = this.email.composeSignature;
-    if (state == ComposeSignature.Add ||
-        state == ComposeSignature.Keep && !new MailBody(html).ownSignature) {
-      return null;
+  /**
+   * The user changed the From identity: Swaps our signature.
+   * If the previous identity has none, adds the signature of the new identity.
+   * @param body In the editor
+   * @returns false, if nothing changed
+   */
+  changeSignature(previous: MailIdentity, identity: MailIdentity, body: MailBody): boolean {
+    if (!body.ownSignature && previous.signatureHTML) { // The user removed it, or it's e.g. a redirect
+      return false;
     }
-    return this.putSignature(identity, html);
-  }
-
-  /** @returns The new body, or null, if nothing changed */
-  putSignature(identity: MailIdentity, html: string): string | null {
-    this.email.composeSignature = ComposeSignature.Added;
-    let body = new MailBody(html);
-    return body.putOwnSignature(identity.signatureHTML) ? body.html : null;
+    return body.putOwnSignature(identity.signatureHTML);
   }
 
   /**
@@ -367,11 +363,11 @@ export class ComposeActions {
     }
     let account = fromIdentity.account;
 
-    if (this.email.composeSignature == ComposeSignature.Add) {
+    if (this.email.needsSignature) {
       let body = new MailBody(this.email.html);
-      if (body.putOwnSignature(fromIdentity.signatureHTML, false)) {
-        this.email.html = body.html;
-      }
+      body.putOwnSignature(fromIdentity.signatureHTML, false);
+      this.email.html = body.html;
+      this.email.needsSignature = false;
     }
     await this.convertInlineAttachmentsURLs();
     const kSentByHTML = `<p style="color: #777777">Sent by © <a href="https://parula.app" style="color: #20AE9E; text-decoration: none"><strong><em>Parula</em></strong></a></p>`;
@@ -380,7 +376,6 @@ export class ComposeActions {
     let body = new MailBody(this.email.html);
     body.prepareForSending(gLicense?.license ? null : kSentByHTML);
     this.email.html = body.html;
-    this.email.composeSignature = ComposeSignature.Keep;
     this.email.regenerateTextFromHTML();
     this.email.headers.set("User-Agent", (appName == "Mustang" ? "" : `Mustang/${appVersion} `) + `${appName}/${appVersion}`);
 
@@ -460,15 +455,6 @@ export class ComposeActions {
       await previousDraft.deleteMessage();
     }
   }
-}
-
-/** Whether the composer manages the signature of the From identity */
-export enum ComposeSignature {
-  /** When the composer opens the mail, or at the latest when sending */
-  Add = "add",
-  Added = "added",
-  /** Only an existing own signature, e.g. of a draft */
-  Keep = "keep",
 }
 
 /** What `send()` still has to do, once the mail went out.

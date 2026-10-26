@@ -273,7 +273,7 @@
     if (hasHTML) {
       editor.commands.setContent(mail.html);
     }
-    editor.commands.setContentWithSignature(mail.compose.addSignature(fromIdentity, editor.getHTML()));
+    editor.commands.editSignature(body => mail.compose.addSignature(fromIdentity, body));
     setCursorDefault();
   }
 
@@ -293,7 +293,7 @@
     let previousIdentity = mail.identity;
     mail.identity = fromIdentity;
     if (previousIdentity && previousIdentity != fromIdentity && editor) {
-      editor.commands.setContentWithSignature(mail.compose.changeSignature(fromIdentity, editor.getHTML()));
+      editor.commands.editSignature(body => mail.compose.changeSignature(previousIdentity, fromIdentity, body));
     }
     mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;

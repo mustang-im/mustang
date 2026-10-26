@@ -62,7 +62,6 @@ beforeEach(async () => {
     saveAsDraft: vi.fn(async () => {}),
     addSignature: realCompose.addSignature.bind(realCompose),
     changeSignature: realCompose.changeSignature.bind(realCompose),
-    putSignature: realCompose.putSignature.bind(realCompose),
   } as any;
   vi.spyOn(mail, "compose", "get").mockReturnValue(compose as any);
 

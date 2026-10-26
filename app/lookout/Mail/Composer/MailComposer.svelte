@@ -146,6 +146,7 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { MailBody } from "../../../logic/Mail/MailBody";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
@@ -162,7 +163,6 @@
   import { isTextField } from "../../Util/util";
   import { getOSName } from "../../../frontend/Util/util";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { hasUserText } from "./DraftContent";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField, openSelectNames } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
@@ -260,7 +260,7 @@
     if (hasHTML) {
       editor.commands.setContent(mail.html);
     }
-    editor.commands.setContentWithSignature(mail.compose.addSignature(fromIdentity, editor.getHTML()));
+    editor.commands.editSignature(body => mail.compose.addSignature(fromIdentity, body));
     setCursorDefault();
   }
 
@@ -280,7 +280,7 @@
     let previousIdentity = mail.identity;
     mail.identity = fromIdentity;
     if (previousIdentity && previousIdentity != fromIdentity && editor) {
-      editor.commands.setContentWithSignature(mail.compose.changeSignature(fromIdentity, editor.getHTML()));
+      editor.commands.editSignature(body => mail.compose.changeSignature(previousIdentity, fromIdentity, body));
     }
     mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
@@ -436,7 +436,7 @@
   }
 
   function onCloseRequest() {
-    if (hasUserText(mail.html)) {
+    if (new MailBody(mail.html).hasUserText) {
       showSaveChanges = true;
     } else {
       onClose();

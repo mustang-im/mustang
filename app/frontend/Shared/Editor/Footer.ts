@@ -1,10 +1,12 @@
 import { mergeAttributes, Node } from "@tiptap/core";
+import { MailBody } from "../../../logic/Mail/MailBody";
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     footer: {
-      /** @param html The whole body, with the changed signature. null = nothing changed */
-      setContentWithSignature: (html: string | null) => ReturnType,
+      /** Changes our signature, not as undo step
+       * @param change returns false, if it changed nothing */
+      editSignature: (change: (body: MailBody) => boolean) => ReturnType,
       focusBeforeSignature: () => ReturnType,
     }
   }
@@ -45,14 +47,15 @@ export const Footer = Node.create<FooterOptions>({
 
   addCommands() {
     return {
-      setContentWithSignature: (html: string | null) => ({ chain, tr }) => {
-        if (html == null) {
+      editSignature: (change: (body: MailBody) => boolean) => ({ editor, chain, tr }) => {
+        let body = new MailBody(editor.getHTML());
+        if (!change(body)) {
           return false;
         }
         // Undo should not bring back the signature of the previous From identity
         tr.setMeta("addToHistory", false);
         let { from } = tr.selection;
-        return chain().setContent(html).setTextSelection(from).run();
+        return chain().setContent(body.html).setTextSelection(from).run();
       },
       focusBeforeSignature: () => ({ chain, state }) => {
         let signaturePos: number | null = null;

@@ -4,7 +4,6 @@ import { appGlobal } from "../../../logic/app";
 import { newTestEMail, setUpAccount, type TestMailAccount } from "./TestMailAccount";
 import { MailIdentity } from "../../../logic/Mail/MailIdentity";
 import { MailBody } from "../../../logic/Mail/MailBody";
-import { ComposeSignature } from "../../../logic/Mail/ComposeActions";
 import { SpecialFolder } from "../../../logic/Mail/Folder";
 import { PersonUID } from "../../../logic/Abstract/PersonUID";
 import type { EMail } from "../../../logic/Mail/EMail";
@@ -91,19 +90,33 @@ async function send(mail: EMail) {
 
 // Composing
 
+/** What the composer does when it opens the mail
+ * @returns null, if nothing changed */
+function addSignature(mail: EMail, identity: MailIdentity, html: string): string | null {
+  let body = new MailBody(html);
+  return mail.compose.addSignature(identity, body) ? body.html : null;
+}
+
+/** What the composer does when the user changes From
+ * @returns null, if nothing changed */
+function changeSignature(mail: EMail, previous: MailIdentity, identity: MailIdentity, html: string): string | null {
+  let body = new MailBody(html);
+  return mail.compose.changeSignature(previous, identity, body) ? body.html : null;
+}
+
 test("A new mail gets the signature at the end, below an empty line to type in", () => {
   let mail = account.newEMailFrom();
-  let html = mail.compose.addSignature(personal, "<p></p>");
+  let html = addSignature(mail, personal, "<p></p>");
   expect(topLevel(html)).toEqual(["P", "FOOTER"]);
   expect(ownSignatureText(html)).toBe("Fred MillerExample Inc.");
-  expect(mail.composeSignature).toBe(ComposeSignature.Added);
+  expect(mail.needsSignature).toBe(false);
   // Only once
-  expect(mail.compose.addSignature(personal, html)).toBeNull();
+  expect(addSignature(mail, personal, html)).toBeNull();
 });
 
 test("Reply with quote below: The signature goes between the reply and the quote", () => {
   let reply = receivedMail("<p>Lunch at 12?</p>").compose.replyToAuthor();
-  let html = reply.compose.addSignature(personal, reply.html);
+  let html = addSignature(reply, personal, reply.html);
   expect(topLevel(html)).toEqual(["P", "P", "FOOTER", "P", "BLOCKQUOTE"]);
   expect(doc(html).querySelector("footer + p.quote-header")).not.toBeNull();
 });
@@ -111,7 +124,7 @@ test("Reply with quote below: The signature goes between the reply and the quote
 test("Reply with quote above: The signature goes at the end", () => {
   localStorage.setItem("mail.send.quote", JSON.stringify("above"));
   let reply = receivedMail("<p>Lunch at 12?</p>").compose.replyToAuthor();
-  let tags = topLevel(reply.compose.addSignature(personal, reply.html));
+  let tags = topLevel(addSignature(reply, personal, reply.html));
   expect(tags.at(-1)).toBe("FOOTER");
   expect(tags.indexOf("BLOCKQUOTE")).toBeLessThan(tags.indexOf("FOOTER"));
 });
@@ -119,7 +132,7 @@ test("Reply with quote above: The signature goes at the end", () => {
 test("Forward: Our signature goes above the forwarded mail, which keeps its own signature", async () => {
   let original = receivedMail(`<p>Menu attached</p><footer class="signature"><p>Anna</p></footer>`);
   let forward = await original.compose.forwardInline();
-  let html = forward.compose.addSignature(personal, forward.html);
+  let html = addSignature(forward, personal, forward.html);
   let footers = Array.from(doc(html).body.querySelectorAll("footer"));
   expect(footers.map(f => f.textContent)).toEqual(["Fred MillerExample Inc.", "Anna"]);
   expect(footers[0].nextElementSibling.tagName).toBe("HR");
@@ -127,87 +140,93 @@ test("Forward: Our signature goes above the forwarded mail, which keeps its own 
 
 test("The editor drops the class of the quote header, but the signature still goes above it", () => {
   let mail = account.newEMailFrom();
-  let html = mail.compose.addSignature(personal, "<p>Hi Anna</p><p></p><p>Anna wrote:</p><blockquote><p>Lunch?</p></blockquote>");
+  let html = addSignature(mail, personal, "<p>Hi Anna</p><p></p><p>Anna wrote:</p><blockquote><p>Lunch?</p></blockquote>");
   expect(topLevel(html)).toEqual(["P", "P", "FOOTER", "P", "BLOCKQUOTE"]);
 });
 
 test("Changing From swaps only our signature, in the same place", async () => {
   let original = receivedMail(`<p>Menu attached</p><footer class="signature"><p>Anna</p></footer>`);
   let forward = await original.compose.forwardInline();
-  let html = forward.compose.addSignature(personal, forward.html);
-  let swapped = forward.compose.changeSignature(work, html);
+  let html = addSignature(forward, personal, forward.html);
+  let swapped = changeSignature(forward, personal, work, html);
   expect(ownSignatureText(swapped)).toBe("Fred Miller, CTO");
   expect(Array.from(doc(swapped).body.querySelectorAll("footer")).map(f => f.textContent))
     .toEqual(["Fred Miller, CTO", "Anna"]);
 
   // An identity without signature removes ours, but not Anna's
   let none = new MailIdentity(account);
-  let removed = forward.compose.changeSignature(none, swapped);
+  let removed = changeSignature(forward, work, none, swapped);
   expect(new MailBody(removed).ownSignature).toBeNull();
   expect(doc(removed).body.querySelector("footer").textContent).toBe("Anna");
 
   // ... and back to an identity with signature puts it above the forwarded mail again
-  let back = forward.compose.changeSignature(personal, removed);
+  let back = changeSignature(forward, none, personal, removed);
   expect(doc(back).querySelector("footer + hr")).not.toBeNull();
 });
 
 test("Changing From from an identity without signature adds the new signature", () => {
   personal.signatureHTML = null;
   let mail = account.newEMailFrom();
-  expect(mail.compose.addSignature(personal, "<p></p>")).toBeNull();
-  expect(ownSignatureText(mail.compose.changeSignature(work, "<p></p>"))).toBe("Fred Miller, CTO");
+  expect(addSignature(mail, personal, "<p></p>")).toBeNull();
+  expect(ownSignatureText(changeSignature(mail, personal, work, "<p></p>"))).toBe("Fred Miller, CTO");
 });
 
 test("Changing From keeps text that the user typed", () => {
   let mail = account.newEMailFrom();
-  let html = mail.compose.addSignature(personal, "<p></p>");
+  let html = addSignature(mail, personal, "<p></p>");
   html = html.replace("<p></p>", "<p>See you!</p>");
-  html = mail.compose.changeSignature(work, html);
+  html = changeSignature(mail, personal, work, html);
   expect(doc(html).body.textContent).toBe("See you!Fred Miller, CTO");
 });
 
 test("Changing From to the same signature changes nothing", () => {
   let mail = account.newEMailFrom();
-  let html = mail.compose.addSignature(personal, "<p></p>");
-  expect(mail.compose.changeSignature(personal, html)).toBeNull();
+  let html = addSignature(mail, personal, "<p></p>");
+  expect(changeSignature(mail, personal, personal, html)).toBeNull();
+});
+
+test("Changing From doesn't bring back a signature that the user removed", () => {
+  let mail = account.newEMailFrom();
+  addSignature(mail, personal, "<p></p>");
+  expect(changeSignature(mail, personal, work, "<p>No signature, please</p>")).toBeNull();
 });
 
 test("Changing From before the composer added the signature waits for it", () => {
   let mail = account.newEMailFrom();
-  expect(mail.compose.changeSignature(work, "<p></p>")).toBeNull();
-  expect(ownSignatureText(mail.compose.addSignature(work, "<p></p>"))).toBe("Fred Miller, CTO");
+  expect(changeSignature(mail, personal, work, "<p></p>")).toBeNull();
+  expect(ownSignatureText(addSignature(mail, work, "<p></p>"))).toBe("Fred Miller, CTO");
 });
 
 test("Redirect and Edit as New don't get a signature", async () => {
   let original = receivedMail("<p>Lunch at 12?</p>");
   let redirect = await original.compose.redirect();
-  expect(redirect.compose.addSignature(personal, redirect.html)).toBeNull();
-  expect(redirect.compose.changeSignature(work, redirect.html)).toBeNull();
+  expect(addSignature(redirect, personal, redirect.html)).toBeNull();
+  expect(changeSignature(redirect, personal, work, redirect.html)).toBeNull();
   let clone = await original.compose.editAsNew();
-  expect(clone.compose.addSignature(personal, clone.html)).toBeNull();
+  expect(addSignature(clone, personal, clone.html)).toBeNull();
 });
 
 test("A sent mail that we edit as new keeps its signature on From change", async () => {
   let sent = receivedMail(`<p>Hi</p><footer class="signature"><p>Fred Miller</p></footer>`);
   let clone = await sent.compose.editAsNew();
-  expect(clone.compose.changeSignature(work, clone.html)).toBeNull();
+  expect(changeSignature(clone, personal, work, clone.html)).toBeNull();
 });
 
 test("A reopened draft swaps its signature only if it has ours", () => {
   let draft = account.getSpecialFolder(SpecialFolder.Drafts).newEMail();
   draft.isDraft = true;
   draft.html = `<p>Hi</p><footer class="signature" data-own-signature=""><p>Fred Miller</p></footer>`;
-  expect(draft.compose.addSignature(personal, draft.html)).toBeNull();
-  expect(ownSignatureText(draft.compose.changeSignature(work, draft.html))).toBe("Fred Miller, CTO");
+  expect(addSignature(draft, personal, draft.html)).toBeNull();
+  expect(ownSignatureText(changeSignature(draft, personal, work, draft.html))).toBe("Fred Miller, CTO");
 
   let draftWithout = account.getSpecialFolder(SpecialFolder.Drafts).newEMail();
   draftWithout.html = `<p>Hi</p>`;
-  expect(draftWithout.compose.changeSignature(work, draftWithout.html)).toBeNull();
+  expect(changeSignature(draftWithout, personal, work, draftWithout.html)).toBeNull();
 });
 
 test("Picking a signature explicitly also works on a redirect", async () => {
   let redirect = await receivedMail("<p>Lunch at 12?</p>").compose.redirect();
-  expect(ownSignatureText(redirect.compose.putSignature(work, redirect.html))).toBe("Fred Miller, CTO");
+  expect(ownSignatureText(putOwnSignature(redirect.html, work.signatureHTML))).toBe("Fred Miller, CTO");
 });
 
 // Replying
@@ -264,7 +283,7 @@ test("Plaintext signature: Only `-- ` with space, and only if no quote follows i
 test("Sent mail: Markers in HTML and plaintext, without the composer marker", async () => {
   let mail = newTestEMail(account);
   mail.identity = personal;
-  mail.html = mail.compose.addSignature(personal, "<p></p>").replace("<p></p>", "<p>See you at 12</p>");
+  mail.html = addSignature(mail, personal, "<p></p>").replace("<p></p>", "<p>See you at 12</p>");
   await send(mail);
 
   expect(mail.rawHTMLDangerous).not.toContain("data-own-signature");
@@ -280,7 +299,7 @@ test("Send sanitizes the body, so the signature has no remote images", async () 
   personal.signatureHTML = `<p>Fred Miller</p><img src="https://example.com/logo.png"><img src="data:image/png;base64,AAAA">`;
   let mail = newTestEMail(account);
   mail.identity = personal;
-  mail.html = mail.compose.addSignature(personal, "<p>Hi</p>");
+  mail.html = addSignature(mail, personal, "<p>Hi</p>");
   expect(mail.rawHTMLDangerous).toContain("https://example.com/logo.png");
   await send(mail);
   expect(mail.rawHTMLDangerous).not.toContain("https://example.com/logo.png");
@@ -306,7 +325,7 @@ test("A quick reply gets the signature right after the text, without an empty li
 test("Send does not add the signature again, if the user removed it in the composer", async () => {
   let mail = newTestEMail(account);
   mail.identity = personal;
-  mail.compose.addSignature(personal, "<p></p>");
+  addSignature(mail, personal, "<p></p>");
   mail.html = "<p>No signature, please</p>";
   await send(mail);
   expect(mail.text).toBe("No signature, please");
@@ -316,7 +335,7 @@ test("Unlicensed: The Sent by line goes into our signature, and only once", asyn
   gLicense.license = null;
   let mail = newTestEMail(account);
   mail.identity = personal;
-  mail.html = mail.compose.addSignature(personal, "<p></p>");
+  mail.html = addSignature(mail, personal, "<p></p>");
   await send(mail);
   let footers = doc(mail.rawHTMLDangerous).querySelectorAll("footer");
   expect(footers.length).toBe(1);
@@ -378,4 +397,34 @@ test("Signatures of older versions of this app are recognized", () => {
   let body = new MailBody(html);
   body.removeSignatures();
   expect(body.html).toBe("<p>Hi</p>");
+});
+
+const kLongText = "This is a longer message that the user wrote, with enough words to count as real content of the email. It has two sentences.";
+
+test("User text: Empty and short mails have none", () => {
+  expect(new MailBody("").hasUserText).toBe(false);
+  expect(new MailBody("<p></p>").hasUserText).toBe(false);
+  expect(new MailBody("<p>Thanks!</p>").hasUserText).toBe(false);
+  expect(new MailBody(`<p>${kLongText}</p>`).hasUserText).toBe(true);
+});
+
+test("User text: Quotes, whitespace and signatures don't count", () => {
+  let reply = `<p class="quote-header">Anna wrote on 1/2/2026:</p><blockquote><p>${kLongText}</p></blockquote>`;
+  expect(new MailBody(reply).hasUserText).toBe(false);
+  expect(new MailBody(`<p>${kLongText}</p>${reply}`).hasUserText).toBe(true);
+  expect(new MailBody("<p>" + "a ".repeat(60) + "</p>").hasUserText).toBe(false);
+  for (let signature of [
+    `<footer class="signature" data-own-signature=""><p>${kLongText}</p></footer>`,
+    `<div class="moz-signature">-- <br>${kLongText}</div>`,
+    `<div class="gmail_signature">${kLongText}</div>`,
+  ]) {
+    expect(new MailBody(`<p></p>${signature}`).hasUserText).toBe(false);
+  }
+});
+
+test("User text: Checking it doesn't change the body", () => {
+  let html = `<p>Hi</p><footer class="signature" data-own-signature=""><p>Fred</p></footer>`;
+  let body = new MailBody(html);
+  expect(body.hasUserText).toBe(false);
+  expect(body.html).toBe(html);
 });
