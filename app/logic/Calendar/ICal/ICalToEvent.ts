@@ -4,6 +4,7 @@ import { RecurrenceRule } from "../RecurrenceRule";
 import { ParticipationStatus, InvitationResponse } from "../Invitation/InvitationStatus";
 import { ContentDisposition } from "../../Abstract/Attachment";
 import { ICalContainer, ICalParser } from "./ICalParser";
+import { ICalTimezone } from "./ICalTimezone";
 import { WindowsToIANATimezone } from "./WindowsTimezone";
 import { fileExtensionForMIMEType } from "../../util/util";
 import { base64ToUint8Array, stringFromDataURL } from "../../util/blob";
@@ -232,6 +233,16 @@ export function parseDate(icalDate: { value: string, properties: { tzid?: string
     }
     return [local, tzid];
   } catch (ex) {
-    return [container?.findTimezone(tzid)?.toUTC(utc) ?? null, null];
+    return [vtimezoneToUTC(container, tzid, utc), null];
   }
+}
+
+/**
+ * For a `TZID` that is not an IANA timezone name, which the `VTIMEZONE`
+ * next to `container` defines, RFC 5545 3.2.19
+ * @param local The local time in the UTC fields
+ */
+function vtimezoneToUTC(container: ICalContainer | undefined, tzid: string, local: Date): Date | null {
+  let vtimezone = container?.parent.containers.vtimezone?.find(vtimezone => vtimezone.entries.tzid?.[0].value == tzid);
+  return vtimezone ? new ICalTimezone(vtimezone).toUTC(local) : null;
 }

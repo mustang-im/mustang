@@ -92,6 +92,30 @@ test("Rules with BYMONTHDAY", () => {
   }
 });
 
+test("Rules without BYDAY and BYMONTHDAY change on the day of DTSTART", () => {
+  let vtimezone = [
+    "BEGIN:VTIMEZONE",
+    "TZID:Fixed days",
+    "BEGIN:DAYLIGHT",
+    "DTSTART:19700322T000000",
+    "TZOFFSETFROM:+0330",
+    "TZOFFSETTO:+0430",
+    "RRULE:FREQ=YEARLY;BYMONTH=3",
+    "END:DAYLIGHT",
+    "BEGIN:STANDARD",
+    "DTSTART:19700922T000000",
+    "TZOFFSETFROM:+0430",
+    "TZOFFSETTO:+0330",
+    "RRULE:FREQ=YEARLY;BYMONTH=9",
+    "END:STANDARD",
+    "END:VTIMEZONE",
+  ].join("\r\n");
+  for (let [month, day, offsetHours] of [[3, 21, 3.5], [3, 22, 4.5], [9, 21, 4.5], [9, 22, 3.5]]) {
+    let local = new Date(Date.UTC(kYear, month - 1, day, 12));
+    expect(parseStartTime(vtimezone, "Fixed days", local)).toEqual(new Date(local.getTime() - offsetHours * k1HourMS));
+  }
+});
+
 test("Changes listed with RDATE", () => {
   let vtimezone = [
     "BEGIN:VTIMEZONE",
