@@ -93,16 +93,16 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
     }
   }
   if (vevent.entries.dtstart) {
-    [event.startTime, event.timezone] = parseDate(vevent.entries.dtstart[0]);
+    [event.startTime, event.timezone] = parseDate(vevent.entries.dtstart[0], vevent);
   }
   if (vevent.entries.dtend) {
-    [event.endTime] = parseDate(vevent.entries.dtend[0]);
+    [event.endTime] = parseDate(vevent.entries.dtend[0], vevent);
   }
   if (vevent.entries.recurrenceid) {
-    [event.recurrenceStartTime] = parseDate(vevent.entries.recurrenceid[0]);
+    [event.recurrenceStartTime] = parseDate(vevent.entries.recurrenceid[0], vevent);
   }
   if (vevent.entries.dtstamp) {
-    [event.lastUpdateTime] = parseDate(vevent.entries.dtstamp[0]);
+    [event.lastUpdateTime] = parseDate(vevent.entries.dtstamp[0], vevent);
   }
   event.sequence = sanitize.integer(vevent.entries.sequence?.[0].value, 0);
   if (vevent.entries.dtstart?.[0].properties.value?.toLowerCase() == "date") {
@@ -190,7 +190,11 @@ function readAttachments(vevent: ICalContainer, event: Event): void {
 
 const icalDateRegex = /^(\d{4})(\d\d)(\d\dT\d\d)(\d\d)(\d\dZ?)$/;
 
-export function parseDate(icalDate: { value: string, properties: { tzid?: string } }): [Date | null, string | null] {
+/**
+ * @param container The iCal component that contains the date, e.g. the `VEVENT`.
+ *   The `VTIMEZONE`s next to it define the `TZID`s that are not IANA timezone names.
+ */
+export function parseDate(icalDate: { value: string, properties: { tzid?: string } }, container?: ICalContainer): [Date | null, string | null] {
   let value = icalDate.value;
   let tzid = icalDate.properties.tzid || null;
   if (value.length == 8) {
@@ -228,6 +232,6 @@ export function parseDate(icalDate: { value: string, properties: { tzid?: string
     }
     return [local, tzid];
   } catch (ex) {
-    return [null, null];
+    return [container?.findTimezone(tzid)?.toUTC(utc) ?? null, null];
   }
 }

@@ -1,3 +1,4 @@
+import { ICalTimezone } from "./ICalTimezone";
 import { gt } from "../../../l10n/l10n";
 import { assert } from "../../util/util";
 
@@ -28,9 +29,16 @@ export class ICalEntry {
 
 export class ICalContainer {
   entries: Record<string, ICalEntry[]> = Object.create(null);
+  containers: Record<string, ICalContainer[]> = Object.create(null);
   parent: ICalContainer | ICalParser;
   constructor(parent: ICalContainer | ICalParser) {
     this.parent = parent;
+  }
+
+  /** The `VTIMEZONE` that a `TZID` parameter in this container refers to, RFC 5545 3.2.19 */
+  findTimezone(tzid: string): ICalTimezone | null {
+    let vtimezone = this.parent.containers.vtimezone?.find(container => container.entries.tzid?.[0].value == tzid);
+    return vtimezone ? new ICalTimezone(vtimezone) : null;
   }
 }
 
@@ -44,8 +52,12 @@ export class ICalParser {
       i++;
       if (/^BEGIN:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
-        current = new ICalContainer(current);
-        this.containers[name] = append(this.containers[name], current);
+        let container = new ICalContainer(current);
+        this.containers[name] = append(this.containers[name], container);
+        if (current instanceof ICalContainer) {
+          current.containers[name] = append(current.containers[name], container);
+        }
+        current = container;
       } else if (/^END:([-\w]+)$/i.test(line)) {
         let name = RegExp.$1.toLowerCase();
         assert(this.containers[name] && this.containers[name].at(-1) == current, gt`END without matching BEGIN` + gt`. Line ${i}: ${line}`);
