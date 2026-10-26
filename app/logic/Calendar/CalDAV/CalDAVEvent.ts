@@ -50,7 +50,7 @@ export class CalDAVEvent extends Event {
       return;
     }
     let parsed = new ICalParser(this.originalICal);
-    let vevents = parsed.vevents;
+    let vevents = ensureArray(parsed.containers.vcalendar?.[0].containers.vevent);
     for (let vevent of vevents) {
       let recurrenceID = vevent.entries.recurrenceid?.[0];
       if (!recurrenceID) {

@@ -44,15 +44,6 @@ export class ICalContainer {
 
 export class ICalParser {
   containers: Record<string, ICalContainer[]> = Object.create(null);
-
-  /** The `VEVENT`s of all `VCALENDAR`s, and those without a `VCALENDAR` */
-  get vevents(): ICalContainer[] {
-    return [
-      ...this.containers.vcalendar?.flatMap(vcalendar => vcalendar.containers.vevent ?? []) ?? [],
-      ...this.containers.vevent ?? [],
-    ];
-  }
-
   constructor(textFile: string) {
     let current: ICalContainer | ICalParser = this;
     let lines = textFile.replace(/[\r\n]+/g, "\n").replace(/\n\s|\n$/g, "").split("\n");

@@ -1,4 +1,8 @@
+// app first, to resolve the import cycle around Abstract/Account.ts
+import { appGlobal } from "../../../../logic/app";
+import { Event } from "../../../../logic/Calendar/Event";
 import { ICalParser } from "../../../../logic/Calendar/ICal/ICalParser";
+import { convertICalToEvents } from "../../../../logic/Calendar/ICal/ICalToEvent";
 import { expect, test } from "vitest";
 
 test("Each container lists only its direct children", () => {
@@ -30,9 +34,9 @@ test("Each container lists only its direct children", () => {
   expect(vcalendar.containers.vtimezone[0].containers.standard).toHaveLength(1);
 });
 
-test("vevents has the events of all VCALENDARs", () => {
-  // e.g. several .ics files concatenated, for the import
-  let parsed = new ICalParser([
+test("The import reads the events of all VCALENDARs", () => {
+  // e.g. several .ics files concatenated
+  let events = convertICalToEvents([
     "BEGIN:VCALENDAR",
     "BEGIN:VEVENT",
     "UID:event-1",
@@ -46,17 +50,8 @@ test("vevents has the events of all VCALENDARs", () => {
     "UID:event-3",
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n"));
-  expect(parsed.vevents.map(vevent => vevent.entries.uid[0].value).sort()).toEqual(["event-1", "event-2", "event-3"]);
-});
-
-test("vevents has events without a VCALENDAR", () => {
-  let parsed = new ICalParser([
-    "BEGIN:VEVENT",
-    "UID:event-1",
-    "END:VEVENT",
-  ].join("\r\n"));
-  expect(parsed.vevents.map(vevent => vevent.entries.uid[0].value)).toEqual(["event-1"]);
+  ].join("\r\n"), () => new Event(), ex => { throw ex; });
+  expect(events.map(event => event.calUID).sort()).toEqual(["event-1", "event-2", "event-3"]);
 });
 
 test("A vCard inside a vCard is no separate contact", () => {
