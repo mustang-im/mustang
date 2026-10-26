@@ -51,7 +51,7 @@ export function randomID(): string {
 }
 
 export function capitalizeStart(str: string): string {
-  return str[0].toLocaleUpperCase() + str.substring(1);
+  return str.charAt(0).toLocaleUpperCase() + str.substring(1);
 }
 export function capitalizeWords(str: string): string {
   return str.split(" ").map(word => capitalizeStart(word)).join(" ");
