@@ -57,7 +57,7 @@ export class CalDAVEvent extends Event {
         continue; // the master itself
       }
       try {
-        let [recurrenceStartTime] = parseDate(recurrenceID);
+        let [recurrenceStartTime] = parseDate(recurrenceID, vevent);
         if (!recurrenceStartTime) {
           continue;
         }
@@ -74,7 +74,7 @@ export class CalDAVEvent extends Event {
     let master = vevents.find(v => !v.entries.recurrenceid);
     for (let entry of ensureArray(master?.entries.exdate)) {
       for (let value of entry.value.split(",")) { // one EXDATE line can hold multiple dates
-        let [exclusionTime] = parseDate({ value, properties: entry.properties });
+        let [exclusionTime] = parseDate({ value, properties: entry.properties }, master);
         if (exclusionTime) {
           this.makeExclusionLocally(exclusionTime);
         }
