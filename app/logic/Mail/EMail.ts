@@ -95,6 +95,8 @@ export class EMail extends Message {
   readonly storageLock = new Lock();
   /** For composer only. Optional. */
   identity: MailIdentity;
+  /** For composer only: Whether the composer, or else `send()`, still has to add the signature */
+  needsSignature = false;
 
   /** PGP or S/MIME or none */
   system: EncryptionSystem | null = null;

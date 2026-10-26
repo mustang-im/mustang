@@ -1,12 +1,9 @@
 {#each withSignature as signatureIdentity (signatureIdentity.id)}
-  {#if signatureIdentity == identity}
-    <MenuItem label={signatureIdentity.emailAddress} selected
-      disabled={$t`This signature is added at the end when you send`} />
-  {:else}
-    <MenuItem label={signatureIdentity.emailAddress}
-      disabled={!editor}
-      onClick={() => onInsert(signatureIdentity)} />
-  {/if}
+  <MenuItem label={signatureIdentity.emailAddress}
+    selected={!!mail && signatureIdentity == identity}
+    tooltip={mail ? $t`Use this signature in this message` : null}
+    disabled={!editor}
+    onClick={() => onInsert(signatureIdentity)} />
 {/each}
 {#if withSignature.length}
   <MenuDivider />
@@ -14,6 +11,7 @@
 <MenuItem label={$t`Signatures… *=> Edit the email signatures`} onClick={() => dispatch("editSignatures")} />
 
 <script lang="ts">
+  import type { EMail } from "../../../logic/Mail/EMail";
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
   import { SignatureEdits } from "./SignatureEdits";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
@@ -24,12 +22,17 @@
 
   export let identity: MailIdentity;
   export let editor: Editor;
+  export let mail: EMail | null = null;
   const dispatch = createEventDispatcher<{ editSignatures: void }>();
 
   let identities = findAllIdentities();
   $: withSignature = $identities.contents.filter(candidate => SignatureEdits.hasText(candidate.signatureHTML));
 
   function onInsert(signatureIdentity: MailIdentity) {
-    editor.chain().focus().insertContent(signatureIdentity.signatureHTML).run();
+    if (mail) {
+      editor.commands.editSignature(body => body.putOwnSignature(signatureIdentity.signatureHTML));
+    } else {
+      editor.chain().focus().insertContent(signatureIdentity.signatureHTML).run();
+    }
   }
 </script>

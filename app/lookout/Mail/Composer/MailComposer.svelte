@@ -146,6 +146,7 @@
   import type { PersonUID } from "../../../logic/Abstract/PersonUID";
   import { addFilesAsAttachments } from "../../../logic/Abstract/Attachment";
   import { findAllIdentities, type MailIdentity } from "../../../logic/Mail/MailIdentity";
+  import { MailBody } from "../../../logic/Mail/MailBody";
   import { SpecialFolder } from "../../../logic/Mail/Folder";
   import { appGlobal } from "../../../logic/app";
   import { UserError, assert } from "../../../logic/util/util";
@@ -162,7 +163,6 @@
   import { isTextField } from "../../Util/util";
   import { getOSName } from "../../../frontend/Util/util";
   import { getMyPrivateKey } from "../../../logic/Mail/Encryption/KeyUtils";
-  import { hasUserText } from "./DraftContent";
   import ComposerRibbon from "./ComposerRibbon.svelte";
   import SelectNamesDialog, { RecipientField, openSelectNames } from "./SelectNamesDialog.svelte";
   import SaveChangesDialog from "./SaveChangesDialog.svelte";
@@ -248,16 +248,19 @@
 
   let loading = false;
   async function loadText() {
-    if (!mail.hasHTML) {
-      return;
+    let hasHTML = mail.hasHTML;
+    if (hasHTML) {
+      loading = true;
+      await mail.loadBody();
+      loading = false;
     }
-    loading = true;
-    await mail.loadBody();
-    loading = false;
     if (!editor) {
       await tick();
     }
-    editor.commands.setContent(mail.html);
+    if (hasHTML) {
+      editor.commands.setContent(mail.html);
+    }
+    editor.commands.editSignature(body => mail.compose.addSignature(fromIdentity, body));
     setCursorDefault();
   }
 
@@ -267,12 +270,18 @@
     }
     let quoteSetting = getLocalStorage("mail.send.quote", "below").value;
     let below = quoteSetting == "below";
-    editor.commands.focus(below ? 'start' : 'end');
+    if (below || !editor.commands.focusBeforeSignature()) {
+      editor.commands.focus(below ? 'start' : 'end');
+    }
   }
 
   $: fromIdentity && setAuthor()
   function setAuthor() {
+    let previousIdentity = mail.identity;
     mail.identity = fromIdentity;
+    if (previousIdentity && previousIdentity != fromIdentity && editor) {
+      editor.commands.editSignature(body => mail.compose.changeSignature(previousIdentity, fromIdentity, body));
+    }
     mail.folder ??= fromIdentity.account.getSpecialFolder(SpecialFolder.Sent)
       ?? fromIdentity.account.inbox;
     if (fromIdentity == mail.identity) {
@@ -427,7 +436,7 @@
   }
 
   function onCloseRequest() {
-    if (hasUserText(mail.html)) {
+    if (new MailBody(mail.html).hasUserText) {
       showSaveChanges = true;
     } else {
       onClose();
