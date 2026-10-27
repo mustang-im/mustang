@@ -182,12 +182,12 @@ class ICalTimezoneRule {
   }
 }
 
-/** @param value e.g. "19701025T030000" */
+/** @param value e.g. "19701025T030000", or a date alone, e.g. "19701025" */
 function parseLocalTime(value: string | undefined): Date | null {
-  let match = /^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)$/.exec(value ?? "");
+  let match = /^(\d{4})(\d\d)(\d\d)(?:T(\d\d)(\d\d)(\d\d))?$/.exec(value ?? "");
   if (!match) {
     return null;
   }
-  let [year, month, day, hours, minutes, seconds] = match.slice(1).map(Number);
+  let [year, month, day, hours, minutes, seconds] = match.slice(1).map(part => Number(part ?? 0));
   return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
 }

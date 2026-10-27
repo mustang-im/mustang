@@ -155,6 +155,22 @@ test("Before the first change, the offset before that change applies", () => {
   expect(parseStartTime(vtimezone, "Mountain", local)).toEqual(new Date(local.getTime() + 7 * k1HourMS));
 });
 
+test("A part that starts on a date alone", () => {
+  // Invalid by RFC 5545 3.6.5, which wants a local time, but seen in real calendars (python-icalendar issue 218)
+  let vtimezone = [
+    "BEGIN:VTIMEZONE",
+    "TZID:UTC+11",
+    "BEGIN:STANDARD",
+    "DTSTART;VALUE=DATE:20170101",
+    "TZOFFSETFROM:+1100",
+    "TZOFFSETTO:+1100",
+    "END:STANDARD",
+    "END:VTIMEZONE",
+  ].join("\r\n");
+  let local = new Date(Date.UTC(2017, 1, 28, 23));
+  expect(parseStartTime(vtimezone, "UTC+11", local)).toEqual(new Date(local.getTime() - 11 * k1HourMS));
+});
+
 test("A broken part does not prevent the others", () => {
   let vtimezone = [
     "BEGIN:VTIMEZONE",
