@@ -109,7 +109,7 @@ export function convertICalContainerToEvent(vevent: ICalContainer, event: Event)
   if (vevent.entries.dtstart?.[0].properties.value?.toLowerCase() == "date") {
     event.allDay = true;
   }
-  if (vevent.entries.rrule) {
+  if (vevent.entries.rrule && event.startTime) {
     event.recurrenceRule = RecurrenceRule.fromCalString(event.duration, event.timezone, event.startTime, vevent.entries.rrule[0].line);
   } else {
     event.recurrenceRule = null;
