@@ -43,8 +43,7 @@
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   // <copied to="DisplayModeSwitcher.svelte">
-  $: shouldLoadExternalImages = $modeSetting.value == DisplayMode.HTML && $message.loadExternalImagesFromSender();
-  $: mode = shouldLoadExternalImages ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
+  $: mode = $modeSetting.value == DisplayMode.HTML && $message.loadExternalImagesFromSender() ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
   // </copied>
   $: message.loadExternalImages = mode == DisplayMode.HTMLWithExternal;
 
