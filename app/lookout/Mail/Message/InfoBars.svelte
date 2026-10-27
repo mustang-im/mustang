@@ -50,27 +50,14 @@
 {#if $message.loadedBody && ($message.loadExternalImages || $contentRendering.value == DisplayMode.HTML) && hasExternalContent($message.rawHTMLDangerous)}
   <button type="button" class="info-bar clickable pictures" bind:this={picturesBar}
     aria-haspopup="menu" on:click|stopPropagation={() => { isPicturesMenuOpen = !isPicturesMenuOpen; }}>
-    {#if $message.loadExternalImages}
-      <PicturesIcon size={16} />
-      <span>{$message.loadExternalImagesFromSender
-        ? $t`Pictures from ${$message.from.emailAddress} are downloaded automatically. The sender can see when you read this message.`
-        : $t`Pictures in this message were downloaded. The sender can see when you read this message.`}</span>
-    {:else}
-      <NoPicturesIcon size={16} />
-      <span>{$t`Click here to download pictures. To help protect your privacy, ${appName} prevented automatic download of some pictures in this message.`}</span>
-    {/if}
+    <svelte:component this={$message.loadExternalImages ? PicturesIcon : NoPicturesIcon} size={16} />
+    <span>{$message.loadExternalImages
+      ? $t`Pictures are downloaded for all messages from ${$message.from.emailAddress}. The sender can see when you read this message.`
+      : $t`Click here to download pictures. To help protect your privacy, ${appName} prevented automatic download of some pictures in this message.`}</span>
   </button>
   <Menu bind:isMenuOpen={isPicturesMenuOpen} anchor={picturesBar} placement="bottom-start">
-    {#if !$message.loadExternalImages}
-      <MenuItem label={$t`Download Pictures`} icon={DownloadIcon} onClick={onDownloadPictures} />
-    {/if}
-    {#if $message.loadExternalImagesFromSender}
-      <MenuItem label={$t`Stop Downloading Pictures from ${$message.from.emailAddress}`} icon={StopFromSenderIcon}
-        onClick={() => onDownloadFromSender(false)} />
-    {:else if $message.from.emailAddress != kDummyPerson.emailAddress}
-      <MenuItem label={$t`Always Download Pictures from ${$message.from.emailAddress}`} icon={AlwaysFromSenderIcon}
-        onClick={() => onDownloadFromSender(true)} />
-    {/if}
+    <MenuItem label={$message.loadExternalImages ? $t`Stop Downloading Pictures` : $t`Download Pictures`} icon={DownloadIcon}
+      onClick={() => onDownloadPictures(!$message.loadExternalImages)} />
   </Menu>
 {/if}
 
@@ -84,10 +71,7 @@
   import { appName } from "../../../logic/build";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
-  import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
   import DownloadIcon from "lucide-svelte/icons/image-down";
-  import AlwaysFromSenderIcon from "lucide-svelte/icons/image-plus";
-  import StopFromSenderIcon from "lucide-svelte/icons/image-minus";
   import DraftIcon from "lucide-svelte/icons/square-pen";
   import JunkIcon from "lucide-svelte/icons/shield-alert";
   import ImportantIcon from "lucide-svelte/icons/circle-alert";
@@ -138,13 +122,9 @@
     return kExternalReference.test(html);
   }
 
-  function onDownloadPictures() {
-    $contentRendering.value = DisplayMode.HTMLWithExternal;
-  }
-
-  async function onDownloadFromSender(allow: boolean) {
-    $contentRendering.value = allow ? DisplayMode.HTMLWithExternal : DisplayMode.HTML;
-    await message.setLoadExternalImagesFromSender(allow);
+  async function onDownloadPictures(download: boolean) {
+    $contentRendering.value = download ? DisplayMode.HTMLWithExternal : DisplayMode.HTML;
+    await message.setLoadExternalImagesFromSender(download);
   }
 </script>
 
