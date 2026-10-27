@@ -60,16 +60,15 @@
   export let mode: DisplayMode = DisplayMode.HTML;
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
-  // Before `shouldLoadExternalImages`, so that it reads the reset setting
   $: $selectedMessage && catchErrors(onMessageChanged);
   function onMessageChanged() {
     if (modeSetting.value == DisplayMode.HTMLWithExternal) {
       modeSetting.value = DisplayMode.HTML;
     }
   }
+  // After onMessageChanged(), so that it reads the reset setting
   // <copied from="MessageBody.svelte">
-  $: shouldLoadExternalImages = $modeSetting.value == DisplayMode.HTML && $selectedMessage?.loadExternalImagesFromSender();
-  $: mode = shouldLoadExternalImages ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
+  $: mode = $modeSetting.value == DisplayMode.HTML && $selectedMessage?.loadExternalImagesFromSender() ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
   // </copied>
 
   async function switchTo(newMode: DisplayMode) {
