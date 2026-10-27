@@ -9,8 +9,10 @@
     {:catch ex}
       <ErrorMessage {ex} />
     {/await}
-  {:else if mode == DisplayMode.HTML || mode == DisplayMode.HTMLWithExternal}
-    <HTMLDisplay html={$message.html} allowExternalImages={$message.loadExternalImages} />
+  {:else if mode == DisplayMode.HTML}
+    <HTMLDisplay html={$message.html} allowExternalImages={false} />
+  {:else if mode == DisplayMode.HTMLWithExternal}
+    <HTMLDisplay html={$message.html} allowExternalImages={true} />
   {:else if mode == DisplayMode.Plaintext}
     <PlaintextDisplay plaintext={$message.text} />
     <!--<HTMLDisplay html={convertTextToHTML($message.text)} />-->
@@ -40,8 +42,11 @@
   export let message: EMail;
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
-  $: mode = $modeSetting.value as DisplayMode;
-  $: message.loadExternalImages = mode == DisplayMode.HTMLWithExternal || mode == DisplayMode.HTML && $message.loadExternalImagesFromSender;
+  // <copied to="DisplayModeSwitcher.svelte">
+  $: shouldLoadExternalImages = $modeSetting.value == DisplayMode.HTML && $message.loadExternalImagesFromSender();
+  $: mode = shouldLoadExternalImages ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
+  // </copied>
+  $: message.loadExternalImages = mode == DisplayMode.HTMLWithExternal;
 
   function getSource(message: EMail): string {
     if (!message.mime) {

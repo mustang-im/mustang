@@ -29,16 +29,16 @@ function newMail(fromAddress: string | null, specialFolder = SpecialFolder.Inbox
 test("Pictures are allowed in all mails from that sender, and only from that sender", () => {
   newMail("news@example.com").setLoadExternalImagesFromSender(true);
 
-  expect(newMail("news@example.com").loadExternalImagesFromSender).toBe(true);
-  expect(newMail("News@Example.COM").loadExternalImagesFromSender).toBe(true);
-  expect(newMail("other@example.com").loadExternalImagesFromSender).toBe(false);
+  expect(newMail("news@example.com").loadExternalImagesFromSender()).toBe(true);
+  expect(newMail("News@Example.COM").loadExternalImagesFromSender()).toBe(true);
+  expect(newMail("other@example.com").loadExternalImagesFromSender()).toBe(false);
 });
 
 test("The user stops pictures from the sender", () => {
   newMail("news@example.com").setLoadExternalImagesFromSender(true);
   newMail("news@example.com").setLoadExternalImagesFromSender(false);
 
-  expect(newMail("news@example.com").loadExternalImagesFromSender).toBe(false);
+  expect(newMail("news@example.com").loadExternalImagesFromSender()).toBe(false);
 });
 
 test("The sender is not added to the contacts", () => {
@@ -50,14 +50,14 @@ test("The sender is not added to the contacts", () => {
 test("Junk does not load pictures, because spammers forge the sender address", () => {
   newMail("news@example.com").setLoadExternalImagesFromSender(true);
 
-  expect(newMail("news@example.com", SpecialFolder.Spam).loadExternalImagesFromSender).toBe(false);
+  expect(newMail("news@example.com", SpecialFolder.Spam).loadExternalImagesFromSender()).toBe(false);
   let markedAsJunk = newMail("news@example.com");
   markedAsJunk.isSpam = true;
-  expect(markedAsJunk.loadExternalImagesFromSender).toBe(false);
+  expect(markedAsJunk.loadExternalImagesFromSender()).toBe(false);
 });
 
 test("A mail without sender allows nothing for other mails without sender", () => {
   newMail(null).setLoadExternalImagesFromSender(true);
 
-  expect(newMail(null).loadExternalImagesFromSender).toBe(false);
+  expect(newMail(null).loadExternalImagesFromSender()).toBe(false);
 });

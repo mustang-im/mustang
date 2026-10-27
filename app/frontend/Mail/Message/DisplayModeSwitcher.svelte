@@ -12,16 +12,16 @@
     icon={HTMLIcon}
     iconOnly
     iconSize="16px"
-    onClick={() => catchErrors(onFormatted)}
-    selected={mode == DisplayMode.HTML && !$message?.loadExternalImages}
+    onClick={() => switchTo(DisplayMode.HTML)}
+    selected={mode == DisplayMode.HTML}
     />
   <Button
-    label={$t`Always with external content from this sender (allows the sender to track you)`}
+    label={$t`With external content (allows sender to track you)`}
     icon={WithExternalIcon}
     iconOnly
     iconSize="16px"
-    onClick={() => catchErrors(onWithExternal)}
-    selected={$message?.loadExternalImages}
+    onClick={() => switchTo(DisplayMode.HTMLWithExternal)}
+    selected={mode == DisplayMode.HTMLWithExternal}
     />
   <Button
     label={$t`Plaintext`}
@@ -60,31 +60,23 @@
   export let mode: DisplayMode = DisplayMode.HTML;
 
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
-  $: mode = $modeSetting.value as DisplayMode;
-
-  $: message = $selectedMessage;
-
-  function switchTo(newMode: DisplayMode) {
-    mode = newMode;
-    modeSetting.value = newMode;
-  }
-
-  function onFormatted() {
-    if (message?.loadExternalImages) {
-      message.setLoadExternalImagesFromSender(false);
-    }
-    switchTo(DisplayMode.HTML);
-  }
-
-  function onWithExternal() {
-    message?.setLoadExternalImagesFromSender(true);
-    switchTo(DisplayMode.HTMLWithExternal);
-  }
-
+  // Before `shouldLoadExternalImages`, so that it reads the reset setting
   $: $selectedMessage && catchErrors(onMessageChanged);
   function onMessageChanged() {
-    if (mode == DisplayMode.HTMLWithExternal) {
-      switchTo(DisplayMode.HTML);
+    if (modeSetting.value == DisplayMode.HTMLWithExternal) {
+      modeSetting.value = DisplayMode.HTML;
     }
+  }
+  // <copied from="MessageBody.svelte">
+  $: shouldLoadExternalImages = $modeSetting.value == DisplayMode.HTML && $selectedMessage?.loadExternalImagesFromSender();
+  $: mode = shouldLoadExternalImages ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
+  // </copied>
+
+  function switchTo(newMode: DisplayMode) {
+    if (newMode == DisplayMode.HTML || newMode == DisplayMode.HTMLWithExternal) {
+      $selectedMessage?.setLoadExternalImagesFromSender(newMode == DisplayMode.HTMLWithExternal);
+    }
+    mode = newMode;
+    modeSetting.value = newMode;
   }
 </script>

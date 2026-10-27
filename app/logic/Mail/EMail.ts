@@ -618,11 +618,11 @@ export class EMail extends Message {
 
   /** The user allowed images from the Internet in all mails from the sender.
    * Not for junk, because spammers forge the sender address. */
-  get loadExternalImagesFromSender(): boolean {
+  loadExternalImagesFromSender(): boolean {
     if (this.isSpam || this.folder?.specialFolder == SpecialFolder.Spam) {
       return false;
     }
-    return this.externalImagesSenders.includes(this.from.emailAddress?.toLowerCase());
+    return sanitize.array(getUserPreference("mail.externalImages.senders", []), []).includes(this.from.emailAddress?.toLowerCase());
   }
 
   /** Remembers whether to load images from the Internet in all mails from the sender.
@@ -632,17 +632,11 @@ export class EMail extends Message {
     if (!emailAddress || emailAddress == kDummyPerson.emailAddress) {
       return;
     }
-    let senders = this.externalImagesSenders.filter(sender => sender != emailAddress);
-    if (allow) {
-      senders.push(emailAddress);
+    if (allow == this.loadExternalImagesFromSender()) {
+      return;
     }
-    setUserPreference("mail.externalImages.senders", senders);
-    this.notifyObservers("loadExternalImagesFromSender");
-  }
-
-  /** Email addresses of the senders, lowercase */
-  protected get externalImagesSenders(): string[] {
-    return sanitize.array(getUserPreference("mail.externalImages.senders", []), []);
+    let otherSenders = sanitize.array(getUserPreference("mail.externalImages.senders", []), []).filter(sender => sender != emailAddress);
+    setUserPreference("mail.externalImages.senders", allow ? [...otherSenders, emailAddress] : otherSenders);
   }
 
   readonly downloadRunOnce = new RunOnce<void>();
