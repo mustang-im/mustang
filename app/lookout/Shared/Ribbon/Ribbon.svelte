@@ -110,7 +110,7 @@
     }
   }
   const layoutSetting = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
-  const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
+  const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", true);
   const qatPosition = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
   const customization = getLocalStorage<Record<string, RibbonHiddenParts>>("lookout.ribbon.customization", {});
   let contextMenu: ContextMenu;

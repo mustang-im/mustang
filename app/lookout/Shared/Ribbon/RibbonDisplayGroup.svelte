@@ -34,5 +34,5 @@
   const isCustomizing = getContext<Writable<boolean>>("ribbonIsCustomizing");
   const layout = getLocalStorage<RibbonLayout>("lookout.ribbon.layout", "classic");
   const collapsed = getLocalStorage<boolean>("lookout.ribbon.collapsed", false);
-  const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
+  const qatHidden = getLocalStorage<boolean>("lookout.qat.hidden", true);
 </script>

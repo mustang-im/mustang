@@ -50,7 +50,7 @@
   export let placement: QuickAccessPosition;
 
   const position = getLocalStorage<QuickAccessPosition>("lookout.qat.position", "above");
-  const isHidden = getLocalStorage<boolean>("lookout.qat.hidden", false);
+  const isHidden = getLocalStorage<boolean>("lookout.qat.hidden", true);
   const chosenIDs = getLocalStorage<string[] | null>("lookout.qat.commands", null);
   const commands = quickAccessCommands;
 
