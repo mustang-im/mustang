@@ -15,7 +15,7 @@ import { Event } from "../Calendar/Event";
 import { InvitationMessage, type iCalMethod } from "../Calendar/Invitation/InvitationStatus";
 import { FilterMoment } from "./FilterRules/FilterMoments";
 import type { EncryptionSystem } from "./Encryption/enums";
-import { fileExtensionForMIMEType, assert, AbstractFunction } from "../util/util";
+import { fileExtensionForMIMEType, assert, AbstractFunction, getUserPreference, setUserPreference } from "../util/util";
 import { blobToDataURL } from "../util/blob";
 import { isMobile, webMail } from "../build";
 import { sanitize } from "../../../lib/util/sanitizeDatatypes";
@@ -614,6 +614,35 @@ export class EMail extends Message {
     }
     this.loadedBody = false;
     super.loadExternalImages = val;
+  }
+
+  /** The user allowed images from the Internet in all mails from the sender.
+   * Not for junk, because spammers forge the sender address. */
+  get loadExternalImagesFromSender(): boolean {
+    if (this.isSpam || this.folder?.specialFolder == SpecialFolder.Spam) {
+      return false;
+    }
+    return this.externalImagesSenders.includes(this.from.emailAddress?.toLowerCase());
+  }
+
+  /** Remembers whether to load images from the Internet in all mails from the sender.
+   * Not in the contacts, so that "noreply@" senders don't show up in the recipient autocomplete. */
+  setLoadExternalImagesFromSender(allow: boolean) {
+    let emailAddress = this.from.emailAddress?.toLowerCase();
+    if (!emailAddress || emailAddress == kDummyPerson.emailAddress) {
+      return;
+    }
+    let senders = this.externalImagesSenders.filter(sender => sender != emailAddress);
+    if (allow) {
+      senders.push(emailAddress);
+    }
+    setUserPreference("mail.externalImages.senders", senders);
+    this.notifyObservers("loadExternalImagesFromSender");
+  }
+
+  /** Email addresses of the senders, lowercase */
+  protected get externalImagesSenders(): string[] {
+    return sanitize.array(getUserPreference("mail.externalImages.senders", []), []);
   }
 
   readonly downloadRunOnce = new RunOnce<void>();

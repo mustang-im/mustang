@@ -12,16 +12,16 @@
     icon={HTMLIcon}
     iconOnly
     iconSize="16px"
-    onClick={() => switchTo(DisplayMode.HTML)}
-    selected={mode == DisplayMode.HTML}
+    onClick={() => catchErrors(onFormatted)}
+    selected={mode == DisplayMode.HTML && !$message?.loadExternalImages}
     />
   <Button
-    label={$t`With external content (allows sender to track you)`}
+    label={$t`Always with external content from this sender (allows the sender to track you)`}
     icon={WithExternalIcon}
     iconOnly
     iconSize="16px"
-    onClick={() => switchTo(DisplayMode.HTMLWithExternal)}
-    selected={mode == DisplayMode.HTMLWithExternal}
+    onClick={() => catchErrors(onWithExternal)}
+    selected={$message?.loadExternalImages}
     />
   <Button
     label={$t`Plaintext`}
@@ -62,9 +62,23 @@
   let modeSetting = getLocalStorage("mail.contentRendering", "html");
   $: mode = $modeSetting.value as DisplayMode;
 
+  $: message = $selectedMessage;
+
   function switchTo(newMode: DisplayMode) {
     mode = newMode;
     modeSetting.value = newMode;
+  }
+
+  function onFormatted() {
+    if (message?.loadExternalImages) {
+      message.setLoadExternalImagesFromSender(false);
+    }
+    switchTo(DisplayMode.HTML);
+  }
+
+  function onWithExternal() {
+    message?.setLoadExternalImagesFromSender(true);
+    switchTo(DisplayMode.HTMLWithExternal);
   }
 
   $: $selectedMessage && catchErrors(onMessageChanged);

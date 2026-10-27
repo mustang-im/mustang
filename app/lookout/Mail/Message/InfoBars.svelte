@@ -47,14 +47,30 @@
     <button class="link" on:click={() => { $contentRendering.value = DisplayMode.HTML; }}>{$t`Display as HTML`}</button>
   </hbox>
 {/if}
-{#if $message.loadedBody && $contentRendering.value == DisplayMode.HTML && hasExternalContent($message.rawHTMLDangerous)}
-  <button type="button" class="info-bar clickable" bind:this={picturesBar}
+{#if $message.loadedBody && ($message.loadExternalImages || $contentRendering.value == DisplayMode.HTML) && hasExternalContent($message.rawHTMLDangerous)}
+  <button type="button" class="info-bar clickable pictures" bind:this={picturesBar}
     aria-haspopup="menu" on:click|stopPropagation={() => { isPicturesMenuOpen = !isPicturesMenuOpen; }}>
-    <PicturesIcon size={16} />
-    <span>{$t`Click here to download pictures. To help protect your privacy, ${appName} prevented automatic download of some pictures in this message.`}</span>
+    {#if $message.loadExternalImages}
+      <PicturesIcon size={16} />
+      <span>{$message.loadExternalImagesFromSender
+        ? $t`Pictures from ${$message.from.emailAddress} are downloaded automatically. The sender can see when you read this message.`
+        : $t`Pictures in this message were downloaded. The sender can see when you read this message.`}</span>
+    {:else}
+      <NoPicturesIcon size={16} />
+      <span>{$t`Click here to download pictures. To help protect your privacy, ${appName} prevented automatic download of some pictures in this message.`}</span>
+    {/if}
   </button>
   <Menu bind:isMenuOpen={isPicturesMenuOpen} anchor={picturesBar} placement="bottom-start">
-    <MenuItem label={$t`Download Pictures`} icon={DownloadIcon} onClick={onDownloadPictures} />
+    {#if !$message.loadExternalImages}
+      <MenuItem label={$t`Download Pictures`} icon={DownloadIcon} onClick={onDownloadPictures} />
+    {/if}
+    {#if $message.loadExternalImagesFromSender}
+      <MenuItem label={$t`Stop Downloading Pictures from ${$message.from.emailAddress}`} icon={StopFromSenderIcon}
+        onClick={() => onDownloadFromSender(false)} />
+    {:else if $message.from.emailAddress != kDummyPerson.emailAddress}
+      <MenuItem label={$t`Always Download Pictures from ${$message.from.emailAddress}`} icon={AlwaysFromSenderIcon}
+        onClick={() => onDownloadFromSender(true)} />
+    {/if}
   </Menu>
 {/if}
 
@@ -68,13 +84,17 @@
   import { appName } from "../../../logic/build";
   import Menu from "../../Shared/Menu/Menu.svelte";
   import MenuItem from "../../Shared/Menu/MenuItem.svelte";
+  import { kDummyPerson } from "../../../logic/Abstract/PersonUID";
   import DownloadIcon from "lucide-svelte/icons/image-down";
+  import AlwaysFromSenderIcon from "lucide-svelte/icons/image-plus";
+  import StopFromSenderIcon from "lucide-svelte/icons/image-minus";
   import DraftIcon from "lucide-svelte/icons/square-pen";
   import JunkIcon from "lucide-svelte/icons/shield-alert";
   import ImportantIcon from "lucide-svelte/icons/circle-alert";
   import RepliedIcon from "lucide-svelte/icons/reply";
   import ForwardedIcon from "lucide-svelte/icons/forward";
-  import PicturesIcon from "lucide-svelte/icons/image-off";
+  import PicturesIcon from "lucide-svelte/icons/image";
+  import NoPicturesIcon from "lucide-svelte/icons/image-off";
   import PlainTextIcon from "lucide-svelte/icons/file-text";
   import { catchErrors } from "../../../frontend/Util/error";
   import { t } from "../../../l10n/l10n";
@@ -121,6 +141,11 @@
   function onDownloadPictures() {
     $contentRendering.value = DisplayMode.HTMLWithExternal;
   }
+
+  function onDownloadFromSender(allow: boolean) {
+    message.setLoadExternalImagesFromSender(allow);
+    $contentRendering.value = allow ? DisplayMode.HTMLWithExternal : DisplayMode.HTML;
+  }
 </script>
 
 <style>
@@ -165,6 +190,12 @@
     font-family: inherit;
     text-align: start;
     cursor: pointer;
+  }
+  .info-bar.pictures {
+    padding-block: 3px;
+    background-color: transparent;
+    color: var(--lo-fg-secondary);
+    font-size: 12px;
   }
   .info-bar.clickable:hover {
     background-color: var(--lo-hover-bg);

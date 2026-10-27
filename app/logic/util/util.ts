@@ -44,6 +44,9 @@ export function booleanHasValue(value: boolean | null | undefined): value is boo
 export function getUserPreference<T>(key: string, defaultValue?: T): T {
   return JSON.parse(sanitize.nonemptystring(localStorage.getItem(key), null)) ?? defaultValue;
 }
+export function setUserPreference<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 // </copied>
 
 export function randomID(): string {
