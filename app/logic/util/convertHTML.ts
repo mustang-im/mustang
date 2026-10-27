@@ -118,7 +118,7 @@ function urlAttribute(url: URLString, includeExternal = false) {
 function srcsetAttribute(srcset: URLString): string {
   for (let word of srcset.split(/\s+/)) {
     let url = word.replace(/^,+|,+$/g, ""); // remove , at start or end
-    let isDescriptor = "wxh".includes(url.slice(-1).toLowerCase()) && !isNaN(Number(url.slice(0, -1))); // e.g. 1.5x
+    let isDescriptor = "wxh".includes(url.slice(-1).toLowerCase()) && !isNaN(Number(url.slice(0, -1))); // number and letter, e.g. "1.5x"
     if (url && !isDescriptor && !urlAttribute(url)) {
       return "";
     }
