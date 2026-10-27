@@ -67,7 +67,7 @@
     }
   }
   // After onMessageChanged(), so that it reads the reset setting
-  // <copied from="MessageBody.svelte">
+  // <copied to="MessageBody.svelte">
   $: mode = $modeSetting.value == DisplayMode.HTML && $selectedMessage?.loadExternalImagesFromSender() ? DisplayMode.HTMLWithExternal : $modeSetting.value as DisplayMode;
   // </copied>
 
