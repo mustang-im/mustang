@@ -7,6 +7,7 @@ import type { EWSAccount, EWSSubscribable } from "../../Mail/EWS/EWSAccount";
 import { ConnectionPurpose } from "../../Mail/EWS/ConnectionPurpose";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { kMaxCount } from "../../Mail/EWS/EWSFolder";
+import { kLoadExternalImagesProperty } from "./ExchangePerson";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 import { assert, ensureArray } from "../../util/util";
 import { Lock } from "../../util/flow/Lock";
@@ -185,6 +186,7 @@ export class EWSAddressbook extends ExchangeAddressbook implements EWSSubscribab
               }, {
                 FieldURI: "item:Attachments", // The picture is an attachment
               }],
+              t$ExtendedFieldURI: kLoadExternalImagesProperty,
             },
           },
           m$ItemIds: {

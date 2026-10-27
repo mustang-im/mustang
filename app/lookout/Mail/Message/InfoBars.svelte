@@ -142,9 +142,9 @@
     $contentRendering.value = DisplayMode.HTMLWithExternal;
   }
 
-  function onDownloadFromSender(allow: boolean) {
-    message.setLoadExternalImagesFromSender(allow);
+  async function onDownloadFromSender(allow: boolean) {
     $contentRendering.value = allow ? DisplayMode.HTMLWithExternal : DisplayMode.HTML;
+    await message.setLoadExternalImagesFromSender(allow);
   }
 </script>
 

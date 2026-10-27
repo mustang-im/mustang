@@ -1,4 +1,4 @@
-import { ExchangePerson, kPictureFilename } from "../EWS/ExchangePerson";
+import { ExchangePerson, kLoadExternalImagesProperty, kPictureFilename } from "../EWS/ExchangePerson";
 import { ContactEntry } from '../../Abstract/Person';
 import { Attachment } from '../../Abstract/Attachment';
 import { StreetAddress } from '../StreetAddress';
@@ -6,6 +6,7 @@ import type { OWAAddressbook } from './OWAAddressbook';
 import { OWACreatePersonaRequest } from "./Request/OWACreatePersonaRequest";
 import { OWADeletePersonaRequest } from "./Request/OWADeletePersonaRequest";
 import { OWAUpdatePersonaRequest } from "./Request/OWAUpdatePersonaRequest";
+import { OWAUpdateItemRequest } from "../../Mail/OWA/Request/OWAUpdateItemRequest";
 import { owaGetPersonaRequest } from "./Request/OWAPersonRequests";
 import { owaCreateAttachmentRequest, owaDeleteAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -87,7 +88,31 @@ export class OWAPerson extends ExchangePerson {
       this.itemID = OWAPerson.itemIDFromJSON(response);
       this.fields = fields;
     }
+    await this.saveLoadExternalImagesToServer();
     await this.savePictureToServer();
+  }
+
+  /** The ItemId of the contact behind the persona */
+  protected async getItemID(): Promise<string> {
+    if (!this.itemID) {
+      // This probably shouldn't happen, since we sync the itemID on login.
+      let response = await this.addressbook.callOWA(owaGetPersonaRequest(this.personaID));
+      this.itemID = OWAPerson.itemIDFromJSON(response.Persona);
+    }
+    assert(this.itemID, gt`Cannot find the contact ${this.name} on the server`);
+    return this.itemID;
+  }
+
+  /** Exchange saves it as a named property of the contact,
+   * which the persona calls do not touch,
+   * so it needs a separate call, after the contact exists on the server. */
+  protected async saveLoadExternalImagesToServer() {
+    if (this.loadExternalImages == null) {
+      return;
+    }
+    let request = new OWAUpdateItemRequest(await this.getItemID());
+    request.addExtendedProperty("Contact", kLoadExternalImagesProperty, this.loadExternalImages);
+    await this.addressbook.callOWA(request);
   }
 
   /** Exchange saves the picture as an attachment of the contact,
@@ -97,12 +122,7 @@ export class OWAPerson extends ExchangePerson {
     if (!this.pictureChanged) {
       return;
     }
-    if (!this.itemID) {
-      // This probably shouldn't happen, since we sync the itemID on login.
-      let response = await this.addressbook.callOWA(owaGetPersonaRequest(this.personaID));
-      this.itemID = OWAPerson.itemIDFromJSON(response.Persona);
-    }
-    assert(this.itemID, gt`Cannot find the contact ${this.name} on the server`);
+    let itemID = await this.getItemID();
     if (this.pictureAttachmentID) {
       await this.addressbook.callOWA(owaDeleteAttachmentsRequest([this.pictureAttachmentID]));
       this.pictureAttachmentID = "";
@@ -111,7 +131,7 @@ export class OWAPerson extends ExchangePerson {
       let blob = await dataURLToBlob(this.picture);
       let picture = new Attachment();
       picture.fromFile(new File([blob], kPictureFilename, { type: blob.type }));
-      let request = owaCreateAttachmentRequest(this.itemID, picture);
+      let request = owaCreateAttachmentRequest(itemID, picture);
       request.Body.Attachments[0].IsContactPhoto = true;
       let response;
       if (this.addressbook.account.authorizationHeader) {

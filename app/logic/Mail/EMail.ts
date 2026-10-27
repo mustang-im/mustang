@@ -622,12 +622,14 @@ export class EMail extends Message {
     if (this.isSpam || this.folder?.specialFolder == SpecialFolder.Spam) {
       return false;
     }
-    return this.externalImagesSenders.includes(this.from.emailAddress?.toLowerCase());
+    return this.from.findPerson()?.loadExternalImages ??
+      this.externalImagesSenders.includes(this.from.emailAddress?.toLowerCase());
   }
 
   /** Remembers whether to load images from the Internet in all mails from the sender.
-   * Not in the contacts, so that "noreply@" senders don't show up in the recipient autocomplete. */
-  setLoadExternalImagesFromSender(allow: boolean) {
+   * Also in the contact, if the sender is in an addressbook, which syncs it via the server.
+   * Not in a new contact, so that "noreply@" senders don't show up in the recipient autocomplete. */
+  async setLoadExternalImagesFromSender(allow: boolean) {
     let emailAddress = this.from.emailAddress?.toLowerCase();
     if (!emailAddress || emailAddress == kDummyPerson.emailAddress) {
       return;
@@ -637,7 +639,12 @@ export class EMail extends Message {
       senders.push(emailAddress);
     }
     setUserPreference("mail.externalImages.senders", senders);
+    let person = this.from.findPerson();
+    if (person) {
+      person.loadExternalImages = allow;
+    }
     this.notifyObservers("loadExternalImagesFromSender");
+    await person?.save();
   }
 
   /** Email addresses of the senders, lowercase */

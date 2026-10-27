@@ -46,6 +46,12 @@ export class Person extends ContactBase {
   @notifyChangedProperty
   popularity: number = 0;
 
+  /** Whether the user allowed images from the Internet in mails from this person.
+   * They let the sender see when and where the user reads the mail.
+   * null = The user didn't decide for this person. */
+  @notifyChangedProperty
+  loadExternalImages: boolean | null = null;
+
   /**
    * Saves the contact to the server and to the database.
     */
@@ -189,6 +195,7 @@ export class Person extends ContactBase {
     this.urls.addAll(other.urls.filterOnce(o => !this.urls.find(t => t.value == o.value)));
     this.groups.addAll(other.groups.filterOnce(o => !this.groups.find(t => t.value == o.value)));
     this.custom.addAll(other.custom.filterOnce(o => !this.custom.find(t => t.value == o.value)));
+    this.loadExternalImages ??= other.loadExternalImages;
     await other.deleteIt();
   }
 
@@ -244,6 +251,7 @@ export class Person extends ContactBase {
     this.urls.addAll(other.urls.map(ce => ce.clone()));
     this.groups.addAll(other.groups.map(ce => ce.clone()));
     this.custom.addAll(other.custom.map(ce => ce.clone()));
+    this.loadExternalImages = other.loadExternalImages;
   }
 
   toExtraJSON(): any {
@@ -252,6 +260,7 @@ export class Person extends ContactBase {
     json.department = this.department;
     json.position = this.position;
     json.encryptionPublicKeys = this.encryptionPublicKeys.contents.map(key => key.toJSON());
+    json.loadExternalImages = this.loadExternalImages;
     return json;
   }
 
@@ -260,6 +269,7 @@ export class Person extends ContactBase {
     this.company = sanitize.string(json.company, null);
     this.department = sanitize.string(json.department, null);
     this.position = sanitize.string(json.position, null);
+    this.loadExternalImages = json.loadExternalImages == null ? null : sanitize.boolean(json.loadExternalImages, null);
     this.encryptionPublicKeys.clear();
     for (let keyJSON of sanitize.array(json.encryptionPublicKeys, [])) {
       try {

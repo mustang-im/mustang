@@ -41,6 +41,8 @@ export class JSContact {
     let company = sanitize.object(getOneValue(person, jscontact, jscontact.organizations, "organizations", entry => entry), null) as TOrganization;
     person.company = sanitize.nonemptylabel(company?.name, "");
     person.department = sanitize.nonemptylabel(company?.units?.[0]?.name, "");
+    let loadExternalImages = jscontact["mustang.im:loadExternalImages"];
+    person.loadExternalImages = loadExternalImages == null ? null : sanitize.boolean(loadExternalImages, null);
   }
 
   protected static fromContextToPurpose(contexts: Record<string, true>): string | null {
@@ -153,6 +155,9 @@ export class JSContact {
       entry.name = company.name;
       entry.units = company.units;
     });
+    if (person.loadExternalImages != null) {
+      jscontact["mustang.im:loadExternalImages"] = person.loadExternalImages;
+    }
   }
 
   protected static toContactEntries<T extends { pref?: number, contexts?: Record<string, true> }>(

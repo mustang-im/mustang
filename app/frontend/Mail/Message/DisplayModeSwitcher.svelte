@@ -69,16 +69,17 @@
     modeSetting.value = newMode;
   }
 
-  function onFormatted() {
-    if (message?.loadExternalImages) {
-      message.setLoadExternalImagesFromSender(false);
-    }
+  async function onFormatted() {
+    let wasWithExternal = message?.loadExternalImages;
     switchTo(DisplayMode.HTML);
+    if (wasWithExternal) {
+      await message.setLoadExternalImagesFromSender(false);
+    }
   }
 
-  function onWithExternal() {
-    message?.setLoadExternalImagesFromSender(true);
+  async function onWithExternal() {
     switchTo(DisplayMode.HTMLWithExternal);
+    await message?.setLoadExternalImagesFromSender(true);
   }
 
   $: $selectedMessage && catchErrors(onMessageChanged);

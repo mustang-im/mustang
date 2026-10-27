@@ -45,6 +45,7 @@ test.each(testFiles)("Parse %s", async name => {
   const json = JSON.parse(await fs.readFile(new URL(name + ".json", dataDir), { encoding: 'utf-8' }));
   json.addressbookID = true;
   json.popularity = 0;
+  json.loadExternalImages = null;
   const person = new Person();
   vCard.updatePerson(card, person);
   expect(toJSON(person)).toEqual(json);

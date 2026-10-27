@@ -23,4 +23,14 @@ export class EWSCreateItemRequest {
       }
     }
   }
+
+  /** Sets a MAPI property that EWS has no field for.
+   * The schema wants it after `Body` and before the fields of the item type, e.g. `DisplayName`.
+   * @param fieldURI @see `EWSUpdateItemRequest.addExtendedProperty()` */
+  addExtendedProperty(type: string, fieldURI: Record<string, string>, value: any) {
+    this.addField(type, "ExtendedProperty", {
+      t$ExtendedFieldURI: fieldURI,
+      t$Value: value,
+    });
+  }
 }

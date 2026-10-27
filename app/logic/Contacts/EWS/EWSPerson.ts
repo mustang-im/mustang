@@ -1,4 +1,4 @@
-import { ExchangePerson, kPictureFilename } from "./ExchangePerson";
+import { ExchangePerson, kLoadExternalImagesProperty, kPictureFilename } from "./ExchangePerson";
 import { ContactEntry } from '../../Abstract/Person';
 import { StreetAddress } from '../StreetAddress';
 import type { EWSAddressbook } from './EWSAddressbook';
@@ -72,6 +72,7 @@ export class EWSPerson extends ExchangePerson {
     this.department = sanitize.nonemptystring(xmljs.Department, "");
     this.position = sanitize.nonemptystring(xmljs.JobTitle, "");
     this.pictureChangedOnServer(ensureArray(xmljs.Attachments?.FileAttachment));
+    this.loadExternalImagesFromServer(xmljs.ExtendedProperty);
   }
 
   protected static ewsToStreetAddress(entry: any): StreetAddress {
@@ -87,6 +88,9 @@ export class EWSPerson extends ExchangePerson {
     let request = this.itemID ? new EWSUpdateItemRequest(this.itemID) : new EWSCreateItemRequest({ m$SavedItemFolderId: { t$FolderId: { Id: this.addressbook.folderID } } });
     // `null`, not `""`, so that empty notes result in a field deletion, not an invalid empty <t:Body/>
     request.addField("Contact", "Body", this.notes ? { BodyType: "Text", _TextContent_: this.notes } : null, "item:Body");
+    if (this.loadExternalImages != null) {
+      request.addExtendedProperty("Contact", kLoadExternalImagesProperty, this.loadExternalImages);
+    }
     request.addField("Contact", "DisplayName", this.name, "contacts:DisplayName");
     request.addField("Contact", "GivenName", this.firstName, "contacts:GivenName");
     request.addField("Contact", "CompanyName", this.company, "contacts:CompanyName");

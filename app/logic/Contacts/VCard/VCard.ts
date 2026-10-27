@@ -121,6 +121,8 @@ export function updatePerson(vcard: ICalContainer, person: Person) {
   for (let i = 1; vcard.entries["xcustom" + i]; i++) {
     person.custom.add(new ContactEntry(vcard.entries["xcustom" + i][0].value));
   }
+  let loadExternalImages = vcard.entries.xmustangloadexternalimages?.[0].value;
+  person.loadExternalImages = loadExternalImages ? sanitize.boolean(loadExternalImages.toLowerCase(), null) : null;
 }
 
 /**
@@ -220,6 +222,7 @@ export function updateContainerFromPerson(person: Person, container: Record<stri
   while (("xcustom" + ++i) in container) {
     delete container["xcustom" + i];
   }
+  setValue(container, "x-mustang-load-external-images", person.loadExternalImages == null ? null : String(person.loadExternalImages).toUpperCase());
 }
 
 /**
@@ -248,8 +251,10 @@ function makeContactEntry(entry: ICalEntry, protocol?: string, isURI = true, str
 }
 
 function setValue(container: Record<string, string[]>, key: string, value: string | string[] | null, parameters: Record<string, string> = {}) {
+  // The same key as `ICalParser` gives the property
+  let containerKey = key.replace(/-/g, "");
   if (Array.isArray(value) ? !value.some(Boolean) : !value) {
-    delete container[key];
+    delete container[containerKey];
     return;
   }
   if (typeof value == "string" && parameters.value != "uri") {
@@ -263,7 +268,7 @@ function setValue(container: Record<string, string[]>, key: string, value: strin
   line += ":";
   // `;` and `,` are part of a URI, e.g. of a `data:` URL, and must stay unescaped
   line += typeof value == "string" ? value : value.map(value => escaped(value, false)).join(";");
-  container[key.replace("-", "")] = [line];
+  container[containerKey] = [line];
 }
 
 function setValues(container: Record<string, string[]>, key: string, values: ArrayColl<ContactEntry>, parameters: Record<string, string> = {}) {

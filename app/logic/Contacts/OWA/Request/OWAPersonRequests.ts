@@ -1,4 +1,5 @@
 import { OWARequest } from "../../../Mail/OWA/Request/OWARequest";
+import { kLoadExternalImagesProperty } from "../../EWS/ExchangePerson";
 
 export function owaFindGALPersonsRequest(searchTerm: string): OWARequest {
   return new OWARequest("FindPeople", {
@@ -64,9 +65,10 @@ export function owaFindPersonsRequest(folderID: string, maxFetchCount: number): 
   });
 }
 
-/** Fetches the attachments of the contacts, which is where the pictures are.
+/** Fetches what the personas don't have: The attachments of the contacts,
+ * which is where the pictures are, and our named properties.
  * @param itemIDs the ItemIds of the contacts, not the PersonaIds */
-export function owaGetContactAttachmentsRequest(itemIDs: string[]): OWARequest {
+export function owaGetContactItemsRequest(itemIDs: string[]): OWARequest {
   return new OWARequest("GetItem", {
     __type: "GetItemRequest:#Exchange",
     ItemShape: {
@@ -75,6 +77,9 @@ export function owaGetContactAttachmentsRequest(itemIDs: string[]): OWARequest {
       AdditionalProperties: [{
         __type: "PropertyUri:#Exchange",
         FieldURI: "item:Attachments",
+      }, {
+        __type: "ExtendedPropertyUri:#Exchange",
+        ...kLoadExternalImagesProperty,
       }],
     },
     ItemIds: itemIDs.map(itemID => ({

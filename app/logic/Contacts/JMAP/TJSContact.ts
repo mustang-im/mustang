@@ -72,6 +72,9 @@ export interface TJSContact {
   anniversaries?: Record<TID, TAnniversary>;
 
   localizations?: Record<string, Record<string, any>>;
+
+  /** Our vendor-specific property for `Person.loadExternalImages`, @see RFC 9553 section 1.8.1 */
+  "mustang.im:loadExternalImages"?: boolean;
 }
 
 /**

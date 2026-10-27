@@ -25,7 +25,13 @@ export class EWSUpdateItemRequest {
    * @param PropertyTag the MAPI property tag, e.g. "0x1081"
    * @param PropertyType the MAPI property type, e.g. "Integer" */
   addExtendedField(type: string, PropertyTag: string, PropertyType: string, value: any) {
-    let fieldURI = { PropertyTag, PropertyType };
+    this.addExtendedProperty(type, { PropertyTag, PropertyType }, value);
+  }
+
+  /** Sets a MAPI property that EWS has no field for
+   * @param fieldURI e.g. `{ PropertyTag: "0x1081", PropertyType: "Integer" }`
+   *   or a named property `{ DistinguishedPropertySetId, PropertyName, PropertyType }` */
+  addExtendedProperty(type: string, fieldURI: Record<string, string>, value: any) {
     this.itemChange.t$Updates.t$SetItemField.unshift({
       t$ExtendedFieldURI: fieldURI,
       ["t$" + type]: {

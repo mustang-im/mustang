@@ -7,7 +7,7 @@ import { OWAGroup } from "./OWAGroup";
 import { type OWAAccount, kMaxFetchCount } from "../../Mail/OWA/OWAAccount";
 import { owaGetPermissionsRequest, owaSetFolderPermissionsRequest } from "../../Mail/OWA/Request/OWAFolderRequests";
 import { owaGetAttachmentsRequest } from "../../Mail/OWA/Request/OWAAttachmentRequests";
-import { owaFindPersonsRequest, owaGetContactAttachmentsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
+import { owaFindPersonsRequest, owaGetContactItemsRequest, owaGetPersonaRequest } from "./Request/OWAPersonRequests";
 import { getSharedPersons, ExchangePermission, deleteExchangePermissions, setExchangePermissions } from "../../Mail/EWS/ExchangePermission";
 import { RunOnce } from "../../util/flow/RunOnce";
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
@@ -103,26 +103,33 @@ export class OWAAddressbook extends ExchangeAddressbook {
       }
     }
     // The pictures are slow and not vital, so they come only after all contacts
-    await this.downloadPictures(this.persons.contents);
+    await this.fetchContactItems(this.persons.contents);
   }
 
-  /** Exchange saves the pictures as attachments of the contacts,
-   * which the personas do not include, so they need 2 extra calls,
-   * but a whole batch of contacts fits in each call.
+  /** Fetches what the personas do not include:
+   * Exchange saves the pictures as attachments of the contacts,
+   * and `loadExternalImages` as a named property of the contacts,
+   * so they need 2 extra calls, but a whole batch of contacts fits in each call.
    * Downloads only the pictures that changed, @see `ExchangePerson.needsPicture` */
-  async downloadPictures(persons: OWAPerson[]) {
+  async fetchContactItems(persons: OWAPerson[]) {
     let contacts = persons.filter(person => person.itemID);
     for (let i = 0; i < contacts.length; i += kMaxFetchCount) {
       let batch = contacts.slice(i, i + kMaxFetchCount);
       try {
         // Which attachment of each contact is the picture, and did it change?
-        let response = await this.callOWA(owaGetContactAttachmentsRequest(batch.map(person => person.itemID)));
+        let response = await this.callOWA(owaGetContactItemsRequest(batch.map(person => person.itemID)));
         let items = response.ResponseMessages ? this.account.itemsFromResponses(response.ResponseMessages.Items) : response.Items;
         for (let item of items) {
           let itemID = sanitize.nonemptystring(item.ItemId.Id);
           let person = batch.find(person => person.itemID == itemID);
-          if (person?.pictureChangedOnServer(item.Attachments ?? []) && !person.needsPicture) {
-            await person.saveLocally(); // the picture disappeared from the server
+          if (!person) {
+            continue;
+          }
+          let loadExternalImages = person.loadExternalImages;
+          person.loadExternalImagesFromServer(item.ExtendedProperty);
+          let pictureRemoved = person.pictureChangedOnServer(item.Attachments ?? []) && !person.needsPicture;
+          if (pictureRemoved || person.loadExternalImages != loadExternalImages) {
+            await person.saveLocally();
           }
         }
         let needPicture = batch.filter(person => person.needsPicture);

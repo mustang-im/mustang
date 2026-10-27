@@ -27,17 +27,23 @@ export class OWAUpdateItemRequest extends OWARequest {
    * @param PropertyTag the MAPI property tag, e.g. "0x1081"
    * @param PropertyType the MAPI property type, e.g. "Integer" */
   addExtendedField(type: string, PropertyTag: string, PropertyType: string, value: any) {
+    this.addExtendedProperty(type, { PropertyTag, PropertyType }, value);
+  }
+
+  /** Sets a MAPI property that OWA has no field for
+   * @param fieldURI e.g. `{ PropertyTag: "0x1081", PropertyType: "Integer" }`
+   *   or a named property `{ DistinguishedPropertySetId, PropertyName, PropertyType }` */
+  addExtendedProperty(type: string, fieldURI: Record<string, string>, value: any) {
     this.itemChange.Updates.unshift({
       __type: "SetItemField:#Exchange",
       Path: {
         __type: "ExtendedPropertyUri:#Exchange",
-        PropertyTag,
-        PropertyType,
+        ...fieldURI,
       },
       Item: {
         __type: type + ":#Exchange",
         ExtendedProperty: [{
-          ExtendedFieldURI: { PropertyTag, PropertyType },
+          ExtendedFieldURI: fieldURI,
           Value: String(value),
         }],
       },

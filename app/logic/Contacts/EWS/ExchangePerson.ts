@@ -1,5 +1,5 @@
 import { Person } from '../../Abstract/Person';
-import type { URLString } from '../../util/util';
+import { ensureArray, type URLString } from '../../util/util';
 import { sanitize } from "../../../../lib/util/sanitizeDatatypes";
 
 export class ExchangePerson extends Person {
@@ -48,7 +48,22 @@ export class ExchangePerson extends Person {
     this.picture = sanitize.url(`data:${mimeType};base64,${base64}`, null, ["data"]);
     this.pictureOnServer = this.picture;
   }
+
+  /** @param extendedProperties `ExtendedProperty` of the contact, @see `kLoadExternalImagesProperty` */
+  loadExternalImagesFromServer(extendedProperties: any) {
+    let property = ensureArray(extendedProperties)
+      .find(property => property.ExtendedFieldURI?.PropertyName == kLoadExternalImagesProperty.PropertyName);
+    this.loadExternalImages = property ? sanitize.boolean(property.Value, null) : null;
+  }
 }
+
+/** `Person.loadExternalImages` as a named MAPI property of the contact,
+ * because Exchange has no field for it */
+export const kLoadExternalImagesProperty = {
+  DistinguishedPropertySetId: "PublicStrings",
+  PropertyName: "mustang.im:loadExternalImages",
+  PropertyType: "Boolean",
+};
 
 /** Exchange saves the contact picture as a JPEG file attached to the contact */
 export const kPictureFilename = "ContactPicture.jpg";
