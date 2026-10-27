@@ -8,14 +8,19 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 const kRecordSeparator = "\x1e";
 
 class TestOWAAccount extends OWAAccount {
-  readonly notifications: any[][] = [];
+  server: TestServer;
+  readonly notifications: any[] = [];
 
   async callOWA(request: any): Promise<any> {
+    if (request.action == "SubscribeToNotification") {
+      this.server.subscribe();
+      return {};
+    }
     throw new Error("Unexpected OWA call " + request.action);
   }
 
   async onNotificationMessages(messages: any[][]) {
-    this.notifications.push(...messages);
+    this.notifications.push(...messages.flat());
   }
 }
 
@@ -27,8 +32,13 @@ class TestConnection {
   /** When the event stream was opened and closed */
   opened: number | null = null;
   closed: number | null = null;
+  /** We told the client `ChannelReady` */
+  ready = false;
+  /** The client subscribed after we were ready, so we send it notifications */
+  subscribed = false;
   protected controller: ReadableStreamDefaultController;
   protected pingTimer: ReturnType<typeof setInterval>;
+  protected clientTimeout: ReturnType<typeof setTimeout>;
 
   constructor(connectionToken: string) {
     this.connectionToken = connectionToken;
@@ -45,38 +55,66 @@ class TestConnection {
     return new ReadableStream({
       start: controller => {
         this.controller = controller;
+        controller.enqueue(new TextEncoder().encode(":\r\n"));
       },
       cancel: () => this.onClosed(),
     });
   }
 
-  /** The server sends a message to the client, as server-sent event */
-  send(message: any) {
-    this.controller.enqueue(new TextEncoder().encode("data: " + JSON.stringify(message) + kRecordSeparator + "\r\n\r\n"));
+  /** The server sends messages to the client, as one server-sent event */
+  send(...messages: any[]) {
+    if (this.closed != null) {
+      return;
+    }
+    let data = messages.map(message => JSON.stringify(message) + kRecordSeparator).join("");
+    this.controller.enqueue(new TextEncoder().encode("data: " + data + "\r\n\r\n"));
+  }
+
+  /** The server sends notifications to the client, the way Office 365 does */
+  sendNotifications(...notifications: any[]) {
+    this.send({ type: 1, target: "syncMessage", arguments: [notifications] });
   }
 
   /** The server ends the event stream */
   end() {
+    if (this.closed != null) {
+      return;
+    }
     this.onClosed();
     this.controller.close();
   }
 
   onReceived(message: any) {
     this.received.push({ time: Date.now(), message });
+    // Office 365 closes a connection when the client sent nothing for 5 minutes
+    clearTimeout(this.clientTimeout);
+    this.clientTimeout = setTimeout(() => {
+      this.send({ type: 7, error: "Client hasn't sent a message/ping within the configured ClientTimeoutInterval.", allowReconnect: true });
+      this.end();
+    }, 5 * 60 * 1000);
     if (this.received.length == 1 && message.protocol == "json") {
       this.send({}); // handshake response
-      this.pingTimer = setInterval(() => this.send({ type: 6 }), 15 * 1000);
+      // as Office 365 sends them
+      this.send(
+        { type: 1, target: "syncMessage", arguments: [[{ id: "pg", mark: 0, data: "alive1", EventType: "0" }]] },
+        { type: 1, target: "syncMessage", arguments: [[{ id: "pg", subscriptionIds: [], data: "validateSubscriptions", EventType: "0" }]] },
+        { type: 1, target: "syncMessage", arguments: [[{ id: "ChannelReady", EventType: "0" }]] },
+      );
+      this.ready = true;
+      this.pingTimer = setInterval(() => this.send({ type: 6 }), 20 * 1000);
     }
   }
 
   protected onClosed() {
     this.closed ??= Date.now();
     clearInterval(this.pingTimer);
+    clearTimeout(this.clientTimeout);
   }
 }
 
-/** Answers the requests of the notification channel like a SignalR v2 server,
- * see <https://github.com/dotnet/aspnetcore/tree/main/src/SignalR/docs/specs> */
+/** Answers the requests of the notification channel like Office 365 with SignalR v2,
+ * see <https://github.com/dotnet/aspnetcore/tree/main/src/SignalR/docs/specs>,
+ * plus what we saw in a trace of Outlook on the web */
 class TestServer {
   readonly account: TestOWAAccount;
   readonly connections: TestConnection[] = [];
@@ -89,7 +127,28 @@ class TestServer {
 
   constructor(account: TestOWAAccount) {
     this.account = account;
+    account.server = this;
     globalThis.fetch = this.fetch.bind(this) as any;
+  }
+
+  get openConnections(): TestConnection[] {
+    return this.connections.filter(connection => connection.opened != null && connection.closed == null);
+  }
+
+  /** `SubscribeToNotification` doesn't say for which connection.
+   * Our guess: It's for the connections that are ready at that time. */
+  subscribe() {
+    for (let connection of this.openConnections.filter(connection => connection.ready)) {
+      connection.subscribed = true;
+    }
+  }
+
+  /** Sends a new mail notification to all connections that subscribed */
+  newMail(itemID: string) {
+    for (let connection of this.openConnections.filter(connection => connection.subscribed)) {
+      connection.sendNotifications({ id: "NewMailNotification", Subject: "Test", ItemId: itemID, EventType: "0" });
+      connection.sendNotifications({ id: "pg", mark: 1, data: "update", EventType: "0" });
+    }
   }
 
   async fetch(url: string, options: any): Promise<any> {
@@ -134,8 +193,7 @@ class TestServer {
     }
     expect(options.headers.Accept).toBe("text/event-stream");
     let body = connection.openStream(options.signal);
-    let openStreams = this.connections.filter(connection => connection.opened != null && connection.closed == null).length;
-    this.maxOpenStreams = Math.max(this.maxOpenStreams, openStreams);
+    this.maxOpenStreams = Math.max(this.maxOpenStreams, this.openConnections.length);
     return { ok: true, status: 200, body };
   }
 }
@@ -156,6 +214,10 @@ function startNotifications(account: TestOWAAccount): { error: Error | null } {
   return result;
 }
 
+function newMailNotifications(account: TestOWAAccount): any[] {
+  return account.notifications.filter(notification => notification.id == "NewMailNotification");
+}
+
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 });
@@ -164,23 +226,23 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-test("OWA: Office 365: Notifications arrive over SignalR v2", async () => {
+test("OWA: Office 365: New mail arrives over SignalR v2", async () => {
   let account = newTestAccount();
   let server = new TestServer(account);
-  let notification = { id: "NewMailNotification", ItemId: "item-1" };
-  server.onHandshake = connection => connection.send({ type: 1, target: "notify", arguments: [[notification]] });
 
   let result = startNotifications(account);
   await vi.advanceTimersByTimeAsync(60 * 1000);
+  server.newMail("item-1");
+  await vi.advanceTimersByTimeAsync(1000);
 
   expect(result.error).toBeNull();
   expect(server.connections.length).toBe(1);
   // The handshake must be the first message
   expect(server.connections[0].received[0].message).toEqual({ protocol: "json", version: 1 });
-  expect(account.notifications).toEqual([[notification]]);
+  expect(newMailNotifications(account).map(notification => notification.ItemId)).toEqual(["item-1"]);
 });
 
-test("OWA: Office 365: The notification channel stays open for hours, also when the access token of the account changes, and the client is never silent for 30 s", async () => {
+test("OWA: Office 365: The notification channel stays open for hours, also when the access token of the account changes", async () => {
   let account = newTestAccount();
   let server = new TestServer(account);
 
@@ -189,20 +251,37 @@ test("OWA: Office 365: The notification channel stays open for hours, also when 
   // e.g. after a new login. The server takes only the new token from now on.
   account.authorizationHeader = "Bearer access-token-2";
   await vi.advanceTimersByTimeAsync(90 * 60 * 1000);
+  server.newMail("item-1");
+  await vi.advanceTimersByTimeAsync(1000);
 
   expect(result.error).toBeNull();
   expect(server.rejectedRequests).toEqual([]);
-  expect(server.maxOpenStreams).toBe(1);
-  // The server closes a connection when the client sent nothing for 30 s
-  for (let connection of server.connections.filter(connection => connection.opened != null)) {
-    let times = [...connection.received.map(received => received.time), connection.closed ?? Date.now()];
-    for (let i = 1; i < times.length; i++) {
-      expect(times[i] - times[i - 1]).toBeLessThan(30 * 1000);
+  expect(server.connections.length).toBe(1);
+  expect(server.connections[0].closed).toBeNull();
+  expect(newMailNotifications(account).length).toBe(1);
+});
+
+test("OWA: Office 365: After the server closed the notification channel, we open it again, and subscribe again", async () => {
+  let account = newTestAccount();
+  let server = new TestServer(account);
+  server.onHandshake = connection => {
+    if (server.connections.length == 1) {
+      setTimeout(() => {
+        connection.send({ type: 7, error: "Server restarts", allowReconnect: true });
+        connection.end();
+      }, 10 * 60 * 1000);
     }
-  }
-  let current = server.connections.at(-1);
-  expect(current.closed).toBeNull();
-  expect(Date.now() - current.received.at(-1).time).toBeLessThan(30 * 1000);
+  };
+
+  let result = startNotifications(account);
+  await vi.advanceTimersByTimeAsync(15 * 60 * 1000);
+  server.newMail("item-1");
+  await vi.advanceTimersByTimeAsync(1000);
+
+  expect(result.error).toBeNull();
+  expect(server.connections.length).toBe(2);
+  expect(server.maxOpenStreams).toBe(1);
+  expect(newMailNotifications(account).map(notification => notification.ItemId)).toEqual(["item-1"]);
 });
 
 test("OWA: Office 365: The server closes the notification channel with an error", async () => {

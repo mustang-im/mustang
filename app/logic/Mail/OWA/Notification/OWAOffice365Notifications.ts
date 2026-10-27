@@ -1,4 +1,5 @@
 import { OWANotifications } from "./OWANotifications";
+import { OWASubscribeToNotificationRequest } from "../Request/OWASubscribeToNotificationRequest";
 import { EventDecoder } from "../../../util/eventSource";
 import { ensureArray, sleep } from "../../../util/util";
 import { URLPart } from "../../../util/blob";
@@ -60,11 +61,11 @@ export class OWAOffice365Notifications extends OWANotifications {
         throw new Error(`stream fetch failed with HTTP ${stream.status} ${stream.statusText}`);
       }
       await this.send(connectionURL, { protocol: "json", version: 1 });
-      // The server closes the connection when we didn't send anything for 30 s.
+      // Office 365 closes the connection when we didn't send anything for 5 minutes.
       pingTimer = setInterval(() => {
         this.send(connectionURL, { type: 6 })
           .catch(ex => connection.abort(ex));
-      }, 15 * 1000);
+      }, 60 * 1000);
       let handshakeDone = false;
       let eventStream = stream.body.pipeThrough(new TextDecoderStream()).pipeThrough(new TransformStream(new EventDecoder()));
       for await (let event of eventStream) {
@@ -79,8 +80,13 @@ export class OWAOffice365Notifications extends OWANotifications {
             }
             handshakeDone = true;
           } else if (message.type == 1) { // Invocation
+            let notifications = ensureArray(message.arguments).map(argument => ensureArray(argument));
+            // Subscriptions apply only to the connections that are ready at that time
+            if (notifications.flat().some(notification => notification?.id == "ChannelReady")) {
+              await this.account.callOWA(new OWASubscribeToNotificationRequest());
+            }
             await sleep(0.1); // Avoid racing with ourselves, if we caused the notification
-            await this.account.onNotificationMessages(ensureArray(message.arguments).map(argument => ensureArray(argument)));
+            await this.account.onNotificationMessages(notifications);
           } else if (message.type == 7) { // Close
             if (message.error && !message.allowReconnect) {
               throw new Error("Office 365 closed the notification channel: " + sanitize.label(message.error, ""));
