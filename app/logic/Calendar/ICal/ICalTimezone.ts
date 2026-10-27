@@ -69,14 +69,14 @@ class ICalTimezoneObservance {
   readonly rule: ICalTimezoneRule | null = null;
 
   constructor(part: ICalContainer) {
-    let start = ICalTimezoneObservance.parseLocalTime(part.entries.dtstart?.[0].value);
+    let start = parseLocalTime(part.entries.dtstart?.[0].value);
     assert(start, "VTIMEZONE part without DTSTART");
     this.start = start;
     this.offsetFrom = this.parseOffset(part.entries.tzoffsetfrom?.[0].value);
     this.offsetTo = this.parseOffset(part.entries.tzoffsetto?.[0].value);
     for (let entry of part.entries.rdate ?? []) {
       for (let value of entry.value.split(",")) {
-        let additionalStart = ICalTimezoneObservance.parseLocalTime(value);
+        let additionalStart = parseLocalTime(value);
         if (additionalStart) {
           this.additionalStarts.push(additionalStart);
         }
@@ -105,16 +105,6 @@ class ICalTimezoneObservance {
     let minutes = Number(match[2]) * 60 + Number(match[3]);
     return match[1] == "-" ? -minutes : minutes;
   }
-
-  /** @param value e.g. "19701025T030000" */
-  static parseLocalTime(value: string | undefined): Date | null {
-    let match = /^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)$/.exec(value ?? "");
-    if (!match) {
-      return null;
-    }
-    let [year, month, day, hours, minutes, seconds] = match.slice(1).map(Number);
-    return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
-  }
 }
 
 /** A yearly `RRULE` of a `VTIMEZONE` part, e.g. "FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU" */
@@ -126,7 +116,8 @@ class ICalTimezoneRule {
   readonly weekday: number | null = null;
   /** e.g. 2 for the 2nd Sunday, -1 for the last Sunday, 0 for every Sunday */
   readonly week: number = 0;
-  /** From `BYMONTHDAY`, e.g. 8 to 14 for the 2nd Sunday */
+  /** From `BYMONTHDAY`, e.g. 8 to 14 for the 2nd Sunday.
+   * Without `BYMONTHDAY` and `BYDAY`, the day of the first start. */
   readonly monthDays: number[] | null = null;
   /** As local time before the change */
   readonly until: Date | null = null;
@@ -144,9 +135,11 @@ class ICalTimezoneRule {
     }
     if (parts.BYMONTHDAY) {
       this.monthDays = parts.BYMONTHDAY.split(",").map(day => sanitize.integerRange(day, -31, 31));
+    } else if (this.weekday == null) {
+      this.monthDays = [start.getUTCDate()];
     }
     if (parts.UNTIL) {
-      let until = ICalTimezoneObservance.parseLocalTime(parts.UNTIL.replace(/Z$/, ""));
+      let until = parseLocalTime(parts.UNTIL.replace(/Z$/, ""));
       assert(until, `VTIMEZONE RRULE ${rrule} has a malformed UNTIL`);
       this.until = parts.UNTIL.endsWith("Z") ? new Date(until.getTime() + offsetFrom * k1MinuteMS) : until;
     }
@@ -162,8 +155,9 @@ class ICalTimezoneRule {
 
   protected startIn(year: number): Date | null {
     let lastDay = new Date(Date.UTC(year, this.month + 1, 0)).getUTCDate();
-    for (let day = 1; day <= lastDay; day++) {
-      if (this.matches(new Date(Date.UTC(year, this.month, day)), lastDay)) {
+    let weekday = new Date(Date.UTC(year, this.month, 1)).getUTCDay();
+    for (let day = 1; day <= lastDay; day++, weekday = (weekday + 1) % 7) {
+      if (this.matches(day, weekday, lastDay)) {
         return new Date(Date.UTC(year, this.month, day,
           this.start.getUTCHours(), this.start.getUTCMinutes(), this.start.getUTCSeconds()));
       }
@@ -171,15 +165,14 @@ class ICalTimezoneRule {
     return null;
   }
 
-  protected matches(date: Date, lastDay: number): boolean {
-    let day = date.getUTCDate();
+  protected matches(day: number, weekday: number, lastDay: number): boolean {
     if (this.monthDays && !this.monthDays.includes(day) && !this.monthDays.includes(day - lastDay - 1)) {
       return false;
     }
     if (this.weekday == null) {
-      return !!this.monthDays || day == this.start.getUTCDate();
+      return true;
     }
-    if (date.getUTCDay() != this.weekday) {
+    if (weekday != this.weekday) {
       return false;
     }
     if (this.week < 0) {
@@ -187,4 +180,14 @@ class ICalTimezoneRule {
     }
     return !this.week || Math.ceil(day / 7) == this.week;
   }
+}
+
+/** @param value e.g. "19701025T030000" */
+function parseLocalTime(value: string | undefined): Date | null {
+  let match = /^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)$/.exec(value ?? "");
+  if (!match) {
+    return null;
+  }
+  let [year, month, day, hours, minutes, seconds] = match.slice(1).map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
 }
