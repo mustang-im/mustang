@@ -21,15 +21,16 @@ export class OWAOffice365Notifications extends OWANotifications {
     }
   }
 
-  /** Returns when we renew the access token, or when the server ended the connection */
+  /** Returns when the server ended the connection */
   protected async connect(cid: string): Promise<void> {
-    let request = new OWAGetAccessTokenforResourceRequest(this.account.url + "notificationchannel/");
-    let response = await this.account.callOWA(request);
-    let headers = {
-      Authorization: `Bearer ${response.AccessToken}`,
-    };
     let hubURL = this.account.url + "notificationchannel";
-    let negotiate = await fetch(hubURL + URLPart`/negotiate?negotiateVersion=1&cid=${cid}`, { method: "POST", headers });
+    let negotiate = await fetch(hubURL + URLPart`/negotiate?negotiateVersion=1&cid=${cid}`, {
+      method: "POST",
+      headers: {
+        Authorization: this.account.authorizationHeader,
+        "Content-Type": "text/plain;charset=UTF-8",
+      },
+    });
     if (!negotiate.ok) {
       let allowed = negotiate.headers.get("Allow");
       throw new Error(`negotiate failed with HTTP ${negotiate.status} ${negotiate.statusText}` +
@@ -45,18 +46,11 @@ export class OWAOffice365Notifications extends OWANotifications {
     let connectionURL = hubURL + URLPart`?id=${sanitize.nonemptystring(json.connectionToken ?? json.connectionId)}&cid=${cid}`;
 
     let connection = new AbortController();
-    let renewing = false;
-    // We have to reconnect after 40 minutes,
-    // because the access token expires after about 50 minutes.
-    let renewTimer = setTimeout(() => {
-      renewing = true;
-      connection.abort();
-    }, 40 * 60 * 1000);
     let pingTimer: ReturnType<typeof setInterval>;
     try {
       let stream = await fetch(connectionURL, {
         headers: {
-          ...headers,
+          Authorization: this.account.authorizationHeader,
           Accept: "text/event-stream",
           "Cache-Control": "no-cache",
         },
@@ -65,10 +59,10 @@ export class OWAOffice365Notifications extends OWANotifications {
       if (!stream.ok) {
         throw new Error(`stream fetch failed with HTTP ${stream.status} ${stream.statusText}`);
       }
-      await this.send(connectionURL, headers, { protocol: "json", version: 1 });
+      await this.send(connectionURL, { protocol: "json", version: 1 });
       // The server closes the connection when we didn't send anything for 30 s.
       pingTimer = setInterval(() => {
-        this.send(connectionURL, headers, { type: 6 })
+        this.send(connectionURL, { type: 6 })
           .catch(ex => connection.abort(ex));
       }, 15 * 1000);
       let handshakeDone = false;
@@ -96,39 +90,25 @@ export class OWAOffice365Notifications extends OWANotifications {
         }
       }
     } catch (ex) {
-      if (!renewing) {
-        throw connection.signal.reason ?? ex;
-      }
+      throw connection.signal.reason ?? ex;
     } finally {
-      clearTimeout(renewTimer);
       clearInterval(pingTimer);
       connection.abort();
     }
   }
 
-  protected async send(connectionURL: string, headers: Record<string, string>, message: Record<string, any>): Promise<void> {
+  protected async send(connectionURL: string, message: Record<string, any>): Promise<void> {
     let response = await fetch(connectionURL, {
       method: "POST",
-      headers,
+      headers: {
+        Authorization: this.account.authorizationHeader,
+        "Content-Type": "text/plain;charset=UTF-8",
+      },
       body: JSON.stringify(message) + OWAOffice365Notifications.kRecordSeparator,
     });
     // 409: Our previous message is still being sent. The connection stays open.
     if (!response.ok && response.status != 409) {
       throw new Error(`notification send failed with HTTP ${response.status} ${response.statusText}`);
     }
-  }
-}
-
-class OWAGetAccessTokenforResourceRequest {
-  /* This request doesn't have the header and body that most requests have. */
-  readonly __type = "TokenRequest:#Exchange";
-  readonly Resource: string;
-
-  constructor(url: string) {
-    this.Resource = url;
-  }
-
-  get action() {
-    return "GetAccessTokenforResource";
   }
 }

@@ -6,20 +6,11 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 /** Ends each SignalR message */
 const kRecordSeparator = "\x1e";
-/** How long the access token from `GetAccessTokenforResource` lasts */
-const kTokenLifetime = 50 * 60 * 1000;
 
 class TestOWAAccount extends OWAAccount {
-  /** When we issued each access token for the notification channel */
-  readonly tokens = new Map<string, number>();
   readonly notifications: any[][] = [];
 
   async callOWA(request: any): Promise<any> {
-    if (request.action == "GetAccessTokenforResource") {
-      let token = "notification-token-" + this.tokens.size;
-      this.tokens.set(token, Date.now());
-      return { AccessToken: token };
-    }
     throw new Error("Unexpected OWA call " + request.action);
   }
 
@@ -89,8 +80,8 @@ class TestConnection {
 class TestServer {
   readonly account: TestOWAAccount;
   readonly connections: TestConnection[] = [];
-  /** Requests whose access token had expired */
-  readonly expiredRequests: string[] = [];
+  /** Requests without the account's current access token */
+  readonly rejectedRequests: string[] = [];
   /** The most event streams that were open at the same time */
   maxOpenStreams = 0;
   /** Called when the handshake of a connection is done */
@@ -102,10 +93,8 @@ class TestServer {
   }
 
   async fetch(url: string, options: any): Promise<any> {
-    let token = options?.headers?.Authorization?.replace("Bearer ", "");
-    let issued = this.account.tokens.get(token);
-    if (issued == null || Date.now() - issued >= kTokenLifetime) {
-      this.expiredRequests.push(url);
+    if (options?.headers?.Authorization != this.account.authorizationHeader) {
+      this.rejectedRequests.push(url);
       return { ok: false, status: 401, statusText: "Unauthorized" };
     }
     let hubURL = this.account.url + "notificationchannel";
@@ -155,6 +144,7 @@ function newTestAccount(): TestOWAAccount {
   appGlobal.remoteApp ??= { OWA: {} } as any; // `OWAAccount` needs the backend
   let account = new TestOWAAccount();
   account.url = "https://outlook.office.com/owa/";
+  account.authorizationHeader = "Bearer access-token-1";
   return account;
 }
 
@@ -190,15 +180,18 @@ test("OWA: Office 365: Notifications arrive over SignalR v2", async () => {
   expect(account.notifications).toEqual([[notification]]);
 });
 
-test("OWA: Office 365: The notification channel stays open for hours: the client is never silent for 30 s, and the access token never expires", async () => {
+test("OWA: Office 365: The notification channel stays open for hours, also when the access token of the account changes, and the client is never silent for 30 s", async () => {
   let account = newTestAccount();
   let server = new TestServer(account);
 
   let result = startNotifications(account);
-  await vi.advanceTimersByTimeAsync(3 * 60 * 60 * 1000);
+  await vi.advanceTimersByTimeAsync(90 * 60 * 1000);
+  // e.g. after a new login. The server takes only the new token from now on.
+  account.authorizationHeader = "Bearer access-token-2";
+  await vi.advanceTimersByTimeAsync(90 * 60 * 1000);
 
   expect(result.error).toBeNull();
-  expect(server.expiredRequests).toEqual([]);
+  expect(server.rejectedRequests).toEqual([]);
   expect(server.maxOpenStreams).toBe(1);
   // The server closes a connection when the client sent nothing for 30 s
   for (let connection of server.connections.filter(connection => connection.opened != null)) {
