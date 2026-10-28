@@ -1,6 +1,6 @@
 import { PublicKey } from "../PublicKey";
 import { EncryptionSystem, TrustLevel, trustOrder } from "../enums";
-import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo } from "./SMIMEASN1";
+import { DigestAlgorithm, SignatureAlgorithm, Certificate, RSAPublicKey, SubjectAlternativeName, RDNSequence, TBSCertificate, DigestInfo, BasicConstraints, KeyUsage, KeyUsageBit, ExtKeyUsage } from "./SMIMEASN1";
 import { BlockType, unpadPKCS, decrypt, encrypt, padFF } from "./SMIMERSAES";
 import { appGlobal } from "../../../app";
 import { uint8ArrayToHex } from "../../../util/blob";
@@ -107,6 +107,9 @@ export class SMIMEPublicKey extends PublicKey {
     // cannot sign as another identity today. Do not start trusting the chain
     // itself for identity binding without adding those X.509 path checks first.
     let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    if (!this.allowsEMailProtection()) {
+      return KeyStatus.ChainInvalid;
+    }
     for (let key of this.chain) {
       if (key.obsolete) {
         console.log("obsolete certificate in chain");
@@ -116,11 +119,20 @@ export class SMIMEPublicKey extends PublicKey {
       if (!await verifySignature(cert, signer)) {
         return KeyStatus.ChainInvalid;
       }
+      if (!key.mayIssueCertificates(this.chain.contents.indexOf(key)) || !key.allowsEMailProtection()) {
+        return KeyStatus.ChainInvalid;
+      }
       cert = signer;
     }
+    const kAcceptX509v1Roots = false;
     for (let type of ["bundled", "system", "extra"]) {
       for (let ca of await lazyGetCACertificates(type)) {
         if (await verifySignature(cert, ca)) {
+          let root = new SMIMEPublicKey();
+          await root.setCertificate(ca);
+          if (root.obsolete || !root.allowsEMailProtection() || (!kAcceptX509v1Roots && !ca.tbsCertificate.version)) {
+            continue;
+          }
           let caTrust = type == "bundled" ? TrustLevel.ThirdParty : type == "system" ? TrustLevel.OS : TrustLevel.Personal;
           if (trustOrder(this.trustLevel) < trustOrder(caTrust)) {
             this.trustLevel = caTrust;
@@ -134,6 +146,39 @@ export class SMIMEPublicKey extends PublicKey {
       return KeyStatus.SelfSignedRoot;
     }
     return KeyStatus.ChainIncomplete;
+  }
+
+  /** @param subCAs How many CA certificates are between this one and the leaf */
+  protected mayIssueCertificates(subCAs: number): boolean {
+    let basicConstraints = this.extension("basicConstraints");
+    if (!basicConstraints) {
+      return false;
+    }
+    let { cA, pathLenConstraint } = BasicConstraints.decode(basicConstraints);
+    return cA && (pathLenConstraint == null || subCAs <= pathLenConstraint) && this.allowsKeyUsage(KeyUsageBit.keyCertSign);
+  }
+
+  allowsKeyUsage(...usages: KeyUsageBit[]): boolean {
+    let keyUsage = this.extension("keyUsage");
+    if (!keyUsage) {
+      return true;
+    }
+    let { data } = KeyUsage.decode(keyUsage);
+    return usages.some(bit => (data[bit >> 3] & (0x80 >> (bit % 8))) != 0);
+  }
+
+  protected allowsEMailProtection(): boolean {
+    let extKeyUsage = this.extension("extKeyUsage");
+    if (!extKeyUsage) {
+      return true;
+    }
+    const kAcceptAnyPurpose = false;
+    return ExtKeyUsage.decode(extKeyUsage).some(purpose => purpose == "emailProtection" || (kAcceptAnyPurpose && purpose == "anyExtendedKeyUsage"));
+  }
+
+  protected extension(extnID: string): Uint8Array | undefined {
+    let cert = Certificate.decodePEM(this.certificate, { label: "CERTIFICATE" });
+    return cert.tbsCertificate.extensions?.find(ext => ext.extnID == extnID)?.extnValue;
   }
 
   /** Reads an S/MIME certificate from a file.
