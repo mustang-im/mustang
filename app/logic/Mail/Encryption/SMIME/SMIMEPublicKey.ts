@@ -237,10 +237,20 @@ function lazyGetCACertificates(type: string): Promise<Certificate[]> {
 
 async function getCACertificatesLazy(type: string): Promise<Certificate[]> {
   let certificates: Certificate[] = [];
-  let rootCertificates: string[] = await appGlobal.remoteApp.getCACertificates(type);
+  let rootCertificates: string[] = type == "bundled"
+    ? splitPEM((await import("./roots/mozilla-email-roots.pem?raw")).default)
+    : await appGlobal.remoteApp.getCACertificates(type);
+  let notEmailRoots = type == "system" && rootCertificates.length
+    ? (await import("./roots/mozilla-not-email-roots.txt?raw")).default
+    : "";
   for (let cert of rootCertificates) {
     try {
-      certificates.push(Certificate.decodePEM(cert, { label: "CERTIFICATE" }));
+      let certificate = Certificate.decodePEM(cert, { label: "CERTIFICATE" });
+      let hash = new Uint8Array(await crypto.subtle.digest("SHA-256", Certificate.encode(certificate) as BufferSource));
+      if (notEmailRoots.includes(uint8ArrayToHex(hash))) {
+        continue;
+      }
+      certificates.push(certificate);
     } catch (ex) {
       console.log("Error decoding certificate", cert);
       console.error(ex);
