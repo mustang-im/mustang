@@ -3,7 +3,10 @@ import { AuthMethod } from "../../Abstract/Account";
 import { Provider } from "../../Auth/OAuth2URLs";
 import { GraphFolder } from "./GraphFolder";
 import { GraphSearchEMail } from "./GraphSearchEMail";
-import type { TGraphFolder } from "./TGraphMail";
+import type { TGraphCategory, TGraphFolder } from "./TGraphMail";
+import { hexToCategoryColor, sanitizeCategoryColor } from "../EWS/ExchangeCategories";
+import type { Tag } from "../../Abstract/Tag";
+import type { OAuth2 } from "../../Auth/OAuth2";
 import type { UUID } from "./TGraphGeneric";
 import type { EMail } from "../EMail";
 import { ConnectError, LoginError } from "../../Abstract/Account";
@@ -13,6 +16,7 @@ import { newCalendarForProtocol } from "../../Calendar/AccountsList/Calendars";
 import { newChatAccountForProtocol } from "../../Chat/AccountsList/ChatAccounts";
 import { CreateMIME } from "../SMTP/CreateMIME";
 import { ensureLicensed } from "../../util/LicenseClient";
+import { logErrorToServer } from "../../util/error";
 import { appGlobal } from "../../app";
 import { appName, appVersion } from "../../build";
 import { RunOnce } from "../../util/flow/RunOnce";
@@ -63,6 +67,8 @@ export class GraphAccount extends ExchangeMailAccount {
         let inbox = this.inbox as GraphFolder;
         assert(inbox, "Inbox not found");
         inbox.startPolling();
+        this.readCategories()
+          .catch(logErrorToServer);
 
         await this.createDefaultDependentAccounts();
       } finally { // Even when the mail folders failed, so that calendar and addressbook still work
@@ -281,6 +287,37 @@ export class GraphAccount extends ExchangeMailAccount {
       }
     }
     throw ex;
+  }
+
+  async readCategories(): Promise<void> {
+    if (!this.mayAccessCategories) {
+      return;
+    }
+    let categories = await this.graphGet<TGraphCategory>("outlook/masterCategories");
+    await this.setCategories(categories.map(category => ({
+      name: sanitize.nonemptylabel(category.displayName, null),
+      color: sanitizeCategoryColor(category.color?.replace("preset", "")),
+    })).filter(category => category.name));
+  }
+
+  protected async addCategoryOnServer(tag: Tag): Promise<void> {
+    if (!this.mayAccessCategories) {
+      return;
+    }
+    let name = tag.name.toLowerCase();
+    let categories = await this.graphGet<TGraphCategory>("outlook/masterCategories");
+    if (categories.some(category => category.displayName?.toLowerCase() == name)) {
+      return;
+    }
+    let color = hexToCategoryColor(tag.color);
+    await this.graphPost("outlook/masterCategories", {
+      displayName: tag.name,
+      color: color < 0 ? "none" : "preset" + color,
+    });
+  }
+
+  protected get mayAccessCategories(): boolean {
+    return !!(this.oAuth2 as OAuth2)?.scope?.includes("MailboxSettings.ReadWrite");
   }
 
   async listFolders(): Promise<void> {
