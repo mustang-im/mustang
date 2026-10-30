@@ -32,7 +32,11 @@ export class JSCalendarEvent {
     event.startTime = this.toDate(jmap.start, jmap);
     event.timezone = jmap.timeZone ?? null;
     event.allDay = sanitize.boolean(jmap.showWithoutTime, false);
-    event.duration = toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S"));
+    if (event.allDay) {
+      event.duration = toSeconds(sanitize.nonemptystring(jmap.duration, "PT0S"));
+    } else {
+      event.endTime = this.toEndTime(jmap);
+    }
 
     // Reminder. We support only one alarm per event, so take the first.
     event.alarm = this.toAlarm(Object.values(jmap.alerts ?? {})[0], event);
@@ -118,9 +122,13 @@ export class JSCalendarEvent {
 
     // Time
     jmap.start = this.fromDate(event.startTime, event);
-    jmap.duration = fromSeconds(event.duration);
     jmap.timeZone = event.timezone;
     jmap.showWithoutTime = event.allDay;
+    if (event.allDay) {
+      jmap.duration = fromSeconds(event.duration);
+    } else if (!jmap.duration || this.toEndTime(jmap).getTime() != event.endTime.getTime()) {
+      jmap.duration = fromSeconds(event.duration, false);
+    }
 
     // Reminder. Keep an unchanged alert as it is: ours is an offset from the start
     // and fires before every occurrence, an absolute trigger only once.
@@ -372,6 +380,18 @@ export class JSCalendarEvent {
     return local;
   }
 
+  /** The days of a duration are calendar days in the event's time zone, so they may have 23 or 25 hours */
+  static toEndTime(jmap: TJMAPCalendarEvent): Date {
+    let duration = sanitize.nonemptystring(jmap.duration, "PT0S");
+    let days = toSeconds(duration.replace(/T.*/, "").replace(/^P$/, "PT0S")) / k1DayS;
+    let seconds = toSeconds(duration) - days * k1DayS;
+    let isUTC = /Z$/.test(jmap.start);
+    let endDay = new Date(jmap.start.replace(/Z$/, "") + "Z"); // the date-time of the start, as if it were UTC
+    endDay.setUTCDate(endDay.getUTCDate() + days);
+    let endDayStart = this.toDate(endDay.toISOString().substring(0, 19) + (isUTC ? "Z" : ""), jmap);
+    return new Date(endDayStart.getTime() + seconds * 1000);
+  }
+
   static fromDate(date: Date, event: Event): string {
     // "lt" locale has date/time format YYYY-MM-DD HH:MM:SS.
     if (event.allDay) {
@@ -395,11 +415,14 @@ function toSeconds(duration: string): number {
   return sign ? -total : total;
 }
 
-/** @param seconds may be negative, for alarm offsets */
-function fromSeconds(seconds: number): string {
+/**
+ * @param seconds may be negative, for alarm offsets
+ * @param useDays false: The duration is exact, e.g. "PT24H", because a day "P1D" may have 23 or 25 hours
+ */
+function fromSeconds(seconds: number, useDays = true): string {
   let sign = seconds < 0 ? "-" : "";
   let abs = Math.abs(seconds);
-  if (abs % k1DayS == 0) {
+  if (useDays && abs % k1DayS == 0) {
     return sign + "P" + abs / k1DayS + "D";
   } else if (abs % k1HourS == 0) {
     return sign + "PT" + abs / k1HourS + "H";
