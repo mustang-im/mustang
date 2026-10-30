@@ -1,5 +1,6 @@
 import { MustangApp } from "../AppsBar/MustangApp";
 import { openApp } from "../AppsBar/selectedApp";
+import { AppWindow } from "../MainWindow/AppWindow";
 import type { Event } from "../../logic/Calendar/Event";
 import CalendarIcon from "../Calendar/CalendarIcon.svelte";
 import EditIcon from "lucide-svelte/icons/pencil";
@@ -23,10 +24,13 @@ export class CalendarMustangApp extends MustangApp {
     openApp(edit, edit.windowParams);
   }
 
-  /** Closes the full window that `showEvent()` opened, if any */
+  /** Closes the full window that `showEvent()` opened, if any, in all main windows */
   closeEvent(event: Event) {
-    let window = this.subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
-    this.subApps.remove(window);
+    for (let appWindow of AppWindow.all) {
+      let subApps = appWindow.uiState(this.subApps);
+      let window = subApps.find(app => app instanceof CalendarEventMustangApp && app.windowParams.event == event);
+      subApps.remove(window);
+    }
   }
 }
 
