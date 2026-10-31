@@ -298,6 +298,34 @@ test("An invitation that the JMAP server added to the calendar by itself is unan
   }
 });
 
+test("Answering an invitation from a user who shares their account with us", async () => {
+  let { account, calendar, sent } = setup();
+  // The organizer's account, shared with us: it has an identity with the organizer's address
+  let shared = new JMAPAccount();
+  shared.initFromMainAccount(account);
+  shared.emailAddress = kOrganizer;
+  shared.accountID = "sharedAccount";
+  let sharedIdentity = new MailIdentity(shared);
+  sharedIdentity.emailAddress = kOrganizer;
+  shared.identities.add(sharedIdentity);
+  let sentByShared: EMail[] = [];
+  shared.send = async (email: EMail) => {
+    sentByShared.push(email);
+  };
+  appGlobal.emailAccounts.addAll([account, shared]);
+  let event = calendar.newEvent();
+  event.fromJMAP(serverMeeting("needs-action"));
+  calendar.events.add(event);
+
+  await event.respondToInvitation(InvitationResponse.Accept);
+
+  expect(event.myParticipation).toEqual(InvitationResponse.Accept);
+  expect(sentByShared.length).toEqual(0);
+  expect(sent.length).toEqual(1);
+  expect(sent[0].from.emailAddress).toEqual(kMe);
+  expect(sent[0].event.participants.contents.map(p => [p.emailAddress, p.response])).toEqual([[kMe, InvitationResponse.Accept]]);
+});
+
 test("An invitation that I already answered is not unanswered", () => {
   for (let [status, response] of [
     ["accepted", InvitationResponse.Accept],
